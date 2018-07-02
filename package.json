@@ -1,21 +1,13 @@
 {
-  "name": "electron-quick-start",
-  "version": "1.0.0",
-  "description": "A minimal Electron application",
+  "name": "wwsu-dj-controls",
+  "version": "4.0.0.alpha",
+  "description": "A WWSU management application for DJs and Directors",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
   },
-  "repository": "https://github.com/electron/electron-quick-start",
-  "keywords": [
-    "Electron",
-    "quick",
-    "start",
-    "tutorial",
-    "demo"
-  ],
-  "author": "GitHub",
-  "license": "CC0-1.0",
+  "repository": "https://github.com/Lovinity/wwsu-dj-controls",
+  "author": "Patrick Schmalstig",
   "devDependencies": {
     "electron": "^2.0.0"
   }
