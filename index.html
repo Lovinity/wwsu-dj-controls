@@ -1,19 +1,220 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Hello World!</title>
-  </head>
-  <body>
-    <h1>Hello World!</h1>
-    <!-- All of the Node.js APIs are available in this renderer process. -->
-    We are using Node.js <script>document.write(process.versions.node)</script>,
-    Chromium <script>document.write(process.versions.chrome)</script>,
-    and Electron <script>document.write(process.versions.electron)</script>.
+    <head>
 
-    <script>
-      // You can also require other files to run in this process
-      require('./renderer.js')
-    </script>
-  </body>
+        <script>if (typeof module === 'object') {
+                window.module = module;
+                module = undefined;
+            }</script> 
+        <meta charset="UTF-8">
+        <title>WWSU DJ Controls</title>
+        <script src="assets/js/jquery-3.3.1.min.js"></script>
+        <script src="assets/js/bootstrap/bootstrap.bundle.min.js"></script>
+        <script src="assets/js/fontawesome.js"></script>
+        <script src="assets/js/iziToast.min.js"></script>
+        <script src="assets/js/moment.min.js"></script>
+        <script src="assets/js/moment-duration-format.js"></script>
+        <script src="assets/js/taffy-min.js"></script>
+        <script src="assets/js/sails.io.js"></script>
+        <link rel="stylesheet" href="assets/styles/bootstrap/bootstrap.min.css" type="text/css">
+        <link rel="stylesheet" href="assets/styles/animate.css" type="text/css">
+        <link rel="stylesheet" href="assets/styles/iziToast.min.css" type="text/css">
+        <link rel="stylesheet" href="assets/styles/fontawesome.css" type="text/css">
+        <style>
+            .btn-circle {
+                width: 30px;
+                height: 30px;
+                text-align: center;
+                padding: 6px 0;
+                font-size: 12px;
+                line-height: 1.428571429;
+                border-radius: 15px;
+            }
+            .btn-circle.btn-lg {
+                width: 50px;
+                height: 50px;
+                padding: 10px 16px;
+                font-size: 18px;
+                line-height: 1.33;
+                border-radius: 25px;
+            }
+            .btn-circle.btn-xl {
+                width: 70px;
+                height: 70px;
+                padding: 10px 16px;
+                font-size: 24px;
+                line-height: 1.33;
+                border-radius: 35px;
+            }
+
+            .clock {
+                border-radius: 50%;
+                background: #fff url(assets/svg/clock.svg) no-repeat center;
+                background-size: 88%;
+                height: 10em;
+                position: relative;
+                width: 10em;
+            }
+
+            .clock.simple:after {
+                background: #000;
+                border-radius: 50%;
+                content: "";
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                width: 5%;
+                height: 5%;
+                z-index: 10;
+            }
+
+            .minutes-container, .hours-container, .seconds-container {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+            }
+
+            .hours {
+                background: #000;
+                height: 20%;
+                left: 48.75%;
+                position: absolute;
+                top: 30%;
+                transform-origin: 50% 100%;
+                width: 2.5%;
+            }
+
+            .minutes {
+                background: #000;
+                height: 40%;
+                left: 49%;
+                position: absolute;
+                top: 10%;
+                transform-origin: 50% 100%;
+                width: 2%;
+            }
+
+            .seconds {
+                background: #780000;
+                height: 45%;
+                left: 49.5%;
+                position: absolute;
+                top: 14%;
+                transform-origin: 50% 80%;
+                width: 1%;
+                z-index: 8;
+            }
+
+            @keyframes rotate {
+                100% {
+                    transform: rotateZ(360deg);
+                }
+            }
+
+            .hours-container {
+                transition: transform 0.3s cubic-bezier(.4,2.08,.55,.44);
+            }
+            .minutes-container {
+                transition: transform 0.3s cubic-bezier(.4,2.08,.55,.44);
+            }
+            .seconds-container {
+                transition: transform 0.2s cubic-bezier(.4,2.08,.55,.44);
+            }
+        </style>
+    </head>
+    <body style="background-color: #263238;">
+        <div class="d-flex justify-content-center flex-wrap p-1 m-1">
+
+            <div class="card p-1 m-1" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
+                <div class="card-header text-center">WWSU Operations</div>
+                <div class="card-body" style="overflow: auto;">
+                    <h4 class="card-title" style="text-align: center;">Automation</h4>
+                    <div class="d-flex justify-content-start flex-wrap p-1 m-1">
+                        <div class="p-1 m-1" style="width: 108px; text-align: center;">
+                            <button type="button" class="btn btn-danger btn-circle btn-xl"><i class="fas fa-microphone-alt"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Live</div>
+                        </div>
+                        <div class="p-1 m-1" style="width: 108px; text-align: center;">
+                            <button type="button" class="btn btn-primary btn-circle btn-xl"><i class="fas fa-microphone-alt-slash"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Automation</div>
+                        </div>
+                        <div class="p-1 m-1" style="width: 108px; text-align: center;">
+                            <button type="button" class="btn btn-danger btn-circle btn-xl" style="background-color: #673AB7;"><i class="fas fa-broadcast-tower"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Remote</div>
+                        </div>
+                        <div class="p-1 m-1" style="width: 108px; text-align: center;">
+                            <button type="button" class="btn btn-success btn-circle btn-xl"><i class="fas fa-trophy"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Sports</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-1 m-1" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
+                <div class="card-header text-center">Announcements</div>
+                <div class="card-body" style="overflow: auto;">
+                    <div class="alert alert-warning" role="alert">
+                        Airchecks are due August 2, 2018.
+                    </div>
+                    <div class="alert alert-danger" role="alert">
+                        Don't say fuck on the air or you'll be banned!
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-1 m-1" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
+                <div class="card-header text-center">Messages / Requests <span class="badge badge-secondary">0</span></div>
+                <div class="card-body" style="overflow: auto;">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-4">
+                                Recipients go here
+                            </div>
+                            <div class="col-8">
+                                Messages go here
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-1 m-1" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
+                <div class="card-header text-center">Time and Calendar</div>
+                <div class="card-body">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-4">
+                                <article class="clock">
+                                    <div class="hours-container">
+                                        <div class="hours"></div>
+                                    </div>
+                                    <div class="minutes-container">
+                                        <div class="minutes"></div>
+                                    </div>
+                                    <div class="seconds-container">
+                                        <div class="seconds"></div>
+                                    </div>
+                                </article>
+                                <div id="datestamp" style="text-align: center; font-size: 1em;"></div>
+                            </div>
+                            <div class="col-8">
+                                Messages go here
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <script>if (window.module)
+                module = window.module;</script>
+        <script>
+            // You can also require other files to run in this process
+            require('./renderer.js')
+        </script>
+    </body>
 </html>
