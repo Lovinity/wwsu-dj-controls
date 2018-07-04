@@ -167,15 +167,20 @@
 
             <div class="card p-1 m-1" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
                 <div class="card-header text-center">Messages / Requests <span class="badge badge-secondary">0</span></div>
-                <div class="card-body" style="overflow: auto;">
+                <div class="card-body">
                     <div class="container">
                         <div class="row">
-                            <div class="col-4">
-                                Recipients go here
+                            <div class="col-5" style="overflow: auto; height: 220px;">
+                                <div class="p-1 border border-white"><h3 style="text-align: center; font-size: 1em; color: #ECEFF1">computers</h3><div id="group-computers"><div id="user-EngineeringPC" class="p-1 m-1 border border-warning" onmouseover="renderer.hover('EngineeringPC');" onmouseout="renderer.unhover('EngineeringPC');" onclick="renderer.activate('computers', 'EngineeringPC');" style="cursor: pointer;"><span id="userl-EngineeringPC">Engineering PC</span> <span class="badge badge-secondary" id="userb-EngineeringPC">0</span></div><div id="user-LOVEYTAB" class="p-1 m-1 border border-secondary" onmouseover="renderer.hover('LOVEYTAB');" onmouseout="renderer.unhover('LOVEYTAB');" onclick="renderer.activate('computers', 'LOVEYTAB');" style="cursor: pointer;"><span id="userl-LOVEYTAB">Pat's Tablet</span> <span class="badge badge-secondary" id="userb-LOVEYTAB">0</span></div><div id="user-LoveyPC" class="p-1 m-1 border border-warning" onmouseover="renderer.hover('LoveyPC');" onmouseout="renderer.unhover('LoveyPC');" onclick="renderer.activate('computers', 'LoveyPC');" style="cursor: pointer;"><span id="userl-LoveyPC">Pat's Home PC</span> <span class="badge badge-secondary" id="userb-LoveyPC">0</span></div><div id="user-Patricks-iMac.local" class="p-1 m-1 border border-secondary" onmouseover="renderer.hover('Patricks-iMac.local');" onmouseout="renderer.unhover('Patricks-iMac.local');" onclick="renderer.activate('computers', 'Patricks-iMac.local');" style="cursor: pointer;"><span id="userl-Patricks-iMac.local">Engineering iMac</span> <span class="badge badge-secondary" id="userb-Patricks-iMac.local">0</span></div><div id="user-WIN-C5S1UBO0O18" class="p-1 m-1 border border-warning" onmouseover="renderer.hover('WIN-C5S1UBO0O18');" onmouseout="renderer.unhover('WIN-C5S1UBO0O18');" onclick="renderer.activate('computers', 'WIN-C5S1UBO0O18');" style="cursor: pointer;"><span id="userl-WIN-C5S1UBO0O18">OnAir Studio</span> <span class="badge badge-secondary" id="userb-WIN-C5S1UBO0O18">0</span></div><div id="user-WWSUs-MacBook-Air.local" class="p-1 m-1 border border-secondary" onmouseover="renderer.hover('WWSUs-MacBook-Air.local');" onmouseout="renderer.unhover('WWSUs-MacBook-Air.local');" onclick="renderer.activate('computers', 'WWSUs-MacBook-Air.local');" style="cursor: pointer;"><span id="userl-WWSUs-MacBook-Air.local">Remote MacBook</span> <span class="badge badge-secondary" id="userb-WWSUs-MacBook-Air.local">0</span></div></div></div>
                             </div>
-                            <div class="col-8">
-                                Messages go here
+                            <div class="col-7" style="overflow: auto; height: 220px;">
+                                <div class="p-3 m-1 border border-warning" id="msg-o0g8w8jj6ca4cg" style="background: rgba(255, 193, 7, 0.5);"><span class="m-1 p-1">test</span><br /><span class="badge badge-primary" style="font-size: 0.66em;">7:43:24 PM</span> <span class="badge badge-secondary" style="font-size: 0.66em;">941</span> <span class="badge badge-danger" style="font-size: 0.66em;">From: EngineeringPC</span><span class="badge badge-success" style="font-size: 0.66em;">For: EngineeringPC (YOU)</span></div>
                             </div>
+                        </div>
+                    </div>
+                    <div class="p-1 m-1" style="width: 100%; float: left; color: #FFFFFF;">
+                        <div class="form-group">
+                            <textarea class="form-control" rows="1" id="themessage" placeholder="Type your message and press enter to send." onkeypress="renderer.sendMessage(event);"></textarea>
                         </div>
                     </div>
                 </div>
@@ -198,10 +203,31 @@
                                         <div class="seconds"></div>
                                     </div>
                                 </article>
-                                <div id="datestamp" style="text-align: center; font-size: 1em;"></div>
+                                <div id="datestamp" style="text-align: center; font-size: 1.5em;"></div>
                             </div>
-                            <div class="col-8">
-                                Messages go here
+                            <div class="col-8" style="overflow: auto;">
+                                <div id="track-38739" class="p-1 m-1 border border-secondary bg-danger" onclick="loadTrackInfo(38739);">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-4">
+                                                3:30 PM
+                                            </div>
+                                            <div class="col-8">
+                                                Ike B - The Ike B Show
+                                            </div>
+                                        </div>
+                                    </div></div>
+                                <div id="track-38739" class="p-1 m-1 border border-secondary bg-success" onclick="loadTrackInfo(38739);">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-4">
+                                                7:30 PM
+                                            </div>
+                                            <div class="col-8">
+                                                Raider Sports - Men's Basketball
+                                            </div>
+                                        </div>
+                                    </div></div>
                             </div>
                         </div>
                     </div>
