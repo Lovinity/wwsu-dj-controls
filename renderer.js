@@ -114,6 +114,40 @@ try {
         timeout: 30000
     });
 
+$("#go-live").iziModal({
+    title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Mics, Recorder, Action!</h5>`,
+    headerColor: '#37474F',
+    width: 640,
+    focusInput: true,
+    arrowKeys: false,
+    navigateCaption: false,
+    navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+    overlayClose: false,
+    overlayColor: 'rgba(0, 0, 0, 0.4)',
+    timeout: 180000,
+    timeoutProgressbar: true,
+    pauseOnHover: true,
+    timeoutProgressbarColor: 'rgba(255,255,255,0.5)'
+});
+
+$("#go-remote").iziModal({
+    title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Remote Broadcast</h5>`,
+    headerColor: '#37474F',
+    width: 640,
+    focusInput: true,
+    arrowKeys: false,
+    navigateCaption: false,
+    navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+    overlayClose: false,
+    overlayColor: 'rgba(0, 0, 0, 0.4)',
+    timeout: 180000,
+    timeoutProgressbar: true,
+    pauseOnHover: true,
+    timeoutProgressbarColor: 'rgba(255,255,255,0.5)'
+});
+
+$("#go-remote").iziModal('open');
+
     $.fn.extend({
         // Add an animateCss function to JQuery to trigger an animation of an HTML element with animate.css
         animateCss: function (animationName, callback) {

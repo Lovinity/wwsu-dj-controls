@@ -12,6 +12,7 @@
         <script src="assets/js/bootstrap/bootstrap.bundle.min.js"></script>
         <script src="assets/js/fontawesome.js"></script>
         <script src="assets/js/iziToast.min.js"></script>
+        <script src="assets/js/iziModal.min.js"></script>
         <script src="assets/js/moment.min.js"></script>
         <script src="assets/js/moment-duration-format.js"></script>
         <script src="assets/js/taffy-min.js"></script>
@@ -19,6 +20,7 @@
         <link rel="stylesheet" href="assets/styles/bootstrap/bootstrap.min.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/animate.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/iziToast.min.css" type="text/css">
+        <link rel="stylesheet" href="assets/styles/iziModal.min.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/fontawesome.css" type="text/css">
         <style>
             .btn-circle {
@@ -123,70 +125,113 @@
             .seconds-container {
                 transition: transform 0.2s cubic-bezier(.4,2.08,.55,.44);
             }
+
+            .overlay {
+                position: fixed;
+                display: block;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0,0,0,0.8);
+                z-index: 499;
+            }
+
         </style>
     </head>
     <body style="background-color: #263238;">
         <div class="d-flex justify-content-center flex-wrap p-1 m-1">
 
-            <div class="card p-1 m-1" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
-                <div class="card-header text-center">WWSU Operations</div>
+            <div class="card p-1 m-1" id="operations" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
+                <div class="card-header text-center">WWSU Operations   <span class="badge badge-secondary">Automation</span></div>
                 <div class="card-body" style="overflow: auto;">
-                    <h4 class="card-title" style="text-align: center;">Automation</h4>
-                    <div class="d-flex justify-content-start flex-wrap p-1 m-1">
+                    <div class="d-flex justify-content-start flex-wrap">
                         <div class="p-1 m-1" style="width: 108px; text-align: center;">
-                            <button type="button" class="btn btn-danger btn-circle btn-xl"><i class="fas fa-microphone-alt"></i></button>
+                            <button type="button" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-microphone-alt"></i></button>
                             <div style="text-align: center; font-size: 1em;">Live</div>
                         </div>
                         <div class="p-1 m-1" style="width: 108px; text-align: center;">
-                            <button type="button" class="btn btn-primary btn-circle btn-xl"><i class="fas fa-microphone-alt-slash"></i></button>
+                            <button type="button" class="btn btn-primary btn-circle btn-xl border border-white"><i class="fas fa-microphone-alt-slash"></i></button>
                             <div style="text-align: center; font-size: 1em;">Automation</div>
                         </div>
                         <div class="p-1 m-1" style="width: 108px; text-align: center;">
-                            <button type="button" class="btn btn-danger btn-circle btn-xl" style="background-color: #673AB7;"><i class="fas fa-broadcast-tower"></i></button>
+                            <button type="button" class="btn btn-danger btn-circle btn-xl border border-white" style="background-color: #673AB7;"><i class="fas fa-broadcast-tower"></i></button>
                             <div style="text-align: center; font-size: 1em;">Remote</div>
                         </div>
                         <div class="p-1 m-1" style="width: 108px; text-align: center;">
-                            <button type="button" class="btn btn-success btn-circle btn-xl"><i class="fas fa-trophy"></i></button>
+                            <button type="button" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-trophy"></i></button>
                             <div style="text-align: center; font-size: 1em;">Sports</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="card p-1 m-1" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
+            <div class="card p-1 m-1" id="announcements" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
                 <div class="card-header text-center">Announcements</div>
                 <div class="card-body" style="overflow: auto;">
                     <div class="alert alert-warning" role="alert">
                         Airchecks are due August 2, 2018.
                     </div>
                     <div class="alert alert-danger" role="alert">
-                        Don't say fuck on the air or you'll be banned!
+                        Watch your fucking language when on the air!
                     </div>
                 </div>
             </div>
 
-            <div class="card p-1 m-1" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
-                <div class="card-header text-center">Messages / Requests <span class="badge badge-secondary">0</span></div>
+            <div class="card p-1 m-1" id="messaging" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
+                <div class="card-header text-center">Messaging <span class="badge badge-secondary">0</span></div>
                 <div class="card-body">
                     <div class="container">
                         <div class="row">
-                            <div class="col-5" style="overflow: auto; height: 220px;">
-                                <div class="p-1 border border-white"><h3 style="text-align: center; font-size: 1em; color: #ECEFF1">computers</h3><div id="group-computers"><div id="user-EngineeringPC" class="p-1 m-1 border border-warning" onmouseover="renderer.hover('EngineeringPC');" onmouseout="renderer.unhover('EngineeringPC');" onclick="renderer.activate('computers', 'EngineeringPC');" style="cursor: pointer;"><span id="userl-EngineeringPC">Engineering PC</span> <span class="badge badge-secondary" id="userb-EngineeringPC">0</span></div><div id="user-LOVEYTAB" class="p-1 m-1 border border-secondary" onmouseover="renderer.hover('LOVEYTAB');" onmouseout="renderer.unhover('LOVEYTAB');" onclick="renderer.activate('computers', 'LOVEYTAB');" style="cursor: pointer;"><span id="userl-LOVEYTAB">Pat's Tablet</span> <span class="badge badge-secondary" id="userb-LOVEYTAB">0</span></div><div id="user-LoveyPC" class="p-1 m-1 border border-warning" onmouseover="renderer.hover('LoveyPC');" onmouseout="renderer.unhover('LoveyPC');" onclick="renderer.activate('computers', 'LoveyPC');" style="cursor: pointer;"><span id="userl-LoveyPC">Pat's Home PC</span> <span class="badge badge-secondary" id="userb-LoveyPC">0</span></div><div id="user-Patricks-iMac.local" class="p-1 m-1 border border-secondary" onmouseover="renderer.hover('Patricks-iMac.local');" onmouseout="renderer.unhover('Patricks-iMac.local');" onclick="renderer.activate('computers', 'Patricks-iMac.local');" style="cursor: pointer;"><span id="userl-Patricks-iMac.local">Engineering iMac</span> <span class="badge badge-secondary" id="userb-Patricks-iMac.local">0</span></div><div id="user-WIN-C5S1UBO0O18" class="p-1 m-1 border border-warning" onmouseover="renderer.hover('WIN-C5S1UBO0O18');" onmouseout="renderer.unhover('WIN-C5S1UBO0O18');" onclick="renderer.activate('computers', 'WIN-C5S1UBO0O18');" style="cursor: pointer;"><span id="userl-WIN-C5S1UBO0O18">OnAir Studio</span> <span class="badge badge-secondary" id="userb-WIN-C5S1UBO0O18">0</span></div><div id="user-WWSUs-MacBook-Air.local" class="p-1 m-1 border border-secondary" onmouseover="renderer.hover('WWSUs-MacBook-Air.local');" onmouseout="renderer.unhover('WWSUs-MacBook-Air.local');" onclick="renderer.activate('computers', 'WWSUs-MacBook-Air.local');" style="cursor: pointer;"><span id="userl-WWSUs-MacBook-Air.local">Remote MacBook</span> <span class="badge badge-secondary" id="userb-WWSUs-MacBook-Air.local">0</span></div></div></div>
+                            <div class="col-6">
+                                <div class="d-flex justify-content-start flex-wrap">
+                                    <div class="p-1 m-1" style="width: 108px; text-align: center;">
+                                        <button type="button" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-exclamation-triangle"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Report a Problem</div>
+                                    </div>
+                                    <div class="p-1 m-1" style="width: 108px; text-align: center;">
+                                        <button type="button" class="btn btn-primary btn-circle btn-xl border border-white"><i class="fas fa-question-circle"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Track Requests</div>
+                                    </div>
+                                    <div class="p-1 m-1" style="width: 108px; text-align: center;">
+                                        <button type="button" class="btn btn-warning btn-circle btn-xl border border-white"><i class="fas fa-tv"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Display Signs</div>
+                                    </div>
+                                    <div class="p-1 m-1" style="width: 108px; text-align: center;">
+                                        <button type="button" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-comments"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Messenger</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-7" style="overflow: auto; height: 220px;">
-                                <div class="p-3 m-1 border border-warning" id="msg-o0g8w8jj6ca4cg" style="background: rgba(255, 193, 7, 0.5);"><span class="m-1 p-1">test</span><br /><span class="badge badge-primary" style="font-size: 0.66em;">7:43:24 PM</span> <span class="badge badge-secondary" style="font-size: 0.66em;">941</span> <span class="badge badge-danger" style="font-size: 0.66em;">From: EngineeringPC</span><span class="badge badge-success" style="font-size: 0.66em;">For: EngineeringPC (YOU)</span></div>
+                            <div class="col-6">
+                                <div style="text-align: center; font-size: 1em;">Unread Messages<span style="font-size: 0.66em;"><br />Click a message to read/reply</span></div>
+                                <div style="overflow: auto; height: 220px; background-color: #546E7A;">
+                                    <div class="m-1 border border-secondary" style="background-color: rgba(76, 175, 80, 0.5);">
+                                        Yoo man I'm digging these vibes!<br />
+                                        <span style="font-size: 0.75em;"><span class="badge badge-primary">4:21 PM</span> <span class="badge badge-success">Web (Momma)</span> <span class="badge badge-danger">Private</span></span>
+                                    </div>
+                                    <div class="m-1 border border-secondary" style="background-color: rgba(76, 175, 80, 0.5);">
+                                        YOU SUCK!<br />
+                                        <span style="font-size: 0.75em;"><span class="badge badge-primary">4:22 PM</span> <span class="badge badge-success">Web (No one important)</span></span>
+                                    </div>
+                                    <div class="m-1 border border-secondary" style="background-color: rgba(255, 193, 7, 0.5);">
+                                        Don't forget that I put a custom PSA to be aired on the desktop.<br />
+                                        <span style="font-size: 0.75em;"><span class="badge badge-primary">4:26 PM</span> <span class="badge badge-success">Engineering PC</span></span>
+                                    </div>
+                                    <div class="m-1 border border-secondary" style="background-color: rgba(76, 175, 80, 0.5);">
+                                        You missed your queue, stupid!<br />
+                                        <span style="font-size: 0.75em;"><span class="badge badge-primary">4:27 PM</span> <span class="badge badge-success">Web (No one important)</span></span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="p-1 m-1" style="width: 100%; float: left; color: #FFFFFF;">
-                        <div class="form-group">
-                            <textarea class="form-control" rows="1" id="themessage" placeholder="Type your message and press enter to send." onkeypress="renderer.sendMessage(event);"></textarea>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="card p-1 m-1" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
+            <div class="card p-1 m-1" id="calendar" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
                 <div class="card-header text-center">Time and Calendar</div>
                 <div class="card-body">
                     <div class="container">
@@ -234,6 +279,82 @@
                 </div>
             </div>
 
+        </div>
+
+
+        <div id="go-live">
+            <div style="background-color: #37474F; color: #ffffff;">
+                <div class="media">
+                    <img class="d-flex mr-2" src="assets/images/golive.png" alt="Going Live">
+                    <div class="media-body">
+                        <form>
+                            <div class="form-row align-items-center">
+                                <div class="col-auto">
+                                    <input type="text" class="form-control mb-2 mb-sm-1" id="djhandle" placeholder="Handle / Nickname">
+                                </div>
+                                <div class="col-auto">
+                                    <input type="text" class="form-control mb-2 mb-sm-1" id="djshow" placeholder="Show Name">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <textarea class="form-control mb-2" id="djtopic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
+                            </div>
+                        </form>                    
+                        <label class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="webchat" data-toggle="tooltip" data-placement="bottom" title="Check this box if you do NOT want to receive messages from the website chat" >
+                            <span class="custom-control-indicator"></span>
+                            <span class="custom-control-description" style="color: #ffffff;">Disable website chat during your show</span>
+                        </label>
+                        <div class="row">
+                            <div class="col-3">
+                                <button type="button" class="btn btn-success" id="goLiveNow" data-toggle="tooltip" data-placement="bottom" title="Click to go live. DJ Controls will display a countdown.">Go Live <img src="assets/images/live.png"></button>
+                            </div>
+                            <div class="col-1">
+                                <button type="button" class="btn" id="cancel-btn" style="background-color: #D50000; color: #FFFFFF" data-toggle="tooltip" data-placement="bottom" title="Cancel"><img src="assets/images/cancel.png"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="go-remote">
+            <div style="background-color: #37474F; color: #ffffff;">
+                <div class="media">
+                    <img class="d-flex mr-2" src="assets/images/goRemote.png" alt="Going Remote">
+                    <div class="media-body">
+                        <form>
+                            <div class="form-row align-items-center">
+                                <div class="col-auto">
+                                    <input type="text" class="form-control mb-2 mb-sm-1" id="host" placeholder="Host / Organization">
+                                </div>
+                                <div class="col-auto">
+                                    <input type="text" class="form-control mb-2 mb-sm-1" id="show" placeholder="Show Name">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <textarea class="form-control mb-2" id="djtopic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
+                            </div>
+                        </form>
+                        <label class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="webchat" data-toggle="tooltip" data-placement="bottom" title="Check this box if you do NOT want to receive messages from the website chat" >
+                            <span class="custom-control-indicator"></span>
+                            <span class="custom-control-description" style="color: #ffffff;">Disable website chat during the broadcast</span>
+                        </label>
+                        <div class="alert alert-warning" role="alert">
+                            Remember: Remote streams have a 4 second audio delay!
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <button type="button" class="btn btn-success" id="goRemoteNow" data-toggle="tooltip" data-placement="bottom" title="Begin remote broadcast. DJ Controls will display a countdown. Make sure you are streaming to the internet stream!" >Go Remote <img src="assets/images/remote.png"></button>
+                            </div>
+                            <div class="col-1">
+                                <button type="button" class="btn" id="cancel-btn" style="background-color: #D50000; color: #FFFFFF" data-toggle="tooltip" data-placement="bottom" title="Cancel"><img src="assets/images/cancel.png"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <script>if (window.module)
