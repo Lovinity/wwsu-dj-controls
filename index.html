@@ -139,6 +139,26 @@
                 z-index: 499;
             }
 
+            #close {
+                float:right;
+                display:inline-block;
+                padding:2px 5px;
+                color: #fff;
+            }
+
+            #close:hover {
+                float:right;
+                display:inline-block;
+                padding:2px 5px;
+                color:#ff7878;
+            }
+
+            .notification {
+                position:absolute;
+                top: 60px;
+                right: 16px;
+            }
+
         </style>
     </head>
     <body style="background-color: #000000; color: #ffffff;">
@@ -181,52 +201,58 @@
             </div>
 
             <div class="card p-1 m-3 text-white bg-info-dark" id="messaging" style="width: 640px; height: 360px;">
-                <div class="card-header text-center" style="font-size: 1.5em;">Messaging <span class="badge badge-danger">4</span></div>
+                <div class="card-header text-center" style="font-size: 1.5em;">Messaging</div>
                 <div class="card-body">
                     <div class="container">
                         <div class="row">
                             <div class="col-6">
                                 <div class="d-flex justify-content-start flex-wrap">
-                                    <div class="p-1 m-1" style="width: 108px; text-align: center;">
+                                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
                                         <button type="button" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-exclamation-triangle"></i></button>
                                         <div style="text-align: center; font-size: 1em;">Report a Problem</div>
                                     </div>
-                                    <div class="p-1 m-1" style="width: 108px; text-align: center;">
+                                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
                                         <button type="button" class="btn btn-primary btn-circle btn-xl border border-white"><i class="fas fa-question-circle"></i></button>
+                                        <span class="notification badge badge-secondary">0</span>
                                         <div style="text-align: center; font-size: 1em;">Track Requests</div>
                                     </div>
-                                    <div class="p-1 m-1" style="width: 108px; text-align: center;">
+                                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
                                         <button type="button" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-tv"></i></button>
                                         <div style="text-align: center; font-size: 1em;">Display Signs</div>
                                     </div>
-                                    <div class="p-1 m-1" style="width: 108px; text-align: center;">
+                                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
                                         <button type="button" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-comments"></i></button>
+                                        <span class="notification badge badge-danger">4</span>
                                         <div style="text-align: center; font-size: 1em;">Messenger</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-6">
-                                <div style="text-align: center; font-size: 1em;">Unread Messages<span style="font-size: 0.66em;"><br />Click a message to read/reply</span></div>
+                                <div style="text-align: center; font-size: 1em;">Unread Messages<span style="font-size: 0.66em;"><br />Click a message to read/reply, X to hide.</span></div>
                                 <div style="overflow: auto; height: 220px; background-color: rgba(255, 255, 255, 0.3);">
-                                    <div class="m-1 bg-dark">
+                                    <div class="m-1 bg-dark" style="cursor: pointer;">
+                                        <span id='close' onclick='this.parentNode.parentNode.removeChild(this.parentNode); return false;'>X</span>
                                         <div class="m-1">
                                             Yoo man I'm digging these vibes!<br />
                                             <span style="font-size: 0.66em;">4:21 PM by Web (Momma) (Private)</span>
                                         </div>
                                     </div>
-                                    <div class="m-1 bg-dark">
+                                    <div class="m-1 bg-dark" style="cursor: pointer;">
+                                        <span id='close' onclick='this.parentNode.parentNode.removeChild(this.parentNode); return false;'>X</span>
                                         <div class="m-1">
                                             YOU SUCK!<br />
                                             <span style="font-size: 0.66em;">4:22 PM by Web (No one important)</span>
                                         </div>
                                     </div>
-                                    <div class="m-1 bg-danger">
+                                    <div class="m-1 bg-danger" style="cursor: pointer;">
+                                        <span id='close' onclick='this.parentNode.parentNode.removeChild(this.parentNode); return false;'>X</span>
                                         <div class="m-1">
                                             Don't forget that I put a custom PSA to be aired on the desktop.<br />
                                             <span style="font-size: 0.66em;">4:26 PM by Engineering PC</span>
                                         </div>
                                     </div>
-                                    <div class="m-1 bg-dark">
+                                    <div class="m-1 bg-dark" style="cursor: pointer;">
+                                        <span id='close' onclick='this.parentNode.parentNode.removeChild(this.parentNode); return false;'>X</span>
                                         <div class="m-1">
                                             You missed your queue, stupid!<br />
                                             <span style="font-size: 0.66em;">4:27 PM by Web (No one important)</span>
@@ -259,7 +285,7 @@
                                 <div id="datestamp" style="text-align: center; font-size: 1.5em;"></div>
                             </div>
                             <div class="col-8" style="overflow: auto;">
-                                <div id="track-38739" class="p-1 m-1 border border-secondary bg-danger" onclick="loadTrackInfo(38739);">
+                                <div id="track-38739" class="p-1 m-1 bg-danger" onclick="loadTrackInfo(38739);">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -270,7 +296,7 @@
                                             </div>
                                         </div>
                                     </div></div>
-                                <div id="track-38739" class="p-1 m-1 border border-secondary bg-success" onclick="loadTrackInfo(38739);">
+                                <div id="track-38739" class="p-1 m-1 bg-success" onclick="loadTrackInfo(38739);">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -298,21 +324,20 @@
                         <form>
                             <div class="form-row align-items-center">
                                 <div class="col-auto">
-                                    <input type="text" class="form-control mb-2 mb-sm-1" id="djhandle" placeholder="Handle / Nickname">
+                                    <input type="text" class="form-control mb-2 mb-sm-1" id="live-handle" placeholder="Handle / Nickname">
                                 </div>
                                 <div class="col-auto">
-                                    <input type="text" class="form-control mb-2 mb-sm-1" id="djshow" placeholder="Show Name">
+                                    <input type="text" class="form-control mb-2 mb-sm-1" id="live-show" placeholder="Show Name">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <textarea class="form-control mb-2" id="djtopic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
+                                <textarea class="form-control mb-2" id="live-topic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
                             </div>
                         </form>                    
-                        <label class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="webchat" data-toggle="tooltip" data-placement="bottom" title="Check this box if you do NOT want to receive messages from the website chat" >
-                            <span class="custom-control-indicator"></span>
-                            <span class="custom-control-description" style="color: #ffffff;">Disable website chat during your show</span>
-                        </label>
+                        <div class="custom-control custom-checkbox checkbox-slider--a">
+                            <input type="checkbox" class="custom-control-input" id="webchat" checked>
+                            <label class="custom-control-label" style="color: #ffffff;" for="webchat">Website chat</label>
+                        </div>
                         <div class="row">
                             <div class="col-3">
                                 <button type="button" class="btn btn-success" id="goLiveNow" data-toggle="tooltip" data-placement="bottom" title="Click to go live. DJ Controls will display a countdown.">Go Live <img src="assets/images/live.png"></button>
@@ -334,21 +359,20 @@
                         <form>
                             <div class="form-row align-items-center">
                                 <div class="col-auto">
-                                    <input type="text" class="form-control mb-2 mb-sm-1" id="host" placeholder="Host / Organization">
+                                    <input type="text" class="form-control mb-2 mb-sm-1" id="remote-handle" placeholder="Host / Organization">
                                 </div>
                                 <div class="col-auto">
-                                    <input type="text" class="form-control mb-2 mb-sm-1" id="show" placeholder="Show Name">
+                                    <input type="text" class="form-control mb-2 mb-sm-1" id="remote-show" placeholder="Show Name">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <textarea class="form-control mb-2" id="djtopic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
+                                <textarea class="form-control mb-2" id="remote-topic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
                             </div>
                         </form>
-                        <label class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="webchat" data-toggle="tooltip" data-placement="bottom" title="Check this box if you do NOT want to receive messages from the website chat" >
-                            <span class="custom-control-indicator"></span>
-                            <span class="custom-control-description" style="color: #ffffff;">Disable website chat during the broadcast</span>
-                        </label>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="webchat">
+                            <label class="custom-control-label" style="color: #ffffff;" for="webchat">Website chat</label>
+                        </div>
                         <div class="alert alert-warning" role="alert">
                             Remember: Remote streams have a 4 second audio delay!
                         </div>
