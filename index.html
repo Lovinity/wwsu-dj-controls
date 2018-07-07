@@ -17,7 +17,7 @@
         <script src="assets/js/moment-duration-format.js"></script>
         <script src="assets/js/taffy-min.js"></script>
         <script src="assets/js/sails.io.js"></script>
-        <link rel="stylesheet" href="assets/styles/bootstrap/bootstrap.min.css" type="text/css">
+        <link rel="stylesheet" href="assets/styles/bootstrap/mytheme.min.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/animate.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/iziToast.min.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/iziModal.min.css" type="text/css">
@@ -141,11 +141,11 @@
 
         </style>
     </head>
-    <body style="background-color: #263238;">
+    <body style="background-color: #000000; color: #ffffff;">
         <div class="d-flex justify-content-center flex-wrap p-3 m-3">
 
-            <div class="card p-1 m-3" id="operations" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
-                <div class="card-header text-center" style="font-size: 1.5em;">WWSU Operations   <span class="badge badge-secondary">Automation</span></div>
+            <div class="card p-1 m-3 text-white bg-dark" id="operations" style="width: 640px; height: 360px;">
+                <div class="card-header text-center" style="font-size: 1.5em;">WWSU Operations   <span class="badge badge-primary">Automation</span></div>
                 <div class="card-body" style="overflow: auto;">
                     <div class="d-flex justify-content-start flex-wrap">
                         <div class="p-1 m-1" style="width: 108px; text-align: center;">
@@ -157,7 +157,7 @@
                             <div style="text-align: center; font-size: 1em;">Automation</div>
                         </div>
                         <div class="p-1 m-1" style="width: 108px; text-align: center;">
-                            <button type="button" class="btn btn-danger btn-circle btn-xl border border-white" style="background-color: #673AB7;"><i class="fas fa-broadcast-tower"></i></button>
+                            <button type="button" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-broadcast-tower"></i></button>
                             <div style="text-align: center; font-size: 1em;">Remote</div>
                         </div>
                         <div class="p-1 m-1" style="width: 108px; text-align: center;">
@@ -168,20 +168,20 @@
                 </div>
             </div>
 
-            <div class="card p-1 m-3" id="announcements" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
+            <div class="card p-1 m-3 text-white bg-dark" id="announcements" style="width: 640px; height: 360px;">
                 <div class="card-header text-center" style="font-size: 1.5em;">Announcements</div>
                 <div class="card-body" style="overflow: auto;">
-                    <div class="alert alert-warning" role="alert">
+                    <div class="alert alert-warning-dark" role="alert">
                         Airchecks are due August 2, 2018.
                     </div>
-                    <div class="alert alert-danger" role="alert">
+                    <div class="alert alert-danger-dark" role="alert">
                         Watch your fucking language when on the air!
                     </div>
                 </div>
             </div>
 
-            <div class="card p-1 m-3" id="messaging" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
-                <div class="card-header text-center" style="font-size: 1.5em;">Messaging <span class="badge badge-secondary">0</span></div>
+            <div class="card p-1 m-3 text-white bg-info-dark" id="messaging" style="width: 640px; height: 360px;">
+                <div class="card-header text-center" style="font-size: 1.5em;">Messaging <span class="badge badge-danger">4</span></div>
                 <div class="card-body">
                     <div class="container">
                         <div class="row">
@@ -196,7 +196,7 @@
                                         <div style="text-align: center; font-size: 1em;">Track Requests</div>
                                     </div>
                                     <div class="p-1 m-1" style="width: 108px; text-align: center;">
-                                        <button type="button" class="btn btn-warning btn-circle btn-xl border border-white"><i class="fas fa-tv"></i></button>
+                                        <button type="button" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-tv"></i></button>
                                         <div style="text-align: center; font-size: 1em;">Display Signs</div>
                                     </div>
                                     <div class="p-1 m-1" style="width: 108px; text-align: center;">
@@ -207,22 +207,30 @@
                             </div>
                             <div class="col-6">
                                 <div style="text-align: center; font-size: 1em;">Unread Messages<span style="font-size: 0.66em;"><br />Click a message to read/reply</span></div>
-                                <div style="overflow: auto; height: 220px; background-color: #546E7A;">
-                                    <div class="m-1 border border-secondary" style="background-color: rgba(76, 175, 80, 0.5);">
-                                        Yoo man I'm digging these vibes!<br />
-                                        <span style="font-size: 0.75em;"><span class="badge badge-primary">4:21 PM</span> <span class="badge badge-success">Web (Momma)</span> <span class="badge badge-danger">Private</span></span>
+                                <div style="overflow: auto; height: 220px; background-color: rgba(255, 255, 255, 0.3);">
+                                    <div class="m-1 bg-dark">
+                                        <div class="m-1">
+                                            Yoo man I'm digging these vibes!<br />
+                                            <span style="font-size: 0.66em;">4:21 PM by Web (Momma) (Private)</span>
+                                        </div>
                                     </div>
-                                    <div class="m-1 border border-success">
-                                        YOU SUCK!<br />
-                                        <span style="font-size: 0.75em;"><span class="badge badge-primary">4:22 PM</span> <span class="badge badge-success">Web (No one important)</span></span>
+                                    <div class="m-1 bg-dark">
+                                        <div class="m-1">
+                                            YOU SUCK!<br />
+                                            <span style="font-size: 0.66em;">4:22 PM by Web (No one important)</span>
+                                        </div>
                                     </div>
-                                    <div class="m-1 border border-secondary" style="background-color: rgba(255, 193, 7, 0.5);">
-                                        Don't forget that I put a custom PSA to be aired on the desktop.<br />
-                                        <span style="font-size: 0.75em;"><span class="badge badge-primary">4:26 PM</span> <span class="badge badge-success">Engineering PC</span></span>
+                                    <div class="m-1 bg-danger">
+                                        <div class="m-1">
+                                            Don't forget that I put a custom PSA to be aired on the desktop.<br />
+                                            <span style="font-size: 0.66em;">4:26 PM by Engineering PC</span>
+                                        </div>
                                     </div>
-                                    <div class="m-1 border border-secondary" style="background-color: rgba(76, 175, 80, 0.5);">
-                                        You missed your queue, stupid!<br />
-                                        <span style="font-size: 0.75em;"><span class="badge badge-primary">4:27 PM</span> <span class="badge badge-success">Web (No one important)</span></span>
+                                    <div class="m-1 bg-dark">
+                                        <div class="m-1">
+                                            You missed your queue, stupid!<br />
+                                            <span style="font-size: 0.66em;">4:27 PM by Web (No one important)</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -231,7 +239,7 @@
                 </div>
             </div>
 
-            <div class="card p-1 m-3" id="calendar" style="background-color: #455A64; color: #ffffff; width: 640px; height: 360px;">
+            <div class="card p-1 m-3 text-white bg-dark" id="calendar" style="width: 640px; height: 360px;">
                 <div class="card-header text-center" style="font-size: 1.5em;">Time and Calendar</div>
                 <div class="card-body">
                     <div class="container">
@@ -283,7 +291,7 @@
 
 
         <div id="go-live">
-            <div style="background-color: #37474F; color: #ffffff;">
+            <div style="background-color: #393939; color: #ffffff;">
                 <div class="media">
                     <img class="d-flex mr-2" src="assets/images/golive.png" alt="Going Live">
                     <div class="media-body">
@@ -319,7 +327,7 @@
         </div>
 
         <div id="go-remote">
-            <div style="background-color: #37474F; color: #ffffff;">
+            <div style="background-color: #393939; color: #ffffff;">
                 <div class="media">
                     <img class="d-flex mr-2" src="assets/images/goRemote.png" alt="Going Remote">
                     <div class="media-body">
