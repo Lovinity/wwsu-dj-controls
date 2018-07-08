@@ -10,5 +10,6 @@
   "author": "Patrick Schmalstig",
   "devDependencies": {
     "electron": "^2.0.0"
-  }
+  },
+  "dependencies": {}
 }

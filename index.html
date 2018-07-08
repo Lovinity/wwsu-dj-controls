@@ -126,19 +126,6 @@
                 transition: transform 0.2s cubic-bezier(.4,2.08,.55,.44);
             }
 
-            .overlay {
-                position: fixed;
-                display: block;
-                width: 100%;
-                height: 100%;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: rgba(0,0,0,0.8);
-                z-index: 499;
-            }
-
             #close {
                 float:right;
                 display:inline-block;
@@ -159,30 +146,108 @@
                 right: 16px;
             }
 
+            .overlay {
+                position: fixed;
+                display: block;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0,0,0,0.8);
+                z-index: 9999;
+            }
+
+            .text{
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%,-50%);
+                -ms-transform: translate(-50%,-50%);
+            }
+
+
         </style>
     </head>
     <body style="background-color: #000000; color: #ffffff;">
-        <div class="d-flex justify-content-center flex-wrap p-3 m-3">
 
+        <div id="no-connection" class="overlay">
+            <div class="text container-fluid" style="text-align: center;">
+                <h2 style="text-align: center; font-size: 4em; color: #F44336">Lost Connection!</h2>
+                <h2 style="text-align: center; font-size: 2em; color: #F44336">Re-connecting to WWSU...</h2>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-center flex-wrap p-3 m-3">
             <div class="card p-1 m-3 text-white bg-dark" id="operations" style="width: 640px; height: 360px;">
-                <div class="card-header text-center" style="font-size: 1.5em;">WWSU Operations   <span class="badge badge-primary">Automation</span></div>
-                <div class="card-body" style="overflow: auto;">
+                <div class="card-header text-center" style="font-size: 1.5em;">WWSU Operations   <span class="badge badge-secondary" id="operations-state">Unknown</span></div>
+                <div class="card-body" id="operations-body" style="overflow: auto;">
                     <div class="d-flex justify-content-start flex-wrap">
-                        <div class="p-1 m-1" style="width: 108px; text-align: center;">
-                            <button type="button" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-microphone-alt"></i></button>
+                        <div class="p-1 m-1" id="queue" style="width: 216px; text-align: center; display: none;">
+                            <div style="text-align: center; font-size: 2em;">Seconds to live:</div>
+                            <div class="text-warning" id="queue-seconds" style="text-align: center; font-size: 5em;">???</div>
+                        </div>
+                        <div class="p-1 m-1" id="no-remote" style="width: 216px; text-align: center; display: none;">
+                            <div class="text-danger" style="text-align: center; font-size: 1.5em;">Lost connection to remote stream!</div>
+                            <div class="text-warning" style="text-align: center; font-size: 1em;">Ensure you are streaming to the remote stream, then click Resume Show.</div>
+                        </div>
+                        <div id="please-wait" style="z-index: auto;">
+                            <div class="text container-fluid" style="text-align: center;">
+                                <h2 style="text-align: center; font-size: 2em; color: #FFC107">Please wait...</h2>
+                            </div>
+                        </div>
+                        <div class="p-1 m-1" id="btn-return" style="width: 108px; text-align: center; display: none;">
+                            <button type="button" class="btn btn-success btn-circle btn-xl border border-white" onclick="returnBreak();"><i class="fas fa-check"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Resume Show</div>
+                        </div>
+                        <div class="p-1 m-1" id="btn-psa15" style="width: 108px; text-align: center; display: none;">
+                            <button type="button" class="btn btn-purple btn-circle btn-xl border border-white" onclick="queuePSA(15);"><i class="fas fa-plus"></i></button>
+                            <div style="text-align: center; font-size: 1em;">+15-second PSA</div>
+                        </div>
+                        <div class="p-1 m-1" id="btn-psa30" style="width: 108px; text-align: center; display: none;">
+                            <button type="button" class="btn btn-purple btn-circle btn-xl border border-white" onclick="queuePSA(30);"><i class="fas fa-plus"></i></button>
+                            <div style="text-align: center; font-size: 1em;">+30-second PSA</div>
+                        </div>
+                        <div class="p-1 m-1" id="btn-golive" style="width: 108px; text-align: center; display: none;">
+                            <button type="button" class="btn btn-danger btn-circle btn-xl border border-white" onclick="prepareLive();"><i class="fas fa-microphone-alt"></i></button>
                             <div style="text-align: center; font-size: 1em;">Live</div>
                         </div>
-                        <div class="p-1 m-1" style="width: 108px; text-align: center;">
-                            <button type="button" class="btn btn-primary btn-circle btn-xl border border-white"><i class="fas fa-microphone-alt-slash"></i></button>
-                            <div style="text-align: center; font-size: 1em;">Automation</div>
-                        </div>
-                        <div class="p-1 m-1" style="width: 108px; text-align: center;">
-                            <button type="button" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-broadcast-tower"></i></button>
+                        <div class="p-1 m-1" id="btn-goremote" style="width: 108px; text-align: center; display: none;">
+                            <button type="button" class="btn btn-purple btn-circle btn-xl border border-white" onclick="prepareRemote();"><i class="fas fa-broadcast-tower"></i></button>
                             <div style="text-align: center; font-size: 1em;">Remote</div>
                         </div>
-                        <div class="p-1 m-1" style="width: 108px; text-align: center;">
-                            <button type="button" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-trophy"></i></button>
+                        <div class="p-1 m-1" id="btn-gosports" style="width: 108px; text-align: center; display: none;">
+                            <button type="button" class="btn btn-success btn-circle btn-xl border border-white" onclick="prepareSports();"><i class="fas fa-trophy"></i></button>
                             <div style="text-align: center; font-size: 1em;">Sports</div>
+                        </div>
+                        <div class="p-1 m-1" id="btn-endshow" style="width: 108px; text-align: center; display: none;">
+                            <button type="button" class="btn btn-primary btn-circle btn-xl border border-white" onclick="endShow();"><i class="fas fa-microphone-alt-slash"></i></button>
+                            <div style="text-align: center; font-size: 1em;">End Show</div>
+                        </div>
+                        <div class="p-1 m-1" id="btn-resume" style="width: 108px; text-align: center; display: none;">
+                            <button type="button" class="btn btn-success btn-circle btn-xl border border-white" onclick="returnBreak();"><i class="fas fa-check"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Resume Show</div>
+                        </div>
+                        <div class="p-1 m-1" id="btn-break" style="width: 108px; text-align: center; display: none;">
+                            <button type="button" class="btn btn-info btn-circle btn-xl border border-white" onclick="goBreak(false);"><i class="fas fa-coffee"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Take a Break</div>
+                        </div>
+                        <div class="p-1 m-1" id="btn-halftime" style="width: 108px; text-align: center; display: none;">
+                            <button type="button" class="btn btn-urgent btn-circle btn-xl border border-white" onclick="goBreak(true);"><i class="fas fa-hourglass"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Halftime</div>
+                        </div>
+                        <div class="p-1 m-1" id="btn-topadd" style="width: 108px; text-align: center; display: none;">
+                            <button type="button" class="btn btn-purple btn-circle btn-xl border border-white" onclick="playTopAdd();"><i class="fas fa-headphones"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Play Top Add</div>
+                        </div>
+                        <div class="p-1 m-1" id="btn-liner" style="width: 108px; text-align: center; display: none;">
+                            <button type="button" class="btn btn-purple btn-circle btn-xl border border-white" onclick="playLiner();"><i class="fas fa-angle-double-right"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Play Liner</div>
+                        </div>
+                        <div class="p-1 m-1" id="btn-log" style="width: 108px; text-align: center; display: none;">
+                            <button type="button" class="btn btn-secondary btn-circle btn-xl border border-white" onclick="prepareLog();"><i class="fas fa-file"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Add a Log</div>
                         </div>
                     </div>
                 </div>
@@ -200,7 +265,7 @@
                 </div>
             </div>
 
-            <div class="card p-1 m-3 text-white bg-info-dark" id="messaging" style="width: 640px; height: 360px;">
+            <div class="card p-1 m-3 text-white bg-dark" id="messaging" style="width: 640px; height: 360px;">
                 <div class="card-header text-center" style="font-size: 1.5em;">Messaging</div>
                 <div class="card-body">
                     <div class="container">
@@ -316,7 +381,7 @@
         </div>
 
 
-        <div id="go-live">
+        <div id="go-live-modal">
             <div style="background-color: #393939; color: #ffffff;">
                 <div class="media">
                     <img class="d-flex mr-2" src="assets/images/golive.png" alt="Going Live">
@@ -335,15 +400,12 @@
                             </div>
                         </form>                    
                         <div class="custom-control custom-checkbox checkbox-slider--a">
-                            <input type="checkbox" class="custom-control-input" id="webchat" checked>
+                            <input type="checkbox" class="custom-control-input" id="live-webchat" checked>
                             <label class="custom-control-label" style="color: #ffffff;" for="webchat">Website chat</label>
                         </div>
                         <div class="row">
                             <div class="col-3">
-                                <button type="button" class="btn btn-success" id="goLiveNow" data-toggle="tooltip" data-placement="bottom" title="Click to go live. DJ Controls will display a countdown.">Go Live <img src="assets/images/live.png"></button>
-                            </div>
-                            <div class="col-1">
-                                <button type="button" class="btn" id="cancel-btn" style="background-color: #D50000; color: #FFFFFF" data-toggle="tooltip" data-placement="bottom" title="Cancel"><img src="assets/images/cancel.png"></button>
+                                <button type="button" class="btn btn-success" id="live-go" onclick="goLive();">Go Live <img src="assets/images/live.png"></button>
                             </div>
                         </div>
                     </div>
@@ -351,7 +413,7 @@
             </div>
         </div>
 
-        <div id="go-remote">
+        <div id="go-remote-modal">
             <div style="background-color: #393939; color: #ffffff;">
                 <div class="media">
                     <img class="d-flex mr-2" src="assets/images/goRemote.png" alt="Going Remote">
@@ -370,7 +432,7 @@
                             </div>
                         </form>
                         <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="webchat">
+                            <input type="checkbox" class="custom-control-input" id="remote-webchat">
                             <label class="custom-control-label" style="color: #ffffff;" for="webchat">Website chat</label>
                         </div>
                         <div class="alert alert-warning" role="alert">
@@ -378,10 +440,50 @@
                         </div>
                         <div class="row">
                             <div class="col-3">
-                                <button type="button" class="btn btn-success" id="goRemoteNow" data-toggle="tooltip" data-placement="bottom" title="Begin remote broadcast. DJ Controls will display a countdown. Make sure you are streaming to the internet stream!" >Go Remote <img src="assets/images/remote.png"></button>
+                                <button type="button" class="btn btn-success" id="remote-go" data-toggle="tooltip" data-placement="bottom" title="Begin remote broadcast. DJ Controls will display a countdown. Make sure you are streaming to the internet stream!" >Go Remote <img src="assets/images/remote.png"></button>
                             </div>
-                            <div class="col-1">
-                                <button type="button" class="btn" id="cancel-btn" style="background-color: #D50000; color: #FFFFFF" data-toggle="tooltip" data-placement="bottom" title="Cancel"><img src="assets/images/cancel.png"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="go-sports-modal">
+            <div style="background-color: #393939; color: #ffffff;">
+                <div class="media">
+                    <img class="d-flex mr-2" src="assets/images/goSports.png" alt="Going Sports">
+                    <div class="media-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="showname" style="color: #ffffff;">Which Sport are you Broadcasting?</label>
+                                <select class="form-control" id="sports-sport">
+                                    <option value="Men's Basketball">Men's Basketball</option>
+                                    <option value="Women's Basketball">Women's Basketball</option>
+                                    <option value="Men's Soccer">Men's Soccer</option>
+                                    <option value="Women's Soccer">Women's Soccer</option>
+                                    <option value="Men's Volleyball">Men's Volleyball</option>
+                                    <option value="Women's Volleyball">Women's Volleyball</option>
+                                    <option value="Men's Baseball">Men's Baseball</option>
+                                    <option value="Women's Baseball">Women's Baseball</option>
+                                    <option value="Men's Football">Men's Football</option>
+                                    <option value="Women's Football">Women's Football</option>
+                                </select>
+                            </div>
+                        </form>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="sports-remote">
+                            <label class="custom-control-label" style="color: #ffffff;" for="webchat">Remote Broadcast</label>
+                        </div>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="sports-webchat">
+                            <label class="custom-control-label" style="color: #ffffff;" for="webchat">Website chat</label>
+                        </div>
+                        <div class="alert alert-warning" role="alert">
+                            Remember: Remote streams have a 4 second audio delay!
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <button type="button" class="btn btn-success" id="sports-go" data-toggle="tooltip" data-placement="bottom" title="Begin the broadcast. Automation will clear the queue. DJ Controls will give you a countdown.">Go Sports <img src="assets/images/sports.png"></button>
                             </div>
                         </div>
                     </div>
