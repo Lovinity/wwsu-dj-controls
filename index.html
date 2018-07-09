@@ -198,43 +198,43 @@
                             </div>
                         </div>
                         <div class="p-1 m-1" id="btn-return" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" class="btn btn-success btn-circle btn-xl border border-white" onclick="returnBreak();"><i class="fas fa-check"></i></button>
+                            <button type="button" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-check"></i></button>
                             <div style="text-align: center; font-size: 1em;">Resume Show</div>
                         </div>
                         <div class="p-1 m-1" id="btn-psa15" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" class="btn btn-purple btn-circle btn-xl border border-white" onclick="queuePSA(15);"><i class="fas fa-plus"></i></button>
+                            <button type="button" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-plus"></i></button>
                             <div style="text-align: center; font-size: 1em;">+15-second PSA</div>
                         </div>
                         <div class="p-1 m-1" id="btn-psa30" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" class="btn btn-purple btn-circle btn-xl border border-white" onclick="queuePSA(30);"><i class="fas fa-plus"></i></button>
+                            <button type="button" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-plus"></i></button>
                             <div style="text-align: center; font-size: 1em;">+30-second PSA</div>
                         </div>
                         <div class="p-1 m-1" id="btn-golive" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" class="btn btn-danger btn-circle btn-xl border border-white" onclick="prepareLive();"><i class="fas fa-microphone-alt"></i></button>
+                            <button type="button" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-microphone-alt"></i></button>
                             <div style="text-align: center; font-size: 1em;">Live</div>
                         </div>
                         <div class="p-1 m-1" id="btn-goremote" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" class="btn btn-purple btn-circle btn-xl border border-white" onclick="prepareRemote();"><i class="fas fa-broadcast-tower"></i></button>
+                            <button type="button" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-broadcast-tower"></i></button>
                             <div style="text-align: center; font-size: 1em;">Remote</div>
                         </div>
                         <div class="p-1 m-1" id="btn-gosports" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" class="btn btn-success btn-circle btn-xl border border-white" onclick="prepareSports();"><i class="fas fa-trophy"></i></button>
+                            <button type="button" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-trophy"></i></button>
                             <div style="text-align: center; font-size: 1em;">Sports</div>
                         </div>
                         <div class="p-1 m-1" id="btn-endshow" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" class="btn btn-primary btn-circle btn-xl border border-white" onclick="endShow();"><i class="fas fa-microphone-alt-slash"></i></button>
+                            <button type="button" class="btn btn-primary btn-circle btn-xl border border-white"><i class="fas fa-microphone-alt-slash"></i></button>
                             <div style="text-align: center; font-size: 1em;">End Show</div>
                         </div>
                         <div class="p-1 m-1" id="btn-resume" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" class="btn btn-success btn-circle btn-xl border border-white" onclick="returnBreak();"><i class="fas fa-check"></i></button>
+                            <button type="button" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-check"></i></button>
                             <div style="text-align: center; font-size: 1em;">Resume Show</div>
                         </div>
                         <div class="p-1 m-1" id="btn-break" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" class="btn btn-info btn-circle btn-xl border border-white" onclick="goBreak(false);"><i class="fas fa-coffee"></i></button>
+                            <button type="button" class="btn btn-info btn-circle btn-xl border border-white"><i class="fas fa-coffee"></i></button>
                             <div style="text-align: center; font-size: 1em;">Take a Break</div>
                         </div>
                         <div class="p-1 m-1" id="btn-halftime" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" class="btn btn-urgent btn-circle btn-xl border border-white" onclick="goBreak(true);"><i class="fas fa-hourglass"></i></button>
+                            <button type="button" class="btn btn-urgent btn-circle btn-xl border border-white"><i class="fas fa-hourglass"></i></button>
                             <div style="text-align: center; font-size: 1em;">Halftime</div>
                         </div>
                         <div class="p-1 m-1" id="btn-topadd" style="width: 108px; text-align: center; display: none;">
@@ -255,13 +255,7 @@
 
             <div class="card p-1 m-3 text-white bg-dark" id="announcements" style="width: 640px; height: 360px;">
                 <div class="card-header text-center" style="font-size: 1.5em;">Announcements</div>
-                <div class="card-body" style="overflow: auto;">
-                    <div class="alert alert-warning-dark" role="alert">
-                        Airchecks are due August 2, 2018.
-                    </div>
-                    <div class="alert alert-danger-dark" role="alert">
-                        Watch your fucking language when on the air!
-                    </div>
+                <div class="card-body" style="overflow: auto;" id="announcements-body">
                 </div>
             </div>
 
@@ -349,7 +343,7 @@
                                 </article>
                                 <div id="datestamp" style="text-align: center; font-size: 1.5em;"></div>
                             </div>
-                            <div class="col-8" style="overflow: auto;">
+                            <div class="col-8" style="overflow: auto;" id="calendar-events">
                                 <div id="track-38739" class="p-1 m-1 bg-danger" onclick="loadTrackInfo(38739);">
                                     <div class="container">
                                         <div class="row">
@@ -484,6 +478,36 @@
                         <div class="row">
                             <div class="col-3">
                                 <button type="button" class="btn btn-success" id="sports-go" data-toggle="tooltip" data-placement="bottom" title="Begin the broadcast. Automation will clear the queue. DJ Controls will give you a countdown.">Go Sports <img src="assets/images/sports.png"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="log-modal">
+            <div style="background-color: #393939; color: #ffffff;">
+                <div class="media">
+                    <img class="d-flex mr-2" src="assets/images/log.png" alt="Add a Log">
+                    <div class="media-body">
+                        <div class="alert alert-info" role="alert">
+                            You do not need to log any tracks that you play in RadioDJ; those are logged automatically by the system.
+                        </div>
+                        <input type="text" id="log-datetime" class="form-control" value="mm/dd/yyyy hh:mm:ss">
+                        <select class="form-control" id="log-type">
+                            <option value="Did an unknwon action">Choose a log type...</option>
+                            <option value="Played a Track">Played a Track</option>
+                            <option value="Started a Talk Segment">Started a Talk Segment</option>
+                            <option value="Announced a Legal ID">Announced a Legal ID</option>
+                            <option value="Announced a Sweeper">Announced a Sweeper</option>
+                        </select>
+                        <input type="text" id="log-artist" class="form-control" placeholder="Track Artist (if applicable)">
+                        <input type="text" id="log-title" class="form-control" placeholder="Track Title (if applicable)">
+                        <input type="text" id="log-album" class="form-control" placeholder="Track Album (if applicable)">
+                        <input type="text" id="log-label" class="form-control" placeholder="Track Record Label (if applicable)">
+                        <div class="row">
+                            <div class="col-3">
+                                <button type="button" class="btn btn-success" id="log-add">Add entry</button>
                             </div>
                         </div>
                     </div>

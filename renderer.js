@@ -23,6 +23,8 @@ try {
 
     io.sails.url = nodeURL;
     var disconnected = true;
+    var theStatus = 4;
+    var calendar = []; // Contains calendar events for the next 24 hours
 
     // Clock stuff
     var date = moment(Meta.time);
@@ -93,7 +95,10 @@ try {
                 }
                 secondsC++;
                 if (secondsC >= 60)
+                {
                     secondsC = 0;
+                    checkAnnouncements();
+                }
             }
         }
     }, 100);
@@ -149,6 +154,22 @@ try {
 
     $("#go-sports-modal").iziModal({
         title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Raider Sports</h5>`,
+        headerColor: '#363636',
+        width: 640,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.4)',
+        timeout: 180000,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)'
+    });
+
+    $("#log-modal").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Logs, Logs, and More Logs</h5>`,
         headerColor: '#363636',
         width: 640,
         focusInput: true,
@@ -251,7 +272,6 @@ io.socket.on('connect', function () {
 });
 
 io.socket.on('meta', function (data) {
-    console.dir(data);
     for (var key in data)
     {
         if (data.hasOwnProperty(key))
@@ -261,6 +281,77 @@ io.socket.on('meta', function (data) {
     }
     doMeta(data);
 });
+
+// On new eas data, update our eas memory and run the process function.
+io.socket.on('eas', function (data) {
+    processEas(data);
+});
+
+io.socket.on('status', function (data) {
+    processStatus(data);
+});
+
+io.socket.on('announcements', function (data) {
+    processAnnouncements(data);
+});
+
+io.socket.on('calendar', function (data) {
+    processCalendar(data);
+});
+
+// OnClick handlers
+
+document.querySelector("#btn-return").onclick = function () {
+    returnBreak();
+};
+
+document.querySelector("#btn-psa15").onclick = function () {
+    queuePSA(15);
+};
+
+document.querySelector("#btn-psa30").onclick = function () {
+    queuePSA(30);
+};
+
+document.querySelector("#btn-golive").onclick = function () {
+    prepareLive();
+};
+
+document.querySelector("#btn-goremote").onclick = function () {
+    prepareRemote();
+};
+
+document.querySelector("#btn-gosports").onclick = function () {
+    prepareSports();
+};
+
+document.querySelector("#btn-endshow").onclick = function () {
+    endShow();
+};
+
+document.querySelector("#btn-resume").onclick = function () {
+    returnBreak();
+};
+
+document.querySelector("#btn-break").onclick = function () {
+    goBreak(false);
+};
+
+document.querySelector("#btn-halftime").onclick = function () {
+    goBreak(true);
+};
+
+document.querySelector("#btn-topadd").onclick = function () {
+    playTopAdd();
+};
+
+document.querySelector("#btn-liner").onclick = function () {
+    playLiner();
+};
+
+document.querySelector("#btn-log").onclick = function () {
+    prepareLog();
+};
 
 // FUNCTIONS FOR ANALOG CLOCK
 
@@ -346,6 +437,10 @@ function moveSecondHands() {
 
 function authorise(cb)
 {
+    // REMOVE FOR PRODUCTION
+    cb('BLAH');
+    return null;
+
     io.socket.request({method: 'POST', url: nodeURL + '/user/auth', timeout: 3000, data: {email: tokens.email, password: tokens.password}}, function (body, JWR) {
         if (!body)
         {
@@ -380,7 +475,7 @@ function nodeRequest(opts, cb) {
                         cb(false);
                     } else {
                         try {
-                            cb(JSON.parse(JWR.body));
+                            cb(body);
                         } catch (e) {
                             console.error(e);
                             iziToast.show({
@@ -412,13 +507,29 @@ function nodeRequest(opts, cb) {
 }
 
 function doSockets() {
+    onlineSocket();
     metaSocket();
+    easSocket();
+    statusSocket();
+    announcementsSocket();
+    calendarSocket();
+}
+
+function onlineSocket()
+{
+    console.log('attempting online socket');
+    nodeRequest({method: 'post', url: nodeURL + '/recipients/add-computers', data: {host: os.hostname()}}, function (response) {
+        try {
+        } catch (e) {
+            console.log('FAILED ONLINE CONNECTION');
+            setTimeout(onlineSocket, 10000);
+        }
+    });
 }
 
 function metaSocket() {
     io.socket.post('/meta/get', {}, function serverResponded(body, JWR) {
         try {
-            console.dir(body);
             for (var key in body)
             {
                 if (body.hasOwnProperty(key))
@@ -428,8 +539,57 @@ function metaSocket() {
             }
             doMeta(body);
         } catch (e) {
-            console.error(e);
+            console.log(`FAILED META CONNECTION`);
             setTimeout(metaSocket, 10000);
+        }
+    });
+}
+
+function easSocket()
+{
+    console.log('attempting eas socket');
+    io.socket.post('/eas/get', {}, function serverResponded(body, JWR) {
+        try {
+            processEas(body, true);
+        } catch (e) {
+            console.log('FAILED EAS CONNECTION');
+            setTimeout(easSocket, 10000);
+        }
+    });
+}
+
+function statusSocket() {
+    io.socket.post('/status/get', {}, function serverResponded(body, JWR) {
+        //console.log(body);
+        try {
+            processStatus(body, true);
+        } catch (e) {
+            console.log('FAILED Status CONNECTION');
+            setTimeout(statusSocket, 10000);
+        }
+    });
+}
+
+function announcementsSocket() {
+    io.socket.post('/announcements/get', {type: 'djcontrols'}, function serverResponded(body, JWR) {
+        //console.log(body);
+        try {
+            processAnnouncements(body, true);
+        } catch (e) {
+            console.log('FAILED Announcements CONNECTION');
+            setTimeout(announcementsSocket, 10000);
+        }
+    });
+}
+
+function calendarSocket() {
+    io.socket.post('/calendar/get', {}, function serverResponded(body, JWR) {
+        //console.log(body);
+        try {
+            processCalendar(body, true);
+        } catch (e) {
+            console.log('FAILED Calendar CONNECTION');
+            setTimeout(calendarSocket, 10000);
         }
     });
 }
@@ -443,16 +603,18 @@ function doMeta(metan) {
                     id: 'iziToast-breakneeded',
                     title: 'Top of hour break required',
                     message: `Please find a graceful stopping point and then click "take a break" within the next 5 minutes.`,
-                    timeout: false,
-                    close: false,
+                    timeout: 600000,
+                    close: true,
                     color: 'yellow',
                     drag: false,
-                    position: 'bottomCenter',
+                    position: 'center',
                     closeOnClick: false,
-                    overlay: false,
+                    overlay: true,
+                    zindex: 250,
                     buttons: [
                         ['<button>Take a Break</button>', function (instance, toast, button, e, inputs) {
                                 goBreak(false);
+                                instance.hide({}, toast, 'button');
                             }, true]
                     ]
                 });
@@ -466,7 +628,7 @@ function doMeta(metan) {
             queueLength = 0;
         var queueTime = document.querySelector("#queue-seconds");
         queueTime.innerHTML = queueLength;
-        if (queueLength < 15)
+        if (queueLength < 15 && (Meta.state.includes("_returning") || (Meta.state.startsWith("automation_") && Meta.state !== 'automation_on' && Meta.state !== 'automation_genre') && Meta.state !== 'automation_playlist'))
         {
             var operations = document.querySelector("#operations");
             operations.className = "card p-1 m-3 text-white bg-warning-dark";
@@ -481,7 +643,7 @@ function doMeta(metan) {
                 var badge = document.querySelector('#operations-state');
                 badge.innerHTML = Meta.state;
                 var actionButtons = temp.querySelectorAll("#btn-circle");
-                for (i = 0; i < actionButtons.length; i++) {
+                for (var i = 0; i < actionButtons.length; i++) {
                     actionButtons[i].style.display = "none";
                 }
                 document.querySelector('#queue').style.display = "none";
@@ -523,15 +685,17 @@ function doMeta(metan) {
                             title: 'Lost Remote Connection',
                             message: `Please ensure you are streaming to the remote stream and that your internet connection is stable. Then, click "Resume Show".`,
                             timeout: false,
-                            close: false,
+                            close: true,
                             color: 'red',
                             drag: false,
-                            position: 'bottomCenter',
+                            position: 'Center',
                             closeOnClick: false,
-                            overlay: false,
+                            overlay: true,
+                            zindex: 250,
                             buttons: [
                                 ['<button>Resume Show</button>', function (instance, toast, button, e, inputs) {
                                         returnBreak();
+                                        instance.hide({}, toast, 'button');
                                     }, true]
                             ]
                         });
@@ -579,7 +743,7 @@ function pleaseWait() {
     try {
         var temp = document.querySelector('#operations');
         var actionButtons = temp.querySelectorAll("#btn-circle");
-        for (i = 0; i < actionButtons.length; i++) {
+        for (var i = 0; i < actionButtons.length; i++) {
             actionButtons[i].style.display = "none";
         }
         document.querySelector('#please-wait').style.display = "inline";
@@ -592,7 +756,111 @@ function pleaseWait() {
     }
 }
 
-// WORK ON THIS: onclick HTML cannot call these functions; use onclick event handlers within this javascript instead
+function checkAnnouncementColor() {
+    var temp = document.querySelectorAll(".attn-status-1");
+    var temp2 = document.querySelectorAll(".attn-status-2");
+    var temp3 = document.querySelectorAll(".attn-eas-Extreme");
+    var temp4 = document.querySelectorAll(".attn-eas-Severe");
+    var attn = document.querySelector("#announcements");
+
+    if (temp.length > 0 || temp3.length > 0)
+    {
+        attn.className = "card p-1 m-3 text-white bg-danger-dark";
+    } else if (temp2.length > 0 || temp4.length > 0)
+    {
+        attn.className = "card p-1 m-3 text-white bg-warning-dark";
+    } else {
+        attn.className = "card p-1 m-3 text-white bg-dark";
+    }
+}
+
+function checkAnnouncements() {
+    // Remove all regular announcements
+    var attn = document.querySelectorAll(".attn");
+    for (var i = 0; i < attn.length; i++) {
+        attn[i].parentNode.removeChild(attn[i]);
+    }
+
+    // Add applicableannouncements
+    var attn = document.querySelector("#announcements-body");
+    Announcements().each(function (datum) {
+        if (moment(datum.starts).isBefore(moment(Meta.time)) && moment(datum.expires).isAfter(moment(Meta.time)))
+        {
+            attn.innerHTML += `<div class="attn attn-${datum.level} alert alert-${datum.level}" id="attn-${datum.ID}" role="alert">
+                        ${datum.announcement}
+                    </div>`;
+        }
+    });
+}
+
+function checkCalendar() {
+    // Prepare the calendar variable
+    calendar = [];
+    
+    // Define a comparison function that will order calendar events by start time when we run the iteration
+        var compare = function (a, b) {
+            try {
+                if (moment(a.start).valueOf() < moment(b.start).valueOf())
+                    return -1;
+                if (moment(a.start).valueOf() > moment(b.start).valueOf())
+                    return 1;
+                return 0;
+            } catch (e) {
+                console.error(e);
+                iziToast.show({
+                    title: 'An error occurred - Please check the logs',
+                    message: `Error occurred in the compare function of Calendar.sort in the checkCalendar call.`
+                });
+            }
+        };
+
+    // Run through every event in memory, sorted by the comparison function, and add appropriate ones into our formatted calendar variable.
+    Calendar().get().sort(compare).forEach(function (event)
+    {
+        try {
+            // Do not show genre nor playlist events
+            if (event.title.startsWith("Genre:") || event.title.startsWith("Playlist:"))
+                return null;
+
+            // null start or end? Use a default to prevent errors.
+            if (!moment(event.start).isValid())
+                event.start = moment(Meta.time).startOf('day');
+            if (!moment(event.end).isValid())
+                event.end = moment(Meta.time).add(1, 'days').startOf('day');
+            
+            // Does this event start within the next 24 hours, and has not yet ended? Add it to our formatted array.
+            if (moment(Meta.time).add(1, 'days').isAfter(moment(event.start)) && moment(Meta.time).isBefore(moment(event.end)))
+            {
+                calendar.push(event);
+            }
+            
+            // Clear current list of events
+            document.querySelector('#calendar-events').innerHTML = '';
+            
+            // Add in our new list
+            calendar.forEach(function(event) {
+                document.querySelector('#calendar-events').innerHTML += ` <div class="p-1 m-1" style="background-color: ${event.color}">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-4">
+                                                ${moment(event.start).format("hh:mm A")}
+                                            </div>
+                                            <div class="col-8">
+                                                ${event.title}
+                                            </div>
+                                        </div>
+                                    </div></div>`;
+            });
+            
+        } catch (e) {
+            console.error(e);
+            iziToast.show({
+                title: 'An error occurred - Please check the logs',
+                message: `Error occurred during calendar iteration in processCalendar.`
+            });
+        }
+    });
+}
 
 function returnBreak() {
     nodeRequest({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
@@ -672,4 +940,364 @@ function playLiner() {
     nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-liner'}, function (response) {
         doMeta(Meta);
     });
+}
+
+// Check for new Eas alerts and push them out when necessary.
+function processEas(data, replace = false)
+{
+    // Data processing
+    try {
+        var prev = [];
+        if (replace)
+        {
+            // Get all the EAS IDs currently in memory before replacing the data
+            prev = Eas().select("ID");
+
+            // Remove all Eas-based announcements
+            var easAttn = document.querySelectorAll(".attn-eas");
+            for (var i = 0; i < easAttn.length; i++) {
+                easAttn[i].parentNode.removeChild(easAttn[i]);
+            }
+
+            // Replace with the new data
+            Eas = TAFFY();
+            Eas.insert(data);
+
+            // Add Eas-based announcements
+            var attn = document.querySelector("#announcements-body");
+            data.forEach(function (datum) {
+                // Skip alerts that are not severe nor extreme severity; we don't care about those for DJ Controls
+                if (datum.severity !== 'Extreme' && datum.severity !== 'Severe')
+                    return null;
+
+                attn.innerHTML += `<div class="attn-eas attn-eas-${datum.severity} alert alert-${datum.severity === 'Extreme' ? 'danger' : 'warning'}" id="attn-eas-${datum.ID}" role="alert">
+                        <strong>${datum.alert}</strong> in effect for the counties ${datum.counties}.
+                    </div>`;
+            });
+
+            // Go through the new data. If any IDs exists that did not exist before, consider it a new alert and make a notification.
+            Eas().each(function (record)
+            {
+                if (prev.indexOf(record.ID) === -1)
+                {
+                    if (record.severity === 'Extreme')
+                    {
+                        if (!Meta.state.startsWith("automation_"))
+                        {
+                            iziToast.show({
+                                class: 'iziToast-eas-extreme-end',
+                                title: 'Extreme weather alert in effect',
+                                message: `A ${record.alert} is in effect for the counties of ${record.counties}. You may wish to consider ending the show early and taking shelter. If so, click "End Show" when ready to end. Otherwise, close this notification.`,
+                                timeout: 900000,
+                                close: true,
+                                color: 'red',
+                                drag: false,
+                                position: 'center',
+                                closeOnClick: false,
+                                overlay: true,
+                                zindex: 500,
+                                buttons: [
+                                    ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+                                            endShow();
+                                            instance.hide({}, toast, 'button');
+                                        }, true]
+                                ]
+                            });
+                        } else {
+                            iziToast.show({
+                                class: 'iziToast-eas-extreme',
+                                title: 'Extreme weather alert in effect',
+                                message: `A ${record.alert} is in effect for the counties of ${record.counties}. You may wish to decide against hosting any shows at this time and instead seeking shelter.`,
+                                timeout: 900000,
+                                close: true,
+                                color: 'red',
+                                drag: false,
+                                position: 'center',
+                                closeOnClick: false,
+                                overlay: true,
+                                zindex: 500
+                            });
+                        }
+                    } else if (record.severity === 'Severe')
+                    {
+                        iziToast.show({
+                            class: 'iziToast-eas-severe',
+                            title: 'Severe weather alert in effect',
+                            message: `A ${record.alert} is in effect for the counties of ${record.counties}. Please keep an eye on the weather.`,
+                            timeout: 900000,
+                            close: true,
+                            color: 'yellow',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: false,
+                            overlay: true,
+                            zindex: 250
+                        });
+                    }
+                }
+            });
+
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
+                {
+                    switch (key)
+                    {
+                        case 'insert':
+                            Eas.insert(data[key]);
+                            var attn = document.querySelector("#announcements-body");
+                            var className = 'secondary';
+                            if (data[key].severity === 'Extreme')
+                            {
+                                className = 'danger';
+                            } else if (data[key].severity === 'Severe')
+                            {
+                                className = 'urgent';
+                            } else if (data[key].severity === 'Moderate')
+                            {
+                                className = 'warning';
+                            } else {
+                                className = 'info';
+                            }
+                            attn.innerHTML += `<div class="attn-eas attn-eas-${data[key].severity} alert alert-${className}" id="attn-eas-${data[key].ID}" role="alert">
+                        <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.
+                    </div>`;
+                            if (data[key].severity === 'Extreme')
+                            {
+                                if (!Meta.state.startsWith("automation_"))
+                                {
+                                    iziToast.show({
+                                        class: 'iziToast-eas-extreme-end',
+                                        title: 'Extreme weather alert in effect',
+                                        message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. You may wish to consider ending the show early and taking shelter. If so, click "End Show" when ready to end. Otherwise, close this notification.`,
+                                        timeout: 900000,
+                                        close: true,
+                                        color: 'red',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: false,
+                                        overlay: true,
+                                        zindex: 500,
+                                        buttons: [
+                                            ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+                                                    endShow();
+                                                    instance.hide({}, toast, 'button');
+                                                }, true]
+                                        ]
+                                    });
+                                } else {
+                                    iziToast.show({
+                                        class: 'iziToast-eas-extreme',
+                                        title: 'Extreme weather alert in effect',
+                                        message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. You may wish to decide against hosting any shows at this time and instead seeking shelter.`,
+                                        timeout: 900000,
+                                        close: true,
+                                        color: 'red',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: false,
+                                        overlay: true,
+                                        zindex: 500
+                                    });
+                                }
+                            } else if (data[key].severity === 'Severe')
+                            {
+                                iziToast.show({
+                                    class: 'iziToast-eas-severe',
+                                    title: 'Severe weather alert in effect',
+                                    message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. Please keep an eye on the weather.`,
+                                    timeout: 900000,
+                                    close: true,
+                                    color: 'yellow',
+                                    drag: false,
+                                    position: 'center',
+                                    closeOnClick: false,
+                                    overlay: true,
+                                    zindex: 250
+                                });
+                            }
+                            break;
+                        case 'update':
+                            Eas({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Eas({ID: data[key]}).remove();
+                            var easAttn = document.querySelector(`#attn-eas-${data[key]}`);
+                            if (easAttn !== null)
+                                easAttn.parentNode.removeChild(easAttn);
+                            break;
+                    }
+                }
+            }
+        }
+
+        // Check to see if any alerts are extreme
+        easExtreme = false;
+
+        Eas().each(function (alert) {
+            try {
+                if (alert.severity === 'Extreme')
+                    easExtreme = true;
+            } catch (e) {
+                console.error(e);
+                iziToast.show({
+                    title: 'An error occurred - Please check the logs',
+                    message: `Error occurred during Eas iteration in processEas.`
+                });
+            }
+        });
+
+        checkAnnouncements();
+
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: 'Error occurred during the processEas function.'
+        });
+}
+}
+
+// Update recipients as changes happen
+function processStatus(data, replace = false)
+{
+    // Data processing
+    try {
+        if (replace)
+        {
+            Status = TAFFY();
+            Status.insert(data);
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
+                {
+                    switch (key)
+                    {
+                        case 'insert':
+                            Status.insert(data[key]);
+                            break;
+                        case 'update':
+                            Status({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Status({ID: data[key]}).remove();
+                            break;
+                    }
+                }
+            }
+        }
+
+        // Check the worst status and update accordingly
+        theStatus = 5;
+        var attn = document.querySelector("#announcements-body");
+
+        // Remove all Status-based announcements
+
+        Status().each(function (status) {
+            if (status.status < theStatus && status.status !== 4)
+                theStatus = status.status;
+
+            if (status.status < 3)
+            {
+                attn.innerHTML += `<div class="attn-status attn-status-${status.status} alert alert-${status.status < 2 ? 'danger' : 'warning'}" id="attn-status-${status.ID}" role="alert">
+                        <strong>${status.label}</strong> is reporting a high-priority issue: ${status.data}
+                    </div>`;
+            }
+        });
+
+        checkAnnouncementColor();
+
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred in the processStatus function.'
+        });
+}
+}
+
+// Update announcements as they come in
+function processAnnouncements(data, replace = false)
+{
+    // Data processing
+    try {
+        if (replace)
+        {
+            // Replace with the new data
+            Announcements = TAFFY();
+            Announcements.insert(data);
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
+                {
+                    switch (key)
+                    {
+                        case 'insert':
+                            Announcements.insert(data[key]);
+                            break;
+                        case 'update':
+                            Announcements({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Announcements({ID: data[key]}).remove();
+                            break;
+                    }
+                }
+            }
+        }
+
+        checkAnnouncements();
+
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: 'Error occurred during the processAnnouncements function.'
+        });
+}
+}
+
+// Update announcements as they come in
+function processCalendar(data, replace = false)
+{
+    // Data processing
+    try {
+        if (replace)
+        {
+            // Replace with the new data
+            Calendar = TAFFY();
+            Calendar.insert(data);
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
+                {
+                    switch (key)
+                    {
+                        case 'insert':
+                            Calendar.insert(data[key]);
+                            break;
+                        case 'update':
+                            Calendar({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Calendar({ID: data[key]}).remove();
+                            break;
+                    }
+                }
+            }
+        }
+
+        checkCalendar();
+
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: 'Error occurred during the processCalendar function.'
+        });
+}
 }
