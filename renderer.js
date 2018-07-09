@@ -966,11 +966,11 @@ function checkCalendar() {
 
         // Determine priority of what is currently on the air
         var curPriority = 0;
-        if (Meta.state.startswith("sports_"))
+        if (Meta.state.startsWith("sports_"))
             curPriority = 10;
-        if (Meta.state.startswith("remote_"))
+        if (Meta.state.startsWith("remote_"))
             curPriority = 7;
-        if (Meta.state.startswith("live_") && Meta.state !== 'live_prerecord')
+        if (Meta.state.startsWith("live_") && Meta.state !== 'live_prerecord')
             curPriority = 5;
         if (Meta.state === 'live_prerecord')
             curPriority = 2;
