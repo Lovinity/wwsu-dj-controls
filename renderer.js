@@ -7,7 +7,7 @@ try {
     var os = require('os'); // OS
 
     // Define data variables
-    var Meta = {time: moment().toISOString()};
+    var Meta = {time: moment().toISOString(), state: 'unknown'};
     var Calendar = TAFFY();
     var Status = TAFFY();
     var Messages = TAFFY();
@@ -25,6 +25,14 @@ try {
     var disconnected = true;
     var theStatus = 4;
     var calendar = []; // Contains calendar events for the next 24 hours
+
+    // These are used for keeping track of upcoming shows and notifying DJs to prevent people cutting into each other's shows.
+    var calPriority = 0;
+    var calType = '';
+    var calHost = '';
+    var calShow = '';
+    var calNotified = false;
+    var calStarts = null;
 
     // Clock stuff
     var date = moment(Meta.time);
@@ -97,7 +105,10 @@ try {
                 if (secondsC >= 60)
                 {
                     secondsC = 0;
+
+                    // We want to refresh announcements and the calendar every minute.
                     checkAnnouncements();
+                    checkCalendar();
                 }
             }
         }
@@ -352,6 +363,51 @@ document.querySelector("#btn-liner").onclick = function () {
 document.querySelector("#btn-log").onclick = function () {
     prepareLog();
 };
+
+document.querySelector("#live-handle").addEventListener("change", function () {
+    if (calType === 'Show' && document.querySelector("#live-handle").value === calHost && document.querySelector("#live-show").value === calShow)
+    {
+        document.querySelector("#live-noschedule").style.display = "none";
+    } else {
+        document.querySelector("#live-noschedule").style.display = "inline";
+    }
+});
+
+document.querySelector("#live-show").addEventListener("change", function () {
+    if (calType === 'Show' && document.querySelector("#live-handle").value === calHost && document.querySelector("#live-show").value === calShow)
+    {
+        document.querySelector("#live-noschedule").style.display = "none";
+    } else {
+        document.querySelector("#live-noschedule").style.display = "inline";
+    }
+});
+
+document.querySelector("#remote-handle").addEventListener("change", function () {
+    if (calType === 'Remote' && document.querySelector("#remote-handle").value === calHost && document.querySelector("#remote-show").value === calShow)
+    {
+        document.querySelector("#remote-noschedule").style.display = "none";
+    } else {
+        document.querySelector("#remote-noschedule").style.display = "inline";
+    }
+});
+
+document.querySelector("#remote-show").addEventListener("change", function () {
+    if (calType === 'Remote' && document.querySelector("#remote-handle").value === calHost && document.querySelector("#remote-show").value === calShow)
+    {
+        document.querySelector("#remote-noschedule").style.display = "none";
+    } else {
+        document.querySelector("#remote-noschedule").style.display = "inline";
+    }
+});
+
+document.querySelector("#sports-sport").addEventListener("change", function () {
+    if (calType === 'Sports' && document.querySelector("#sports-sport").value === calShow)
+    {
+        document.querySelector("#sports-noschedule").style.display = "none";
+    } else {
+        document.querySelector("#sports-noschedule").style.display = "inline";
+    }
+});
 
 // FUNCTIONS FOR ANALOG CLOCK
 
@@ -794,10 +850,11 @@ function checkAnnouncements() {
 }
 
 function checkCalendar() {
-    // Prepare the calendar variable
-    calendar = [];
-    
-    // Define a comparison function that will order calendar events by start time when we run the iteration
+    try {
+        // Prepare the calendar variable
+        calendar = [];
+
+        // Define a comparison function that will order calendar events by start time when we run the iteration
         var compare = function (a, b) {
             try {
                 if (moment(a.start).valueOf() < moment(b.start).valueOf())
@@ -814,32 +871,219 @@ function checkCalendar() {
             }
         };
 
-    // Run through every event in memory, sorted by the comparison function, and add appropriate ones into our formatted calendar variable.
-    Calendar().get().sort(compare).forEach(function (event)
-    {
-        try {
-            // Do not show genre nor playlist events
-            if (event.title.startsWith("Genre:") || event.title.startsWith("Playlist:"))
-                return null;
+        // Declare empty temp variables for cal
+        var calPriorityN = 0;
+        var calTypeN = '';
+        var calHostN = '';
+        var calShowN = '';
+        var calStartsN = null;
 
-            // null start or end? Use a default to prevent errors.
-            if (!moment(event.start).isValid())
-                event.start = moment(Meta.time).startOf('day');
-            if (!moment(event.end).isValid())
-                event.end = moment(Meta.time).add(1, 'days').startOf('day');
-            
-            // Does this event start within the next 24 hours, and has not yet ended? Add it to our formatted array.
-            if (moment(Meta.time).add(1, 'days').isAfter(moment(event.start)) && moment(Meta.time).isBefore(moment(event.end)))
-            {
-                calendar.push(event);
+        // Run through every event in memory, sorted by the comparison function, and add appropriate ones into our formatted calendar variable.
+        Calendar().get().sort(compare).forEach(function (event)
+        {
+            try {
+                // Do not show genre nor playlist events
+                if (event.title.startsWith("Genre:") || event.title.startsWith("Playlist:"))
+                    return null;
+
+                // null start or end? Use a default to prevent errors.
+                if (!moment(event.start).isValid())
+                    event.start = moment(Meta.time).startOf('day');
+                if (!moment(event.end).isValid())
+                    event.end = moment(Meta.time).add(1, 'days').startOf('day');
+
+                // Does this event start within the next 24 hours, and has not yet ended? Add it to our formatted array.
+                if (moment(Meta.time).add(1, 'days').isAfter(moment(event.start)) && moment(Meta.time).isBefore(moment(event.end)))
+                {
+                    calendar.push(event);
+                }
+
+                // First priority: Sports broadcasts. Check for broadcasts scheduled to start within the next 15 minutes. Skip any scheduled to end in 15 minutes.
+                if (event.title.startsWith("Sports: ") && moment(Meta.time).add(15, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 10)
+                {
+                    calPriorityN = 10;
+                    calTypeN = 'Sports';
+                    calHostN = '';
+                    calShowN = event.title.replace('Sports: ', '');
+                    calStartsN = event.start;
+                }
+
+                // Second priority: Remote broadcasts. Check for broadcasts scheduled to start within the next 15 minutes. Skip any scheduled to end in 15 minutes.
+                if (event.title.startsWith("Remote: ") && moment(Meta.time).add(15, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 7)
+                {
+                    var summary = event.title.replace('Remote: ', '');
+                    var temp = summary.split(" - ");
+
+                    calPriorityN = 7;
+                    calTypeN = 'Remote';
+                    calHostN = temp[0];
+                    calShowN = temp[1];
+                    calStartsN = event.start;
+                }
+
+                // Third priority: Radio shows. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
+                if (event.title.startsWith("Show: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 5)
+                {
+                    var summary = event.title.replace('Show: ', '');
+                    var temp = summary.split(" - ");
+
+                    calPriorityN = 5;
+                    calTypeN = 'Show';
+                    calHostN = temp[0];
+                    calShowN = temp[1];
+                    calStartsN = event.start;
+                }
+
+                // Fourth priority: Prerecords. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
+                if (event.title.startsWith("Prerecord: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 2)
+                {
+                    calPriorityN = 2;
+                    calTypeN = 'Prerecord';
+                    calHostN = '';
+                    calShowN = event.title.replace('Prerecord: ', '');
+                    calStartsN = event.start;
+                }
+
+            } catch (e) {
+                console.error(e);
+                iziToast.show({
+                    title: 'An error occurred - Please check the logs',
+                    message: `Error occurred during calendar iteration in processCalendar.`
+                });
             }
-            
-            // Clear current list of events
-            document.querySelector('#calendar-events').innerHTML = '';
-            
-            // Add in our new list
-            calendar.forEach(function(event) {
-                document.querySelector('#calendar-events').innerHTML += ` <div class="p-1 m-1" style="background-color: ${event.color}">
+        });
+
+        // Check for changes in determined upcoming scheduled event compared to what is stored in memory
+        if (calTypeN !== calType || calHostN !== calHost || calShowN !== calShow || calStartsN !== calStarts || calPriorityN !== calPriority)
+        {
+            calNotified = false;
+            calType = calTypeN;
+            calHost = calHostN;
+            calShow = calShowN;
+            calStarts = calStartsN;
+            calPriority = calPriorityN;
+        }
+
+        // Determine priority of what is currently on the air
+        var curPriority = 0;
+        if (Meta.state.startswith("sports_"))
+            curPriority = 10;
+        if (Meta.state.startswith("remote_"))
+            curPriority = 7;
+        if (Meta.state.startswith("live_") && Meta.state !== 'live_prerecord')
+            curPriority = 5;
+        if (Meta.state === 'live_prerecord')
+            curPriority = 2;
+        if (Meta.state.startsWith("automation_"))
+            curPriority = 1;
+
+        // Determine if the DJ should be notified of the upcoming program
+        if (curPriority <= calPriority && !calNotified && Meta.djcontrols === os.hostname())
+        {
+            // Sports events should notify right away; allows for 15 minutes to transition
+            if (calType === 'Sports')
+            {
+                calNotified = true;
+                iziToast.show({
+                    title: 'Sports broadcast in less than 15 minutes.',
+                    message: `A sports broadcast is scheduled to begin in less than 15 minutes. If this broadcast is still scheduled to air, please wrap up your show now and then click "End Show". That way, WWSU has 15 minutes to prepare for the broadcast.`,
+                    timeout: 900000,
+                    close: true,
+                    color: 'blue',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: false,
+                    overlay: true,
+                    zindex: 501,
+                    buttons: [
+                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+                                endShow();
+                                instance.hide({}, toast, 'button');
+                            }, true]
+                    ]
+                });
+            }
+
+            // Remote events should also notify right away; allows for 15 minutes to transition
+            if (calType === 'Remote')
+            {
+                calNotified = true;
+                iziToast.show({
+                    title: 'Remote broadcast in less than 15 minutes.',
+                    message: `A remote broadcast is scheduled to begin in less than 15 minutes. If this broadcast is still scheduled to air, please wrap up your show now and then click "End Show". That way, WWSU has 15 minutes to prepare for the broadcast.`,
+                    timeout: 900000,
+                    close: true,
+                    color: 'blue',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: false,
+                    overlay: true,
+                    zindex: 501,
+                    buttons: [
+                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+                                endShow();
+                                instance.hide({}, toast, 'button');
+                            }, true]
+                    ]
+                });
+            }
+
+            // Live shows should not notify until the scheduled start time is past the current time.
+            if (calType === 'Show' && moment(Meta.time).isAfter(moment(calStarts)))
+            {
+                calNotified = true;
+                iziToast.show({
+                    title: 'You are interrupting another show!',
+                    message: `You are running into another person's show time. Please wrap up your show now and then click "End Show".`,
+                    timeout: 900000,
+                    close: true,
+                    color: 'blue',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: false,
+                    overlay: true,
+                    zindex: 501,
+                    buttons: [
+                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+                                endShow();
+                                instance.hide({}, toast, 'button');
+                            }, true]
+                    ]
+                });
+            }
+
+            // Prerecords also should not notify until the scheduled start time is past the current time.
+            if (calType === 'Prerecord' && moment(Meta.time).isAfter(moment(calStarts)))
+            {
+                calNotified = true;
+                iziToast.show({
+                    title: 'You are running into a scheduled prerecord.',
+                    message: `You are running into a scheduled prerecorded show. Unless WWSU has given you`,
+                    timeout: 900000,
+                    close: true,
+                    color: 'blue',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: false,
+                    overlay: true,
+                    zindex: 501,
+                    buttons: [
+                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+                                endShow();
+                                instance.hide({}, toast, 'button');
+                            }, true]
+                    ]
+                });
+            }
+
+        }
+
+        // Clear current list of events
+        document.querySelector('#calendar-events').innerHTML = '';
+
+        // Add in our new list
+        calendar.forEach(function (event) {
+            document.querySelector('#calendar-events').innerHTML += ` <div class="p-1 m-1" style="background-color: ${event.color}">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -850,16 +1094,14 @@ function checkCalendar() {
                                             </div>
                                         </div>
                                     </div></div>`;
-            });
-            
-        } catch (e) {
-            console.error(e);
-            iziToast.show({
-                title: 'An error occurred - Please check the logs',
-                message: `Error occurred during calendar iteration in processCalendar.`
-            });
-        }
-    });
+        });
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: `Error occurred during checkCalendar.`
+        });
+    }
 }
 
 function returnBreak() {
@@ -875,7 +1117,16 @@ function queuePSA(duration) {
 }
 
 function prepareLive() {
-    // WORK ON THIS
+    document.querySelector("#live-handle").value = '';
+    document.querySelector("#live-show").value = '';
+    document.querySelector("#live-topic").value = '';
+    document.querySelector("#live-noschedule").style.display = "inline";
+    if (calType === 'Show')
+    {
+        document.querySelector("#live-handle").value = calHost;
+        document.querySelector("#live-show").value = calShow;
+        document.querySelector("#live-noschedule").style.display = "none";
+    }
     $("#go-live-modal").iziModal('open');
 }
 
@@ -887,7 +1138,16 @@ function goLive() {
 }
 
 function prepareRemote() {
-    // WORK ON THIS
+    document.querySelector("#remote-handle").value = '';
+    document.querySelector("#remote-show").value = '';
+    document.querySelector("#remote-topic").value = '';
+    document.querySelector("#remote-noschedule").style.display = "inline";
+    if (calType === 'Remote')
+    {
+        document.querySelector("#remote-handle").value = calHost;
+        document.querySelector("#remote-show").value = calShow;
+        document.querySelector("#remote-noschedule").style.display = "none";
+    }
     $("#go-remote-modal").iziModal('open');
 }
 
@@ -899,7 +1159,13 @@ function goRemote() {
 }
 
 function prepareSports() {
-    // WORK ON THIS
+    document.querySelector('#sports-sport').value = "";
+    document.querySelector("#sports-noschedule").style.display = "inline";
+    if (calType === 'Sports')
+    {
+        document.querySelector("#sports-sport").value = calShow;
+        document.querySelector("#sports-noschedule").style.display = "none";
+    }
     $("#go-sports-modal").iziModal('open');
 }
 

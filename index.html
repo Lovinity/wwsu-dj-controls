@@ -397,6 +397,9 @@
                             <input type="checkbox" class="custom-control-input" id="live-webchat" checked>
                             <label class="custom-control-label" style="color: #ffffff;" for="webchat">Website chat</label>
                         </div>
+                        <div class="alert alert-warning" role="alert" id="live-noschedule" style="display: none;">
+                            <strong>Caution!</strong> The DJ/Handle and show name currently typed in does not match a show scheduled to start. If you go live, this show will not count in show attendance! Further, if you did not get permission from WWSU to go live at this time, you may receive disciplinary action.
+                        </div>
                         <div class="row">
                             <div class="col-3">
                                 <button type="button" class="btn btn-success" id="live-go" onclick="goLive();">Go Live <img src="assets/images/live.png"></button>
@@ -429,7 +432,10 @@
                             <input type="checkbox" class="custom-control-input" id="remote-webchat">
                             <label class="custom-control-label" style="color: #ffffff;" for="webchat">Website chat</label>
                         </div>
-                        <div class="alert alert-warning" role="alert">
+                        <div class="alert alert-warning" role="alert" id="remote-noschedule" style="display: none;">
+                            <strong>Caution!</strong> The Host and Show name currently typed in does not match a remote broadcast scheduled to start. If you did not get permission from WWSU to air a remote broadcast at this time, you may receive disciplinary action.
+                        </div>
+                        <div class="alert alert-info" role="alert">
                             Remember: Remote streams have a 4 second audio delay!
                         </div>
                         <div class="row">
@@ -451,6 +457,7 @@
                             <div class="form-group">
                                 <label for="showname" style="color: #ffffff;">Which Sport are you Broadcasting?</label>
                                 <select class="form-control" id="sports-sport">
+                                    <option value="">Choose a sport...</option>
                                     <option value="Men's Basketball">Men's Basketball</option>
                                     <option value="Women's Basketball">Women's Basketball</option>
                                     <option value="Men's Soccer">Men's Soccer</option>
@@ -472,7 +479,10 @@
                             <input type="checkbox" class="custom-control-input" id="sports-webchat">
                             <label class="custom-control-label" style="color: #ffffff;" for="webchat">Website chat</label>
                         </div>
-                        <div class="alert alert-warning" role="alert">
+                        <div class="alert alert-warning" role="alert" id="sports-noschedule" style="display: none;">
+                            <strong>Caution!</strong> The sport currently selected does not appear to be scheduled to air. If you did not get permission from WWSU to air this sports broadcast at this time, you may receive disciplinary action.
+                        </div>
+                        <div class="alert alert-info" role="alert">
                             Remember: Remote streams have a 4 second audio delay!
                         </div>
                         <div class="row">
