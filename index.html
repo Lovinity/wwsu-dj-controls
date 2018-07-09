@@ -397,12 +397,14 @@
                             <input type="checkbox" class="custom-control-input" id="live-webchat" checked>
                             <label class="custom-control-label" style="color: #ffffff;" for="webchat">Website chat</label>
                         </div>
-                        <div class="p-1 m-1 bg-warning-dark" role="alert" id="live-noschedule" style="display: none;">
+                        <div class="p-1 bg-warning-dark" role="alert" id="live-noschedule">
+                            <div class="m-1">
                             <strong>Caution!</strong> The DJ/Handle and show name currently typed in does not match a show scheduled to start. If you go live, this show will not count in show attendance! Further, if you did not get permission from WWSU to go live at this time, you may receive disciplinary action.
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-3">
-                                <button type="button" class="btn btn-success" id="live-go" onclick="goLive();">Go Live <img src="assets/images/live.png"></button>
+                                <button type="button" class="btn btn-success" id="live-go">Go Live <img src="assets/images/live.png"></button>
                             </div>
                         </div>
                     </div>
@@ -432,15 +434,19 @@
                             <input type="checkbox" class="custom-control-input" id="remote-webchat">
                             <label class="custom-control-label" style="color: #ffffff;" for="webchat">Website chat</label>
                         </div>
-                        <div class="p-1 m-1 bg-warning-dark" id="remote-noschedule" style="display: none;">
+                        <div class="p-1 m-1 bg-warning-dark" id="remote-noschedule">
+                            <div class="m-1">
                             <strong>Caution!</strong> The Host and Show name currently typed in does not match a remote broadcast scheduled to start. If you did not get permission from WWSU to air a remote broadcast at this time, you may receive disciplinary action.
+                            </div>
                         </div>
                         <div class="p-1 m-1 bg-info-dark">
+                            <div class="m-1">
                             Remember: Remote streams have a 4 second audio delay!
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-3">
-                                <button type="button" class="btn btn-success" id="remote-go" data-toggle="tooltip" data-placement="bottom" title="Begin remote broadcast. DJ Controls will display a countdown. Make sure you are streaming to the internet stream!" >Go Remote <img src="assets/images/remote.png"></button>
+                                <button type="button" class="btn btn-success" id="remote-go">Go Remote <img src="assets/images/remote.png"></button>
                             </div>
                         </div>
                     </div>
@@ -479,15 +485,19 @@
                             <input type="checkbox" class="custom-control-input" id="sports-webchat">
                             <label class="custom-control-label" style="color: #ffffff;" for="webchat">Website chat</label>
                         </div>
-                        <div class="p-1 m-1 bg-warning-dark" id="sports-noschedule" style="display: none;">
+                        <div class="p-1 m-1 bg-warning-dark" id="sports-noschedule">
+                            <div class="m-1">
                             <strong>Caution!</strong> The sport currently selected does not appear to be scheduled to air. If you did not get permission from WWSU to air this sports broadcast at this time, you may receive disciplinary action.
+                            </div>
                         </div>
                         <div class="p-1 m-1 bg-info-dark">
+                            <div class="m-1">
                             Remember: Remote streams have a 4 second audio delay!
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-3">
-                                <button type="button" class="btn btn-success" id="sports-go" data-toggle="tooltip" data-placement="bottom" title="Begin the broadcast. Automation will clear the queue. DJ Controls will give you a countdown.">Go Sports <img src="assets/images/sports.png"></button>
+                                <button type="button" class="btn btn-success" id="sports-go">Go Sports <img src="assets/images/sports.png"></button>
                             </div>
                         </div>
                     </div>
@@ -505,7 +515,7 @@
                         </div>
                         <input type="text" id="log-datetime" class="form-control" value="mm/dd/yyyy hh:mm:ss">
                         <select class="form-control" id="log-type">
-                            <option value="Did an unknwon action">Choose a log type...</option>
+                            <option value="Did an unknown action">Choose a log type...</option>
                             <option value="Played a Track">Played a Track</option>
                             <option value="Started a Talk Segment">Started a Talk Segment</option>
                             <option value="Announced a Legal ID">Announced a Legal ID</option>

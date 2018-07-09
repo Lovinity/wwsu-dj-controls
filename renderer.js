@@ -124,6 +124,7 @@ try {
         color: 'red',
         close: true,
         overlay: true,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
         zindex: 100,
         layout: 1,
         closeOnClick: true,
@@ -140,7 +141,7 @@ try {
         navigateCaption: false,
         navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
         overlayClose: false,
-        overlayColor: 'rgba(0, 0, 0, 0.4)',
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
         timeout: 180000,
         timeoutProgressbar: true,
         pauseOnHover: true,
@@ -156,7 +157,7 @@ try {
         navigateCaption: false,
         navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
         overlayClose: false,
-        overlayColor: 'rgba(0, 0, 0, 0.4)',
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
         timeout: 180000,
         timeoutProgressbar: true,
         pauseOnHover: true,
@@ -172,7 +173,7 @@ try {
         navigateCaption: false,
         navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
         overlayClose: false,
-        overlayColor: 'rgba(0, 0, 0, 0.4)',
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
         timeout: 180000,
         timeoutProgressbar: true,
         pauseOnHover: true,
@@ -188,7 +189,7 @@ try {
         navigateCaption: false,
         navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
         overlayClose: false,
-        overlayColor: 'rgba(0, 0, 0, 0.4)',
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
         timeout: 180000,
         timeoutProgressbar: true,
         pauseOnHover: true,
@@ -364,7 +365,23 @@ document.querySelector("#btn-log").onclick = function () {
     prepareLog();
 };
 
-document.querySelector("#live-handle").onkeydown = function () {
+document.querySelector("#live-go").onclick = function () {
+    goLive();
+};
+
+document.querySelector("#remote-go").onclick = function () {
+    goRemote();
+};
+
+document.querySelector("#sports-go").onclick = function () {
+    goSports();
+};
+
+document.querySelector("#log-add").onclick = function () {
+    saveLog();
+};
+
+document.querySelector("#live-handle").onkeyup = function () {
     if (calType === 'Show' && document.querySelector("#live-handle").value === calHost && document.querySelector("#live-show").value === calShow)
     {
         document.querySelector("#live-noschedule").style.display = "none";
@@ -373,7 +390,7 @@ document.querySelector("#live-handle").onkeydown = function () {
     }
 };
 
-document.querySelector("#live-show").onkeydown = function () {
+document.querySelector("#live-show").onkeyup = function () {
     if (calType === 'Show' && document.querySelector("#live-handle").value === calHost && document.querySelector("#live-show").value === calShow)
     {
         document.querySelector("#live-noschedule").style.display = "none";
@@ -382,7 +399,7 @@ document.querySelector("#live-show").onkeydown = function () {
     }
 };
 
-document.querySelector("#remote-handle").onkeydown = function () {
+document.querySelector("#remote-handle").onkeyup = function () {
     if (calType === 'Remote' && document.querySelector("#remote-handle").value === calHost && document.querySelector("#remote-show").value === calShow)
     {
         document.querySelector("#remote-noschedule").style.display = "none";
@@ -391,7 +408,7 @@ document.querySelector("#remote-handle").onkeydown = function () {
     }
 };
 
-document.querySelector("#remote-show").onkeydown = function () {
+document.querySelector("#remote-show").onkeyup = function () {
     if (calType === 'Remote' && document.querySelector("#remote-handle").value === calHost && document.querySelector("#remote-show").value === calShow)
     {
         document.querySelector("#remote-noschedule").style.display = "none";
@@ -577,6 +594,7 @@ function onlineSocket()
     nodeRequest({method: 'post', url: nodeURL + '/recipients/add-computers', data: {host: os.hostname()}}, function (response) {
         try {
         } catch (e) {
+            console.error(e);
             console.log('FAILED ONLINE CONNECTION');
             setTimeout(onlineSocket, 10000);
         }
@@ -584,6 +602,7 @@ function onlineSocket()
 }
 
 function metaSocket() {
+    console.log('attempting meta socket');
     io.socket.post('/meta/get', {}, function serverResponded(body, JWR) {
         try {
             for (var key in body)
@@ -595,6 +614,7 @@ function metaSocket() {
             }
             doMeta(body);
         } catch (e) {
+            console.error(e);
             console.log(`FAILED META CONNECTION`);
             setTimeout(metaSocket, 10000);
         }
@@ -608,6 +628,7 @@ function easSocket()
         try {
             processEas(body, true);
         } catch (e) {
+            console.error(e);
             console.log('FAILED EAS CONNECTION');
             setTimeout(easSocket, 10000);
         }
@@ -615,11 +636,13 @@ function easSocket()
 }
 
 function statusSocket() {
+    console.log('attempting statuc socket');
     io.socket.post('/status/get', {}, function serverResponded(body, JWR) {
         //console.log(body);
         try {
             processStatus(body, true);
         } catch (e) {
+            console.error(e);
             console.log('FAILED Status CONNECTION');
             setTimeout(statusSocket, 10000);
         }
@@ -627,11 +650,13 @@ function statusSocket() {
 }
 
 function announcementsSocket() {
+    console.log('attempting announcements socket');
     io.socket.post('/announcements/get', {type: 'djcontrols'}, function serverResponded(body, JWR) {
         //console.log(body);
         try {
             processAnnouncements(body, true);
         } catch (e) {
+            console.error(e);
             console.log('FAILED Announcements CONNECTION');
             setTimeout(announcementsSocket, 10000);
         }
@@ -639,11 +664,13 @@ function announcementsSocket() {
 }
 
 function calendarSocket() {
+    console.log('attempting calendar socket');
     io.socket.post('/calendar/get', {}, function serverResponded(body, JWR) {
         //console.log(body);
         try {
             processCalendar(body, true);
         } catch (e) {
+            console.error(e);
             console.log('FAILED Calendar CONNECTION');
             setTimeout(calendarSocket, 10000);
         }
@@ -657,7 +684,7 @@ function doMeta(metan) {
             if (document.querySelector("#iziToast-breakneeded") === null)
                 iziToast.show({
                     id: 'iziToast-breakneeded',
-                    title: 'Top of hour break required',
+                    title: '<i class="fas fa-clock"></i> Top of hour break required',
                     message: `Please find a graceful stopping point and then click "take a break" within the next 5 minutes.`,
                     timeout: 600000,
                     close: true,
@@ -738,7 +765,7 @@ function doMeta(metan) {
                     if (document.querySelector("#iziToast-noremote") === null)
                         iziToast.show({
                             id: 'iziToast-noremote',
-                            title: 'Lost Remote Connection',
+                            title: '<i class="fas fa-exclamation-triangle"></i> Lost Remote Connection',
                             message: `Please ensure you are streaming to the remote stream and that your internet connection is stable. Then, click "Resume Show".`,
                             timeout: false,
                             close: true,
@@ -831,22 +858,33 @@ function checkAnnouncementColor() {
 }
 
 function checkAnnouncements() {
-    // Remove all regular announcements
-    var attn = document.querySelectorAll(".attn");
-    for (var i = 0; i < attn.length; i++) {
-        attn[i].parentNode.removeChild(attn[i]);
-    }
 
-    // Add applicableannouncements
-    var attn = document.querySelector("#announcements-body");
+    var prev = [];
+    // Add applicable announcements
     Announcements().each(function (datum) {
         if (moment(datum.starts).isBefore(moment(Meta.time)) && moment(datum.expires).isAfter(moment(Meta.time)))
         {
-            attn.innerHTML += `<div class="attn attn-${datum.level} alert alert-${datum.level}" id="attn-${datum.ID}" role="alert">
-                        ${datum.announcement}
+            prev.push(datum.ID);
+            if (document.querySelector(`#attn-${datum.ID}`) === null)
+            {
+                var attn = document.querySelector("#announcements-body");
+                attn.innerHTML += `<div class="attn attn-${datum.level} alert alert-${datum.level}" id="attn-${datum.ID}" role="alert">
+                        <i class="fas fa-bullhorn"> ${datum.announcement}
                     </div>`;
+            } else {
+                var temp = document.querySelector(`#attn-${datum.ID}`);
+                temp.className = `attn attn-${datum.level} alert alert-${datum.level}`;
+                temp.innerHTML = `<i class="fas fa-bullhorn"> ${datum.announcement}`;
+            }
         }
     });
+
+    // Remove announcements no longer valid
+    var attn = document.querySelectorAll(".attn");
+    for (var i = 0; i < attn.length; i++) {
+        if (prev.indexOf(attn[i].id) === -1)
+            attn[i].parentNode.removeChild(attn[i]);
+    }
 }
 
 function checkCalendar() {
@@ -985,7 +1023,7 @@ function checkCalendar() {
             {
                 calNotified = true;
                 iziToast.show({
-                    title: 'Sports broadcast in less than 15 minutes.',
+                    title: '<i class="fas fa-trophy"></i> Sports broadcast in less than 15 minutes.',
                     message: `A sports broadcast is scheduled to begin in less than 15 minutes. If this broadcast is still scheduled to air, please wrap up your show now and then click "End Show". That way, WWSU has 15 minutes to prepare for the broadcast.`,
                     timeout: 900000,
                     close: true,
@@ -1009,7 +1047,7 @@ function checkCalendar() {
             {
                 calNotified = true;
                 iziToast.show({
-                    title: 'Remote broadcast in less than 15 minutes.',
+                    title: '<i class="fas fa-broadcast-tower"></i> Remote broadcast in less than 15 minutes.',
                     message: `A remote broadcast is scheduled to begin in less than 15 minutes. If this broadcast is still scheduled to air, please wrap up your show now and then click "End Show". That way, WWSU has 15 minutes to prepare for the broadcast.`,
                     timeout: 900000,
                     close: true,
@@ -1033,7 +1071,7 @@ function checkCalendar() {
             {
                 calNotified = true;
                 iziToast.show({
-                    title: 'You are interrupting another show!',
+                    title: '<i class="fas fa-microphone-alt"></i> You are interrupting another show!',
                     message: `You are running into another person's show time. Please wrap up your show now and then click "End Show".`,
                     timeout: 900000,
                     close: true,
@@ -1057,8 +1095,8 @@ function checkCalendar() {
             {
                 calNotified = true;
                 iziToast.show({
-                    title: 'You are running into a scheduled prerecord.',
-                    message: `You are running into a scheduled prerecorded show. Unless WWSU has given you`,
+                    title: '<i class="fas fa-circle"></i> You are running into a scheduled prerecord.',
+                    message: `You are running into a scheduled prerecorded show. Unless WWSU has given you permission to continue, please consider wrapping up and ending your show by clicking "End Now".`,
                     timeout: 900000,
                     close: true,
                     color: 'blue',
@@ -1131,9 +1169,9 @@ function prepareLive() {
 }
 
 function goLive() {
-    $("#go-live-modal").iziModal('close');
     nodeRequest({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: document.querySelector('#live-topic').value, djcontrols: os.computerName(), webchat: document.querySelector('#live-webchat').checked}}, function (response) {
         doMeta(Meta);
+        $("#go-live-modal").iziModal('close');
     });
 }
 
@@ -1152,9 +1190,9 @@ function prepareRemote() {
 }
 
 function goRemote() {
-    $("#go-remote-modal").iziModal('close');
     nodeRequest({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: document.querySelector('#remote-topic').value, djcontrols: os.computerName(), webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
         doMeta(Meta);
+        $("#go-remote-modal").iziModal('close');
     });
 }
 
@@ -1170,11 +1208,37 @@ function prepareSports() {
 }
 
 function goSports() {
-    $("#go-sports-modal").iziModal('close');
     var sportsOptions = document.getElementById('sports-sport');
     var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
     nodeRequest({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, remote: document.querySelector('#sports-remote').checked, djcontrols: os.computerName(), webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
         doMeta(Meta);
+        $("#go-sports-modal").iziModal('close');
+    });
+}
+
+function prepareLog() {
+    document.querySelector("#log-datetime").value = moment(Meta.time).format("mm/dd/YYYY HH:mm:ss");
+    document.querySelector("#log-type").value = 'Did an unknown action';
+    document.querySelector("#log-artist").value = '';
+    document.querySelector("#log-title").value = '';
+    document.querySelector("#log-album").value = '';
+    document.querySelector("#log-label").value = '';
+    $("#log-modal").iziModal('open');
+}
+
+function saveLog() {
+    var thelog = 'DJ/Producer ' + document.querySelector("#log-type").value;
+    var dateObject = moment(document.querySelector("#log-datetime").value);
+    nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'operation', logsubtype: Meta.dj, loglevel: 'info', event: thelog, trackArtist: document.querySelector("#log-artist").value, trackTitle: document.querySelector("#log-title").value, trackAlbum: document.querySelector("#log-album").value, trackLabel: document.querySelector("#log-label").value, date: dateObject.toISOString()}}, function (response) {
+        if (response === 'OK')
+        {
+            $("#log-modal").iziModal('close');
+        } else {
+            iziToast.show({
+                title: 'An error occurred',
+                message: 'Error occurred trying to submit a log entry.'
+            });
+        }
     });
 }
 
@@ -1219,27 +1283,46 @@ function processEas(data, replace = false)
             // Get all the EAS IDs currently in memory before replacing the data
             prev = Eas().select("ID");
 
-            // Remove all Eas-based announcements
-            var easAttn = document.querySelectorAll(".attn-eas");
-            for (var i = 0; i < easAttn.length; i++) {
-                easAttn[i].parentNode.removeChild(easAttn[i]);
-            }
-
             // Replace with the new data
             Eas = TAFFY();
             Eas.insert(data);
 
-            // Add Eas-based announcements
-            var attn = document.querySelector("#announcements-body");
-            data.forEach(function (datum) {
-                // Skip alerts that are not severe nor extreme severity; we don't care about those for DJ Controls
-                if (datum.severity !== 'Extreme' && datum.severity !== 'Severe')
-                    return null;
 
-                attn.innerHTML += `<div class="attn-eas attn-eas-${datum.severity} alert alert-${datum.severity === 'Extreme' ? 'danger' : 'warning'}" id="attn-eas-${datum.ID}" role="alert">
-                        <strong>${datum.alert}</strong> in effect for the counties ${datum.counties}.
+            // Add Eas-based announcements
+            data.forEach(function (datum) {
+                var className = 'secondary';
+                if (datum.severity === 'Extreme')
+                {
+                    className = 'danger';
+                } else if (datum.severity === 'Severe')
+                {
+                    className = 'urgent';
+                } else if (datum.severity === 'Moderate')
+                {
+                    className = 'warning';
+                } else {
+                    className = 'info';
+                }
+                if (document.querySelector(`#attn-eas-${datum.ID}`) === null)
+                {
+                    var attn = document.querySelector("#announcements-body");
+                    attn.innerHTML += `<div class="attn-eas attn-eas-${datum.severity} alert alert-${className}" id="attn-eas-${datum.ID}" role="alert">
+                        <i class="fas fa-bolt"></i> <strong>${datum.alert}</strong> in effect for the counties ${datum.counties}.
                     </div>`;
+                } else {
+                    var temp = document.querySelector(`#attn-eas-${datum.ID}`);
+                    temp.className = `attn-eas attn-eas-${datum.severity} alert alert-${className}`;
+                    temp.innerHTML = `<i class="fas fa-bolt"></i> <strong>${datum.alert}</strong> in effect for the counties ${datum.counties}.`;
+                }
             });
+
+            // Remove all Eas announcements no longer valid
+            var prev2 = Eas().select("ID");
+            var attn = document.querySelectorAll(".attn-eas");
+            for (var i = 0; i < attn.length; i++) {
+                if (prev2.indexOf(attn[i].id) === -1)
+                    attn[i].parentNode.removeChild(attn[i]);
+            }
 
             // Go through the new data. If any IDs exists that did not exist before, consider it a new alert and make a notification.
             Eas().each(function (record)
@@ -1252,7 +1335,7 @@ function processEas(data, replace = false)
                         {
                             iziToast.show({
                                 class: 'iziToast-eas-extreme-end',
-                                title: 'Extreme weather alert in effect',
+                                title: '<i class="fas fa-bolt"></i> Extreme weather alert in effect',
                                 message: `A ${record.alert} is in effect for the counties of ${record.counties}. You may wish to consider ending the show early and taking shelter. If so, click "End Show" when ready to end. Otherwise, close this notification.`,
                                 timeout: 900000,
                                 close: true,
@@ -1272,7 +1355,7 @@ function processEas(data, replace = false)
                         } else {
                             iziToast.show({
                                 class: 'iziToast-eas-extreme',
-                                title: 'Extreme weather alert in effect',
+                                title: '<i class="fas fa-bolt"></i> Extreme weather alert in effect',
                                 message: `A ${record.alert} is in effect for the counties of ${record.counties}. You may wish to decide against hosting any shows at this time and instead seeking shelter.`,
                                 timeout: 900000,
                                 close: true,
@@ -1288,7 +1371,7 @@ function processEas(data, replace = false)
                     {
                         iziToast.show({
                             class: 'iziToast-eas-severe',
-                            title: 'Severe weather alert in effect',
+                            title: '<i class="fas fa-bolt"></i> Severe weather alert in effect',
                             message: `A ${record.alert} is in effect for the counties of ${record.counties}. Please keep an eye on the weather.`,
                             timeout: 900000,
                             close: true,
@@ -1312,7 +1395,6 @@ function processEas(data, replace = false)
                     {
                         case 'insert':
                             Eas.insert(data[key]);
-                            var attn = document.querySelector("#announcements-body");
                             var className = 'secondary';
                             if (data[key].severity === 'Extreme')
                             {
@@ -1326,16 +1408,24 @@ function processEas(data, replace = false)
                             } else {
                                 className = 'info';
                             }
-                            attn.innerHTML += `<div class="attn-eas attn-eas-${data[key].severity} alert alert-${className}" id="attn-eas-${data[key].ID}" role="alert">
-                        <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.
+                            if (document.querySelector(`#attn-eas-${data[key].ID}`) === null)
+                            {
+                                var attn = document.querySelector("#announcements-body");
+                                attn.innerHTML += `<div class="attn-eas attn-eas-${data[key].severity} alert alert-${className}" id="attn-eas-${data[key].ID}" role="alert">
+                        <i class="fas fa-bolt"></i> <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.
                     </div>`;
+                            } else {
+                                var temp = document.querySelector(`#attn-eas-${data[key].ID}`);
+                                temp.className = `attn-eas attn-eas-${data[key].severity} alert alert-${className}`;
+                                temp.innerHTML = `<i class="fas fa-bolt"></i> <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
+                            }
                             if (data[key].severity === 'Extreme')
                             {
                                 if (!Meta.state.startsWith("automation_"))
                                 {
                                     iziToast.show({
                                         class: 'iziToast-eas-extreme-end',
-                                        title: 'Extreme weather alert in effect',
+                                        title: '<i class="fas fa-bolt"></i> Extreme weather alert in effect',
                                         message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. You may wish to consider ending the show early and taking shelter. If so, click "End Show" when ready to end. Otherwise, close this notification.`,
                                         timeout: 900000,
                                         close: true,
@@ -1355,7 +1445,7 @@ function processEas(data, replace = false)
                                 } else {
                                     iziToast.show({
                                         class: 'iziToast-eas-extreme',
-                                        title: 'Extreme weather alert in effect',
+                                        title: '<i class="fas fa-bolt"></i> Extreme weather alert in effect',
                                         message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. You may wish to decide against hosting any shows at this time and instead seeking shelter.`,
                                         timeout: 900000,
                                         close: true,
@@ -1371,7 +1461,7 @@ function processEas(data, replace = false)
                             {
                                 iziToast.show({
                                     class: 'iziToast-eas-severe',
-                                    title: 'Severe weather alert in effect',
+                                    title: '<i class="fas fa-bolt"></i> Severe weather alert in effect',
                                     message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. Please keep an eye on the weather.`,
                                     timeout: 900000,
                                     close: true,
@@ -1386,6 +1476,30 @@ function processEas(data, replace = false)
                             break;
                         case 'update':
                             Eas({ID: data[key].ID}).update(data[key]);
+                            var className = 'secondary';
+                            if (data[key].severity === 'Extreme')
+                            {
+                                className = 'danger';
+                            } else if (data[key].severity === 'Severe')
+                            {
+                                className = 'urgent';
+                            } else if (data[key].severity === 'Moderate')
+                            {
+                                className = 'warning';
+                            } else {
+                                className = 'info';
+                            }
+                            if (document.querySelector(`#attn-eas-${data[key].ID}`) === null)
+                            {
+                                var attn = document.querySelector("#announcements-body");
+                                attn.innerHTML += `<div class="attn-eas attn-eas-${data[key].severity} alert alert-${className}" id="attn-eas-${data[key].ID}" role="alert">
+                        <i class="fas fa-bolt"></i> <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.
+                    </div>`;
+                            } else {
+                                var temp = document.querySelector(`#attn-eas-${data[key].ID}`);
+                                temp.className = `attn-eas attn-eas-${data[key].severity} alert alert-${className}`;
+                                temp.innerHTML = `<i class="fas fa-bolt"></i> <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
+                            }
                             break;
                         case 'remove':
                             Eas({ID: data[key]}).remove();
@@ -1398,23 +1512,7 @@ function processEas(data, replace = false)
             }
         }
 
-        // Check to see if any alerts are extreme
-        easExtreme = false;
-
-        Eas().each(function (alert) {
-            try {
-                if (alert.severity === 'Extreme')
-                    easExtreme = true;
-            } catch (e) {
-                console.error(e);
-                iziToast.show({
-                    title: 'An error occurred - Please check the logs',
-                    message: `Error occurred during Eas iteration in processEas.`
-                });
-            }
-        });
-
-        checkAnnouncements();
+        checkAnnouncementColor();
 
     } catch (e) {
         console.error(e);
@@ -1434,6 +1532,49 @@ function processStatus(data, replace = false)
         {
             Status = TAFFY();
             Status.insert(data);
+
+            // Add Status-based announcements
+            var prev = [];
+            data.forEach(function (datum) {
+                var className = 'secondary';
+                if (datum.status === 1)
+                {
+                    className = 'danger';
+                } else if (datum.status === 2)
+                {
+                    className = 'urgent';
+                } else if (datum.status === 3)
+                {
+                    className = 'warning';
+                } else {
+                    return null;
+                }
+                if (document.querySelector(`#attn-status-${datum.ID}`) === null)
+                {
+                    prev.push(datum.ID);
+                    var attn = document.querySelector("#announcements-body");
+                    attn.innerHTML += `<div class="attn-status attn-status-${datum.status} alert alert-${className}" id="attn-status-${datum.ID}" role="alert">
+                        <i class="fas fa-server"></i> <strong>${datum.label}</strong> is reporting a problem: ${datum.data}
+                    </div>`;
+                } else {
+                    console.log(`Editing status ${datum.label}`);
+                    var temp = document.querySelector(`#attn-status-${datum.ID}`);
+                    temp.className = `attn-status attn-status-${datum.status} alert alert-${className}`;
+                    temp.innerHTML = `<i class="fas fa-server"></i ><strong>${datum.label}</strong> is reporting a problem: ${datum.data}`;
+                }
+            });
+
+            // Remove all Status announcements no longer valid
+
+            Status().each(function (status) {
+                if (prev.indexOf(status.ID) === -1)
+                {
+                    var attn = document.querySelector(`#attn-status-${status.ID}`);
+                    if (attn !== null)
+                        attn.parentNode.removeChild(attn);
+                }
+            });
+
         } else {
             for (var key in data)
             {
@@ -1443,35 +1584,71 @@ function processStatus(data, replace = false)
                     {
                         case 'insert':
                             Status.insert(data[key]);
+                            var className = 'secondary';
+                            if (data[key].status === 1)
+                            {
+                                className = 'danger';
+                            } else if (data[key].status === 2)
+                            {
+                                className = 'urgent';
+                            } else if (data[key].status === 3)
+                            {
+                                className = 'warning';
+                            } else {
+                                continue;
+                            }
+                            if (document.querySelector(`#attn-status-${data[key].ID}`) === null)
+                            {
+                                var attn = document.querySelector("#announcements-body");
+                                attn.innerHTML += `<div class="attn-status attn-status-${data[key].status} alert alert-${className}" id="attn-status-${data[key].ID}" role="alert">
+                        <i class="fas fa-server"></i> <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}
+                    </div>`;
+                            } else {
+                                var temp = document.querySelector(`#attn-status-${data[key].ID}`);
+                                temp.className = `attn-status attn-status-${data[key].status} alert alert-${className}`;
+                                temp.innerHTML = `<i class="fas fa-server"></i> <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}`;
+                            }
                             break;
                         case 'update':
                             Status({ID: data[key].ID}).update(data[key]);
+                            var className = 'secondary';
+                            if (data[key].status === 1)
+                            {
+                                className = 'danger';
+                            } else if (data[key].status === 2)
+                            {
+                                className = 'urgent';
+                            } else if (data[key].status === 3)
+                            {
+                                className = 'warning';
+                            } else {
+                                var attn = document.querySelector(`#attn-status-${data[key].ID}`);
+                                if (attn !== null)
+                                    attn.parentNode.removeChild(attn);
+                                continue;
+                            }
+                            if (document.querySelector(`#attn-status-${data[key].ID}`) === null)
+                            {
+                                var attn = document.querySelector("#announcements-body");
+                                attn.innerHTML += `<div class="attn-status attn-status-${data[key].status} alert alert-${className}" id="attn-status-${data[key].ID}" role="alert">
+                        <i class="fas fa-server"></i> <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}
+                    </div>`;
+                            } else {
+                                var temp = document.querySelector(`#attn-status-${data[key].ID}`);
+                                temp.className = `attn-status attn-status-${data[key].status} alert alert-${className}`;
+                                temp.innerHTML = `<i class="fas fa-server"></i> <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}`;
+                            }
                             break;
                         case 'remove':
                             Status({ID: data[key]}).remove();
+                            var attn = document.querySelector(`#attn-status-${data[key].ID}`);
+                            if (attn !== null)
+                                attn.parentNode.removeChild(attn);
                             break;
                     }
                 }
             }
         }
-
-        // Check the worst status and update accordingly
-        theStatus = 5;
-        var attn = document.querySelector("#announcements-body");
-
-        // Remove all Status-based announcements
-
-        Status().each(function (status) {
-            if (status.status < theStatus && status.status !== 4)
-                theStatus = status.status;
-
-            if (status.status < 3)
-            {
-                attn.innerHTML += `<div class="attn-status attn-status-${status.status} alert alert-${status.status < 2 ? 'danger' : 'warning'}" id="attn-status-${status.ID}" role="alert">
-                        <strong>${status.label}</strong> is reporting a high-priority issue: ${status.data}
-                    </div>`;
-            }
-        });
 
         checkAnnouncementColor();
 
@@ -1494,6 +1671,7 @@ function processAnnouncements(data, replace = false)
             // Replace with the new data
             Announcements = TAFFY();
             Announcements.insert(data);
+
         } else {
             for (var key in data)
             {
