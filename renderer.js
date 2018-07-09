@@ -364,41 +364,41 @@ document.querySelector("#btn-log").onclick = function () {
     prepareLog();
 };
 
-document.querySelector("#live-handle").addEventListener("change", function () {
+document.querySelector("#live-handle").onkeydown = function () {
     if (calType === 'Show' && document.querySelector("#live-handle").value === calHost && document.querySelector("#live-show").value === calShow)
     {
         document.querySelector("#live-noschedule").style.display = "none";
     } else {
         document.querySelector("#live-noschedule").style.display = "inline";
     }
-});
+};
 
-document.querySelector("#live-show").addEventListener("change", function () {
+document.querySelector("#live-show").onkeydown = function () {
     if (calType === 'Show' && document.querySelector("#live-handle").value === calHost && document.querySelector("#live-show").value === calShow)
     {
         document.querySelector("#live-noschedule").style.display = "none";
     } else {
         document.querySelector("#live-noschedule").style.display = "inline";
     }
-});
+};
 
-document.querySelector("#remote-handle").addEventListener("change", function () {
+document.querySelector("#remote-handle").onkeydown = function () {
     if (calType === 'Remote' && document.querySelector("#remote-handle").value === calHost && document.querySelector("#remote-show").value === calShow)
     {
         document.querySelector("#remote-noschedule").style.display = "none";
     } else {
         document.querySelector("#remote-noschedule").style.display = "inline";
     }
-});
+};
 
-document.querySelector("#remote-show").addEventListener("change", function () {
+document.querySelector("#remote-show").onkeydown = function () {
     if (calType === 'Remote' && document.querySelector("#remote-handle").value === calHost && document.querySelector("#remote-show").value === calShow)
     {
         document.querySelector("#remote-noschedule").style.display = "none";
     } else {
         document.querySelector("#remote-noschedule").style.display = "inline";
     }
-});
+};
 
 document.querySelector("#sports-sport").addEventListener("change", function () {
     if (calType === 'Sports' && document.querySelector("#sports-sport").value === calShow)
