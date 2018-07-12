@@ -19,7 +19,7 @@ try {
     // Define HTML elements
 
     // Define other variables
-    var nodeURL = 'http://server.wwsu1069.org';
+    var nodeURL = 'http://localhost:1337';
 
     io.sails.url = nodeURL;
     var disconnected = true;
@@ -415,6 +415,85 @@ document.querySelector("#sports-go").onclick = function () {
 document.querySelector("#log-add").onclick = function () {
     saveLog();
 };
+
+document.querySelector(`#users`).addEventListener("click", function (e) {
+    try {
+        console.log(JSON.stringify(e.target.id));
+        if (e.target) {
+            if (e.target.id.startsWith(`users-o-mute`))
+            {
+                var recipient = Recipients({host: e.target.id.replace(`users-o-mute-`, ``)}).first().ID;
+                prepareMute(recipient);
+            }
+            if (e.target.id.startsWith(`users-o-ban`))
+            {
+                var recipient = Recipients({host: e.target.id.replace(`users-o-ban-`, ``)}).first().ID;
+                prepareBan(recipient);
+            }
+            if (e.target.id.startsWith(`users-b`))
+            {
+                var recipient = Recipients({host: e.target.id.replace(`users-b-`, ``)}).first().ID;
+                selectRecipient(recipient);
+            }
+            if (e.target.id.startsWith(`users-l`))
+            {
+                var recipient = Recipients({host: e.target.id.replace(`users-l-`, ``)}).first().ID;
+                selectRecipient(recipient);
+            }
+            if (e.target.id.startsWith(`users-n`))
+            {
+                var recipient = Recipients({host: e.target.id.replace(`users-n-`, ``)}).first().ID;
+                selectRecipient(recipient);
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #users.'
+        });
+    }
+});
+
+document.querySelector(`#messages`).addEventListener("click", function (e) {
+    try {
+        console.log(JSON.stringify(e.target.id));
+        if (e.target) {
+            if (e.target.id.startsWith(`message-o-mute`))
+            {
+                var recipient = Messages({ID: parseInt(e.target.id.replace(`message-o-mute-`, ``))}).first().from;
+                prepareMute(recipient);
+            }
+            if (e.target.id.startsWith(`message-o-ban`))
+            {
+                var recipient = Messages({ID: parseInt(e.target.id.replace(`message-o-ban-`, ``))}).first().from;
+                prepareBan(recipient);
+            }
+            if (e.target.id.startsWith(`message-o-delete`))
+            {
+                deleteMessage(e.target.id.replace(`message-o-delete-`, ``));
+            }
+            if (e.target.id.startsWith(`message-m`))
+            {
+                markRead(parseInt(e.target.id.replace(`message-m-`, ``)));
+            }
+            if (e.target.id.startsWith(`message-b`))
+            {
+                markRead(parseInt(e.target.id.replace(`message-b-`, ``)));
+            }
+            if (e.target.id.startsWith(`message-t`))
+            {
+                markRead(parseInt(e.target.id.replace(`message-t-`, ``)));
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #messages.'
+        });
+    }
+});
 
 document.querySelector("#btn-messenger").onclick = function () {
     $("#messages-modal").iziModal('open');
@@ -1369,44 +1448,20 @@ function checkRecipients() {
                         {
                             temp.innerHTML += `<div id="users-u-${recipient.host}" class="recipient">
                             <div class="dropdown">
-                                <div id="users-u-${recipient.host}-b" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;"><span id="users-u-${recipient.host}-l">${recipient.label}</span> <span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-u-${recipient.host}-n" style="float: right;">${recipient.unread}</span>
-                                    <span class='message-options' id="users-u-${recipient.host}-o" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
-                                    <div class="dropdown-menu" aria-labelledby="users-u-${recipient.host}-o">
-                                        <a class="dropdown-item text-warning-dark" data-toggle="dropdown" id="users-u-${recipient.host}-o-mute">Mute for 24 hours</a>
-                                        <a class="dropdown-item text-danger-dark" data-toggle="dropdown" id="users-u-${recipient.host}-o-ban">Ban indefinitely</a>
+                                <div id="users-b-${recipient.host}" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;"><span id="users-l-${recipient.host}">${recipient.label}</span> <span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.host}" style="float: right;">${recipient.unread}</span>
+                                    <span class='message-options' id="users-o-${recipient.host}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
+                                    <div class="dropdown-menu" aria-labelledby="users-o-${recipient.host}">
+                                        <a class="dropdown-item text-warning-dark" data-toggle="dropdown" id="users-o-mute-${recipient.host}">Mute for 24 hours</a>
+                                        <a class="dropdown-item text-danger-dark" data-toggle="dropdown" id="users-o-ban-${recipient.host}">Ban indefinitely</a>
                                     </div>
                                 </div>
                             </div>
                         </div>`;
-                            waitFor(function () {
-                                return (document.querySelector(`#users-u-${recipient.host}-o-mute`) !== null && document.querySelector(`#users-u-${recipient.host}-o-ban`) !== null);
-                            }, function () {
-                                document.querySelector(`#users-u-${recipient.host}-o-mute`).onclick = function () {
-                                    prepareMute(recipient.ID);
-                                };
-                                document.querySelector(`#users-u-${recipient.host}-o-ban`).onclick = function () {
-                                    prepareBan(recipient.ID);
-                                };
-                            });
-                            waitFor(function () {
-                                return (document.querySelector(`#users-u-${recipient.host}`) !== null);
-                            }, function () {
-                                document.querySelector(`#users-u-${recipient.host}`).onclick = function () {
-                                    selectRecipient(recipient.ID);
-                                };
-                            });
                         } else {
                             temp.innerHTML += `<div id="users-u-${recipient.host}" class="recipient">
-                                <div id="users-u-${recipient.host}-b" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;"><span id="users-u-${recipient.host}-l">${recipient.label}</span> <span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-u-${recipient.host}-n" style="float: right;">${recipient.unread}</span>
+                                <div id="users-b-${recipient.host}" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;"><span id="users-l-${recipient.host}">${recipient.label}</span> <span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.host}" style="float: right;">${recipient.unread}</span>
                                 </div>
                         </div>`;
-                            waitFor(function () {
-                                return (document.querySelector(`#users-u-${recipient.host}`) !== null);
-                            }, function () {
-                                document.querySelector(`#users-u-${recipient.host}`).onclick = function () {
-                                    selectRecipient(recipient.ID);
-                                };
-                            });
                         }
                     });
                 }
@@ -1441,7 +1496,7 @@ function selectRecipient(recipient = null)
         messages.innerHTML = ``;
 
         Recipients().each(function (recipientb) {
-            var temp = document.querySelector(`#users-u-${recipientb.host}-b`);
+            var temp = document.querySelector(`#users-b-${recipientb.host}`);
             if (temp !== null)
             {
                 var theClass = 'dark';
@@ -1480,7 +1535,7 @@ function selectRecipient(recipient = null)
         var host = Recipients({ID: recipient}).first().host;
         var status = Recipients({ID: recipient}).first().status;
 
-        var temp = document.querySelector(`#users-u-${host}-b`);
+        var temp = document.querySelector(`#users-b-${host}`);
         if (temp !== null)
         {
             var theClass = 'dark';
@@ -1580,92 +1635,58 @@ function selectRecipient(recipient = null)
                     return null;
                 }
 
-                messageIDs.push(`message-${message.ID}`);
+                messageIDs.push(`message-m-${message.ID}`);
 
-                var temp = document.querySelector(`#message-${message.ID}`);
+                var temp = document.querySelector(`#message-m-${message.ID}`);
                 if (temp === null)
                 {
                     if (message.from.startsWith("website-"))
                     {
-                        var temp2 = document.querySelector(`#message-${message.ID}`);
+                        var temp2 = document.querySelector(`#message-m-${message.ID}`);
                         if (temp2 === null)
                         {
-                            messages.innerHTML += `<div class="message m-2 bg-${message.needsread ? 'wwsu-red' : 'dark'}" id="message-${message.ID}" style="cursor: pointer;">
+                            messages.innerHTML += `<div class="message m-2 bg-${message.needsread ? 'wwsu-red' : 'dark'}" id="message-m-${message.ID}" style="cursor: pointer;">
                         <div class="m-1">
                             <div class="dropdown">
-                                <span class='message-options' id="message-${message.ID}-o" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
-                                <div class="dropdown-menu" aria-labelledby="message-${message.ID}-o">
-                                    <a class="dropdown-item text-primary" data-toggle="dropdown" id="message-${message.ID}-o-delete">Delete Message</a>
-                                    <a class="dropdown-item text-warning-dark" data-toggle="dropdown" id="message-${message.ID}-o-mute">Mute for 24 hours</a>
-                                    <a class="dropdown-item text-danger-dark" data-toggle="dropdown" id="message-${message.ID}-o-ban">Ban indefinitely</a>
+                                <span class='message-options' id="message-o-${message.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
+                                <div class="dropdown-menu" aria-labelledby="message-o-${message.ID}">
+                                    <a class="dropdown-item text-primary" data-toggle="dropdown" id="message-o-delete-${message.ID}">Delete Message</a>
+                                    <a class="dropdown-item text-warning-dark" data-toggle="dropdown" id="message-o-mute-${message.ID}">Mute for 24 hours</a>
+                                    <a class="dropdown-item text-danger-dark" data-toggle="dropdown" id="message-o-ban-${message.ID}">Ban indefinitely</a>
                                 </div>
                             </div>
-                            <div id="message-${message.ID}-m">${message.message}</div>
-                            <div style="font-size: 0.66em;" id="message-${message.ID}-b">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? '(Private)' : ''}</div>
+                            <div id="message-t-${message.ID}">${message.message}</div>
+                            <div style="font-size: 0.66em;" id="message-b-${message.ID}">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? '(Private)' : ''}</div>
                         </div>
                     </div>`;
-                            waitFor(function () {
-                                return (document.querySelector(`#message-${message.ID}-o-delete`) !== null && document.querySelector(`#message-${message.ID}-o-mute`) !== null && document.querySelector(`#users-u-${recipient.host}-o-ban`) !== null);
-                            }, function () {
-                                document.querySelector(`#message-${message.ID}-o-delete`).onclick = function () {
-                                    deleteMessage(message.ID);
-                                };
-                                document.querySelector(`#message-${message.ID}-o-mute`).onclick = function () {
-                                    prepareMute(recipient);
-                                };
-                                document.querySelector(`#message-${message.ID}-o-ban`).onclick = function () {
-                                    prepareBan(recipient);
-                                };
-                            });
-                            waitFor(function () {
-                                return (document.querySelector(`#message-${message.ID}`) !== null);
-                            }, function () {
-                                document.querySelector(`#message-${message.ID}`).onclick = function () {
-                                    markRead(message.ID);
-                                };
-                            });
                         } else {
                             temp2.className = `message m-2 bg-${message.needsread ? 'wwsu-red' : 'dark'}`;
-                            var temp3 = document.querySelector(`#message-${message.ID}-m`);
+                            var temp3 = document.querySelector(`#message-t-${message.ID}`);
                             temp3.innerHTML = message.message;
-                            var temp3 = document.querySelector(`#message-${message.ID}-b`);
+                            var temp3 = document.querySelector(`#message-b-${message.ID}`);
                             temp3.innerHTML = `${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? '(Private)' : ''}`;
                         }
                     } else {
-                        var temp2 = document.querySelector(`#message-${message.ID}`);
+                        var temp2 = document.querySelector(`#message-m-${message.ID}`);
                         if (temp2 === null)
                         {
-                            messages.innerHTML += `<div class="message m-2 bg-${message.needsread ? 'wwsu-red' : 'dark'}" id="message-${message.ID}" style="cursor: pointer;">
+                            messages.innerHTML += `<div class="message m-2 bg-${message.needsread ? 'wwsu-red' : 'dark'}" id="message-m-${message.ID}" style="cursor: pointer;">
                         <div class="m-1">
                             <div class="dropdown">
-                                <span class='message-options' id="message-${message.ID}-o" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
-                                <div class="dropdown-menu" aria-labelledby="message-${message.ID}-o">
-                                    <a class="dropdown-item text-primary" data-toggle="dropdown" id="message-${message.ID}-o-delete">Delete Message</a>
+                                <span class='message-options' id="message-o-${message.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
+                                <div class="dropdown-menu" aria-labelledby="message-o-${message.ID}">
+                                    <a class="dropdown-item text-primary" data-toggle="dropdown" id="message-o-delete-${message.ID}">Delete Message</a>
                                 </div>
                             </div>
-                            <div id="message-${message.ID}-m">${message.message}</div>
-                            <div style="font-size: 0.66em;" id="message-${message.ID}-b">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? '(Private)' : ''}</div>
+                            <div id="message-t-${message.ID}">${message.message}</div>
+                            <div style="font-size: 0.66em;" id="message-b-${message.ID}">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? '(Private)' : ''}</div>
                         </div>
                     </div>`;
-                            waitFor(function () {
-                                return (document.querySelector(`#message-${message.ID}-o-delete`) !== null);
-                            }, function () {
-                                document.querySelector(`#message-${message.ID}-o-delete`).onclick = function () {
-                                    deleteMessage(message.ID);
-                                };
-                            });
-                            waitFor(function () {
-                                return (document.querySelector(`#message-${message.ID}`) !== null);
-                            }, function () {
-                                document.querySelector(`#message-${message.ID}`).onclick = function () {
-                                    markRead(message.ID);
-                                };
-                            });
                         } else {
                             temp2.className = `message m-2 bg-${message.needsread ? 'wwsu-red' : 'dark'}`;
-                            var temp3 = document.querySelector(`#message-${message.ID}-m`);
+                            var temp3 = document.querySelector(`#message-t-${message.ID}`);
                             temp3.innerHTML = message.message;
-                            var temp3 = document.querySelector(`#message-${message.ID}-b`);
+                            var temp3 = document.querySelector(`#message-b-${message.ID}`);
                             temp3.innerHTML = `${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? '(Private)' : ''}`;
                         }
                     }
@@ -1692,7 +1713,7 @@ function selectRecipient(recipient = null)
 function markRead(message = null)
 {
     try {
-        console.log(`Mark Read`);
+        console.log(`Mark Read ${message}`);
         var query = {ID: message};
         if (message === null)
         {
