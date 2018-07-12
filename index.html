@@ -126,14 +126,28 @@
                 transition: transform 0.2s cubic-bezier(.4,2.08,.55,.44);
             }
 
-            #close {
+            .close {
                 float:right;
                 display:inline-block;
                 padding:2px 5px;
                 color: #fff;
             }
 
-            #close:hover {
+            .close:hover {
+                float:right;
+                display:inline-block;
+                padding:2px 5px;
+                color:#ff7878;
+            }
+
+            .message-options {
+                float:right;
+                display:inline-block;
+                padding:2px 5px;
+                color: #fff;
+            }
+
+            .message-options:hover {
                 float:right;
                 display:inline-block;
                 padding:2px 5px;
@@ -197,55 +211,55 @@
                                 <h2 style="text-align: center; font-size: 2em; color: #FFC107">Please wait...</h2>
                             </div>
                         </div>
-                        <div class="p-1 m-1" id="btn-return" style="width: 108px; text-align: center; display: none;">
+                        <div class="p-1 m-1 btn-operation" id="btn-return" style="width: 108px; text-align: center; display: none;">
                             <button type="button" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-check"></i></button>
                             <div style="text-align: center; font-size: 1em;">Resume Show</div>
                         </div>
-                        <div class="p-1 m-1" id="btn-psa15" style="width: 108px; text-align: center; display: none;">
+                        <div class="p-1 m-1 btn-operation" id="btn-psa15" style="width: 108px; text-align: center; display: none;">
                             <button type="button" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-plus"></i></button>
                             <div style="text-align: center; font-size: 1em;">+15-second PSA</div>
                         </div>
-                        <div class="p-1 m-1" id="btn-psa30" style="width: 108px; text-align: center; display: none;">
+                        <div class="p-1 m-1 btn-operation" id="btn-psa30" style="width: 108px; text-align: center; display: none;">
                             <button type="button" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-plus"></i></button>
                             <div style="text-align: center; font-size: 1em;">+30-second PSA</div>
                         </div>
-                        <div class="p-1 m-1" id="btn-golive" style="width: 108px; text-align: center; display: none;">
+                        <div class="p-1 m-1 btn-operation" id="btn-golive" style="width: 108px; text-align: center; display: none;">
                             <button type="button" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-microphone-alt"></i></button>
                             <div style="text-align: center; font-size: 1em;">Live</div>
                         </div>
-                        <div class="p-1 m-1" id="btn-goremote" style="width: 108px; text-align: center; display: none;">
+                        <div class="p-1 m-1 btn-operation" id="btn-goremote" style="width: 108px; text-align: center; display: none;">
                             <button type="button" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-broadcast-tower"></i></button>
                             <div style="text-align: center; font-size: 1em;">Remote</div>
                         </div>
-                        <div class="p-1 m-1" id="btn-gosports" style="width: 108px; text-align: center; display: none;">
+                        <div class="p-1 m-1 btn-operation" id="btn-gosports" style="width: 108px; text-align: center; display: none;">
                             <button type="button" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-trophy"></i></button>
                             <div style="text-align: center; font-size: 1em;">Sports</div>
                         </div>
-                        <div class="p-1 m-1" id="btn-endshow" style="width: 108px; text-align: center; display: none;">
+                        <div class="p-1 m-1 btn-operation" id="btn-endshow" style="width: 108px; text-align: center; display: none;">
                             <button type="button" class="btn btn-primary btn-circle btn-xl border border-white"><i class="fas fa-microphone-alt-slash"></i></button>
                             <div style="text-align: center; font-size: 1em;">End Show</div>
                         </div>
-                        <div class="p-1 m-1" id="btn-resume" style="width: 108px; text-align: center; display: none;">
+                        <div class="p-1 m-1 btn-operation" id="btn-resume" style="width: 108px; text-align: center; display: none;">
                             <button type="button" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-check"></i></button>
                             <div style="text-align: center; font-size: 1em;">Resume Show</div>
                         </div>
-                        <div class="p-1 m-1" id="btn-break" style="width: 108px; text-align: center; display: none;">
+                        <div class="p-1 m-1 btn-operation" id="btn-break" style="width: 108px; text-align: center; display: none;">
                             <button type="button" class="btn btn-info btn-circle btn-xl border border-white"><i class="fas fa-coffee"></i></button>
                             <div style="text-align: center; font-size: 1em;">Take a Break</div>
                         </div>
-                        <div class="p-1 m-1" id="btn-halftime" style="width: 108px; text-align: center; display: none;">
+                        <div class="p-1 m-1 btn-operation" id="btn-halftime" style="width: 108px; text-align: center; display: none;">
                             <button type="button" class="btn btn-urgent btn-circle btn-xl border border-white"><i class="fas fa-hourglass"></i></button>
                             <div style="text-align: center; font-size: 1em;">Halftime</div>
                         </div>
-                        <div class="p-1 m-1" id="btn-topadd" style="width: 108px; text-align: center; display: none;">
+                        <div class="p-1 m-1 btn-operation" id="btn-topadd" style="width: 108px; text-align: center; display: none;">
                             <button type="button" class="btn btn-purple btn-circle btn-xl border border-white" onclick="playTopAdd();"><i class="fas fa-headphones"></i></button>
                             <div style="text-align: center; font-size: 1em;">Play Top Add</div>
                         </div>
-                        <div class="p-1 m-1" id="btn-liner" style="width: 108px; text-align: center; display: none;">
+                        <div class="p-1 m-1 btn-operation" id="btn-liner" style="width: 108px; text-align: center; display: none;">
                             <button type="button" class="btn btn-purple btn-circle btn-xl border border-white" onclick="playLiner();"><i class="fas fa-angle-double-right"></i></button>
                             <div style="text-align: center; font-size: 1em;">Play Liner</div>
                         </div>
-                        <div class="p-1 m-1" id="btn-log" style="width: 108px; text-align: center; display: none;">
+                        <div class="p-1 m-1 btn-operation" id="btn-log" style="width: 108px; text-align: center; display: none;">
                             <button type="button" class="btn btn-secondary btn-circle btn-xl border border-white" onclick="prepareLog();"><i class="fas fa-file"></i></button>
                             <div style="text-align: center; font-size: 1em;">Add a Log</div>
                         </div>
@@ -280,43 +294,15 @@
                                         <div style="text-align: center; font-size: 1em;">Display Signs</div>
                                     </div>
                                     <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                                        <button type="button" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-comments"></i></button>
-                                        <span class="notification badge badge-danger">4</span>
+                                        <button type="button" id="btn-messenger" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-comments"></i></button>
+                                        <span class="notification badge badge-secondary" id="btn-messenger-unread">0</span>
                                         <div style="text-align: center; font-size: 1em;">Messenger</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div style="text-align: center; font-size: 1em;">Unread Messages<span style="font-size: 0.66em;"><br />Click a message to read/reply, X to hide.</span></div>
-                                <div style="overflow: auto; height: 220px; background-color: rgba(255, 255, 255, 0.3);">
-                                    <div class="m-1 bg-dark" style="cursor: pointer;">
-                                        <span id='close' onclick='this.parentNode.parentNode.removeChild(this.parentNode); return false;'>X</span>
-                                        <div class="m-1">
-                                            Yoo man I'm digging these vibes!<br />
-                                            <span style="font-size: 0.66em;">4:21 PM by Web (Momma) (Private)</span>
-                                        </div>
-                                    </div>
-                                    <div class="m-1 bg-dark" style="cursor: pointer;">
-                                        <span id='close' onclick='this.parentNode.parentNode.removeChild(this.parentNode); return false;'>X</span>
-                                        <div class="m-1">
-                                            YOU SUCK!<br />
-                                            <span style="font-size: 0.66em;">4:22 PM by Web (No one important)</span>
-                                        </div>
-                                    </div>
-                                    <div class="m-1 bg-danger" style="cursor: pointer;">
-                                        <span id='close' onclick='this.parentNode.parentNode.removeChild(this.parentNode); return false;'>X</span>
-                                        <div class="m-1">
-                                            Don't forget that I put a custom PSA to be aired on the desktop.<br />
-                                            <span style="font-size: 0.66em;">4:26 PM by Engineering PC</span>
-                                        </div>
-                                    </div>
-                                    <div class="m-1 bg-dark" style="cursor: pointer;">
-                                        <span id='close' onclick='this.parentNode.parentNode.removeChild(this.parentNode); return false;'>X</span>
-                                        <div class="m-1">
-                                            You missed your queue, stupid!<br />
-                                            <span style="font-size: 0.66em;">4:27 PM by Web (No one important)</span>
-                                        </div>
-                                    </div>
+                                <div style="overflow: auto; height: 220px; background-color: rgba(255, 255, 255, 0.3);" id="messages-unread">
                                 </div>
                             </div>
                         </div>
@@ -376,7 +362,7 @@
 
 
         <div id="go-live-modal">
-            <div style="background-color: #393939; color: #ffffff;">
+            <div style="background-color: #363636; color: #ffffff;">
                 <div class="media">
                     <img class="d-flex mr-2" src="assets/images/golive.png" alt="Going Live">
                     <div class="media-body">
@@ -393,13 +379,15 @@
                                 <textarea class="form-control mb-2" id="live-topic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
                             </div>
                         </form>                    
-                        <div class="custom-control custom-checkbox checkbox-slider--a">
-                            <input type="checkbox" class="custom-control-input" id="live-webchat" checked>
-                            <label class="custom-control-label" style="color: #ffffff;" for="webchat">Website chat</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="live-webchat">
+                            <label class="form-check-label" for="live-webchat">
+                                Enable Website Chat
+                            </label>
                         </div>
-                        <div class="p-1 bg-warning-dark" role="alert" id="live-noschedule">
+                        <div class="p-1 text-warning-light" role="alert" id="live-noschedule">
                             <div class="m-1">
-                            <strong>Caution!</strong> The DJ/Handle and show name currently typed in does not match a show scheduled to start. If you go live, this show will not count in show attendance! Further, if you did not get permission from WWSU to go live at this time, you may receive disciplinary action.
+                                <strong>Get your attendance credit!</strong> Your name or show does not match the currently scheduled programming.
                             </div>
                         </div>
                         <div class="row">
@@ -413,7 +401,7 @@
         </div>
 
         <div id="go-remote-modal">
-            <div style="background-color: #393939; color: #ffffff;">
+            <div style="background-color: #363636; color: #ffffff;">
                 <div class="media">
                     <img class="d-flex mr-2" src="assets/images/goRemote.png" alt="Going Remote">
                     <div class="media-body">
@@ -430,18 +418,20 @@
                                 <textarea class="form-control mb-2" id="remote-topic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
                             </div>
                         </form>
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="remote-webchat">
-                            <label class="custom-control-label" style="color: #ffffff;" for="webchat">Website chat</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="remote-webchat">
+                            <label class="form-check-label" for="remote-webchat">
+                                Enable Website Chat
+                            </label>
                         </div>
-                        <div class="p-1 m-1 bg-warning-dark" id="remote-noschedule">
+                        <div class="p-1 text-warning-light" role="alert" id="remote-noschedule">
                             <div class="m-1">
-                            <strong>Caution!</strong> The Host and Show name currently typed in does not match a remote broadcast scheduled to start. If you did not get permission from WWSU to air a remote broadcast at this time, you may receive disciplinary action.
+                                <strong>Get your attendance credit!</strong> Your name or show does not match the currently scheduled programming for remote broadcasts.
                             </div>
                         </div>
                         <div class="p-1 m-1 bg-info-dark">
                             <div class="m-1">
-                            Remember: Remote streams have a 4 second audio delay!
+                                Remember: Remote streams have a 4 second audio delay!
                             </div>
                         </div>
                         <div class="row">
@@ -455,7 +445,7 @@
         </div>
 
         <div id="go-sports-modal">
-            <div style="background-color: #393939; color: #ffffff;">
+            <div style="background-color: #363636; color: #ffffff;">
                 <div class="media">
                     <img class="d-flex mr-2" src="assets/images/goSports.png" alt="Going Sports">
                     <div class="media-body">
@@ -477,22 +467,26 @@
                                 </select>
                             </div>
                         </form>
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="sports-remote">
-                            <label class="custom-control-label" style="color: #ffffff;" for="webchat">Remote Broadcast</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="sports-remote">
+                            <label class="form-check-label" for="sports-remote">
+                                Remote Broadcast
+                            </label>
                         </div>
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="sports-webchat">
-                            <label class="custom-control-label" style="color: #ffffff;" for="webchat">Website chat</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="sports-webchat">
+                            <label class="form-check-label" for="sports-webchat">
+                                Enable Website Chat
+                            </label>
                         </div>
-                        <div class="p-1 m-1 bg-warning-dark" id="sports-noschedule">
+                        <div class="p-1 text-warning-light" role="alert" id="sports-noschedule">
                             <div class="m-1">
-                            <strong>Caution!</strong> The sport currently selected does not appear to be scheduled to air. If you did not get permission from WWSU to air this sports broadcast at this time, you may receive disciplinary action.
+                                <strong>Get your attendance credit!</strong> The selected sport does not match the currently scheduled programming for sports.
                             </div>
                         </div>
                         <div class="p-1 m-1 bg-info-dark">
                             <div class="m-1">
-                            Remember: Remote streams have a 4 second audio delay!
+                                Remember: Remote streams have a 4 second audio delay!
                             </div>
                         </div>
                         <div class="row">
@@ -506,7 +500,7 @@
         </div>
 
         <div id="log-modal">
-            <div style="background-color: #393939; color: #ffffff;">
+            <div style="background-color: #363636; color: #ffffff;">
                 <div class="media">
                     <img class="d-flex mr-2" src="assets/images/log.png" alt="Add a Log">
                     <div class="media-body">
@@ -535,11 +529,34 @@
             </div>
         </div>
 
+        <div id="messages-modal" style="background-color: #363636; color: #ffffff;">
+            <div style="width: 33%; float: left; color: #FFFFFF;">
+                <h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Recipients</h5>
+            </div>
+            <div style="width: 66%; float: left; color: #FFFFFF;">
+                <h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Messages</h5>
+            </div>
+            <div style="width: 33%; height: 480px; float: left; overflow-y: auto; color: #FFFFFF;">
+                <div class="p-3 m-1" id="users">
+                </div>
+            </div>
+            <div id="messages" class="bg-secondary" style="width: 66%; height: 400px; float: left; overflow-y: auto; color: #FFFFFF;">
+                <div class="p-3 m-1" id="messages">
+                </div>
+            </div>
+            <div style="width: 66%; float: left; color: #FFFFFF;">
+                <div class="form-group">
+                    <textarea class="form-control" rows="4" id="themessage" placeholder="Type your message here and press enter to send."></textarea>
+                </div>
+            </div>
+        </div>
+
         <script>if (window.module)
                 module = window.module;</script>
         <script>
+
             // You can also require other files to run in this process
-            require('./renderer.js')
+            require('./renderer.js');
         </script>
     </body>
 </html>
