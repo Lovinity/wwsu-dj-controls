@@ -19,7 +19,7 @@ try {
     // Define HTML elements
 
     // Define other variables
-    var nodeURL = 'http://localhost:1337';
+    var nodeURL = 'http://server.wwsu1069.org';
 
     io.sails.url = nodeURL;
     var disconnected = true;
@@ -27,6 +27,8 @@ try {
     var calendar = []; // Contains calendar events for the next 24 hours
     var activeRecipient = 0;
     var client = {};
+    var totalUnread = 0;
+    var totalRequests = 0;
 
     // These are used for keeping track of upcoming shows and notifying DJs to prevent people cutting into each other's shows.
     var calPriority = 0;
@@ -118,6 +120,17 @@ try {
 
     // Read in WWSU Node username and password from uncommitted tokens file
     var tokens = JSON.parse(fs.readFileSync("tokens.json"));
+
+    var messageFlash = setInterval(function () {
+        if (totalUnread > 0 || totalRequests > 0)
+        {
+            var messaging = document.querySelector("#messaging");
+            messaging.className = "card p-1 m-3 text-white bg-info-dark";
+            setTimeout(function () {
+                messaging.className = "card p-1 m-3 text-white bg-dark";
+            }, 250);
+        }
+    }, 3000);
 
     // Define default settings for iziToast (overlaying messages)
     iziToast.settings({
@@ -212,7 +225,55 @@ try {
         navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
         overlayClose: false,
         overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: null,
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 50
+    });
+
+    $("#wait-modal").iziModal({
+        width: 480,
+        appendTo: `#operations`,
+        appendToOverlay: `#operations`,
+        focusInput: false,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)'
+    });
+
+    $("#emergency-modal").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Report an Issue</h5>`,
+        headerColor: '#363636',
+        width: 640,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: 180000,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 50
+    });
+
+    $("#display-modal").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Display a Message on Display Signs</h5>`,
+        headerColor: '#363636',
+        width: 640,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: 180000,
         timeoutProgressbar: true,
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
@@ -400,6 +461,22 @@ document.querySelector("#btn-log").onclick = function () {
     prepareLog();
 };
 
+document.querySelector("#btn-emergency").onclick = function () {
+    prepareEmergency();
+};
+
+document.querySelector("#emergency-go").onclick = function () {
+    sendEmergency();
+};
+
+document.querySelector("#btn-display").onclick = function () {
+    prepareDisplay();
+};
+
+document.querySelector("#display-go").onclick = function () {
+    sendDisplay();
+};
+
 document.querySelector("#live-go").onclick = function () {
     goLive();
 };
@@ -418,7 +495,6 @@ document.querySelector("#log-add").onclick = function () {
 
 document.querySelector(`#users`).addEventListener("click", function (e) {
     try {
-        console.log(JSON.stringify(e.target.id));
         if (e.target) {
             if (e.target.id.startsWith(`users-o-mute`))
             {
@@ -457,7 +533,6 @@ document.querySelector(`#users`).addEventListener("click", function (e) {
 
 document.querySelector(`#messages`).addEventListener("click", function (e) {
     try {
-        console.log(JSON.stringify(e.target.id));
         if (e.target) {
             if (e.target.id.startsWith(`message-o-mute`))
             {
@@ -484,6 +559,44 @@ document.querySelector(`#messages`).addEventListener("click", function (e) {
             if (e.target.id.startsWith(`message-t`))
             {
                 markRead(parseInt(e.target.id.replace(`message-t-`, ``)));
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #messages.'
+        });
+    }
+});
+
+document.querySelector(`#messages-unread`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            if (e.target.id.startsWith(`message-n-m`))
+            {
+                var message = Messages({ID: parseInt(e.target.id.replace(`message-n-m-`, ``))}).first();
+                var host = (message.to === 'DJ' ? 'website' : message.from);
+                selectRecipient(Recipients({host: host}).first().ID || null);
+                $("#messages-modal").iziModal('open');
+            }
+            if (e.target.id.startsWith(`message-n-t`))
+            {
+                var message = Messages({ID: parseInt(e.target.id.replace(`message-n-t-`, ``))}).first();
+                var host = (message.to === 'DJ' ? 'website' : message.from);
+                selectRecipient(Recipients({host: host}).first().ID || null);
+                $("#messages-modal").iziModal('open');
+            }
+            if (e.target.id.startsWith(`message-n-b`))
+            {
+                var message = Messages({ID: parseInt(e.target.id.replace(`message-n-b-`, ``))}).first();
+                var host = (message.to === 'DJ' ? 'website' : message.from);
+                selectRecipient(Recipients({host: host}).first().ID || null);
+                $("#messages-modal").iziModal('open');
+            }
+            if (e.target.id.startsWith(`message-n-x`))
+            {
+                markRead(parseInt(e.target.id.replace(`message-n-x-`, ``)));
             }
         }
     } catch (err) {
@@ -734,26 +847,16 @@ function waitFor(check, callback, count = 0)
     {
         if (count < 1200)
         {
-            console.log(`WAIT ${count}`);
             count++;
             window.requestAnimationFrame(function () {
                 waitFor(check, callback, count);
             });
         } else {
-            console.log(`TIMED OUT`);
         }
     } else {
-        console.log(`DONE`);
         callback();
 }
 }
-
-waitFor(function () {
-    return (typeof io !== 'undefined' && typeof io.socket !== 'undefined' && typeof io.socket._raw !== 'undefined' && typeof io.socket._raw.io !== 'undefined');
-}, function () {
-    io.socket._raw.io._reconnection = true;
-    io.socket._raw.io._reconnectionAttempts = Infinity;
-});
 
 function doSockets() {
     onlineSocket();
@@ -984,6 +1087,8 @@ function doMeta(metan) {
                 } else if (Meta.state.startsWith('automation_') || (Meta.state.includes('_returning') && !Meta.state.startsWith('sports')))
                 {
                     document.querySelector('#queue').style.display = "inline";
+                    document.querySelector('#btn-psa15').style.display = "inline";
+                    document.querySelector('#btn-psa30').style.display = "inline";
                 } else if (Meta.state.startsWith('sports') && Meta.state.includes('_returning'))
                 {
                     document.querySelector('#queue').style.display = "inline";
@@ -1092,17 +1197,17 @@ function checkAnnouncements() {
     Announcements().each(function (datum) {
         if (moment(datum.starts).isBefore(moment(Meta.time)) && moment(datum.expires).isAfter(moment(Meta.time)))
         {
-            prev.push(datum.ID);
+            prev.push(`attn-${datum.ID}`);
             if (document.querySelector(`#attn-${datum.ID}`) === null)
             {
                 var attn = document.querySelector("#announcements-body");
                 attn.innerHTML += `<div class="attn attn-${datum.level} alert alert-${datum.level}" id="attn-${datum.ID}" role="alert">
-                        <i class="fas fa-bullhorn"> ${datum.announcement}
+                        <i class="fas fa-bullhorn"></i> ${datum.announcement}
                     </div>`;
             } else {
                 var temp = document.querySelector(`#attn-${datum.ID}`);
                 temp.className = `attn attn-${datum.level} alert alert-${datum.level}`;
-                temp.innerHTML = `<i class="fas fa-bullhorn"> ${datum.announcement}`;
+                temp.innerHTML = `<i class="fas fa-bullhorn"></i> ${datum.announcement}`;
             }
         }
     });
@@ -1488,7 +1593,6 @@ function checkRecipients() {
 function selectRecipient(recipient = null)
 {
     try {
-        console.log(recipient);
         activeRecipient = recipient;
 
         var messages = document.querySelector("#messages");
@@ -1582,13 +1686,13 @@ function selectRecipient(recipient = null)
             }
         };
 
-        var query = [{from: host}, {from: os.hostname(), to: host}];
+        var query = [{from: host, to: os.hostname()}, {from: os.hostname(), to: host}, {from: host, to: 'DJ'}, {from: host, to: 'DJ-private'}];
         if (host === 'website')
         {
             query = [{to: 'DJ'}, {to: 'website'}];
         }
 
-        var totalUnread = 0;
+        totalUnread = 0;
         var recipientUnread = {};
         var records = Recipients().get();
 
@@ -1600,15 +1704,40 @@ function selectRecipient(recipient = null)
         }
 
         records = Messages({needsread: true}).get();
+        var unreadIDs = [];
 
         if (records.length > 0)
         {
             records.forEach(function (message) {
                 totalUnread++;
-                if (typeof recipientUnread[message.from] === 'undefined')
-                    recipientUnread[message.from] = 0;
-                recipientUnread[message.from]++;
+                if (typeof recipientUnread[message.from_real] === 'undefined')
+                    recipientUnread[message.from_real] = 0;
+                recipientUnread[message.from_real]++;
+                unreadIDs.push(`message-n-m-${message.ID}`);
+
+                var temp = document.querySelector(`#message-n-m-${message.ID}`);
+                if (temp === null)
+                {
+                    var temp2 = document.querySelector(`#messages-unread`);
+                    temp2.innerHTML += `<div class="m-1 bg-wwsu-red message-n" style="cursor: pointer;" id="message-n-m-${message.ID}">
+                                        <span class="close" id="message-n-x-${message.ID}">X</span>
+                                        <div class="m-1">
+                                            <div id="message-n-t-${message.ID}">${message.message}</div>
+                                            <div id="message-n-b-${message.ID}" style="font-size: 0.66em;">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' (Private)' : ``}</span>
+                                        </div>
+                                    </div>`;
+                } else {
+                    document.querySelector(`#message-n-t-${message.ID}`).innerHTML = message.message;
+                    document.querySelector(`#message-n-b-${message.ID}`).innerHTML = `${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' (Private)' : ``}`;
+                }
             });
+        }
+
+        // Remove new messages no longer valid
+        var attn = document.querySelectorAll(".message-n");
+        for (var i = 0; i < attn.length; i++) {
+            if (unreadIDs.indexOf(attn[i].id) === -1)
+                attn[i].parentNode.removeChild(attn[i]);
         }
 
         for (var key in recipientUnread)
@@ -1656,7 +1785,7 @@ function selectRecipient(recipient = null)
                                 </div>
                             </div>
                             <div id="message-t-${message.ID}">${message.message}</div>
-                            <div style="font-size: 0.66em;" id="message-b-${message.ID}">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? '(Private)' : ''}</div>
+                            <div style="font-size: 0.66em;" id="message-b-${message.ID}">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' for DJ (Private)' : ` for ${message.to_friendly}`}</div>
                         </div>
                     </div>`;
                         } else {
@@ -1679,7 +1808,7 @@ function selectRecipient(recipient = null)
                                 </div>
                             </div>
                             <div id="message-t-${message.ID}">${message.message}</div>
-                            <div style="font-size: 0.66em;" id="message-b-${message.ID}">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? '(Private)' : ''}</div>
+                            <div style="font-size: 0.66em;" id="message-b-${message.ID}">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' for DJ (Private)' : ` for ${message.to_friendly}`}</div>
                         </div>
                     </div>`;
                         } else {
@@ -1687,7 +1816,7 @@ function selectRecipient(recipient = null)
                             var temp3 = document.querySelector(`#message-t-${message.ID}`);
                             temp3.innerHTML = message.message;
                             var temp3 = document.querySelector(`#message-b-${message.ID}`);
-                            temp3.innerHTML = `${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? '(Private)' : ''}`;
+                            temp3.innerHTML = `${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' for DJ (Private)' : ` for ${message.to_friendly}`}`;
                         }
                     }
                 }
@@ -1713,7 +1842,6 @@ function selectRecipient(recipient = null)
 function markRead(message = null)
 {
     try {
-        console.log(`Mark Read ${message}`);
         var query = {ID: message};
         if (message === null)
         {
@@ -1924,14 +2052,14 @@ function finishBan(recipient) {
 }
 
 function returnBreak() {
+    $("#wait-modal").iziModal('open');
     nodeRequest({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
-        doMeta(Meta);
+        $("#wait-modal").iziModal('close');
     });
 }
 
 function queuePSA(duration) {
     nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-psa', data: {duration: duration}}, function (response) {
-        doMeta(Meta);
     });
 }
 
@@ -1951,9 +2079,10 @@ function prepareLive() {
 }
 
 function goLive() {
+    $("#wait-modal").iziModal('open');
+    $("#go-live-modal").iziModal('close');
     nodeRequest({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: document.querySelector('#live-topic').value, djcontrols: os.hostname(), webchat: document.querySelector('#live-webchat').checked}}, function (response) {
-        doMeta(Meta);
-        $("#go-live-modal").iziModal('close');
+        $("#wait-modal").iziModal('close');
     });
 }
 
@@ -1973,9 +2102,10 @@ function prepareRemote() {
 }
 
 function goRemote() {
+    $("#wait-modal").iziModal('open');
+    $("#go-remote-modal").iziModal('close');
     nodeRequest({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: document.querySelector('#remote-topic').value, djcontrols: os.hostname(), webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
-        doMeta(Meta);
-        $("#go-remote-modal").iziModal('close');
+        $("#wait-modal").iziModal('close');
     });
 }
 
@@ -1995,9 +2125,10 @@ function prepareSports() {
 function goSports() {
     var sportsOptions = document.getElementById('sports-sport');
     var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
+    $("#go-sports-modal").iziModal('close');
+    $("#wait-modal").iziModal('open');
     nodeRequest({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, remote: document.querySelector('#sports-remote').checked, djcontrols: os.hostname(), webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
-        doMeta(Meta);
-        $("#go-sports-modal").iziModal('close');
+        $("#wait-modal").iziModal('close');
     });
 }
 
@@ -2027,33 +2158,76 @@ function saveLog() {
     });
 }
 
+function prepareEmergency() {
+    document.querySelector("#emergency-issue").value = ``;
+    $("#emergency-modal").iziModal('open');
+}
+
+function sendEmergency() {
+    nodeRequest({method: 'POST', url: nodeURL + '/announcements/add', data: {type: 'djcontrols', level: 'danger', announcement: `<strong>Problem reported by ${Meta.dj}</strong>: ${document.querySelector("#emergency-issue").value}`}}, function (response) {
+        if (response === 'OK')
+        {
+            $("#emergency-modal").iziModal('close');
+        } else {
+            iziToast.show({
+                title: 'An error occurred',
+                message: 'Error occurred trying to submit a problem. Please email your issue to engineer@wwsu1069.org instead.'
+            });
+        }
+    });
+}
+
+function prepareDisplay() {
+    document.querySelector("#display-message").value = ``;
+    $("#display-modal").iziModal('open');
+}
+
+function sendDisplay() {
+    nodeRequest({method: 'POST', url: nodeURL + '/messages/send', data: {from: os.hostname(), to: `display-public`, to_friendly: `Display (Public)`, message: document.querySelector("#display-message").value}}, function (response) {
+        if (response === 'OK')
+        {
+            $("#display-modal").iziModal('close');
+        } else {
+            iziToast.show({
+                title: 'An error occurred',
+                message: 'Error occurred trying to submit a message to the display signs.'
+            });
+        }
+    });
+}
+
 function endShow() {
+    $("#wait-modal").iziModal('open');
     nodeRequest({method: 'POST', url: nodeURL + '/state/automation'}, function (response) {
-        doMeta(Meta);
+        $("#wait-modal").iziModal('close');
     });
 }
 
 function returnBreak() {
+    $("#wait-modal").iziModal('open');
     nodeRequest({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
-        doMeta(Meta);
+        $("#wait-modal").iziModal('close');
     });
 }
 
 function goBreak(halftime) {
+    $("#wait-modal").iziModal('open');
     nodeRequest({method: 'POST', url: nodeURL + '/state/break', data: {halftime: halftime}}, function (response) {
-        doMeta(Meta);
+        $("#wait-modal").iziModal('close');
     });
 }
 
 function playTopAdd() {
+    $("#wait-modal").iziModal('open');
     nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-add'}, function (response) {
-        doMeta(Meta);
+        $("#wait-modal").iziModal('close');
     });
 }
 
 function playLiner() {
+    $("#wait-modal").iziModal('open');
     nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-liner'}, function (response) {
-        doMeta(Meta);
+        $("#wait-modal").iziModal('close');
     });
 }
 
@@ -2337,9 +2511,6 @@ function processStatus(data, replace = false)
                     } else if (datum.status === 3)
                     {
                         className = 'warning';
-                    } else if (datum.status === 4)
-                    {
-                        className = 'info';
                     } else {
                         return null;
                     }
@@ -2387,9 +2558,6 @@ function processStatus(data, replace = false)
                             } else if (data[key].status === 3)
                             {
                                 className = 'warning';
-                            } else if (data[key].status === 4)
-                            {
-                                className = 'info';
                             } else {
                                 continue;
                             }
@@ -2417,9 +2585,6 @@ function processStatus(data, replace = false)
                             } else if (data[key].status === 3)
                             {
                                 className = 'warning';
-                            } else if (data[key].status === 4)
-                            {
-                                className = 'info';
                             } else {
                                 var attn = document.querySelector(`#attn-status-${data[key].name}`);
                                 if (attn !== null)
@@ -2596,7 +2761,6 @@ function processRecipients(data, replace = false)
 // Update messages as changes happen
 function processMessages(data, replace = false)
 {
-    console.log(JSON.stringify(data));
     // Data processing
     try {
         if (replace)
@@ -2610,6 +2774,9 @@ function processMessages(data, replace = false)
             {
                 data.forEach(function (datum, index) {
                     data[index].needsread = false;
+                    data[index].from_real = datum.from;
+                    if (datum.to === `DJ`)
+                        data[index].from_real = `website`;
                     if (prev.indexOf(datum.ID) === -1)
                     {
                         switch (data[index].to)
@@ -2701,6 +2868,9 @@ function processMessages(data, replace = false)
                     {
                         case 'insert':
                             data[key].needsread = false;
+                            data[key].from_real = data[key].from;
+                            if (data[key].to === `DJ`)
+                                data[key].from_real = `website`;
                             switch (data[key].to)
                             {
                                 case 'emergency':
@@ -2776,6 +2946,9 @@ function processMessages(data, replace = false)
                             selectRecipient(activeRecipient);
                             break;
                         case 'update':
+                            data[key].from_real = data[key].from;
+                            if (data[key].to === `DJ`)
+                                data[key].from_real = `website`;
                             Messages({ID: data[key].ID}).update(data[key]);
                             selectRecipient(activeRecipient);
                             break;
