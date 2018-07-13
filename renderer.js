@@ -1897,6 +1897,7 @@ function deleteMessage(message) {
                 zindex: 1000
             });
         }
+        console.log(JSON.stringify(response));
     });
 }
 
@@ -1999,6 +2000,7 @@ function finishMute(recipient) {
                     zindex: 1000
                 });
             }
+            console.log(JSON.stringify(response));
         });
     } catch (e) {
         console.error(e);
@@ -2041,6 +2043,7 @@ function finishBan(recipient) {
                     zindex: 1000
                 });
             }
+            console.log(JSON.stringify(response));
         });
     } catch (e) {
         console.error(e);
@@ -2055,11 +2058,13 @@ function returnBreak() {
     $("#wait-modal").iziModal('open');
     nodeRequest({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
         $("#wait-modal").iziModal('close');
+        console.log(JSON.stringify(response));
     });
 }
 
 function queuePSA(duration) {
     nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-psa', data: {duration: duration}}, function (response) {
+        console.log(JSON.stringify(response));
     });
 }
 
@@ -2083,6 +2088,7 @@ function goLive() {
     $("#go-live-modal").iziModal('close');
     nodeRequest({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: document.querySelector('#live-topic').value, djcontrols: os.hostname(), webchat: document.querySelector('#live-webchat').checked}}, function (response) {
         $("#wait-modal").iziModal('close');
+        console.log(JSON.stringify(response));
     });
 }
 
@@ -2106,6 +2112,7 @@ function goRemote() {
     $("#go-remote-modal").iziModal('close');
     nodeRequest({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: document.querySelector('#remote-topic').value, djcontrols: os.hostname(), webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
         $("#wait-modal").iziModal('close');
+        console.log(JSON.stringify(response));
     });
 }
 
@@ -2129,6 +2136,7 @@ function goSports() {
     $("#wait-modal").iziModal('open');
     nodeRequest({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, remote: document.querySelector('#sports-remote').checked, djcontrols: os.hostname(), webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
         $("#wait-modal").iziModal('close');
+        console.log(JSON.stringify(response));
     });
 }
 
@@ -2155,6 +2163,7 @@ function saveLog() {
                 message: 'Error occurred trying to submit a log entry.'
             });
         }
+        console.log(JSON.stringify(response));
     });
 }
 
@@ -2174,6 +2183,7 @@ function sendEmergency() {
                 message: 'Error occurred trying to submit a problem. Please email your issue to engineer@wwsu1069.org instead.'
             });
         }
+        console.log(JSON.stringify(response));
     });
 }
 
@@ -2193,6 +2203,7 @@ function sendDisplay() {
                 message: 'Error occurred trying to submit a message to the display signs.'
             });
         }
+        console.log(JSON.stringify(response));
     });
 }
 
@@ -2200,6 +2211,7 @@ function endShow() {
     $("#wait-modal").iziModal('open');
     nodeRequest({method: 'POST', url: nodeURL + '/state/automation'}, function (response) {
         $("#wait-modal").iziModal('close');
+        console.log(JSON.stringify(response));
     });
 }
 
@@ -2207,6 +2219,7 @@ function returnBreak() {
     $("#wait-modal").iziModal('open');
     nodeRequest({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
         $("#wait-modal").iziModal('close');
+        console.log(JSON.stringify(response));
     });
 }
 
@@ -2214,6 +2227,7 @@ function goBreak(halftime) {
     $("#wait-modal").iziModal('open');
     nodeRequest({method: 'POST', url: nodeURL + '/state/break', data: {halftime: halftime}}, function (response) {
         $("#wait-modal").iziModal('close');
+        console.log(JSON.stringify(response));
     });
 }
 
@@ -2221,6 +2235,7 @@ function playTopAdd() {
     $("#wait-modal").iziModal('open');
     nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-add'}, function (response) {
         $("#wait-modal").iziModal('close');
+        console.log(JSON.stringify(response));
     });
 }
 
@@ -2228,6 +2243,7 @@ function playLiner() {
     $("#wait-modal").iziModal('open');
     nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-liner'}, function (response) {
         $("#wait-modal").iziModal('close');
+        console.log(JSON.stringify(response));
     });
 }
 
