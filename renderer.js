@@ -29,6 +29,7 @@ try {
     var client = {};
     var totalUnread = 0;
     var totalRequests = 0;
+    var breakNotified = false;
 
     // These are used for keeping track of upcoming shows and notifying DJs to prevent people cutting into each other's shows.
     var calPriority = 0;
@@ -1013,27 +1014,29 @@ function doMeta(metan) {
     try {
         if (Meta.breakneeded && Meta.djcontrols === os.hostname())
         {
-            if (document.querySelector("#iziToast-breakneeded") === null)
-                iziToast.show({
-                    id: 'iziToast-breakneeded',
-                    title: '<i class="fas fa-clock"></i> Top of hour break required',
-                    message: `Please find a graceful stopping point and then click "take a break" within the next 5 minutes.`,
-                    timeout: 600000,
-                    close: true,
-                    color: 'yellow',
-                    drag: false,
-                    position: 'center',
-                    closeOnClick: false,
-                    overlay: true,
-                    zindex: 250,
-                    buttons: [
-                        ['<button>Take a Break</button>', function (instance, toast, button, e, inputs) {
-                                goBreak(false);
-                                instance.hide({}, toast, 'button');
-                            }, true]
-                    ]
-                });
+            if (document.querySelector("#iziToast-breakneeded") === null && !breakNotified)
+                breakNotified = true;
+            iziToast.show({
+                id: 'iziToast-breakneeded',
+                title: '<i class="fas fa-clock"></i> Top of hour break required',
+                message: `Please find a graceful stopping point and then click "take a break" within the next 5 minutes.`,
+                timeout: 600000,
+                close: true,
+                color: 'yellow',
+                drag: false,
+                position: 'center',
+                closeOnClick: false,
+                overlay: true,
+                zindex: 250,
+                buttons: [
+                    ['<button>Take a Break</button>', function (instance, toast, button, e, inputs) {
+                            goBreak(false);
+                            instance.hide({}, toast, 'button');
+                        }, true]
+                ]
+            });
         } else {
+            breakNotified = false;
             var temp = document.querySelector("#iziToast-breakneeded");
             if (temp !== null)
                 iziToast.hide({}, temp);
@@ -1633,11 +1636,17 @@ function selectRecipient(recipient = null)
 
         if (recipient === null)
         {
+            messages.innerHTML += `<div class="message m-2 bg-danger-dark" style="cursor: pointer;">
+                        <div class="m-1">
+                            <div>Please click a recipient on the left to view / send messages.</div>
+                        </div>
+                    </div>`;
             return null;
         }
 
         var host = Recipients({ID: recipient}).first().host;
         var status = Recipients({ID: recipient}).first().status;
+        var label = Recipients({ID: recipient}).first().label;
 
         var temp = document.querySelector(`#users-b-${host}`);
         if (temp !== null)
@@ -1667,6 +1676,47 @@ function selectRecipient(recipient = null)
             if (host === 'website' && Meta.webchat)
                 theClass = 'wwsu-red';
             temp.className = `p-1 m-1 bg-${theClass} border border-warning`;
+        }
+
+        if (recipient === null || typeof host === 'undefined')
+        {
+            messages.innerHTML += `<div class="m-2 bg-danger-dark" style="cursor: pointer;">
+                        <div class="m-1">
+                            <div>Please click a recipient on the left to view / send messages.</div>
+                        </div>
+                    </div>`;
+        } else if (host === 'website' && Meta.webchat)
+        {
+            messages.innerHTML += `<div class="m-2 bg-danger-dark" style="cursor: pointer;">
+                        <div class="m-1">
+                            <div>You are viewing messages sent publicly from the web. Messages you send will be visible to all web visitors.</div>
+                        </div>
+                    </div>`;
+        } else if (host.startsWith("website-") && Meta.webchat) {
+            messages.innerHTML += `<div class="m-2 bg-danger-dark" style="cursor: pointer;">
+                        <div class="m-1">
+                            <div>You are viewing private messages from ${label}. Messages you send will ONLY be visible by ${label}. This visitor is currently ${status > 0 ? 'online' : 'offline'}.</div>
+                        </div>
+                    </div>`;
+        } else if (host === 'website' && !Meta.webchat)
+        {
+            messages.innerHTML += `<div class="m-2 bg-dark" style="cursor: pointer;">
+                        <div class="m-1">
+                            <div>You are viewing messages sent publicly from the web. The web chat is currently disabled. Therefore, web visitors cannot send messages.</div>
+                        </div>
+                    </div>`;
+        } else if (host.startsWith("website-") && !Meta.webchat) {
+            messages.innerHTML += `<div class="m-2 bg-dark" style="cursor: pointer;">
+                        <div class="m-1">
+                            <div>You are viewing private messages from ${label}. The web chat is currently disabled. Therefore, web visitors cannot send messages.</div>
+                        </div>
+                    </div>`;
+        } else {
+            messages.innerHTML += `<div class="m-2 bg-danger-dark" style="cursor: pointer;">
+                        <div class="m-1">
+                            <div>You are viewing messages from the computer ${label}. Messages you send will be delivered to the DJ Controls running on that computer. The DJ controls on this computer is currently ${status > 0 ? 'online' : 'offline'}.</div>
+                        </div>
+                    </div>`;
         }
 
         // Define a comparison function that will order calendar events by start time when we run the iteration
@@ -2788,6 +2838,10 @@ function processMessages(data, replace = false)
             // Display notifications for new messages
             if (data.length > 0)
             {
+                // Replace old data with new data
+                Messages = TAFFY();
+                Messages.insert(data);
+
                 data.forEach(function (datum, index) {
                     data[index].needsread = false;
                     data[index].from_real = datum.from;
@@ -2869,10 +2923,6 @@ function processMessages(data, replace = false)
                     }
                 });
             }
-
-            // Replace old data with new data
-            Messages = TAFFY();
-            Messages.insert(data);
 
             selectRecipient(activeRecipient);
         } else {
