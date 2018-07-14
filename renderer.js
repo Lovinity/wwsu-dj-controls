@@ -1032,7 +1032,7 @@ function doMeta(metan) {
                     ['<button>Take a Break</button>', function (instance, toast, button, e, inputs) {
                             goBreak(false);
                             instance.hide({}, toast, 'button');
-                        }, true]
+                        }]
                 ]
             });
         } else {
@@ -1116,7 +1116,7 @@ function doMeta(metan) {
                                 ['<button>Resume Show</button>', function (instance, toast, button, e, inputs) {
                                         returnBreak();
                                         instance.hide({}, toast, 'button');
-                                    }, true]
+                                    }]
                             ]
                         });
                     document.querySelector('#no-remote').style.display = "inline";
@@ -1377,7 +1377,7 @@ function checkCalendar() {
                         ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
                                 endShow();
                                 instance.hide({}, toast, 'button');
-                            }, true]
+                            }]
                     ]
                 });
             }
@@ -1401,7 +1401,7 @@ function checkCalendar() {
                         ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
                                 endShow();
                                 instance.hide({}, toast, 'button');
-                            }, true]
+                            }]
                     ]
                 });
             }
@@ -1425,7 +1425,7 @@ function checkCalendar() {
                         ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
                                 endShow();
                                 instance.hide({}, toast, 'button');
-                            }, true]
+                            }]
                     ]
                 });
             }
@@ -1449,7 +1449,7 @@ function checkCalendar() {
                         ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
                                 endShow();
                                 instance.hide({}, toast, 'button');
-                            }, true]
+                            }]
                     ]
                 });
             }
@@ -1722,9 +1722,9 @@ function selectRecipient(recipient = null)
         // Define a comparison function that will order calendar events by start time when we run the iteration
         var compare = function (a, b) {
             try {
-                if (moment(a.start).valueOf() < moment(b.start).valueOf())
+                if (moment(a.createdAt).valueOf() < moment(b.createdAt).valueOf())
                     return -1;
-                if (moment(a.start).valueOf() > moment(b.start).valueOf())
+                if (moment(a.createdAt).valueOf() > moment(b.createdAt).valueOf())
                     return 1;
                 return 0;
             } catch (e) {
@@ -1753,7 +1753,7 @@ function selectRecipient(recipient = null)
             });
         }
 
-        records = Messages({needsread: true}).get();
+        records = Messages({needsread: true}).get().sort(compare);
         var unreadIDs = [];
 
         if (records.length > 0)
@@ -1969,10 +1969,10 @@ function prepareMute(recipient) {
                 ['<button>Mute</button>', function (instance, toast, button, e, inputs) {
                         finishMute(recipient);
                         instance.hide({}, toast, 'button');
-                    }, true],
+                    }],
                 ['<button>Cancel</button>', function (instance, toast, button, e, inputs) {
                         instance.hide({}, toast, 'button');
-                    }, true]
+                    }]
             ]
         });
     } catch (e) {
@@ -2003,10 +2003,10 @@ function prepareBan(recipient) {
                 ['<button>Ban</button>', function (instance, toast, button, e, inputs) {
                         finishBan(recipient);
                         instance.hide({}, toast, 'button');
-                    }, true],
+                    }],
                 ['<button>Cancel</button>', function (instance, toast, button, e, inputs) {
                         instance.hide({}, toast, 'button');
-                    }, true]
+                    }]
             ]
         });
     } catch (e) {
@@ -2377,7 +2377,7 @@ function processEas(data, replace = false)
                                     ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
                                             endShow();
                                             instance.hide({}, toast, 'button');
-                                        }, true]
+                                        }]
                                 ]
                             });
                         } else {
@@ -2467,7 +2467,7 @@ function processEas(data, replace = false)
                                             ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
                                                     endShow();
                                                     instance.hide({}, toast, 'button');
-                                                }, true]
+                                                }]
                                         ]
                                     });
                                 } else {
@@ -2886,7 +2886,7 @@ function processMessages(data, replace = false)
                                                 $("#messages-modal").iziModal('open');
                                                 selectRecipient(Recipients({host: datum.from}).first().ID || null);
                                                 instance.hide({}, toast, 'button');
-                                            }, true]
+                                            }]
                                     ]
                                 });
                                 data[index].needsread = true;
@@ -2911,7 +2911,7 @@ function processMessages(data, replace = false)
                                                     var host = (datum.to === 'DJ' ? 'website' : datum.from);
                                                     selectRecipient(Recipients({host: host}).first().ID || null);
                                                     instance.hide({}, toast, 'button');
-                                                }, true]
+                                                }]
                                         ]
                                     });
                                 }
@@ -2974,7 +2974,7 @@ function processMessages(data, replace = false)
                                                     $("#messages-modal").iziModal('open');
                                                     selectRecipient(Recipients({host: data[key].from}).first().ID || null);
                                                     instance.hide({}, toast, 'button');
-                                                }, true]
+                                                }]
                                         ]
                                     });
                                     data[key].needsread = true;
@@ -2999,7 +2999,7 @@ function processMessages(data, replace = false)
                                                         var host = (data[key].to === 'DJ' ? 'website' : data[key].from);
                                                         selectRecipient(Recipients({host: host}).first().ID || null);
                                                         instance.hide({}, toast, 'button');
-                                                    }, true]
+                                                    }]
                                             ]
                                         });
                                     }
