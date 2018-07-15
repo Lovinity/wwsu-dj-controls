@@ -2124,6 +2124,7 @@ function finishBan(recipient) {
 
 function returnBreak() {
     $("#wait-modal").iziModal('open');
+    document.querySelector("#wait-text").innerHTML = 'Queuing Sweeper/ID';
     nodeRequest({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -2154,6 +2155,7 @@ function prepareLive() {
 function goLive() {
     $("#wait-modal").iziModal('open');
     $("#go-live-modal").iziModal('close');
+    document.querySelector("#wait-text").innerHTML = 'Clearing RadioDJ queue and preparing for live show';
     nodeRequest({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: document.querySelector('#live-topic').value, djcontrols: os.hostname(), webchat: document.querySelector('#live-webchat').checked}}, function (response) {
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -2178,6 +2180,7 @@ function prepareRemote() {
 function goRemote() {
     $("#wait-modal").iziModal('open');
     $("#go-remote-modal").iziModal('close');
+    document.querySelector("#wait-text").innerHTML = 'Clearing RadioDJ queue and preparing for remote broadcast';
     nodeRequest({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: document.querySelector('#remote-topic').value, djcontrols: os.hostname(), webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -2202,6 +2205,7 @@ function goSports() {
     var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
     $("#go-sports-modal").iziModal('close');
     $("#wait-modal").iziModal('open');
+    document.querySelector("#wait-text").innerHTML = 'Clearing RadioDJ queue and preparing for sports broadcast';
     nodeRequest({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, remote: document.querySelector('#sports-remote').checked, djcontrols: os.hostname(), webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -2277,15 +2281,8 @@ function sendDisplay() {
 
 function endShow() {
     $("#wait-modal").iziModal('open');
+    document.querySelector("#wait-text").innerHTML = 'Queuing automation music in RadioDJ';
     nodeRequest({method: 'POST', url: nodeURL + '/state/automation'}, function (response) {
-        $("#wait-modal").iziModal('close');
-        console.log(JSON.stringify(response));
-    });
-}
-
-function returnBreak() {
-    $("#wait-modal").iziModal('open');
-    nodeRequest({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
@@ -2293,6 +2290,7 @@ function returnBreak() {
 
 function goBreak(halftime) {
     $("#wait-modal").iziModal('open');
+    document.querySelector("#wait-text").innerHTML = (halftime ? 'Queuing Halftime music' : 'Queuing PSAs');
     nodeRequest({method: 'POST', url: nodeURL + '/state/break', data: {halftime: halftime}}, function (response) {
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -2301,6 +2299,7 @@ function goBreak(halftime) {
 
 function playTopAdd() {
     $("#wait-modal").iziModal('open');
+    document.querySelector("#wait-text").innerHTML = 'Queuing/playing Top Add song';
     nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-add'}, function (response) {
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -2309,6 +2308,7 @@ function playTopAdd() {
 
 function playLiner() {
     $("#wait-modal").iziModal('open');
+    document.querySelector("#wait-text").innerHTML = 'Queuing/playing Liner';
     nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-liner'}, function (response) {
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
