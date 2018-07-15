@@ -131,6 +131,16 @@ try {
                 messaging.className = "card p-1 m-3 text-white bg-dark";
             }, 250);
         }
+
+        var flasher = document.querySelectorAll(".flash-bg");
+        if (flasher !== null && flasher.length > 0)
+        {
+            console.log(`FOUND IT`);
+            document.querySelector("body").style.backgroundColor = '#ffffff';
+            setTimeout(function () {
+                document.querySelector("body").style.backgroundColor = '#000000';
+            }, 250);
+        }
     }, 3000);
 
     // Define default settings for iziToast (overlaying messages)
@@ -672,7 +682,7 @@ $('#themessage').keydown(function (e) {
                     iziToast.show({
                         title: `Failed to send!`,
                         message: `There was an error trying to send your message.`,
-                        timeout: 5000,
+                        timeout: 10000,
                         close: true,
                         color: 'red',
                         drag: false,
@@ -1015,26 +1025,29 @@ function doMeta(metan) {
         if (Meta.breakneeded && Meta.djcontrols === os.hostname())
         {
             if (document.querySelector("#iziToast-breakneeded") === null && !breakNotified)
+            {
                 breakNotified = true;
-            iziToast.show({
-                id: 'iziToast-breakneeded',
-                title: '<i class="fas fa-clock"></i> Top of hour break required',
-                message: `Please find a graceful stopping point and then click "take a break" within the next 5 minutes.`,
-                timeout: 600000,
-                close: true,
-                color: 'yellow',
-                drag: false,
-                position: 'center',
-                closeOnClick: false,
-                overlay: true,
-                zindex: 250,
-                buttons: [
-                    ['<button>Take a Break</button>', function (instance, toast, button, e, inputs) {
-                            goBreak(false);
-                            instance.hide({}, toast, 'button');
-                        }]
-                ]
-            });
+                iziToast.show({
+                    id: 'iziToast-breakneeded',
+                    class: 'flash-bg',
+                    title: '<i class="fas fa-clock"></i> Top of hour break required',
+                    message: `Please find a graceful stopping point and then click "take a break" within the next 5 minutes.`,
+                    timeout: false,
+                    close: true,
+                    color: 'yellow',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: false,
+                    overlay: true,
+                    zindex: 250,
+                    buttons: [
+                        ['<button>Take a Break</button>', function (instance, toast, button, e, inputs) {
+                                goBreak(false);
+                                instance.hide({}, toast, 'button');
+                            }]
+                    ]
+                });
+            }
         } else {
             breakNotified = false;
             var temp = document.querySelector("#iziToast-breakneeded");
@@ -1097,11 +1110,12 @@ function doMeta(metan) {
                     document.querySelector('#queue').style.display = "inline";
                     document.querySelector('#btn-psa15').style.display = "inline";
                     document.querySelector('#btn-psa30').style.display = "inline";
-                } else if (Meta.state.includes('_break_disconnected') || Meta.state.includes('_halftime_disconnected'))
+                } else if (Meta.state.includes('_break_disconnected') || Meta.state.includes('_halftime_disconnected') && Meta.djcontrols === os.hostname())
                 {
                     if (document.querySelector("#iziToast-noremote") === null)
                         iziToast.show({
                             id: 'iziToast-noremote',
+                            class: 'flash-bg',
                             title: '<i class="fas fa-exclamation-triangle"></i> Lost Remote Connection',
                             message: `Please ensure you are streaming to the remote stream and that your internet connection is stable. Then, click "Resume Show".`,
                             timeout: false,
@@ -1356,13 +1370,14 @@ function checkCalendar() {
             curPriority = 1;
 
         // Determine if the DJ should be notified of the upcoming program
-        if (curPriority <= calPriority && !calNotified && Meta.djcontrols === os.hostname())
+        if (curPriority <= calPriority && !calNotified && Meta.djcontrols === os.hostname() && Meta.dj !== `${calHost} - ${calShow}`)
         {
             // Sports events should notify right away; allows for 15 minutes to transition
             if (calType === 'Sports')
             {
                 calNotified = true;
                 iziToast.show({
+                    class: 'flash-bg',
                     title: '<i class="fas fa-trophy"></i> Sports broadcast in less than 15 minutes.',
                     message: `A sports broadcast is scheduled to begin in less than 15 minutes. If this broadcast is still scheduled to air, please wrap up your show now and then click "End Show". That way, WWSU has 15 minutes to prepare for the broadcast.`,
                     timeout: 900000,
@@ -1387,6 +1402,7 @@ function checkCalendar() {
             {
                 calNotified = true;
                 iziToast.show({
+                    class: 'flash-bg',
                     title: '<i class="fas fa-broadcast-tower"></i> Remote broadcast in less than 15 minutes.',
                     message: `A remote broadcast is scheduled to begin in less than 15 minutes. If this broadcast is still scheduled to air, please wrap up your show now and then click "End Show". That way, WWSU has 15 minutes to prepare for the broadcast.`,
                     timeout: 900000,
@@ -1411,6 +1427,7 @@ function checkCalendar() {
             {
                 calNotified = true;
                 iziToast.show({
+                    class: 'flash-bg',
                     title: '<i class="fas fa-microphone-alt"></i> You are interrupting another show!',
                     message: `You are running into another person's show time. Please wrap up your show now and then click "End Show".`,
                     timeout: 900000,
@@ -1435,6 +1452,7 @@ function checkCalendar() {
             {
                 calNotified = true;
                 iziToast.show({
+                    class: 'flash-bg',
                     title: '<i class="fas fa-circle"></i> You are running into a scheduled prerecord.',
                     message: `You are running into a scheduled prerecorded show. Unless WWSU has given you permission to continue, please consider wrapping up and ending your show by clicking "End Now".`,
                     timeout: 900000,
@@ -1937,7 +1955,7 @@ function deleteMessage(message) {
             iziToast.show({
                 title: `Message failed to delete!`,
                 message: `There was an error trying to delete that message.`,
-                timeout: 5000,
+                timeout: 10000,
                 close: true,
                 color: 'red',
                 drag: false,
@@ -2040,7 +2058,7 @@ function finishMute(recipient) {
                 iziToast.show({
                     title: `Failed to mute!`,
                     message: `There was an error trying to mute this user.`,
-                    timeout: 5000,
+                    timeout: 10000,
                     close: true,
                     color: 'red',
                     drag: false,
@@ -2083,7 +2101,7 @@ function finishBan(recipient) {
                 iziToast.show({
                     title: `Failed to ban!`,
                     message: `There was an error trying to ban this user.`,
-                    timeout: 5000,
+                    timeout: 10000,
                     close: true,
                     color: 'red',
                     drag: false,
@@ -2362,6 +2380,7 @@ function processEas(data, replace = false)
                         if (!Meta.state.startsWith("automation_"))
                         {
                             iziToast.show({
+                                class: 'flash-bg',
                                 class: 'iziToast-eas-extreme-end',
                                 title: '<i class="fas fa-bolt"></i> Extreme weather alert in effect',
                                 message: `A ${record.alert} is in effect for the counties of ${record.counties}. You may wish to consider ending the show early and taking shelter. If so, click "End Show" when ready to end. Otherwise, close this notification.`,
@@ -2452,6 +2471,7 @@ function processEas(data, replace = false)
                                 if (!Meta.state.startsWith("automation_"))
                                 {
                                     iziToast.show({
+                                        class: 'flash-bg',
                                         class: 'iziToast-eas-extreme-end',
                                         title: '<i class="fas fa-bolt"></i> Extreme weather alert in effect',
                                         message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. You may wish to consider ending the show early and taking shelter. If so, click "End Show" when ready to end. Otherwise, close this notification.`,
@@ -2472,6 +2492,7 @@ function processEas(data, replace = false)
                                     });
                                 } else {
                                     iziToast.show({
+                                        class: 'flash-bg',
                                         class: 'iziToast-eas-extreme',
                                         title: '<i class="fas fa-bolt"></i> Extreme weather alert in effect',
                                         message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. You may wish to decide against hosting any shows at this time and instead seeking shelter.`,
