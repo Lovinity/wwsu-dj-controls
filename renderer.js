@@ -2154,9 +2154,18 @@ function prepareLive() {
 
 function goLive() {
     $("#wait-modal").iziModal('open');
-    $("#go-live-modal").iziModal('close');
     document.querySelector("#wait-text").innerHTML = 'Clearing RadioDJ queue and preparing for live show';
     nodeRequest({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: document.querySelector('#live-topic').value, djcontrols: os.hostname(), webchat: document.querySelector('#live-webchat').checked}}, function (response) {
+        if (response === 'OK')
+        {
+            $("#go-live-modal").iziModal('close');
+        } else {
+            iziToast.show({
+                title: 'An error occurred',
+                message: 'Cannot go live at this time. Please try again in 15-30 seconds.',
+                timeout: 10000
+            });
+        }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
@@ -2179,9 +2188,18 @@ function prepareRemote() {
 
 function goRemote() {
     $("#wait-modal").iziModal('open');
-    $("#go-remote-modal").iziModal('close');
     document.querySelector("#wait-text").innerHTML = 'Clearing RadioDJ queue and preparing for remote broadcast';
     nodeRequest({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: document.querySelector('#remote-topic').value, djcontrols: os.hostname(), webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
+        if (response === 'OK')
+        {
+            $("#go-remote-modal").iziModal('close');
+        } else {
+            iziToast.show({
+                title: 'An error occurred',
+                message: 'Cannot go remote at this time. Please try again in 15-30 seconds.',
+                timeout: 10000
+            });
+        }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
@@ -2203,10 +2221,19 @@ function prepareSports() {
 function goSports() {
     var sportsOptions = document.getElementById('sports-sport');
     var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
-    $("#go-sports-modal").iziModal('close');
     $("#wait-modal").iziModal('open');
     document.querySelector("#wait-text").innerHTML = 'Clearing RadioDJ queue and preparing for sports broadcast';
     nodeRequest({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, remote: document.querySelector('#sports-remote').checked, djcontrols: os.hostname(), webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
+        if (response === 'OK')
+        {
+            $("#go-sports-modal").iziModal('close');
+        } else {
+            iziToast.show({
+                title: 'An error occurred',
+                message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
+                timeout: 10000
+            });
+        }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
@@ -2232,7 +2259,7 @@ function saveLog() {
         } else {
             iziToast.show({
                 title: 'An error occurred',
-                message: 'Error occurred trying to submit a log entry.'
+                message: 'Error occurred trying to submit a log entry. Please email engineer@wwsu1069.org.'
             });
         }
         console.log(JSON.stringify(response));
@@ -2272,7 +2299,7 @@ function sendDisplay() {
         } else {
             iziToast.show({
                 title: 'An error occurred',
-                message: 'Error occurred trying to submit a message to the display signs.'
+                message: 'Error occurred trying to submit a message to the display signs. Please email engineer@wwsu1069.org'
             });
         }
         console.log(JSON.stringify(response));
@@ -2283,6 +2310,14 @@ function endShow() {
     $("#wait-modal").iziModal('open');
     document.querySelector("#wait-text").innerHTML = 'Queuing automation music in RadioDJ';
     nodeRequest({method: 'POST', url: nodeURL + '/state/automation'}, function (response) {
+        if (response !== 'OK')
+        {
+            iziToast.show({
+                title: 'An error occurred',
+                message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
+                timeout: 10000
+            });
+        }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
@@ -2292,6 +2327,14 @@ function goBreak(halftime) {
     $("#wait-modal").iziModal('open');
     document.querySelector("#wait-text").innerHTML = (halftime ? 'Queuing Halftime music' : 'Queuing PSAs');
     nodeRequest({method: 'POST', url: nodeURL + '/state/break', data: {halftime: halftime}}, function (response) {
+        if (response !== 'OK')
+        {
+            iziToast.show({
+                title: 'An error occurred',
+                message: 'Error occurred trying to go into break. Please try again in 15-30 seconds.',
+                timeout: 10000
+            });
+        }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
@@ -2301,6 +2344,14 @@ function playTopAdd() {
     $("#wait-modal").iziModal('open');
     document.querySelector("#wait-text").innerHTML = 'Queuing/playing Top Add song';
     nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-add'}, function (response) {
+        if (response !== 'OK')
+        {
+            iziToast.show({
+                title: 'An error occurred',
+                message: 'Error occurred trying to play a Top Add. Please try again in 15-30 seconds.',
+                timeout: 10000
+            });
+        }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
@@ -2310,6 +2361,14 @@ function playLiner() {
     $("#wait-modal").iziModal('open');
     document.querySelector("#wait-text").innerHTML = 'Queuing/playing Liner';
     nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-liner'}, function (response) {
+        if (response !== 'OK')
+        {
+            iziToast.show({
+                title: 'An error occurred',
+                message: 'Error occurred trying to play a liner. Please try again in 15-30 seconds.',
+                timeout: 10000
+            });
+        }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
