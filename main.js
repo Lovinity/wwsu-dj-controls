@@ -7,7 +7,7 @@ let mainWindow;
 
 function createWindow () {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 1600, height: 900, backgroundColor: '#263238', resizable: false});
+  mainWindow = new BrowserWindow({width: 1600, minWidth: 720, height: 900, backgroundColor: '#263238', resizable: true});
 
   // and load the index.html of the app.
   mainWindow.loadFile('index.html');
