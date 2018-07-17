@@ -506,6 +506,7 @@ document.querySelector("#log-add").onclick = function () {
 
 document.querySelector(`#users`).addEventListener("click", function (e) {
     try {
+        console.log(e.target.id);
         if (e.target) {
             if (e.target.id.startsWith(`users-o-mute`))
             {
@@ -530,6 +531,16 @@ document.querySelector(`#users`).addEventListener("click", function (e) {
             if (e.target.id.startsWith(`users-n`))
             {
                 var recipient = Recipients({host: e.target.id.replace(`users-n-`, ``)}).first().ID;
+                selectRecipient(recipient);
+            }
+            if (e.target.id.startsWith(`users-c1`))
+            {
+                var recipient = Recipients({host: e.target.id.replace(`users-c1-`, ``)}).first().ID;
+                selectRecipient(recipient);
+            }
+            if (e.target.id.startsWith(`users-c2`))
+            {
+                var recipient = Recipients({host: e.target.id.replace(`users-c2-`, ``)}).first().ID;
                 selectRecipient(recipient);
             }
         }
@@ -570,6 +581,14 @@ document.querySelector(`#messages`).addEventListener("click", function (e) {
             if (e.target.id.startsWith(`message-t`))
             {
                 markRead(parseInt(e.target.id.replace(`message-t-`, ``)));
+            }
+            if (e.target.id.startsWith(`message-c1`))
+            {
+                markRead(parseInt(e.target.id.replace(`message-c1-`, ``)));
+            }
+            if (e.target.id.startsWith(`message-c2`))
+            {
+                markRead(parseInt(e.target.id.replace(`message-c2-`, ``)));
             }
         }
     } catch (err) {
@@ -1573,19 +1592,38 @@ function checkRecipients() {
                         if (recipient.group === 'website' && recipient.host !== 'website')
                         {
                             temp.innerHTML += `<div id="users-u-${recipient.host}" class="recipient">
-                            <div class="dropdown">
-                                <div id="users-b-${recipient.host}" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;"><span id="users-l-${recipient.host}">${recipient.label}</span> <span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.host}" style="float: right;">${recipient.unread}</span>
-                                    <span class='message-options' id="users-o-${recipient.host}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
-                                    <div class="dropdown-menu" aria-labelledby="users-o-${recipient.host}">
+                                <div id="users-b-${recipient.host}" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;">
+                                                    <div class="container">
+  <div class="row">
+    <div class="col-8" id="users-c1-${recipient.host}">
+      <span id="users-l-${recipient.host}">${recipient.label}</span>
+    </div>
+    <div class="col-4" id="users-c2-${recipient.host}" style="text-align: center;">
+                                                                                <div class="dropdown">
+      <span class='message-options' id="users-o-${recipient.host}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span><span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.host}">${recipient.unread}</span>
+                                                                                        <div class="dropdown-menu" aria-labelledby="users-o-${recipient.host}">
                                         <a class="dropdown-item text-warning-dark" data-toggle="dropdown" id="users-o-mute-${recipient.host}">Mute for 24 hours</a>
                                         <a class="dropdown-item text-danger-dark" data-toggle="dropdown" id="users-o-ban-${recipient.host}">Ban indefinitely</a>
                                     </div>
+    </div>
+  </div>
+</div> 
                                 </div>
                             </div>
                         </div>`;
                         } else {
                             temp.innerHTML += `<div id="users-u-${recipient.host}" class="recipient">
-                                <div id="users-b-${recipient.host}" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;"><span id="users-l-${recipient.host}">${recipient.label}</span> <span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.host}" style="float: right;">${recipient.unread}</span>
+                                <div id="users-b-${recipient.host}" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;">
+                                                    <div class="container">
+  <div class="row">
+    <div class="col-8" id="users-c1-${recipient.host}">
+      <span id="users-l-${recipient.host}">${recipient.label}</span>
+    </div>
+    <div class="col-4" id="users-c2-${recipient.host}" style="text-align: center;">
+    <span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.host}" style="float: right;">${recipient.unread}</span>
+    </div>
+  </div>
+</div> 
                                 </div>
                         </div>`;
                         }
@@ -1844,7 +1882,13 @@ function selectRecipient(recipient = null)
                         {
                             messages.innerHTML += `<div class="message m-2 bg-${message.needsread ? 'wwsu-red' : 'dark'}" id="message-m-${message.ID}" style="cursor: pointer;">
                         <div class="m-1">
-                            <div class="dropdown">
+                              <div class="row">
+    <div class="col-10" id="message-c1-${message.ID}">
+                            <div id="message-t-${message.ID}">${message.message}</div>
+                            <div style="font-size: 0.66em;" id="message-b-${message.ID}">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' for DJ (Private)' : ` for ${message.to_friendly}`}</div>
+    </div>
+    <div class="col-2" id="message-c2-${message.ID}" style="text-align: center;">
+<div class="dropdown">
                                 <span class='message-options' id="message-o-${message.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
                                 <div class="dropdown-menu" aria-labelledby="message-o-${message.ID}">
                                     <a class="dropdown-item text-primary" data-toggle="dropdown" id="message-o-delete-${message.ID}">Delete Message</a>
@@ -1852,8 +1896,9 @@ function selectRecipient(recipient = null)
                                     <a class="dropdown-item text-danger-dark" data-toggle="dropdown" id="message-o-ban-${message.ID}">Ban indefinitely</a>
                                 </div>
                             </div>
-                            <div id="message-t-${message.ID}">${message.message}</div>
-                            <div style="font-size: 0.66em;" id="message-b-${message.ID}">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' for DJ (Private)' : ` for ${message.to_friendly}`}</div>
+    </div>
+  </div>
+</div> 
                         </div>
                     </div>`;
                         } else {
@@ -1869,14 +1914,21 @@ function selectRecipient(recipient = null)
                         {
                             messages.innerHTML += `<div class="message m-2 bg-${message.needsread ? 'wwsu-red' : 'dark'}" id="message-m-${message.ID}" style="cursor: pointer;">
                         <div class="m-1">
-                            <div class="dropdown">
+                              <div class="row">
+    <div class="col-10" id="message-c1-${message.ID}">
+                            <div id="message-t-${message.ID}">${message.message}</div>
+                            <div style="font-size: 0.66em;" id="message-b-${message.ID}">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' for DJ (Private)' : ` for ${message.to_friendly}`}</div>
+    </div>
+    <div class="col-2" id="message-c2-${message.ID}" style="text-align: center;">
+<div class="dropdown">
                                 <span class='message-options' id="message-o-${message.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
                                 <div class="dropdown-menu" aria-labelledby="message-o-${message.ID}">
                                     <a class="dropdown-item text-primary" data-toggle="dropdown" id="message-o-delete-${message.ID}">Delete Message</a>
                                 </div>
                             </div>
-                            <div id="message-t-${message.ID}">${message.message}</div>
-                            <div style="font-size: 0.66em;" id="message-b-${message.ID}">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' for DJ (Private)' : ` for ${message.to_friendly}`}</div>
+    </div>
+  </div>
+</div> 
                         </div>
                     </div>`;
                         } else {
