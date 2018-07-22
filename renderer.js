@@ -897,6 +897,8 @@ function doSockets() {
     calendarSocket();
     messagesSocket();
     recipientsSocket();
+    var notif = new Notification("TEST");
+    console.dir(notif);
 }
 
 function onlineSocket()
