@@ -5,6 +5,7 @@ try {
     // Define constants
     var fs = require("fs"); // file system
     var os = require('os'); // OS
+    var main = require('electron').remote.require('./main');
 
     // Define data variables
     var Meta = {time: moment().toISOString(), state: 'unknown'};
@@ -897,8 +898,6 @@ function doSockets() {
     calendarSocket();
     messagesSocket();
     recipientsSocket();
-    var notif = new Notification("TEST");
-    console.dir(notif);
 }
 
 function onlineSocket()
@@ -1068,6 +1067,8 @@ function doMeta(metan) {
                             }]
                     ]
                 });
+                var notif = new Notification("DJ Controls - Break required", {body: 'You need to take a top of the hour break!', requireInteraction: true, silent: true});
+                main.flashTaskbar();
             }
         } else {
             breakNotified = false;
@@ -1154,6 +1155,8 @@ function doMeta(metan) {
                                     }]
                             ]
                         });
+                    var notif = new Notification("DJ Controls - Lost Remote Stream", {body: 'Remote stream was disconnected.', requireInteraction: true, silent: true});
+                    main.flashTaskbar();
                     document.querySelector('#no-remote').style.display = "inline";
                     document.querySelector('#btn-resume').style.display = "inline";
                 } else if (Meta.state.includes('_break') || Meta.state.includes('_halftime'))
@@ -1416,6 +1419,8 @@ function checkCalendar() {
                             }]
                     ]
                 });
+                var notif = new Notification("DJ Controls - Sports Broadcast", {body: 'Please wrap up your show for the upcoming sports broadcast', requireInteraction: true, silent: true});
+                main.flashTaskbar();
             }
 
             // Remote events should also notify right away; allows for 15 minutes to transition
@@ -1441,6 +1446,8 @@ function checkCalendar() {
                             }]
                     ]
                 });
+                var notif = new Notification("DJ Controls - Remote Broadcast", {body: 'Please wrap up your show for the upcoming remote broadcast', requireInteraction: true, silent: true});
+                main.flashTaskbar();
             }
 
             // Live shows should not notify until the scheduled start time is past the current time.
@@ -1466,6 +1473,8 @@ function checkCalendar() {
                             }]
                     ]
                 });
+                var notif = new Notification("DJ Controls - Interrupting a Show", {body: 'Please wrap up your show now. Someone else is supposed to be on.', requireInteraction: true, silent: true});
+                main.flashTaskbar();
             }
 
             // Prerecords also should not notify until the scheduled start time is past the current time.
@@ -1491,6 +1500,8 @@ function checkCalendar() {
                             }]
                     ]
                 });
+                var notif = new Notification("DJ Controls - Interrupting a Prerecord", {body: 'Please wrap up your show now. A prerecord is scheduled.', requireInteraction: true, silent: true});
+                main.flashTaskbar();
             }
 
         }
@@ -2512,6 +2523,8 @@ function processEas(data, replace = false)
                                         }]
                                 ]
                             });
+                            var notif = new Notification("DJ Controls - Extreme weather", {body: 'Extreme weather alert in effect. Consider ending your show and taking shelter.', requireInteraction: true, silent: true});
+                            main.flashTaskbar();
                         } else {
                             iziToast.show({
                                 class: 'iziToast-eas-extreme',
@@ -2542,6 +2555,8 @@ function processEas(data, replace = false)
                             overlay: true,
                             zindex: 250
                         });
+                        var notif = new Notification("DJ Controls - Severe weather", {body: 'Weather alert(s) in effect. Please keep an eye on the weather.', requireInteraction: true, silent: true});
+                        main.flashTaskbar();
                     }
                 }
             });
@@ -2603,6 +2618,8 @@ function processEas(data, replace = false)
                                                 }]
                                         ]
                                     });
+                                    var notif = new Notification("DJ Controls - Extreme weather", {body: 'Extreme weather alert in effect. Consider ending your show and taking shelter.', requireInteraction: true, silent: true});
+                                    main.flashTaskbar();
                                 } else {
                                     iziToast.show({
                                         class: 'flash-bg',
@@ -2634,6 +2651,8 @@ function processEas(data, replace = false)
                                     overlay: true,
                                     zindex: 250
                                 });
+                                var notif = new Notification("DJ Controls - Severe weather", {body: 'Weather alert(s) in effect. Please keep an eye on the weather.', requireInteraction: true, silent: true});
+                                main.flashTaskbar();
                             }
                             break;
                         case 'update':
@@ -3001,6 +3020,8 @@ function processMessages(data, replace = false)
                                         overlay: true,
                                         zindex: 250
                                     });
+                                    var notif = new Notification("DJ Controls - Reported Problem", {body: 'A problem has been reported!', requireInteraction: true, silent: true});
+                                    main.flashTaskbar();
                                 }
                                 break;
                             case os.hostname():
@@ -3023,6 +3044,8 @@ function processMessages(data, replace = false)
                                             }]
                                     ]
                                 });
+                                var notif = new Notification("DJ Controls - Message", {body: 'You received a new message', requireInteraction: true, silent: true});
+                                main.flashTaskbar();
                                 data[index].needsread = true;
                                 break;
                             case 'DJ':
@@ -3048,6 +3071,8 @@ function processMessages(data, replace = false)
                                                 }]
                                         ]
                                     });
+                                    var notif = new Notification("DJ Controls - Web message", {body: 'You received a new message from the web.', requireInteraction: true, silent: true});
+                                    main.flashTaskbar();
                                 }
                                 data[index].needsread = true;
                                 break;
@@ -3089,6 +3114,8 @@ function processMessages(data, replace = false)
                                             overlay: true,
                                             zindex: 250
                                         });
+                                        var notif = new Notification("DJ Controls - Reported Problem", {body: 'A problem has been reported.', requireInteraction: true, silent: true});
+                                        main.flashTaskbar();
                                     }
                                     break;
                                 case os.hostname():
@@ -3111,6 +3138,8 @@ function processMessages(data, replace = false)
                                                 }]
                                         ]
                                     });
+                                    var notif = new Notification("DJ Controls - Message", {body: 'You received a new message', requireInteraction: true, silent: true});
+                                    main.flashTaskbar();
                                     data[key].needsread = true;
                                     break;
                                 case 'DJ':
@@ -3136,6 +3165,8 @@ function processMessages(data, replace = false)
                                                     }]
                                             ]
                                         });
+                                        var notif = new Notification("DJ Controls - Web Message", {body: 'You received a new message from the web.', requireInteraction: true, silent: true});
+                                        main.flashTaskbar();
                                     }
                                     data[key].needsread = true;
                                     break;
