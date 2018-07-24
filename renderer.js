@@ -1,7 +1,14 @@
 /* global iziToast, io, moment, Infinity */
 
 try {
+// Define hexrgb constants
+    var hexChars = 'a-f\\d';
+    var match3or4Hex = `#?[${hexChars}]{3}[${hexChars}]?`;
+    var match6or8Hex = `#?[${hexChars}]{6}([${hexChars}]{2})?`;
 
+    var nonHexChars = new RegExp(`[^#${hexChars}]`, 'gi');
+    var validHexSize = new RegExp(`^${match3or4Hex}$|^${match6or8Hex}$`, 'i');
+    
     // Define constants
     var fs = require("fs"); // file system
     var os = require('os'); // OS
@@ -1512,8 +1519,13 @@ function checkCalendar() {
         // Add in our new list
         if (calendar.length > 0)
         {
+            
             calendar.forEach(function (event) {
-                document.querySelector('#calendar-events').innerHTML += ` <div class="p-1 m-1" style="background-color: ${event.color}">
+                var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878');
+                finalColor.red = Math.round(finalColor.red / 2);
+                finalColor.green = Math.round(finalColor.green / 2);
+                finalColor.blue = Math.round(finalColor.blue / 2);
+                document.querySelector('#calendar-events').innerHTML += ` <div class="p-1 m-1" style="background-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue});">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -2305,7 +2317,7 @@ function goSports() {
 }
 
 function prepareLog() {
-    document.querySelector("#log-datetime").value = moment(Meta.time).format("mm/dd/YYYY HH:mm:ss");
+    document.querySelector("#log-datetime").value = moment(Meta.time).format("MM/DD/YYYY HH:mm:ss");
     document.querySelector("#log-type").value = 'Did an unknown action';
     document.querySelector("#log-artist").value = '';
     document.querySelector("#log-title").value = '';
@@ -3282,4 +3294,44 @@ function processRequests(data, replace = false)
      console.error(e);
      }
      */
+}
+
+function hexRgb(hex, options = {}) {
+    try {
+        if (typeof hex !== 'string' || nonHexChars.test(hex) || !validHexSize.test(hex)) {
+            throw new TypeError('Expected a valid hex string');
+        }
+
+        hex = hex.replace(/^#/, '');
+        let alpha = 255;
+
+        if (hex.length === 8) {
+            alpha = parseInt(hex.slice(6, 8), 16) / 255;
+            hex = hex.substring(0, 6);
+        }
+
+        if (hex.length === 4) {
+            alpha = parseInt(hex.slice(3, 4).repeat(2), 16) / 255;
+            hex = hex.substring(0, 3);
+        }
+
+        if (hex.length === 3) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+
+        const num = parseInt(hex, 16);
+        const red = num >> 16;
+        const green = (num >> 8) & 255;
+        const blue = num & 255;
+
+        return options.format === 'array' ?
+                [red, green, blue, alpha] :
+                {red, green, blue, alpha};
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: 'Error occurred during hexRgb.'
+        });
+}
 }
