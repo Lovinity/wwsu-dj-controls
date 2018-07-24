@@ -5,7 +5,7 @@ const electronInstaller = require('electron-winstaller');
 
 resultPromise = electronInstaller.createWindowsInstaller({
     appDirectory: require('path').dirname(require.main.filename),
-    outputDirectory: '/tmp/build/wwsu-dj-controls',
+    outputDirectory: require('path').dirname(require.main.filename) + '/build',
     authors: 'WWSU 106.9 FM',
     exe: 'wwsu-dj-controls.exe'
   });
