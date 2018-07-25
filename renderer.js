@@ -8,7 +8,7 @@ try {
 
     var nonHexChars = new RegExp(`[^#${hexChars}]`, 'gi');
     var validHexSize = new RegExp(`^${match3or4Hex}$|^${match6or8Hex}$`, 'i');
-    
+
     // Define constants
     var fs = require("fs"); // file system
     var os = require('os'); // OS
@@ -714,7 +714,7 @@ $('#themessage').keydown(function (e) {
                         color: 'red',
                         drag: false,
                         position: 'center',
-                        closeOnClick: false,
+                        closeOnClick: true,
                         overlay: false,
                         zindex: 1000
                     });
@@ -1519,7 +1519,7 @@ function checkCalendar() {
         // Add in our new list
         if (calendar.length > 0)
         {
-            
+
             calendar.forEach(function (event) {
                 var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878');
                 finalColor.red = Math.round(finalColor.red / 2);
@@ -2024,7 +2024,7 @@ function deleteMessage(message) {
                 color: 'green',
                 drag: false,
                 position: 'center',
-                closeOnClick: false,
+                closeOnClick: true,
                 overlay: false,
                 zindex: 1000
             });
@@ -2037,7 +2037,7 @@ function deleteMessage(message) {
                 color: 'red',
                 drag: false,
                 position: 'center',
-                closeOnClick: false,
+                closeOnClick: true,
                 overlay: false,
                 zindex: 1000
             });
@@ -2127,7 +2127,7 @@ function finishMute(recipient) {
                     color: 'green',
                     drag: false,
                     position: 'center',
-                    closeOnClick: false,
+                    closeOnClick: true,
                     overlay: false,
                     zindex: 1000
                 });
@@ -2140,7 +2140,7 @@ function finishMute(recipient) {
                     color: 'red',
                     drag: false,
                     position: 'center',
-                    closeOnClick: false,
+                    closeOnClick: true,
                     overlay: false,
                     zindex: 1000
                 });
@@ -2170,7 +2170,7 @@ function finishBan(recipient) {
                     color: 'green',
                     drag: false,
                     position: 'center',
-                    closeOnClick: false,
+                    closeOnClick: true,
                     overlay: false,
                     zindex: 1000
                 });
@@ -2183,7 +2183,7 @@ function finishBan(recipient) {
                     color: 'red',
                     drag: false,
                     position: 'center',
-                    closeOnClick: false,
+                    closeOnClick: true,
                     overlay: false,
                     zindex: 1000
                 });
@@ -2547,7 +2547,7 @@ function processEas(data, replace = false)
                                 color: 'red',
                                 drag: false,
                                 position: 'center',
-                                closeOnClick: false,
+                                closeOnClick: true,
                                 overlay: true,
                                 zindex: 500
                             });
@@ -2563,7 +2563,7 @@ function processEas(data, replace = false)
                             color: 'yellow',
                             drag: false,
                             position: 'center',
-                            closeOnClick: false,
+                            closeOnClick: true,
                             overlay: true,
                             zindex: 250
                         });
@@ -2643,7 +2643,7 @@ function processEas(data, replace = false)
                                         color: 'red',
                                         drag: false,
                                         position: 'center',
-                                        closeOnClick: false,
+                                        closeOnClick: true,
                                         overlay: true,
                                         zindex: 500
                                     });
@@ -2659,7 +2659,7 @@ function processEas(data, replace = false)
                                     color: 'yellow',
                                     drag: false,
                                     position: 'center',
-                                    closeOnClick: false,
+                                    closeOnClick: true,
                                     overlay: true,
                                     zindex: 250
                                 });
@@ -2758,6 +2758,23 @@ function processStatus(data, replace = false)
                         temp.className = `attn-status attn-status-${datum.status} alert alert-${className}`;
                         temp.innerHTML = `<i class="fas fa-server"></i ><strong>${datum.label}</strong> is reporting a problem: ${datum.data}`;
                     }
+                    if (datum.name === 'silence' && datum.status <= 3)
+                    {
+                        iziToast.show({
+                            title: '<i class="fas fa-volume-off"></i> Silence / Low Audio detected!',
+                            message: `Silence / low audio was detected. Please check your audio levels. The Silence entry in the Announcements box will disappear when audio levels are acceptable again.`,
+                            timeout: 60000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: true,
+                            zindex: 500
+                        });
+                        var notif = new Notification("DJ Controls - Silence Detected", {body: 'Silence / Low Audio detected!', requireInteraction: true, silent: true});
+                        main.flashTaskbar();
+                    }
                 });
             }
 
@@ -2803,6 +2820,23 @@ function processStatus(data, replace = false)
                                 temp.className = `attn-status attn-status-${data[key].status} alert alert-${className}`;
                                 temp.innerHTML = `<i class="fas fa-server"></i> <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}`;
                             }
+                            if (data[key].name === 'silence' && data[key].status <= 3)
+                            {
+                                iziToast.show({
+                                    title: '<i class="fas fa-volume-off"></i> Silence / Low Audio detected!',
+                                    message: `Silence / low audio was detected. Please check your audio levels. The Silence entry in the Announcements box will disappear when audio levels are acceptable again.`,
+                                    timeout: 60000,
+                                    close: true,
+                                    color: 'red',
+                                    drag: false,
+                                    position: 'center',
+                                    closeOnClick: true,
+                                    overlay: true,
+                                    zindex: 500
+                                });
+                                var notif = new Notification("DJ Controls - Silence Detected", {body: 'Silence / Low Audio detected!', requireInteraction: true, silent: true});
+                                main.flashTaskbar();
+                            }
                             break;
                         case 'update':
                             Status({ID: data[key].ID}).update(data[key]);
@@ -2832,6 +2866,23 @@ function processStatus(data, replace = false)
                                 var temp = document.querySelector(`#attn-status-${data[key].name}`);
                                 temp.className = `attn-status attn-status-${data[key].status} alert alert-${className}`;
                                 temp.innerHTML = `<i class="fas fa-server"></i> <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}`;
+                            }
+                            if (data[key].name === 'silence' && data[key].status <= 3)
+                            {
+                                iziToast.show({
+                                    title: '<i class="fas fa-volume-off"></i> Silence / Low Audio detected!',
+                                    message: `Silence / low audio was detected. Please check your audio levels. The Silence entry in the Announcements box will disappear when audio levels are acceptable again.`,
+                                    timeout: 60000,
+                                    close: true,
+                                    color: 'red',
+                                    drag: false,
+                                    position: 'center',
+                                    closeOnClick: true,
+                                    overlay: true,
+                                    zindex: 500
+                                });
+                                var notif = new Notification("DJ Controls - Silence Detected", {body: 'Silence / Low Audio detected!', requireInteraction: true, silent: true});
+                                main.flashTaskbar();
                             }
                             break;
                         case 'remove':
