@@ -902,7 +902,6 @@ function doSockets() {
     metaSocket();
     easSocket();
     statusSocket();
-    announcementsSocket();
     calendarSocket();
     messagesSocket();
     recipientsSocket();
@@ -969,20 +968,6 @@ function statusSocket() {
     });
 }
 
-function announcementsSocket() {
-    console.log('attempting announcements socket');
-    io.socket.post('/announcements/get', {type: 'djcontrols'}, function serverResponded(body, JWR) {
-        //console.log(body);
-        try {
-            processAnnouncements(body, true);
-        } catch (e) {
-            console.error(e);
-            console.log('FAILED Announcements CONNECTION');
-            setTimeout(announcementsSocket, 10000);
-        }
-    });
-}
-
 function calendarSocket() {
     console.log('attempting calendar socket');
     io.socket.post('/calendar/get', {}, function serverResponded(body, JWR) {
@@ -1023,6 +1008,17 @@ function messagesSocket() {
                     //console.error(e);
                     console.log(`FAILED messages CONNECTION via requests`);
                     console.error(e);
+                    setTimeout(messagesSocket, 10000);
+                }
+            });
+
+            io.socket.post('/announcements/get', {type: 'djcontrols'}, function serverResponded(body, JWR) {
+                //console.log(body);
+                try {
+                    processAnnouncements(body, true);
+                } catch (e) {
+                    console.error(e);
+                    console.log('FAILED Announcements CONNECTION');
                     setTimeout(messagesSocket, 10000);
                 }
             });
