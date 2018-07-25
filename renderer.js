@@ -28,6 +28,7 @@ try {
 
     // Define other variables
     var nodeURL = 'http://server.wwsu1069.org';
+    //var nodeURL = 'http://localhost:1337';
 
     io.sails.url = nodeURL;
     var disconnected = true;
