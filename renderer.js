@@ -1253,6 +1253,23 @@ function checkAnnouncements() {
                 attn.innerHTML += `<div class="attn attn-${datum.level} alert alert-${datum.level}" id="attn-${datum.ID}" role="alert">
                         <i class="fas fa-bullhorn"></i> ${datum.announcement}
                     </div>`;
+                if (client.emergencies && datum.announcement.startsWith("<strong>Problem reported by"))
+                {
+                    iziToast.show({
+                        title: '<i class="fas fa-exclamation-triangle"></i> Technical issue reported!',
+                        message: `${datum.message}`,
+                        timeout: false,
+                        close: true,
+                        color: 'red',
+                        drag: false,
+                        position: 'center',
+                        closeOnClick: false,
+                        overlay: true,
+                        zindex: 250
+                    });
+                    var notif = new Notification("DJ Controls - Reported Problem", {body: 'A problem has been reported!', requireInteraction: true, silent: true});
+                    main.flashTaskbar();
+                }
             } else {
                 var temp = document.querySelector(`#attn-${datum.ID}`);
                 temp.className = `attn attn-${datum.level} alert alert-${datum.level}`;
