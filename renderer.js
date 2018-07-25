@@ -3069,7 +3069,7 @@ function processMessages(data, replace = false)
                         switch (data[index].to)
                         {
                             case 'emergency':
-                                if (client.emergencies === 1)
+                                if (client.emergencies)
                                 {
                                     data[index].needsread = true;
                                     iziToast.show({
@@ -3163,7 +3163,7 @@ function processMessages(data, replace = false)
                             switch (data[key].to)
                             {
                                 case 'emergency':
-                                    if (client.emergencies === 1)
+                                    if (client.emergencies)
                                     {
                                         data[key].needsread = true;
                                         iziToast.show({
