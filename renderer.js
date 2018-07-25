@@ -1257,7 +1257,7 @@ function checkAnnouncements() {
                 {
                     iziToast.show({
                         title: '<i class="fas fa-exclamation-triangle"></i> Technical issue reported!',
-                        message: `${datum.message}`,
+                        message: `${datum.announcement}`,
                         timeout: false,
                         close: true,
                         color: 'red',
