@@ -300,7 +300,6 @@ try {
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
         zindex: 50
     });
-
     $.fn.extend({
         // Add an animateCss function to JQuery to trigger an animation of an HTML element with animate.css
         animateCss: function (animationName, callback) {
@@ -1056,9 +1055,10 @@ function doMeta(metan) {
                 var notification = notifier.notify('Top of Hour Break', {
                     message: 'It is time to take the FCC-required top of the hour break.',
                     icon: 'http://cdn.onlinewebfonts.com/svg/img_205852.png',
-                    duration: 60000
+                    duration: 60000,
+                            buttons: ["Close"]
                 });
-                notification.on('clicked', () => {
+                notification.on('buttonClicked', (text, buttonIndex, options) => {
                     notification.close();
                 });
                 main.flashTaskbar();
@@ -1171,11 +1171,12 @@ function doMeta(metan) {
                     var notification = notifier.notify('Lost Remote Connection', {
                         message: 'The remote stream has disconnected. Ensure you are encoding to the remote stream.',
                         icon: 'https://d30y9cdsu7xlg0.cloudfront.net/png/244853-200.png',
-                        duration: 60000
+                        duration: 60000,
+                                buttons: ["Close"]
                     });
-                    notification.on('clicked', () => {
-                        notification.close();
-                    });
+                    notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
                     main.flashTaskbar();
                     document.querySelector('#no-remote').style.display = "inline";
                     document.querySelector('#btn-resume').style.display = "inline";
@@ -1282,11 +1283,12 @@ function checkAnnouncements() {
                     var notification = notifier.notify('Problem Reported', {
                         message: datum.announcement,
                         icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                        duration: 60000000
+                        duration: 60000000,
+                                buttons: ["Close"]
                     });
-                    notification.on('clicked', () => {
-                        notification.close();
-                    });
+notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
                     main.flashTaskbar();
                 }
             } else {
@@ -1447,9 +1449,10 @@ function checkCalendar() {
                 var notification = notifier.notify('Please Wrap Up Show', {
                     message: 'A sports broadcast is scheduled in less than 15 minutes. Please wrap up your broadcast.',
                     icon: 'https://icon2.kisspng.com/20171221/lje/gold-cup-trophy-png-clip-art-image-5a3c1fa99cbcb0.608850721513889705642.jpg',
-                    duration: 900000
+                    duration: 900000,
+                            buttons: ["Close"]
                 });
-                notification.on('clicked', () => {
+notification.on('buttonClicked', (text, buttonIndex, options) => {
                     notification.close();
                 });
                 main.flashTaskbar();
@@ -1481,10 +1484,10 @@ function checkCalendar() {
                 var notification = notifier.notify('Please Wrap Up Show', {
                     message: 'A remote broadcast is scheduled in less than 15 minutes. Please wrap up your broadcast.',
                     icon: 'http://cdn.onlinewebfonts.com/svg/img_550701.png',
-                    buttons: ["End Show"],
-                    duration: 900000
+                    duration: 900000,
+                            buttons: ["Close"]
                 });
-                notification.on('clicked', () => {
+notification.on('buttonClicked', (text, buttonIndex, options) => {
                     notification.close();
                 });
                 main.flashTaskbar();
@@ -1516,9 +1519,10 @@ function checkCalendar() {
                 var notification = notifier.notify('Please Wrap Up Show', {
                     message: 'You are interfering with another scheduled show. Please end your show ASAP.',
                     icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
-                    duration: 600000
+                    duration: 600000,
+                            buttons: ["Close"]
                 });
-                notification.on('clicked', () => {
+notification.on('buttonClicked', (text, buttonIndex, options) => {
                     notification.close();
                 });
                 main.flashTaskbar();
@@ -1550,9 +1554,10 @@ function checkCalendar() {
                 var notification = notifier.notify('Please Wrap Up Show', {
                     message: 'You are interfering with a scheduled prerecord. Please end your show ASAP.',
                     icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
-                    duration: 600000
+                    duration: 600000,
+                            buttons: ["Close"]
                 });
-                notification.on('clicked', () => {
+notification.on('buttonClicked', (text, buttonIndex, options) => {
                     notification.close();
                 });
                 main.flashTaskbar();
@@ -2584,11 +2589,12 @@ function processEas(data, replace = false)
                             var notification = notifier.notify('Extreme Weather Alert', {
                                 message: `A ${record.alert} is in effect for the counties of ${record.counties}. Please consider ending your show and taking shelter.`,
                                 icon: 'https://png2.kisspng.com/20180419/rue/kisspng-weather-forecasting-storm-computer-icons-clip-art-severe-5ad93bcb9e9da1.5355263615241860596497.png',
-                                duration: 900000
+                                duration: 900000,
+                                        buttons: ["Close"]
                             });
-                            notification.on('clicked', () => {
-                                notification.close();
-                            });
+notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
                             main.flashTaskbar();
                             iziToast.show({
                                 class: 'flash-bg',
@@ -2630,11 +2636,12 @@ function processEas(data, replace = false)
                         var notification = notifier.notify('Severe Weather Alert', {
                             message: `A ${record.alert} is in effect for the counties of ${record.counties}. Please keep an eye on the weather.`,
                             icon: 'https://static1.squarespace.com/static/59a614fef7e0ab8b4a7b489a/5aa95c6a652dea6215e225f9/5aa95d258165f5044f919008/1521460510101/feature+icon+-+severe+weather.png?format=300w',
-                            duration: 900000
+                            duration: 900000,
+                                    buttons: ["Close"]
                         });
-                        notification.on('clicked', () => {
-                            notification.close();
-                        });
+notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
                         main.flashTaskbar();
                         iziToast.show({
                             class: 'iziToast-eas-severe',
@@ -2693,11 +2700,12 @@ function processEas(data, replace = false)
                                     var notification = notifier.notify('Extreme Weather Alert', {
                                         message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. Please consider ending your show and taking shelter.`,
                                         icon: 'https://png2.kisspng.com/20180419/rue/kisspng-weather-forecasting-storm-computer-icons-clip-art-severe-5ad93bcb9e9da1.5355263615241860596497.png',
-                                        duration: 900000
+                                        duration: 900000,
+                                                buttons: ["Close"]
                                     });
-                                    notification.on('clicked', () => {
-                                        notification.close();
-                                    });
+notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
                                     main.flashTaskbar();
                                     iziToast.show({
                                         class: 'flash-bg',
@@ -2740,11 +2748,12 @@ function processEas(data, replace = false)
                                 var notification = notifier.notify('Severe Weather Alert', {
                                     message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. Please keep an eye on the weather.`,
                                     icon: 'https://static1.squarespace.com/static/59a614fef7e0ab8b4a7b489a/5aa95c6a652dea6215e225f9/5aa95d258165f5044f919008/1521460510101/feature+icon+-+severe+weather.png?format=300w',
-                                    duration: 900000
+                                    duration: 900000,
+                                            buttons: ["Close"]
                                 });
-                                notification.on('clicked', () => {
-                                    notification.close();
-                                });
+notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
                                 main.flashTaskbar();
                                 iziToast.show({
                                     class: 'iziToast-eas-severe',
@@ -2869,11 +2878,12 @@ function processStatus(data, replace = false)
                         var notification = notifier.notify('Low / No Audio!', {
                             message: `Audio levels were detected as too low. Please check your audio levels.`,
                             icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
-                            duration: 60000
+                            duration: 60000,
+                                    buttons: ["Close"]
                         });
-                        notification.on('clicked', () => {
-                            notification.close();
-                        });
+notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
                         main.flashTaskbar();
                     }
                 });
@@ -2938,11 +2948,12 @@ function processStatus(data, replace = false)
                                 var notification = notifier.notify('Low / No Audio!', {
                                     message: `Audio levels were detected as too low. Please check your audio levels.`,
                                     icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
-                                    duration: 60000
+                                    duration: 60000,
+                                            buttons: ["Close"]
                                 });
-                                notification.on('clicked', () => {
-                                    notification.close();
-                                });
+notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
                                 main.flashTaskbar();
                             }
                             break;
@@ -2992,11 +3003,12 @@ function processStatus(data, replace = false)
                                 var notification = notifier.notify('Low / No Audio!', {
                                     message: `Audio levels were detected as too low. Please check your audio levels.`,
                                     icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
-                                    duration: 60000
+                                    duration: 60000,
+                                            buttons: ["Close"]
                                 });
-                                notification.on('clicked', () => {
-                                    notification.close();
-                                });
+notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
                                 main.flashTaskbar();
                             }
                             break;
@@ -3201,11 +3213,12 @@ function processMessages(data, replace = false)
                                     var notification = notifier.notify('Problem Reported', {
                                         message: datum.message,
                                         icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                                        duration: 60000000
+                                        duration: 60000000,
+                                                buttons: ["Close"]
                                     });
-                                    notification.on('clicked', () => {
-                                        notification.close();
-                                    });
+notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
                                     main.flashTaskbar();
                                 }
                                 break;
@@ -3214,11 +3227,12 @@ function processMessages(data, replace = false)
                                 var notification = notifier.notify('New Message', {
                                     message: `You have a new message from ${datum.from_friendly} (see DJ Controls).`,
                                     icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
-                                    duration: 30000
+                                    duration: 30000,
+                                            buttons: ["Close"]
                                 });
-                                notification.on('clicked', () => {
-                                    notification.close();
-                                });
+notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
                                 main.flashTaskbar();
                                 iziToast.show({
                                     title: `<i class="fas fa-comments"></i> Message from ${datum.from_friendly}`,
@@ -3247,11 +3261,12 @@ function processMessages(data, replace = false)
                                     var notification = notifier.notify('New Web Message', {
                                         message: `You have a new web message from ${datum.from_friendly} (see DJ Controls).`,
                                         icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
-                                        duration: 30000
+                                        duration: 30000,
+                                                buttons: ["Close"]
                                     });
-                                    notification.on('clicked', () => {
-                                        notification.close();
-                                    });
+notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
                                     main.flashTaskbar();
                                     iziToast.show({
                                         title: `<i class="fas fa-comments"></i> Web message from ${datum.from_friendly}`,
@@ -3316,11 +3331,12 @@ function processMessages(data, replace = false)
                                         var notification = notifier.notify('Problem Reported', {
                                             message: data[key].message,
                                             icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                                            duration: 60000000
+                                            duration: 60000000,
+                                                    buttons: ["Close"]
                                         });
-                                        notification.on('clicked', () => {
-                                            notification.close();
-                                        });
+notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
                                         main.flashTaskbar();
                                     }
                                     break;
@@ -3329,11 +3345,12 @@ function processMessages(data, replace = false)
                                     var notification = notifier.notify('New Message', {
                                         message: `You have a new message from ${data[key].from_friendly} (see DJ Controls).`,
                                         icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
-                                        duration: 30000
+                                        duration: 30000,
+                                                buttons: ["Close"]
                                     });
-                                    notification.on('clicked', () => {
-                                        notification.close();
-                                    });
+notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
                                     main.flashTaskbar();
                                     iziToast.show({
                                         title: `<i class="fas fa-comments"></i> Message from ${data[key].from_friendly}`,
@@ -3362,11 +3379,12 @@ function processMessages(data, replace = false)
                                         var notification = notifier.notify('New Web Message', {
                                             message: `You have a new web message from ${data[key].from_friendly} (see DJ Controls).`,
                                             icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
-                                            duration: 30000
+                                            duration: 30000,
+                                                    buttons: ["Close"]
                                         });
-                                        notification.on('clicked', () => {
-                                            notification.close();
-                                        });
+notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
                                         main.flashTaskbar();
                                         iziToast.show({
                                             title: `<i class="fas fa-comments"></i> Web message from ${data[key].from_friendly}`,
