@@ -13,6 +13,7 @@ try {
     var fs = require("fs"); // file system
     var os = require('os'); // OS
     var main = require('electron').remote.require('./main');
+    var notifier = require('electron-notifications');
 
     // Define data variables
     var Meta = {time: moment().toISOString(), state: 'unknown'};
@@ -912,6 +913,7 @@ function onlineSocket()
     console.log('attempting online socket');
     nodeRequest({method: 'post', url: nodeURL + '/recipients/add-computers', data: {host: os.hostname()}}, function (response) {
         try {
+            //main.notification(true, "Loaded", "DJ Controls is now loaded", null, 10000);
         } catch (e) {
             console.error(e);
             console.log('FAILED ONLINE CONNECTION');
@@ -1051,6 +1053,15 @@ function doMeta(metan) {
             if (document.querySelector("#iziToast-breakneeded") === null && !breakNotified)
             {
                 breakNotified = true;
+                var notification = notifier.notify('Top of Hour Break', {
+                    message: 'It is time to take the FCC-required top of the hour break.',
+                    icon: 'http://cdn.onlinewebfonts.com/svg/img_205852.png',
+                    duration: 60000
+                });
+                notification.on('clicked', () => {
+                    notification.close();
+                });
+                main.flashTaskbar();
                 iziToast.show({
                     id: 'iziToast-breakneeded',
                     class: 'flash-bg',
@@ -1071,8 +1082,6 @@ function doMeta(metan) {
                             }]
                     ]
                 });
-                var notif = new Notification("DJ Controls - Break required", {body: 'You need to take a top of the hour break!', requireInteraction: true, silent: true});
-                main.flashTaskbar();
             }
         } else {
             breakNotified = false;
@@ -1159,7 +1168,14 @@ function doMeta(metan) {
                                     }]
                             ]
                         });
-                    var notif = new Notification("DJ Controls - Lost Remote Stream", {body: 'Remote stream was disconnected.', requireInteraction: true, silent: true});
+                    var notification = notifier.notify('Lost Remote Connection', {
+                        message: 'The remote stream has disconnected. Ensure you are encoding to the remote stream.',
+                        icon: 'https://d30y9cdsu7xlg0.cloudfront.net/png/244853-200.png',
+                        duration: 60000
+                    });
+                    notification.on('clicked', () => {
+                        notification.close();
+                    });
                     main.flashTaskbar();
                     document.querySelector('#no-remote').style.display = "inline";
                     document.querySelector('#btn-resume').style.display = "inline";
@@ -1263,7 +1279,14 @@ function checkAnnouncements() {
                         overlay: true,
                         zindex: 250
                     });
-                    var notif = new Notification("DJ Controls - Reported Problem", {body: 'A problem has been reported!', requireInteraction: true, silent: true});
+                    var notification = notifier.notify('Problem Reported', {
+                        message: datum.announcement,
+                        icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
+                        duration: 60000000
+                    });
+                    notification.on('clicked', () => {
+                        notification.close();
+                    });
                     main.flashTaskbar();
                 }
             } else {
@@ -1421,6 +1444,15 @@ function checkCalendar() {
             if (calType === 'Sports')
             {
                 calNotified = true;
+                var notification = notifier.notify('Please Wrap Up Show', {
+                    message: 'A sports broadcast is scheduled in less than 15 minutes. Please wrap up your broadcast.',
+                    icon: 'https://icon2.kisspng.com/20171221/lje/gold-cup-trophy-png-clip-art-image-5a3c1fa99cbcb0.608850721513889705642.jpg',
+                    duration: 900000
+                });
+                notification.on('clicked', () => {
+                    notification.close();
+                });
+                main.flashTaskbar();
                 iziToast.show({
                     class: 'flash-bg',
                     title: '<i class="fas fa-trophy"></i> Sports broadcast in less than 15 minutes.',
@@ -1440,14 +1472,22 @@ function checkCalendar() {
                             }]
                     ]
                 });
-                var notif = new Notification("DJ Controls - Sports Broadcast", {body: 'Please wrap up your show for the upcoming sports broadcast', requireInteraction: true, silent: true});
-                main.flashTaskbar();
             }
 
             // Remote events should also notify right away; allows for 15 minutes to transition
             if (calType === 'Remote')
             {
                 calNotified = true;
+                var notification = notifier.notify('Please Wrap Up Show', {
+                    message: 'A remote broadcast is scheduled in less than 15 minutes. Please wrap up your broadcast.',
+                    icon: 'http://cdn.onlinewebfonts.com/svg/img_550701.png',
+                    buttons: ["End Show"],
+                    duration: 900000
+                });
+                notification.on('clicked', () => {
+                    notification.close();
+                });
+                main.flashTaskbar();
                 iziToast.show({
                     class: 'flash-bg',
                     title: '<i class="fas fa-broadcast-tower"></i> Remote broadcast in less than 15 minutes.',
@@ -1467,14 +1507,21 @@ function checkCalendar() {
                             }]
                     ]
                 });
-                var notif = new Notification("DJ Controls - Remote Broadcast", {body: 'Please wrap up your show for the upcoming remote broadcast', requireInteraction: true, silent: true});
-                main.flashTaskbar();
             }
 
             // Live shows should not notify until the scheduled start time is past the current time.
             if (calType === 'Show' && moment(Meta.time).isAfter(moment(calStarts)))
             {
                 calNotified = true;
+                var notification = notifier.notify('Please Wrap Up Show', {
+                    message: 'You are interfering with another scheduled show. Please end your show ASAP.',
+                    icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+                    duration: 600000
+                });
+                notification.on('clicked', () => {
+                    notification.close();
+                });
+                main.flashTaskbar();
                 iziToast.show({
                     class: 'flash-bg',
                     title: '<i class="fas fa-microphone-alt"></i> You are interrupting another show!',
@@ -1494,14 +1541,21 @@ function checkCalendar() {
                             }]
                     ]
                 });
-                var notif = new Notification("DJ Controls - Interrupting a Show", {body: 'Please wrap up your show now. Someone else is supposed to be on.', requireInteraction: true, silent: true});
-                main.flashTaskbar();
             }
 
             // Prerecords also should not notify until the scheduled start time is past the current time.
             if (calType === 'Prerecord' && moment(Meta.time).isAfter(moment(calStarts)))
             {
                 calNotified = true;
+                var notification = notifier.notify('Please Wrap Up Show', {
+                    message: 'You are interfering with a scheduled prerecord. Please end your show ASAP.',
+                    icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+                    duration: 600000
+                });
+                notification.on('clicked', () => {
+                    notification.close();
+                });
+                main.flashTaskbar();
                 iziToast.show({
                     class: 'flash-bg',
                     title: '<i class="fas fa-circle"></i> You are running into a scheduled prerecord.',
@@ -1521,8 +1575,6 @@ function checkCalendar() {
                             }]
                     ]
                 });
-                var notif = new Notification("DJ Controls - Interrupting a Prerecord", {body: 'Please wrap up your show now. A prerecord is scheduled.', requireInteraction: true, silent: true});
-                main.flashTaskbar();
             }
 
         }
@@ -2529,6 +2581,15 @@ function processEas(data, replace = false)
                     {
                         if (!Meta.state.startsWith("automation_"))
                         {
+                            var notification = notifier.notify('Extreme Weather Alert', {
+                                message: `A ${record.alert} is in effect for the counties of ${record.counties}. Please consider ending your show and taking shelter.`,
+                                icon: 'https://png2.kisspng.com/20180419/rue/kisspng-weather-forecasting-storm-computer-icons-clip-art-severe-5ad93bcb9e9da1.5355263615241860596497.png',
+                                duration: 900000
+                            });
+                            notification.on('clicked', () => {
+                                notification.close();
+                            });
+                            main.flashTaskbar();
                             iziToast.show({
                                 class: 'flash-bg',
                                 class: 'iziToast-eas-extreme-end',
@@ -2549,8 +2610,6 @@ function processEas(data, replace = false)
                                         }]
                                 ]
                             });
-                            var notif = new Notification("DJ Controls - Extreme weather", {body: 'Extreme weather alert in effect. Consider ending your show and taking shelter.', requireInteraction: true, silent: true});
-                            main.flashTaskbar();
                         } else {
                             iziToast.show({
                                 class: 'iziToast-eas-extreme',
@@ -2568,6 +2627,15 @@ function processEas(data, replace = false)
                         }
                     } else if (record.severity === 'Severe')
                     {
+                        var notification = notifier.notify('Severe Weather Alert', {
+                            message: `A ${record.alert} is in effect for the counties of ${record.counties}. Please keep an eye on the weather.`,
+                            icon: 'https://static1.squarespace.com/static/59a614fef7e0ab8b4a7b489a/5aa95c6a652dea6215e225f9/5aa95d258165f5044f919008/1521460510101/feature+icon+-+severe+weather.png?format=300w',
+                            duration: 900000
+                        });
+                        notification.on('clicked', () => {
+                            notification.close();
+                        });
+                        main.flashTaskbar();
                         iziToast.show({
                             class: 'iziToast-eas-severe',
                             title: '<i class="fas fa-bolt"></i> Severe weather alert in effect',
@@ -2581,8 +2649,6 @@ function processEas(data, replace = false)
                             overlay: true,
                             zindex: 250
                         });
-                        var notif = new Notification("DJ Controls - Severe weather", {body: 'Weather alert(s) in effect. Please keep an eye on the weather.', requireInteraction: true, silent: true});
-                        main.flashTaskbar();
                     }
                 }
             });
@@ -2624,6 +2690,15 @@ function processEas(data, replace = false)
                             {
                                 if (!Meta.state.startsWith("automation_"))
                                 {
+                                    var notification = notifier.notify('Extreme Weather Alert', {
+                                        message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. Please consider ending your show and taking shelter.`,
+                                        icon: 'https://png2.kisspng.com/20180419/rue/kisspng-weather-forecasting-storm-computer-icons-clip-art-severe-5ad93bcb9e9da1.5355263615241860596497.png',
+                                        duration: 900000
+                                    });
+                                    notification.on('clicked', () => {
+                                        notification.close();
+                                    });
+                                    main.flashTaskbar();
                                     iziToast.show({
                                         class: 'flash-bg',
                                         class: 'iziToast-eas-extreme-end',
@@ -2644,8 +2719,6 @@ function processEas(data, replace = false)
                                                 }]
                                         ]
                                     });
-                                    var notif = new Notification("DJ Controls - Extreme weather", {body: 'Extreme weather alert in effect. Consider ending your show and taking shelter.', requireInteraction: true, silent: true});
-                                    main.flashTaskbar();
                                 } else {
                                     iziToast.show({
                                         class: 'flash-bg',
@@ -2664,6 +2737,15 @@ function processEas(data, replace = false)
                                 }
                             } else if (data[key].severity === 'Severe')
                             {
+                                var notification = notifier.notify('Severe Weather Alert', {
+                                    message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. Please keep an eye on the weather.`,
+                                    icon: 'https://static1.squarespace.com/static/59a614fef7e0ab8b4a7b489a/5aa95c6a652dea6215e225f9/5aa95d258165f5044f919008/1521460510101/feature+icon+-+severe+weather.png?format=300w',
+                                    duration: 900000
+                                });
+                                notification.on('clicked', () => {
+                                    notification.close();
+                                });
+                                main.flashTaskbar();
                                 iziToast.show({
                                     class: 'iziToast-eas-severe',
                                     title: '<i class="fas fa-bolt"></i> Severe weather alert in effect',
@@ -2677,8 +2759,6 @@ function processEas(data, replace = false)
                                     overlay: true,
                                     zindex: 250
                                 });
-                                var notif = new Notification("DJ Controls - Severe weather", {body: 'Weather alert(s) in effect. Please keep an eye on the weather.', requireInteraction: true, silent: true});
-                                main.flashTaskbar();
                             }
                             break;
                         case 'update':
@@ -2786,7 +2866,14 @@ function processStatus(data, replace = false)
                             overlay: true,
                             zindex: 500
                         });
-                        var notif = new Notification("DJ Controls - Silence Detected", {body: 'Silence / Low Audio detected!', requireInteraction: true, silent: true});
+                        var notification = notifier.notify('Low / No Audio!', {
+                            message: `Audio levels were detected as too low. Please check your audio levels.`,
+                            icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
+                            duration: 60000
+                        });
+                        notification.on('clicked', () => {
+                            notification.close();
+                        });
                         main.flashTaskbar();
                     }
                 });
@@ -2848,7 +2935,14 @@ function processStatus(data, replace = false)
                                     overlay: true,
                                     zindex: 500
                                 });
-                                var notif = new Notification("DJ Controls - Silence Detected", {body: 'Silence / Low Audio detected!', requireInteraction: true, silent: true});
+                                var notification = notifier.notify('Low / No Audio!', {
+                                    message: `Audio levels were detected as too low. Please check your audio levels.`,
+                                    icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
+                                    duration: 60000
+                                });
+                                notification.on('clicked', () => {
+                                    notification.close();
+                                });
                                 main.flashTaskbar();
                             }
                             break;
@@ -2895,7 +2989,14 @@ function processStatus(data, replace = false)
                                     overlay: true,
                                     zindex: 500
                                 });
-                                var notif = new Notification("DJ Controls - Silence Detected", {body: 'Silence / Low Audio detected!', requireInteraction: true, silent: true});
+                                var notification = notifier.notify('Low / No Audio!', {
+                                    message: `Audio levels were detected as too low. Please check your audio levels.`,
+                                    icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
+                                    duration: 60000
+                                });
+                                notification.on('clicked', () => {
+                                    notification.close();
+                                });
                                 main.flashTaskbar();
                             }
                             break;
@@ -3097,12 +3198,28 @@ function processMessages(data, replace = false)
                                         overlay: true,
                                         zindex: 250
                                     });
-                                    var notif = new Notification("DJ Controls - Reported Problem", {body: 'A problem has been reported!', requireInteraction: true, silent: true});
+                                    var notification = notifier.notify('Problem Reported', {
+                                        message: datum.message,
+                                        icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
+                                        duration: 60000000
+                                    });
+                                    notification.on('clicked', () => {
+                                        notification.close();
+                                    });
                                     main.flashTaskbar();
                                 }
                                 break;
                             case os.hostname():
                             case 'all':
+                                var notification = notifier.notify('New Message', {
+                                    message: `You have a new message from ${datum.from_friendly} (see DJ Controls).`,
+                                    icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
+                                    duration: 30000
+                                });
+                                notification.on('clicked', () => {
+                                    notification.close();
+                                });
+                                main.flashTaskbar();
                                 iziToast.show({
                                     title: `<i class="fas fa-comments"></i> Message from ${datum.from_friendly}`,
                                     message: `${datum.message}`,
@@ -3121,14 +3238,21 @@ function processMessages(data, replace = false)
                                             }]
                                     ]
                                 });
-                                var notif = new Notification("DJ Controls - Message", {body: 'You received a new message', requireInteraction: true, silent: true});
-                                main.flashTaskbar();
                                 data[index].needsread = true;
                                 break;
                             case 'DJ':
                             case 'DJ-private':
                                 if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.webmessages) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === os.hostname())))
                                 {
+                                    var notification = notifier.notify('New Web Message', {
+                                        message: `You have a new web message from ${datum.from_friendly} (see DJ Controls).`,
+                                        icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
+                                        duration: 30000
+                                    });
+                                    notification.on('clicked', () => {
+                                        notification.close();
+                                    });
+                                    main.flashTaskbar();
                                     iziToast.show({
                                         title: `<i class="fas fa-comments"></i> Web message from ${datum.from_friendly}`,
                                         message: `${datum.message}`,
@@ -3148,8 +3272,6 @@ function processMessages(data, replace = false)
                                                 }]
                                         ]
                                     });
-                                    var notif = new Notification("DJ Controls - Web message", {body: 'You received a new message from the web.', requireInteraction: true, silent: true});
-                                    main.flashTaskbar();
                                 }
                                 data[index].needsread = true;
                                 break;
@@ -3191,12 +3313,28 @@ function processMessages(data, replace = false)
                                             overlay: true,
                                             zindex: 250
                                         });
-                                        var notif = new Notification("DJ Controls - Reported Problem", {body: 'A problem has been reported.', requireInteraction: true, silent: true});
+                                        var notification = notifier.notify('Problem Reported', {
+                                            message: data[key].message,
+                                            icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
+                                            duration: 60000000
+                                        });
+                                        notification.on('clicked', () => {
+                                            notification.close();
+                                        });
                                         main.flashTaskbar();
                                     }
                                     break;
                                 case os.hostname():
                                 case 'all':
+                                    var notification = notifier.notify('New Message', {
+                                        message: `You have a new message from ${data[key].from_friendly} (see DJ Controls).`,
+                                        icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
+                                        duration: 30000
+                                    });
+                                    notification.on('clicked', () => {
+                                        notification.close();
+                                    });
+                                    main.flashTaskbar();
                                     iziToast.show({
                                         title: `<i class="fas fa-comments"></i> Message from ${data[key].from_friendly}`,
                                         message: `${data[key].message}`,
@@ -3215,14 +3353,21 @@ function processMessages(data, replace = false)
                                                 }]
                                         ]
                                     });
-                                    var notif = new Notification("DJ Controls - Message", {body: 'You received a new message', requireInteraction: true, silent: true});
-                                    main.flashTaskbar();
                                     data[key].needsread = true;
                                     break;
                                 case 'DJ':
                                 case 'DJ-private':
                                     if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.webmessages) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === os.hostname())))
                                     {
+                                        var notification = notifier.notify('New Web Message', {
+                                            message: `You have a new web message from ${data[key].from_friendly} (see DJ Controls).`,
+                                            icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
+                                            duration: 30000
+                                        });
+                                        notification.on('clicked', () => {
+                                            notification.close();
+                                        });
+                                        main.flashTaskbar();
                                         iziToast.show({
                                             title: `<i class="fas fa-comments"></i> Web message from ${data[key].from_friendly}`,
                                             message: `${data[key].message}`,
@@ -3242,8 +3387,6 @@ function processMessages(data, replace = false)
                                                     }]
                                             ]
                                         });
-                                        var notif = new Notification("DJ Controls - Web Message", {body: 'You received a new message from the web.', requireInteraction: true, silent: true});
-                                        main.flashTaskbar();
                                     }
                                     data[key].needsread = true;
                                     break;
