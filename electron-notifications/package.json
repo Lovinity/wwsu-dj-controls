@@ -1,0 +1,76 @@
+{
+  "_args": [
+    [
+      "electron-notifications@1.0.0",
+      "C:\\Users\\user\\djcontrols4"
+    ]
+  ],
+  "_from": "electron-notifications@1.0.0",
+  "_id": "electron-notifications@1.0.0",
+  "_inBundle": false,
+  "_integrity": "sha1-uTYT4jM/IqpPa50ydcyfPPgPTSI=",
+  "_location": "/electron-notifications",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "electron-notifications@1.0.0",
+    "name": "electron-notifications",
+    "escapedName": "electron-notifications",
+    "rawSpec": "1.0.0",
+    "saveSpec": null,
+    "fetchSpec": "1.0.0"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/electron-notifications/-/electron-notifications-1.0.0.tgz",
+  "_spec": "1.0.0",
+  "_where": "C:\\Users\\user\\djcontrols4",
+  "author": {
+    "name": "Blaine Schmeisser"
+  },
+  "bugs": {
+    "url": "https://github.com/blainesch/electron-notifications/issues"
+  },
+  "dependencies": {
+    "electron-is": "^2.3.0"
+  },
+  "description": "A node module for sending notifications in electron applications",
+  "devDependencies": {
+    "electron": "^1.3.4",
+    "standard": "^8.0.0"
+  },
+  "homepage": "https://github.com/blainesch/electron-notifications#readme",
+  "keywords": [
+    "electron",
+    "notification",
+    "notification center",
+    "toaster",
+    "growl",
+    "notify-send",
+    "terminal-notifier",
+    "notify"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "name": "electron-notifications",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/blainesch/electron-notifications.git"
+  },
+  "scripts": {
+    "lint": "standard",
+    "playbook": "electron playbook/main.js",
+    "start": "npm run playbook"
+  },
+  "standard": {
+    "globals": [
+      "CodeMirror"
+    ],
+    "ignore": [
+      "playbook/assets/vendor"
+    ]
+  },
+  "version": "1.0.0"
+}

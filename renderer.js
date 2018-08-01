@@ -13,7 +13,7 @@ try {
     var fs = require("fs"); // file system
     var os = require('os'); // OS
     var main = require('electron').remote.require('./main');
-    var notifier = require('electron-notifications');
+    var notifier = require('./electron-notifications/index.js');
 
     // Define data variables
     var Meta = {time: moment().toISOString(), state: 'unknown'};
@@ -1056,7 +1056,7 @@ function doMeta(metan) {
                     message: 'It is time to take the FCC-required top of the hour break.',
                     icon: 'http://cdn.onlinewebfonts.com/svg/img_205852.png',
                     duration: 60000,
-                            buttons: ["Close"]
+                    buttons: ["Close"]
                 });
                 notification.on('buttonClicked', (text, buttonIndex, options) => {
                     notification.close();
@@ -1172,11 +1172,11 @@ function doMeta(metan) {
                         message: 'The remote stream has disconnected. Ensure you are encoding to the remote stream.',
                         icon: 'https://d30y9cdsu7xlg0.cloudfront.net/png/244853-200.png',
                         duration: 60000,
-                                buttons: ["Close"]
+                        buttons: ["Close"]
                     });
                     notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
-                });
+                        notification.close();
+                    });
                     main.flashTaskbar();
                     document.querySelector('#no-remote').style.display = "inline";
                     document.querySelector('#btn-resume').style.display = "inline";
@@ -1284,11 +1284,11 @@ function checkAnnouncements() {
                         message: datum.announcement,
                         icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
                         duration: 60000000,
-                                buttons: ["Close"]
+                        buttons: ["Close"]
                     });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
-                });
+                    notification.on('buttonClicked', (text, buttonIndex, options) => {
+                        notification.close();
+                    });
                     main.flashTaskbar();
                 }
             } else {
@@ -1450,9 +1450,9 @@ function checkCalendar() {
                     message: 'A sports broadcast is scheduled in less than 15 minutes. Please wrap up your broadcast.',
                     icon: 'https://icon2.kisspng.com/20171221/lje/gold-cup-trophy-png-clip-art-image-5a3c1fa99cbcb0.608850721513889705642.jpg',
                     duration: 900000,
-                            buttons: ["Close"]
+                    buttons: ["Close"]
                 });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
+                notification.on('buttonClicked', (text, buttonIndex, options) => {
                     notification.close();
                 });
                 main.flashTaskbar();
@@ -1485,9 +1485,9 @@ notification.on('buttonClicked', (text, buttonIndex, options) => {
                     message: 'A remote broadcast is scheduled in less than 15 minutes. Please wrap up your broadcast.',
                     icon: 'http://cdn.onlinewebfonts.com/svg/img_550701.png',
                     duration: 900000,
-                            buttons: ["Close"]
+                    buttons: ["Close"]
                 });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
+                notification.on('buttonClicked', (text, buttonIndex, options) => {
                     notification.close();
                 });
                 main.flashTaskbar();
@@ -1520,9 +1520,9 @@ notification.on('buttonClicked', (text, buttonIndex, options) => {
                     message: 'You are interfering with another scheduled show. Please end your show ASAP.',
                     icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
                     duration: 600000,
-                            buttons: ["Close"]
+                    buttons: ["Close"]
                 });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
+                notification.on('buttonClicked', (text, buttonIndex, options) => {
                     notification.close();
                 });
                 main.flashTaskbar();
@@ -1555,9 +1555,9 @@ notification.on('buttonClicked', (text, buttonIndex, options) => {
                     message: 'You are interfering with a scheduled prerecord. Please end your show ASAP.',
                     icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
                     duration: 600000,
-                            buttons: ["Close"]
+                    buttons: ["Close"]
                 });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
+                notification.on('buttonClicked', (text, buttonIndex, options) => {
                     notification.close();
                 });
                 main.flashTaskbar();
@@ -2590,11 +2590,11 @@ function processEas(data, replace = false)
                                 message: `A ${record.alert} is in effect for the counties of ${record.counties}. Please consider ending your show and taking shelter.`,
                                 icon: 'https://png2.kisspng.com/20180419/rue/kisspng-weather-forecasting-storm-computer-icons-clip-art-severe-5ad93bcb9e9da1.5355263615241860596497.png',
                                 duration: 900000,
-                                        buttons: ["Close"]
+                                buttons: ["Close"]
                             });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
-                });
+                            notification.on('buttonClicked', (text, buttonIndex, options) => {
+                                notification.close();
+                            });
                             main.flashTaskbar();
                             iziToast.show({
                                 class: 'flash-bg',
@@ -2637,11 +2637,11 @@ notification.on('buttonClicked', (text, buttonIndex, options) => {
                             message: `A ${record.alert} is in effect for the counties of ${record.counties}. Please keep an eye on the weather.`,
                             icon: 'https://static1.squarespace.com/static/59a614fef7e0ab8b4a7b489a/5aa95c6a652dea6215e225f9/5aa95d258165f5044f919008/1521460510101/feature+icon+-+severe+weather.png?format=300w',
                             duration: 900000,
-                                    buttons: ["Close"]
+                            buttons: ["Close"]
                         });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
-                });
+                        notification.on('buttonClicked', (text, buttonIndex, options) => {
+                            notification.close();
+                        });
                         main.flashTaskbar();
                         iziToast.show({
                             class: 'iziToast-eas-severe',
@@ -2701,11 +2701,11 @@ notification.on('buttonClicked', (text, buttonIndex, options) => {
                                         message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. Please consider ending your show and taking shelter.`,
                                         icon: 'https://png2.kisspng.com/20180419/rue/kisspng-weather-forecasting-storm-computer-icons-clip-art-severe-5ad93bcb9e9da1.5355263615241860596497.png',
                                         duration: 900000,
-                                                buttons: ["Close"]
+                                        buttons: ["Close"]
                                     });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
-                });
+                                    notification.on('buttonClicked', (text, buttonIndex, options) => {
+                                        notification.close();
+                                    });
                                     main.flashTaskbar();
                                     iziToast.show({
                                         class: 'flash-bg',
@@ -2749,11 +2749,11 @@ notification.on('buttonClicked', (text, buttonIndex, options) => {
                                     message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. Please keep an eye on the weather.`,
                                     icon: 'https://static1.squarespace.com/static/59a614fef7e0ab8b4a7b489a/5aa95c6a652dea6215e225f9/5aa95d258165f5044f919008/1521460510101/feature+icon+-+severe+weather.png?format=300w',
                                     duration: 900000,
-                                            buttons: ["Close"]
+                                    buttons: ["Close"]
                                 });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
-                });
+                                notification.on('buttonClicked', (text, buttonIndex, options) => {
+                                    notification.close();
+                                });
                                 main.flashTaskbar();
                                 iziToast.show({
                                     class: 'iziToast-eas-severe',
@@ -2879,11 +2879,11 @@ function processStatus(data, replace = false)
                             message: `Audio levels were detected as too low. Please check your audio levels.`,
                             icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
                             duration: 60000,
-                                    buttons: ["Close"]
+                            buttons: ["Close"]
                         });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
-                });
+                        notification.on('buttonClicked', (text, buttonIndex, options) => {
+                            notification.close();
+                        });
                         main.flashTaskbar();
                     }
                 });
@@ -2949,11 +2949,11 @@ notification.on('buttonClicked', (text, buttonIndex, options) => {
                                     message: `Audio levels were detected as too low. Please check your audio levels.`,
                                     icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
                                     duration: 60000,
-                                            buttons: ["Close"]
+                                    buttons: ["Close"]
                                 });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
-                });
+                                notification.on('buttonClicked', (text, buttonIndex, options) => {
+                                    notification.close();
+                                });
                                 main.flashTaskbar();
                             }
                             break;
@@ -3004,11 +3004,11 @@ notification.on('buttonClicked', (text, buttonIndex, options) => {
                                     message: `Audio levels were detected as too low. Please check your audio levels.`,
                                     icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
                                     duration: 60000,
-                                            buttons: ["Close"]
+                                    buttons: ["Close"]
                                 });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
-                });
+                                notification.on('buttonClicked', (text, buttonIndex, options) => {
+                                    notification.close();
+                                });
                                 main.flashTaskbar();
                             }
                             break;
@@ -3214,11 +3214,11 @@ function processMessages(data, replace = false)
                                         message: datum.message,
                                         icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
                                         duration: 60000000,
-                                                buttons: ["Close"]
+                                        buttons: ["Close"]
                                     });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
-                });
+                                    notification.on('buttonClicked', (text, buttonIndex, options) => {
+                                        notification.close();
+                                    });
                                     main.flashTaskbar();
                                 }
                                 break;
@@ -3228,11 +3228,11 @@ notification.on('buttonClicked', (text, buttonIndex, options) => {
                                     message: `You have a new message from ${datum.from_friendly} (see DJ Controls).`,
                                     icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
                                     duration: 30000,
-                                            buttons: ["Close"]
+                                    buttons: ["Close"],
                                 });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
-                });
+                                notification.on('buttonClicked', (text, buttonIndex, options) => {
+                                    notification.close();
+                                });
                                 main.flashTaskbar();
                                 iziToast.show({
                                     title: `<i class="fas fa-comments"></i> Message from ${datum.from_friendly}`,
@@ -3262,11 +3262,11 @@ notification.on('buttonClicked', (text, buttonIndex, options) => {
                                         message: `You have a new web message from ${datum.from_friendly} (see DJ Controls).`,
                                         icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
                                         duration: 30000,
-                                                buttons: ["Close"]
+                                        buttons: ["Close"]
                                     });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
-                });
+                                    notification.on('buttonClicked', (text, buttonIndex, options) => {
+                                        notification.close();
+                                    });
                                     main.flashTaskbar();
                                     iziToast.show({
                                         title: `<i class="fas fa-comments"></i> Web message from ${datum.from_friendly}`,
@@ -3332,11 +3332,11 @@ notification.on('buttonClicked', (text, buttonIndex, options) => {
                                             message: data[key].message,
                                             icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
                                             duration: 60000000,
-                                                    buttons: ["Close"]
+                                            buttons: ["Close"]
                                         });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
-                });
+                                        notification.on('buttonClicked', (text, buttonIndex, options) => {
+                                            notification.close();
+                                        });
                                         main.flashTaskbar();
                                     }
                                     break;
@@ -3346,11 +3346,11 @@ notification.on('buttonClicked', (text, buttonIndex, options) => {
                                         message: `You have a new message from ${data[key].from_friendly} (see DJ Controls).`,
                                         icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
                                         duration: 30000,
-                                                buttons: ["Close"]
+                                        buttons: ["Close"],
                                     });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
-                });
+                                    notification.on('buttonClicked', (text, buttonIndex, options) => {
+                                        notification.close();
+                                    });
                                     main.flashTaskbar();
                                     iziToast.show({
                                         title: `<i class="fas fa-comments"></i> Message from ${data[key].from_friendly}`,
@@ -3380,11 +3380,11 @@ notification.on('buttonClicked', (text, buttonIndex, options) => {
                                             message: `You have a new web message from ${data[key].from_friendly} (see DJ Controls).`,
                                             icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
                                             duration: 30000,
-                                                    buttons: ["Close"]
+                                            buttons: ["Close"]
                                         });
-notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
-                });
+                                        notification.on('buttonClicked', (text, buttonIndex, options) => {
+                                            notification.close();
+                                        });
                                         main.flashTaskbar();
                                         iziToast.show({
                                             title: `<i class="fas fa-comments"></i> Web message from ${data[key].from_friendly}`,
