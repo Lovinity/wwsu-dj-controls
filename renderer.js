@@ -2409,6 +2409,18 @@ function saveLog() {
         if (response === 'OK')
         {
             $("#log-modal").iziModal('close');
+            iziToast.show({
+                title: `Saved`,
+                message: `Your log entry was saved successfully.`,
+                timeout: 5000,
+                close: true,
+                color: 'green',
+                drag: false,
+                position: 'center',
+                closeOnClick: true,
+                overlay: false,
+                zindex: 1000
+            });
         } else {
             iziToast.show({
                 title: 'An error occurred',
@@ -2429,6 +2441,18 @@ function sendEmergency() {
         if (response === 'OK')
         {
             $("#emergency-modal").iziModal('close');
+            iziToast.show({
+                title: `Reported`,
+                message: `The problem has been reported, and the engineer will be notified.`,
+                timeout: 5000,
+                close: true,
+                color: 'green',
+                drag: false,
+                position: 'center',
+                closeOnClick: true,
+                overlay: false,
+                zindex: 1000
+            });
         } else {
             iziToast.show({
                 title: 'An error occurred',
@@ -2449,6 +2473,18 @@ function sendDisplay() {
         if (response === 'OK')
         {
             $("#display-modal").iziModal('close');
+            iziToast.show({
+                title: `Sent`,
+                message: `Your message was sent to the display signs.`,
+                timeout: 5000,
+                close: true,
+                color: 'green',
+                drag: false,
+                position: 'center',
+                closeOnClick: true,
+                overlay: false,
+                zindex: 1000
+            });
         } else {
             iziToast.show({
                 title: 'An error occurred',
