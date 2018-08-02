@@ -359,6 +359,15 @@ io.socket.on('disconnect', function () {
             var noConnection = document.getElementById('no-connection');
             noConnection.style.display = "inline";
             disconnected = true;
+            var notification = notifier.notify('DJ Controls Lost Connection', {
+                message: `DJ Controls lost connection to WWSU.`,
+                icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
+                duration: 60000,
+                buttons: ["Close"]
+            });
+            notification.on('buttonClicked', (text, buttonIndex, options) => {
+                notification.close();
+            });
         }
     } catch (e) {
         iziToast.show({
@@ -1173,9 +1182,9 @@ function doMeta(metan) {
                             ]
                         });
                     var notification = notifier.notify('Lost Remote Connection', {
-                        message: 'You are not encoding to the remote stream. Check your connection.',
+                        message: 'Check your connection to the remote stream, then resume broadcast in DJ Controls.',
                         icon: 'https://d30y9cdsu7xlg0.cloudfront.net/png/244853-200.png',
-                        duration: 600000,
+                        duration: 180000,
                         buttons: ["Close"]
                     });
                     notification.on('buttonClicked', (text, buttonIndex, options) => {
@@ -2896,6 +2905,19 @@ function processStatus(data, replace = false)
                         attn.innerHTML += `<div class="attn-status attn-status-${datum.status} alert alert-${className}" id="attn-status-${datum.name}" role="alert">
                         <i class="fas fa-server"></i> <strong>${datum.label}</strong> is reporting a problem: ${datum.data}
                     </div>`;
+                        if (client.emergencies && datum.status < 3)
+                        {
+                            var notification = notifier.notify('System Problem', {
+                                message: `${datum.label} reports a significant issue. Please see DJ Controls.`,
+                                icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
+                                duration: (1000 * 60 * 60 * 24),
+                                buttons: ["Close"]
+                            });
+                            notification.on('buttonClicked', (text, buttonIndex, options) => {
+                                notification.close();
+                            });
+                            main.flashTaskbar();
+                        }
                     } else {
                         prev.push(`attn-status-${datum.name}`);
                         var temp = document.querySelector(`#attn-status-${datum.name}`);
@@ -2967,6 +2989,19 @@ function processStatus(data, replace = false)
                                 attn.innerHTML += `<div class="attn-status attn-status-${data[key].status} alert alert-${className}" id="attn-status-${data[key].name}" role="alert">
                         <i class="fas fa-server"></i> <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}
                     </div>`;
+                                if (client.emergencies && data[key].status < 3)
+                                {
+                                    var notification = notifier.notify('System Problem', {
+                                        message: `${data[key].label} reports a significant issue. Please see DJ Controls.`,
+                                        icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
+                                        duration: (1000 * 60 * 60 * 24),
+                                        buttons: ["Close"]
+                                    });
+                                    notification.on('buttonClicked', (text, buttonIndex, options) => {
+                                        notification.close();
+                                    });
+                                    main.flashTaskbar();
+                                }
                             } else {
                                 var temp = document.querySelector(`#attn-status-${data[key].name}`);
                                 temp.className = `attn-status attn-status-${data[key].status} alert alert-${className}`;
@@ -3022,6 +3057,19 @@ function processStatus(data, replace = false)
                                 attn.innerHTML += `<div class="attn-status attn-status-${data[key].status} alert alert-${className}" id="attn-status-${data[key].name}" role="alert">
                         <i class="fas fa-server"></i> <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}
                     </div>`;
+                                if (client.emergencies && data[key].status < 3)
+                                {
+                                    var notification = notifier.notify('System Problem', {
+                                        message: `${data[key].label} reports a significant issue. Please see DJ Controls.`,
+                                        icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
+                                        duration: (1000 * 60 * 60 * 24),
+                                        buttons: ["Close"]
+                                    });
+                                    notification.on('buttonClicked', (text, buttonIndex, options) => {
+                                        notification.close();
+                                    });
+                                    main.flashTaskbar();
+                                }
                             } else {
                                 var temp = document.querySelector(`#attn-status-${data[key].name}`);
                                 temp.className = `attn-status attn-status-${data[key].status} alert alert-${className}`;
