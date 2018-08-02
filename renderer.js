@@ -457,6 +457,10 @@ document.querySelector("#btn-endshow").onclick = function () {
     endShow();
 };
 
+document.querySelector("#btn-switchshow").onclick = function () {
+    switchShow();
+};
+
 document.querySelector("#btn-resume").onclick = function () {
     returnBreak();
 };
@@ -1052,10 +1056,10 @@ function doMeta(metan) {
             if (document.querySelector("#iziToast-breakneeded") === null && !breakNotified)
             {
                 breakNotified = true;
-                var notification = notifier.notify('Top of Hour Break', {
-                    message: 'It is time to take the FCC-required top of the hour break.',
+                var notification = notifier.notify('Top of Hour Break Required', {
+                    message: 'Please take a break within the next 5 minutes.',
                     icon: 'http://cdn.onlinewebfonts.com/svg/img_205852.png',
-                    duration: 60000,
+                    duration: 300000,
                     buttons: ["Close"]
                 });
                 notification.on('buttonClicked', (text, buttonIndex, options) => {
@@ -1169,9 +1173,9 @@ function doMeta(metan) {
                             ]
                         });
                     var notification = notifier.notify('Lost Remote Connection', {
-                        message: 'The remote stream has disconnected. Ensure you are encoding to the remote stream.',
+                        message: 'You are not encoding to the remote stream. Check your connection.',
                         icon: 'https://d30y9cdsu7xlg0.cloudfront.net/png/244853-200.png',
-                        duration: 60000,
+                        duration: 600000,
                         buttons: ["Close"]
                     });
                     notification.on('buttonClicked', (text, buttonIndex, options) => {
@@ -1187,6 +1191,7 @@ function doMeta(metan) {
                 {
                     badge.className = 'badge badge-danger';
                     document.querySelector('#btn-endshow').style.display = "inline";
+                    document.querySelector('#btn-switchshow').style.display = "inline";
                     document.querySelector('#btn-break').style.display = "inline";
                     document.querySelector('#btn-topadd').style.display = "inline";
                     document.querySelector('#btn-log').style.display = "inline";
@@ -1281,9 +1286,9 @@ function checkAnnouncements() {
                         zindex: 250
                     });
                     var notification = notifier.notify('Problem Reported', {
-                        message: datum.announcement,
+                        message: `A problem was reported. Please see DJ Controls.`,
                         icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                        duration: 60000000,
+                        duration: (1000 * 60 * 60 * 24),
                         buttons: ["Close"]
                     });
                     notification.on('buttonClicked', (text, buttonIndex, options) => {
@@ -1446,8 +1451,8 @@ function checkCalendar() {
             if (calType === 'Sports')
             {
                 calNotified = true;
-                var notification = notifier.notify('Please Wrap Up Show', {
-                    message: 'A sports broadcast is scheduled in less than 15 minutes. Please wrap up your broadcast.',
+                var notification = notifier.notify('Upcoming Sports Broadcast', {
+                    message: 'Please wrap-up / end your show in the next few minutes.',
                     icon: 'https://icon2.kisspng.com/20171221/lje/gold-cup-trophy-png-clip-art-image-5a3c1fa99cbcb0.608850721513889705642.jpg',
                     duration: 900000,
                     buttons: ["Close"]
@@ -1481,8 +1486,8 @@ function checkCalendar() {
             if (calType === 'Remote')
             {
                 calNotified = true;
-                var notification = notifier.notify('Please Wrap Up Show', {
-                    message: 'A remote broadcast is scheduled in less than 15 minutes. Please wrap up your broadcast.',
+                var notification = notifier.notify('Upcoming Remote Broadcast', {
+                    message: 'Please wrap-up / end your show in the next few minutes.',
                     icon: 'http://cdn.onlinewebfonts.com/svg/img_550701.png',
                     duration: 900000,
                     buttons: ["Close"]
@@ -1516,8 +1521,8 @@ function checkCalendar() {
             if (calType === 'Show' && moment(Meta.time).isAfter(moment(calStarts)))
             {
                 calNotified = true;
-                var notification = notifier.notify('Please Wrap Up Show', {
-                    message: 'You are interfering with another scheduled show. Please end your show ASAP.',
+                var notification = notifier.notify('Interfering with Another Show', {
+                    message: 'Please wrap-up / end your show as soon as possible.',
                     icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
                     duration: 600000,
                     buttons: ["Close"]
@@ -1551,8 +1556,8 @@ function checkCalendar() {
             if (calType === 'Prerecord' && moment(Meta.time).isAfter(moment(calStarts)))
             {
                 calNotified = true;
-                var notification = notifier.notify('Please Wrap Up Show', {
-                    message: 'You are interfering with a scheduled prerecord. Please end your show ASAP.',
+                var notification = notifier.notify('Interfering with a Prerecord', {
+                    message: 'Please wrap-up / end your show as soon as possible.',
                     icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
                     duration: 600000,
                     buttons: ["Close"]
@@ -1600,7 +1605,7 @@ function checkCalendar() {
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
-                                                ${moment(event.start).format("hh:mm A")}
+                                                ${moment(event.start).format("hh:mm A")} - ${moment(event.end).format("hh:mm A")}
                                             </div>
                                             <div class="col-8">
                                                 ${event.title}
@@ -2586,8 +2591,8 @@ function processEas(data, replace = false)
                     {
                         if (!Meta.state.startsWith("automation_"))
                         {
-                            var notification = notifier.notify('Extreme Weather Alert', {
-                                message: `A ${record.alert} is in effect for the counties of ${record.counties}. Please consider ending your show and taking shelter.`,
+                            var notification = notifier.notify('Extreme Weather Alert in effect', {
+                                message: `Please consider ending your show and taking shelter. See DJ Controls.`,
                                 icon: 'https://png2.kisspng.com/20180419/rue/kisspng-weather-forecasting-storm-computer-icons-clip-art-severe-5ad93bcb9e9da1.5355263615241860596497.png',
                                 duration: 900000,
                                 buttons: ["Close"]
@@ -2633,8 +2638,8 @@ function processEas(data, replace = false)
                         }
                     } else if (record.severity === 'Severe')
                     {
-                        var notification = notifier.notify('Severe Weather Alert', {
-                            message: `A ${record.alert} is in effect for the counties of ${record.counties}. Please keep an eye on the weather.`,
+                        var notification = notifier.notify('Severe Weather Alert in effect', {
+                            message: `Please keep an eye on the weather. See DJ Controls for more info.`,
                             icon: 'https://static1.squarespace.com/static/59a614fef7e0ab8b4a7b489a/5aa95c6a652dea6215e225f9/5aa95d258165f5044f919008/1521460510101/feature+icon+-+severe+weather.png?format=300w',
                             duration: 900000,
                             buttons: ["Close"]
@@ -2697,8 +2702,8 @@ function processEas(data, replace = false)
                             {
                                 if (!Meta.state.startsWith("automation_"))
                                 {
-                                    var notification = notifier.notify('Extreme Weather Alert', {
-                                        message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. Please consider ending your show and taking shelter.`,
+                                    var notification = notifier.notify('Extreme Weather Alert in effect', {
+                                        message: `Please consider ending your show and taking shelter. See DJ Controls.`,
                                         icon: 'https://png2.kisspng.com/20180419/rue/kisspng-weather-forecasting-storm-computer-icons-clip-art-severe-5ad93bcb9e9da1.5355263615241860596497.png',
                                         duration: 900000,
                                         buttons: ["Close"]
@@ -2745,8 +2750,8 @@ function processEas(data, replace = false)
                                 }
                             } else if (data[key].severity === 'Severe')
                             {
-                                var notification = notifier.notify('Severe Weather Alert', {
-                                    message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. Please keep an eye on the weather.`,
+                                var notification = notifier.notify('Severe Weather Alert in effect', {
+                                    message: `Please keep an eye on the weather. See DJ Controls for more info.`,
                                     icon: 'https://static1.squarespace.com/static/59a614fef7e0ab8b4a7b489a/5aa95c6a652dea6215e225f9/5aa95d258165f5044f919008/1521460510101/feature+icon+-+severe+weather.png?format=300w',
                                     duration: 900000,
                                     buttons: ["Close"]
@@ -2865,7 +2870,7 @@ function processStatus(data, replace = false)
                     {
                         iziToast.show({
                             title: '<i class="fas fa-volume-off"></i> Silence / Low Audio detected!',
-                            message: `Silence / low audio was detected. Please check your audio levels. The Silence entry in the Announcements box will disappear when audio levels are acceptable again.`,
+                            message: `Silence / low audio was detected. Please check your audio levels. The Silence entry in the Announcements box will disappear when audio levels are acceptable again. NOTE: Silence detection is delayed based off of the delay system.`,
                             timeout: 60000,
                             close: true,
                             color: 'red',
@@ -2875,8 +2880,8 @@ function processStatus(data, replace = false)
                             overlay: true,
                             zindex: 500
                         });
-                        var notification = notifier.notify('Low / No Audio!', {
-                            message: `Audio levels were detected as too low. Please check your audio levels.`,
+                        var notification = notifier.notify('Low / No Audio Detected', {
+                            message: `Please check your audio levels to see if they are okay.`,
                             icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
                             duration: 60000,
                             buttons: ["Close"]
@@ -2935,7 +2940,7 @@ function processStatus(data, replace = false)
                             {
                                 iziToast.show({
                                     title: '<i class="fas fa-volume-off"></i> Silence / Low Audio detected!',
-                                    message: `Silence / low audio was detected. Please check your audio levels. The Silence entry in the Announcements box will disappear when audio levels are acceptable again.`,
+                                    message: `Silence / low audio was detected. Please check your audio levels. The Silence entry in the Announcements box will disappear when audio levels are acceptable again. NOTE: Silence detection is on a delay according to the delay system.`,
                                     timeout: 60000,
                                     close: true,
                                     color: 'red',
@@ -2945,8 +2950,8 @@ function processStatus(data, replace = false)
                                     overlay: true,
                                     zindex: 500
                                 });
-                                var notification = notifier.notify('Low / No Audio!', {
-                                    message: `Audio levels were detected as too low. Please check your audio levels.`,
+                                var notification = notifier.notify('Low / No Audio Detected', {
+                                    message: `Please check your audio levels to see if they are okay.`,
                                     icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
                                     duration: 60000,
                                     buttons: ["Close"]
@@ -2990,7 +2995,7 @@ function processStatus(data, replace = false)
                             {
                                 iziToast.show({
                                     title: '<i class="fas fa-volume-off"></i> Silence / Low Audio detected!',
-                                    message: `Silence / low audio was detected. Please check your audio levels. The Silence entry in the Announcements box will disappear when audio levels are acceptable again.`,
+                                    message: `Silence / low audio was detected. Please check your audio levels. The Silence entry in the Announcements box will disappear when audio levels are acceptable again. NOTE: Silence detection is on a delay according to the delay system.`,
                                     timeout: 60000,
                                     close: true,
                                     color: 'red',
@@ -3000,8 +3005,8 @@ function processStatus(data, replace = false)
                                     overlay: true,
                                     zindex: 500
                                 });
-                                var notification = notifier.notify('Low / No Audio!', {
-                                    message: `Audio levels were detected as too low. Please check your audio levels.`,
+                                var notification = notifier.notify('Low / No Audio Detected', {
+                                    message: `Please check your audio levels to see if they are okay.`,
                                     icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
                                     duration: 60000,
                                     buttons: ["Close"]
@@ -3211,9 +3216,9 @@ function processMessages(data, replace = false)
                                         zindex: 250
                                     });
                                     var notification = notifier.notify('Problem Reported', {
-                                        message: datum.message,
+                                        message: `A problem was reported. Please see DJ Controls.`,
                                         icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                                        duration: 60000000,
+                                        duration: (1000 * 60 * 60 * 24),
                                         buttons: ["Close"]
                                     });
                                     notification.on('buttonClicked', (text, buttonIndex, options) => {
@@ -3329,9 +3334,9 @@ function processMessages(data, replace = false)
                                             zindex: 250
                                         });
                                         var notification = notifier.notify('Problem Reported', {
-                                            message: data[key].message,
+                                            message: `A problem was reported. Please see DJ Controls.`,
                                             icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                                            duration: 60000000,
+                                            duration: (1000 * 60 * 60 * 24),
                                             buttons: ["Close"]
                                         });
                                         notification.on('buttonClicked', (text, buttonIndex, options) => {
