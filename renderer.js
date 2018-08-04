@@ -1127,7 +1127,7 @@ function doMeta(metan) {
                 document.querySelector('#queue').style.display = "none";
                 document.querySelector('#no-remote').style.display = "none";
                 document.querySelector('#please-wait').style.display = "none";
-                if (Meta.state === 'automation_on')
+                if (Meta.state === 'automation_on' || Meta.state === 'automation_break')
                 {
                     badge.className = 'badge badge-primary';
                     document.querySelector('#btn-golive').style.display = "inline";
@@ -1543,7 +1543,7 @@ function checkCalendar() {
                 iziToast.show({
                     class: 'flash-bg',
                     title: '<i class="fas fa-microphone-alt"></i> You are interrupting another show!',
-                    message: `You are running into another person's show time. Please wrap up your show now and then click "End Show".`,
+                    message: `You are running into another person's show time. Please wrap up your show now and then click "End Show" (or click "Switch Show" if the other person is ready to go live in the next few minutes).`,
                     timeout: 900000,
                     close: true,
                     color: 'blue',
@@ -1555,6 +1555,10 @@ function checkCalendar() {
                     buttons: [
                         ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
                                 endShow();
+                                instance.hide({}, toast, 'button');
+                            }],
+                        ['<button>Switch Show</button>', function (instance, toast, button, e, inputs) {
+                                switchShow();
                                 instance.hide({}, toast, 'button');
                             }]
                     ]
@@ -2515,6 +2519,25 @@ function endShow() {
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
+        }
+        $("#wait-modal").iziModal('close');
+        console.log(JSON.stringify(response));
+    });
+}
+
+function switchShow() {
+    $("#wait-modal").iziModal('open');
+    document.querySelector("#wait-text").innerHTML = 'Queuing PSAs / ID';
+    nodeRequest({method: 'POST', url: nodeURL + '/state/automation', data: {transition: true}}, function (response) {
+        if (response !== 'OK')
+        {
+            iziToast.show({
+                title: 'An error occurred',
+                message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
+                timeout: 10000
+            });
+        } else {
+            prepareLive();
         }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
