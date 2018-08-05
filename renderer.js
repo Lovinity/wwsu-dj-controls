@@ -14,6 +14,8 @@ try {
     var os = require('os'); // OS
     var main = require('electron').remote.require('./main');
     var notifier = require('./electron-notifications/index.js');
+    var nrc = require("node-run-cmd");
+    var sanitize = require("sanitize-filename");
 
     // Define data variables
     var Meta = {time: moment().toISOString(), state: 'unknown'};
@@ -30,6 +32,9 @@ try {
     // Define other variables
     var nodeURL = 'https://server.wwsu1069.org';
     //var nodeURL = 'http://localhost:1337';
+    var recordPadPath = "C:\\Program Files (x86)\\NCH Software\\Recordpad\\recordpad.exe";
+    var recordPath = "S:\\OnAir recordings";
+    var delay = 9000; // Subtract 1 second from the amount of on-air delay, as it takes about a second to process the recorder.
 
     io.sails.url = nodeURL;
     var disconnected = true;
@@ -397,14 +402,63 @@ io.socket.on('connect', function () {
 });
 
 io.socket.on('meta', function (data) {
+    var startRecording = null;
     for (var key in data)
     {
         if (data.hasOwnProperty(key))
         {
+            if (key === 'state')
+            {
+                if (((Meta[key].startsWith("automation_") || Meta[key] === 'unknown') && Meta[key] !== 'automation_break') || (Meta[key].includes("_returning") && !data[key].includes("_returning")))
+                {
+                    if (data[key] === 'live_on')
+                    {
+                        startRecording = 'live';
+                    } else if (data[key] === 'remote_on')
+                    {
+                        startRecording = 'remote';
+                    } else if (data[key] === 'sports_on' || data[key] === 'sportsremote_on')
+                    {
+                        startRecording = 'sports';
+                    }
+                } else if (!Meta[key].startsWith("automation_") && data[key].startsWith("automation_"))
+                {
+                    startRecording = 'automation';
+                } else if (data[key].includes("_break") || data[key].includes("_returning"))
+                {
+                    setTimeout(function () {
+                        nrc.run(`"${recordPadPath}" -done`)
+                                .then(function (response) {
+                                    console.log(response);
+                                })
+                                .catch(err => {
+                                    console.error(err);
+                                });
+                    }, delay);
+                }
+            }
             Meta[key] = data[key];
         }
     }
     doMeta(data);
+    if (startRecording !== null) {
+        setTimeout(function () {
+            nrc.run(`"${recordPadPath}" -done`)
+                    .then(function (response) {
+                        console.log(response);
+                        nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                .then(function (response2) {
+                                    console.log(response2);
+                                })
+                                .catch(err => {
+                                    console.error(err);
+                                });
+                    })
+                    .catch(err => {
+                        console.error(err);
+                    });
+        }, delay);
+    }
 });
 
 // On new eas data, update our eas memory and run the process function.
@@ -938,14 +992,60 @@ function metaSocket() {
     console.log('attempting meta socket');
     io.socket.post('/meta/get', {}, function serverResponded(body, JWR) {
         try {
+            var startRecording = null;
             for (var key in body)
             {
                 if (body.hasOwnProperty(key))
                 {
+                    if (key === 'state')
+                    {
+                        if (((Meta[key].startsWith("automation_") || Meta[key] === 'unknown') && Meta[key] !== 'automation_break') || (Meta[key].includes("_returning") && !body[key].includes("_returning")))
+                        {
+                            if (body[key] === 'live_on')
+                            {
+                                startRecording = 'live';
+                            } else if (body[key] === 'remote_on')
+                            {
+                                startRecording = 'remote';
+                            } else if (body[key] === 'sports_on' || body[key] === 'sportsremote_on')
+                            {
+                                startRecording = 'sports';
+                            }
+                        } else if (!Meta[key].startsWith("automation_") && body[key].startsWith("automation_"))
+                        {
+                            startRecording = 'automation';
+                        } else if (body[key].includes("_break") || body[key].includes("_returning"))
+                        {
+                            nrc.run(`"${recordPadPath}" -done`)
+                                    .then(function (response) {
+                                        console.log(response);
+                                    })
+                                    .catch(err => {
+                                        console.error(err);
+                                    });
+                        }
+                    }
                     Meta[key] = body[key];
                 }
             }
             doMeta(body);
+            if (startRecording !== null) {
+                nrc.run(`"${recordPadPath}" -done`)
+                        .then(function (response) {
+                            console.log(`DONE: ${response}`);
+                            nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                    .then(function (response2) {
+                                        console.log(`RECORDFILE: ${response2}`);
+                                        console.log(`"${recordPath}\\${startRecording}\\${Meta.dj} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`);
+                                    })
+                                    .catch(err => {
+                                        console.error(err);
+                                    });
+                        })
+                        .catch(err => {
+                            console.error(err);
+                        });
+            }
         } catch (e) {
             console.error(e);
             console.log(`FAILED META CONNECTION`);
