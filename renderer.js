@@ -104,7 +104,27 @@ try {
                 }
                 minutesC++;
                 if (minutesC >= 60)
+                {
                     minutesC = 0;
+                    // Start a new recording if we are in automation
+                    if (Meta.state.startsWith("automation_"))
+                    {
+                        nrc.run(`"${recordPadPath}" -done`)
+                                .then(function (response) {
+                                    console.log(`DONE: ${response}`);
+                                    nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\automation\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                            .then(function (response2) {
+                                                console.log(`RECORDFILE: ${response2}`)
+                                            })
+                                            .catch(err => {
+                                                console.error(err);
+                                            });
+                                })
+                                .catch(err => {
+                                    console.error(err);
+                                });
+                    }
+                }
             }
         }
         if (secondsC !== seconds)
@@ -1010,6 +1030,9 @@ function metaSocket() {
                             } else if (body[key] === 'sports_on' || body[key] === 'sportsremote_on')
                             {
                                 startRecording = 'sports';
+                            } else if (body[key].startsWith("automation_"))
+                            {
+                                startRecording = 'automation';
                             }
                         } else if (!Meta[key].startsWith("automation_") && body[key].startsWith("automation_"))
                         {
