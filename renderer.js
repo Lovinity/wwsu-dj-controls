@@ -114,6 +114,11 @@ try {
                                     console.log(`DONE: ${response}`);
                                     nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\automation\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
                                             .then(function (response2) {
+                                                if (response2 == 0)
+                                                {
+                                                    nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'operation', logsubtype: 'automation', loglevel: 'info', event: `A recording was started in ${recordPath}\\automation\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                    });
+                                                }
                                                 console.log(`RECORDFILE: ${response2}`)
                                             })
                                             .catch(err => {
@@ -468,6 +473,11 @@ io.socket.on('meta', function (data) {
                         console.log(response);
                         nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
                                 .then(function (response2) {
+                                    if (response2 == 0)
+                                    {
+                                        nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'operation', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                        });
+                                    }
                                     console.log(response2);
                                 })
                                 .catch(err => {
@@ -1058,8 +1068,12 @@ function metaSocket() {
                             console.log(`DONE: ${response}`);
                             nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
                                     .then(function (response2) {
+                                        if (response2 == 0)
+                                        {
+                                            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'operation', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                            });
+                                        }
                                         console.log(`RECORDFILE: ${response2}`);
-                                        console.log(`"${recordPath}\\${startRecording}\\${Meta.dj} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`);
                                     })
                                     .catch(err => {
                                         console.error(err);
