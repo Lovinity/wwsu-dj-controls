@@ -1340,30 +1340,39 @@ function doMeta(metan) {
                 {
                     badge.className = 'badge badge-danger';
                     if (queueLength > 0)
+                    {
                         document.querySelector('#queue').style.display = "inline";
+                    } else {
+                        document.querySelector('#btn-topadd').style.display = "inline";
+                        document.querySelector('#btn-log').style.display = "inline";
+                    }
                     document.querySelector('#btn-endshow').style.display = "inline";
                     document.querySelector('#btn-switchshow').style.display = "inline";
                     document.querySelector('#btn-break').style.display = "inline";
-                    document.querySelector('#btn-topadd').style.display = "inline";
-                    document.querySelector('#btn-log').style.display = "inline";
                 } else if (Meta.state.includes('sports_') || Meta.state.includes('sportsremote_'))
                 {
                     badge.className = 'badge badge-success';
                     if (queueLength > 0)
+                    {
                         document.querySelector('#queue').style.display = "inline";
+                    } else {
+                        document.querySelector('#btn-liner').style.display = "inline";
+                    }
                     document.querySelector('#btn-endshow').style.display = "inline";
                     document.querySelector('#btn-break').style.display = "inline";
                     document.querySelector('#btn-halftime').style.display = "inline";
-                    document.querySelector('#btn-liner').style.display = "inline";
                 } else if (Meta.state.includes('remote_'))
                 {
                     badge.className = 'badge badge-purple';
                     if (Meta.queueLength > 0)
+                    {
                         document.querySelector('#queue').style.display = "inline";
+                    } else {
+                        document.querySelector('#btn-topadd').style.display = "inline";
+                        document.querySelector('#btn-log').style.display = "inline";
+                    }
                     document.querySelector('#btn-endshow').style.display = "inline";
                     document.querySelector('#btn-break').style.display = "inline";
-                    document.querySelector('#btn-topadd').style.display = "inline";
-                    document.querySelector('#btn-log').style.display = "inline";
                 } else {
                 }
                 $('#operations-body').animateCss('bounceIn', function () {});
