@@ -1244,6 +1244,8 @@ function doMeta(metan) {
             queueLength = 0;
         var queueTime = document.querySelector("#queue-seconds");
         queueTime.innerHTML = moment.duration(queueLength, "seconds").format();
+        if (typeof metan.playing !== 'undefined' && typeof metan.state === 'undefined')
+            metan.state = Meta.state;
         if (queueLength < 15 && (Meta.state.includes("_returning") || (Meta.state.startsWith("automation_") && Meta.state !== 'automation_on' && Meta.state !== 'automation_genre') && Meta.state !== 'automation_playlist'))
         {
             var operations = document.querySelector("#operations");
