@@ -522,59 +522,59 @@ io.socket.on('recipients', function (data) {
 
 // OnClick handlers
 
-document.querySelector("#btn-return").onclick = function () {
+document.querySelector("#btn-return-b").onclick = function () {
     returnBreak();
 };
 
-document.querySelector("#btn-psa15").onclick = function () {
+document.querySelector("#btn-psa15-b").onclick = function () {
     queuePSA(15);
 };
 
-document.querySelector("#btn-psa30").onclick = function () {
+document.querySelector("#btn-psa30-b").onclick = function () {
     queuePSA(30);
 };
 
-document.querySelector("#btn-golive").onclick = function () {
+document.querySelector("#btn-golive-b").onclick = function () {
     prepareLive();
 };
 
-document.querySelector("#btn-goremote").onclick = function () {
+document.querySelector("#btn-goremote-b").onclick = function () {
     prepareRemote();
 };
 
-document.querySelector("#btn-gosports").onclick = function () {
+document.querySelector("#btn-gosports-b").onclick = function () {
     prepareSports();
 };
 
-document.querySelector("#btn-endshow").onclick = function () {
+document.querySelector("#btn-endshow-b").onclick = function () {
     endShow();
 };
 
-document.querySelector("#btn-switchshow").onclick = function () {
+document.querySelector("#btn-switchshow-b").onclick = function () {
     switchShow();
 };
 
-document.querySelector("#btn-resume").onclick = function () {
+document.querySelector("#btn-resume-b").onclick = function () {
     returnBreak();
 };
 
-document.querySelector("#btn-break").onclick = function () {
+document.querySelector("#btn-break-b").onclick = function () {
     goBreak(false);
 };
 
-document.querySelector("#btn-halftime").onclick = function () {
+document.querySelector("#btn-halftime-b").onclick = function () {
     goBreak(true);
 };
 
-document.querySelector("#btn-topadd").onclick = function () {
+document.querySelector("#btn-topadd-b").onclick = function () {
     playTopAdd();
 };
 
-document.querySelector("#btn-liner").onclick = function () {
+document.querySelector("#btn-liner-b").onclick = function () {
     playLiner();
 };
 
-document.querySelector("#btn-log").onclick = function () {
+document.querySelector("#btn-log-b").onclick = function () {
     prepareLog();
 };
 
