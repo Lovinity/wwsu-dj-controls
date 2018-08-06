@@ -1339,7 +1339,7 @@ function doMeta(metan) {
                 } else if (Meta.state.includes('live_'))
                 {
                     badge.className = 'badge badge-danger';
-                    if (queueLength > 0)
+                    if (Meta.playing)
                     {
                         document.querySelector('#queue').style.display = "inline";
                     } else {
@@ -1352,7 +1352,7 @@ function doMeta(metan) {
                 } else if (Meta.state.includes('sports_') || Meta.state.includes('sportsremote_'))
                 {
                     badge.className = 'badge badge-success';
-                    if (queueLength > 0)
+                    if (Meta.playing)
                     {
                         document.querySelector('#queue').style.display = "inline";
                     } else {
@@ -1364,7 +1364,7 @@ function doMeta(metan) {
                 } else if (Meta.state.includes('remote_'))
                 {
                     badge.className = 'badge badge-purple';
-                    if (Meta.queueLength > 0)
+                    if (Meta.playing)
                     {
                         document.querySelector('#queue').style.display = "inline";
                     } else {
