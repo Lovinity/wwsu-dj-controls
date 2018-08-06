@@ -1285,6 +1285,9 @@ function doMeta(metan) {
                 } else if (Meta.state === 'live_prerecord' || Meta.state === 'automation_prerecord')
                 {
                     badge.className = 'badge badge-danger';
+                    document.querySelector('#btn-golive').style.display = "inline";
+                    document.querySelector('#btn-goremote').style.display = "inline";
+                    document.querySelector('#btn-gosports').style.display = "inline";
                 } else if (Meta.state.startsWith('automation_') || (Meta.state.includes('_returning') && !Meta.state.startsWith('sports')))
                 {
                     document.querySelector('#queue').style.display = "inline";
@@ -1336,6 +1339,8 @@ function doMeta(metan) {
                 } else if (Meta.state.includes('live_'))
                 {
                     badge.className = 'badge badge-danger';
+                    if (queueLength > 0)
+                        document.querySelector('#queue').style.display = "inline";
                     document.querySelector('#btn-endshow').style.display = "inline";
                     document.querySelector('#btn-switchshow').style.display = "inline";
                     document.querySelector('#btn-break').style.display = "inline";
@@ -1344,6 +1349,8 @@ function doMeta(metan) {
                 } else if (Meta.state.includes('sports_') || Meta.state.includes('sportsremote_'))
                 {
                     badge.className = 'badge badge-success';
+                    if (queueLength > 0)
+                        document.querySelector('#queue').style.display = "inline";
                     document.querySelector('#btn-endshow').style.display = "inline";
                     document.querySelector('#btn-break').style.display = "inline";
                     document.querySelector('#btn-halftime').style.display = "inline";
@@ -1351,6 +1358,8 @@ function doMeta(metan) {
                 } else if (Meta.state.includes('remote_'))
                 {
                     badge.className = 'badge badge-purple';
+                    if (Meta.queueLength > 0)
+                        document.querySelector('#queue').style.display = "inline";
                     document.querySelector('#btn-endshow').style.display = "inline";
                     document.querySelector('#btn-break').style.display = "inline";
                     document.querySelector('#btn-topadd').style.display = "inline";
