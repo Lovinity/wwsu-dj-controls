@@ -1866,10 +1866,10 @@ function checkRecipients() {
                                 <div id="users-b-${recipient.host}" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;">
                                                     <div class="container">
   <div class="row">
-    <div class="col-8" id="users-c1-${recipient.host}">
+    <div class="col-9" id="users-c1-${recipient.host}">
       <span id="users-l-${recipient.host}">${recipient.label}</span>
     </div>
-    <div class="col-4" id="users-c2-${recipient.host}" style="text-align: center;">
+    <div class="col-3" id="users-c2-${recipient.host}" style="text-align: center;">
                                                                                 <div class="dropdown">
       <span class='message-options' id="users-o-${recipient.host}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span><span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.host}">${recipient.unread}</span>
                                                                                         <div class="dropdown-menu" aria-labelledby="users-o-${recipient.host}">
@@ -1887,10 +1887,10 @@ function checkRecipients() {
                                 <div id="users-b-${recipient.host}" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;">
                                                     <div class="container">
   <div class="row">
-    <div class="col-8" id="users-c1-${recipient.host}">
+    <div class="col-9" id="users-c1-${recipient.host}">
       <span id="users-l-${recipient.host}">${recipient.label}</span>
     </div>
-    <div class="col-4" id="users-c2-${recipient.host}" style="text-align: center;">
+    <div class="col-3" id="users-c2-${recipient.host}" style="text-align: center;">
     <span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.host}" style="float: right;">${recipient.unread}</span>
     </div>
   </div>
