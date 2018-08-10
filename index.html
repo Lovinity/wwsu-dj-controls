@@ -110,6 +110,7 @@
                 z-index: 8;
             }
 
+
             @keyframes rotate {
                 100% {
                     transform: rotateZ(360deg);
@@ -124,6 +125,21 @@
             }
             .seconds-container {
                 transition: transform 0.2s cubic-bezier(.4,2.08,.55,.44);
+            }
+
+            .clock circle {
+                fill: rgba(0, 0, 0, 0);
+                stroke: #0074d9;
+                stroke-width: 50%;
+                stroke-dasharray: 0 1;
+                transition: stroke-dasharray .5s ease;
+            }
+
+            .clock svg {
+                margin: 0 auto;
+                background: rgba(0, 0, 0, 0);
+                border-radius: 50%;
+                display: block;
             }
 
             .close {
@@ -312,20 +328,22 @@
             </div>
 
             <div class="card p-1 m-3 text-white bg-dark" id="calendar" style="width: 640px; height: 360px;">
-                <div class="card-header text-center" style="font-size: 1.5em;">Time and Calendar</div>
+                <div class="card-header text-center" style="font-size: 1.5em;">Calendar (next 12 hours)</div>
                 <div class="card-body">
                     <div class="container">
                         <div class="row">
                             <div class="col-4">
                                 <article class="clock">
+                                    <svg class="chart" id="clock-program" style="z-index: 15; opacity: 0.66; position: absolute; width: 100%; height: 100%; top: 0; left: 0;">
+                                    </svg>
                                     <div class="hours-container">
-                                        <div class="hours"></div>
+                                        <div class="hours" style="z-index: 20;"></div>
                                     </div>
                                     <div class="minutes-container">
-                                        <div class="minutes"></div>
+                                        <div class="minutes" style="z-index: 20;"></div>
                                     </div>
                                     <div class="seconds-container">
-                                        <div class="seconds"></div>
+                                        <div class="seconds" style="z-index: 20;"></div>
                                     </div>
                                 </article>
                                 <div id="datestamp" style="text-align: center; font-size: 1.5em;"></div>

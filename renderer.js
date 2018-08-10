@@ -45,6 +45,11 @@ try {
     var totalUnread = 0;
     var totalRequests = 0;
     var breakNotified = false;
+    var data = {
+        size: 160,
+        start: 0, // angle to rotate pie chart by
+        sectors: [] // start (angle from start), size (amount of angle to cover), label, color
+    }
 
     // These are used for keeping track of upcoming shows and notifying DJs to prevent people cutting into each other's shows.
     var calPriority = 0;
@@ -69,21 +74,21 @@ try {
         hours = date.hours();
         var dateStamp = document.getElementById("datestamp");
         dateStamp.innerHTML = date.format('LLLL');
-        if (hoursC !== (hours + (Math.floor(minutes / 15) / 4)))
+        if (hoursC !== (hours + (Math.floor(minutes / 3) / 20)))
         {
             var containers = document.querySelectorAll('.hours-container');
             if (containers)
             {
                 for (var i = 0; i < containers.length; i++) {
                     if (containers[i].angle === undefined) {
-                        containers[i].angle = 7.5;
+                        containers[i].angle = 1.5;
                     } else {
-                        containers[i].angle += 7.5;
+                        containers[i].angle += 1.5;
                     }
                     containers[i].style.webkitTransform = 'rotateZ(' + containers[i].angle + 'deg)';
                     containers[i].style.transform = 'rotateZ(' + containers[i].angle + 'deg)';
                 }
-                hoursC = hoursC + 0.25;
+                hoursC = Math.floor((hoursC * 20) + 1) / 20;
                 if (hoursC >= 24)
                     hoursC = 0;
             }
@@ -1504,6 +1509,10 @@ function checkCalendar() {
         // Prepare the calendar variable
         calendar = [];
 
+        // Erase the clockwheel
+        $(".chart").empty();
+        data.sectors = [];
+
         // Define a comparison function that will order calendar events by start time when we run the iteration
         var compare = function (a, b) {
             try {
@@ -1545,8 +1554,8 @@ function checkCalendar() {
                     if (!moment(event.end).isValid())
                         event.end = moment(Meta.time).add(1, 'days').startOf('day');
 
-                    // Does this event start within the next 24 hours, and has not yet ended? Add it to our formatted array.
-                    if (moment(Meta.time).add(1, 'days').isAfter(moment(event.start)) && moment(Meta.time).isBefore(moment(event.end)))
+                    // Does this event start within the next 12 hours, and has not yet ended? Add it to our formatted array.
+                    if (moment(Meta.time).add(12, 'hours').isAfter(moment(event.start)) && moment(Meta.time).isBefore(moment(event.end)))
                     {
                         calendar.push(event);
                     }
@@ -1783,10 +1792,9 @@ function checkCalendar() {
         // Clear current list of events
         document.querySelector('#calendar-events').innerHTML = '';
 
-        // Add in our new list
+        // Add in our new list, and include in clockwheel
         if (calendar.length > 0)
         {
-
             calendar.forEach(function (event) {
                 var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878');
                 finalColor.red = Math.round(finalColor.red / 2);
@@ -1803,7 +1811,84 @@ function checkCalendar() {
                                             </div>
                                         </div>
                                     </div></div>`;
+                if (Meta.state.startsWith("automation_") || Meta.state === "live_prerecord")
+                {
+                    if (event.title.startsWith("Show: ") || event.title.startsWith("Remote: ") || event.title.startsWith("Sports: "))
+                    {
+                        if (moment(event.end).diff(moment(Meta.time), 'minutes') < (12 * 60))
+                        {
+                            if (moment(event.start).isAfter(moment(Meta.time)))
+                            {
+                                data.sectors.push({
+                                    label: event.title,
+                                    start: ((moment(event.start).diff(moment(Meta.time), 'minutes') / (12 * 60)) * 360),
+                                    size: ((moment(event.end).diff(moment(event.start), 'minutes') / (12 * 60)) * 360) - 2,
+                                    color: event.color || '#787878'
+                                });
+                            } else {
+                                data.sectors.push({
+                                    label: event.title,
+                                    start: 0,
+                                    size: ((moment(event.end).diff(moment(Meta.time), 'minutes') / (12 * 60)) * 360) - 2,
+                                    color: event.color || '#787878'
+                                });
+                            }
+                        } else if (moment(event.start).diff(moment(Meta.time), 'minutes') < (12 * 60))
+                        {
+                            if (moment(event.start).isAfter(moment(Meta.time)))
+                            {
+                                var start = ((moment(event.start).diff(moment(Meta.time), 'minutes') / (12 * 60)) * 360);
+                                data.sectors.push({
+                                    label: event.title,
+                                    start: start,
+                                    size: 358 - start,
+                                    color: event.color || '#787878'
+                                });
+                            } else {
+                                data.sectors.push({
+                                    label: event.title,
+                                    start: 0,
+                                    size: 358,
+                                    color: event.color || '#787878'
+                                });
+                            }
+                        }
+                        console.dir(data.sectors);
+                    }
+                }
             });
+
+            // In automation, shade the clock in 12-hour format for upcoming shows
+            if (Meta.state.startsWith("automation_") || Meta.state === "live_prerecord")
+            {
+                var start = moment(Meta.time).startOf('day');
+                if (moment(Meta.time).hour() >= 12)
+                    start.add(12, 'hours');
+                var diff = moment(Meta.time).diff(moment(start), 'minutes');
+                data.start = 0.5 * diff;
+                console.log(data.start);
+
+                data.sectors.push({
+                    label: 'current hour',
+                    start: 0,
+                    size: 2,
+                    color: "#000000"
+                });
+
+                var sectors = calculateSectors(data);
+                var newSVG = document.getElementById("clock-program");
+                newSVG.setAttribute("transform", `rotate(${data.start})`);
+                console.dir(sectors);
+                sectors.map(function (sector) {
+
+                    var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    newSector.setAttributeNS(null, 'fill', sector.color);
+                    newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
+                    newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
+
+                    newSVG.appendChild(newSector);
+                })
+            }
         }
     } catch (e) {
         console.error(e);
@@ -3850,4 +3935,65 @@ function hexRgb(hex, options = {}) {
             message: 'Error occurred during hexRgb.'
         });
 }
+}
+
+function calculateSectors(data) {
+    var sectors = [];
+
+    var l = data.size / 2
+    var a = 0 // Angle
+    var aRad = 0 // Angle in Rad
+    var z = 0 // Size z
+    var x = 0 // Side x
+    var y = 0 // Side y
+    var X = 0 // SVG X coordinate
+    var Y = 0 // SVG Y coordinate
+    var R = 0 // Rotation
+
+    data.sectors.map(function (item, key) {
+        a = item.size;
+        if ((item.start + item.size) > 360)
+            a = 360 - item.start;
+        console.log(`a: ${a}`);
+        aCalc = (a > 180) ? 360 - a : a;
+        console.log(`aCalc: ${aCalc}`);
+        aRad = aCalc * Math.PI / 180;
+        console.log(`aRad: ${aRad}`);
+        console.log(`cos: ${Math.sqrt(2 * 80 * 80 - (2 * 80 * 80 * 0.5))}`);
+        z = Math.sqrt(2 * l * l - (2 * l * l * Math.cos(aRad)));
+        console.log(`z: ${z}`);
+        if (aCalc <= 90) {
+            x = l * Math.sin(aRad);
+        } else {
+            x = l * Math.sin((180 - aCalc) * Math.PI / 180);
+        }
+        console.log(`x: ${x}`);
+
+        y = Math.sqrt(z * z - x * x);
+        Y = y;
+        console.log(`Y: ${Y}`);
+
+        if (a <= 180) {
+            X = l + x;
+            arcSweep = 0;
+        } else {
+            X = l - x;
+            arcSweep = 1;
+        }
+        console.log(`X: ${X}`);
+        console.log(`arcSweep: ${arcSweep}`);
+
+        sectors.push({
+            label: item.label,
+            color: item.color,
+            arcSweep: arcSweep,
+            L: l,
+            X: X,
+            Y: Y,
+            R: item.start
+        });
+    })
+
+
+    return sectors
 }
