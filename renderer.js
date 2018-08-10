@@ -330,6 +330,23 @@ try {
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
         zindex: 50
     });
+
+    $("#xp-modal").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Your Show is Complete</h5>`,
+        headerColor: '#363636',
+        width: 640,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: 60000,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 60
+    });
     $.fn.extend({
         // Add an animateCss function to JQuery to trigger an animation of an HTML element with animate.css
         animateCss: function (animationName, callback) {
@@ -494,6 +511,10 @@ io.socket.on('meta', function (data) {
 // On new eas data, update our eas memory and run the process function.
 io.socket.on('eas', function (data) {
     processEas(data);
+});
+
+io.socket.on('show-stats', function (data) {
+    $("#xp-modal").iziModal('open');
 });
 
 io.socket.on('status', function (data) {
