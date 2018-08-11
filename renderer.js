@@ -1848,12 +1848,56 @@ function checkCalendar() {
                                 data.sectors.push({
                                     label: event.title,
                                     start: 0,
-                                    size: 358,
+                                    size: 360,
                                     color: event.color || '#787878'
                                 });
                             }
                         }
                         console.dir(data.sectors);
+                    }
+                } else {
+                    if (event.title.startsWith("Show: ") || event.title.startsWith("Remote: ") || event.title.startsWith("Sports: "))
+                    {
+                        var stripped = event.title.replace("Show: ", "");
+                        stripped = stripped.replace("Remote: ", "");
+                        stripped = stripped.replace("Sports: ", "");
+                        if (Meta.dj === stripped && moment(event.end).isAfter(moment(Meta.time)))
+                        {
+                            if (moment(event.end).diff(moment(Meta.time), 'minutes') < 60)
+                            {
+                                if (moment(event.start).isAfter(moment(Meta.time)))
+                                {
+                                    data.sectors.push({
+                                        label: event.title,
+                                        start: ((moment(event.start).diff(moment(Meta.time), 'minutes') / 60) * 360),
+                                        size: ((moment(event.end).diff(moment(event.start), 'minutes') / 60) * 360) + 6,
+                                        color: event.color || '#787878'
+                                    });
+                                } else {
+                                    var theSize = ((moment(event.end).diff(moment(Meta.time), 'minutes') / 60) * 360) + 6;
+                                    data.sectors.push({
+                                        label: event.title + "A",
+                                        start: 0,
+                                        size: theSize,
+                                        color: event.color || '#787878'
+                                    });
+                                    data.sectors.push({
+                                        label: event.title,
+                                        start: theSize,
+                                        size: 360 - theSize,
+                                        color: "#000000"
+                                    });
+                                }
+                            } else if (moment(event.start).isBefore(moment(Meta.time)))
+                            {
+                                data.sectors.push({
+                                    label: event.title,
+                                    start: 0,
+                                    size: 360,
+                                    color: event.color || '#787878'
+                                });
+                            }
+                        }
                     }
                 }
             });
@@ -1866,7 +1910,6 @@ function checkCalendar() {
                     start.add(12, 'hours');
                 var diff = moment(Meta.time).diff(moment(start), 'minutes');
                 data.start = 0.5 * diff;
-                console.log(data.start);
 
                 data.sectors.push({
                     label: 'current hour',
@@ -1874,6 +1917,34 @@ function checkCalendar() {
                     size: 2,
                     color: "#000000"
                 });
+                console.dir(data);
+
+                var sectors = calculateSectors(data);
+                var newSVG = document.getElementById("clock-program");
+                newSVG.setAttribute("transform", `rotate(${data.start})`);
+                console.dir(sectors);
+                sectors.map(function (sector) {
+
+                    var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    newSector.setAttributeNS(null, 'fill', sector.color);
+                    newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
+                    newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
+
+                    newSVG.appendChild(newSector);
+                })
+            } else {
+                var start = moment(Meta.time).startOf('hour');
+                var diff = moment(Meta.time).diff(moment(start), 'minutes');
+                data.start = 6 * diff;
+
+                data.sectors.push({
+                    label: 'current minute',
+                    start: 0,
+                    size: 2,
+                    color: "#000000"
+                });
+
+                console.dir(data);
 
                 var sectors = calculateSectors(data);
                 var newSVG = document.getElementById("clock-program");
@@ -3950,48 +4021,65 @@ function calculateSectors(data) {
     var Y = 0 // SVG Y coordinate
     var R = 0 // Rotation
 
-    data.sectors.map(function (item, key) {
-        a = item.size;
-        if ((item.start + item.size) > 360)
-            a = 360 - item.start;
-        console.log(`a: ${a}`);
-        aCalc = (a > 180) ? 360 - a : a;
-        console.log(`aCalc: ${aCalc}`);
-        aRad = aCalc * Math.PI / 180;
-        console.log(`aRad: ${aRad}`);
-        console.log(`cos: ${Math.sqrt(2 * 80 * 80 - (2 * 80 * 80 * 0.5))}`);
-        z = Math.sqrt(2 * l * l - (2 * l * l * Math.cos(aRad)));
-        console.log(`z: ${z}`);
-        if (aCalc <= 90) {
-            x = l * Math.sin(aRad);
-        } else {
-            x = l * Math.sin((180 - aCalc) * Math.PI / 180);
-        }
-        console.log(`x: ${x}`);
+    data.sectors.map(function (item2) {
+        var doIt = function (item) {
+            a = item.size;
+            if ((item.start + item.size) > 360)
+                a = 360 - item.start;
+            console.log(`a: ${a}`);
+            aCalc = (a > 180) ? 180 : a;
+            console.log(`aCalc: ${aCalc}`);
+            aRad = aCalc * Math.PI / 180;
+            console.log(`aRad: ${aRad}`);
+            console.log(`cos: ${Math.sqrt(2 * 80 * 80 - (2 * 80 * 80 * 0.5))}`);
+            z = Math.sqrt(2 * l * l - (2 * l * l * Math.cos(aRad)));
+            console.log(`z: ${z}`);
+            if (aCalc <= 90) {
+                x = l * Math.sin(aRad);
+            } else {
+                x = l * Math.sin((180 - aCalc) * Math.PI / 180);
+            }
+            console.log(`x: ${x}`);
 
-        y = Math.sqrt(z * z - x * x);
-        Y = y;
-        console.log(`Y: ${Y}`);
+            y = Math.sqrt(z * z - x * x);
+            Y = y;
+            console.log(`Y: ${Y}`);
 
-        if (a <= 180) {
-            X = l + x;
-            arcSweep = 0;
-        } else {
-            X = l - x;
-            arcSweep = 1;
-        }
-        console.log(`X: ${X}`);
-        console.log(`arcSweep: ${arcSweep}`);
+            if (a <= 180) {
+                X = l + x;
+                arcSweep = 0;
+            } else {
+                X = l - x;
+                arcSweep = 1;
+            }
+            console.log(`X: ${X}`);
+            console.log(`arcSweep: ${arcSweep}`);
 
-        sectors.push({
-            label: item.label,
-            color: item.color,
-            arcSweep: arcSweep,
-            L: l,
-            X: X,
-            Y: Y,
-            R: item.start
-        });
+            sectors.push({
+                label: item.label,
+                color: item.color,
+                arcSweep: arcSweep,
+                L: l,
+                X: X,
+                Y: Y,
+                R: item.start
+            });
+
+            if (a > 180)
+            {
+                var temp = {
+                    label: item.label,
+                    size: 180 - (360 - a),
+                    start: 180 + item.start,
+                    color: item.color
+                };
+                doIt(temp);
+            }
+        };
+
+        doIt(item2);
+
+
     })
 
 
