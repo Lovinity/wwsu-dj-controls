@@ -1793,18 +1793,18 @@ function checkCalendar() {
         // Clear current list of events
         document.querySelector('#calendar-events').innerHTML = '';
 
+        var timeLeft = 1000000;
+        var timeLeft2 = 1000000;
+        var doLabel = null;
+        var doStart = 0;
+        var doSize = 0;
+        var doColor = 0;
+        var currentStart = moment();
+        var currentEnd = moment();
+        var firstEvent = '';
         // Add in our new list, and include in clockwheel
         if (calendar.length > 0)
         {
-            var timeLeft = 1000000;
-            var timeLeft2 = 1000000;
-            var doLabel = null;
-            var doStart = 0;
-            var doSize = 0;
-            var doColor = 0;
-            var currentStart = moment();
-            var currentEnd = moment();
-            var firstEvent = '';
             calendar.forEach(function (event) {
                 if (Meta.state.startsWith("automation_") || Meta.state === "live_prerecord")
                 {
@@ -1975,58 +1975,59 @@ function checkCalendar() {
                     }
                 }
             });
+        }
 
-            // In automation, shade the clock in 12-hour format for upcoming shows
-            if (Meta.state.startsWith("automation_") || Meta.state === "live_prerecord")
+        // In automation, shade the clock in 12-hour format for upcoming shows
+        if (Meta.state.startsWith("automation_") || Meta.state === "live_prerecord")
+        {
+            var temp = document.getElementById("calendar-title");
+            temp.innerHTML = 'Clockwheel (next 12 hours)';
+            var start = moment(Meta.time).startOf('day');
+            if (moment(Meta.time).hour() >= 12)
+                start.add(12, 'hours');
+            var diff = moment(Meta.time).diff(moment(start), 'minutes');
+            data.start = 0.5 * diff;
+
+            data.sectors.push({
+                label: 'current hour',
+                start: 0,
+                size: 2,
+                color: "#000000"
+            });
+
+            console.dir(data);
+
+            var sectors = calculateSectors(data);
+            var newSVG = document.getElementById("clock-program");
+            newSVG.setAttribute("transform", `rotate(${data.start})`);
+            console.dir(sectors);
+            sectors.map(function (sector) {
+
+                var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                newSector.setAttributeNS(null, 'fill', sector.color);
+                newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
+                newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
+
+                newSVG.appendChild(newSector);
+            });
+        } else {
+            var temp = document.getElementById("calendar-title");
+            temp.innerHTML = 'Clockwheel (next hour)';
+            var start = moment(Meta.time).startOf('hour');
+            var diff = moment(Meta.time).diff(moment(start), 'minutes');
+            data.start = 6 * diff;
+
+
+            if (doLabel !== null)
             {
-                var temp = document.getElementById("calendar-title");
-                temp.innerHTML = 'Clockwheel (next 12 hours)';
-                var start = moment(Meta.time).startOf('day');
-                if (moment(Meta.time).hour() >= 12)
-                    start.add(12, 'hours');
-                var diff = moment(Meta.time).diff(moment(start), 'minutes');
-                data.start = 0.5 * diff;
-
-                data.sectors.push({
-                    label: 'current hour',
-                    start: 0,
-                    size: 2,
-                    color: "#000000"
-                });
-
-                console.dir(data);
-
-                var sectors = calculateSectors(data);
-                var newSVG = document.getElementById("clock-program");
-                newSVG.setAttribute("transform", `rotate(${data.start})`);
-                console.dir(sectors);
-                sectors.map(function (sector) {
-
-                    var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    newSector.setAttributeNS(null, 'fill', sector.color);
-                    newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
-                    newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
-
-                    newSVG.appendChild(newSector);
-                });
-            } else {
-                var temp = document.getElementById("calendar-title");
-                temp.innerHTML = 'Clockwheel (next hour)';
-                var start = moment(Meta.time).startOf('hour');
-                var diff = moment(Meta.time).diff(moment(start), 'minutes');
-                data.start = 6 * diff;
-
-
-                if (doLabel !== null)
+                var doTopOfHour = false;
+                if (!Meta.breakneeded)
                 {
-                    var doTopOfHour = false;
                     var topOfHour = moment(Meta.time).add(1, 'hours').startOf('hour');
                     if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
                     {
-                        if (!Meta.breakneeded)
-                        {
-                            doTopOfHour = true;
-                            document.querySelector('#calendar-events').innerHTML = ` <div class="p-1 m-1" style="background-color: #7f751d;">
+                        doTopOfHour = true;
+                        document.querySelector('#calendar-events').innerHTML = ` <div class="p-1 m-1" style="background-color: #7f751d;">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -2037,28 +2038,32 @@ function checkCalendar() {
                                             </div>
                                         </div>
                                     </div></div>` + document.querySelector('#calendar-events').innerHTML;
-                        } else {
-                            topOfHour = moment(Meta.time).startOf('hour');
-                            doTopOfHour = true;
-                            document.querySelector('#calendar-events').innerHTML += ` <div class="p-1 m-1" style="background-color: #7f751d;">
-                                    <div class="container">
-                                        <div class="row">
-                                            <div class="col-4">
-                                                ${moment(topOfHour).format("hh:mm A")}
-                                            </div>
-                                            <div class="col-8">
-                                                Mandatory Top-of-Hour Break
-                                            </div>
-                                        </div>
-                                    </div></div>` + document.querySelector('#calendar-events').innerHTML;
-                        }
                     }
+                } else {
+                    topOfHour = moment(Meta.time).startOf('hour');
+                    if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
+                    {
+                        doTopOfHour = true;
+                        document.querySelector('#calendar-events').innerHTML += ` <div class="p-1 m-1" style="background-color: #7f751d;">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-4">
+                                                ${moment(topOfHour).format("hh:mm A")}
+                                            </div>
+                                            <div class="col-8">
+                                                Mandatory Top-of-Hour Break
+                                            </div>
+                                        </div>
+                                    </div></div>` + document.querySelector('#calendar-events').innerHTML;
 
-                    var finalColor = (typeof doColor !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(doColor)) ? hexRgb(doColor) : hexRgb('#787878');
-                    finalColor.red = Math.round(finalColor.red / 2);
-                    finalColor.green = Math.round(finalColor.green / 2);
-                    finalColor.blue = Math.round(finalColor.blue / 2);
-                    document.querySelector('#calendar-events').innerHTML = ` <div class="p-1 m-1" style="background-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue});">
+                    }
+                }
+
+                var finalColor = (typeof doColor !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(doColor)) ? hexRgb(doColor) : hexRgb('#787878');
+                finalColor.red = Math.round(finalColor.red / 2);
+                finalColor.green = Math.round(finalColor.green / 2);
+                finalColor.blue = Math.round(finalColor.blue / 2);
+                document.querySelector('#calendar-events').innerHTML = ` <div class="p-1 m-1" style="background-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue});">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -2069,96 +2074,95 @@ function checkCalendar() {
                                             </div>
                                         </div>
                                     </div></div>` + document.querySelector('#calendar-events').innerHTML;
-                    if (moment(currentEnd).diff(moment(Meta.time), 'minutes') < 60)
+                if (moment(currentEnd).diff(moment(Meta.time), 'minutes') < 60)
+                {
+                    if (moment(currentStart).isAfter(moment(Meta.time)))
                     {
-                        if (moment(currentStart).isAfter(moment(Meta.time)))
-                        {
-                            var theStart = ((moment(currentStart).diff(moment(Meta.time), 'minutes') / 60) * 360);
-                            var theSize = ((moment(currentEnd).diff(moment(currentStart), 'minutes') / 60) * 360) + 6;
-                            data.sectors.push({
-                                label: doLabel,
-                                start: theStart,
-                                size: theSize,
-                                color: doColor
-                            });
-                        } else {
-                            var theSize = ((moment(currentEnd).diff(moment(Meta.time), 'minutes') / 60) * 360) + 6;
-                            data.sectors.push({
-                                label: doLabel,
-                                start: 0,
-                                size: theSize,
-                                color: doColor
-                            });
-                        }
-                    } else if (moment(currentStart).isBefore(moment(Meta.time)))
-                    {
+                        var theStart = ((moment(currentStart).diff(moment(Meta.time), 'minutes') / 60) * 360);
+                        var theSize = ((moment(currentEnd).diff(moment(currentStart), 'minutes') / 60) * 360) + 6;
                         data.sectors.push({
                             label: doLabel,
-                            start: 0,
-                            size: 360,
+                            start: theStart,
+                            size: theSize,
                             color: doColor
                         });
                     } else {
-                        var theStart = ((moment(currentStart).diff(moment(Meta.time), 'minutes') / 60) * 360);
-                        if (theStart < 360)
-                        {
-                            data.sectors.push({
-                                label: doLabel,
-                                start: theStart,
-                                size: 360 - theStart,
-                                color: doColor
-                            });
-                        }
+                        var theSize = ((moment(currentEnd).diff(moment(Meta.time), 'minutes') / 60) * 360) + 6;
+                        data.sectors.push({
+                            label: doLabel,
+                            start: 0,
+                            size: theSize,
+                            color: doColor
+                        });
                     }
-
-                    if (doTopOfHour)
+                } else if (moment(currentStart).isBefore(moment(Meta.time)))
+                {
+                    data.sectors.push({
+                        label: doLabel,
+                        start: 0,
+                        size: 360,
+                        color: doColor
+                    });
+                } else {
+                    var theStart = ((moment(currentStart).diff(moment(Meta.time), 'minutes') / 60) * 360);
+                    if (theStart < 360)
                     {
-                        if (!Meta.breakneeded)
-                        {
-                            var start = moment(Meta.time).add(1, 'hours').startOf('hour');
-                            var diff = moment(start).diff(moment(Meta.time), 'minutes');
-                            data.sectors.push({
-                                label: 'current minute',
-                                start: (6 * diff) + 6,
-                                size: 15,
-                                color: "#FFEB3B"
-                            });
-                        } else {
-                            var start = moment(Meta.time).startOf('hour');
-                            var diff = moment(Meta.time).diff(moment(start), 'minutes');
-                            data.sectors.push({
-                                label: 'current minute',
-                                start: 360 - (diff * 6),
-                                size: 15,
-                                color: "#FFEB3B"
-                            });
-                        }
+                        data.sectors.push({
+                            label: doLabel,
+                            start: theStart,
+                            size: 360 - theStart,
+                            color: doColor
+                        });
                     }
                 }
 
-                data.sectors.push({
-                    label: 'current minute',
-                    start: 0,
-                    size: 2,
-                    color: "#000000"
-                });
-
-                console.dir(data);
-
-                var sectors = calculateSectors(data);
-                var newSVG = document.getElementById("clock-program");
-                newSVG.setAttribute("transform", `rotate(${data.start})`);
-                console.dir(sectors);
-                sectors.map(function (sector) {
-
-                    var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    newSector.setAttributeNS(null, 'fill', sector.color);
-                    newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
-                    newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
-
-                    newSVG.appendChild(newSector);
-                })
+                if (doTopOfHour)
+                {
+                    if (!Meta.breakneeded)
+                    {
+                        var start = moment(Meta.time).add(1, 'hours').startOf('hour');
+                        var diff = moment(start).diff(moment(Meta.time), 'minutes');
+                        data.sectors.push({
+                            label: 'current minute',
+                            start: (6 * diff) + 6,
+                            size: 15,
+                            color: "#FFEB3B"
+                        });
+                    } else {
+                        var start = moment(Meta.time).startOf('hour');
+                        var diff = moment(Meta.time).diff(moment(start), 'minutes');
+                        data.sectors.push({
+                            label: 'current minute',
+                            start: 360 - (diff * 6),
+                            size: 15,
+                            color: "#FFEB3B"
+                        });
+                    }
+                }
             }
+
+            data.sectors.push({
+                label: 'current minute',
+                start: 0,
+                size: 2,
+                color: "#000000"
+            });
+
+            console.dir(data);
+
+            var sectors = calculateSectors(data);
+            var newSVG = document.getElementById("clock-program");
+            newSVG.setAttribute("transform", `rotate(${data.start})`);
+            console.dir(sectors);
+            sectors.map(function (sector) {
+
+                var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                newSector.setAttributeNS(null, 'fill', sector.color);
+                newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
+                newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
+
+                newSVG.appendChild(newSector);
+            })
         }
     } catch (e) {
         console.error(e);
