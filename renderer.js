@@ -1089,27 +1089,25 @@ function metaSocket() {
             }
             doMeta(body);
             if (startRecording !== null) {
-                /*
-                 nrc.run(`"${recordPadPath}" -done`)
-                 .then(function (response) {
-                 console.log(`DONE: ${response}`);
-                 nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
-                 .then(function (response2) {
-                 if (response2 == 0)
-                 {
-                 nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'operation', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                 });
-                 }
-                 console.log(`RECORDFILE: ${response2}`);
-                 })
-                 .catch(err => {
-                 console.error(err);
-                 });
-                 })
-                 .catch(err => {
-                 console.error(err);
-                 });
-                 */
+                nrc.run(`"${recordPadPath}" -done`)
+                        .then(function (response) {
+                            console.log(`DONE: ${response}`);
+                            nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                    .then(function (response2) {
+                                        if (response2 == 0)
+                                        {
+                                            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'operation', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                            });
+                                        }
+                                        console.log(`RECORDFILE: ${response2}`);
+                                    })
+                                    .catch(err => {
+                                        console.error(err);
+                                    });
+                        })
+                        .catch(err => {
+                            console.error(err);
+                        });
             }
         } catch (e) {
             console.error(e);
