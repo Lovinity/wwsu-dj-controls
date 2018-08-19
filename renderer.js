@@ -50,6 +50,8 @@ try {
         start: 0, // angle to rotate pie chart by
         sectors: [] // start (angle from start), size (amount of angle to cover), label, color
     }
+    var prevQueueLength = 0;
+    var queueLength = 0;
 
     // These are used for keeping track of upcoming shows and notifying DJs to prevent people cutting into each other's shows.
     var calPriority = 0;
@@ -1265,13 +1267,93 @@ function doMeta(metan) {
             if (temp !== null)
                 iziToast.hide({}, temp);
         }
+        if (typeof metan.playing !== 'undefined' && typeof metan.state === 'undefined')
+            metan.state = Meta.state;
+        prevQueueLength = queueLength;
         queueLength = Math.round(Meta.queueLength);
         if (queueLength < 0)
             queueLength = 0;
+        if ((prevQueueLength + 10) < queueLength && Meta.djcontrols === os.hostname())
+        {
+            if (Meta.state.includes("_returning") && queueLength > (60 * 2))
+            {
+                var notification = notifier.notify(`Problem with RadioDJ queue`, {
+                    message: `Please wait for the queue to empty / finish before adding tracks.`,
+                    icon: '',
+                    duration: 120000,
+                    buttons: ["Close"]
+                });
+                notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
+                main.flashTaskbar();
+                iziToast.show({
+                    class: 'flash-bg',
+                    title: '<i class="fas fa-clock"></i> Tracks were added to the RadioDJ queue too soon',
+                    message: `You need to wait until the queue empties / finishes before adding tracks. Otherwise, the system will think you are still coming out of a break.`,
+                    timeout: 120000,
+                    close: true,
+                    color: 'yellow',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: false,
+                    overlay: true,
+                    zindex: 250
+                });
+            } else if (Meta.state === 'automation_live' && queueLength >= (60 * 5))
+            {
+                var notification = notifier.notify(`Problem with RadioDJ queue`, {
+                    message: `Please wait for the queue to empty / finish before adding tracks.`,
+                    icon: '',
+                    duration: 120000,
+                    buttons: ["Close"]
+                });
+                notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
+                main.flashTaskbar();
+                iziToast.show({
+                    class: 'flash-bg',
+                    title: '<i class="fas fa-clock"></i> Tracks were added to the RadioDJ queue too soon',
+                    message: `You need to wait until the queue empties / finishes before adding tracks. The system does not enter live show mode until the queue finishes playing.`,
+                    timeout: 120000,
+                    close: true,
+                    color: 'yellow',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: false,
+                    overlay: true,
+                    zindex: 250
+                });
+            } else if ((Meta.state === 'automation_sports' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote') && queueLength >= 60)
+            {
+                var notification = notifier.notify(`Problem with RadioDJ queue`, {
+                    message: `Please wait for the queue to empty / finish before adding tracks.`,
+                    icon: '',
+                    duration: 120000,
+                    buttons: ["Close"]
+                });
+                notification.on('buttonClicked', (text, buttonIndex, options) => {
+                    notification.close();
+                });
+                main.flashTaskbar();
+                iziToast.show({
+                    class: 'flash-bg',
+                    title: '<i class="fas fa-clock"></i> Tracks were added to the RadioDJ queue too soon',
+                    message: `You need to wait until the queue empties / finishes before adding tracks. The system does not enter broadcast mode until the queue finishes playing.`,
+                    timeout: 120000,
+                    close: true,
+                    color: 'yellow',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: false,
+                    overlay: true,
+                    zindex: 250
+                });
+            }
+        }
         var queueTime = document.querySelector("#queue-seconds");
         queueTime.innerHTML = moment.duration(queueLength, "seconds").format();
-        if (typeof metan.playing !== 'undefined' && typeof metan.state === 'undefined')
-            metan.state = Meta.state;
         if (queueLength < 15 && (Meta.state.includes("_returning") || (Meta.state.startsWith("automation_") && Meta.state !== 'automation_on' && Meta.state !== 'automation_genre') && Meta.state !== 'automation_playlist'))
         {
             var operations = document.querySelector("#operations");
@@ -1823,7 +1905,7 @@ function checkCalendar() {
                                             </div>
                                         </div>
                                     </div></div>`;
-                    if (event.title.startsWith("Show: ") || event.title.startsWith("Remote: ") || event.title.startsWith("Sports: "))
+                    if (event.title.startsWith("Show: ") || event.title.startsWith("Remote: ") || event.title.startsWith("Sports: ") || event.title.startsWith("Prerecord: "))
                     {
                         if (moment(event.end).diff(moment(Meta.time), 'minutes') < (12 * 60))
                         {
