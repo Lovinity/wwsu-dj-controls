@@ -1,6 +1,6 @@
 {
   "name": "wwsu-dj-controls",
-  "version": "4.0.8",
+  "version": "4.0.10",
   "description": "A WWSU management application for DJs and Directors",
   "main": "main.js",
   "scripts": {
@@ -9,9 +9,8 @@
   "repository": "https://github.com/Lovinity/wwsu-dj-controls",
   "author": "Patrick Schmalstig",
   "devDependencies": {
-    "electron": "^2.0.0",
-    "electron-squirrel-startup": "^1.0.0",
-    "electron-winstaller": "^2.6.4"
+    "electron": "^2.0.8",
+    "electron-squirrel-startup": "^1.0.0"
   },
   "dependencies": {
     "electron-is": "^3.0.0",

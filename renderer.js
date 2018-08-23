@@ -13,6 +13,7 @@ try {
     var fs = require("fs"); // file system
     var os = require('os'); // OS
     var main = require('electron').remote.require('./main');
+    const {remote} = window.require('electron');
     var notifier = require('./electron-notifications/index.js');
     var nrc = require("node-run-cmd");
     var sanitize = require("sanitize-filename");
@@ -167,7 +168,7 @@ try {
     }, 100);
 
     // Read in WWSU Node username and password from uncommitted tokens file
-    var tokens = JSON.parse(fs.readFileSync("tokens.json"));
+    var tokens = JSON.parse(fs.readFileSync(`${remote.app.getAppPath()}/tokens.json`));
 
     var messageFlash = setInterval(function () {
         if (totalUnread > 0 || totalRequests > 0)
@@ -190,170 +191,171 @@ try {
         }
     }, 3000);
 
-    // Define default settings for iziToast (overlaying messages)
-    iziToast.settings({
-        titleColor: '#000000',
-        messageColor: '#000000',
-        color: 'red',
-        close: true,
-        overlay: true,
-        overlayColor: 'rgba(0, 0, 0, 0.75)',
-        zindex: 100,
-        layout: 1,
-        closeOnClick: true,
-        position: 'center',
-        timeout: 30000
-    });
+        // Define default settings for iziToast (overlaying messages)
+        iziToast.settings({
+            titleColor: '#000000',
+            messageColor: '#000000',
+            color: 'red',
+            close: true,
+            overlay: true,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            zindex: 100,
+            layout: 1,
+            closeOnClick: true,
+            position: 'center',
+            timeout: 30000
+        });
 
-    $("#go-live-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Mics, Recorder, Action!</h5>`,
-        headerColor: '#363636',
-        width: 640,
-        focusInput: true,
-        arrowKeys: false,
-        navigateCaption: false,
-        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-        overlayClose: false,
-        overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 180000,
-        timeoutProgressbar: true,
-        pauseOnHover: true,
-        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-        zindex: 50
-    });
+        // Pre-load all the modal windows
+        $("#go-live-modal").iziModal({
+            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Mics, Recorder, Action!</h5>`,
+            headerColor: '#363636',
+            width: 640,
+            focusInput: true,
+            arrowKeys: false,
+            navigateCaption: false,
+            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+            overlayClose: false,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            timeout: 180000,
+            timeoutProgressbar: true,
+            pauseOnHover: true,
+            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+            zindex: 50
+        });
 
-    $("#go-remote-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Remote Broadcast</h5>`,
-        headerColor: '#363636',
-        width: 640,
-        focusInput: true,
-        arrowKeys: false,
-        navigateCaption: false,
-        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-        overlayClose: false,
-        overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 180000,
-        timeoutProgressbar: true,
-        pauseOnHover: true,
-        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-        zindex: 50
-    });
+        $("#go-remote-modal").iziModal({
+            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Remote Broadcast</h5>`,
+            headerColor: '#363636',
+            width: 640,
+            focusInput: true,
+            arrowKeys: false,
+            navigateCaption: false,
+            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+            overlayClose: false,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            timeout: 180000,
+            timeoutProgressbar: true,
+            pauseOnHover: true,
+            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+            zindex: 50
+        });
 
-    $("#go-sports-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Raider Sports</h5>`,
-        headerColor: '#363636',
-        width: 640,
-        focusInput: true,
-        arrowKeys: false,
-        navigateCaption: false,
-        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-        overlayClose: false,
-        overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 180000,
-        timeoutProgressbar: true,
-        pauseOnHover: true,
-        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-        zindex: 50
-    });
+        $("#go-sports-modal").iziModal({
+            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Raider Sports</h5>`,
+            headerColor: '#363636',
+            width: 640,
+            focusInput: true,
+            arrowKeys: false,
+            navigateCaption: false,
+            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+            overlayClose: false,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            timeout: 180000,
+            timeoutProgressbar: true,
+            pauseOnHover: true,
+            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+            zindex: 50
+        });
 
-    $("#log-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Logs, Logs, and More Logs</h5>`,
-        headerColor: '#363636',
-        width: 640,
-        focusInput: true,
-        arrowKeys: false,
-        navigateCaption: false,
-        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-        overlayClose: false,
-        overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 180000,
-        timeoutProgressbar: true,
-        pauseOnHover: true,
-        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-        zindex: 50
-    });
+        $("#log-modal").iziModal({
+            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Logs, Logs, and More Logs</h5>`,
+            headerColor: '#363636',
+            width: 640,
+            focusInput: true,
+            arrowKeys: false,
+            navigateCaption: false,
+            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+            overlayClose: false,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            timeout: 180000,
+            timeoutProgressbar: true,
+            pauseOnHover: true,
+            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+            zindex: 50
+        });
 
-    $("#messages-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Messages</h5>`,
-        headerColor: '#363636',
-        width: 800,
-        focusInput: true,
-        arrowKeys: false,
-        navigateCaption: false,
-        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-        overlayClose: false,
-        overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: false,
-        pauseOnHover: true,
-        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-        zindex: 50
-    });
+        $("#messages-modal").iziModal({
+            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Messages</h5>`,
+            headerColor: '#363636',
+            width: 800,
+            focusInput: true,
+            arrowKeys: false,
+            navigateCaption: false,
+            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+            overlayClose: false,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            timeout: false,
+            pauseOnHover: true,
+            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+            zindex: 50
+        });
 
-    $("#wait-modal").iziModal({
-        width: 480,
-        appendTo: `#operations`,
-        appendToOverlay: `#operations`,
-        focusInput: false,
-        arrowKeys: false,
-        navigateCaption: false,
-        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-        overlayClose: false,
-        overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: false,
-        pauseOnHover: true,
-        timeoutProgressbarColor: 'rgba(255,255,255,0.5)'
-    });
+        $("#wait-modal").iziModal({
+            width: 480,
+            appendTo: `#operations`,
+            appendToOverlay: `#operations`,
+            focusInput: false,
+            arrowKeys: false,
+            navigateCaption: false,
+            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+            overlayClose: false,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            timeout: false,
+            pauseOnHover: true,
+            timeoutProgressbarColor: 'rgba(255,255,255,0.5)'
+        });
 
-    $("#emergency-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Report an Issue</h5>`,
-        headerColor: '#363636',
-        width: 640,
-        focusInput: true,
-        arrowKeys: false,
-        navigateCaption: false,
-        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-        overlayClose: false,
-        overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 180000,
-        timeoutProgressbar: true,
-        pauseOnHover: true,
-        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-        zindex: 50
-    });
+        $("#emergency-modal").iziModal({
+            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Report an Issue</h5>`,
+            headerColor: '#363636',
+            width: 640,
+            focusInput: true,
+            arrowKeys: false,
+            navigateCaption: false,
+            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+            overlayClose: false,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            timeout: 180000,
+            timeoutProgressbar: true,
+            pauseOnHover: true,
+            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+            zindex: 50
+        });
 
-    $("#display-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Display a Message on Display Signs</h5>`,
-        headerColor: '#363636',
-        width: 640,
-        focusInput: true,
-        arrowKeys: false,
-        navigateCaption: false,
-        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-        overlayClose: false,
-        overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 180000,
-        timeoutProgressbar: true,
-        pauseOnHover: true,
-        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-        zindex: 50
-    });
+        $("#display-modal").iziModal({
+            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Display a Message on Display Signs</h5>`,
+            headerColor: '#363636',
+            width: 640,
+            focusInput: true,
+            arrowKeys: false,
+            navigateCaption: false,
+            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+            overlayClose: false,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            timeout: 180000,
+            timeoutProgressbar: true,
+            pauseOnHover: true,
+            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+            zindex: 50
+        });
 
-    $("#xp-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Your Show is Complete</h5>`,
-        headerColor: '#363636',
-        width: 640,
-        focusInput: true,
-        arrowKeys: false,
-        navigateCaption: false,
-        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-        overlayClose: false,
-        overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 60000,
-        timeoutProgressbar: true,
-        pauseOnHover: true,
-        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-        zindex: 60
-    });
+        $("#xp-modal").iziModal({
+            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Your Show is Complete</h5>`,
+            headerColor: '#363636',
+            width: 640,
+            focusInput: true,
+            arrowKeys: false,
+            navigateCaption: false,
+            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+            overlayClose: false,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            timeout: 60000,
+            timeoutProgressbar: true,
+            pauseOnHover: true,
+            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+            zindex: 60
+        });
     $.fn.extend({
         // Add an animateCss function to JQuery to trigger an animation of an HTML element with animate.css
         animateCss: function (animationName, callback) {
@@ -397,7 +399,7 @@ try {
 } catch (e) {
     iziToast.show({
         title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-        message: 'Error occurred when trying to load initial variables.'
+        message: 'Error occurred when trying to load initial variables. ' + e.message
     });
     console.error(e);
 }
@@ -444,7 +446,7 @@ io.socket.on('connect', function () {
     } catch (e) {
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-            message: 'Error occurred in the connect event.'
+            message: 'Error occurred in the connect event.' + e.message
         });
         console.error(e);
     }
@@ -642,6 +644,7 @@ document.querySelector(`#users`).addEventListener("click", function (e) {
     try {
         console.log(e.target.id);
         if (e.target) {
+            console.log(e.target.id);
             if (e.target.id.startsWith(`users-o-mute`))
             {
                 var recipient = Recipients({host: e.target.id.replace(`users-o-mute-`, ``)}).first().ID;
@@ -690,6 +693,7 @@ document.querySelector(`#users`).addEventListener("click", function (e) {
 document.querySelector(`#messages`).addEventListener("click", function (e) {
     try {
         if (e.target) {
+            console.log(e.target.id);
             if (e.target.id.startsWith(`message-o-mute`))
             {
                 var recipient = Messages({ID: parseInt(e.target.id.replace(`message-o-mute-`, ``))}).first().from;
@@ -737,6 +741,7 @@ document.querySelector(`#messages`).addEventListener("click", function (e) {
 document.querySelector(`#messages-unread`).addEventListener("click", function (e) {
     try {
         if (e.target) {
+            console.log(e.target.id);
             if (e.target.id.startsWith(`message-n-m`))
             {
                 var message = Messages({ID: parseInt(e.target.id.replace(`message-n-m-`, ``))}).first();
@@ -938,6 +943,7 @@ function moveSecondHands() {
 
 // FUNCTIONS FOR PROGRAM
 
+// Get a token for API endpoints requiring authorization
 function authorise(cb)
 {
     io.socket.request({method: 'POST', url: nodeURL + '/user/auth', timeout: 3000, data: {email: tokens.email, password: tokens.password}}, function (body, JWR) {
@@ -960,6 +966,7 @@ function authorise(cb)
     });
 }
 
+// This function calls authorise to get a token, and then proceeds with the requested API call
 function nodeRequest(opts, cb) {
     authorise(function (token) {
         if (token)
@@ -1005,6 +1012,7 @@ function nodeRequest(opts, cb) {
     });
 }
 
+// Wait for a condition to be met, and then execute the callback. Fails after 1200 frames.
 function waitFor(check, callback, count = 0)
 {
     if (!check())
@@ -1022,6 +1030,7 @@ function waitFor(check, callback, count = 0)
 }
 }
 
+// Called on connection to WWSU to get data and subscribe to notifications
 function doSockets() {
     onlineSocket();
     metaSocket();
@@ -1032,6 +1041,7 @@ function doSockets() {
     recipientsSocket();
 }
 
+// Registers this DJ Controls as a recipient
 function onlineSocket()
 {
     console.log('attempting online socket');
@@ -1046,6 +1056,7 @@ function onlineSocket()
     });
 }
 
+// Gets wwsu metadata
 function metaSocket() {
     console.log('attempting meta socket');
     io.socket.post('/meta/get', {}, function serverResponded(body, JWR) {
@@ -1055,6 +1066,7 @@ function metaSocket() {
             {
                 if (body.hasOwnProperty(key))
                 {
+                    // Manage NCH Software RecordPad recordings
                     if (key === 'state')
                     {
                         if (((Meta[key].startsWith("automation_") || Meta[key] === 'unknown') && Meta[key] !== 'automation_break') || (Meta[key].includes("_returning") && !body[key].includes("_returning")))
@@ -1119,6 +1131,7 @@ function metaSocket() {
     });
 }
 
+// Internal emergency alerts
 function easSocket()
 {
     console.log('attempting eas socket');
@@ -1133,6 +1146,7 @@ function easSocket()
     });
 }
 
+// Status checks
 function statusSocket() {
     console.log('attempting statuc socket');
     io.socket.post('/status/get', {}, function serverResponded(body, JWR) {
@@ -1147,6 +1161,7 @@ function statusSocket() {
     });
 }
 
+// Event calendar from Google
 function calendarSocket() {
     console.log('attempting calendar socket');
     io.socket.post('/calendar/get', {}, function serverResponded(body, JWR) {
@@ -1161,6 +1176,7 @@ function calendarSocket() {
     });
 }
 
+// Messages system
 function messagesSocket() {
     console.log('attempting messages socket');
     nodeRequest({method: 'post', url: nodeURL + '/hosts/get', data: {host: os.hostname()}}, function (body) {
@@ -1209,6 +1225,7 @@ function messagesSocket() {
     });
 }
 
+// Retrieving a list of clients we can send/receive messages to/from
 function recipientsSocket() {
     console.log('attempting recipients socket');
     io.socket.post('/recipients/get', {}, function serverResponded(body, JWR) {
@@ -1223,8 +1240,10 @@ function recipientsSocket() {
     });
 }
 
+// Called on change to any metadata info
 function doMeta(metan) {
     try {
+        // Notify the DJ of a mandatory top of the hour break if they need to take one
         if (Meta.breakneeded && Meta.djcontrols === os.hostname())
         {
             if (document.querySelector("#iziToast-breakneeded") === null && !breakNotified)
@@ -1269,11 +1288,15 @@ function doMeta(metan) {
         }
         if (typeof metan.playing !== 'undefined' && typeof metan.state === 'undefined')
             metan.state = Meta.state;
+
+        // Manage queueLength
         prevQueueLength = queueLength;
         queueLength = Math.round(Meta.queueLength);
         if (queueLength < 0)
             queueLength = 0;
-        if ((prevQueueLength + 10) < queueLength && Meta.djcontrols === os.hostname())
+
+        // Detect if the DJ adds stuff to the queue before the system has entered show mode or exited break mode. Notify the DJ if such happened.
+        if ((prevQueueLength + 10) < queueLength && Meta.djcontrols === os.hostname() && typeof metan.state === 'undefined')
         {
             if (Meta.state.includes("_returning") && queueLength > (60 * 2))
             {
@@ -1352,8 +1375,11 @@ function doMeta(metan) {
                 });
             }
         }
+        // Make queue timer show current queue length (when visible)
         var queueTime = document.querySelector("#queue-seconds");
         queueTime.innerHTML = moment.duration(queueLength, "seconds").format();
+
+        // Flash the WWSU Operations box when queue time goes below 15 seconds.
         if (queueLength < 15 && (Meta.state.includes("_returning") || (Meta.state.startsWith("automation_") && Meta.state !== 'automation_on' && Meta.state !== 'automation_genre') && Meta.state !== 'automation_playlist'))
         {
             var operations = document.querySelector("#operations");
@@ -1362,9 +1388,14 @@ function doMeta(metan) {
                 operations.className = "card p-1 m-3 text-white bg-dark";
             }, 250);
         }
+
+        // Do stuff if the state changed
         if (typeof metan.state !== 'undefined')
         {
+            // Always re-do the calendar / clockwheel when states change.
             checkCalendar();
+
+            // Have the WWSU Operations box display buttons and operations depending on which state we are in
             $('#operations-body').animateCss('bounceOut', function () {
                 var badge = document.querySelector('#operations-state');
                 badge.innerHTML = Meta.state;
@@ -1409,6 +1440,7 @@ function doMeta(metan) {
                     document.querySelector('#queue').style.display = "inline";
                     document.querySelector('#btn-psa15').style.display = "inline";
                     document.querySelector('#btn-psa30').style.display = "inline";
+                    // If the system goes into disconnected mode, the host client should be notified of that!
                 } else if (Meta.state.includes('_break_disconnected') || Meta.state.includes('_halftime_disconnected') && Meta.djcontrols === os.hostname())
                 {
                     if (document.querySelector("#iziToast-noremote") === null)
@@ -1498,6 +1530,7 @@ function doMeta(metan) {
     }
 }
 
+// Shows a please wait box.
 function pleaseWait() {
     try {
         var temp = document.querySelector('#operations');
@@ -1515,6 +1548,7 @@ function pleaseWait() {
     }
 }
 
+// Check the current announcements from the Status system or the emergency alerts system. Color the Announcements box depending on the level of the most critical announcement.
 function checkAnnouncementColor() {
     var temp = document.querySelectorAll(".attn-status-1");
     var temp2 = document.querySelectorAll(".attn-status-2");
@@ -1533,10 +1567,12 @@ function checkAnnouncementColor() {
     }
 }
 
+// Re-do the announcements shown in the announcements box
 function checkAnnouncements() {
     var prev = [];
     // Add applicable announcements
     Announcements().each(function (datum) {
+        // Check to make sure the announcement is valid / not expired
         if (moment(datum.starts).isBefore(moment(Meta.time)) && moment(datum.expires).isAfter(moment(Meta.time)))
         {
             prev.push(`attn-${datum.ID}`);
@@ -1546,6 +1582,7 @@ function checkAnnouncements() {
                 attn.innerHTML += `<div class="attn attn-${datum.level} alert alert-${datum.level}" id="attn-${datum.ID}" role="alert">
                         <i class="fas fa-bullhorn"></i> ${datum.announcement}
                     </div>`;
+                // If this DJ Controls is configured by WWSU to notify on technical problems, notify so.
                 if (client.emergencies && datum.announcement.startsWith("<strong>Problem reported by"))
                 {
                     iziToast.show({
@@ -1803,7 +1840,7 @@ function checkCalendar() {
                 var notification = notifier.notify('Interfering with Another Show', {
                     message: 'Please wrap-up / end your show as soon as possible.',
                     icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
-                    duration: 600000,
+                    duration: 900000,
                     buttons: ["Close"]
                 });
                 notification.on('buttonClicked', (text, buttonIndex, options) => {
@@ -1842,7 +1879,7 @@ function checkCalendar() {
                 var notification = notifier.notify('Interfering with a Prerecord', {
                     message: 'Please wrap-up / end your show as soon as possible.',
                     icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
-                    duration: 600000,
+                    duration: 900000,
                     buttons: ["Close"]
                 });
                 notification.on('buttonClicked', (text, buttonIndex, options) => {
@@ -1875,6 +1912,7 @@ function checkCalendar() {
         // Clear current list of events
         document.querySelector('#calendar-events').innerHTML = '';
 
+        // Prepare some variables
         var timeLeft = 1000000;
         var timeLeft2 = 1000000;
         var doLabel = null;
@@ -1884,10 +1922,12 @@ function checkCalendar() {
         var currentStart = moment();
         var currentEnd = moment();
         var firstEvent = '';
+
         // Add in our new list, and include in clockwheel
         if (calendar.length > 0)
         {
             calendar.forEach(function (event) {
+                // If we are not doing a show, proceed with a 12-hour clockwheel and events list
                 if (Meta.state.startsWith("automation_") || Meta.state === "live_prerecord")
                 {
                     var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878');
@@ -1905,6 +1945,7 @@ function checkCalendar() {
                                             </div>
                                         </div>
                                     </div></div>`;
+                    // Add upcoming shows to the clockwheel shading
                     if (event.title.startsWith("Show: ") || event.title.startsWith("Remote: ") || event.title.startsWith("Sports: ") || event.title.startsWith("Prerecord: "))
                     {
                         if (moment(event.end).diff(moment(Meta.time), 'minutes') < (12 * 60))
@@ -1947,15 +1988,19 @@ function checkCalendar() {
                         }
                         console.dir(data.sectors);
                     }
+                    // If we are doing a show, do a 1-hour clockwheel
                 } else {
                     if (event.title.startsWith("Show: ") || event.title.startsWith("Remote: ") || event.title.startsWith("Sports: "))
                     {
                         var stripped = event.title.replace("Show: ", "");
                         stripped = stripped.replace("Remote: ", "");
                         stripped = stripped.replace("Sports: ", "");
+                        // If the event we are processing is what is on the air right now, and the event has not yet ended...
                         if (Meta.dj === stripped && moment(event.end).isAfter(moment(Meta.time)))
                         {
+                            // Calculate base remaining time
                             timeLeft = moment(event.end).diff(moment(Meta.time), 'minutes');
+                            // If there is less than 1 hour remaining in the show, only shade the clock for the portion of the hour remaining in the show
                             if (moment(event.end).diff(moment(Meta.time), 'minutes') < 60)
                             {
                                 if (moment(event.start).isAfter(moment(Meta.time)))
@@ -1975,6 +2020,7 @@ function checkCalendar() {
                                     currentStart = moment(event.start);
                                     currentEnd = moment(event.end);
                                 }
+                                // Otherwise, shade the entire hour, if the event has already started via the scheduled start time
                             } else if (moment(event.start).isBefore(moment(Meta.time)))
                             {
                                 doLabel = event.title;
@@ -1984,11 +2030,19 @@ function checkCalendar() {
                                 currentStart = moment(event.start);
                                 currentEnd = moment(event.end);
                             }
+                            // If the event being process is not what is live, but the end time is after the current time...
                         } else if (moment(event.end).isAfter(moment(Meta.time)))
                         {
+                            // Do a check to see if this event will intercept the currently live event
                             timeLeft2 = moment(event.start).diff(moment(Meta.time), 'minutes');
+                            // Sports and remote broadcasts should be given an extra 15 minutes for preparation
+                            if (event.title.startsWith("Sports: ") || event.title.startsWith("Remote: "))
+                                timeLeft2 -= 15;
+                            if (timeLeft2 < 0)
+                                timeLeft2 = 0;
                             console.log(`Timeleft: ${timeLeft}`);
                             console.log(`TimeLeft2: ${timeLeft2}`);
+                            // If timeLeft2 is less than timeleft, that means the currently live show needs to end earlier than the scheduled time.
                             if (timeLeft2 < timeLeft)
                             {
                                 timeLeft = timeLeft2;
@@ -1996,7 +2050,6 @@ function checkCalendar() {
                                 if (event.title.startsWith("Sports: ") || event.title.startsWith("Remote: "))
                                 {
                                     currentEnd = moment(currentEnd).subtract(15, 'minutes');
-                                    timeLeft -= 15;
                                 }
                                 if (moment(currentEnd).isBefore(moment(Meta.time)))
                                 {
@@ -2006,6 +2059,7 @@ function checkCalendar() {
                             }
                             if (timeLeft < 0)
                                 timeLeft = 0;
+                            // If the event being processed starts in less than 1 hour, add it to the hour clockwheel as a black shaded event
                             if (moment(event.start).diff(moment(Meta.time), 'minutes') < 60)
                             {
                                 if (moment(event.start).isAfter(moment(Meta.time)))
@@ -2031,6 +2085,7 @@ function checkCalendar() {
                             }
                         }
                     }
+                    // Add the event to the list on the right of the clock
                     if (moment(Meta.time).add(1, 'hours').isAfter(moment(event.start)) && moment(Meta.time).isBefore(moment(event.end)))
                     {
                         var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878');
@@ -2070,6 +2125,7 @@ function checkCalendar() {
             var diff = moment(Meta.time).diff(moment(start), 'minutes');
             data.start = 0.5 * diff;
 
+// Show an indicator on the clock for the current hour (extra visual to show 12-hour clock mode)
             data.sectors.push({
                 label: 'current hour',
                 start: 0,
@@ -2092,6 +2148,7 @@ function checkCalendar() {
 
                 newSVG.appendChild(newSector);
             });
+            // During shows, use a 1-hour clockwheel
         } else {
             var temp = document.getElementById("calendar-title");
             temp.innerHTML = 'Clockwheel (next hour)';
@@ -2106,6 +2163,7 @@ function checkCalendar() {
                 if (!Meta.breakneeded)
                 {
                     var topOfHour = moment(Meta.time).add(1, 'hours').startOf('hour');
+                    // If the DJ is expected to do a top of the hour break at the next top of hour, show so on the clock and in the events list
                     if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
                     {
                         doTopOfHour = true;
@@ -2123,6 +2181,7 @@ function checkCalendar() {
                     }
                 } else {
                     topOfHour = moment(Meta.time).startOf('hour');
+                    // This happens when the DJ has not yet taken their top of the hour break; keep the time in the events list the same until they take the break.
                     if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
                     {
                         doTopOfHour = true;
@@ -2141,6 +2200,8 @@ function checkCalendar() {
                     }
                 }
 
+                // First in the list of events, show the current show and how much time remains based on the schedule and whether or not something else will mandate this show
+                // ends early.
                 var finalColor = (typeof doColor !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(doColor)) ? hexRgb(doColor) : hexRgb('#787878');
                 finalColor.red = Math.round(finalColor.red / 2);
                 finalColor.green = Math.round(finalColor.green / 2);
@@ -2198,6 +2259,7 @@ function checkCalendar() {
                     }
                 }
 
+                // Then, shade the top of hour ID break on the clock if required
                 if (doTopOfHour)
                 {
                     if (!Meta.breakneeded)
@@ -2223,6 +2285,7 @@ function checkCalendar() {
                 }
             }
 
+            // Finally, show an indicator on the clock for the current minute (extra visual to show 1-hour clock mode)
             data.sectors.push({
                 label: 'current minute',
                 start: 0,
@@ -2255,6 +2318,7 @@ function checkCalendar() {
     }
 }
 
+// Called when the recipients available to send/receive messages needs recalculating
 function checkRecipients() {
     try {
 
@@ -2294,6 +2358,7 @@ function checkRecipients() {
                     recipients[key].forEach(function (recipient) {
                         var temp = document.querySelector(`#users-u-${recipient.host}`);
                         var theClass = 'dark';
+                        // Online recipients in wwsu-red color, offline in dark color.
                         switch (recipient.status)
                         {
                             case 1:
@@ -2315,6 +2380,7 @@ function checkRecipients() {
                                 theClass = 'dark';
                                 break;
                         }
+                        // Make "Web Public" red if the webchat is enabled.
                         if (recipient.host === 'website' && Meta.webchat)
                             theClass = 'wwsu-red';
                         if (temp !== null)
@@ -2322,6 +2388,7 @@ function checkRecipients() {
                             temp.remove();
                         }
                         temp = document.querySelector(`#users-g-${key}`);
+                        // For web visitor recipients, add options for muting or banning
                         if (recipient.group === 'website' && recipient.host !== 'website')
                         {
                             temp.innerHTML += `<div id="users-u-${recipient.host}" class="recipient">
@@ -2382,6 +2449,7 @@ function checkRecipients() {
     }
 }
 
+// Called when the user clicks on a recipient to view the messages from that recipient
 function selectRecipient(recipient = null)
 {
     try {
@@ -2392,6 +2460,7 @@ function selectRecipient(recipient = null)
         messages.innerHTML = ``;
 
         Recipients().each(function (recipientb) {
+            // Update all the recipients, ensuring only the selected one has a yellow border
             var temp = document.querySelector(`#users-b-${recipientb.host}`);
             if (temp !== null)
             {
@@ -2467,6 +2536,7 @@ function selectRecipient(recipient = null)
             temp.className = `p-1 m-1 bg-${theClass} border border-warning`;
         }
 
+        // Add labels at the top of the messages box to explain stuff
         if (recipient === null || typeof host === 'undefined')
         {
             messages.innerHTML += `<div class="m-2 bg-danger-dark" style="cursor: pointer;">
@@ -2508,7 +2578,7 @@ function selectRecipient(recipient = null)
                     </div>`;
         }
 
-        // Define a comparison function that will order calendar events by start time when we run the iteration
+        // Define a comparison function that will order messages by createdAt when we run the iteration
         var compare = function (a, b) {
             try {
                 if (moment(a.createdAt).valueOf() < moment(b.createdAt).valueOf())
@@ -2525,6 +2595,7 @@ function selectRecipient(recipient = null)
             }
         };
 
+        // Get only the relevant messages to show in the "new messages" box
         var query = [{from: host, to: os.hostname()}, {from: os.hostname(), to: host}, {from: host, to: 'DJ'}, {from: host, to: 'DJ-private'}];
         if (host === 'website')
         {
@@ -2589,6 +2660,7 @@ function selectRecipient(recipient = null)
 
         checkRecipients();
 
+        // Now, get other messages according to selected recipient
         var temp = document.querySelector(`#btn-messenger-unread`);
         temp.className = `notification badge badge-${totalUnread > 0 ? 'danger' : 'secondary'}`;
         temp.innerHTML = totalUnread;
@@ -2596,6 +2668,7 @@ function selectRecipient(recipient = null)
 
         if (records.length > 0)
         {
+            // Remove messages older than 1 hour
             records.forEach(function (message) {
                 if (moment().subtract(1, 'hours').isAfter(moment(message.createdAt)))
                 {
@@ -2608,6 +2681,7 @@ function selectRecipient(recipient = null)
                 var temp = document.querySelector(`#message-m-${message.ID}`);
                 if (temp === null)
                 {
+                    // Messages from website visitors should offer the options delete message, mute user, or ban user.
                     if (message.from.startsWith("website-"))
                     {
                         var temp2 = document.querySelector(`#message-m-${message.ID}`);
@@ -2641,6 +2715,7 @@ function selectRecipient(recipient = null)
                             var temp3 = document.querySelector(`#message-b-${message.ID}`);
                             temp3.innerHTML = `${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? '(Private)' : ''}`;
                         }
+                        // All other messages should just offer delete message as an option
                     } else {
                         var temp2 = document.querySelector(`#message-m-${message.ID}`);
                         if (temp2 === null)
@@ -2692,6 +2767,7 @@ function selectRecipient(recipient = null)
 }
 }
 
+// Called when a message needs to be marked as read. A null message means mark all messages by the currently selected recipient as read.
 function markRead(message = null)
 {
     try {
@@ -2720,6 +2796,7 @@ function markRead(message = null)
 }
 }
 
+// Called when the user requests to have a message deleted
 function deleteMessage(message) {
     nodeRequest({method: 'POST', url: nodeURL + '/messages/remove', data: {ID: message}}, function (response) {
         if (response === 'OK')
@@ -2754,6 +2831,7 @@ function deleteMessage(message) {
     });
 }
 
+// Prompt the user to confirm a mute when they ask to mute someone
 function prepareMute(recipient) {
     try {
         var label = Recipients({ID: recipient}).first().label;
@@ -2787,6 +2865,7 @@ function prepareMute(recipient) {
     }
 }
 
+// Prompt the user when they ask to ban someone
 function prepareBan(recipient) {
     try {
         var label = Recipients({ID: recipient}).first().label;
@@ -2821,6 +2900,7 @@ function prepareBan(recipient) {
     }
 }
 
+// Finalizes and issues a mute
 function finishMute(recipient) {
     try {
         var host = Recipients({ID: recipient}).first().host;
@@ -2864,6 +2944,7 @@ function finishMute(recipient) {
     }
 }
 
+// Finalizes and issues a ban
 function finishBan(recipient) {
     try {
         var host = Recipients({ID: recipient}).first().host;
@@ -2907,6 +2988,9 @@ function finishBan(recipient) {
     }
 }
 
+// THE FUNCTIONS BELOW DEAL WITH THE BUTTONS CLICKED IN WWSU OPERATIONS
+
+
 function returnBreak() {
     $("#wait-modal").iziModal('open');
     document.querySelector("#wait-text").innerHTML = 'Queuing Sweeper/ID';
@@ -2928,6 +3012,7 @@ function prepareLive() {
     document.querySelector("#live-topic").value = '';
     document.querySelector("#live-noschedule").style.display = "inline";
     document.querySelector("#live-webchat").checked = true;
+    // Auto-fill show host and name if one is scheduled to go on
     if (calType === 'Show')
     {
         document.querySelector("#live-handle").value = calHost;
@@ -2962,6 +3047,7 @@ function prepareRemote() {
     document.querySelector("#remote-topic").value = '';
     document.querySelector("#remote-noschedule").style.display = "inline";
     document.querySelector("#remote-webchat").checked = true;
+    // Auto fill remote host and show if one is scheduled to go on
     if (calType === 'Remote')
     {
         document.querySelector("#remote-handle").value = calHost;
@@ -2995,6 +3081,7 @@ function prepareSports() {
     document.querySelector("#sports-noschedule").style.display = "inline";
     document.querySelector("#sports-remote").checked = false;
     document.querySelector("#sports-webchat").checked = true;
+    // Auto fill the sport dropdown if a sport is scheduled
     if (calType === 'Sports')
     {
         document.querySelector("#sports-sport").value = calShow;
@@ -3063,6 +3150,7 @@ function saveLog() {
     });
 }
 
+// for when a DJ reports a problem
 function prepareEmergency() {
     document.querySelector("#emergency-issue").value = ``;
     $("#emergency-modal").iziModal('open');
@@ -3095,6 +3183,7 @@ function sendEmergency() {
     });
 }
 
+// For when a DJ requests to have a message display on the display signs
 function prepareDisplay() {
     document.querySelector("#display-message").value = ``;
     $("#display-modal").iziModal('open');
