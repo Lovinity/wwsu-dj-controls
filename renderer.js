@@ -774,6 +774,25 @@ document.querySelector(`#messages-unread`).addEventListener("click", function (e
     }
 });
 
+document.querySelector(`#announcements-body`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith(`attn-r`))
+            {
+                var ID = parseInt(e.target.id.replace(`attn-r-`, ``));
+                prepareAttnRemove(ID);
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #announcements-body.'
+        });
+    }
+});
+
 document.querySelector("#btn-messenger").onclick = function () {
     $("#messages-modal").iziModal('open');
 };
@@ -1591,6 +1610,9 @@ function checkAnnouncements() {
             {
                 var attn = document.querySelector("#announcements-body");
                 attn.innerHTML += `<div class="attn attn-${datum.level} alert alert-${datum.level}" id="attn-${datum.ID}" role="alert">
+                                ${client.emergencies ? `<button type="button" class="close" aria-label="Remove">
+                <span aria-hidden="true" id="attn-r-${datum.ID}">&times;</span>
+                </button>` : ``}
                         <i class="fas fa-bullhorn"></i> ${datum.announcement}
                     </div>`;
                 // If this DJ Controls is configured by WWSU to notify on technical problems, notify so.
@@ -1622,7 +1644,9 @@ function checkAnnouncements() {
             } else {
                 var temp = document.querySelector(`#attn-${datum.ID}`);
                 temp.className = `attn attn-${datum.level} alert alert-${datum.level}`;
-                temp.innerHTML = `<i class="fas fa-bullhorn"></i> ${datum.announcement}`;
+                temp.innerHTML = `${client.emergencies ? `<button type="button" class="close" aria-label="Remove">
+                <span aria-hidden="true" id="attn-r-${datum.ID}">&times;</span>
+                </button>` : ``}<i class="fas fa-bullhorn"></i> ${datum.announcement}`;
             }
         }
     });
@@ -2411,7 +2435,7 @@ function checkRecipients() {
     </div>
     <div class="col-3" id="users-c2-${recipient.host}" style="text-align: center;">
                                                                                 <div class="dropdown">
-      <span class='message-options' id="users-o-${recipient.host}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span><span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.host}">${recipient.unread}</span>
+      <span class='close' id="users-o-${recipient.host}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span><span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.host}">${recipient.unread}</span>
                                                                                         <div class="dropdown-menu" aria-labelledby="users-o-${recipient.host}">
                                         <a class="dropdown-item text-warning-dark" data-toggle="dropdown" id="users-o-mute-${recipient.host}">Mute for 24 hours</a>
                                         <a class="dropdown-item text-danger-dark" data-toggle="dropdown" id="users-o-ban-${recipient.host}">Ban indefinitely</a>
@@ -2707,7 +2731,7 @@ function selectRecipient(recipient = null)
     </div>
     <div class="col-2" id="message-c2-${message.ID}" style="text-align: center;">
 <div class="dropdown">
-                                <span class='message-options' id="message-o-${message.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
+                                <span class='close' id="message-o-${message.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
                                 <div class="dropdown-menu" aria-labelledby="message-o-${message.ID}">
                                     <a class="dropdown-item text-primary" data-toggle="dropdown" id="message-o-delete-${message.ID}">Delete Message</a>
                                     <a class="dropdown-item text-warning-dark" data-toggle="dropdown" id="message-o-mute-${message.ID}">Mute for 24 hours</a>
@@ -2740,7 +2764,7 @@ function selectRecipient(recipient = null)
     </div>
     <div class="col-2" id="message-c2-${message.ID}" style="text-align: center;">
 <div class="dropdown">
-                                <span class='message-options' id="message-o-${message.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
+                                <span class='close' id="message-o-${message.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
                                 <div class="dropdown-menu" aria-labelledby="message-o-${message.ID}">
                                     <a class="dropdown-item text-primary" data-toggle="dropdown" id="message-o-delete-${message.ID}">Delete Message</a>
                                 </div>
@@ -2995,6 +3019,82 @@ function finishBan(recipient) {
         iziToast.show({
             title: 'An error occurred - Please check the logs',
             message: `Error occurred during finishBan.`
+        });
+    }
+}
+
+// Prompt the user to confirm if they want to remove an announcement
+function prepareAttnRemove(ID) {
+    try {
+        iziToast.show({
+            title: `Confirm removal of announcement ${ID}`,
+            message: `Are you sure you want to remove this announcement?`,
+            timeout: 60000,
+            close: true,
+            color: 'yellow',
+            drag: false,
+            position: 'center',
+            closeOnClick: false,
+            overlay: true,
+            zindex: 1000,
+            buttons: [
+                ['<button>Yes</button>', function (instance, toast, button, e, inputs) {
+                        finishAttnRemove(ID);
+                        instance.hide({}, toast, 'button');
+                    }],
+                ['<button>No</button>', function (instance, toast, button, e, inputs) {
+                        instance.hide({}, toast, 'button');
+                    }]
+            ]
+        });
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: `Error occurred during prepareAttnRemove.`
+        });
+    }
+}
+
+// Finalizes and removes an announcement
+function finishAttnRemove(ID) {
+    try {
+        nodeRequest({method: 'POST', url: nodeURL + '/announcements/remove', data: {ID: ID}}, function (response) {
+            if (response === 'OK')
+            {
+                iziToast.show({
+                    title: `Announcement removed!`,
+                    message: `The announcement was removed successfully.`,
+                    timeout: 5000,
+                    close: true,
+                    color: 'green',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: true,
+                    overlay: false,
+                    zindex: 1000
+                });
+            } else {
+                iziToast.show({
+                    title: `Failed to remove!`,
+                    message: `There was an error trying to remove that announcement.`,
+                    timeout: 10000,
+                    close: true,
+                    color: 'red',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: true,
+                    overlay: false,
+                    zindex: 1000
+                });
+            }
+            console.log(JSON.stringify(response));
+        });
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: `Error occurred during finishAttnRemove.`
         });
     }
 }
