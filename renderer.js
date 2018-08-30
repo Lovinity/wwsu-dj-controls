@@ -27,6 +27,7 @@ try {
     var Eas = TAFFY();
     var Recipients = TAFFY();
     var Requests = TAFFY();
+    var Logs = TAFFY();
 
     // Define HTML elements
 
@@ -191,171 +192,171 @@ try {
         }
     }, 3000);
 
-        // Define default settings for iziToast (overlaying messages)
-        iziToast.settings({
-            titleColor: '#000000',
-            messageColor: '#000000',
-            color: 'red',
-            close: true,
-            overlay: true,
-            overlayColor: 'rgba(0, 0, 0, 0.75)',
-            zindex: 100,
-            layout: 1,
-            closeOnClick: true,
-            position: 'center',
-            timeout: 30000
-        });
+    // Define default settings for iziToast (overlaying messages)
+    iziToast.settings({
+        titleColor: '#000000',
+        messageColor: '#000000',
+        color: 'red',
+        close: true,
+        overlay: true,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        zindex: 100,
+        layout: 1,
+        closeOnClick: true,
+        position: 'center',
+        timeout: 30000
+    });
 
-        // Pre-load all the modal windows
-        $("#go-live-modal").iziModal({
-            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Mics, Recorder, Action!</h5>`,
-            headerColor: '#363636',
-            width: 640,
-            focusInput: true,
-            arrowKeys: false,
-            navigateCaption: false,
-            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-            overlayClose: false,
-            overlayColor: 'rgba(0, 0, 0, 0.75)',
-            timeout: 180000,
-            timeoutProgressbar: true,
-            pauseOnHover: true,
-            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-            zindex: 50
-        });
+    // Pre-load all the modal windows
+    $("#go-live-modal").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Mics, Recorder, Action!</h5>`,
+        headerColor: '#363636',
+        width: 640,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: 180000,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 50
+    });
 
-        $("#go-remote-modal").iziModal({
-            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Remote Broadcast</h5>`,
-            headerColor: '#363636',
-            width: 640,
-            focusInput: true,
-            arrowKeys: false,
-            navigateCaption: false,
-            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-            overlayClose: false,
-            overlayColor: 'rgba(0, 0, 0, 0.75)',
-            timeout: 180000,
-            timeoutProgressbar: true,
-            pauseOnHover: true,
-            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-            zindex: 50
-        });
+    $("#go-remote-modal").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Remote Broadcast</h5>`,
+        headerColor: '#363636',
+        width: 640,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: 180000,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 50
+    });
 
-        $("#go-sports-modal").iziModal({
-            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Raider Sports</h5>`,
-            headerColor: '#363636',
-            width: 640,
-            focusInput: true,
-            arrowKeys: false,
-            navigateCaption: false,
-            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-            overlayClose: false,
-            overlayColor: 'rgba(0, 0, 0, 0.75)',
-            timeout: 180000,
-            timeoutProgressbar: true,
-            pauseOnHover: true,
-            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-            zindex: 50
-        });
+    $("#go-sports-modal").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Raider Sports</h5>`,
+        headerColor: '#363636',
+        width: 640,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: 180000,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 50
+    });
 
-        $("#log-modal").iziModal({
-            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Logs, Logs, and More Logs</h5>`,
-            headerColor: '#363636',
-            width: 640,
-            focusInput: true,
-            arrowKeys: false,
-            navigateCaption: false,
-            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-            overlayClose: false,
-            overlayColor: 'rgba(0, 0, 0, 0.75)',
-            timeout: 180000,
-            timeoutProgressbar: true,
-            pauseOnHover: true,
-            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-            zindex: 50
-        });
+    $("#log-modal").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Logs, Logs, and More Logs</h5>`,
+        headerColor: '#363636',
+        width: 640,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: 180000,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 50
+    });
 
-        $("#messages-modal").iziModal({
-            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Messages</h5>`,
-            headerColor: '#363636',
-            width: 800,
-            focusInput: true,
-            arrowKeys: false,
-            navigateCaption: false,
-            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-            overlayClose: false,
-            overlayColor: 'rgba(0, 0, 0, 0.75)',
-            timeout: false,
-            pauseOnHover: true,
-            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-            zindex: 50
-        });
+    $("#messages-modal").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Messages</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 50
+    });
 
-        $("#wait-modal").iziModal({
-            width: 480,
-            appendTo: `#operations`,
-            appendToOverlay: `#operations`,
-            focusInput: false,
-            arrowKeys: false,
-            navigateCaption: false,
-            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-            overlayClose: false,
-            overlayColor: 'rgba(0, 0, 0, 0.75)',
-            timeout: false,
-            pauseOnHover: true,
-            timeoutProgressbarColor: 'rgba(255,255,255,0.5)'
-        });
+    $("#wait-modal").iziModal({
+        width: 480,
+        appendTo: `#operations`,
+        appendToOverlay: `#operations`,
+        focusInput: false,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)'
+    });
 
-        $("#emergency-modal").iziModal({
-            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Report an Issue</h5>`,
-            headerColor: '#363636',
-            width: 640,
-            focusInput: true,
-            arrowKeys: false,
-            navigateCaption: false,
-            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-            overlayClose: false,
-            overlayColor: 'rgba(0, 0, 0, 0.75)',
-            timeout: 180000,
-            timeoutProgressbar: true,
-            pauseOnHover: true,
-            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-            zindex: 50
-        });
+    $("#emergency-modal").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Report an Issue</h5>`,
+        headerColor: '#363636',
+        width: 640,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: 180000,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 50
+    });
 
-        $("#display-modal").iziModal({
-            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Display a Message on Display Signs</h5>`,
-            headerColor: '#363636',
-            width: 640,
-            focusInput: true,
-            arrowKeys: false,
-            navigateCaption: false,
-            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-            overlayClose: false,
-            overlayColor: 'rgba(0, 0, 0, 0.75)',
-            timeout: 180000,
-            timeoutProgressbar: true,
-            pauseOnHover: true,
-            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-            zindex: 50
-        });
+    $("#display-modal").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Display a Message on Display Signs</h5>`,
+        headerColor: '#363636',
+        width: 640,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: 180000,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 50
+    });
 
-        $("#xp-modal").iziModal({
-            title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Your Show is Complete</h5>`,
-            headerColor: '#363636',
-            width: 640,
-            focusInput: true,
-            arrowKeys: false,
-            navigateCaption: false,
-            navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
-            overlayClose: false,
-            overlayColor: 'rgba(0, 0, 0, 0.75)',
-            timeout: 60000,
-            timeoutProgressbar: true,
-            pauseOnHover: true,
-            timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-            zindex: 60
-        });
+    $("#xp-modal").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Your Show is Complete</h5>`,
+        headerColor: '#363636',
+        width: 640,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: 60000,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 60
+    });
     $.fn.extend({
         // Add an animateCss function to JQuery to trigger an animation of an HTML element with animate.css
         animateCss: function (animationName, callback) {
@@ -520,10 +521,6 @@ io.socket.on('meta', function (data) {
 // On new eas data, update our eas memory and run the process function.
 io.socket.on('eas', function (data) {
     processEas(data);
-});
-
-io.socket.on('show-stats', function (data) {
-    $("#xp-modal").iziModal('open');
 });
 
 io.socket.on('status', function (data) {
@@ -1217,6 +1214,20 @@ function messagesSocket() {
                     setTimeout(messagesSocket, 10000);
                 }
             });
+
+            if (client.emergencies)
+            {
+                io.socket.post('/logs/get', {}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processLogs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED logs CONNECTION');
+                        setTimeout(messagesSocket, 10000);
+                    }
+                });
+            }
         } catch (e) {
             console.log(`FAILED messages CONNECTION`);
             console.error(e);
@@ -2993,7 +3004,7 @@ function finishBan(recipient) {
 
 function returnBreak() {
     $("#wait-modal").iziModal('open');
-    document.querySelector("#wait-text").innerHTML = 'Queuing Sweeper/ID';
+    document.querySelector("#wait-text").innerHTML = 'Finishing break';
     nodeRequest({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -3024,7 +3035,7 @@ function prepareLive() {
 
 function goLive() {
     $("#wait-modal").iziModal('open');
-    document.querySelector("#wait-text").innerHTML = 'Clearing RadioDJ queue and preparing for live show';
+    document.querySelector("#wait-text").innerHTML = 'Preparing RadioDJ for live show';
     nodeRequest({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: document.querySelector('#live-topic').value, djcontrols: os.hostname(), webchat: document.querySelector('#live-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
@@ -3059,7 +3070,7 @@ function prepareRemote() {
 
 function goRemote() {
     $("#wait-modal").iziModal('open');
-    document.querySelector("#wait-text").innerHTML = 'Clearing RadioDJ queue and preparing for remote broadcast';
+    document.querySelector("#wait-text").innerHTML = 'Preparing RadioDJ for remote broadcast';
     nodeRequest({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: document.querySelector('#remote-topic').value, djcontrols: os.hostname(), webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
@@ -3094,7 +3105,7 @@ function goSports() {
     var sportsOptions = document.getElementById('sports-sport');
     var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
     $("#wait-modal").iziModal('open');
-    document.querySelector("#wait-text").innerHTML = 'Clearing RadioDJ queue and preparing for sports broadcast';
+    document.querySelector("#wait-text").innerHTML = 'Preparing RadioDJ for sports broadcast';
     nodeRequest({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, remote: document.querySelector('#sports-remote').checked, djcontrols: os.hostname(), webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
@@ -3218,15 +3229,28 @@ function sendDisplay() {
 
 function endShow() {
     $("#wait-modal").iziModal('open');
-    document.querySelector("#wait-text").innerHTML = 'Queuing automation music in RadioDJ';
+    document.querySelector("#wait-text").innerHTML = 'Switching to automation / Calculating show stats';
     nodeRequest({method: 'POST', url: nodeURL + '/state/automation'}, function (response) {
-        if (response !== 'OK')
+        if (typeof response.showTime === 'undefined')
         {
             iziToast.show({
                 title: 'An error occurred',
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
+        } else {
+            $("#xp-modal").iziModal('open');
+            document.querySelector(`#stat-showTime`).innerHTML = moment.duration(response.showTime || 0, "minutes").format();
+            document.querySelector(`#stat-showXP`).innerHTML = response.showXP || 0;
+            document.querySelector(`#stat-listenerMinutes`).innerHTML = moment.duration(response.listenerMinutes || 0, "minutes").format();
+            document.querySelector(`#stat-listenerXP`).innerHTML = response.listenerXP || 0;
+            document.querySelector(`#stat-messagesWeb`).innerHTML = response.messagesWeb || 0;
+            document.querySelector(`#stat-messagesXP`).innerHTML = response.messagesXP || 0;
+            document.querySelector(`#stat-topAdds`).innerHTML = response.topAdds || 0;
+            document.querySelector(`#stat-topAddsXP`).innerHTML = response.topAddsXP || 0;
+            document.querySelector(`#stat-IDsXP`).innerHTML = response.IDsXP || 0;
+            document.querySelector(`#stat-subtotalXP`).innerHTML = response.subtotalXP || 0;
+            document.querySelector(`#stat-totalXP`).innerHTML = response.totalXP || 0;
         }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -3235,9 +3259,9 @@ function endShow() {
 
 function switchShow() {
     $("#wait-modal").iziModal('open');
-    document.querySelector("#wait-text").innerHTML = 'Queuing PSAs / ID';
+    document.querySelector("#wait-text").innerHTML = 'Switching to break / Calculating show stats';
     nodeRequest({method: 'POST', url: nodeURL + '/state/automation', data: {transition: true}}, function (response) {
-        if (response !== 'OK')
+        if (typeof response.showTime === 'undefined')
         {
             iziToast.show({
                 title: 'An error occurred',
@@ -3245,7 +3269,18 @@ function switchShow() {
                 timeout: 10000
             });
         } else {
-            prepareLive();
+            $("#xp-modal").iziModal('open');
+            document.querySelector(`#stat-showTime`).innerHTML = moment.duration(response.showTime || 0, "minutes").format();
+            document.querySelector(`#stat-showXP`).innerHTML = response.showXP || 0;
+            document.querySelector(`#stat-listenerMinutes`).innerHTML = moment.duration(response.listenerMinutes || 0, "minutes").format();
+            document.querySelector(`#stat-listenerXP`).innerHTML = response.listenerXP || 0;
+            document.querySelector(`#stat-messagesWeb`).innerHTML = response.messagesWeb || 0;
+            document.querySelector(`#stat-messagesXP`).innerHTML = response.messagesXP || 0;
+            document.querySelector(`#stat-topAdds`).innerHTML = response.topAdds || 0;
+            document.querySelector(`#stat-topAddsXP`).innerHTML = response.topAddsXP || 0;
+            document.querySelector(`#stat-IDsXP`).innerHTML = response.IDsXP || 0;
+            document.querySelector(`#stat-subtotalXP`).innerHTML = response.subtotalXP || 0;
+            document.querySelector(`#stat-totalXP`).innerHTML = response.totalXP || 0;
         }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -3254,7 +3289,7 @@ function switchShow() {
 
 function goBreak(halftime) {
     $("#wait-modal").iziModal('open');
-    document.querySelector("#wait-text").innerHTML = (halftime ? 'Queuing Halftime music' : 'Queuing PSAs');
+    document.querySelector("#wait-text").innerHTML = (halftime ? 'Switching to halftime/extended break' : 'Switching to break');
     nodeRequest({method: 'POST', url: nodeURL + '/state/break', data: {halftime: halftime}}, function (response) {
         if (response !== 'OK')
         {
@@ -3271,7 +3306,7 @@ function goBreak(halftime) {
 
 function playTopAdd() {
     $("#wait-modal").iziModal('open');
-    document.querySelector("#wait-text").innerHTML = 'Queuing/playing Top Add song';
+    document.querySelector("#wait-text").innerHTML = 'Queuing/playing Top Add';
     nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-add'}, function (response) {
         if (response !== 'OK')
         {

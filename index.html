@@ -588,11 +588,100 @@
         </div>
 
         <div id="xp-modal" style="background-color: #363636; color: #ffffff;">
-            <p class="text-success-light">Congratulations on completing your radio show today!</p>
-            <p class="text-info-light">
-                You can access MP3 recordings of your show today by going in the S drive, and then going to OnAir recordings\live. Breaks were automatically removed.
-            </p>
-            <p class="text-warning-light">Additional show statistics are to come in the future, so look out for those!</p>
+            <div class="alert alert-info" role="alert">
+                <strong>Access recordings of your show!</strong> Go to Computer -> S drive -> OnAir recordings folder -> live folder. There are probably more than one MP3 for this show. Each file is named by "dj name - show name (date and time)". 
+            </div>
+            <p style="font-size: 2em; text-align: center;">Statistics / XP earned</p>
+            <div class="container">
+                <div class="row">
+                    <div class="col-9">
+                        Length of show:
+                    </div>
+                    <div class="col-3" id="stat-showTime">
+                        0
+                    </div>
+                </div>
+                <div class="row text-success-light">
+                    <div class="col-9">
+                        XP earned for show time:
+                    </div>
+                    <div class="col-3" id="stat-showXP">
+                        0
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-9">
+                        Online listener minutes:
+                    </div>
+                    <div class="col-3" id="stat-listenerMinutes">
+                        0
+                    </div>
+                </div>
+                <div class="row text-success-light">
+                    <div class="col-9">
+                        XP earned for online listeners:
+                    </div>
+                    <div class="col-3" id="stat-listenerXP">
+                        0
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-9">
+                        Messages sent to web visitors:
+                    </div>
+                    <div class="col-3" id="stat-messagesWeb">
+                        0
+                    </div>
+                </div>
+                <div class="row text-success-light">
+                    <div class="col-9">
+                        XP earned for sending messages:
+                    </div>
+                    <div class="col-3" id="stat-messagesXP">
+                        0
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-9">
+                        Top Adds played:
+                    </div>
+                    <div class="col-3" id="stat-topAdds">
+                        0
+                    </div>
+                </div>
+                <div class="row text-success-light">
+                    <div class="col-9">
+                        XP earned for Top Adds:
+                    </div>
+                    <div class="col-3" id="stat-topAddsXP">
+                        0
+                    </div>
+                </div>
+                <div class="row text-success-light">
+                    <div class="col-9">
+                        XP earned for on-time top-of-hour breaks:
+                    </div>
+                    <div class="col-3" id="stat-IDsXP">
+                        0
+                    </div>
+                </div>
+                <div class="row text-warning-light">
+                    <div class="col-9">
+                        Total XP earned for this show:
+                    </div>
+                    <div class="col-3" id="stat-subtotalXP">
+                        0
+                    </div>
+                </div>
+                <div class="row text-primary-light">
+                    <div class="col-9">
+                        Total XP earned to date:
+                    </div>
+                    <div class="col-3" id="stat-totalXP">
+                        0
+                    </div>
+                </div>
+            </div>
         </div>
 
         <script>if (window.module)
