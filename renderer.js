@@ -419,11 +419,7 @@ io.socket.on('disconnect', function () {
             var notification = notifier.notify('DJ Controls Lost Connection', {
                 message: `DJ Controls lost connection to WWSU.`,
                 icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                duration: 60000,
-                buttons: ["Close"]
-            });
-            notification.on('buttonClicked', (text, buttonIndex, options) => {
-                notification.close();
+                duration: 60000
             });
         }
     } catch (e) {
@@ -1283,10 +1279,6 @@ function doMeta(metan) {
                     message: 'Please take a break within the next 5 minutes.',
                     icon: 'http://cdn.onlinewebfonts.com/svg/img_205852.png',
                     duration: 300000,
-                    buttons: ["Close"]
-                });
-                notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
                 });
                 main.flashTaskbar();
                 iziToast.show({
@@ -1334,10 +1326,6 @@ function doMeta(metan) {
                     message: `Please wait for the queue to empty / finish before adding tracks.`,
                     icon: '',
                     duration: 120000,
-                    buttons: ["Close"]
-                });
-                notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
                 });
                 main.flashTaskbar();
                 iziToast.show({
@@ -1359,10 +1347,6 @@ function doMeta(metan) {
                     message: `Please wait for the queue to empty / finish before adding tracks.`,
                     icon: '',
                     duration: 120000,
-                    buttons: ["Close"]
-                });
-                notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
                 });
                 main.flashTaskbar();
                 iziToast.show({
@@ -1384,10 +1368,6 @@ function doMeta(metan) {
                     message: `Please wait for the queue to empty / finish before adding tracks.`,
                     icon: '',
                     duration: 120000,
-                    buttons: ["Close"]
-                });
-                notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
                 });
                 main.flashTaskbar();
                 iziToast.show({
@@ -1498,10 +1478,6 @@ function doMeta(metan) {
                         message: 'Check your connection to the remote stream, then resume broadcast in DJ Controls.',
                         icon: 'https://d30y9cdsu7xlg0.cloudfront.net/png/244853-200.png',
                         duration: 180000,
-                        buttons: ["Close"]
-                    });
-                    notification.on('buttonClicked', (text, buttonIndex, options) => {
-                        notification.close();
                     });
                     main.flashTaskbar();
                     document.querySelector('#no-remote').style.display = "inline";
@@ -1634,10 +1610,6 @@ function checkAnnouncements() {
                         message: `A problem was reported. Please see DJ Controls.`,
                         icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
                         duration: (1000 * 60 * 60 * 24),
-                        buttons: ["Close"]
-                    });
-                    notification.on('buttonClicked', (text, buttonIndex, options) => {
-                        notification.close();
                     });
                     main.flashTaskbar();
                 }
@@ -1806,10 +1778,6 @@ function checkCalendar() {
                     message: 'Please wrap-up / end your show in the next few minutes.',
                     icon: 'https://icon2.kisspng.com/20171221/lje/gold-cup-trophy-png-clip-art-image-5a3c1fa99cbcb0.608850721513889705642.jpg',
                     duration: 900000,
-                    buttons: ["Close"]
-                });
-                notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
                 });
                 main.flashTaskbar();
                 iziToast.show({
@@ -1841,10 +1809,6 @@ function checkCalendar() {
                     message: 'Please wrap-up / end your show in the next few minutes.',
                     icon: 'http://cdn.onlinewebfonts.com/svg/img_550701.png',
                     duration: 900000,
-                    buttons: ["Close"]
-                });
-                notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
                 });
                 main.flashTaskbar();
                 iziToast.show({
@@ -1876,10 +1840,6 @@ function checkCalendar() {
                     message: 'Please wrap-up / end your show as soon as possible.',
                     icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
                     duration: 900000,
-                    buttons: ["Close"]
-                });
-                notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
                 });
                 main.flashTaskbar();
                 iziToast.show({
@@ -1915,10 +1875,6 @@ function checkCalendar() {
                     message: 'Please wrap-up / end your show as soon as possible.',
                     icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
                     duration: 900000,
-                    buttons: ["Close"]
-                });
-                notification.on('buttonClicked', (text, buttonIndex, options) => {
-                    notification.close();
                 });
                 main.flashTaskbar();
                 iziToast.show({
@@ -3506,10 +3462,6 @@ function processEas(data, replace = false)
                                 message: `Please consider ending your show and taking shelter. See DJ Controls.`,
                                 icon: 'https://png2.kisspng.com/20180419/rue/kisspng-weather-forecasting-storm-computer-icons-clip-art-severe-5ad93bcb9e9da1.5355263615241860596497.png',
                                 duration: 900000,
-                                buttons: ["Close"]
-                            });
-                            notification.on('buttonClicked', (text, buttonIndex, options) => {
-                                notification.close();
                             });
                             main.flashTaskbar();
                             iziToast.show({
@@ -3553,10 +3505,6 @@ function processEas(data, replace = false)
                             message: `Please keep an eye on the weather. See DJ Controls for more info.`,
                             icon: 'https://static1.squarespace.com/static/59a614fef7e0ab8b4a7b489a/5aa95c6a652dea6215e225f9/5aa95d258165f5044f919008/1521460510101/feature+icon+-+severe+weather.png?format=300w',
                             duration: 900000,
-                            buttons: ["Close"]
-                        });
-                        notification.on('buttonClicked', (text, buttonIndex, options) => {
-                            notification.close();
                         });
                         main.flashTaskbar();
                         iziToast.show({
@@ -3617,10 +3565,6 @@ function processEas(data, replace = false)
                                         message: `Please consider ending your show and taking shelter. See DJ Controls.`,
                                         icon: 'https://png2.kisspng.com/20180419/rue/kisspng-weather-forecasting-storm-computer-icons-clip-art-severe-5ad93bcb9e9da1.5355263615241860596497.png',
                                         duration: 900000,
-                                        buttons: ["Close"]
-                                    });
-                                    notification.on('buttonClicked', (text, buttonIndex, options) => {
-                                        notification.close();
                                     });
                                     main.flashTaskbar();
                                     iziToast.show({
@@ -3665,10 +3609,6 @@ function processEas(data, replace = false)
                                     message: `Please keep an eye on the weather. See DJ Controls for more info.`,
                                     icon: 'https://static1.squarespace.com/static/59a614fef7e0ab8b4a7b489a/5aa95c6a652dea6215e225f9/5aa95d258165f5044f919008/1521460510101/feature+icon+-+severe+weather.png?format=300w',
                                     duration: 900000,
-                                    buttons: ["Close"]
-                                });
-                                notification.on('buttonClicked', (text, buttonIndex, options) => {
-                                    notification.close();
                                 });
                                 main.flashTaskbar();
                                 iziToast.show({
@@ -3777,10 +3717,6 @@ function processStatus(data, replace = false)
                                 message: `${datum.label} reports a significant issue. Please see DJ Controls.`,
                                 icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
                                 duration: (1000 * 60 * 60 * 24),
-                                buttons: ["Close"]
-                            });
-                            notification.on('buttonClicked', (text, buttonIndex, options) => {
-                                notification.close();
                             });
                             main.flashTaskbar();
                         }
@@ -3808,10 +3744,6 @@ function processStatus(data, replace = false)
                             message: `Please check your audio levels to see if they are okay.`,
                             icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
                             duration: 60000,
-                            buttons: ["Close"]
-                        });
-                        notification.on('buttonClicked', (text, buttonIndex, options) => {
-                            notification.close();
                         });
                         main.flashTaskbar();
                     }
@@ -3861,10 +3793,6 @@ function processStatus(data, replace = false)
                                         message: `${data[key].label} reports a significant issue. Please see DJ Controls.`,
                                         icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
                                         duration: (1000 * 60 * 60 * 24),
-                                        buttons: ["Close"]
-                                    });
-                                    notification.on('buttonClicked', (text, buttonIndex, options) => {
-                                        notification.close();
                                     });
                                     main.flashTaskbar();
                                 }
@@ -3891,10 +3819,6 @@ function processStatus(data, replace = false)
                                     message: `Please check your audio levels to see if they are okay.`,
                                     icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
                                     duration: 60000,
-                                    buttons: ["Close"]
-                                });
-                                notification.on('buttonClicked', (text, buttonIndex, options) => {
-                                    notification.close();
                                 });
                                 main.flashTaskbar();
                             }
@@ -3929,10 +3853,6 @@ function processStatus(data, replace = false)
                                         message: `${data[key].label} reports a significant issue. Please see DJ Controls.`,
                                         icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
                                         duration: (1000 * 60 * 60 * 24),
-                                        buttons: ["Close"]
-                                    });
-                                    notification.on('buttonClicked', (text, buttonIndex, options) => {
-                                        notification.close();
                                     });
                                     main.flashTaskbar();
                                 }
@@ -3959,10 +3879,6 @@ function processStatus(data, replace = false)
                                     message: `Please check your audio levels to see if they are okay.`,
                                     icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
                                     duration: 60000,
-                                    buttons: ["Close"]
-                                });
-                                notification.on('buttonClicked', (text, buttonIndex, options) => {
-                                    notification.close();
                                 });
                                 main.flashTaskbar();
                             }
@@ -4169,10 +4085,6 @@ function processMessages(data, replace = false)
                                         message: `A problem was reported. Please see DJ Controls.`,
                                         icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
                                         duration: (1000 * 60 * 60 * 24),
-                                        buttons: ["Close"]
-                                    });
-                                    notification.on('buttonClicked', (text, buttonIndex, options) => {
-                                        notification.close();
                                     });
                                     main.flashTaskbar();
                                 }
@@ -4183,10 +4095,6 @@ function processMessages(data, replace = false)
                                     message: `You have a new message from ${datum.from_friendly} (see DJ Controls).`,
                                     icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
                                     duration: 30000,
-                                    buttons: ["Close"],
-                                });
-                                notification.on('buttonClicked', (text, buttonIndex, options) => {
-                                    notification.close();
                                 });
                                 main.flashTaskbar();
                                 iziToast.show({
@@ -4217,10 +4125,6 @@ function processMessages(data, replace = false)
                                         message: `You have a new web message from ${datum.from_friendly} (see DJ Controls).`,
                                         icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
                                         duration: 30000,
-                                        buttons: ["Close"]
-                                    });
-                                    notification.on('buttonClicked', (text, buttonIndex, options) => {
-                                        notification.close();
                                     });
                                     main.flashTaskbar();
                                     iziToast.show({
@@ -4287,10 +4191,6 @@ function processMessages(data, replace = false)
                                             message: `A problem was reported. Please see DJ Controls.`,
                                             icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
                                             duration: (1000 * 60 * 60 * 24),
-                                            buttons: ["Close"]
-                                        });
-                                        notification.on('buttonClicked', (text, buttonIndex, options) => {
-                                            notification.close();
                                         });
                                         main.flashTaskbar();
                                     }
@@ -4301,10 +4201,6 @@ function processMessages(data, replace = false)
                                         message: `You have a new message from ${data[key].from_friendly} (see DJ Controls).`,
                                         icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
                                         duration: 30000,
-                                        buttons: ["Close"],
-                                    });
-                                    notification.on('buttonClicked', (text, buttonIndex, options) => {
-                                        notification.close();
                                     });
                                     main.flashTaskbar();
                                     iziToast.show({
@@ -4335,10 +4231,6 @@ function processMessages(data, replace = false)
                                             message: `You have a new web message from ${data[key].from_friendly} (see DJ Controls).`,
                                             icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
                                             duration: 30000,
-                                            buttons: ["Close"]
-                                        });
-                                        notification.on('buttonClicked', (text, buttonIndex, options) => {
-                                            notification.close();
                                         });
                                         main.flashTaskbar();
                                         iziToast.show({

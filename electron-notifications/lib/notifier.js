@@ -23,6 +23,7 @@ class Notifier {
   notify (title, data) {
     const isWindows = process.platform === 'win32'
     const options = Object.assign({}, data);
+    options.buttons = ["Close"]; // Override... we only ever want a Close button, and we always want one
     const size = electron.screen.getPrimaryDisplay().workAreaSize;
     let verticalSpace = 0;
     if (options.vertical && options.buttons && options.buttons.length) {
