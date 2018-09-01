@@ -17,11 +17,13 @@
         <script src="assets/js/moment-duration-format.js"></script>
         <script src="assets/js/taffy-min.js"></script>
         <script src="assets/js/sails.io.js"></script>
+        <script src="assets/js/quill.js"></script>
         <link rel="stylesheet" href="assets/styles/bootstrap/mytheme.min.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/animate.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/iziToast.min.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/iziModal.min.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/fontawesome.css" type="text/css">
+        <link rel="stylesheet" href="assets/styles/quill.snow.css" type="text/css">
         <style>
             .btn-circle {
                 width: 30px;
@@ -531,7 +533,9 @@
             </div>
             <div style="width: 59%; float: left; color: #FFFFFF;">
                 <div class="form-group">
-                    <textarea class="form-control" rows="4" id="themessage" placeholder="Type your message here and press enter to send."></textarea>
+                    <div class="bg-light text-dark">
+                        <div id="themessage"></div>
+                    </div>
                 </div>
             </div>
         </div>

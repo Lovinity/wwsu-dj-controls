@@ -292,6 +292,65 @@ try {
         zindex: 50
     });
 
+    var quill = new Quill('#themessage', {
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline', 'strike', { 'color': [] }],
+                ['link'],
+                ['clean']
+            ],
+            keyboard: {
+                bindings: {
+                    messageSend: {
+                        key: 'enter',
+                        shiftKey: false,
+                        handler: function (range, context) {
+                            try {
+                                var host = Recipients({ID: activeRecipient}).first().host;
+                                var label = Recipients({ID: activeRecipient}).first().label;
+                                var message = quillGetHTML(this.quill.getContents());
+                                nodeRequest({method: 'POST', url: nodeURL + '/messages/send', data: {from: os.hostname(), to: host, to_friendly: label, message: message}}, (response) => {
+                                    if (response === 'OK')
+                                    {
+                                        this.quill.setText('');
+                                        markRead(null);
+                                    } else {
+                                        iziToast.show({
+                                            title: `Failed to send!`,
+                                            message: `There was an error trying to send your message.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            } catch (e) {
+                                console.error(e);
+                                iziToast.show({
+                                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                                    message: 'Error occurred during the keydown event of themessage.'
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        theme: 'snow',
+        placeholder: 'Type / format your message here and then press enter to send. Shift+Enter adds a new line.'
+    });
+
+    function quillGetHTML(inputDelta) {
+        var tempCont = document.createElement("div");
+        (new Quill(tempCont)).setContents(inputDelta);
+        return tempCont.getElementsByClassName("ql-editor")[0].innerHTML;
+    }
+
     $("#wait-modal").iziModal({
         width: 480,
         appendTo: `#operations`,
@@ -838,41 +897,6 @@ document.querySelector("#sports-sport").addEventListener("change", function () {
     }
 });
 
-$('#themessage').keydown(function (e) {
-    if (e.which === 13) {
-        try {
-            var host = Recipients({ID: activeRecipient}).first().host;
-            var label = Recipients({ID: activeRecipient}).first().label;
-            nodeRequest({method: 'POST', url: nodeURL + '/messages/send', data: {from: os.hostname(), to: host, to_friendly: label, message: document.querySelector(`#themessage`).value}}, function (response) {
-                if (response === 'OK')
-                {
-                    document.querySelector(`#themessage`).value = ``;
-                    markRead(null);
-                } else {
-                    iziToast.show({
-                        title: `Failed to send!`,
-                        message: `There was an error trying to send your message.`,
-                        timeout: 10000,
-                        close: true,
-                        color: 'red',
-                        drag: false,
-                        position: 'center',
-                        closeOnClick: true,
-                        overlay: false,
-                        zindex: 1000
-                    });
-                }
-            });
-        } catch (e) {
-            console.error(e);
-            iziToast.show({
-                title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                message: 'Error occurred during the keydown event of themessage.'
-            });
-        }
-    }
-});
-
 // FUNCTIONS FOR ANALOG CLOCK
 
 /*
@@ -1235,7 +1259,8 @@ function messagesSocket() {
                 io.socket.post('/logs/get', {}, function serverResponded(body, JWR) {
                     //console.log(body);
                     try {
-                        processLogs(body, true);
+                        // TODO
+                        //processLogs(body, true);
                     } catch (e) {
                         console.error(e);
                         console.log('FAILED logs CONNECTION');
