@@ -531,7 +531,7 @@ io.socket.on('meta', function (data) {
                 } else if (!Meta[key].startsWith("automation_") && data[key].startsWith("automation_"))
                 {
                     startRecording = 'automation';
-                } else if (data[key].includes("_break") || data[key].includes("_returning"))
+                } else if (data[key].includes("_break") || data[key].includes("_returning") || data[key].includes("_halftime"))
                 {
                     setTimeout(function () {
                         nrc.run(`"${recordPadPath}" -done`)
