@@ -125,7 +125,7 @@ try {
                                             .then(function (response2) {
                                                 if (response2 == 0)
                                                 {
-                                                    nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'operation', logsubtype: 'automation', loglevel: 'info', event: `A recording was started in ${recordPath}\\automation\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                    nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started in ${recordPath}\\automation\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
                                                     });
                                                 }
                                                 console.log(`RECORDFILE: ${response2}`)
@@ -295,7 +295,7 @@ try {
     var quill = new Quill('#themessage', {
         modules: {
             toolbar: [
-                ['bold', 'italic', 'underline', 'strike', { 'color': [] }],
+                ['bold', 'italic', 'underline', 'strike', {'color': []}],
                 ['link'],
                 ['clean']
             ],
@@ -557,7 +557,7 @@ io.socket.on('meta', function (data) {
                                 .then(function (response2) {
                                     if (response2 == 0)
                                     {
-                                        nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'operation', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                        nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
                                         });
                                     }
                                     console.log(response2);
@@ -1146,7 +1146,7 @@ function metaSocket() {
                                     .then(function (response2) {
                                         if (response2 == 0)
                                         {
-                                            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'operation', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
                                             });
                                         }
                                         console.log(`RECORDFILE: ${response2}`);
@@ -1294,14 +1294,25 @@ function recipientsSocket() {
 // Called on change to any metadata info
 function doMeta(metan) {
     try {
+        // If changingState, display please wait overlay
+        if (typeof metan.changingState !== 'undefined')
+        {
+            if (metan.changingState !== null)
+            {
+                $("#wait-modal").iziModal('open');
+                document.querySelector("#wait-text").innerHTML = metan.changingState;
+            } else {
+                $("#wait-modal").iziModal('close');
+            }
+        }
         // Notify the DJ of a mandatory top of the hour break if they need to take one
         if (Meta.breakneeded && Meta.djcontrols === os.hostname())
         {
             if (document.querySelector("#iziToast-breakneeded") === null && !breakNotified)
             {
                 breakNotified = true;
-                var notification = notifier.notify('Top of Hour Break Required', {
-                    message: 'Please take a break within the next 5 minutes.',
+                var notification = notifier.notify(`Don't forget Top of Hour break!`, {
+                    message: 'Please take a break in the next 3 minutes.',
                     icon: 'http://cdn.onlinewebfonts.com/svg/img_205852.png',
                     duration: 300000,
                 });
@@ -1309,8 +1320,8 @@ function doMeta(metan) {
                 iziToast.show({
                     id: 'iziToast-breakneeded',
                     class: 'flash-bg',
-                    title: '<i class="fas fa-clock"></i> Top of hour break required',
-                    message: `Please find a graceful stopping point and then click "take a break" within the next 5 minutes.`,
+                    title: `<i class="fas fa-clock"></i> Don't forget the required Top of Hour break!`,
+                    message: `Please find a graceful stopping point and then click "take a break" within the next 3 minutes. If you're about to end your show, you do not need to take a break.`,
                     timeout: false,
                     close: true,
                     color: 'yellow',
@@ -1793,7 +1804,7 @@ function checkCalendar() {
             curPriority = 1;
 
         // Determine if the DJ should be notified of the upcoming program
-        if (curPriority <= calPriority && !calNotified && Meta.djcontrols === os.hostname() && Meta.dj !== `${calHost} - ${calShow}`)
+        if (curPriority <= calPriority && !calNotified && Meta.djcontrols === os.hostname() && Meta.dj !== `${calHost} - ${calShow}` && Meta.changingState === null)
         {
             // Sports events should notify right away; allows for 15 minutes to transition
             if (calType === 'Sports')
@@ -3084,10 +3095,7 @@ function finishAttnRemove(ID) {
 
 
 function returnBreak() {
-    $("#wait-modal").iziModal('open');
-    document.querySelector("#wait-text").innerHTML = 'Finishing break';
     nodeRequest({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
-        $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
 }
@@ -3115,8 +3123,6 @@ function prepareLive() {
 }
 
 function goLive() {
-    $("#wait-modal").iziModal('open');
-    document.querySelector("#wait-text").innerHTML = 'Preparing RadioDJ for live show';
     nodeRequest({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: document.querySelector('#live-topic').value, djcontrols: os.hostname(), webchat: document.querySelector('#live-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
@@ -3128,7 +3134,6 @@ function goLive() {
                 timeout: 10000
             });
         }
-        $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
 }
@@ -3150,8 +3155,6 @@ function prepareRemote() {
 }
 
 function goRemote() {
-    $("#wait-modal").iziModal('open');
-    document.querySelector("#wait-text").innerHTML = 'Preparing RadioDJ for remote broadcast';
     nodeRequest({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: document.querySelector('#remote-topic').value, djcontrols: os.hostname(), webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
@@ -3163,7 +3166,6 @@ function goRemote() {
                 timeout: 10000
             });
         }
-        $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
 }
@@ -3185,8 +3187,6 @@ function prepareSports() {
 function goSports() {
     var sportsOptions = document.getElementById('sports-sport');
     var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
-    $("#wait-modal").iziModal('open');
-    document.querySelector("#wait-text").innerHTML = 'Preparing RadioDJ for sports broadcast';
     nodeRequest({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, remote: document.querySelector('#sports-remote').checked, djcontrols: os.hostname(), webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
@@ -3198,14 +3198,12 @@ function goSports() {
                 timeout: 10000
             });
         }
-        $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
 }
 
 function prepareLog() {
     document.querySelector("#log-datetime").value = moment(Meta.time).format("MM/DD/YYYY HH:mm:ss");
-    document.querySelector("#log-type").value = 'Did an unknown action';
     document.querySelector("#log-artist").value = '';
     document.querySelector("#log-title").value = '';
     document.querySelector("#log-album").value = '';
@@ -3214,9 +3212,9 @@ function prepareLog() {
 }
 
 function saveLog() {
-    var thelog = 'DJ/Producer ' + document.querySelector("#log-type").value;
+    var thelog = 'DJ/Producer played a track.';
     var dateObject = moment(document.querySelector("#log-datetime").value);
-    nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'operation', logsubtype: Meta.dj, loglevel: 'info', event: thelog, trackArtist: document.querySelector("#log-artist").value, trackTitle: document.querySelector("#log-title").value, trackAlbum: document.querySelector("#log-album").value, trackLabel: document.querySelector("#log-label").value, date: dateObject.toISOString()}}, function (response) {
+    nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.dj, loglevel: 'info', event: thelog, trackArtist: document.querySelector("#log-artist").value, trackTitle: document.querySelector("#log-title").value, trackAlbum: document.querySelector("#log-album").value, trackLabel: document.querySelector("#log-label").value, date: dateObject.toISOString()}}, function (response) {
         if (response === 'OK')
         {
             $("#log-modal").iziModal('close');
@@ -3232,6 +3230,30 @@ function saveLog() {
                 overlay: false,
                 zindex: 1000
             });
+            if (document.querySelector("#log-artist").value.length > 0 && document.querySelector("#log-title").value.length > 0)
+            {
+                iziToast.show({
+                    title: `Let me know when you finished playing this track:`,
+                    message: `${document.querySelector("#log-artist").value} - ${document.querySelector("#log-title").value}`,
+                    timeout: 600000,
+                    close: false,
+                    color: 'yellow',
+                    drag: false,
+                    position: 'bottomCenter',
+                    closeOnClick: false,
+                    overlay: false,
+                    buttons: [
+                        ['<button>Playing another track</button>', function (instance, toast, button, e, inputs) {
+                                prepareLog();
+                                instance.hide({}, toast, 'button');
+                            }],
+                        ['<button>Not playing any tracks</button>', function (instance, toast, button, e, inputs) {
+                                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.dj, loglevel: 'info', event: 'DJ/Producer finished playing music.', trackArtist: '', trackTitle: '', trackAlbum: '', trackLabel: '', date: moment().toISOString(true)}}, function (response) {});
+                                instance.hide({}, toast, 'button');
+                            }]
+                    ]
+                });
+            }
         } else {
             iziToast.show({
                 title: 'An error occurred',
@@ -3309,8 +3331,6 @@ function sendDisplay() {
 }
 
 function endShow() {
-    $("#wait-modal").iziModal('open');
-    document.querySelector("#wait-text").innerHTML = 'Switching to automation / Calculating show stats';
     nodeRequest({method: 'POST', url: nodeURL + '/state/automation'}, function (response) {
         if (typeof response.showTime === 'undefined')
         {
@@ -3333,14 +3353,11 @@ function endShow() {
             document.querySelector(`#stat-subtotalXP`).innerHTML = response.subtotalXP || 0;
             document.querySelector(`#stat-totalXP`).innerHTML = response.totalXP || 0;
         }
-        $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
 }
 
 function switchShow() {
-    $("#wait-modal").iziModal('open');
-    document.querySelector("#wait-text").innerHTML = 'Switching to break / Calculating show stats';
     nodeRequest({method: 'POST', url: nodeURL + '/state/automation', data: {transition: true}}, function (response) {
         if (typeof response.showTime === 'undefined')
         {
@@ -3363,14 +3380,11 @@ function switchShow() {
             document.querySelector(`#stat-subtotalXP`).innerHTML = response.subtotalXP || 0;
             document.querySelector(`#stat-totalXP`).innerHTML = response.totalXP || 0;
         }
-        $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
 }
 
 function goBreak(halftime) {
-    $("#wait-modal").iziModal('open');
-    document.querySelector("#wait-text").innerHTML = (halftime ? 'Switching to halftime/extended break' : 'Switching to break');
     nodeRequest({method: 'POST', url: nodeURL + '/state/break', data: {halftime: halftime}}, function (response) {
         if (response !== 'OK')
         {
@@ -3380,7 +3394,6 @@ function goBreak(halftime) {
                 timeout: 10000
             });
         }
-        $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
 }
