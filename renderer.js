@@ -2641,12 +2641,27 @@ function selectRecipient(recipient = null)
             });
         }
 
-        records = Messages({needsread: true}).get().sort(compare);
+        records = Messages().get().sort(compare);
         var unreadIDs = [];
 
         if (records.length > 0)
         {
             records.forEach(function (message) {
+                // Delete messages older than 1 hour
+                if (moment().subtract(1, 'hours').isAfter(moment(message.createdAt)))
+                {
+                    var temp3 = document.querySelector(`#message-n-m-${message.ID}`);
+                    if (temp3)
+                    {
+                        temp3.parentNode.removeChild(temp3);
+                    }
+                    Messages({ID: message.ID}).remove();
+                    // Do not continue; no need if the message is being deleted
+                    return null;
+                }
+                // Do not continue if this message is not new
+                if (!message.needsread)
+                    return null;
                 totalUnread++;
                 if (typeof recipientUnread[message.from_real] === 'undefined')
                     recipientUnread[message.from_real] = 0;
@@ -2696,18 +2711,7 @@ function selectRecipient(recipient = null)
 
         if (records.length > 0)
         {
-            // Remove messages older than 1 hour
             records.forEach(function (message) {
-                if (moment().subtract(1, 'hours').isAfter(moment(message.createdAt)))
-                {
-                    var temp3 = document.querySelector(`#message-n-m-${message.ID}`);
-                    if (temp3)
-                    {
-                        temp3.parentNode.removeChild(temp3);
-                    }
-                    Messages({ID: message.ID}).remove();
-                    return null;
-                }
 
                 messageIDs.push(`message-m-${message.ID}`);
 
