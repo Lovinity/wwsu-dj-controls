@@ -160,9 +160,10 @@ try {
                 {
                     secondsC = 0;
 
-                    // We want to refresh announcements and the calendar every minute.
+                    // We want to refresh announcements, calendar, and messages every minute.
                     checkAnnouncements();
                     checkCalendar();
+                    selectRecipient(activeRecipient);
                 }
             }
         }
@@ -2699,6 +2700,11 @@ function selectRecipient(recipient = null)
             records.forEach(function (message) {
                 if (moment().subtract(1, 'hours').isAfter(moment(message.createdAt)))
                 {
+                    var temp3 = document.querySelector(`#message-n-m-${message.ID}`);
+                    if (temp3)
+                    {
+                        temp3.parentNode.removeChild(temp3);
+                    }
                     Messages({ID: message.ID}).remove();
                     return null;
                 }
