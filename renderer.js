@@ -503,74 +503,82 @@ io.socket.on('connect', function () {
     } catch (e) {
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-            message: 'Error occurred in the connect event.' + e.message
+            message: 'Error occurred in the connect event. ' + e.message
         });
         console.error(e);
     }
 });
 
 io.socket.on('meta', function (data) {
-    var startRecording = null;
-    for (var key in data)
-    {
-        if (data.hasOwnProperty(key))
+    try {
+        var startRecording = null;
+        for (var key in data)
         {
-            if (key === 'state')
+            if (data.hasOwnProperty(key))
             {
-                if (((Meta[key].startsWith("automation_") || Meta[key] === 'unknown') && Meta[key] !== 'automation_break') || (Meta[key].includes("_returning") && !data[key].includes("_returning")))
+                if (key === 'state')
                 {
-                    if (data[key] === 'live_on')
+                    if (((Meta[key].startsWith("automation_") || Meta[key] === 'unknown') && Meta[key] !== 'automation_break') || (Meta[key].includes("_returning") && !data[key].includes("_returning")))
                     {
-                        startRecording = 'live';
-                    } else if (data[key] === 'remote_on')
+                        if (data[key] === 'live_on')
+                        {
+                            startRecording = 'live';
+                        } else if (data[key] === 'remote_on')
+                        {
+                            startRecording = 'remote';
+                        } else if (data[key] === 'sports_on' || data[key] === 'sportsremote_on')
+                        {
+                            startRecording = 'sports';
+                        }
+                    } else if (!Meta[key].startsWith("automation_") && data[key].startsWith("automation_"))
                     {
-                        startRecording = 'remote';
-                    } else if (data[key] === 'sports_on' || data[key] === 'sportsremote_on')
+                        startRecording = 'automation';
+                    } else if (data[key].includes("_break") || data[key].includes("_returning") || data[key].includes("_halftime"))
                     {
-                        startRecording = 'sports';
+                        setTimeout(function () {
+                            nrc.run(`"${recordPadPath}" -done`)
+                                    .then(function (response) {
+                                        console.log(response);
+                                    })
+                                    .catch(err => {
+                                        console.error(err);
+                                    });
+                        }, delay);
                     }
-                } else if (!Meta[key].startsWith("automation_") && data[key].startsWith("automation_"))
-                {
-                    startRecording = 'automation';
-                } else if (data[key].includes("_break") || data[key].includes("_returning") || data[key].includes("_halftime"))
-                {
-                    setTimeout(function () {
-                        nrc.run(`"${recordPadPath}" -done`)
-                                .then(function (response) {
-                                    console.log(response);
-                                })
-                                .catch(err => {
-                                    console.error(err);
-                                });
-                    }, delay);
                 }
+                Meta[key] = data[key];
             }
-            Meta[key] = data[key];
         }
-    }
-    doMeta(data);
-    if (startRecording !== null) {
-        setTimeout(function () {
-            nrc.run(`"${recordPadPath}" -done`)
-                    .then(function (response) {
-                        console.log(response);
-                        nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
-                                .then(function (response2) {
-                                    if (response2 == 0)
-                                    {
-                                        nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                                        });
-                                    }
-                                    console.log(response2);
-                                })
-                                .catch(err => {
-                                    console.error(err);
-                                });
-                    })
-                    .catch(err => {
-                        console.error(err);
-                    });
-        }, delay);
+        doMeta(data);
+        if (startRecording !== null) {
+            setTimeout(function () {
+                nrc.run(`"${recordPadPath}" -done`)
+                        .then(function (response) {
+                            console.log(response);
+                            nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                    .then(function (response2) {
+                                        if (response2 == 0)
+                                        {
+                                            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                            });
+                                        }
+                                        console.log(response2);
+                                    })
+                                    .catch(err => {
+                                        console.error(err);
+                                    });
+                        })
+                        .catch(err => {
+                            console.error(err);
+                        });
+            }, delay);
+        }
+    } catch (e) {
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred in the meta event. ' + e.message
+        });
+        console.error(e);
     }
 });
 
@@ -812,6 +820,13 @@ document.querySelector(`#messages-unread`).addEventListener("click", function (e
             if (e.target.id.startsWith(`message-n-b`))
             {
                 var message = Messages({ID: parseInt(e.target.id.replace(`message-n-b-`, ``))}).first();
+                var host = (message.to === 'DJ' ? 'website' : message.from);
+                selectRecipient(Recipients({host: host}).first().ID || null);
+                $("#messages-modal").iziModal('open');
+            }
+            if (e.target.id.startsWith(`message-n-a`))
+            {
+                var message = Messages({ID: parseInt(e.target.id.replace(`message-n-a-`, ``))}).first();
                 var host = (message.to === 'DJ' ? 'website' : message.from);
                 selectRecipient(Recipients({host: host}).first().ID || null);
                 $("#messages-modal").iziModal('open');
@@ -1615,48 +1630,56 @@ function checkAnnouncements() {
     var prev = [];
     // Add applicable announcements
     Announcements().each(function (datum) {
-        // Check to make sure the announcement is valid / not expired
-        if (moment(datum.starts).isBefore(moment(Meta.time)) && moment(datum.expires).isAfter(moment(Meta.time)))
-        {
-            prev.push(`attn-${datum.ID}`);
-            if (document.querySelector(`#attn-${datum.ID}`) === null)
+        try {
+            // Check to make sure the announcement is valid / not expired
+            if (moment(datum.starts).isBefore(moment(Meta.time)) && moment(datum.expires).isAfter(moment(Meta.time)))
             {
-                var attn = document.querySelector("#announcements-body");
-                attn.innerHTML += `<div class="attn attn-${datum.level} alert alert-${datum.level}" id="attn-${datum.ID}" role="alert">
+                prev.push(`attn-${datum.ID}`);
+                if (document.querySelector(`#attn-${datum.ID}`) === null)
+                {
+                    var attn = document.querySelector("#announcements-body");
+                    attn.innerHTML += `<div class="attn attn-${datum.level} alert alert-${datum.level}" id="attn-${datum.ID}" role="alert">
                                 ${client.emergencies ? `<button type="button" class="close" aria-label="Remove">
                 <span aria-hidden="true" id="attn-r-${datum.ID}">&times;</span>
                 </button>` : ``}
                         <i class="fas fa-bullhorn"></i> ${datum.announcement}
                     </div>`;
-                // If this DJ Controls is configured by WWSU to notify on technical problems, notify so.
-                if (client.emergencies && datum.announcement.startsWith("<strong>Problem reported by"))
-                {
-                    iziToast.show({
-                        title: '<i class="fas fa-exclamation-triangle"></i> Technical issue reported!',
-                        message: `${datum.announcement}`,
-                        timeout: false,
-                        close: true,
-                        color: 'red',
-                        drag: false,
-                        position: 'center',
-                        closeOnClick: false,
-                        overlay: true,
-                        zindex: 250
-                    });
-                    var notification = notifier.notify('Problem Reported', {
-                        message: `A problem was reported. Please see DJ Controls.`,
-                        icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                        duration: (1000 * 60 * 60 * 24),
-                    });
-                    main.flashTaskbar();
-                }
-            } else {
-                var temp = document.querySelector(`#attn-${datum.ID}`);
-                temp.className = `attn attn-${datum.level} alert alert-${datum.level}`;
-                temp.innerHTML = `${client.emergencies ? `<button type="button" class="close" aria-label="Remove">
+                    // If this DJ Controls is configured by WWSU to notify on technical problems, notify so.
+                    if (client.emergencies && datum.announcement.startsWith("<strong>Problem reported by"))
+                    {
+                        iziToast.show({
+                            title: '<i class="fas fa-exclamation-triangle"></i> Technical issue reported!',
+                            message: `${datum.announcement}`,
+                            timeout: false,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: false,
+                            overlay: true,
+                            zindex: 250
+                        });
+                        var notification = notifier.notify('Problem Reported', {
+                            message: `A problem was reported. Please see DJ Controls.`,
+                            icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
+                            duration: (1000 * 60 * 60 * 24),
+                        });
+                        main.flashTaskbar();
+                    }
+                } else {
+                    var temp = document.querySelector(`#attn-${datum.ID}`);
+                    temp.className = `attn attn-${datum.level} alert alert-${datum.level}`;
+                    temp.innerHTML = `${client.emergencies ? `<button type="button" class="close" aria-label="Remove">
                 <span aria-hidden="true" id="attn-r-${datum.ID}">&times;</span>
                 </button>` : ``}<i class="fas fa-bullhorn"></i> ${datum.announcement}`;
+                }
             }
+        } catch (e) {
+            iziToast.show({
+                title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                message: 'Error occurred in the checkAnnouncements each. ' + e.message
+            });
+            console.error(e);
         }
     });
 
@@ -2674,7 +2697,7 @@ function selectRecipient(recipient = null)
                     var temp2 = document.querySelector(`#messages-unread`);
                     temp2.innerHTML += `<div class="m-1 bg-wwsu-red message-n" style="cursor: pointer;" id="message-n-m-${message.ID}">
                                         <span class="close" id="message-n-x-${message.ID}">X</span>
-                                        <div class="m-1">
+                                        <div class="m-1" id="message-n-a-${message.ID}">
                                             <div id="message-n-t-${message.ID}">${message.message}</div>
                                             <div id="message-n-b-${message.ID}" style="font-size: 0.66em;">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' (Private)' : ``}</span>
                                         </div>
@@ -2863,6 +2886,7 @@ function deleteMessage(message) {
                 overlay: false,
                 zindex: 1000
             });
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to delete message ${message} but an error was returned: ${response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -2969,6 +2993,7 @@ function finishMute(recipient) {
                     overlay: false,
                     zindex: 1000
                 });
+                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to mute ${host} but an error was returned: ${response}`}}, function (response) {});
             }
             console.log(JSON.stringify(response));
         });
@@ -3013,6 +3038,7 @@ function finishBan(recipient) {
                     overlay: false,
                     zindex: 1000
                 });
+                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to ban ${host} but an error was returned: ${response}`}}, function (response) {});
             }
             console.log(JSON.stringify(response));
         });
@@ -3089,6 +3115,7 @@ function finishAttnRemove(ID) {
                     overlay: false,
                     zindex: 1000
                 });
+                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `Someone on ${os.hostname()} DJ Controls attempted to delete announcement ${ID} but an error was returned: ${response}`}}, function (response) {});
             }
             console.log(JSON.stringify(response));
         });
@@ -3107,12 +3134,30 @@ function finishAttnRemove(ID) {
 function returnBreak() {
     nodeRequest({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
         console.log(JSON.stringify(response));
+        if (response !== 'OK')
+        {
+            iziToast.show({
+                title: 'An error occurred',
+                message: 'Cannot return from break. Please try again in 15-30 seconds.',
+                timeout: 10000
+            });
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to return from break, but an error was returned: ${response}`}}, function (response) {});
+        }
     });
 }
 
 function queuePSA(duration) {
     nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-psa', data: {duration: duration}}, function (response) {
         console.log(JSON.stringify(response));
+        if (response !== 'OK')
+        {
+            iziToast.show({
+                title: 'An error occurred',
+                message: 'Could not queue a PSA. Please try again in 15-30 seconds.',
+                timeout: 10000
+            });
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to queue a PSA, but an error was returned: ${response}`}}, function (response) {});
+        }
     });
 }
 
@@ -3143,6 +3188,7 @@ function goLive() {
                 message: 'Cannot go live at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go live, but an error was returned: ${response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -3175,6 +3221,7 @@ function goRemote() {
                 message: 'Cannot go remote at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -3207,6 +3254,7 @@ function goSports() {
                 message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go sports, but an error was returned: ${response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -3269,6 +3317,7 @@ function saveLog() {
                 title: 'An error occurred',
                 message: 'Error occurred trying to submit a log entry. Please email engineer@wwsu1069.org.'
             });
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to add a log, but an error was returned: ${response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -3302,6 +3351,7 @@ function sendEmergency() {
                 title: 'An error occurred',
                 message: 'Error occurred trying to submit a problem. Please email your issue to engineer@wwsu1069.org instead.'
             });
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to report a problem, but an error was returned: ${response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -3335,6 +3385,7 @@ function sendDisplay() {
                 title: 'An error occurred',
                 message: 'Error occurred trying to submit a message to the display signs. Please email engineer@wwsu1069.org'
             });
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to send a message to display signs, but an error was returned: ${response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -3349,6 +3400,7 @@ function endShow() {
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to end their show, but an error was returned: ${response}`}}, function (response) {});
         } else {
             $("#xp-modal").iziModal('open');
             document.querySelector(`#stat-showTime`).innerHTML = moment.duration(response.showTime || 0, "minutes").format();
@@ -3376,6 +3428,7 @@ function switchShow() {
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to switch show, but an error was returned: ${response}`}}, function (response) {});
         } else {
             $("#xp-modal").iziModal('open');
             document.querySelector(`#stat-showTime`).innerHTML = moment.duration(response.showTime || 0, "minutes").format();
@@ -3403,6 +3456,7 @@ function goBreak(halftime) {
                 message: 'Error occurred trying to go into break. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go to break, but an error was returned: ${response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -3419,6 +3473,7 @@ function playTopAdd() {
                 message: 'Error occurred trying to play a Top Add. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to play a Top Add, but an error was returned: ${response}`}}, function (response) {});
         }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -3436,6 +3491,7 @@ function playLiner() {
                 message: 'Error occurred trying to play a liner. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to play a Liner, but an error was returned: ${response}`}}, function (response) {});
         }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
