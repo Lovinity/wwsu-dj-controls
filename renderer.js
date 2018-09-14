@@ -708,37 +708,37 @@ document.querySelector(`#users`).addEventListener("click", function (e) {
             console.log(e.target.id);
             if (e.target.id.startsWith(`users-o-mute`))
             {
-                var recipient = Recipients({host: e.target.id.replace(`users-o-mute-`, ``)}).first().ID;
+                var recipient = parseInt(e.target.id.replace(`users-o-mute-`, ``));
                 prepareMute(recipient);
             }
             if (e.target.id.startsWith(`users-o-ban`))
             {
-                var recipient = Recipients({host: e.target.id.replace(`users-o-ban-`, ``)}).first().ID;
+                var recipient = parseInt(e.target.id.replace(`users-o-ban-`, ``));
                 prepareBan(recipient);
             }
             if (e.target.id.startsWith(`users-b`))
             {
-                var recipient = Recipients({host: e.target.id.replace(`users-b-`, ``)}).first().ID;
+                var recipient = parseInt(e.target.id.replace(`users-b-`, ``));
                 selectRecipient(recipient);
             }
             if (e.target.id.startsWith(`users-l`))
             {
-                var recipient = Recipients({host: e.target.id.replace(`users-l-`, ``)}).first().ID;
+                var recipient = parseInt(e.target.id.replace(`users-l-`, ``));
                 selectRecipient(recipient);
             }
             if (e.target.id.startsWith(`users-n`))
             {
-                var recipient = Recipients({host: e.target.id.replace(`users-n-`, ``)}).first().ID;
+                var recipient = parseInt(e.target.id.replace(`users-n-`, ``));
                 selectRecipient(recipient);
             }
             if (e.target.id.startsWith(`users-c1`))
             {
-                var recipient = Recipients({host: e.target.id.replace(`users-c1-`, ``)}).first().ID;
+                var recipient = parseInt(e.target.id.replace(`users-c1-`, ``));
                 selectRecipient(recipient);
             }
             if (e.target.id.startsWith(`users-c2`))
             {
-                var recipient = Recipients({host: e.target.id.replace(`users-c2-`, ``)}).first().ID;
+                var recipient = parseInt(e.target.id.replace(`users-c2-`, ``));
                 selectRecipient(recipient);
             }
         }
@@ -758,12 +758,14 @@ document.querySelector(`#messages`).addEventListener("click", function (e) {
             if (e.target.id.startsWith(`message-o-mute`))
             {
                 var recipient = Messages({ID: parseInt(e.target.id.replace(`message-o-mute-`, ``))}).first().from;
-                prepareMute(recipient);
+                var ID = Recipients({host: recipient}).first().ID;
+                prepareMute(ID);
             }
             if (e.target.id.startsWith(`message-o-ban`))
             {
                 var recipient = Messages({ID: parseInt(e.target.id.replace(`message-o-ban-`, ``))}).first().from;
-                prepareBan(recipient);
+                var ID = Recipients({host: recipient}).first().ID;
+                prepareBan(ID);
             }
             if (e.target.id.startsWith(`message-o-delete`))
             {
@@ -2388,7 +2390,7 @@ function checkRecipients() {
                 recipients[recipient.group] = [];
                 groupIDs.push(`users-g-${recipient.group}`);
             }
-            recipientIDs.push(`users-u-${recipient.host}`);
+            recipientIDs.push(`users-u-${recipient.ID}`);
             recipients[recipient.group].push(recipient);
         });
 
@@ -2407,7 +2409,7 @@ function checkRecipients() {
                 if (recipients[key].length > 0)
                 {
                     recipients[key].forEach(function (recipient) {
-                        var temp = document.querySelector(`#users-u-${recipient.host}`);
+                        var temp = document.querySelector(`#users-u-${recipient.ID}`);
                         var theClass = 'dark';
                         // Online recipients in wwsu-red color, offline in dark color.
                         switch (recipient.status)
@@ -2442,19 +2444,19 @@ function checkRecipients() {
                         // For web visitor recipients, add options for muting or banning
                         if (recipient.group === 'website' && recipient.host !== 'website')
                         {
-                            temp.innerHTML += `<div id="users-u-${recipient.host}" class="recipient">
-                                <div id="users-b-${recipient.host}" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;">
+                            temp.innerHTML += `<div id="users-u-${recipient.ID}" class="recipient">
+                                <div id="users-b-${recipient.ID}" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;">
                                                     <div class="container">
   <div class="row">
-    <div class="col-9" id="users-c1-${recipient.host}">
-      <span id="users-l-${recipient.host}">${recipient.label}</span>
+    <div class="col-9" id="users-c1-${recipient.ID}">
+      <span id="users-l-${recipient.ID}">${recipient.label}</span>
     </div>
-    <div class="col-3" id="users-c2-${recipient.host}" style="text-align: center;">
+    <div class="col-3" id="users-c2-${recipient.ID}" style="text-align: center;">
                                                                                 <div class="dropdown">
-      <span class='close' id="users-o-${recipient.host}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span><span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.host}">${recipient.unread}</span>
-                                                                                        <div class="dropdown-menu" aria-labelledby="users-o-${recipient.host}">
-                                        <a class="dropdown-item text-warning-dark" data-toggle="dropdown" id="users-o-mute-${recipient.host}">Mute for 24 hours</a>
-                                        <a class="dropdown-item text-danger-dark" data-toggle="dropdown" id="users-o-ban-${recipient.host}">Ban indefinitely</a>
+      <span class='close' id="users-o-${recipient.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span><span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.host}">${recipient.unread}</span>
+                                                                                        <div class="dropdown-menu" aria-labelledby="users-o-${recipient.ID}">
+                                        <a class="dropdown-item text-warning-dark" data-toggle="dropdown" id="users-o-mute-${recipient.ID}">Mute for 24 hours</a>
+                                        <a class="dropdown-item text-danger-dark" data-toggle="dropdown" id="users-o-ban-${recipient.ID}">Ban indefinitely</a>
                                     </div>
     </div>
   </div>
@@ -2463,15 +2465,15 @@ function checkRecipients() {
                             </div>
                         </div>`;
                         } else {
-                            temp.innerHTML += `<div id="users-u-${recipient.host}" class="recipient">
-                                <div id="users-b-${recipient.host}" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;">
+                            temp.innerHTML += `<div id="users-u-${recipient.ID}" class="recipient">
+                                <div id="users-b-${recipient.ID}" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;">
                                                     <div class="container">
   <div class="row">
-    <div class="col-9" id="users-c1-${recipient.host}">
-      <span id="users-l-${recipient.host}">${recipient.label}</span>
+    <div class="col-9" id="users-c1-${recipient.ID}">
+      <span id="users-l-${recipient.ID}">${recipient.label}</span>
     </div>
-    <div class="col-3" id="users-c2-${recipient.host}" style="text-align: center;">
-    <span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.host}" style="float: right;">${recipient.unread}</span>
+    <div class="col-3" id="users-c2-${recipient.ID}" style="text-align: center;">
+    <span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.ID}" style="float: right;">${recipient.unread}</span>
     </div>
   </div>
 </div> 
@@ -2512,7 +2514,7 @@ function selectRecipient(recipient = null)
 
         Recipients().each(function (recipientb) {
             // Update all the recipients, ensuring only the selected one has a yellow border
-            var temp = document.querySelector(`#users-b-${recipientb.host}`);
+            var temp = document.querySelector(`#users-b-${recipientb.ID}`);
             if (temp !== null)
             {
                 var theClass = 'dark';
@@ -2554,10 +2556,11 @@ function selectRecipient(recipient = null)
         }
 
         var host = Recipients({ID: recipient}).first().host;
+        var ID = Recipients({ID: recipient}).first().ID;
         var status = Recipients({ID: recipient}).first().status;
         var label = Recipients({ID: recipient}).first().label;
 
-        var temp = document.querySelector(`#users-b-${host}`);
+        var temp = document.querySelector(`#users-b-${ID}`);
         if (temp !== null)
         {
             var theClass = 'dark';
