@@ -21,14 +21,15 @@
     "electron-prompt": "^1.2.0",
     "node-run-cmd": "^1.0.1",
     "quill": "^1.3.6",
-    "sanitize-filename": "^1.6.1"
+    "sanitize-filename": "^1.6.1",
+    "taucharts": "^2.6.1"
   },
   "build": {
     "appId": "com.electron.wwsu-dj-controls",
     "productName": "WWSU DJ Controls",
     "copyright": "Copyright © 2018 WWSU 106.9 FM",
     "mac": {
-        "category": "public.app-category.business"
-        }
+      "category": "public.app-category.business"
     }
+  }
 }

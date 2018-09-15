@@ -17,6 +17,7 @@ try {
     var notifier = require('./electron-notifications/index.js');
     var nrc = require("node-run-cmd");
     var sanitize = require("sanitize-filename");
+    //var Taucharts = require("taucharts");
 
     // Define data variables
     var Meta = {time: moment().toISOString(), state: 'unknown'};
@@ -417,6 +418,7 @@ try {
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
         zindex: 60
     });
+
     $.fn.extend({
         // Add an animateCss function to JQuery to trigger an animation of an HTML element with animate.css
         animateCss: function (animationName, callback) {
@@ -3407,16 +3409,62 @@ function endShow() {
         } else {
             $("#xp-modal").iziModal('open');
             document.querySelector(`#stat-showTime`).innerHTML = moment.duration(response.showTime || 0, "minutes").format();
-            document.querySelector(`#stat-showXP`).innerHTML = response.showXP || 0;
+            document.querySelector(`#stat-showXP`).innerHTML = response.showXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
             document.querySelector(`#stat-listenerMinutes`).innerHTML = moment.duration(response.listenerMinutes || 0, "minutes").format();
-            document.querySelector(`#stat-listenerXP`).innerHTML = response.listenerXP || 0;
+            document.querySelector(`#stat-listenerXP`).innerHTML = response.listenerXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
             document.querySelector(`#stat-messagesWeb`).innerHTML = response.messagesWeb || 0;
-            document.querySelector(`#stat-messagesXP`).innerHTML = response.messagesXP || 0;
+            document.querySelector(`#stat-messagesXP`).innerHTML = response.messagesXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
             document.querySelector(`#stat-topAdds`).innerHTML = response.topAdds || 0;
-            document.querySelector(`#stat-topAddsXP`).innerHTML = response.topAddsXP || 0;
-            document.querySelector(`#stat-IDsXP`).innerHTML = response.IDsXP || 0;
-            document.querySelector(`#stat-subtotalXP`).innerHTML = response.subtotalXP || 0;
-            document.querySelector(`#stat-totalXP`).innerHTML = response.totalXP || 0;
+            document.querySelector(`#stat-topAddsXP`).innerHTML = response.topAddsXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            document.querySelector(`#stat-IDsXP`).innerHTML = response.IDsXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            document.querySelector(`#stat-subtotalXP`).innerHTML = response.subtotalXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            document.querySelector(`#stat-totalXP`).innerHTML = response.totalXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            var data = [];
+            response.listeners.forEach(function (listener) {
+                data.push({x: listener.createdAt, y: listener.listeners});
+            });
+            new Taucharts.Chart({
+                data: data,
+                type: 'line',
+                x: 'x',
+                y: 'y',
+                color: 'wwsu-red',
+                guide: {
+                    y: {label: {text: 'Online Listeners'}, autoScale: true, nice: true},
+                    x: {label: {text: 'Time'}, autoScale: true, nice: false},
+                    interpolate: 'step-after',
+                    showGridLines: 'xy',
+                },
+                dimensions: {
+                    x: {
+                        type: 'measure',
+                        scale: 'time'
+                    },
+                    y: {
+                        type: 'measure',
+                        scale: 'linear'
+                    }
+                },
+                plugins: [
+                    Taucharts.api.plugins.get('tooltip')({
+                        formatters: {
+                            x: {
+                                label: "Time",
+                                format: function (n) {
+                                    return moment(n).format("LT");
+                                }
+                            },
+                            y: {
+                                label: "Online Listeners",
+                                format: function (n) {
+                                    return n;
+                                }
+                            }
+
+                        }
+                    })
+                ]
+            }).renderTo('#listenerChart');
         }
         console.log(JSON.stringify(response));
     });
@@ -3435,16 +3483,62 @@ function switchShow() {
         } else {
             $("#xp-modal").iziModal('open');
             document.querySelector(`#stat-showTime`).innerHTML = moment.duration(response.showTime || 0, "minutes").format();
-            document.querySelector(`#stat-showXP`).innerHTML = response.showXP || 0;
+            document.querySelector(`#stat-showXP`).innerHTML = response.showXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
             document.querySelector(`#stat-listenerMinutes`).innerHTML = moment.duration(response.listenerMinutes || 0, "minutes").format();
-            document.querySelector(`#stat-listenerXP`).innerHTML = response.listenerXP || 0;
+            document.querySelector(`#stat-listenerXP`).innerHTML = response.listenerXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
             document.querySelector(`#stat-messagesWeb`).innerHTML = response.messagesWeb || 0;
-            document.querySelector(`#stat-messagesXP`).innerHTML = response.messagesXP || 0;
+            document.querySelector(`#stat-messagesXP`).innerHTML = response.messagesXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
             document.querySelector(`#stat-topAdds`).innerHTML = response.topAdds || 0;
-            document.querySelector(`#stat-topAddsXP`).innerHTML = response.topAddsXP || 0;
-            document.querySelector(`#stat-IDsXP`).innerHTML = response.IDsXP || 0;
-            document.querySelector(`#stat-subtotalXP`).innerHTML = response.subtotalXP || 0;
-            document.querySelector(`#stat-totalXP`).innerHTML = response.totalXP || 0;
+            document.querySelector(`#stat-topAddsXP`).innerHTML = response.topAddsXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            document.querySelector(`#stat-IDsXP`).innerHTML = response.IDsXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            document.querySelector(`#stat-subtotalXP`).innerHTML = response.subtotalXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            document.querySelector(`#stat-totalXP`).innerHTML = response.totalXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            var data = [];
+            response.listeners.forEach(function (listener) {
+                data.push({x: listener.createdAt, y: listener.listeners});
+            });
+            new Taucharts.Chart({
+                data: data,
+                type: 'line',
+                x: 'x',
+                y: 'y',
+                color: 'wwsu-red',
+                guide: {
+                    y: {label: {text: 'Online Listeners'}, autoScale: true, nice: true},
+                    x: {label: {text: 'Time'}, autoScale: true, nice: false},
+                    interpolate: 'step-after',
+                    showGridLines: 'xy',
+                },
+                dimensions: {
+                    x: {
+                        type: 'measure',
+                        scale: 'time'
+                    },
+                    y: {
+                        type: 'measure',
+                        scale: 'linear'
+                    }
+                },
+                plugins: [
+                    Taucharts.api.plugins.get('tooltip')({
+                        formatters: {
+                            x: {
+                                label: "Time",
+                                format: function (n) {
+                                    return moment(n).format("LT");
+                                }
+                            },
+                            y: {
+                                label: "Online Listeners",
+                                format: function (n) {
+                                    return n;
+                                }
+                            }
+
+                        }
+                    })
+                ]
+            }).renderTo('#listenerChart');
         }
         console.log(JSON.stringify(response));
     });

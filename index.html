@@ -18,12 +18,15 @@
         <script src="assets/js/taffy-min.js"></script>
         <script src="assets/js/sails.io.js"></script>
         <script src="assets/js/quill.js"></script>
+        <script src="assets/js/d3.min.js" charset="utf-8"></script>
+        <script src="assets/js/taucharts.min.js" type="text/javascript"></script>
         <link rel="stylesheet" href="assets/styles/bootstrap/mytheme.min.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/animate.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/iziToast.min.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/iziModal.min.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/fontawesome.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/quill.snow.css" type="text/css">
+        <link rel="stylesheet" type="text/css" href="assets/styles/taucharts.min.css">
         <style>
             .btn-circle {
                 width: 30px;
@@ -574,93 +577,95 @@
             <div class="alert alert-info" role="alert">
                 <strong>Access recordings of your show!</strong> Go to Computer -> S drive -> OnAir recordings folder -> live folder. There are probably more than one MP3 for this show. Each file is named by "dj name - show name (date and time)". 
             </div>
+            <p style="font-size: 1.5em; text-align: center;">Online Listener Graph<span style="font-size: 0.5em"><br />Hover over graph to see listener counts at specific times</span></p>
+            <div class="d-flex justify-content-center" style="align: center; width: 100%"><div style="width: 320px;" id="listenerChart"></div></div>
             <p style="font-size: 2em; text-align: center;">Statistics / XP earned</p>
             <div class="container">
+                <div class="row text-primary-light">
+                    <div class="col-7">
+                        Statistic
+                    </div>
+                    <div class="col-3">
+                        Value
+                    </div>
+                    <div class="col-2">
+                        XP Earned
+                    </div>
+                </div>
                 <div class="row">
-                    <div class="col-9">
+                    <div class="col-7">
                         Length of show:
                     </div>
                     <div class="col-3" id="stat-showTime">
                         0
                     </div>
-                </div>
-                <div class="row text-success-light">
-                    <div class="col-9">
-                        XP earned for show time:
-                    </div>
-                    <div class="col-3" id="stat-showXP">
+                    <div class="col-2 text-success-light" id="stat-showXP">
                         0
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-9">
+                    <div class="col-7">
                         Online listener minutes:
                     </div>
                     <div class="col-3" id="stat-listenerMinutes">
                         0
                     </div>
-                </div>
-                <div class="row text-success-light">
-                    <div class="col-9">
-                        XP earned for online listeners:
-                    </div>
-                    <div class="col-3" id="stat-listenerXP">
+                    <div class="col-2 text-success-light" id="stat-listenerXP">
                         0
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-9">
+                    <div class="col-7">
                         Messages sent to web visitors:
                     </div>
                     <div class="col-3" id="stat-messagesWeb">
                         0
                     </div>
-                </div>
-                <div class="row text-success-light">
-                    <div class="col-9">
-                        XP earned for sending messages:
-                    </div>
-                    <div class="col-3" id="stat-messagesXP">
+                    <div class="col-2 text-success-light" id="stat-messagesXP">
                         0
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-9">
+                    <div class="col-7">
                         Top Adds played:
                     </div>
                     <div class="col-3" id="stat-topAdds">
                         0
                     </div>
-                </div>
-                <div class="row text-success-light">
-                    <div class="col-9">
-                        XP earned for Top Adds:
-                    </div>
-                    <div class="col-3" id="stat-topAddsXP">
+                    <div class="col-2 text-success-light" id="stat-topAddsXP">
                         0
                     </div>
                 </div>
-                <div class="row text-success-light">
-                    <div class="col-9">
-                        XP earned for on-time top-of-hour breaks:
+                <div class="row">
+                    <div class="col-7">
+                        On-time Top of the Hour breaks:
                     </div>
-                    <div class="col-3" id="stat-IDsXP">
+                    <div class="col-3">
+                        -
+                    </div>
+                    <div class="col-2 text-success-light" id="stat-IDsXP">
                         0
                     </div>
                 </div>
-                <div class="row text-warning-light">
-                    <div class="col-9">
-                        Total XP earned for this show:
+                <div class="row">
+                    <div class="col-7">
+                        Total XP earned this show:
                     </div>
-                    <div class="col-3" id="stat-subtotalXP">
+                    <div class="col-3">
+                        -
+                    </div>
+                    <div class="col-2 text-success-light" id="stat-subtotalXP">
                         0
                     </div>
                 </div>
-                <div class="row text-primary-light">
-                    <div class="col-9">
+                <div class="row">
+                    <div class="col-7">
                         Total XP earned to date:
                     </div>
-                    <div class="col-3" id="stat-totalXP">
+                    <div class="col-3">
+                        -
+                    </div>
+                    <div class="col-2 text-info-light" id="stat-totalXP">
                         0
                     </div>
                 </div>
