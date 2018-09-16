@@ -1418,86 +1418,25 @@ function doMeta(metan) {
         if (queueLength < 0)
             queueLength = 0;
 
-        // Detect if the DJ adds stuff to the queue before the system has entered show mode or exited break mode. Notify the DJ if such happened.
-        if ((prevQueueLength + 10) < queueLength && Meta.djcontrols === os.hostname() && typeof metan.state === 'undefined')
-        {
-            if (Meta.state.includes("_returning") && queueLength > (60 * 2))
-            {
-                var notification = notifier.notify(`Problem with RadioDJ queue`, {
-                    message: `Please wait for the queue to empty / finish before adding tracks.`,
-                    icon: '',
-                    duration: 120000,
-                });
-                main.flashTaskbar();
-                iziToast.show({
-                    class: 'flash-bg',
-                    title: '<i class="fas fa-clock"></i> Tracks were added to the RadioDJ queue too soon',
-                    message: `You need to wait until the queue empties / finishes before adding tracks. Otherwise, the system will think you are still coming out of a break.`,
-                    timeout: 120000,
-                    close: true,
-                    color: 'yellow',
-                    drag: false,
-                    position: 'center',
-                    closeOnClick: false,
-                    overlay: true,
-                    zindex: 250
-                });
-            } else if (Meta.state === 'automation_live' && queueLength >= (60 * 5))
-            {
-                var notification = notifier.notify(`Problem with RadioDJ queue`, {
-                    message: `Please wait for the queue to empty / finish before adding tracks.`,
-                    icon: '',
-                    duration: 120000,
-                });
-                main.flashTaskbar();
-                iziToast.show({
-                    class: 'flash-bg',
-                    title: '<i class="fas fa-clock"></i> Tracks were added to the RadioDJ queue too soon',
-                    message: `You need to wait until the queue empties / finishes before adding tracks. The system does not enter live show mode until the queue finishes playing.`,
-                    timeout: 120000,
-                    close: true,
-                    color: 'yellow',
-                    drag: false,
-                    position: 'center',
-                    closeOnClick: false,
-                    overlay: true,
-                    zindex: 250
-                });
-            } else if ((Meta.state === 'automation_sports' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote') && queueLength >= 60)
-            {
-                var notification = notifier.notify(`Problem with RadioDJ queue`, {
-                    message: `Please wait for the queue to empty / finish before adding tracks.`,
-                    icon: '',
-                    duration: 120000,
-                });
-                main.flashTaskbar();
-                iziToast.show({
-                    class: 'flash-bg',
-                    title: '<i class="fas fa-clock"></i> Tracks were added to the RadioDJ queue too soon',
-                    message: `You need to wait until the queue empties / finishes before adding tracks. The system does not enter broadcast mode until the queue finishes playing.`,
-                    timeout: 120000,
-                    close: true,
-                    color: 'yellow',
-                    drag: false,
-                    position: 'center',
-                    closeOnClick: false,
-                    overlay: true,
-                    zindex: 250
-                });
-            }
-        }
         // Make queue timer show current queue length (when visible)
         var queueTime = document.querySelector("#queue-seconds");
         queueTime.innerHTML = moment.duration(queueLength, "seconds").format();
 
         // Flash the WWSU Operations box when queue time goes below 15 seconds.
-        if (queueLength < 15 && (Meta.state.includes("_returning") || (Meta.state.startsWith("automation_") && Meta.state !== 'automation_on' && Meta.state !== 'automation_genre') && Meta.state !== 'automation_playlist'))
+        if (queueLength < 15 && document.querySelector('#queue').style.display !== "none")
         {
             var operations = document.querySelector("#operations");
             operations.className = "card p-1 m-3 text-white bg-warning-dark";
             setTimeout(function () {
                 operations.className = "card p-1 m-3 text-white bg-dark";
             }, 250);
+        }
+        
+        if (Meta.queueMusic)
+        {
+            document.querySelector('#queue-music').style.display = "inline";
+        } else {
+            document.querySelector('#queue-music').style.display = "none";
         }
 
         // Do stuff if the state changed
@@ -3454,16 +3393,16 @@ function endShow() {
         } else {
             $("#xp-modal").iziModal('open');
             document.querySelector(`#stat-showTime`).innerHTML = moment.duration(response.showTime || 0, "minutes").format();
-            document.querySelector(`#stat-showXP`).innerHTML = response.showXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            document.querySelector(`#stat-showXP`).innerHTML = formatInt(response.showXP || 0);
             document.querySelector(`#stat-listenerMinutes`).innerHTML = moment.duration(response.listenerMinutes || 0, "minutes").format();
-            document.querySelector(`#stat-listenerXP`).innerHTML = response.listenerXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            document.querySelector(`#stat-listenerXP`).innerHTML = formatInt(response.listenerXP || 0);
             document.querySelector(`#stat-messagesWeb`).innerHTML = response.messagesWeb || 0;
-            document.querySelector(`#stat-messagesXP`).innerHTML = response.messagesXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            document.querySelector(`#stat-messagesXP`).innerHTML = formatInt(response.messagesXP || 0);
             document.querySelector(`#stat-topAdds`).innerHTML = response.topAdds || 0;
-            document.querySelector(`#stat-topAddsXP`).innerHTML = response.topAddsXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
-            document.querySelector(`#stat-IDsXP`).innerHTML = response.IDsXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
-            document.querySelector(`#stat-subtotalXP`).innerHTML = response.subtotalXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
-            document.querySelector(`#stat-totalXP`).innerHTML = response.totalXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            document.querySelector(`#stat-topAddsXP`).innerHTML = formatInt(response.topAddsXP || 0);
+            document.querySelector(`#stat-IDsXP`).innerHTML = formatInt(response.IDsXP || 0);
+            document.querySelector(`#stat-subtotalXP`).innerHTML = formatInt(response.subtotalXP || 0);
+            document.querySelector(`#stat-totalXP`).innerHTML = formatInt(response.totalXP || 0);
             var data = [];
             response.listeners.forEach(function (listener) {
                 data.push({x: listener.createdAt, y: listener.listeners});
@@ -3528,16 +3467,16 @@ function switchShow() {
         } else {
             $("#xp-modal").iziModal('open');
             document.querySelector(`#stat-showTime`).innerHTML = moment.duration(response.showTime || 0, "minutes").format();
-            document.querySelector(`#stat-showXP`).innerHTML = response.showXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            document.querySelector(`#stat-showXP`).innerHTML = formatInt(response.showXP || 0);
             document.querySelector(`#stat-listenerMinutes`).innerHTML = moment.duration(response.listenerMinutes || 0, "minutes").format();
-            document.querySelector(`#stat-listenerXP`).innerHTML = response.listenerXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            document.querySelector(`#stat-listenerXP`).innerHTML = formatInt(response.listenerXP || 0);
             document.querySelector(`#stat-messagesWeb`).innerHTML = response.messagesWeb || 0;
-            document.querySelector(`#stat-messagesXP`).innerHTML = response.messagesXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            document.querySelector(`#stat-messagesXP`).innerHTML = formatInt(response.messagesXP || 0);
             document.querySelector(`#stat-topAdds`).innerHTML = response.topAdds || 0;
-            document.querySelector(`#stat-topAddsXP`).innerHTML = response.topAddsXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
-            document.querySelector(`#stat-IDsXP`).innerHTML = response.IDsXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
-            document.querySelector(`#stat-subtotalXP`).innerHTML = response.subtotalXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
-            document.querySelector(`#stat-totalXP`).innerHTML = response.totalXP.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0;
+            document.querySelector(`#stat-topAddsXP`).innerHTML = formatInt(response.topAddsXP || 0);
+            document.querySelector(`#stat-IDsXP`).innerHTML = formatInt(response.IDsXP || 0);
+            document.querySelector(`#stat-subtotalXP`).innerHTML = formatInt(response.subtotalXP || 0);
+            document.querySelector(`#stat-totalXP`).innerHTML = formatInt(response.totalXP || 0);
             var data = [];
             response.listeners.forEach(function (listener) {
                 data.push({x: listener.createdAt, y: listener.listeners});
@@ -4845,4 +4784,8 @@ function calculateSectors(data) {
 
 
     return sectors
+}
+
+function formatInt(number) {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
