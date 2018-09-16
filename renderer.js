@@ -209,6 +209,8 @@ try {
         timeout: 30000
     });
 
+    // iziToast color standard: Red is errors / problems, yellow is important, blue is information, green is success.
+
     // Pre-load all the modal windows
     $("#go-live-modal").iziModal({
         title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Mics, Recorder, Action!</h5>`,
@@ -365,7 +367,8 @@ try {
         overlayColor: 'rgba(0, 0, 0, 0.75)',
         timeout: false,
         pauseOnHover: true,
-        timeoutProgressbarColor: 'rgba(255,255,255,0.5)'
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 100
     });
 
     $("#emergency-modal").iziModal({
@@ -416,7 +419,24 @@ try {
         timeoutProgressbar: true,
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-        zindex: 60
+        zindex: 50
+    });
+
+    $("#requests-modal").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Requested Tracks</h5>`,
+        headerColor: '#363636',
+        width: 640,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: 180000,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 50
     });
 
     $.fn.extend({
@@ -607,6 +627,7 @@ io.socket.on('messages', function (data) {
 
 io.socket.on('requests', function (data) {
     processRequests(data);
+    console.dir(data);
 });
 
 io.socket.on('recipients', function (data) {
@@ -701,6 +722,10 @@ document.querySelector("#sports-go").onclick = function () {
 
 document.querySelector("#log-add").onclick = function () {
     saveLog();
+};
+
+document.querySelector("#btn-requests").onclick = function () {
+    $("#requests-modal").iziModal('open');
 };
 
 document.querySelector(`#users`).addEventListener("click", function (e) {
@@ -914,6 +939,26 @@ document.querySelector("#sports-sport").addEventListener("change", function () {
         document.querySelector("#sports-noschedule").style.display = "none";
     } else {
         document.querySelector("#sports-noschedule").style.display = "inline";
+    }
+});
+
+document.querySelector(`#track-requests`).addEventListener("click", function (e) {
+    try {
+        console.log(e.target.id);
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith(`request-b-`))
+            {
+                var requestID = parseInt(e.target.id.replace(`request-b-`, ``));
+                queueRequest(requestID);
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #track-requests.'
+        });
     }
 });
 
@@ -1462,7 +1507,7 @@ function doMeta(metan) {
             checkCalendar();
 
             // Have the WWSU Operations box display buttons and operations depending on which state we are in
-            $('#operations-body').animateCss('bounceOut', function () {
+            $('#operations-body').animateCss('fadeOut faster', function () {
                 var badge = document.querySelector('#operations-state');
                 badge.innerHTML = Meta.state;
                 var actionButtons = document.querySelectorAll(".btn-operation");
@@ -1580,7 +1625,7 @@ function doMeta(metan) {
                     document.querySelector('#btn-break').style.display = "inline";
                 } else {
                 }
-                $('#operations-body').animateCss('bounceIn', function () {});
+                $('#operations-body').animateCss('fadeIn faster', function () {});
             });
         }
     } catch (e) {
@@ -1850,7 +1895,7 @@ function checkCalendar() {
                     message: `A sports broadcast is scheduled to begin in less than 15 minutes. If this broadcast is still scheduled to air, please wrap up your show now and then click "End Show". That way, WWSU has 15 minutes to prepare for the broadcast.`,
                     timeout: 900000,
                     close: true,
-                    color: 'blue',
+                    color: 'yellow',
                     drag: false,
                     position: 'center',
                     closeOnClick: false,
@@ -1881,7 +1926,7 @@ function checkCalendar() {
                     message: `A remote broadcast is scheduled to begin in less than 15 minutes. If this broadcast is still scheduled to air, please wrap up your show now and then click "End Show". That way, WWSU has 15 minutes to prepare for the broadcast.`,
                     timeout: 900000,
                     close: true,
-                    color: 'blue',
+                    color: 'yellow',
                     drag: false,
                     position: 'center',
                     closeOnClick: false,
@@ -1912,7 +1957,7 @@ function checkCalendar() {
                     message: `You are running into another person's show time. Please wrap up your show now and then click "End Show" (or click "Switch Show" if the other person is ready to go live in the next few minutes).`,
                     timeout: 900000,
                     close: true,
-                    color: 'blue',
+                    color: 'red',
                     drag: false,
                     position: 'center',
                     closeOnClick: false,
@@ -1947,7 +1992,7 @@ function checkCalendar() {
                     message: `You are running into a scheduled prerecorded show. Unless WWSU has given you permission to continue, please consider wrapping up and ending your show by clicking "End Now".`,
                     timeout: 900000,
                     close: true,
-                    color: 'blue',
+                    color: 'red',
                     drag: false,
                     position: 'center',
                     closeOnClick: false,
@@ -2700,7 +2745,7 @@ function selectRecipient(recipient = null)
                 if (temp === null)
                 {
                     var temp2 = document.querySelector(`#messages-unread`);
-                    temp2.innerHTML += `<div class="m-1 bg-wwsu-red message-n" style="cursor: pointer;" id="message-n-m-${message.ID}">
+                    temp2.innerHTML += `<div class="m-1 bg-wwsu-red message-n animated bounceIn slow" style="cursor: pointer;" id="message-n-m-${message.ID}">
                                         <span class="close" id="message-n-x-${message.ID}">X</span>
                                         <div class="m-1" id="message-n-a-${message.ID}">
                                             <div id="message-n-t-${message.ID}">${message.message}</div>
@@ -3300,7 +3345,7 @@ function saveLog() {
                     message: `${document.querySelector("#log-artist").value} - ${document.querySelector("#log-title").value}`,
                     timeout: 600000,
                     close: false,
-                    color: 'yellow',
+                    color: 'blue',
                     drag: false,
                     position: 'bottomCenter',
                     closeOnClick: false,
@@ -3593,6 +3638,49 @@ function playLiner() {
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
     });
+}
+
+// Finalizes and issues a mute
+function queueRequest(requestID) {
+    try {
+        nodeRequest({method: 'POST', url: nodeURL + '/requests/queue', data: {ID: requestID}}, function (response) {
+            if (response === 'OK')
+            {
+                iziToast.show({
+                    title: `Request queued!`,
+                    message: `The request was queued successfully. The request entry will not disappear until the request is played.`,
+                    timeout: 5000,
+                    close: true,
+                    color: 'green',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: true,
+                    overlay: false,
+                    zindex: 1000
+                });
+            } else {
+                iziToast.show({
+                    title: `Failed to queue request!`,
+                    message: `There was an error trying to queue that request. Either the request was already queued, cannot be queued because of rotation rules, or some other error happened.`,
+                    timeout: 10000,
+                    close: true,
+                    color: 'red',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: true,
+                    overlay: false,
+                    zindex: 1000
+                });
+            }
+            console.log(JSON.stringify(response));
+        });
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: `Error occurred during queueRequest.`
+        });
+    }
 }
 
 // Check for new Eas alerts and push them out when necessary.
@@ -4303,7 +4391,7 @@ function processMessages(data, replace = false)
                                     message: `${datum.message}`,
                                     timeout: 30000,
                                     close: true,
-                                    color: 'yellow',
+                                    color: 'blue',
                                     drag: false,
                                     position: 'bottomCenter',
                                     closeOnClick: false,
@@ -4333,7 +4421,7 @@ function processMessages(data, replace = false)
                                         message: `${datum.message}`,
                                         timeout: 30000,
                                         close: true,
-                                        color: 'green',
+                                        color: 'blue',
                                         drag: false,
                                         position: 'bottomCenter',
                                         closeOnClick: false,
@@ -4409,7 +4497,7 @@ function processMessages(data, replace = false)
                                         message: `${data[key].message}`,
                                         timeout: 30000,
                                         close: true,
-                                        color: 'yellow',
+                                        color: 'blue',
                                         drag: false,
                                         position: 'bottomCenter',
                                         closeOnClick: false,
@@ -4439,7 +4527,7 @@ function processMessages(data, replace = false)
                                             message: `${data[key].message}`,
                                             timeout: 30000,
                                             close: true,
-                                            color: 'green',
+                                            color: 'blue',
                                             drag: false,
                                             position: 'bottomCenter',
                                             closeOnClick: false,
@@ -4491,83 +4579,154 @@ function processMessages(data, replace = false)
 // Update messages as changes happen
 function processRequests(data, replace = false)
 {
-    /*
-     // Data processing
-     try {
-     if (replace)
-     {
-     
-     var prev = [];
-     // Get all the requests currently in memory
-     Requests.find({}, {ID: 1}, function (err, requestO) {
-     
-     requestO.forEach(function (record) {
-     prev.push(record.ID);
-     });
-     
-     // Notify on new requests
-     data.forEach(function (datum, index) {
-     data[index].needsread = false;
-     if (prev.indexOf(datum.ID === -1))
-     {
-     if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.requests) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === thishost)))
-     {
-     data[index].needsread = true;
-     exports.addNotification({
-     title: 'Track Requested',
-     message: `A track was requested: ${datum.trackname}. See DJ Controls messages for more info / to play the request.`,
-     duration: 10000,
-     priority: 3,
-     icon: 'request.png',
-     time: moment()
-     });
-     }
-     }
-     });
-     
-     // Replace the data
-     Requests = new Datastore();
-     Requests.insert(data);
-     });
-     
-     } else {
-     for (var key in data)
-     {
-     if (data.hasOwnProperty(key))
-     {
-     switch (key)
-     {
-     case 'insert':
-     data[key].needsread = false;
-     if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.requests) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === thishost)))
-     {
-     data[key].needsread = true;
-     exports.addNotification({
-     title: 'Track Requested',
-     message: `A track was requested: ${data[key].trackname}. See DJ Controls messages for more info / to play the request.`,
-     duration: 10000,
-     priority: 3,
-     icon: 'request.png',
-     time: moment()
-     });
-     }
-     Requests.insert(data[key]);
-     break;
-     case 'update':
-     Requests.update({ID: data[key].ID}, data[key], {multi: true});
-     break;
-     case 'remove':
-     Requests.remove({ID: data[key]}, {multi: true});
-     break;
-     }
-     }
-     }
-     }
-     sendToRenderer();
-     } catch (e) {
-     console.error(e);
-     }
-     */
+    // Data processing
+    try {
+        if (replace)
+        {
+
+            var prev = [];
+
+            prev = Requests().select("ID");
+
+            // Notify on new requests
+            data.forEach(function (datum, index) {
+                data[index].needsread = false;
+                if (prev.indexOf(datum.ID === -1))
+                {
+                    if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.requests) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === os.hostname())))
+                    {
+                        data[index].needsread = true;
+                        var notification = notifier.notify('Track Requested', {
+                            message: `A track was requested (see DJ Controls). Playing requests are optional.`,
+                            icon: 'https://static.thenounproject.com/png/7236-200.png',
+                            duration: 30000,
+                        });
+                        main.flashTaskbar();
+                        iziToast.show({
+                            title: `<i class="fas fa-music"></i> Track Requested`,
+                            message: `${data[key].trackname}`,
+                            timeout: 30000,
+                            close: true,
+                            color: 'blue',
+                            drag: false,
+                            position: 'bottomCenter',
+                            closeOnClick: false,
+                            overlay: false,
+                            buttons: [
+                                ['<button>View Requests</button>', function (instance, toast, button, e, inputs) {
+                                        $("#requests-modal").iziModal('open');
+                                        instance.hide({}, toast, 'button');
+                                    }]
+                            ]
+                        });
+                    }
+                }
+            });
+
+            // Replace the data
+            Requests = new TAFFY();
+            Requests.insert(data);
+
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
+                {
+                    switch (key)
+                    {
+                        case 'insert':
+                            data[key].needsread = false;
+                            if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.requests) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === os.hostname())))
+                            {
+                                data[key].needsread = true;
+                                var notification = notifier.notify('Track Requested', {
+                                    message: `A track was requested (see DJ Controls). Playing requests are optional.`,
+                                    icon: 'https://static.thenounproject.com/png/7236-200.png',
+                                    duration: 30000,
+                                });
+                                main.flashTaskbar();
+                                iziToast.show({
+                                    title: `<i class="fas fa-music"></i> Track Requested`,
+                                    message: `${data[key].trackname}`,
+                                    timeout: 30000,
+                                    close: true,
+                                    color: 'blue',
+                                    drag: false,
+                                    position: 'bottomCenter',
+                                    closeOnClick: false,
+                                    overlay: false,
+                                    buttons: [
+                                        ['<button>View Requests</button>', function (instance, toast, button, e, inputs) {
+                                                $("#requests-modal").iziModal('open');
+                                                instance.hide({}, toast, 'button');
+                                            }]
+                                    ]
+                                });
+                            }
+                            Requests.insert(data[key]);
+                            break;
+                        case 'update':
+                            Requests({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Requests({ID: data[key]}).remove();
+                            break;
+                    }
+                }
+            }
+        }
+
+        var prev = [];
+
+        // Update track requests
+        Requests({played: 0}).each(function (datum) {
+            try {
+                prev.push(`request-${datum.ID}`);
+                if (document.querySelector(`#request-${datum.ID}`) === null)
+                {
+                    var request = document.querySelector("#track-requests");
+                    request.innerHTML += `<div class="row request p-1 m-1" id="request-${datum.ID}">
+    <div class="col-8" id="request-i-${datum.ID}">
+      <span id="request-t-${datum.ID}" class="text-primary-light">Track: ${datum.trackname}</span><br />
+      <span id="request-u-${datum.ID}" class="text-warning-light">Requested By: ${datum.username}</span><br />
+      <span id="request-m-${datum.ID}" class="text-success-light">Message: ${datum.message}</span><br />
+    </div>
+    <div class="col-4" style="text-align: center;">
+    <button type="button" class="btn btn-primary" id="request-b-${datum.ID}">Play/Queue Request</button>
+    </div>
+  </div>`;
+                } else {
+                    var temp = document.querySelector(`#request-t-${datum.ID}`);
+                    temp.innerHTML = `Track: ${datum.trackname}`;
+                    var temp = document.querySelector(`#request-u-${datum.ID}`);
+                    temp.innerHTML = `Requested By: ${datum.username}`;
+                    var temp = document.querySelector(`#request-m-${datum.ID}`);
+                    temp.innerHTML = `Message: ${datum.message}`;
+                }
+            } catch (e) {
+                iziToast.show({
+                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                    message: 'Error occurred in the processRequests each. ' + e.message
+                });
+                console.error(e);
+            }
+        });
+
+        // Remove requests no longer valid
+        var attn = document.querySelectorAll(".request");
+        for (var i = 0; i < attn.length; i++) {
+            if (prev.indexOf(attn[i].id) === -1)
+                attn[i].parentNode.removeChild(attn[i]);
+        }
+
+        var temp = document.querySelector(`#badge-track-requests`);
+        temp.className = `notification badge badge-${prev.length > 0 ? 'danger' : 'secondary'}`;
+        temp.innerHTML = prev.length;
+
+
+    } catch (e) {
+        console.error(e);
+}
 }
 
 function hexRgb(hex, options = {}) {
