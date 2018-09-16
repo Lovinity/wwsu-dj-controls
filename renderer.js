@@ -1431,7 +1431,7 @@ function doMeta(metan) {
                 operations.className = "card p-1 m-3 text-white bg-dark";
             }, 250);
         }
-        
+
         if (Meta.queueMusic)
         {
             document.querySelector('#queue-music').style.display = "inline";
@@ -3407,6 +3407,7 @@ function endShow() {
             response.listeners.forEach(function (listener) {
                 data.push({x: listener.createdAt, y: listener.listeners});
             });
+            document.querySelector(`#listenerChart`).innerHTML = ``;
             new Taucharts.Chart({
                 data: data,
                 type: 'line',
@@ -3481,6 +3482,7 @@ function switchShow() {
             response.listeners.forEach(function (listener) {
                 data.push({x: listener.createdAt, y: listener.listeners});
             });
+            document.querySelector(`#listenerChart`).innerHTML = ``;
             new Taucharts.Chart({
                 data: data,
                 type: 'line',
