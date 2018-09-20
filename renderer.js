@@ -3403,6 +3403,7 @@ function endShow() {
             document.querySelector(`#stat-IDsXP`).innerHTML = formatInt(response.IDsXP || 0);
             document.querySelector(`#stat-subtotalXP`).innerHTML = formatInt(response.subtotalXP || 0);
             document.querySelector(`#stat-totalXP`).innerHTML = formatInt(response.totalXP || 0);
+            /* DEPRECATED per request of GM
             var data = [];
             response.listeners.forEach(function (listener) {
                 data.push({x: listener.createdAt, y: listener.listeners});
@@ -3450,6 +3451,7 @@ function endShow() {
                     })
                 ]
             }).renderTo('#listenerChart');
+            */
         }
         console.log(JSON.stringify(response));
     });
@@ -3478,6 +3480,7 @@ function switchShow() {
             document.querySelector(`#stat-IDsXP`).innerHTML = formatInt(response.IDsXP || 0);
             document.querySelector(`#stat-subtotalXP`).innerHTML = formatInt(response.subtotalXP || 0);
             document.querySelector(`#stat-totalXP`).innerHTML = formatInt(response.totalXP || 0);
+            /* DEPRECATED per request of GM
             var data = [];
             response.listeners.forEach(function (listener) {
                 data.push({x: listener.createdAt, y: listener.listeners});
@@ -3525,6 +3528,7 @@ function switchShow() {
                     })
                 ]
             }).renderTo('#listenerChart');
+            */
         }
         console.log(JSON.stringify(response));
     });
