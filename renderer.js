@@ -122,28 +122,31 @@ try {
                     // Start a new recording if we are in automation
                     if (Meta.state.startsWith("automation_"))
                     {
-                        nrc.run(`"${recordPadPath}" -done`)
-                                .then(function (response) {
-                                    console.log(`DONE: ${response}`);
-                                    if (!development)
-                                    {
-                                        nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\automation\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
-                                                .then(function (response2) {
-                                                    if (response2 == 0)
-                                                    {
-                                                        nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started in ${recordPath}\\automation\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                                                        });
-                                                    }
-                                                    console.log(`RECORDFILE: ${response2}`)
-                                                })
-                                                .catch(err => {
-                                                    console.error(err);
-                                                });
-                                    }
-                                })
-                                .catch(err => {
-                                    console.error(err);
-                                });
+                        if (!development)
+                        {
+                            nrc.run(`"${recordPadPath}" -done`)
+                                    .then(function (response) {
+                                        console.log(`DONE: ${response}`);
+                                        if (!development)
+                                        {
+                                            nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\automation\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                                    .then(function (response2) {
+                                                        if (response2 == 0)
+                                                        {
+                                                            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started in ${recordPath}\\automation\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                            });
+                                                        }
+                                                        console.log(`RECORDFILE: ${response2}`)
+                                                    })
+                                                    .catch(err => {
+                                                        console.error(err);
+                                                    });
+                                        }
+                                    })
+                                    .catch(err => {
+                                        console.error(err);
+                                    });
+                        }
                     }
                 }
             }
@@ -579,15 +582,19 @@ io.socket.on('meta', function (data) {
                         startRecording = 'automation';
                     } else if (data[key].includes("_break") || data[key].includes("_returning") || data[key].includes("_halftime"))
                     {
-                        setTimeout(function () {
-                            nrc.run(`"${recordPadPath}" -done`)
-                                    .then(function (response) {
-                                        console.log(response);
-                                    })
-                                    .catch(err => {
-                                        console.error(err);
-                                    });
-                        }, delay);
+                        if (!development)
+                        {
+                            setTimeout(function () {
+
+                                nrc.run(`"${recordPadPath}" -done`)
+                                        .then(function (response) {
+                                            console.log(response);
+                                        })
+                                        .catch(err => {
+                                            console.error(err);
+                                        });
+                            }, delay);
+                        }
                     }
                 }
                 Meta[key] = data[key];
@@ -595,30 +602,33 @@ io.socket.on('meta', function (data) {
         }
         doMeta(data);
         if (startRecording !== null) {
-            setTimeout(function () {
-                nrc.run(`"${recordPadPath}" -done`)
-                        .then(function (response) {
-                            console.log(response);
-                            if (!development)
-                            {
-                                nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
-                                        .then(function (response2) {
-                                            if (response2 == 0)
-                                            {
-                                                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                                                });
-                                            }
-                                            console.log(response2);
-                                        })
-                                        .catch(err => {
-                                            console.error(err);
-                                        });
-                            }
-                        })
-                        .catch(err => {
-                            console.error(err);
-                        });
-            }, delay);
+            if (!development)
+            {
+                setTimeout(function () {
+                    nrc.run(`"${recordPadPath}" -done`)
+                            .then(function (response) {
+                                console.log(response);
+                                if (!development)
+                                {
+                                    nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                            .then(function (response2) {
+                                                if (response2 == 0)
+                                                {
+                                                    nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                    });
+                                                }
+                                                console.log(response2);
+                                            })
+                                            .catch(err => {
+                                                console.error(err);
+                                            });
+                                }
+                            })
+                            .catch(err => {
+                                console.error(err);
+                            });
+                }, delay);
+            }
         }
     } catch (e) {
         iziToast.show({
@@ -1219,13 +1229,16 @@ function metaSocket() {
                             startRecording = 'automation';
                         } else if (body[key].includes("_break") || body[key].includes("_returning"))
                         {
-                            nrc.run(`"${recordPadPath}" -done`)
-                                    .then(function (response) {
-                                        console.log(response);
-                                    })
-                                    .catch(err => {
-                                        console.error(err);
-                                    });
+                            if (!development)
+                            {
+                                nrc.run(`"${recordPadPath}" -done`)
+                                        .then(function (response) {
+                                            console.log(response);
+                                        })
+                                        .catch(err => {
+                                            console.error(err);
+                                        });
+                            }
                         }
                     }
                     Meta[key] = body[key];
@@ -1233,11 +1246,11 @@ function metaSocket() {
             }
             doMeta(body);
             if (startRecording !== null) {
-                nrc.run(`"${recordPadPath}" -done`)
-                        .then(function (response) {
-                            console.log(`DONE: ${response}`);
-                            if (!development)
-                            {
+                if (!development)
+                {
+                    nrc.run(`"${recordPadPath}" -done`)
+                            .then(function (response) {
+                                console.log(`DONE: ${response}`);
                                 nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
                                         .then(function (response2) {
                                             if (response2 == 0)
@@ -1250,11 +1263,11 @@ function metaSocket() {
                                         .catch(err => {
                                             console.error(err);
                                         });
-                            }
-                        })
-                        .catch(err => {
-                            console.error(err);
-                        });
+                            })
+                            .catch(err => {
+                                console.error(err);
+                            });
+                }
             }
         } catch (e) {
             console.error(e);
