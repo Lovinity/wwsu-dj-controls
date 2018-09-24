@@ -1,6 +1,9 @@
 /* global iziToast, io, moment, Infinity */
 
 try {
+
+    var development = true;
+
 // Define hexrgb constants
     var hexChars = 'a-f\\d';
     var match3or4Hex = `#?[${hexChars}]{3}[${hexChars}]?`;
@@ -122,18 +125,21 @@ try {
                         nrc.run(`"${recordPadPath}" -done`)
                                 .then(function (response) {
                                     console.log(`DONE: ${response}`);
-                                    nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\automation\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
-                                            .then(function (response2) {
-                                                if (response2 == 0)
-                                                {
-                                                    nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started in ${recordPath}\\automation\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                                                    });
-                                                }
-                                                console.log(`RECORDFILE: ${response2}`)
-                                            })
-                                            .catch(err => {
-                                                console.error(err);
-                                            });
+                                    if (!development)
+                                    {
+                                        nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\automation\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                                .then(function (response2) {
+                                                    if (response2 == 0)
+                                                    {
+                                                        nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started in ${recordPath}\\automation\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                        });
+                                                    }
+                                                    console.log(`RECORDFILE: ${response2}`)
+                                                })
+                                                .catch(err => {
+                                                    console.error(err);
+                                                });
+                                    }
                                 })
                                 .catch(err => {
                                     console.error(err);
@@ -282,6 +288,22 @@ try {
 
     $("#messages-modal").iziModal({
         title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Messages</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 50
+    });
+
+    $("#options-modal").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Options / Administration</h5>`,
         headerColor: '#363636',
         width: 800,
         focusInput: true,
@@ -577,18 +599,21 @@ io.socket.on('meta', function (data) {
                 nrc.run(`"${recordPadPath}" -done`)
                         .then(function (response) {
                             console.log(response);
-                            nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
-                                    .then(function (response2) {
-                                        if (response2 == 0)
-                                        {
-                                            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                                            });
-                                        }
-                                        console.log(response2);
-                                    })
-                                    .catch(err => {
-                                        console.error(err);
-                                    });
+                            if (!development)
+                            {
+                                nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                        .then(function (response2) {
+                                            if (response2 == 0)
+                                            {
+                                                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                });
+                                            }
+                                            console.log(response2);
+                                        })
+                                        .catch(err => {
+                                            console.error(err);
+                                        });
+                            }
                         })
                         .catch(err => {
                             console.error(err);
@@ -726,6 +751,10 @@ document.querySelector("#log-add").onclick = function () {
 
 document.querySelector("#btn-requests").onclick = function () {
     $("#requests-modal").iziModal('open');
+};
+
+document.querySelector("#options").onclick = function () {
+    $("#options-modal").iziModal('open');
 };
 
 document.querySelector(`#users`).addEventListener("click", function (e) {
@@ -1207,18 +1236,21 @@ function metaSocket() {
                 nrc.run(`"${recordPadPath}" -done`)
                         .then(function (response) {
                             console.log(`DONE: ${response}`);
-                            nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
-                                    .then(function (response2) {
-                                        if (response2 == 0)
-                                        {
-                                            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                                            });
-                                        }
-                                        console.log(`RECORDFILE: ${response2}`);
-                                    })
-                                    .catch(err => {
-                                        console.error(err);
-                                    });
+                            if (!development)
+                            {
+                                nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                        .then(function (response2) {
+                                            if (response2 == 0)
+                                            {
+                                                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                });
+                                            }
+                                            console.log(`RECORDFILE: ${response2}`);
+                                        })
+                                        .catch(err => {
+                                            console.error(err);
+                                        });
+                            }
                         })
                         .catch(err => {
                             console.error(err);
@@ -1321,6 +1353,9 @@ function messagesSocket() {
 
             if (client.emergencies)
             {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "inline";
                 io.socket.post('/logs/get', {}, function serverResponded(body, JWR) {
                     //console.log(body);
                     try {
@@ -2636,10 +2671,10 @@ function selectRecipient(recipient = null)
         };
 
         // Get only the relevant messages to show in the "new messages" box
-        var query = [{from: host, to: os.hostname()}, {from: os.hostname(), to: host}, {from: host, to: 'DJ'}, {from: host, to: 'DJ-private'}];
+        var query = [{from: host, to: [os.hostname(), 'DJ', 'DJ-private']}, {to: host}];
         if (host === 'website')
         {
-            query = [{to: 'DJ'}, {to: 'website'}];
+            query = [{to: ['DJ', 'website']}];
         }
 
         totalUnread = 0;
@@ -3404,54 +3439,54 @@ function endShow() {
             document.querySelector(`#stat-subtotalXP`).innerHTML = formatInt(response.subtotalXP || 0);
             document.querySelector(`#stat-totalXP`).innerHTML = formatInt(response.totalXP || 0);
             /* DEPRECATED per request of GM
-            var data = [];
-            response.listeners.forEach(function (listener) {
-                data.push({x: listener.createdAt, y: listener.listeners});
-            });
-            document.querySelector(`#listenerChart`).innerHTML = ``;
-            new Taucharts.Chart({
-                data: data,
-                type: 'line',
-                x: 'x',
-                y: 'y',
-                color: 'wwsu-red',
-                guide: {
-                    y: {label: {text: 'Online Listeners'}, autoScale: true, nice: true},
-                    x: {label: {text: 'Time'}, autoScale: true, nice: false},
-                    interpolate: 'step-after',
-                    showGridLines: 'xy',
-                },
-                dimensions: {
-                    x: {
-                        type: 'measure',
-                        scale: 'time'
-                    },
-                    y: {
-                        type: 'measure',
-                        scale: 'linear'
-                    }
-                },
-                plugins: [
-                    Taucharts.api.plugins.get('tooltip')({
-                        formatters: {
-                            x: {
-                                label: "Time",
-                                format: function (n) {
-                                    return moment(n).format("LT");
-                                }
-                            },
-                            y: {
-                                label: "Online Listeners",
-                                format: function (n) {
-                                    return n;
-                                }
-                            }
-
-                        }
-                    })
-                ]
-            }).renderTo('#listenerChart');
-            */
+             var data = [];
+             response.listeners.forEach(function (listener) {
+             data.push({x: listener.createdAt, y: listener.listeners});
+             });
+             document.querySelector(`#listenerChart`).innerHTML = ``;
+             new Taucharts.Chart({
+             data: data,
+             type: 'line',
+             x: 'x',
+             y: 'y',
+             color: 'wwsu-red',
+             guide: {
+             y: {label: {text: 'Online Listeners'}, autoScale: true, nice: true},
+             x: {label: {text: 'Time'}, autoScale: true, nice: false},
+             interpolate: 'step-after',
+             showGridLines: 'xy',
+             },
+             dimensions: {
+             x: {
+             type: 'measure',
+             scale: 'time'
+             },
+             y: {
+             type: 'measure',
+             scale: 'linear'
+             }
+             },
+             plugins: [
+             Taucharts.api.plugins.get('tooltip')({
+             formatters: {
+             x: {
+             label: "Time",
+             format: function (n) {
+             return moment(n).format("LT");
+             }
+             },
+             y: {
+             label: "Online Listeners",
+             format: function (n) {
+             return n;
+             }
+             }
+             
+             }
+             })
+             ]
+             }).renderTo('#listenerChart');
+             */
         }
         console.log(JSON.stringify(response));
     });
@@ -3481,54 +3516,54 @@ function switchShow() {
             document.querySelector(`#stat-subtotalXP`).innerHTML = formatInt(response.subtotalXP || 0);
             document.querySelector(`#stat-totalXP`).innerHTML = formatInt(response.totalXP || 0);
             /* DEPRECATED per request of GM
-            var data = [];
-            response.listeners.forEach(function (listener) {
-                data.push({x: listener.createdAt, y: listener.listeners});
-            });
-            document.querySelector(`#listenerChart`).innerHTML = ``;
-            new Taucharts.Chart({
-                data: data,
-                type: 'line',
-                x: 'x',
-                y: 'y',
-                color: 'wwsu-red',
-                guide: {
-                    y: {label: {text: 'Online Listeners'}, autoScale: true, nice: true},
-                    x: {label: {text: 'Time'}, autoScale: true, nice: false},
-                    interpolate: 'step-after',
-                    showGridLines: 'xy',
-                },
-                dimensions: {
-                    x: {
-                        type: 'measure',
-                        scale: 'time'
-                    },
-                    y: {
-                        type: 'measure',
-                        scale: 'linear'
-                    }
-                },
-                plugins: [
-                    Taucharts.api.plugins.get('tooltip')({
-                        formatters: {
-                            x: {
-                                label: "Time",
-                                format: function (n) {
-                                    return moment(n).format("LT");
-                                }
-                            },
-                            y: {
-                                label: "Online Listeners",
-                                format: function (n) {
-                                    return n;
-                                }
-                            }
-
-                        }
-                    })
-                ]
-            }).renderTo('#listenerChart');
-            */
+             var data = [];
+             response.listeners.forEach(function (listener) {
+             data.push({x: listener.createdAt, y: listener.listeners});
+             });
+             document.querySelector(`#listenerChart`).innerHTML = ``;
+             new Taucharts.Chart({
+             data: data,
+             type: 'line',
+             x: 'x',
+             y: 'y',
+             color: 'wwsu-red',
+             guide: {
+             y: {label: {text: 'Online Listeners'}, autoScale: true, nice: true},
+             x: {label: {text: 'Time'}, autoScale: true, nice: false},
+             interpolate: 'step-after',
+             showGridLines: 'xy',
+             },
+             dimensions: {
+             x: {
+             type: 'measure',
+             scale: 'time'
+             },
+             y: {
+             type: 'measure',
+             scale: 'linear'
+             }
+             },
+             plugins: [
+             Taucharts.api.plugins.get('tooltip')({
+             formatters: {
+             x: {
+             label: "Time",
+             format: function (n) {
+             return moment(n).format("LT");
+             }
+             },
+             y: {
+             label: "Online Listeners",
+             format: function (n) {
+             return n;
+             }
+             }
+             
+             }
+             })
+             ]
+             }).renderTo('#listenerChart');
+             */
         }
         console.log(JSON.stringify(response));
     });
@@ -4380,8 +4415,8 @@ function processMessages(data, replace = false)
                                                 }]
                                         ]
                                     });
+                                    data[index].needsread = true;
                                 }
-                                data[index].needsread = true;
                                 break;
                             default:
                                 break;
@@ -4486,8 +4521,8 @@ function processMessages(data, replace = false)
                                                     }]
                                             ]
                                         });
+                                        data[key].needsread = true;
                                     }
-                                    data[key].needsread = true;
                                     break;
                                 default:
                                     break;

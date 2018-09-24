@@ -199,13 +199,19 @@
 
         <div class="d-flex justify-content-center flex-wrap p-3 m-3">
             <div class="card p-1 m-3 text-white bg-dark" id="operations" style="width: 640px; height: 360px;">
-                <div class="card-header text-center" style="font-size: 1.5em;">WWSU Operations   <span class="badge badge-secondary" id="operations-state">Unknown</span></div>
+                <div class="card-header text-center" style="font-size: 1.5em;">
+                    WWSU Operations   
+                    <span class="badge badge-secondary" id="operations-state">Unknown</span>
+                    <button type="button" class="close" id="options" aria-label="Options" style="display: none;">
+                        <span aria-hidden="true" id="options-icon"><i class="fas fa-cogs text-white"></i></span>
+                    </button>
+                </div>
                 <div class="card-body" id="operations-body" style="overflow: auto;">
                     <div class="d-flex justify-content-start flex-wrap">
                         <div class="p-1 m-1" id="queue" style="width: 216px; text-align: center; display: none;">
-                            <div style="text-align: center; font-size: 2em;">Queue Remaining:</div>
+                            <div style="text-align: center; font-size: 2em;">Queue:</div>
                             <div class="text-warning" id="queue-seconds" style="text-align: center; font-size: 5em;">???</div>
-                            <div class="text-info" id="queue-music" style="text-align: center; font-size: 0.75em; display: none;">Music queued after countdown ends</div>
+                            <div class="text-info" id="queue-music" style="text-align: center; font-size: 2em; display: none;">+ Music</div>
                         </div>
                         <div class="p-1 m-1" id="no-remote" style="width: 216px; text-align: center; display: none;">
                             <div class="text-danger" style="text-align: center; font-size: 1.5em;">Lost connection to remote stream!</div>
@@ -670,10 +676,25 @@
                 </div>
             </div>
         </div>
-        
+
         <div id="requests-modal" style="background-color: #363636; color: #ffffff;">
             <p style="font-size: 1em; text-align: center;">Playing requests are optional. Automation will play any requests you ignore after your show.</p>
             <div class="container" id="track-requests">
+            </div>
+        </div>
+
+        <div id="options-modal" style="background-color: #363636; color: #ffffff;">
+            <div class="d-flex justify-content-start flex-wrap">
+                <div id="options-slide-0">
+                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                        <button type="button" id="btn-options-djs" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-microphone"></i></button>
+                        <div style="text-align: center; font-size: 1em;">Manage DJs</div>
+                    </div>
+                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                        <button type="button" id="btn-options-state" class="btn btn-urgent btn-circle btn-xl border border-white"><i class="fas fa-microphone"></i></button>
+                        <div style="text-align: center; font-size: 1em;">Force Change State</div>
+                    </div>
+                </div>
             </div>
         </div>
 
