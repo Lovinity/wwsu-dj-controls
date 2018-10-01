@@ -189,7 +189,7 @@ try {
             messaging.className = "card p-1 m-3 text-white bg-info-dark";
             setTimeout(function () {
                 messaging.className = "card p-1 m-3 text-white bg-dark";
-            }, 250);
+            }, 2750);
         }
 
         var flasher = document.querySelectorAll(".flash-bg");
@@ -318,7 +318,55 @@ try {
         timeout: false,
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-        zindex: 50
+        zindex: 60
+    });
+
+    $("#options-modal-djs").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Choose a DJ</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 61
+    });
+
+    $("#options-modal-dj").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - DJ</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 62
+    });
+
+    $("#options-modal-dj-logs").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - DJ Show Logs</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 63
     });
 
     var quill = new Quill('#themessage', {
@@ -767,6 +815,405 @@ document.querySelector("#options").onclick = function () {
     $("#options-modal").iziModal('open');
 };
 
+document.querySelector("#btn-options-djs").onclick = function () {
+    try {
+        nodeRequest({method: 'POST', url: nodeURL + '/xp/get-djs', data: {}}, function (response) {
+            document.querySelector('#options-djs').innerHTML = `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                        <button type="button" id="options-dj-add" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-plus-circle"></i></button>
+                        <div style="text-align: center; font-size: 1em;">Add DJ</div>
+                    </div>`;
+            if (response.length > 0 && typeof response.forEach !== 'undefined')
+            {
+                response.forEach(function (dj, index) {
+                    document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                        <button type="button" id="options-dj-${index}" class="btn btn-wwsu-red btn-circle btn-xl border border-white" data-dj="${dj.dj}"><i class="fas fa-user" id="options-dj-i-${index}" data-dj="${dj.dj}"></i></button>
+                        <div style="text-align: center; font-size: 1em;">${dj.dj}</div>
+                    </div>`;
+                });
+            }
+            $("#options-modal-djs").iziModal('open');
+        });
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-djs.'
+        });
+    }
+};
+
+document.querySelector(`#options-djs`).addEventListener("click", function (e) {
+    try {
+        console.log(e.target.id);
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith(`options-dj-`))
+            {
+                if (e.target.id !== 'options-dj-add')
+                {
+                    nodeRequest({method: 'POST', url: nodeURL + '/xp/get', data: {dj: e.target.dataset.dj}}, function (response) {
+                        document.querySelector('#options-dj-name').innerHTML = e.target.dataset.dj;
+                        document.querySelector('#dj-remotes').innerHTML = response.XP.remote || 0;
+                        document.querySelector('#dj-xp').innerHTML = response.XP.totalXP || 0;
+
+                        document.querySelector('#options-dj-buttons').innerHTML = `
+                        <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                                <button type="button" id="btn-options-dj-edit" data-dj="${e.target.dataset.dj}" class="btn btn-urgent btn-circle btn-xl border border-white"><i class="fas fa-pen"></i></button>
+                                <div style="text-align: center; font-size: 1em;">Edit</div>
+                            </div>
+                            <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                                <button type="button" id="btn-options-dj-remove" data-dj="${e.target.dataset.dj}" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-trash"></i></button>
+                                <div style="text-align: center; font-size: 1em;">Remove</div>
+                            </div>
+`;
+
+
+
+                        // Populate attendance records
+                        var att = document.querySelector('#dj-attendance');
+                        att.innerHTML = ``;
+                        if (response.attendance.length > 0)
+                        {
+                            response.attendance.forEach(function (record) {
+                                if (moment(record.start).isAfter(moment(Meta.time)))
+                                {
+                                    att.innerHTML += `<div class="row bg-dark m-1">
+                                <div class="col-3 text-primary-light">
+                                    ${record.title}
+                                </div>
+                                <div class="col-4 text-warning-light">
+                                    START: ${moment(record.start).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.end).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-4 text-success-light">
+                                    FUTURE EVENT
+                                </div>
+                            </div>`;
+                                } else if (record.actualStart !== null && record.actualEnd !== null)
+                                {
+                                    if (moment(record.start).diff(record.actualStart, 'minutes') >= 10 || moment(record.end).diff(record.actualEnd, 'minutes') >= 10)
+                                    {
+                                        att.innerHTML += `<div class="row bg-warning-dark m-1">
+                                <div class="col-3 text-primary-light">
+                                    ${record.title}
+                                </div>
+                                <div class="col-4 text-warning-light">
+                                    START: ${moment(record.start).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.end).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-4 text-success-light">
+                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.actualEnd).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                        <div class="col-1">
+                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" data-start="${record.actualStart}" data-end="${record.actualEnd}">
+                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                </button>
+                                        </div>
+                            </div>`;
+                                    } else {
+                                        att.innerHTML += `<div class="row bg-success-dark m-1">
+                                <div class="col-3 text-primary-light">
+                                    ${record.title}
+                                </div>
+                                <div class="col-4 text-warning-light">
+                                    START: ${moment(record.start).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.end).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-4 text-success-light">
+                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.actualEnd).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-1">
+                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" data-start="${record.actualStart}" data-end="${record.actualEnd}">
+                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                </button>
+                                </div>
+                            </div>`;
+                                    }
+                                } else if (record.actualStart !== null && record.actualEnd === null)
+                                {
+                                    att.innerHTML += `<div class="row bg-info-dark m-1">
+                                <div class="col-3 text-primary-light">
+                                    ${record.title}
+                                </div>
+                                <div class="col-4 text-warning-light">
+                                    START: ${moment(record.start).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.end).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-4 text-success-light">
+                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    IN PROGRESS
+                                </div>
+                                <div class="col-1">
+                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" data-start="${record.actualStart}" data-end="${record.end}">
+                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                </button>
+                                        </div>
+                            </div>`;
+                                } else if (record.actualStart === null && record.actualEnd === null) {
+                                    att.innerHTML += `<div class="row bg-danger-dark m-1">
+                                <div class="col-3 text-primary-light">
+                                    ${record.title}
+                                </div>
+                                <div class="col-4 text-warning-light">
+                                    START: ${moment(record.start).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.end).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-4 text-success-light">
+                                    ABSENT
+                                </div>
+                            </div>`;
+                                } else {
+                                    att.innerHTML += `<div class="row bg-purple-dark m-1">
+                                <div class="col-3 text-primary-light">
+                                    ${record.title}
+                                </div>
+                                <div class="col-4 text-warning-light">
+                                    START: ${moment(record.start).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.end).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-4 text-success-light">
+                                    NOT STARTED YET
+                                </div>
+                            </div>`;
+                                }
+                            });
+                        }
+                        $("#options-modal-dj").iziModal('open');
+                    });
+                } else {
+                    var inputData = "";
+                    iziToast.info({
+                        timeout: 180000,
+                        overlay: true,
+                        displayMode: 'once',
+                        color: 'yellow',
+                        id: 'inputs',
+                        zindex: 999,
+                        title: 'Case-Sensitive DJ Name',
+                        message: 'Make sure you type it correctly and it matches what you use on Google Calendar (if applicable)!',
+                        position: 'center',
+                        drag: false,
+                        closeOnClick: false,
+                        inputs: [
+                            ['<input type="text">', 'keyup', function (instance, toast, input, e) {
+                                    inputData = input.value;
+                                }, true],
+                        ],
+                        buttons: [
+                            ['<button><b>Submit</b></button>', function (instance, toast) {
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                    nodeRequest({method: 'POST', url: nodeURL + '/xp/add-dj', data: {dj: inputData}}, function (response) {
+                                        if (response === 'OK')
+                                        {
+                                            iziToast.show({
+                                                title: `DJ Added!`,
+                                                message: `DJ was added! You may need to close and re-open the manage DJ screen.`,
+                                                timeout: 15000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to add DJ!`,
+                                                message: `There was an error trying to add the new DJ.`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }],
+                        ]
+                    });
+                }
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-djs.'
+        });
+    }
+});
+
+document.querySelector(`#options-dj-buttons`).addEventListener("click", function (e) {
+    try {
+        console.log(e.target.id);
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id === 'btn-options-dj-edit')
+            {
+                var inputData = "";
+                iziToast.info({
+                    timeout: 180000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    title: 'Case-Sensitive DJ Name',
+                    message: 'Make sure you type it correctly and it matches what you use on Google Calendar (if applicable)! If you provide the name of a DJ that already exists, all XP and logs from this DJ will be merged with the other DJ.',
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    inputs: [
+                        ['<input type="text">', 'keyup', function (instance, toast, input, e) {
+                                inputData = input.value;
+                            }, true],
+                    ],
+                    buttons: [
+                        ['<button><b>Edit</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                nodeRequest({method: 'POST', url: nodeURL + '/xp/edit-dj', data: {old: e.target.dataset.dj, new: inputData}}, function (response) {
+                                    if (response === 'OK')
+                                    {
+                                        iziToast.show({
+                                            title: `DJ Edited!`,
+                                            message: `DJ was edited! You may need to close and re-open the manage DJ screen.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to edit DJ!`,
+                                            message: `There was an error trying to edit the DJ.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
+                    ]
+                });
+            } else if (e.target.id === 'btn-options-dj-remove')
+            {
+                var inputData = "";
+                iziToast.info({
+                    timeout: 180000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    title: 'Remove DJ',
+                    message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove ' + e.target.dataset.dj + '? All XP and remotes will be lost (but logs will remain in the database)!',
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Remove</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                nodeRequest({method: 'POST', url: nodeURL + '/xp/remove-dj', data: {dj: e.target.dataset.dj}}, function (response) {
+                                    if (response === 'OK')
+                                    {
+                                        iziToast.show({
+                                            title: `DJ Removed!`,
+                                            message: `DJ was removed! You may need to close and re-open the manage DJ screen.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to remove DJ!`,
+                                            message: `There was an error trying to remove the DJ.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
+                    ]
+                });
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-djs.'
+        });
+    }
+});
+
+document.querySelector(`#dj-attendance`).addEventListener("click", function (e) {
+    try {
+        console.log(e.target.id);
+        if (e.target) {
+            if (e.target.id.startsWith(`dj-show-logs-`))
+            {
+                nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {start: e.target.dataset.start, end: e.target.dataset.end}}, function (response) {
+                    var logs = document.querySelector('#dj-show-logs');
+                    logs.innerHTML = ``;
+
+                    if (response.length > 0)
+                    {
+                        response.forEach(function (log) {
+                            logs.innerHTML += `<div class="row bg-${log.loglevel}-dark m-1">
+                                <div class="col-4 text-warning-light">
+                                    ${moment(log.createdAt).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-8 text-info-light">
+                                ${log.event}
+                                ${log.trackArtist !== null && log.trackArtist !== "" ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== "" ? ` - ${log.trackTitle}` : ``}
+                                ${log.trackAlbum !== null && log.trackAlbum !== "" ? `<br />Album: ${log.trackAlbum}` : ``}
+                                ${log.trackLabel !== null && log.trackLabel !== "" ? `<br />Label: ${log.trackLabel}` : ``}
+                                </div>
+                            </div>`;
+                        });
+                    }
+                    $("#options-modal-dj-logs").iziModal('open');
+                });
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #dj-attendance.'
+        });
+    }
+});
+
 document.querySelector(`#users`).addEventListener("click", function (e) {
     try {
         console.log(e.target.id);
@@ -840,22 +1287,6 @@ document.querySelector(`#messages`).addEventListener("click", function (e) {
             if (e.target.id.startsWith(`message-m`))
             {
                 markRead(parseInt(e.target.id.replace(`message-m-`, ``)));
-            }
-            if (e.target.id.startsWith(`message-b`))
-            {
-                markRead(parseInt(e.target.id.replace(`message-b-`, ``)));
-            }
-            if (e.target.id.startsWith(`message-t`))
-            {
-                markRead(parseInt(e.target.id.replace(`message-t-`, ``)));
-            }
-            if (e.target.id.startsWith(`message-c1`))
-            {
-                markRead(parseInt(e.target.id.replace(`message-c1-`, ``)));
-            }
-            if (e.target.id.startsWith(`message-c2`))
-            {
-                markRead(parseInt(e.target.id.replace(`message-c2-`, ``)));
             }
         }
     } catch (err) {
@@ -2733,8 +3164,8 @@ function selectRecipient(recipient = null)
                 {
                     var temp2 = document.querySelector(`#messages-unread`);
                     temp2.innerHTML += `<div class="m-1 bg-wwsu-red message-n animated bounceIn slow" style="cursor: pointer;" id="message-n-m-${message.ID}">
-                                        <span class="close" id="message-n-x-${message.ID}">X</span>
-                                        <div class="m-1" id="message-n-a-${message.ID}">
+                                        <span class="close" id="message-n-x-${message.ID}" style="pointer-events: auto;">X</span>
+                                        <div class="m-1" id="message-n-a-${message.ID}" style="pointer-events: auto;">
                                             <div id="message-n-t-${message.ID}">${message.message}</div>
                                             <div id="message-n-b-${message.ID}" style="font-size: 0.66em;">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' (Private)' : ``}</span>
                                         </div>
@@ -2793,8 +3224,8 @@ function selectRecipient(recipient = null)
     </div>
     <div class="col-2" id="message-c2-${message.ID}" style="text-align: center;">
 <div class="dropdown">
-                                <span class='close' id="message-o-${message.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
-                                <div class="dropdown-menu" aria-labelledby="message-o-${message.ID}">
+                                <span class='close' id="message-o-${message.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="pointer-events: auto;"><i class="fas fa-ellipsis-v"></i></span>
+                                <div class="dropdown-menu" aria-labelledby="message-o-${message.ID}" style="pointer-events: auto;">
                                     <a class="dropdown-item text-primary" data-toggle="dropdown" id="message-o-delete-${message.ID}">Delete Message</a>
                                     <a class="dropdown-item text-warning-dark" data-toggle="dropdown" id="message-o-mute-${message.ID}">Mute for 24 hours</a>
                                     <a class="dropdown-item text-danger-dark" data-toggle="dropdown" id="message-o-ban-${message.ID}">Ban indefinitely</a>
@@ -2826,8 +3257,8 @@ function selectRecipient(recipient = null)
     </div>
     <div class="col-2" id="message-c2-${message.ID}" style="text-align: center;">
 <div class="dropdown">
-                                <span class='close' id="message-o-${message.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
-                                <div class="dropdown-menu" aria-labelledby="message-o-${message.ID}">
+                                <span class='close' id="message-o-${message.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="pointer-events: auto;"><i class="fas fa-ellipsis-v"></i></span>
+                                <div class="dropdown-menu" aria-labelledby="message-o-${message.ID}" style="pointer-events: auto;">
                                     <a class="dropdown-item text-primary" data-toggle="dropdown" id="message-o-delete-${message.ID}">Delete Message</a>
                                 </div>
                             </div>

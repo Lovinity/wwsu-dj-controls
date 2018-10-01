@@ -54,6 +54,26 @@
                 border-radius: 35px;
             }
 
+            button > * {
+                pointer-events: none;
+            }
+
+            .message > * {
+                pointer-events: none;
+            }
+
+            .message-n > * {
+                pointer-events: none;
+            }
+
+            #btn-options-dj-edit > * {
+                pointer-events: none;
+            }
+
+            #btn-options-dj-remove > * {
+                pointer-events: none;
+            }
+
             .clock {
                 border-radius: 50%;
                 background: #fff url(assets/svg/clock.svg) no-repeat center;
@@ -685,15 +705,90 @@
 
         <div id="options-modal" style="background-color: #363636; color: #ffffff;">
             <div class="d-flex justify-content-start flex-wrap">
-                <div id="options-slide-0">
-                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                        <button type="button" id="btn-options-djs" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-microphone"></i></button>
-                        <div style="text-align: center; font-size: 1em;">Manage DJs</div>
+                <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                    <button type="button" id="btn-options-djs" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-microphone"></i></button>
+                    <div style="text-align: center; font-size: 1em;">Manage DJs</div>
+                </div>
+                <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                    <button type="button" id="btn-options-logs" class="btn btn-secondary btn-circle btn-xl border border-white"><i class="fas fa-file"></i></button>
+                    <div style="text-align: center; font-size: 1em;">Logs</div>
+                </div>
+                <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                    <button type="button" id="btn-options-state" class="btn btn-urgent btn-circle btn-xl border border-white"><i class="fas fa-microphone"></i></button>
+                    <div style="text-align: center; font-size: 1em;">Force Change State</div>
+                </div>
+            </div>
+        </div>
+        <div id="options-modal-djs" style="background-color: #363636; color: #ffffff;">
+            <div class="d-flex justify-content-start flex-wrap" id="options-djs">
+            </div>
+        </div>
+        <div id="options-modal-dj" style="background-color: #363636; color: #ffffff;">
+            <p style="font-size: 2em; text-align: center;" id="options-dj-name"></p>
+            <div class="container">
+                <div class="row">
+                    <div class="col-6">
+                        <p style="font-size: 1.5em; text-align: center;">Overview</p>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-5">
+                                    Remote Credits
+                                </div>
+                                <div class="col-7" id="dj-remotes">
+                                    Unknown
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-5">
+                                    Total XP
+                                </div>
+                                <div class="col-7" id="dj-xp">
+                                    Unknown
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                        <button type="button" id="btn-options-state" class="btn btn-urgent btn-circle btn-xl border border-white"><i class="fas fa-microphone"></i></button>
-                        <div style="text-align: center; font-size: 1em;">Force Change State</div>
+                    <div class="col-6">
+                        <div class="d-flex justify-content-start flex-wrap" id="options-dj-buttons">
+                        </div>
                     </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <p style="font-size: 1.5em; text-align: center;">Attendance History</p>
+                    </div>
+                    <div class="container m-1 p-1" style="height: 240px; overflow: scroll;">
+                        <div class="row bg-primary-dark m-1">
+                            <div class="col-3 text-primary-light">
+                                Event Name
+                            </div>
+                            <div class="col-4 text-warning-light">
+                                Scheduled start/end Times
+                            </div>
+                            <div class="col-4 text-success-light">
+                                Actual start/end Times
+                            </div>
+                            <div class="col-1">
+                                Log
+                            </div>
+                        </div>
+                        <div id="dj-attendance">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="options-modal-dj-logs" style="background-color: #363636; color: #ffffff;">
+            <div class="container m-1 p-1" style="height: 480px; overflow: scroll;">
+                <div class="row bg-primary-dark m-1">
+                    <div class="col-4 text-warning-light">
+                        Date / Time
+                    </div>
+                    <div class="col-8 text-info-light">
+                        Event
+                    </div>
+                </div>
+                <div id="dj-show-logs">
                 </div>
             </div>
         </div>
