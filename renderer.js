@@ -898,15 +898,34 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                         if (response.attendance.length > 0)
                         {
                             response.attendance.forEach(function (record) {
-                                if (moment(record.start).isAfter(moment(Meta.time)))
+                                if (record.scheduledStart === null)
+                                {
+                                    att.innerHTML += `<div class="row bg-urgent-dark m-1">
+                                <div class="col-3 text-primary-light">
+                                    ${record.event}
+                                </div>
+                                <div class="col-4 text-warning-light">
+                                    UN-SCHEDULED
+                                </div>
+                                <div class="col-4 text-success-light">
+                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${record.actualEnd !== null ? moment(record.actualEnd).format("YYYY-MM-DD h:mm A") : `IN PROGRESS`}
+                                </div>
+                                    <div class="col-1">
+                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                </button>
+                                        </div>
+                            </div>`;
+                                } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)))
                                 {
                                     att.innerHTML += `<div class="row bg-dark m-1">
                                 <div class="col-3 text-primary-light">
-                                    ${record.title}
+                                    ${record.event}
                                 </div>
                                 <div class="col-4 text-warning-light">
-                                    START: ${moment(record.start).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.end).format("YYYY-MM-DD h:mm A")}
+                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
                                 </div>
                                 <div class="col-4 text-success-light">
                                     FUTURE EVENT
@@ -914,22 +933,22 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                             </div>`;
                                 } else if (record.actualStart !== null && record.actualEnd !== null)
                                 {
-                                    if (moment(record.start).diff(record.actualStart, 'minutes') >= 10 || moment(record.end).diff(record.actualEnd, 'minutes') >= 10)
+                                    if (moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes') >= 10 || moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes') >= 10)
                                     {
                                         att.innerHTML += `<div class="row bg-warning-dark m-1">
                                 <div class="col-3 text-primary-light">
-                                    ${record.title}
+                                    ${record.event}
                                 </div>
                                 <div class="col-4 text-warning-light">
-                                    START: ${moment(record.start).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.end).format("YYYY-MM-DD h:mm A")}
+                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
                                 </div>
                                 <div class="col-4 text-success-light">
                                     START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
                                     END: ${moment(record.actualEnd).format("YYYY-MM-DD h:mm A")}
                                 </div>
                                         <div class="col-1">
-                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" data-start="${record.actualStart}" data-end="${record.actualEnd}">
+                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
                 <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
                 </button>
                                         </div>
@@ -937,18 +956,18 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                                     } else {
                                         att.innerHTML += `<div class="row bg-success-dark m-1">
                                 <div class="col-3 text-primary-light">
-                                    ${record.title}
+                                    ${record.event}
                                 </div>
                                 <div class="col-4 text-warning-light">
-                                    START: ${moment(record.start).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.end).format("YYYY-MM-DD h:mm A")}
+                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
                                 </div>
                                 <div class="col-4 text-success-light">
                                     START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
                                     END: ${moment(record.actualEnd).format("YYYY-MM-DD h:mm A")}
                                 </div>
                                 <div class="col-1">
-                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" data-start="${record.actualStart}" data-end="${record.actualEnd}">
+                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
                 <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
                 </button>
                                 </div>
@@ -958,18 +977,18 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                                 {
                                     att.innerHTML += `<div class="row bg-info-dark m-1">
                                 <div class="col-3 text-primary-light">
-                                    ${record.title}
+                                    ${record.event}
                                 </div>
                                 <div class="col-4 text-warning-light">
-                                    START: ${moment(record.start).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.end).format("YYYY-MM-DD h:mm A")}
+                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
                                 </div>
                                 <div class="col-4 text-success-light">
                                     START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    IN PROGRESS
+                                    END: IN PROGRESS
                                 </div>
                                 <div class="col-1">
-                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" data-start="${record.actualStart}" data-end="${record.end}">
+                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
                 <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
                 </button>
                                         </div>
@@ -977,27 +996,27 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                                 } else if (record.actualStart === null && record.actualEnd === null) {
                                     att.innerHTML += `<div class="row bg-danger-dark m-1">
                                 <div class="col-3 text-primary-light">
-                                    ${record.title}
+                                    ${record.event}
                                 </div>
                                 <div class="col-4 text-warning-light">
-                                    START: ${moment(record.start).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.end).format("YYYY-MM-DD h:mm A")}
+                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
                                 </div>
                                 <div class="col-4 text-success-light">
                                     ABSENT
                                 </div>
                             </div>`;
                                 } else {
-                                    att.innerHTML += `<div class="row bg-purple-dark m-1">
+                                    att.innerHTML += `<div class="row bg-info-dark m-1">
                                 <div class="col-3 text-primary-light">
-                                    ${record.title}
+                                    ${record.event}
                                 </div>
                                 <div class="col-4 text-warning-light">
-                                    START: ${moment(record.start).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.end).format("YYYY-MM-DD h:mm A")}
+                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
                                 </div>
                                 <div class="col-4 text-success-light">
-                                    NOT STARTED YET
+                                    SCHEDULED, BUT NOT YET STARTED
                                 </div>
                             </div>`;
                                 }
@@ -1400,7 +1419,7 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
         if (e.target) {
             if (e.target.id.startsWith(`dj-show-logs-`))
             {
-                nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {start: e.target.dataset.start, end: e.target.dataset.end}}, function (response) {
+                nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``))}}, function (response) {
                     var logs = document.querySelector('#dj-show-logs');
                     logs.innerHTML = ``;
 
