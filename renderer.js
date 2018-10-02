@@ -32,6 +32,7 @@ try {
     var Recipients = TAFFY();
     var Requests = TAFFY();
     var Logs = TAFFY();
+    var DJData = {};
 
     // Define HTML elements
 
@@ -355,6 +356,22 @@ try {
 
     $("#options-modal-dj-logs").iziModal({
         title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - DJ Show Logs</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 63
+    });
+
+    $("#options-modal-dj-xp").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - DJ XP / Remote Credits</h5>`,
         headerColor: '#363636',
         width: 800,
         focusInput: true,
@@ -852,9 +869,11 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                 if (e.target.id !== 'options-dj-add')
                 {
                     nodeRequest({method: 'POST', url: nodeURL + '/xp/get', data: {dj: e.target.dataset.dj}}, function (response) {
+                        console.dir(response);
+                        DJData = response;
                         document.querySelector('#options-dj-name').innerHTML = e.target.dataset.dj;
                         document.querySelector('#dj-remotes').innerHTML = response.XP.remote || 0;
-                        document.querySelector('#dj-xp').innerHTML = response.XP.totalXP || 0;
+                        document.querySelector('#dj-xp').innerHTML = formatInt(response.XP.totalXP) || 0;
 
                         document.querySelector('#options-dj-buttons').innerHTML = `
                         <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
@@ -864,6 +883,10 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                             <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
                                 <button type="button" id="btn-options-dj-remove" data-dj="${e.target.dataset.dj}" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-trash"></i></button>
                                 <div style="text-align: center; font-size: 1em;">Remove</div>
+                            </div>
+                        <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                                <button type="button" id="btn-options-dj-xp" data-dj="${e.target.dataset.dj}" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-hand-holding-usd"></i></button>
+                                <div style="text-align: center; font-size: 1em;">XP / Remote Credits</div>
                             </div>
 `;
 
@@ -1078,7 +1101,7 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                     buttons: [
                         ['<button><b>Edit</b></button>', function (instance, toast) {
                                 instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                nodeRequest({method: 'POST', url: nodeURL + '/xp/edit-dj', data: {old: e.target.dataset.dj, new: inputData}}, function (response) {
+                                nodeRequest({method: 'POST', url: nodeURL + '/xp/edit-dj', data: {old: e.target.dataset.dj, new : inputData}}, function (response) {
                                     if (response === 'OK')
                                     {
                                         iziToast.show({
@@ -1164,6 +1187,37 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                             }],
                     ]
                 });
+            } else if (e.target.id === 'btn-options-dj-xp')
+            {
+                document.querySelector(`#dj-xp-add-div`).innerHTML = `Add <button type="button" id="dj-xp-add" class="close dj-xp-add" aria-label="Add XP/Remote" data-dj="${e.target.dataset.dj}">
+                <span aria-hidden="true"><i class="fas fa-plus text-white"></i></span>
+                </button>`;
+                var xpLogs = document.querySelector(`#dj-xp-logs`);
+                xpLogs.innerHTML = ``;
+                if (DJData && DJData.XP && DJData.XP.rows && DJData.XP.rows.length > 0)
+                {
+                    DJData.XP.rows.forEach(function (row) {
+                        xpLogs.innerHTML += `<div class="row ${row.type === 'remote' ? `bg-warning-dark` : `bg-info-dark`} m-1">
+                    <div class="col-3 text-warning-light">
+                        ${moment(row.createdAt).format("YYYY-MM-DD h:mm A")}
+                    </div>
+                    <div class="col-2 text-success-light">
+                        ${row.amount}
+                    </div>
+                    <div class="col-6 text-info-light">
+                        ${row.type}-${row.subtype}${row.description !== null && row.description !== '' ? `: ${row.description}` : ``}
+                    </div>
+                    <div class="col-1 text-danger-light">
+                        <button type="button" id="dj-xp-remove-${row.ID}" class="close dj-xp-remove" aria-label="Remove XP/Remote">
+                <span aria-hidden="true"><i class="fas fa-trash text-danger-light"></i></span>
+                </button>
+                    </div>
+                </div>
+`;
+                    });
+                }
+
+                $("#options-modal-dj-xp").iziModal('open');
             }
         }
     } catch (err) {
@@ -1171,6 +1225,171 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred during the click event of #options-djs.'
+        });
+    }
+});
+
+document.querySelector(`#dj-xp-add-div`).addEventListener("click", function (e) {
+    try {
+        console.log(e.target.id);
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id === 'dj-xp-add')
+            {
+                var type = 'undefined';
+                var subtype = 'undefined';
+                var date = moment().format("YYYY-MM-DD HH:mm:ss");
+                var description = "";
+                var amount = 0;
+                iziToast.info({
+                    timeout: 180000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    title: 'Add XP / Remote Credits',
+                    message: `Add XP or remote credits to ${e.target.dataset.dj}`,
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    inputs: [
+                        [`<select><option value="0">Entry Type</option>
+                            <option value="1">Remote Credit: Remote Event</option>
+                            <option value="2">Remote Credit: CD Review</option>
+                            <option value="3">Remote Credit: Sports</option>
+                            <option value="4">Remote Credit: Production</option>
+                            <option value="5">Remote Credit: Playlist / Genre</option>
+                            <option value="99">Remote Credit: Other</option>
+                            <option value="101">XP: Show Time</option>
+                            <option value="102">XP: Listeners</option>
+                            <option value="103">XP: Legal ID</option>
+                            <option value="104">XP: Top Adds</option>
+                            <option value="105">XP: Web Messages</option>
+                            <option value="106">XP: Show Promotion</option>
+                            <option value="107">XP: Contribution to WWSU</option>
+                            <option value="199">XP: Other</option>
+                        </select>`, 'change', function (instance, toast, select, e) {
+                                //console.info(select.options[select.selectedIndex].value);
+
+                                switch (select.options[select.selectedIndex].value)
+                                {
+                                    case "0":
+                                        type = "undefined";
+                                        subtype = "undefined";
+                                        break;
+                                    case "1":
+                                        type = "remote";
+                                        subtype = "event";
+                                        break;
+                                    case "2":
+                                        type = "remote";
+                                        subtype = "cd-review";
+                                        break;
+                                    case "3":
+                                        type = "remote";
+                                        subtype = "sports";
+                                        break;
+                                    case "4":
+                                        type = "remote";
+                                        subtype = "production";
+                                        break;
+                                    case "5":
+                                        type = "remote";
+                                        subtype = "playlist";
+                                        break;
+                                    case "99":
+                                        type = "remote";
+                                        subtype = "other";
+                                        break;
+                                    case "101":
+                                        type = "xp";
+                                        subtype = "showtime";
+                                        break;
+                                    case "102":
+                                        type = "xp";
+                                        subtype = "listeners";
+                                        break;
+                                    case "103":
+                                        type = "xp";
+                                        subtype = "id";
+                                        break;
+                                    case "104":
+                                        type = "xp";
+                                        subtype = "topadd";
+                                        break;
+                                    case "105":
+                                        type = "xp";
+                                        subtype = "messages";
+                                        break;
+                                    case "106":
+                                        type = "xp";
+                                        subtype = "promotion";
+                                        break;
+                                    case "107":
+                                        type = "xp";
+                                        subtype = "contribution";
+                                        break;
+                                    case "199":
+                                        type = "xp";
+                                        subtype = "other";
+                                        break;
+                                }
+                            }, true],
+                        [`<input type="datetime-local" value="${moment().format("YYYY-MM-DD\THH:mm")}">`, 'keyup', function (instance, toast, input, e) {
+                                date = input.value;
+                            }],
+                        [`<input type="text" placeholder="Description">`, 'keyup', function (instance, toast, input, e) {
+                                description = input.value;
+                            }],
+                        [`<input type="text" placeholder="Amount">`, 'keyup', function (instance, toast, input, e) {
+                                amount = input.value;
+                            }],
+                    ],
+                    buttons: [
+                        ['<button><b>Submit</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                nodeRequest({method: 'POST', url: nodeURL + '/xp/add', data: {dj: e.target.dataset.dj, type: type, subtype: subtype, description: description, date: moment(date).toISOString(true), amount: amount}}, function (response) {
+                                    if (response === 'OK')
+                                    {
+                                        iziToast.show({
+                                            title: `XP / Remote Credit Added!`,
+                                            message: `XP / Remote Credit was added! You may need to close and re-open the DJ screens.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to add XP / Remote Credit!`,
+                                            message: `There was an error trying to add XP / Remote Credit.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
+                    ]
+                });
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #dj-xp-add-div.'
         });
     }
 });
@@ -1210,6 +1429,73 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred during the click event of #dj-attendance.'
+        });
+    }
+});
+
+document.querySelector(`#dj-xp-logs`).addEventListener("click", function (e) {
+    try {
+        console.log(e.target.id);
+        if (e.target) {
+            if (e.target.id.startsWith(`dj-xp-remove-`))
+            {
+                var inputData = "";
+                iziToast.info({
+                    timeout: 180000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    title: 'Remove XP/Remote',
+                    message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove this XP/Remote log?',
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Remove</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                nodeRequest({method: 'POST', url: nodeURL + '/xp/remove', data: {ID: parseInt(e.target.id.replace(`dj-xp-remove-`, ``))}}, function (response) {
+                                    if (response === 'OK')
+                                    {
+                                        iziToast.show({
+                                            title: `Log removed!!`,
+                                            message: `Log was removed! You may need to close and re-open the DJ screens.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to remove log!`,
+                                            message: `There was an error trying to remove the log.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
+                    ]
+                });
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #dj-xp-logs.'
         });
     }
 });
