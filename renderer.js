@@ -373,6 +373,9 @@ try {
         overlayColor: 'rgba(0, 0, 0, 0.75)',
         zindex: 100,
         layout: 1,
+        imageWidth: 100,
+        image: ``,
+        progressBarColor: `rgba(255, 0, 0, 0.5)`,
         closeOnClick: true,
         position: 'center',
         timeout: 30000
@@ -720,6 +723,7 @@ try {
         zindex: 50
     });
 
+
     $.fn.extend({
         // Add an animateCss function to JQuery to trigger an animation of an HTML element with animate.css
         animateCss: function (animationName, callback) {
@@ -1041,6 +1045,7 @@ document.querySelector("#btn-options-logs").onclick = function () {
                 });
             }
             $("#options-modal-global-logs").iziModal('open');
+            $('#options-modal-global-logs').animateCss('flash slower', function () {});
         });
     } catch (e) {
         console.error(e);
@@ -1145,13 +1150,15 @@ document.querySelector("#btn-options-calendar").onclick = function () {
 
 document.querySelector("#btn-options-radiodj").onclick = function () {
     try {
-        iziToast.info({
-            timeout: 180000,
+        iziToast.show({
+            timeout: 60000,
             overlay: true,
             displayMode: 'once',
             color: 'yellow',
             id: 'inputs',
             zindex: 999,
+            layout: 2,
+            image: `assets/images/radio.png`,
             title: 'Switch RadioDJ',
             message: 'Are you sure you want the system to switch which RadioDJ is active?',
             position: 'center',
@@ -1191,6 +1198,9 @@ document.querySelector("#btn-options-radiodj").onclick = function () {
                                 });
                             }
                         });
+                    }],
+                ['<button><b>Cancel</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
                     }],
             ]
         });
@@ -1371,13 +1381,16 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                     });
                 } else {
                     var inputData = "";
-                    iziToast.info({
+                    iziToast.show({
                         timeout: 180000,
                         overlay: true,
                         displayMode: 'once',
                         color: 'yellow',
                         id: 'inputs',
                         zindex: 999,
+                        layout: 2,
+                        image: `assets/images/renameDJ.png`,
+                        maxWidth: 480,
                         title: 'Case-Sensitive DJ Name',
                         message: 'Make sure you type it correctly and it matches what you use on Google Calendar (if applicable)!',
                         position: 'center',
@@ -1423,6 +1436,9 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                                         }
                                     });
                                 }],
+                            ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                }],
                         ]
                     });
                 }
@@ -1445,13 +1461,16 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
             if (e.target.id === 'btn-options-dj-edit')
             {
                 var inputData = "";
-                iziToast.info({
+                iziToast.show({
                     timeout: 180000,
                     overlay: true,
                     displayMode: 'once',
                     color: 'yellow',
                     id: 'inputs',
                     zindex: 999,
+                    layout: 2,
+                    image: `assets/images/renameDJ.png`,
+                    maxWidth: 480,
                     title: 'Case-Sensitive DJ Name',
                     message: 'Make sure you type it correctly and it matches what you use on Google Calendar (if applicable)! If you provide the name of a DJ that already exists, all XP and logs from this DJ will be merged with the other DJ.',
                     position: 'center',
@@ -1497,18 +1516,24 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                                     }
                                 });
                             }],
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             } else if (e.target.id === 'btn-options-dj-remove')
             {
                 var inputData = "";
-                iziToast.info({
-                    timeout: 180000,
+                iziToast.show({
+                    timeout: 60000,
                     overlay: true,
                     displayMode: 'once',
                     color: 'yellow',
                     id: 'inputs',
                     zindex: 999,
+                    layout: 2,
+                    image: `assets/images/trash.png`,
+                    maxWidth: 480,
                     title: 'Remove DJ',
                     message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove ' + e.target.dataset.dj + '? All XP and remotes will be lost (but logs will remain in the database)!',
                     position: 'center',
@@ -1548,6 +1573,9 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                                         });
                                     }
                                 });
+                            }],
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
                             }],
                     ]
                 });
@@ -1605,13 +1633,16 @@ document.querySelector(`#dj-xp-add-div`).addEventListener("click", function (e) 
                 var date = moment().format("YYYY-MM-DD HH:mm:ss");
                 var description = "";
                 var amount = 0;
-                iziToast.info({
+                iziToast.show({
                     timeout: 180000,
                     overlay: true,
                     displayMode: 'once',
                     color: 'yellow',
                     id: 'inputs',
                     zindex: 999,
+                    layout: 2,
+                    image: `assets/images/xp.png`,
+                    maxWidth: 640,
                     title: 'Add XP / Remote Credits',
                     message: `Add XP or remote credits to ${e.target.dataset.dj}`,
                     position: 'center',
@@ -1745,6 +1776,9 @@ document.querySelector(`#dj-xp-add-div`).addEventListener("click", function (e) 
                                     }
                                 });
                             }],
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             }
@@ -1843,13 +1877,16 @@ document.querySelector(`#dj-xp-logs`).addEventListener("click", function (e) {
             if (e.target.id.startsWith(`dj-xp-remove-`))
             {
                 var inputData = "";
-                iziToast.info({
-                    timeout: 180000,
+                iziToast.show({
+                    timeout: 60000,
                     overlay: true,
                     displayMode: 'once',
                     color: 'yellow',
                     id: 'inputs',
                     zindex: 999,
+                    layout: 2,
+                    image: `assets/images/trash.png`,
+                    maxWidth: 480,
                     title: 'Remove XP/Remote',
                     message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove this XP/Remote log?',
                     position: 'center',
@@ -1889,6 +1926,9 @@ document.querySelector(`#dj-xp-logs`).addEventListener("click", function (e) {
                                         });
                                     }
                                 });
+                            }],
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
                             }],
                     ]
                 });
@@ -2580,8 +2620,8 @@ function doMeta(metan) {
                 iziToast.show({
                     id: 'iziToast-breakneeded',
                     class: 'flash-bg',
-                    title: `<i class="fas fa-clock"></i> Don't forget the required Top of Hour break!`,
-                    message: `Please find a graceful stopping point and then click "take a break" within the next 3 minutes. If you're about to end your show, you do not need to take a break.`,
+                    title: `Do not forget Top of the Hour Break!`,
+                    message: `Unless you are about to end your show, please find a graceful stopping point within the next few minutes and then click "take a break".`,
                     timeout: false,
                     close: true,
                     color: 'yellow',
@@ -2590,6 +2630,9 @@ function doMeta(metan) {
                     closeOnClick: false,
                     overlay: true,
                     zindex: 250,
+                    layout: 2,
+                    image: `assets/images/TopOfHourBreak.png`,
+                    maxWidth: 480,
                     buttons: [
                         ['<button>Take a Break</button>', function (instance, toast, button, e, inputs) {
                                 goBreak(false);
@@ -2692,7 +2735,7 @@ function doMeta(metan) {
                         iziToast.show({
                             id: 'iziToast-noremote',
                             class: 'flash-bg',
-                            title: '<i class="fas fa-exclamation-triangle"></i> Lost Remote Connection',
+                            title: 'Lost Remote Connection!',
                             message: `Please ensure you are streaming to the remote stream and that your internet connection is stable. Then, click "Resume Show".`,
                             timeout: false,
                             close: true,
@@ -2702,6 +2745,9 @@ function doMeta(metan) {
                             closeOnClick: false,
                             overlay: true,
                             zindex: 250,
+                            layout: 2,
+                            image: `assets/images/noRemote.png`,
+                            maxWidth: 480,
                             buttons: [
                                 ['<button>Resume Show</button>', function (instance, toast, button, e, inputs) {
                                         returnBreak();
@@ -2831,7 +2877,7 @@ function checkAnnouncements() {
                     if (client.emergencies && datum.announcement.startsWith("<strong>Problem reported by"))
                     {
                         iziToast.show({
-                            title: '<i class="fas fa-exclamation-triangle"></i> Technical issue reported!',
+                            title: 'Technical issue reported!',
                             message: `${datum.announcement}`,
                             timeout: false,
                             close: true,
@@ -2840,7 +2886,10 @@ function checkAnnouncements() {
                             position: 'center',
                             closeOnClick: false,
                             overlay: true,
-                            zindex: 250
+                            zindex: 250,
+                            layout: 2,
+                            image: `assets/images/error.png`,
+                            maxWidth: 480,
                         });
                         var notification = notifier.notify('Problem Reported', {
                             message: `A problem was reported. Please see DJ Controls.`,
@@ -3003,10 +3052,10 @@ function checkCalendar() {
             curPriority = 10;
         if (Meta.state.startsWith("remote_"))
             curPriority = 7;
-        if (Meta.state.startsWith("live_") && Meta.state !== 'live_prerecord')
-            curPriority = 5;
         if (Meta.state === 'live_prerecord')
-            curPriority = 2;
+            curPriority = 5;
+        if (Meta.state.startsWith("live_") && Meta.state !== 'live_prerecord')
+            curPriority = 4;
         if (Meta.state.startsWith("automation_"))
             curPriority = 1;
 
@@ -3025,8 +3074,8 @@ function checkCalendar() {
                 main.flashTaskbar();
                 iziToast.show({
                     class: 'flash-bg',
-                    title: '<i class="fas fa-trophy"></i> Sports broadcast in less than 15 minutes.',
-                    message: `A sports broadcast is scheduled to begin in less than 15 minutes. If this broadcast is still scheduled to air, please wrap up your show now and then click "End Show". That way, WWSU has 15 minutes to prepare for the broadcast.`,
+                    title: 'Sports broadcast in less than 15 minutes.',
+                    message: `If the sports broadcast is still planned, please wrap up your show now and click "End Show". That way, the sports team has time to set up.`,
                     timeout: 900000,
                     close: true,
                     color: 'yellow',
@@ -3035,6 +3084,9 @@ function checkCalendar() {
                     closeOnClick: false,
                     overlay: true,
                     zindex: 501,
+                    layout: 2,
+                    image: `assets/images/sportsOff.png`,
+                    maxWidth: 480,
                     buttons: [
                         ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
                                 endShow();
@@ -3056,8 +3108,8 @@ function checkCalendar() {
                 main.flashTaskbar();
                 iziToast.show({
                     class: 'flash-bg',
-                    title: '<i class="fas fa-broadcast-tower"></i> Remote broadcast in less than 15 minutes.',
-                    message: `A remote broadcast is scheduled to begin in less than 15 minutes. If this broadcast is still scheduled to air, please wrap up your show now and then click "End Show". That way, WWSU has 15 minutes to prepare for the broadcast.`,
+                    title: 'Remote broadcast in less than 15 minutes.',
+                    message: `If the remote broadcast is still planned, please wrap up your show now and click "End Show". That way, the producers have time to set up for the broadcast.`,
                     timeout: 900000,
                     close: true,
                     color: 'yellow',
@@ -3066,6 +3118,9 @@ function checkCalendar() {
                     closeOnClick: false,
                     overlay: true,
                     zindex: 501,
+                    layout: 2,
+                    image: `assets/images/remoteOff.png`,
+                    maxWidth: 480,
                     buttons: [
                         ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
                                 endShow();
@@ -3087,8 +3142,8 @@ function checkCalendar() {
                 main.flashTaskbar();
                 iziToast.show({
                     class: 'flash-bg',
-                    title: '<i class="fas fa-microphone-alt"></i> You are interrupting another show!',
-                    message: `You are running into another person's show time. Please wrap up your show now and then click "End Show" (or click "Switch Show" if the other person is ready to go live in the next few minutes).`,
+                    title: 'You are interfering with a scheduled show!',
+                    message: `Please wrap up your show now. Then, if the next producer will be ready within 5 minutes, click "Switch Show"; otherwise, click "End Show".`,
                     timeout: 900000,
                     close: true,
                     color: 'red',
@@ -3097,13 +3152,16 @@ function checkCalendar() {
                     closeOnClick: false,
                     overlay: true,
                     zindex: 501,
+                    layout: 2,
+                    image: `assets/images/showOff.png`,
+                    maxWidth: 480,
                     buttons: [
-                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
-                                endShow();
-                                instance.hide({}, toast, 'button');
-                            }],
                         ['<button>Switch Show</button>', function (instance, toast, button, e, inputs) {
                                 switchShow();
+                                instance.hide({}, toast, 'button');
+                            }],
+                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+                                endShow();
                                 instance.hide({}, toast, 'button');
                             }]
                     ]
@@ -3122,8 +3180,8 @@ function checkCalendar() {
                 main.flashTaskbar();
                 iziToast.show({
                     class: 'flash-bg',
-                    title: '<i class="fas fa-circle"></i> You are running into a scheduled prerecord.',
-                    message: `You are running into a scheduled prerecorded show. Unless WWSU has given you permission to continue, please consider wrapping up and ending your show by clicking "End Now".`,
+                    title: 'You are interfering with a scheduled prerecord!',
+                    message: `Please wrap up your show and then click "End Show".`,
                     timeout: 900000,
                     close: true,
                     color: 'red',
@@ -3132,6 +3190,9 @@ function checkCalendar() {
                     closeOnClick: false,
                     overlay: true,
                     zindex: 501,
+                    layout: 2,
+                    image: `assets/images/prerecordOff.png`,
+                    maxWidth: 480,
                     buttons: [
                         ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
                                 endShow();
@@ -3188,15 +3249,15 @@ function checkCalendar() {
                             {
                                 data.sectors.push({
                                     label: event.title,
-                                    start: ((moment(event.start).diff(moment(Meta.time), 'minutes') / (12 * 60)) * 360),
-                                    size: ((moment(event.end).diff(moment(event.start), 'minutes') / (12 * 60)) * 360) - 2,
+                                    start: ((moment(event.start).diff(moment(Meta.time), 'minutes') / (12 * 60)) * 360) + 0.5,
+                                    size: ((moment(event.end).diff(moment(event.start), 'minutes') / (12 * 60)) * 360) - 0.5,
                                     color: event.color || '#787878'
                                 });
                             } else {
                                 data.sectors.push({
                                     label: event.title,
-                                    start: 0,
-                                    size: ((moment(event.end).diff(moment(Meta.time), 'minutes') / (12 * 60)) * 360) - 2,
+                                    start: 0.5,
+                                    size: ((moment(event.end).diff(moment(Meta.time), 'minutes') / (12 * 60)) * 360) - 0.5,
                                     color: event.color || '#787878'
                                 });
                             }
@@ -3207,8 +3268,8 @@ function checkCalendar() {
                                 var start = ((moment(event.start).diff(moment(Meta.time), 'minutes') / (12 * 60)) * 360);
                                 data.sectors.push({
                                     label: event.title,
-                                    start: start,
-                                    size: 358 - start,
+                                    start: start + 0.5,
+                                    size: 360 - start,
                                     color: event.color || '#787878'
                                 });
                             } else {
@@ -3362,7 +3423,7 @@ function checkCalendar() {
 // Show an indicator on the clock for the current hour (extra visual to show 12-hour clock mode)
             data.sectors.push({
                 label: 'current hour',
-                start: 0,
+                start: -1,
                 size: 2,
                 color: "#000000"
             });
@@ -4091,6 +4152,9 @@ function prepareMute(recipient) {
             closeOnClick: false,
             overlay: true,
             zindex: 1000,
+            layout: 2,
+            image: `assets/images/mute.png`,
+            maxWidth: 480,
             buttons: [
                 ['<button>Mute</button>', function (instance, toast, button, e, inputs) {
                         finishMute(recipient);
@@ -4126,6 +4190,9 @@ function prepareBan(recipient) {
             closeOnClick: false,
             overlay: true,
             zindex: 1000,
+            layout: 2,
+            image: `assets/images/ban.png`,
+            maxWidth: 480,
             buttons: [
                 ['<button>Ban</button>', function (instance, toast, button, e, inputs) {
                         finishBan(recipient);
@@ -4475,21 +4542,21 @@ function saveLog() {
             if (document.querySelector("#log-artist").value.length > 0 && document.querySelector("#log-title").value.length > 0)
             {
                 iziToast.show({
-                    title: `Let me know when you finished playing this track:`,
+                    title: `Please indicate when you finished playing:`,
                     message: `${document.querySelector("#log-artist").value} - ${document.querySelector("#log-title").value}`,
                     timeout: 600000,
-                    close: false,
+                    close: true,
                     color: 'blue',
                     drag: false,
                     position: 'bottomCenter',
                     closeOnClick: false,
                     overlay: false,
                     buttons: [
-                        ['<button>Playing another track</button>', function (instance, toast, button, e, inputs) {
+                        ['<button>Playing Another Track</button>', function (instance, toast, button, e, inputs) {
                                 prepareLog();
                                 instance.hide({}, toast, 'button');
                             }],
-                        ['<button>Not playing any tracks</button>', function (instance, toast, button, e, inputs) {
+                        ['<button>Playing No Tracks</button>', function (instance, toast, button, e, inputs) {
                                 nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.dj, loglevel: 'info', event: 'DJ/Producer finished playing music.', trackArtist: '', trackTitle: '', trackAlbum: '', trackLabel: '', date: moment().toISOString(true)}}, function (response) {});
                                 instance.hide({}, toast, 'button');
                             }]
@@ -4789,7 +4856,7 @@ function queueRequest(requestID) {
                 iziToast.show({
                     title: `Request queued!`,
                     message: `The request was queued successfully. The request entry will not disappear until the request is played.`,
-                    timeout: 5000,
+                    timeout: 10000,
                     close: true,
                     color: 'green',
                     drag: false,
@@ -4896,8 +4963,8 @@ function processEas(data, replace = false)
                             iziToast.show({
                                 class: 'flash-bg',
                                 class: 'iziToast-eas-extreme-end',
-                                title: '<i class="fas fa-bolt"></i> Extreme weather alert in effect',
-                                message: `A ${record.alert} is in effect for the counties of ${record.counties}. You may wish to consider ending the show early and taking shelter. If so, click "End Show" when ready to end. Otherwise, close this notification.`,
+                                title: 'Extreme Weather Alert in Effect',
+                                message: `A ${record.alert} is in effect for the counties of ${record.counties}. You may wish to consider ending your show early and taking shelter. If so, click "End Show" when ready to end. Otherwise, close this notification.`,
                                 timeout: 900000,
                                 close: true,
                                 color: 'red',
@@ -4906,6 +4973,9 @@ function processEas(data, replace = false)
                                 closeOnClick: false,
                                 overlay: true,
                                 zindex: 500,
+                                layout: 2,
+                                image: `assets/images/extremeWeather.png`,
+                                maxWidth: 640,
                                 buttons: [
                                     ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
                                             endShow();
@@ -4916,7 +4986,7 @@ function processEas(data, replace = false)
                         } else {
                             iziToast.show({
                                 class: 'iziToast-eas-extreme',
-                                title: '<i class="fas fa-bolt"></i> Extreme weather alert in effect',
+                                title: 'Extreme Weather Alert in Effect',
                                 message: `A ${record.alert} is in effect for the counties of ${record.counties}. You may wish to decide against hosting any shows at this time and instead seeking shelter.`,
                                 timeout: 900000,
                                 close: true,
@@ -4925,7 +4995,10 @@ function processEas(data, replace = false)
                                 position: 'center',
                                 closeOnClick: true,
                                 overlay: true,
-                                zindex: 500
+                                zindex: 500,
+                                layout: 2,
+                                image: `assets/images/extremeWeather.png`,
+                                maxWidth: 640
                             });
                         }
                     } else if (record.severity === 'Severe')
@@ -4938,7 +5011,7 @@ function processEas(data, replace = false)
                         main.flashTaskbar();
                         iziToast.show({
                             class: 'iziToast-eas-severe',
-                            title: '<i class="fas fa-bolt"></i> Severe weather alert in effect',
+                            title: 'Severe Weather Alert in Effect',
                             message: `A ${record.alert} is in effect for the counties of ${record.counties}. Please keep an eye on the weather.`,
                             timeout: 900000,
                             close: true,
@@ -4947,7 +5020,10 @@ function processEas(data, replace = false)
                             position: 'center',
                             closeOnClick: true,
                             overlay: true,
-                            zindex: 250
+                            zindex: 250,
+                            layout: 2,
+                            image: `assets/images/severeWeather.png`,
+                            maxWidth: 640
                         });
                     }
                 }
@@ -4999,7 +5075,7 @@ function processEas(data, replace = false)
                                     iziToast.show({
                                         class: 'flash-bg',
                                         class: 'iziToast-eas-extreme-end',
-                                        title: '<i class="fas fa-bolt"></i> Extreme weather alert in effect',
+                                        title: 'Extreme Weather Alert in Effect!',
                                         message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. You may wish to consider ending the show early and taking shelter. If so, click "End Show" when ready to end. Otherwise, close this notification.`,
                                         timeout: 900000,
                                         close: true,
@@ -5009,6 +5085,9 @@ function processEas(data, replace = false)
                                         closeOnClick: false,
                                         overlay: true,
                                         zindex: 500,
+                                        layout: 2,
+                                        image: `assets/images/extremeWeather.png`,
+                                        maxWidth: 640,
                                         buttons: [
                                             ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
                                                     endShow();
@@ -5020,7 +5099,7 @@ function processEas(data, replace = false)
                                     iziToast.show({
                                         class: 'flash-bg',
                                         class: 'iziToast-eas-extreme',
-                                        title: '<i class="fas fa-bolt"></i> Extreme weather alert in effect',
+                                        title: 'Extreme weather alert in effect',
                                         message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. You may wish to decide against hosting any shows at this time and instead seeking shelter.`,
                                         timeout: 900000,
                                         close: true,
@@ -5029,7 +5108,10 @@ function processEas(data, replace = false)
                                         position: 'center',
                                         closeOnClick: true,
                                         overlay: true,
-                                        zindex: 500
+                                        zindex: 500,
+                                        layout: 2,
+                                        image: `assets/images/extremeWeather.png`,
+                                        maxWidth: 640
                                     });
                                 }
                             } else if (data[key].severity === 'Severe')
@@ -5042,7 +5124,7 @@ function processEas(data, replace = false)
                                 main.flashTaskbar();
                                 iziToast.show({
                                     class: 'iziToast-eas-severe',
-                                    title: '<i class="fas fa-bolt"></i> Severe weather alert in effect',
+                                    title: 'Severe weather alert in effect',
                                     message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. Please keep an eye on the weather.`,
                                     timeout: 900000,
                                     close: true,
@@ -5051,7 +5133,10 @@ function processEas(data, replace = false)
                                     position: 'center',
                                     closeOnClick: true,
                                     overlay: true,
-                                    zindex: 250
+                                    zindex: 250,
+                                    layout: 2,
+                                    image: `assets/images/severeWeather.png`,
+                                    maxWidth: 640
                                 });
                             }
                             break;
@@ -5158,8 +5243,8 @@ function processStatus(data, replace = false)
                     if (datum.name === 'silence' && datum.status <= 3)
                     {
                         iziToast.show({
-                            title: '<i class="fas fa-volume-off"></i> Silence / Low Audio detected!',
-                            message: `Silence / low audio was detected. Please check your audio levels. The Silence entry in the Announcements box will disappear when audio levels are acceptable again. NOTE: Silence detection is delayed based off of the delay system.`,
+                            title: 'Silence / Low Audio detected!',
+                            message: `Please check your audio levels and ensure they are good. Be aware silence detection may be delayed due to the delay system.`,
                             timeout: 60000,
                             close: true,
                             color: 'red',
@@ -5167,7 +5252,10 @@ function processStatus(data, replace = false)
                             position: 'center',
                             closeOnClick: true,
                             overlay: true,
-                            zindex: 500
+                            zindex: 500,
+                            layout: 2,
+                            image: `assets/images/silence.png`,
+                            maxWidth: 480
                         });
                         var notification = notifier.notify('Low / No Audio Detected', {
                             message: `Please check your audio levels to see if they are okay.`,
@@ -5233,8 +5321,8 @@ function processStatus(data, replace = false)
                             if (data[key].name === 'silence' && data[key].status <= 3)
                             {
                                 iziToast.show({
-                                    title: '<i class="fas fa-volume-off"></i> Silence / Low Audio detected!',
-                                    message: `Silence / low audio was detected. Please check your audio levels. The Silence entry in the Announcements box will disappear when audio levels are acceptable again. NOTE: Silence detection is on a delay according to the delay system.`,
+                                    title: 'Silence / Low Audio detected!',
+                                    message: `Please check your audio levels and ensure they are good. Be aware silence detection may be delayed due to the delay system.`,
                                     timeout: 60000,
                                     close: true,
                                     color: 'red',
@@ -5242,7 +5330,10 @@ function processStatus(data, replace = false)
                                     position: 'center',
                                     closeOnClick: true,
                                     overlay: true,
-                                    zindex: 500
+                                    zindex: 500,
+                                    layout: 2,
+                                    image: `assets/images/silence.png`,
+                                    maxWidth: 480
                                 });
                                 var notification = notifier.notify('Low / No Audio Detected', {
                                     message: `Please check your audio levels to see if they are okay.`,
@@ -5293,8 +5384,8 @@ function processStatus(data, replace = false)
                             if (data[key].name === 'silence' && data[key].status <= 3)
                             {
                                 iziToast.show({
-                                    title: '<i class="fas fa-volume-off"></i> Silence / Low Audio detected!',
-                                    message: `Silence / low audio was detected. Please check your audio levels. The Silence entry in the Announcements box will disappear when audio levels are acceptable again. NOTE: Silence detection is on a delay according to the delay system.`,
+                                    title: 'Silence / Low Audio detected!',
+                                    message: `Please check your audio levels and ensure they are good. Be aware silence detection may be delayed due to the delay system.`,
                                     timeout: 60000,
                                     close: true,
                                     color: 'red',
@@ -5302,7 +5393,10 @@ function processStatus(data, replace = false)
                                     position: 'center',
                                     closeOnClick: true,
                                     overlay: true,
-                                    zindex: 500
+                                    zindex: 500,
+                                    layout: 2,
+                                    image: `assets/images/silence.png`,
+                                    maxWidth: 480
                                 });
                                 var notification = notifier.notify('Low / No Audio Detected', {
                                     message: `Please check your audio levels to see if they are okay.`,
@@ -5499,7 +5593,7 @@ function processMessages(data, replace = false)
                                 {
                                     data[index].needsread = true;
                                     iziToast.show({
-                                        title: '<i class="fas fa-exclamation-triangle"></i> Technical issue reported!',
+                                        title: 'Technical issue reported!',
                                         message: `${datum.message}`,
                                         timeout: false,
                                         close: true,
@@ -5508,7 +5602,10 @@ function processMessages(data, replace = false)
                                         position: 'center',
                                         closeOnClick: false,
                                         overlay: true,
-                                        zindex: 250
+                                        zindex: 250,
+                                        layout: 2,
+                                        image: `assets/images/error.png`,
+                                        maxWidth: 480
                                     });
                                     var notification = notifier.notify('Problem Reported', {
                                         message: `A problem was reported. Please see DJ Controls.`,
@@ -5527,7 +5624,7 @@ function processMessages(data, replace = false)
                                 });
                                 main.flashTaskbar();
                                 iziToast.show({
-                                    title: `<i class="fas fa-comments"></i> Message from ${datum.from_friendly}`,
+                                    title: `Message from ${datum.from_friendly}`,
                                     message: `${datum.message}`,
                                     timeout: 30000,
                                     close: true,
@@ -5536,6 +5633,9 @@ function processMessages(data, replace = false)
                                     position: 'bottomCenter',
                                     closeOnClick: false,
                                     overlay: false,
+                                    layout: 2,
+                                    image: `assets/images/messageAll.png`,
+                                    maxWidth: 480,
                                     buttons: [
                                         ['<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
                                                 $("#messages-modal").iziModal('open');
@@ -5557,7 +5657,7 @@ function processMessages(data, replace = false)
                                     });
                                     main.flashTaskbar();
                                     iziToast.show({
-                                        title: `<i class="fas fa-comments"></i> Web message from ${datum.from_friendly}`,
+                                        title: `Web message from ${datum.from_friendly}`,
                                         message: `${datum.message}`,
                                         timeout: 30000,
                                         close: true,
@@ -5566,6 +5666,9 @@ function processMessages(data, replace = false)
                                         position: 'bottomCenter',
                                         closeOnClick: false,
                                         overlay: false,
+                                        layout: 2,
+                                        image: `assets/images/messageWeb.png`,
+                                        maxWidth: 480,
                                         buttons: [
                                             ['<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
                                                     $("#messages-modal").iziModal('open');
@@ -5605,7 +5708,7 @@ function processMessages(data, replace = false)
                                     {
                                         data[key].needsread = true;
                                         iziToast.show({
-                                            title: '<i class="fas fa-exclamation-triangle"></i> Technical issue reported!',
+                                            title: 'Technical issue reported!',
                                             message: `${data[key].message}`,
                                             timeout: false,
                                             close: true,
@@ -5614,7 +5717,10 @@ function processMessages(data, replace = false)
                                             position: 'center',
                                             closeOnClick: false,
                                             overlay: true,
-                                            zindex: 250
+                                            zindex: 250,
+                                            layout: 2,
+                                            image: `assets/images/error.png`,
+                                            maxWidth: 480,
                                         });
                                         var notification = notifier.notify('Problem Reported', {
                                             message: `A problem was reported. Please see DJ Controls.`,
@@ -5633,7 +5739,7 @@ function processMessages(data, replace = false)
                                     });
                                     main.flashTaskbar();
                                     iziToast.show({
-                                        title: `<i class="fas fa-comments"></i> Message from ${data[key].from_friendly}`,
+                                        title: `Message from ${data[key].from_friendly}`,
                                         message: `${data[key].message}`,
                                         timeout: 30000,
                                         close: true,
@@ -5642,6 +5748,9 @@ function processMessages(data, replace = false)
                                         position: 'bottomCenter',
                                         closeOnClick: false,
                                         overlay: false,
+                                        layout: 2,
+                                        image: `assets/images/messageAll.png`,
+                                        maxWidth: 480,
                                         buttons: [
                                             ['<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
                                                     $("#messages-modal").iziModal('open');
@@ -5663,7 +5772,7 @@ function processMessages(data, replace = false)
                                         });
                                         main.flashTaskbar();
                                         iziToast.show({
-                                            title: `<i class="fas fa-comments"></i> Web message from ${data[key].from_friendly}`,
+                                            title: `Web message from ${data[key].from_friendly}`,
                                             message: `${data[key].message}`,
                                             timeout: 30000,
                                             close: true,
@@ -5672,6 +5781,9 @@ function processMessages(data, replace = false)
                                             position: 'bottomCenter',
                                             closeOnClick: false,
                                             overlay: false,
+                                            layout: 2,
+                                            image: `assets/images/messageWeb.png`,
+                                            maxWidth: 480,
                                             buttons: [
                                                 ['<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
                                                         $("#messages-modal").iziModal('open');
@@ -5743,7 +5855,7 @@ function processRequests(data, replace = false)
                         });
                         main.flashTaskbar();
                         iziToast.show({
-                            title: `<i class="fas fa-music"></i> Track Requested`,
+                            title: `Track Requested`,
                             message: `${data[key].trackname}`,
                             timeout: 30000,
                             close: true,
@@ -5752,6 +5864,9 @@ function processRequests(data, replace = false)
                             position: 'bottomCenter',
                             closeOnClick: false,
                             overlay: false,
+                            layout: 2,
+                            image: `assets/images/trackRequest.png`,
+                            maxWidth: 480,
                             buttons: [
                                 ['<button>View Requests</button>', function (instance, toast, button, e, inputs) {
                                         $("#requests-modal").iziModal('open');
@@ -5786,7 +5901,7 @@ function processRequests(data, replace = false)
                                 });
                                 main.flashTaskbar();
                                 iziToast.show({
-                                    title: `<i class="fas fa-music"></i> Track Requested`,
+                                    title: `Track Requested`,
                                     message: `${data[key].trackname}`,
                                     timeout: 30000,
                                     close: true,
@@ -5795,6 +5910,9 @@ function processRequests(data, replace = false)
                                     position: 'bottomCenter',
                                     closeOnClick: false,
                                     overlay: false,
+                                    layout: 2,
+                                    image: `assets/images/trackRequest.png`,
+                                    maxWidth: 480,
                                     buttons: [
                                         ['<button>View Requests</button>', function (instance, toast, button, e, inputs) {
                                                 $("#requests-modal").iziModal('open');
