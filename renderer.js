@@ -1,4 +1,4 @@
-/* global iziToast, io, moment, Infinity */
+/* global iziToast, io, moment, Infinity, err */
 
 try {
 
@@ -42,6 +42,7 @@ try {
     var recordPadPath = "C:\\Program Files (x86)\\NCH Software\\Recordpad\\recordpad.exe";
     var recordPath = "S:\\OnAir recordings";
     var delay = 9000; // Subtract 1 second from the amount of on-air delay, as it takes about a second to process the recorder.
+    var activeToken = "";
 
     io.sails.url = nodeURL;
     var disconnected = true;
@@ -355,7 +356,7 @@ try {
     });
 
     $("#options-modal-dj-logs").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - DJ Show Logs</h5>`,
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Logs</h5>`,
         headerColor: '#363636',
         width: 800,
         focusInput: true,
@@ -384,6 +385,38 @@ try {
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
         zindex: 63
+    });
+
+    $("#options-modal-global-logs").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Global Logs</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 61
+    });
+
+    $("#options-modal-calendar").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Calendar Verification</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 61
     });
 
     var quill = new Quill('#themessage', {
@@ -859,6 +892,317 @@ document.querySelector("#btn-options-djs").onclick = function () {
     }
 };
 
+document.querySelector("#btn-options-logs").onclick = function () {
+    try {
+        nodeRequest({method: 'POST', url: nodeURL + '/logs/get-attendance', data: {}}, function (response) {
+            console.dir(response);
+            var att = document.querySelector('#global-logs');
+            att.innerHTML = ``;
+            if (response.length > 0 && typeof response.forEach !== 'undefined')
+            {
+                response.forEach(function (record) {
+                    var theClass = 'bg-dark';
+                    if (record.event.startsWith("Show: ") || record.event.startsWith("Prerecord: "))
+                    {
+                        theClass = "bg-danger-dark";
+                    } else if (record.event.startsWith("Sports: "))
+                    {
+                        theClass = "bg-success-dark";
+                    } else if (record.event.startsWith("Remote: "))
+                    {
+                        theClass = "bg-purple";
+                    } else if (record.event.startsWith("Genre: ") || record.event.startsWith("Playlist: "))
+                    {
+                        theClass = "bg-info-dark";
+                    }
+                    if (record.scheduledStart === null)
+                    {
+                        att.innerHTML += `<div class="row ${theClass} m-1">
+                                <div class="col-3 text-primary-light">
+                                    ${record.event}
+                                </div>
+                                <div class="col-4 text-warning-light">
+                                    UN-SCHEDULED
+                                </div>
+                                <div class="col-4 text-success-light">
+                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${record.actualEnd !== null ? moment(record.actualEnd).format("YYYY-MM-DD h:mm A") : `IN PROGRESS`}
+                                </div>
+                                    <div class="col-1">
+                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                </button>
+                                        </div>
+                            </div>`;
+                    } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)))
+                    {
+                        att.innerHTML += `<div class="row ${theClass} m-1">
+                                <div class="col-3 text-primary-light">
+                                    ${record.event}
+                                </div>
+                                <div class="col-4 text-warning-light">
+                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-4 text-success-light">
+                                    FUTURE EVENT
+                                </div>
+                            </div>`;
+                    } else if (record.actualStart !== null && record.actualEnd !== null)
+                    {
+                        if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10)
+                        {
+                            att.innerHTML += `<div class="row ${theClass} m-1">
+                                <div class="col-3 text-primary-light">
+                                    ${record.event}
+                                </div>
+                                <div class="col-4 text-warning-light">
+                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-4 text-success-light">
+                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.actualEnd).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                        <div class="col-1">
+                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                </button>
+                                        </div>
+                            </div>`;
+                        } else {
+                            att.innerHTML += `<div class="row ${theClass} m-1">
+                                <div class="col-3 text-primary-light">
+                                    ${record.event}
+                                </div>
+                                <div class="col-4 text-warning-light">
+                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-4 text-success-light">
+                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.actualEnd).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-1">
+                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                </button>
+                                </div>
+                            </div>`;
+                        }
+                    } else if (record.actualStart !== null && record.actualEnd === null)
+                    {
+                        att.innerHTML += `<div class="row ${theClass} m-1">
+                                <div class="col-3 text-primary-light">
+                                    ${record.event}
+                                </div>
+                                <div class="col-4 text-warning-light">
+                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-4 text-success-light">
+                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: IN PROGRESS
+                                </div>
+                                <div class="col-1">
+                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                </button>
+                                        </div>
+                            </div>`;
+                    } else if (record.actualStart === null && record.actualEnd === null) {
+                        att.innerHTML += `<div class="row ${theClass} m-1">
+                                <div class="col-3 text-primary-light">
+                                    ${record.event}
+                                </div>
+                                <div class="col-4 text-warning-light">
+                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-4 text-success-light">
+                                    DID NOT AIR / ABSENT
+                                </div>
+                            </div>`;
+                    } else {
+                        att.innerHTML += `<div class="row ${theClass} m-1">
+                                <div class="col-3 text-primary-light">
+                                    ${record.event}
+                                </div>
+                                <div class="col-4 text-warning-light">
+                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
+                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-4 text-success-light">
+                                    SCHEDULED, NOT YET STARTED
+                                </div>
+                            </div>`;
+                    }
+                });
+            }
+            $("#options-modal-global-logs").iziModal('open');
+        });
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-logs.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-issues").onclick = function () {
+    nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(7, 'days').toISOString(true), end: moment().toISOString(true)}}, function (response) {
+        var logs = document.querySelector('#dj-show-logs');
+        logs.innerHTML = ``;
+
+        if (response.length > 0)
+        {
+            response.reverse();
+            response.forEach(function (log) {
+                logs.innerHTML += `<div class="row bg-${log.loglevel}-dark m-1">
+                                <div class="col-4 text-warning-light">
+                                    ${moment(log.createdAt).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-8 text-info-light">
+                                ${log.event}
+                                ${log.trackArtist !== null && log.trackArtist !== "" ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== "" ? ` - ${log.trackTitle}` : ``}
+                                ${log.trackAlbum !== null && log.trackAlbum !== "" ? `<br />Album: ${log.trackAlbum}` : ``}
+                                ${log.trackLabel !== null && log.trackLabel !== "" ? `<br />Label: ${log.trackLabel}` : ``}
+                                </div>
+                            </div>`;
+            });
+        }
+        $("#options-modal-dj-logs").iziModal('open');
+    });
+};
+
+document.querySelector("#btn-options-calendar").onclick = function () {
+    try {
+        var calendar = document.querySelector('#calendar-verify');
+        calendar.innerHTML = ``;
+
+        // Define a comparison function that will order calendar events by start time when we run the iteration
+        var compare = function (a, b) {
+            try {
+                if (moment(a.start).valueOf() < moment(b.start).valueOf())
+                    return -1;
+                if (moment(a.start).valueOf() > moment(b.start).valueOf())
+                    return 1;
+                return 0;
+            } catch (e) {
+                console.error(e);
+                iziToast.show({
+                    title: 'An error occurred - Please check the logs',
+                    message: `Error occurred in the compare function of Calendar.sort in the #btn-options-calendar call.`
+                });
+            }
+        };
+        var records = Calendar().get().sort(compare);
+        if (records.length > 0)
+        {
+            records.forEach(function (event)
+            {
+                var cell3 = ``;
+                if (event.verify === 'Valid')
+                {
+                    cell3 = `<span class="badge badge-success">Valid</span>`;
+                } else if (event.verify === 'Invalid')
+                {
+                    cell3 = `<span class="badge badge-danger">Invalid</span>`;
+                } else if (event.verify === 'Check')
+                {
+                    cell3 = `<span class="badge badge-warning">Check</span>`;
+                } else {
+                    cell3 = `<span class="badge badge-dark">Manual</span>`;
+                }
+                calendar.innerHTML += `<div class="row m-1">
+                                <div class="col-3 text-warning-light">
+                                    ${moment(event.start).format("YYYY-MM-DD h:mm A")} - ${moment(event.end).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-3 text-light">
+                                    ${event.verify_titleHTML}
+                                </div>
+                                <div class="col-1">
+                                    ${cell3}
+                                </div>
+                                    <div class="col-5 text-info-light">
+                                        ${event.verify_message}
+                                        </div>
+                            </div>`;
+            });
+        }
+
+        $("#options-modal-calendar").iziModal('open');
+    } catch (e) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-calendar.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-radiodj").onclick = function () {
+    try {
+        iziToast.info({
+            timeout: 180000,
+            overlay: true,
+            displayMode: 'once',
+            color: 'yellow',
+            id: 'inputs',
+            zindex: 999,
+            title: 'Switch RadioDJ',
+            message: 'Are you sure you want the system to switch which RadioDJ is active?',
+            position: 'center',
+            drag: false,
+            closeOnClick: false,
+            buttons: [
+                ['<button><b>Switch RadioDJ</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        nodeRequest({method: 'POST', url: nodeURL + '/state/change-radio-dj', data: {}}, function (response) {
+                            if (response === 'OK')
+                            {
+                                iziToast.show({
+                                    title: `RadioDJ changed!`,
+                                    message: `RadioDJ instance was changed.`,
+                                    timeout: 5000,
+                                    close: true,
+                                    color: 'green',
+                                    drag: false,
+                                    position: 'center',
+                                    closeOnClick: true,
+                                    overlay: false,
+                                    zindex: 1000
+                                });
+                            } else {
+                                console.dir(response);
+                                iziToast.show({
+                                    title: `Failed to change RadioDJ!`,
+                                    message: `There was an error trying to change RadioDJ instances.`,
+                                    timeout: 10000,
+                                    close: true,
+                                    color: 'red',
+                                    drag: false,
+                                    position: 'center',
+                                    closeOnClick: true,
+                                    overlay: false,
+                                    zindex: 1000
+                                });
+                            }
+                        });
+                    }],
+            ]
+        });
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-radiodj.'
+        });
+    }
+
+};
+
 document.querySelector(`#options-djs`).addEventListener("click", function (e) {
     try {
         console.log(e.target.id);
@@ -933,7 +1277,7 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                             </div>`;
                                 } else if (record.actualStart !== null && record.actualEnd !== null)
                                 {
-                                    if (moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes') >= 10 || moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes') >= 10)
+                                    if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10)
                                     {
                                         att.innerHTML += `<div class="row bg-warning-dark m-1">
                                 <div class="col-3 text-primary-light">
@@ -1452,6 +1796,45 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
     }
 });
 
+document.querySelector(`#global-logs`).addEventListener("click", function (e) {
+    try {
+        console.log(e.target.id);
+        if (e.target) {
+            if (e.target.id.startsWith(`dj-show-logs-`))
+            {
+                nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``))}}, function (response) {
+                    var logs = document.querySelector('#dj-show-logs');
+                    logs.innerHTML = ``;
+
+                    if (response.length > 0)
+                    {
+                        response.forEach(function (log) {
+                            logs.innerHTML += `<div class="row bg-${log.loglevel}-dark m-1">
+                                <div class="col-4 text-warning-light">
+                                    ${moment(log.createdAt).format("YYYY-MM-DD h:mm A")}
+                                </div>
+                                <div class="col-8 text-info-light">
+                                ${log.event}
+                                ${log.trackArtist !== null && log.trackArtist !== "" ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== "" ? ` - ${log.trackTitle}` : ``}
+                                ${log.trackAlbum !== null && log.trackAlbum !== "" ? `<br />Album: ${log.trackAlbum}` : ``}
+                                ${log.trackLabel !== null && log.trackLabel !== "" ? `<br />Label: ${log.trackLabel}` : ``}
+                                </div>
+                            </div>`;
+                        });
+                    }
+                    $("#options-modal-dj-logs").iziModal('open');
+                });
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #dj-attendance.'
+        });
+    }
+});
+
 document.querySelector(`#dj-xp-logs`).addEventListener("click", function (e) {
     try {
         console.log(e.target.id);
@@ -1842,50 +2225,77 @@ function authorise(cb)
     });
 }
 
-// This function calls authorise to get a token, and then proceeds with the requested API call
+// This function calls authorise to get a token (if necessary), and then proceeds with the requested API call
 function nodeRequest(opts, cb) {
-    authorise(function (token) {
-        if (token)
-        {
-            opts.headers = {
-                'Authorization': 'Bearer ' + token
-            };
-            try {
-                io.socket.request(opts, function serverResponded(body, JWR) {
-                    if (!body)
-                    {
-                        cb(false);
-                    } else {
-                        try {
-                            cb(body);
-                        } catch (e) {
-                            console.error(e);
-                            iziToast.show({
-                                title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                                message: 'Error occurred in nodeRequest callback.'
-                            });
-                        }
-                    }
-                });
-            } catch (e) {
-                console.error(e);
-                iziToast.show({
-                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                    message: 'Error occurred making a Node request.'
-                });
-            }
-        } else {
-            try {
+    opts.headers = {
+        'Authorization': 'Bearer ' + activeToken
+    };
+
+    try {
+        io.socket.request(opts, function serverResponded(body, JWR) {
+            if (!body)
+            {
                 cb(false);
-            } catch (e) {
-                console.error(e);
-                iziToast.show({
-                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                    message: 'Error occurred in nodeRequest callback.'
-                });
+            } else {
+                try {
+                    if (body.err && body.err === "Invalid Token!")
+                    {
+                        authorise(function (token) {
+                            if (token)
+                            {
+                                activeToken = token;
+                                opts.headers = {
+                                    'Authorization': 'Bearer ' + activeToken
+                                };
+                                io.socket.request(opts, function serverResponded(body, JWR) {
+                                    if (!body)
+                                    {
+                                        cb(false);
+                                    } else {
+                                        try {
+                                            cb(body);
+                                        } catch (e) {
+                                            console.error(e);
+                                            iziToast.show({
+                                                title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                                                message: 'Error occurred in nodeRequest callback 2.'
+                                            });
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        cb(body);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    iziToast.show({
+                        title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                        message: 'Error occurred in nodeRequest callback 1.'
+                    });
+                }
             }
-        }
-    });
+        });
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred making a Node request.'
+        });
+    }
+    //} else {
+    //try {
+    //    cb(false);
+    //} catch (e) {
+    //    console.error(e);
+    //    iziToast.show({
+    //        title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+    //        message: 'Error occurred in nodeRequest callback.'
+    //    });
+    //}
+    //}
+    //});
 }
 
 // Wait for a condition to be met, and then execute the callback. Fails after 1200 frames.

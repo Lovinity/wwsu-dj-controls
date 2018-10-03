@@ -706,7 +706,7 @@
         <div id="options-modal" style="background-color: #363636; color: #ffffff;">
             <div class="d-flex justify-content-start flex-wrap">
                 <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-djs" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-microphone"></i></button>
+                    <button type="button" id="btn-options-djs" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-microphone"></i></button>
                     <div style="text-align: center; font-size: 1em;">Manage DJs</div>
                 </div>
                 <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
@@ -714,8 +714,16 @@
                     <div style="text-align: center; font-size: 1em;">Logs</div>
                 </div>
                 <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-state" class="btn btn-urgent btn-circle btn-xl border border-white"><i class="fas fa-microphone"></i></button>
-                    <div style="text-align: center; font-size: 1em;">Force Change State</div>
+                    <button type="button" id="btn-options-issues" class="btn btn-warning btn-circle btn-xl border border-white"><i class="fas fa-poo"></i></button>
+                    <div style="text-align: center; font-size: 1em;">Issues</div>
+                </div>
+                <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                    <button type="button" id="btn-options-calendar" class="btn btn-primary btn-circle btn-xl border border-white"><i class="fas fa-calendar"></i></button>
+                    <div style="text-align: center; font-size: 1em;">Calendar Verification</div>
+                </div>
+                <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                    <button type="button" id="btn-options-radiodj" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-sync"></i></button>
+                    <div style="text-align: center; font-size: 1em;">Switch RadioDJ</div>
                 </div>
             </div>
         </div>
@@ -812,6 +820,49 @@
                     </div>
                 </div>
                 <div id="dj-xp-logs">
+                </div>
+            </div>
+        </div>
+        <div id="options-modal-global-logs" style="background-color: #363636; color: #ffffff;">
+            <div class="container m-1" style="height: 480px; overflow: scroll;">
+                <div class="row bg-primary-dark m-1">
+                    <div class="col-3 text-primary-light">
+                        Event Name
+                    </div>
+                    <div class="col-4 text-warning-light">
+                        Scheduled start/end Times
+                    </div>
+                    <div class="col-4 text-success-light">
+                        Actual start/end Times
+                    </div>
+                    <div class="col-1">
+                        Log
+                    </div>
+                </div>
+                <div id="global-logs">
+                </div>
+            </div>
+        </div>
+
+        <div id="options-modal-calendar" style="background-color: #363636; color: #ffffff;">
+            <div class="container m-1" style="height: 480px; overflow: scroll;">
+                <p>NOTE: This only verifies events for the next 7 days.</p>
+                <p>NOTE 2: Changes to Google Calendar may take up to 5 minutes to reflect in the system.</p>
+                <div class="row bg-primary-dark m-1">
+                    <div class="col-3 text-warning-light">
+                        Date/Time
+                    </div>
+                    <div class="col-3 text-light">
+                        Event
+                    </div>
+                    <div class="col-1">
+                        Status
+                    </div>
+                    <div class="col-5 text-info-light">
+                        Information
+                    </div>
+                </div>
+                <div id="calendar-verify">
                 </div>
             </div>
         </div>
