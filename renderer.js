@@ -44,7 +44,6 @@ try {
     var delay = 9000; // Subtract 1 second from the amount of on-air delay, as it takes about a second to process the recorder.
     var activeToken = "";
 
-    io.sails.url = nodeURL;
     var disconnected = true;
     var theStatus = 4;
     var calendar = []; // Contains calendar events for the next 24 hours
@@ -183,6 +182,165 @@ try {
 
     // Read in WWSU Node username and password from uncommitted tokens file
     var tokens = JSON.parse(fs.readFileSync(`${remote.app.getAppPath()}/tokens.json`));
+
+    // Connect the socket
+    io.sails.url = nodeURL;
+    io.socket = io.sails.connect();
+
+    io.socket.on('disconnect', function () {
+        try {
+            io.socket._raw.io._reconnection = true;
+            io.socket._raw.io._reconnectionAttempts = Infinity;
+            if (!disconnected)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "inline";
+                disconnected = true;
+                var notification = notifier.notify('DJ Controls Lost Connection', {
+                    message: `DJ Controls lost connection to WWSU.`,
+                    icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
+                    duration: 60000
+                });
+            }
+        } catch (e) {
+            iziToast.show({
+                title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                message: 'Error occurred in the disconnect event.'
+            });
+            console.error(e);
+        }
+    });
+
+    io.socket.on('connect', function () {
+        try {
+            if (disconnected)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "none";
+                disconnected = false;
+            }
+            doSockets();
+        } catch (e) {
+            iziToast.show({
+                title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                message: 'Error occurred in the connect event. ' + e.message
+            });
+            console.error(e);
+        }
+    });
+
+    io.socket.on('meta', function (data) {
+        try {
+            var startRecording = null;
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
+                {
+                    if (key === 'state')
+                    {
+                        if (((Meta[key].startsWith("automation_") || Meta[key] === 'unknown') && Meta[key] !== 'automation_break') || (Meta[key].includes("_returning") && !data[key].includes("_returning")))
+                        {
+                            if (data[key] === 'live_on')
+                            {
+                                startRecording = 'live';
+                            } else if (data[key] === 'remote_on')
+                            {
+                                startRecording = 'remote';
+                            } else if (data[key] === 'sports_on' || data[key] === 'sportsremote_on')
+                            {
+                                startRecording = 'sports';
+                            }
+                        } else if (!Meta[key].startsWith("automation_") && data[key].startsWith("automation_"))
+                        {
+                            startRecording = 'automation';
+                        } else if (data[key].includes("_break") || data[key].includes("_returning") || data[key].includes("_halftime"))
+                        {
+                            if (!development)
+                            {
+                                setTimeout(function () {
+
+                                    nrc.run(`"${recordPadPath}" -done`)
+                                            .then(function (response) {
+                                                console.log(response);
+                                            })
+                                            .catch(err => {
+                                                console.error(err);
+                                            });
+                                }, delay);
+                            }
+                        }
+                    }
+                    Meta[key] = data[key];
+                }
+            }
+            doMeta(data);
+            if (startRecording !== null) {
+                if (!development)
+                {
+                    setTimeout(function () {
+                        nrc.run(`"${recordPadPath}" -done`)
+                                .then(function (response) {
+                                    console.log(response);
+                                    if (!development)
+                                    {
+                                        nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                                .then(function (response2) {
+                                                    if (response2 == 0)
+                                                    {
+                                                        nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                        });
+                                                    }
+                                                    console.log(response2);
+                                                })
+                                                .catch(err => {
+                                                    console.error(err);
+                                                });
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error(err);
+                                });
+                    }, delay);
+                }
+            }
+        } catch (e) {
+            iziToast.show({
+                title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                message: 'Error occurred in the meta event. ' + e.message
+            });
+            console.error(e);
+        }
+    });
+
+// On new eas data, update our eas memory and run the process function.
+    io.socket.on('eas', function (data) {
+        processEas(data);
+    });
+
+    io.socket.on('status', function (data) {
+        processStatus(data);
+    });
+
+    io.socket.on('announcements', function (data) {
+        processAnnouncements(data);
+    });
+
+    io.socket.on('calendar', function (data) {
+        processCalendar(data);
+    });
+
+    io.socket.on('messages', function (data) {
+        processMessages(data);
+    });
+
+    io.socket.on('requests', function (data) {
+        processRequests(data);
+        console.dir(data);
+    });
+
+    io.socket.on('recipients', function (data) {
+        processRecipients(data);
+    });
 
     var messageFlash = setInterval(function () {
         if (totalUnread > 0 || totalRequests > 0)
@@ -609,163 +767,6 @@ try {
     });
     console.error(e);
 }
-
-// EVENT HANDLERS
-
-io.socket.on('disconnect', function () {
-    try {
-        io.socket._raw.io._reconnection = true;
-        io.socket._raw.io._reconnectionAttempts = Infinity;
-        if (!disconnected)
-        {
-            var noConnection = document.getElementById('no-connection');
-            noConnection.style.display = "inline";
-            disconnected = true;
-            var notification = notifier.notify('DJ Controls Lost Connection', {
-                message: `DJ Controls lost connection to WWSU.`,
-                icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                duration: 60000
-            });
-        }
-    } catch (e) {
-        iziToast.show({
-            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-            message: 'Error occurred in the disconnect event.'
-        });
-        console.error(e);
-    }
-});
-
-io.socket.on('connect', function () {
-    try {
-        if (disconnected)
-        {
-            var noConnection = document.getElementById('no-connection');
-            noConnection.style.display = "none";
-            disconnected = false;
-        }
-        doSockets();
-    } catch (e) {
-        iziToast.show({
-            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-            message: 'Error occurred in the connect event. ' + e.message
-        });
-        console.error(e);
-    }
-});
-
-io.socket.on('meta', function (data) {
-    try {
-        var startRecording = null;
-        for (var key in data)
-        {
-            if (data.hasOwnProperty(key))
-            {
-                if (key === 'state')
-                {
-                    if (((Meta[key].startsWith("automation_") || Meta[key] === 'unknown') && Meta[key] !== 'automation_break') || (Meta[key].includes("_returning") && !data[key].includes("_returning")))
-                    {
-                        if (data[key] === 'live_on')
-                        {
-                            startRecording = 'live';
-                        } else if (data[key] === 'remote_on')
-                        {
-                            startRecording = 'remote';
-                        } else if (data[key] === 'sports_on' || data[key] === 'sportsremote_on')
-                        {
-                            startRecording = 'sports';
-                        }
-                    } else if (!Meta[key].startsWith("automation_") && data[key].startsWith("automation_"))
-                    {
-                        startRecording = 'automation';
-                    } else if (data[key].includes("_break") || data[key].includes("_returning") || data[key].includes("_halftime"))
-                    {
-                        if (!development)
-                        {
-                            setTimeout(function () {
-
-                                nrc.run(`"${recordPadPath}" -done`)
-                                        .then(function (response) {
-                                            console.log(response);
-                                        })
-                                        .catch(err => {
-                                            console.error(err);
-                                        });
-                            }, delay);
-                        }
-                    }
-                }
-                Meta[key] = data[key];
-            }
-        }
-        doMeta(data);
-        if (startRecording !== null) {
-            if (!development)
-            {
-                setTimeout(function () {
-                    nrc.run(`"${recordPadPath}" -done`)
-                            .then(function (response) {
-                                console.log(response);
-                                if (!development)
-                                {
-                                    nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
-                                            .then(function (response2) {
-                                                if (response2 == 0)
-                                                {
-                                                    nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                                                    });
-                                                }
-                                                console.log(response2);
-                                            })
-                                            .catch(err => {
-                                                console.error(err);
-                                            });
-                                }
-                            })
-                            .catch(err => {
-                                console.error(err);
-                            });
-                }, delay);
-            }
-        }
-    } catch (e) {
-        iziToast.show({
-            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-            message: 'Error occurred in the meta event. ' + e.message
-        });
-        console.error(e);
-    }
-});
-
-// On new eas data, update our eas memory and run the process function.
-io.socket.on('eas', function (data) {
-    processEas(data);
-});
-
-io.socket.on('status', function (data) {
-    processStatus(data);
-});
-
-io.socket.on('announcements', function (data) {
-    processAnnouncements(data);
-});
-
-io.socket.on('calendar', function (data) {
-    processCalendar(data);
-});
-
-io.socket.on('messages', function (data) {
-    processMessages(data);
-});
-
-io.socket.on('requests', function (data) {
-    processRequests(data);
-    console.dir(data);
-});
-
-io.socket.on('recipients', function (data) {
-    processRecipients(data);
-});
 
 // OnClick handlers
 
