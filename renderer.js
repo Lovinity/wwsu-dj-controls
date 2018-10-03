@@ -187,81 +187,128 @@ try {
     io.sails.url = nodeURL;
     io.socket = io.sails.connect();
 
-    io.socket.on('disconnect', function () {
-        try {
-            io.socket._raw.io._reconnection = true;
-            io.socket._raw.io._reconnectionAttempts = Infinity;
-            if (!disconnected)
-            {
-                var noConnection = document.getElementById('no-connection');
-                noConnection.style.display = "inline";
-                disconnected = true;
-                var notification = notifier.notify('DJ Controls Lost Connection', {
-                    message: `DJ Controls lost connection to WWSU.`,
-                    icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                    duration: 60000
-                });
-            }
-        } catch (e) {
-            iziToast.show({
-                title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                message: 'Error occurred in the disconnect event.'
-            });
-            console.error(e);
-        }
-    });
-
-    io.socket.on('connect', function () {
-        try {
-            if (disconnected)
-            {
-                var noConnection = document.getElementById('no-connection');
-                noConnection.style.display = "none";
-                disconnected = false;
-            }
-            doSockets();
-        } catch (e) {
-            iziToast.show({
-                title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                message: 'Error occurred in the connect event. ' + e.message
-            });
-            console.error(e);
-        }
-    });
-
-    io.socket.on('meta', function (data) {
-        try {
-            var startRecording = null;
-            for (var key in data)
-            {
-                if (data.hasOwnProperty(key))
+    waitFor(function () {
+        return io.socket && io.socket.isConnected();
+    },
+            function () {
+                console.log(`READY`);
+                if (disconnected)
                 {
-                    if (key === 'state')
-                    {
-                        if (((Meta[key].startsWith("automation_") || Meta[key] === 'unknown') && Meta[key] !== 'automation_break') || (Meta[key].includes("_returning") && !data[key].includes("_returning")))
+                    var noConnection = document.getElementById('no-connection');
+                    noConnection.style.display = "none";
+                    disconnected = false;
+                }
+                doSockets();
+                
+                io.socket.on('disconnect', function () {
+                    try {
+                        io.socket._raw.io._reconnection = true;
+                        io.socket._raw.io._reconnectionAttempts = Infinity;
+                        if (!disconnected)
                         {
-                            if (data[key] === 'live_on')
+                            var noConnection = document.getElementById('no-connection');
+                            noConnection.style.display = "inline";
+                            disconnected = true;
+                            var notification = notifier.notify('DJ Controls Lost Connection', {
+                                message: `DJ Controls lost connection to WWSU.`,
+                                icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
+                                duration: 60000
+                            });
+                        }
+                    } catch (e) {
+                        iziToast.show({
+                            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                            message: 'Error occurred in the disconnect event.'
+                        });
+                        console.error(e);
+                    }
+                });
+
+                io.socket.on('connect', function () {
+                    try {
+                        if (disconnected)
+                        {
+                            var noConnection = document.getElementById('no-connection');
+                            noConnection.style.display = "none";
+                            disconnected = false;
+                        }
+                        doSockets();
+                    } catch (e) {
+                        iziToast.show({
+                            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                            message: 'Error occurred in the connect event. ' + e.message
+                        });
+                        console.error(e);
+                    }
+                });
+
+                io.socket.on('meta', function (data) {
+                    try {
+                        var startRecording = null;
+                        for (var key in data)
+                        {
+                            if (data.hasOwnProperty(key))
                             {
-                                startRecording = 'live';
-                            } else if (data[key] === 'remote_on')
-                            {
-                                startRecording = 'remote';
-                            } else if (data[key] === 'sports_on' || data[key] === 'sportsremote_on')
-                            {
-                                startRecording = 'sports';
+                                if (key === 'state')
+                                {
+                                    if (((Meta[key].startsWith("automation_") || Meta[key] === 'unknown') && Meta[key] !== 'automation_break') || (Meta[key].includes("_returning") && !data[key].includes("_returning")))
+                                    {
+                                        if (data[key] === 'live_on')
+                                        {
+                                            startRecording = 'live';
+                                        } else if (data[key] === 'remote_on')
+                                        {
+                                            startRecording = 'remote';
+                                        } else if (data[key] === 'sports_on' || data[key] === 'sportsremote_on')
+                                        {
+                                            startRecording = 'sports';
+                                        }
+                                    } else if (!Meta[key].startsWith("automation_") && data[key].startsWith("automation_"))
+                                    {
+                                        startRecording = 'automation';
+                                    } else if (data[key].includes("_break") || data[key].includes("_returning") || data[key].includes("_halftime"))
+                                    {
+                                        if (!development)
+                                        {
+                                            setTimeout(function () {
+
+                                                nrc.run(`"${recordPadPath}" -done`)
+                                                        .then(function (response) {
+                                                            console.log(response);
+                                                        })
+                                                        .catch(err => {
+                                                            console.error(err);
+                                                        });
+                                            }, delay);
+                                        }
+                                    }
+                                }
+                                Meta[key] = data[key];
                             }
-                        } else if (!Meta[key].startsWith("automation_") && data[key].startsWith("automation_"))
-                        {
-                            startRecording = 'automation';
-                        } else if (data[key].includes("_break") || data[key].includes("_returning") || data[key].includes("_halftime"))
-                        {
+                        }
+                        doMeta(data);
+                        if (startRecording !== null) {
                             if (!development)
                             {
                                 setTimeout(function () {
-
                                     nrc.run(`"${recordPadPath}" -done`)
                                             .then(function (response) {
                                                 console.log(response);
+                                                if (!development)
+                                                {
+                                                    nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                                            .then(function (response2) {
+                                                                if (response2 == 0)
+                                                                {
+                                                                    nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                                    });
+                                                                }
+                                                                console.log(response2);
+                                                            })
+                                                            .catch(err => {
+                                                                console.error(err);
+                                                            });
+                                                }
                                             })
                                             .catch(err => {
                                                 console.error(err);
@@ -269,78 +316,45 @@ try {
                                 }, delay);
                             }
                         }
+                    } catch (e) {
+                        iziToast.show({
+                            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                            message: 'Error occurred in the meta event. ' + e.message
+                        });
+                        console.error(e);
                     }
-                    Meta[key] = data[key];
-                }
-            }
-            doMeta(data);
-            if (startRecording !== null) {
-                if (!development)
-                {
-                    setTimeout(function () {
-                        nrc.run(`"${recordPadPath}" -done`)
-                                .then(function (response) {
-                                    console.log(response);
-                                    if (!development)
-                                    {
-                                        nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
-                                                .then(function (response2) {
-                                                    if (response2 == 0)
-                                                    {
-                                                        nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                                                        });
-                                                    }
-                                                    console.log(response2);
-                                                })
-                                                .catch(err => {
-                                                    console.error(err);
-                                                });
-                                    }
-                                })
-                                .catch(err => {
-                                    console.error(err);
-                                });
-                    }, delay);
-                }
-            }
-        } catch (e) {
-            iziToast.show({
-                title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                message: 'Error occurred in the meta event. ' + e.message
-            });
-            console.error(e);
-        }
-    });
+                });
 
 // On new eas data, update our eas memory and run the process function.
-    io.socket.on('eas', function (data) {
-        processEas(data);
-    });
+                io.socket.on('eas', function (data) {
+                    processEas(data);
+                });
 
-    io.socket.on('status', function (data) {
-        processStatus(data);
-    });
+                io.socket.on('status', function (data) {
+                    processStatus(data);
+                });
 
-    io.socket.on('announcements', function (data) {
-        processAnnouncements(data);
-    });
+                io.socket.on('announcements', function (data) {
+                    processAnnouncements(data);
+                });
 
-    io.socket.on('calendar', function (data) {
-        processCalendar(data);
-    });
+                io.socket.on('calendar', function (data) {
+                    processCalendar(data);
+                });
 
-    io.socket.on('messages', function (data) {
-        processMessages(data);
-    });
+                io.socket.on('messages', function (data) {
+                    processMessages(data);
+                });
 
-    io.socket.on('requests', function (data) {
-        processRequests(data);
-        console.dir(data);
-    });
+                io.socket.on('requests', function (data) {
+                    processRequests(data);
+                    console.dir(data);
+                });
 
-    io.socket.on('recipients', function (data) {
-        processRecipients(data);
-    });
+                io.socket.on('recipients', function (data) {
+                    processRecipients(data);
+                });
+            });
 
     var messageFlash = setInterval(function () {
         if (totalUnread > 0 || totalRequests > 0)
