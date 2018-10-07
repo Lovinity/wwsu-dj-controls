@@ -2,7 +2,7 @@
 
 try {
 
-    var development = false;
+    var development = true;
 
 // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -500,6 +500,22 @@ try {
         zindex: 61
     });
 
+    $("#options-modal-announcements").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Announcements</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 61
+    });
+
     $("#options-modal-dj").iziModal({
         title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - DJ</h5>`,
         headerColor: '#363636',
@@ -580,6 +596,22 @@ try {
         zindex: 61
     });
 
+    $("#options-modal-announcement").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Add/Edit Announcement</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: 180000,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 62
+    });
+
     var quill = new Quill('#themessage', {
         modules: {
             toolbar: [
@@ -631,6 +663,18 @@ try {
         },
         theme: 'snow',
         placeholder: 'Type / format your message here and then press enter to send. Shift+Enter adds a new line.'
+    });
+
+    var quill2 = new Quill('#theannouncement', {
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline', 'strike', {'color': []}],
+                ['link'],
+                ['clean']
+            ],
+        },
+        theme: 'snow',
+        placeholder: 'Formatted announcement text goes here.'
     });
 
     function quillGetHTML(inputDelta) {
@@ -897,12 +941,34 @@ document.querySelector("#btn-options-djs").onclick = function () {
     }
 };
 
+document.querySelector("#options-announcements-add").onclick = function () {
+    document.querySelector("#options-announcement-starts").value = moment().format("YYYY-MM-DD\THH:mm");
+    document.querySelector("#options-announcement-expires").value = moment({year: 3000, month: 1, day: 1, hour: 0, minute: 0, second: 0}).format("YYYY-MM-DD\THH:mm");
+    document.querySelector("#options-announcement-type").value = "djcontrols";
+    document.querySelector("#options-announcement-level").value = "secondary";
+    quill2.setText("\n");
+    document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-success" id="options-announcement-add">Add</button>`;
+    $("#options-modal-announcement").iziModal('open');
+};
+
 document.querySelector("#btn-options-logs").onclick = function () {
+    var att = document.querySelector('#global-logs');
+    att.innerHTML = ``;
+    $("#options-modal-global-logs").iziModal('open');
+    $('#options-modal-global-logs').animateCss('flash slower', function () {});
+};
+
+document.querySelector("#filter-global-logs").onclick = function () {
+    filterGlobalLogs(document.querySelector("#global-log-filter").value);
+};
+
+function filterGlobalLogs(date) {
     try {
-        nodeRequest({method: 'POST', url: nodeURL + '/logs/get-attendance', data: {}}, function (response) {
+        nodeRequest({method: 'POST', url: nodeURL + '/logs/get-attendance', data: {date: moment(date).toISOString(true)}}, function (response) {
             console.dir(response);
             var att = document.querySelector('#global-logs');
             att.innerHTML = ``;
+            att.scrollTop = 0;
             if (response.length > 0 && typeof response.forEach !== 'undefined')
             {
                 response.forEach(function (record) {
@@ -1044,23 +1110,21 @@ document.querySelector("#btn-options-logs").onclick = function () {
                     }
                 });
             }
-            $("#options-modal-global-logs").iziModal('open');
-            $('#options-modal-global-logs').animateCss('flash slower', function () {});
         });
     } catch (e) {
         console.error(e);
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-            message: 'Error occurred during the click event of #btn-options-logs.'
+            message: 'Error occurred din filterGlobalLogs.'
         });
     }
-};
+}
 
 document.querySelector("#btn-options-issues").onclick = function () {
     nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(7, 'days').toISOString(true), end: moment().toISOString(true)}}, function (response) {
         var logs = document.querySelector('#dj-show-logs');
         logs.innerHTML = ``;
-
+        logs.scrollTop = 0;
         if (response.length > 0)
         {
             response.reverse();
@@ -1086,6 +1150,7 @@ document.querySelector("#btn-options-calendar").onclick = function () {
     try {
         var calendar = document.querySelector('#calendar-verify');
         calendar.innerHTML = ``;
+        calendar.scrollTop = 0;
 
         // Define a comparison function that will order calendar events by start time when we run the iteration
         var compare = function (a, b) {
@@ -1139,6 +1204,67 @@ document.querySelector("#btn-options-calendar").onclick = function () {
         }
 
         $("#options-modal-calendar").iziModal('open');
+    } catch (e) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-calendar.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-announcements").onclick = function () {
+    try {
+        var announcements = document.querySelector('#options-announcements');
+        announcements.innerHTML = ``;
+        announcements.scrollTop = 0;
+
+        var compare = function (a, b) {
+            try {
+                if (moment(a.starts).valueOf() < moment(b.starts).valueOf())
+                    return -1;
+                if (moment(a.starts).valueOf() > moment(b.starts).valueOf())
+                    return 1;
+                return 0;
+            } catch (e) {
+                console.error(e);
+                iziToast.show({
+                    title: 'An error occurred - Please check the logs',
+                    message: `Error occurred in the compare function of #btn-options-announcements.`
+                });
+            }
+        };
+        nodeRequest({method: 'POST', url: nodeURL + '/announcements/get', data: {type: "all"}}, function (response) {
+            if (response.length > 0)
+            {
+                response.forEach(function (announcement)
+                {
+                    announcements.innerHTML += `<div class="row bg-${announcement.level}-dark m-1">
+                    <div class="col-3 text-warning-light">
+                        ${moment(announcement.starts).format("YYYY-MM-DD h:mm A")}<br />
+                        - ${moment(announcement.expires).format("YYYY-MM-DD h:mm A")}
+                    </div>
+                    <div class="col-2 text-success-light">
+                        ${announcement.type}
+                    </div>
+                    <div class="col-5 text-light">
+                        ${announcement.announcement}
+                    </div>
+                    <div class="col-2 text-info-light">
+                <button type="button" id="options-announcements-edit-${announcement.ID}" class="close" aria-label="Edit Announcement">
+                <span aria-hidden="true"><i class="fas fa-edit text-info-light"></i></span>
+                </button>
+                <button type="button" id="options-announcements-remove-${announcement.ID}" class="close" aria-label="Remove Announcement">
+                <span aria-hidden="true"><i class="fas fa-trash text-info-light"></i></span>
+                </button>
+                    </div>
+                </div>
+                `;
+                });
+            }
+        });
+
+        $("#options-modal-announcements").iziModal('open');
     } catch (e) {
         console.error(err);
         iziToast.show({
@@ -1249,6 +1375,7 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
 
                         // Populate attendance records
                         var att = document.querySelector('#dj-attendance');
+                        att.scrollTop = 0;
                         att.innerHTML = ``;
                         if (response.attendance.length > 0)
                         {
@@ -1586,6 +1713,7 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                 </button>`;
                 var xpLogs = document.querySelector(`#dj-xp-logs`);
                 xpLogs.innerHTML = ``;
+                xpLogs.scrollTop = 0;
                 if (DJData && DJData.XP && DJData.XP.rows && DJData.XP.rows.length > 0)
                 {
                     DJData.XP.rows.forEach(function (row) {
@@ -1801,6 +1929,7 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                 nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``))}}, function (response) {
                     var logs = document.querySelector('#dj-show-logs');
                     logs.innerHTML = ``;
+                    logs.scrollTop = 0;
 
                     if (response.length > 0)
                     {
@@ -1840,6 +1969,7 @@ document.querySelector(`#global-logs`).addEventListener("click", function (e) {
                 nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``))}}, function (response) {
                     var logs = document.querySelector('#dj-show-logs');
                     logs.innerHTML = ``;
+                    logs.scrollTop = 0;
 
                     if (response.length > 0)
                     {
@@ -2023,6 +2153,175 @@ document.querySelector(`#messages`).addEventListener("click", function (e) {
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred during the click event of #messages.'
+        });
+    }
+});
+
+document.querySelector(`#options-announcements`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith("options-announcements-remove-"))
+            {
+                var inputData = "";
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/trash.png`,
+                    maxWidth: 480,
+                    title: 'Remove announcement',
+                    message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove this announcement?',
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Remove</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                nodeRequest({method: 'POST', url: nodeURL + '/announcements/remove', data: {ID: parseInt(e.target.id.replace(`options-announcements-remove-`, ``))}}, function (response) {
+                                    if (response === 'OK')
+                                    {
+                                        iziToast.show({
+                                            title: `Announcement removed!`,
+                                            message: `Announcement was removed! You may need to close and re-open the manage announcement screen.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to remove announcement!`,
+                                            message: `There was an error trying to remove the announcement.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
+                    ]
+                });
+            }
+            if (e.target.id.startsWith("options-announcements-edit-"))
+            {
+                nodeRequest({method: 'POST', url: nodeURL + '/announcements/get', data: {type: "all", ID: parseInt(e.target.id.replace(`options-announcements-edit-`, ``))}}, function (response) {
+                    document.querySelector("#options-announcement-starts").value = moment(response.starts).format("YYYY-MM-DD\THH:mm");
+                    document.querySelector("#options-announcement-expires").value = moment(response.expires).format("YYYY-MM-DD\THH:mm");
+                    document.querySelector("#options-announcement-type").value = response.type;
+                    document.querySelector("#options-announcement-level").value = response.level;
+                    quill2.clipboard.dangerouslyPasteHTML(response.announcement);
+                    document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-success" id="options-announcement-edit-${response.ID}">Edit</button>`;
+                    $("#options-modal-announcement").iziModal('open');
+                });
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-announcements.'
+        });
+    }
+});
+
+document.querySelector(`#options-announcement-button`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith("options-announcement-edit-"))
+            {
+                nodeRequest({method: 'POST', url: nodeURL + '/announcements/edit', data: {ID: parseInt(e.target.id.replace(`options-announcement-edit-`, ``)), starts: moment(document.querySelector("#options-announcement-starts").value).toISOString(true), expires: moment(document.querySelector("#options-announcement-expires").value).toISOString(true), type: document.querySelector("#options-announcement-type").value, level: document.querySelector("#options-announcement-level").value, announcement: quillGetHTML(quill2.getContents())}}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-announcement").iziModal('close');
+                        iziToast.show({
+                            title: `Announcement edited!`,
+                            message: `Announcement was edited! You may need to close and re-open the manage announcement screen.`,
+                            timeout: 15000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to edit announcement!`,
+                            message: `There was an error trying to edit the announcement.`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+            if (e.target.id === "options-announcement-add")
+            {
+                nodeRequest({method: 'POST', url: nodeURL + '/announcements/add', data: {starts: moment(document.querySelector("#options-announcement-starts").value).toISOString(true), expires: moment(document.querySelector("#options-announcement-expires").value).toISOString(true), type: document.querySelector("#options-announcement-type").value, level: document.querySelector("#options-announcement-level").value, announcement: quillGetHTML(quill2.getContents())}}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-announcement").iziModal('close');
+                        iziToast.show({
+                            title: `Announcement added!`,
+                            message: `Announcement was added! You may need to close and re-open the manage announcement screen.`,
+                            timeout: 15000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to add announcement!`,
+                            message: `There was an error trying to add the announcement.`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-announcement-button.'
         });
     }
 });
@@ -2868,9 +3167,6 @@ function checkAnnouncements() {
                 {
                     var attn = document.querySelector("#announcements-body");
                     attn.innerHTML += `<div class="attn attn-${datum.level} alert alert-${datum.level}" id="attn-${datum.ID}" role="alert">
-                                ${client.emergencies ? `<button type="button" class="close" aria-label="Remove">
-                <span aria-hidden="true" id="attn-r-${datum.ID}">&times;</span>
-                </button>` : ``}
                         <i class="fas fa-bullhorn"></i> ${datum.announcement}
                     </div>`;
                     // If this DJ Controls is configured by WWSU to notify on technical problems, notify so.
@@ -2901,9 +3197,7 @@ function checkAnnouncements() {
                 } else {
                     var temp = document.querySelector(`#attn-${datum.ID}`);
                     temp.className = `attn attn-${datum.level} alert alert-${datum.level}`;
-                    temp.innerHTML = `${client.emergencies ? `<button type="button" class="close" aria-label="Remove">
-                <span aria-hidden="true" id="attn-r-${datum.ID}">&times;</span>
-                </button>` : ``}<i class="fas fa-bullhorn"></i> ${datum.announcement}`;
+                    temp.innerHTML = `<i class="fas fa-bullhorn"></i> ${datum.announcement}`;
                 }
             }
         } catch (e) {
@@ -4512,7 +4806,7 @@ function goSports() {
 }
 
 function prepareLog() {
-    document.querySelector("#log-datetime").value = moment(Meta.time).format("MM/DD/YYYY HH:mm:ss");
+    document.querySelector("#log-datetime").value = moment(Meta.time).format("YYYY-MM-DD\THH:mm");
     document.querySelector("#log-artist").value = '';
     document.querySelector("#log-title").value = '';
     document.querySelector("#log-album").value = '';
@@ -4523,7 +4817,7 @@ function prepareLog() {
 function saveLog() {
     var thelog = 'DJ/Producer played a track.';
     var dateObject = moment(document.querySelector("#log-datetime").value);
-    nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.dj, loglevel: 'info', event: thelog, trackArtist: document.querySelector("#log-artist").value, trackTitle: document.querySelector("#log-title").value, trackAlbum: document.querySelector("#log-album").value, trackLabel: document.querySelector("#log-label").value, date: dateObject.toISOString()}}, function (response) {
+    nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.dj, loglevel: 'secondary', event: thelog, trackArtist: document.querySelector("#log-artist").value, trackTitle: document.querySelector("#log-title").value, trackAlbum: document.querySelector("#log-album").value, trackLabel: document.querySelector("#log-label").value, date: dateObject.toISOString()}}, function (response) {
         if (response === 'OK')
         {
             $("#log-modal").iziModal('close');
@@ -4557,7 +4851,7 @@ function saveLog() {
                                 instance.hide({}, toast, 'button');
                             }],
                         ['<button>Playing No Tracks</button>', function (instance, toast, button, e, inputs) {
-                                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.dj, loglevel: 'info', event: 'DJ/Producer finished playing music.', trackArtist: '', trackTitle: '', trackAlbum: '', trackLabel: '', date: moment().toISOString(true)}}, function (response) {});
+                                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.dj, loglevel: 'secondary', event: 'DJ/Producer finished playing music.', trackArtist: '', trackTitle: '', trackAlbum: '', trackLabel: '', date: moment().toISOString(true)}}, function (response) {});
                                 instance.hide({}, toast, 'button');
                             }]
                     ]
