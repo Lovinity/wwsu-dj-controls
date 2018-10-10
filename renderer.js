@@ -5606,7 +5606,7 @@ function processStatus(data, replace = false)
                             var notification = notifier.notify('System Problem', {
                                 message: `${datum.label} reports a significant issue. Please see DJ Controls.`,
                                 icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                                duration: (1000 * 60 * 60 * 24),
+                                duration: (1000 * 60 * 15),
                             });
                             main.flashTaskbar();
                         }
@@ -5686,7 +5686,7 @@ function processStatus(data, replace = false)
                                     var notification = notifier.notify('System Problem', {
                                         message: `${data[key].label} reports a significant issue. Please see DJ Controls.`,
                                         icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                                        duration: (1000 * 60 * 60 * 24),
+                                        duration: (1000 * 60 * 15),
                                     });
                                     main.flashTaskbar();
                                 }
@@ -5750,7 +5750,7 @@ function processStatus(data, replace = false)
                                     var notification = notifier.notify('System Problem', {
                                         message: `${data[key].label} reports a significant issue. Please see DJ Controls.`,
                                         icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                                        duration: (1000 * 60 * 60 * 24),
+                                        duration: (1000 * 60 * 15),
                                     });
                                     main.flashTaskbar();
                                 }
