@@ -13,9 +13,11 @@
         <script src="assets/js/fontawesome.js"></script>
         <script src="assets/js/iziToast.min.js"></script>
         <script src="assets/js/iziModal.min.js"></script>
+        <script src="assets/js/move.min.js"></script>
         <script src="assets/js/moment.min.js"></script>
         <script src="assets/js/moment-duration-format.js"></script>
         <script src="assets/js/taffy-min.js"></script>
+        <script src="assets/js/progress.js"></script>
         <script src="assets/js/sails.io.js" autoConnect="false"></script>
         <script src="assets/js/quill.js"></script>
         <script src="assets/js/d3.min.js" charset="utf-8"></script>
@@ -84,6 +86,7 @@
             }
 
             .clock.simple:after {
+                -webkit-transform: translate3d(0, 0, 0);
                 background: #000;
                 border-radius: 50%;
                 content: "";
@@ -105,6 +108,7 @@
             }
 
             .hours {
+                -webkit-transform: translate3d(0, 0, 0);
                 background: #000;
                 height: 20%;
                 left: 48.75%;
@@ -115,6 +119,7 @@
             }
 
             .minutes {
+                -webkit-transform: translate3d(0, 0, 0);
                 background: #000;
                 height: 40%;
                 left: 49%;
@@ -125,6 +130,7 @@
             }
 
             .seconds {
+                -webkit-transform: translate3d(0, 0, 0);
                 background: #780000;
                 height: 45%;
                 left: 49.5%;
@@ -143,16 +149,20 @@
             }
 
             .hours-container {
+                -webkit-transform: translate3d(0, 0, 0);
                 transition: transform 0.3s cubic-bezier(.4,2.08,.55,.44);
             }
             .minutes-container {
+                -webkit-transform: translate3d(0, 0, 0);
                 transition: transform 0.3s cubic-bezier(.4,2.08,.55,.44);
             }
             .seconds-container {
+                -webkit-transform: translate3d(0, 0, 0);
                 transition: transform 0.2s cubic-bezier(.4,2.08,.55,.44);
             }
 
             .clock circle {
+                -webkit-transform: translate3d(0, 0, 0);
                 fill: rgba(0, 0, 0, 0);
                 stroke: #0074d9;
                 stroke-width: 50%;
@@ -197,11 +207,196 @@
             }
 
             .text{
+                -webkit-transform: translate3d(0, 0, 0);
                 position: absolute;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%,-50%);
                 -ms-transform: translate(-50%,-50%);
+            }
+
+            #nowplaying-seek {
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                bottom: 16px;
+                left: 0;
+            }
+
+            .bs-callout {
+                padding: 10px;
+                margin: 10px 0;
+                border: 1px solid #eee;
+                border-left-width: 5px;
+                border-radius: 3px;
+            }
+            .bs-callout h4 {
+                margin-top: 0;
+                margin-bottom: 5px;
+            }
+            .bs-callout p:last-child {
+                margin-bottom: 0;
+            }
+            .bs-callout code {
+                border-radius: 3px;
+            }
+            .bs-callout+.bs-callout {
+                margin-top: -5px;
+            }
+            .bs-callout-default {
+                border-color: #777;
+                background: rgba(119, 119, 119, 0.2);
+            }
+            .bs-callout-default h4 {
+                color: #777;
+            }
+            .bs-callout-secondary {
+                border-color: #777;
+                background: rgba(119, 119, 119, 0.2);
+            }
+            .bs-callout-secondary h4 {
+                color: #777;
+            }
+            .bs-callout-primary {
+                border-color: #428bca;
+                background: rgba(0, 123, 255, 0.2);
+            }
+            .bs-callout-primary h4 {
+                color: #428bca;
+            }
+            .bs-callout-success {
+                border-color: #5cb85c;
+                background: rgba(40, 167, 69, 0.2);
+            }
+            .bs-callout-success h4 {
+                color: #5cb85c;
+            }
+            .bs-callout-danger {
+                border-color: #d9534f;
+                background: rgba(220, 53, 69, 0.2);
+            }
+            .bs-callout-danger h4 {
+                color: #d9534f;
+            }
+            .bs-callout-warning {
+                border-color: #f0ad4e;
+                background: rgba(255, 193, 7, 0.2);
+            }
+            .bs-callout-warning h4 {
+                color: #f0ad4e;
+            }
+            .bs-callout-info {
+                border-color: #5bc0de;
+                background: rgba(23, 162, 184, 0.2);
+            }
+            .bs-callout-info h4 {
+                color: #5bc0de;
+            }
+            .bs-callout-urgent {
+                border-color: #fda45a;
+                background: rgba(253, 126, 20, 0.2);
+            }
+            .bs-callout-urgent h4 {
+                color: #fda45a;
+            }
+
+            .funkyradio div {
+                clear: both;
+                overflow: hidden;
+            }
+
+            .funkyradio label {
+                width: 100%;
+                border-radius: 3px;
+                border: 1px solid #D1D3D4;
+                font-weight: normal;
+            }
+
+            .funkyradio input[type="radio"]:empty,
+            .funkyradio input[type="checkbox"]:empty {
+                display: none;
+            }
+
+            .funkyradio input[type="radio"]:empty ~ label,
+            .funkyradio input[type="checkbox"]:empty ~ label {
+                position: relative;
+                line-height: 2.5em;
+                text-indent: 3.25em;
+                margin-top: 2em;
+                cursor: pointer;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+
+            .funkyradio input[type="radio"]:empty ~ label:before,
+            .funkyradio input[type="checkbox"]:empty ~ label:before {
+                position: absolute;
+                display: block;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                content: '';
+                width: 2.5em;
+                background: #D1D3D4;
+                border-radius: 3px 0 0 3px;
+            }
+
+            .funkyradio input[type="radio"]:hover:not(:checked) ~ label:before,
+            .funkyradio input[type="checkbox"]:hover:not(:checked) ~ label:before {
+                content: '\2714';
+                text-indent: .9em;
+                color: #C2C2C2;
+            }
+
+            .funkyradio input[type="radio"]:checked ~ label:before,
+            .funkyradio input[type="checkbox"]:checked ~ label:before {
+                content: '\2714';
+                text-indent: .9em;
+                color: #333;
+                background-color: #ccc;
+            }
+
+            .funkyradio input[type="radio"]:focus ~ label:before,
+            .funkyradio input[type="checkbox"]:focus ~ label:before {
+                box-shadow: 0 0 0 3px #999;
+            }
+
+            .funkyradio-default input[type="radio"]:checked ~ label:before,
+            .funkyradio-default input[type="checkbox"]:checked ~ label:before {
+                color: #333;
+                background-color: #ccc;
+            }
+
+            .funkyradio-primary input[type="radio"]:checked ~ label:before,
+            .funkyradio-primary input[type="checkbox"]:checked ~ label:before {
+                color: #fff;
+                background-color: #337ab7;
+            }
+
+            .funkyradio-success input[type="radio"]:checked ~ label:before,
+            .funkyradio-success input[type="checkbox"]:checked ~ label:before {
+                color: #fff;
+                background-color: #5cb85c;
+            }
+
+            .funkyradio-danger input[type="radio"]:checked ~ label:before,
+            .funkyradio-danger input[type="checkbox"]:checked ~ label:before {
+                color: #fff;
+                background-color: #d9534f;
+            }
+
+            .funkyradio-warning input[type="radio"]:checked ~ label:before,
+            .funkyradio-warning input[type="checkbox"]:checked ~ label:before {
+                color: #fff;
+                background-color: #f0ad4e;
+            }
+
+            .funkyradio-info input[type="radio"]:checked ~ label:before,
+            .funkyradio-info input[type="checkbox"]:checked ~ label:before {
+                color: #fff;
+                background-color: #5bc0de;
             }
 
 
@@ -230,7 +425,7 @@
                     <div class="d-flex justify-content-start flex-wrap">
                         <div class="p-1 m-1" id="queue" style="width: 216px; text-align: center; display: none;">
                             <div style="text-align: center; font-size: 2em;">Queue:</div>
-                            <div class="text-warning" id="queue-seconds" style="text-align: center; font-size: 5em;">???</div>
+                            <div class="text-warning" id="queue-seconds" style="text-align: center; font-size: 4em;">???</div>
                             <div class="text-info" id="queue-music" style="text-align: center; font-size: 2em; display: none;">+ Music</div>
                         </div>
                         <div class="p-1 m-1" id="no-remote" style="width: 216px; text-align: center; display: none;">
@@ -300,6 +495,10 @@
                         </div>
                     </div>
                 </div>
+                <div class="card-footer bg-danger-dark" style="color: #FFFFFF; text-align: center; height: 64px;">
+                    <div id="nowplaying-seek" style="height: 4px; opacity: 0.5;"></div>
+                    <div style="color: #FFFFFF; font-size: 1em;" id="nowplaying"></div>
+                </div>
             </div>
 
             <div class="card p-1 m-3 text-white bg-dark" id="announcements" style="width: 640px; height: 360px;">
@@ -345,7 +544,7 @@
                 </div>
             </div>
 
-            <div class="card p-1 m-3 text-white bg-dark" id="calendar" style="width: 640px; height: 360px;">
+            <div class="card p-1 m-3 text-white bg-dark" id="calendar" style="width: 640px; height: 360px; background-color: 'bg-warning';">
                 <div class="card-header text-center" id="calendar-title" style="font-size: 1.5em;">Calendar (next 12 hours)</div>
                 <div class="card-body">
                     <div class="container">
@@ -393,16 +592,19 @@
                             <div class="form-group">
                                 <textarea class="form-control mb-2" id="live-topic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
                             </div>
-                        </form>                    
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="live-webchat">
-                            <label class="form-check-label" for="live-webchat">
-                                Enable Website Chat
-                            </label>
+                        </form>
+                        <div class="funkyradio">
+                            <div class="funkyradio-success">
+                                <input type="checkbox" value="" id="live-webchat">
+                                <label for="live-webchat">
+                                    Enable Website Chat
+                                </label>
+                            </div>
                         </div>
                         <div class="p-1 text-warning-light" role="alert" id="live-noschedule">
-                            <div class="m-1">
-                                <strong>The typed in show is not scheduled!</strong> If you continue, attendance will not be logged, the clockwheel will be inaccurate, and programmed openers/returns/closers might not queue.
+                            <div class="bs-callout bs-callout-warning" role="alert">
+                                <h4>Not Scheduled</h4>
+                                The DJ/Show typed in is not currently scheduled. If you continue, attendance will not be logged, the clockwheel will be inaccurate, and programmed openers/returns/closers will not queue.
                             </div>
                         </div>
                         <div class="row">
@@ -433,20 +635,23 @@
                                 <textarea class="form-control mb-2" id="remote-topic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
                             </div>
                         </form>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="remote-webchat">
-                            <label class="form-check-label" for="remote-webchat">
-                                Enable Website Chat
-                            </label>
+                        <div class="funkyradio">
+                            <div class="funkyradio-success">
+                                <input type="checkbox" value="" id="remote-webchat">
+                                <label for="remote-webchat">
+                                    Enable Website Chat
+                                </label>
+                            </div>
                         </div>
                         <div class="p-1 text-warning-light" role="alert" id="remote-noschedule">
-                            <div class="m-1">
-                                <strong>The typed in broadcast is not scheduled!</strong> If you continue, attendance will not be logged, the clockwheel will be inaccurate, and programmed openers/returns/closers might not queue.
+                            <div class="bs-callout bs-callout-warning" role="alert">
+                                <h4>Not Scheduled</h4>
+                                The Host/Show typed in is not currently scheduled. If you continue, attendance will not be logged, the clockwheel will be inaccurate, and programmed openers/returns/closers will not queue.
                             </div>
                         </div>
                         <div class="p-1 m-1 bg-info-dark">
                             <div class="m-1">
-                                Remember: Remote streams have a 4 second audio delay!
+                                Remember: Remote streams have an audio delay!
                             </div>
                         </div>
                         <div class="row">
@@ -482,26 +687,31 @@
                                 </select>
                             </div>
                         </form>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="sports-remote">
-                            <label class="form-check-label" for="sports-remote">
-                                Remote Broadcast
-                            </label>
+                        <div class="funkyradio">
+                            <div class="funkyradio-info">
+                                <input type="checkbox" value="" id="sports-remote">
+                                <label for="sports-remote">
+                                    Remote Sports Broadcast
+                                </label>
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="sports-webchat">
-                            <label class="form-check-label" for="sports-webchat">
-                                Enable Website Chat
-                            </label>
+                        <div class="funkyradio">
+                            <div class="funkyradio-success">
+                                <input type="checkbox" value="" id="sports-webchat">
+                                <label for="sports-webchat">
+                                    Enable Website Chat
+                                </label>
+                            </div>
                         </div>
                         <div class="p-1 text-warning-light" role="alert" id="sports-noschedule">
-                            <div class="m-1">
-                                <strong>The selected sport is not scheduled!</strong> If you continue, attendance will not be logged, the clockwheel will be inaccurate, and programmed openers/liners/closers might not queue.
+                            <div class="bs-callout bs-callout-warning" role="alert">
+                                <h4>Not Scheduled</h4>
+                                The selected sport is not currently scheduled. If you continue, attendance will not be logged, the clockwheel will be inaccurate, and programmed openers/liners/closers will not queue.
                             </div>
                         </div>
                         <div class="p-1 m-1 bg-info-dark">
                             <div class="m-1">
-                                Remember: Remote streams have a 4 second audio delay!
+                                Remember: Remote streams have an audio delay!
                             </div>
                         </div>
                         <div class="row">
@@ -771,14 +981,15 @@
                     </div>
                     <div class="container m-1">
                         <div class="row bg-primary-dark m-1">
-                            <div class="col-3 text-primary-light">
-                                Event Name
+                            <div class="col-2 text-danger-light">
+                                Date
                             </div>
-                            <div class="col-4 text-warning-light">
-                                Scheduled start/end Times
+                            <div class="col-5 text-info-light">
+                                Event
                             </div>
-                            <div class="col-4 text-success-light">
-                                Actual start/end Times
+                            <div class="col-4">
+                                <span class="text-warning-light">Scheduled Time</span><br />
+                                <span class="text-success-light">Actual Time</span>
                             </div>
                             <div class="col-1">
                                 Log
@@ -793,10 +1004,10 @@
         <div id="options-modal-dj-logs" style="background-color: #363636; color: #ffffff;">
             <div class="container m-1">
                 <div class="row bg-primary-dark m-1">
-                    <div class="col-4 text-warning-light">
-                        Date / Time
+                    <div class="col-2 text-warning-light">
+                        Time
                     </div>
-                    <div class="col-8 text-info-light">
+                    <div class="col-10 text-info-light">
                         Event
                     </div>
                 </div>
@@ -831,14 +1042,12 @@
             <input type="date" id="global-log-filter"> <button type="button" id="filter-global-logs" class="btn btn-primary">Filter</button>
             <div class="container m-1">
                 <div class="row bg-primary-dark m-1">
-                    <div class="col-3 text-primary-light">
-                        Event Name
+                    <div class="col-7 text-primary-light">
+                        Event
                     </div>
-                    <div class="col-4 text-warning-light">
-                        Scheduled start/end Times
-                    </div>
-                    <div class="col-4 text-success-light">
-                        Actual start/end Times
+                    <div class="col-4">
+                        <span class="text-warning-light">Scheduled Time</span><br />
+                        <span class="text-success-light">Actual Time</span>
                     </div>
                     <div class="col-1">
                         Log
@@ -855,8 +1064,8 @@
                 <p>NOTE: This only verifies events for the next 7 days.</p>
                 <p>NOTE 2: Changes to Google Calendar may take up to 5 minutes to reflect in the system.</p>
                 <div class="row bg-primary-dark m-1">
-                    <div class="col-3 text-warning-light">
-                        Date/Time
+                    <div class="col-2 text-warning-light">
+                        Start / End
                     </div>
                     <div class="col-3 text-light">
                         Event
@@ -864,7 +1073,7 @@
                     <div class="col-1">
                         Status
                     </div>
-                    <div class="col-5 text-info-light">
+                    <div class="col-6 text-info-light">
                         Information
                     </div>
                 </div>
@@ -911,6 +1120,7 @@
                     <option value="urgent">Very High (orange)</option>
                     <option value="danger">Critical (red)</option>
                 </select>
+                Announcement Title: <input type="text" id="options-announcement-title" class="form-control" placeholder="Please keep short and concise">
                 Announcement Text: <div class="form-group">
                     <div class="bg-light text-dark">
                         <div id="theannouncement" class="form-control"></div>
@@ -918,7 +1128,7 @@
                 </div>
                 <div class="row">
                     <div class="col-3" id="options-announcement-button">
-                        
+
                     </div>
                 </div>
             </div>

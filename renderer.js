@@ -1,4 +1,4 @@
-/* global iziToast, io, moment, Infinity, err */
+/* global iziToast, io, moment, Infinity, err, ProgressBar */
 
 try {
 
@@ -23,7 +23,7 @@ try {
     //var Taucharts = require("taucharts");
 
     // Define data variables
-    var Meta = {time: moment().toISOString(), state: 'unknown'};
+    var Meta = {time: moment().toISOString(), state: 'unknown', line1: '', line2: '', percent: 0};
     var Calendar = TAFFY();
     var Status = TAFFY();
     var Messages = TAFFY();
@@ -82,7 +82,7 @@ try {
         minutes = date.minutes();
         hours = date.hours();
         var dateStamp = document.getElementById("datestamp");
-        dateStamp.innerHTML = date.format('LLLL');
+        dateStamp.innerHTML = date.format("dddd MM/DD/YYYY hh:mm A");
         if (hoursC !== (hours + (Math.floor(minutes / 3) / 20)))
         {
             var containers = document.querySelectorAll('.hours-container');
@@ -766,6 +766,17 @@ try {
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
         zindex: 50
     });
+    
+    // Create a seek progress bar in the Meta box
+    var bar = new ProgressBar.Line(document.getElementById('nowplaying-seek'), {
+        strokeWidth: 4,
+        easing: 'easeInOut',
+        duration: 500,
+        color: '#FFFF00',
+        trailColor: 'rgba(0, 0, 0, 0)',
+        trailWidth: 1,
+        svgStyle: {width: '100%', height: '100%'}
+    });
 
 
     $.fn.extend({
@@ -945,6 +956,7 @@ document.querySelector("#options-announcements-add").onclick = function () {
     document.querySelector("#options-announcement-starts").value = moment().format("YYYY-MM-DD\THH:mm");
     document.querySelector("#options-announcement-expires").value = moment({year: 3000, month: 1, day: 1, hour: 0, minute: 0, second: 0}).format("YYYY-MM-DD\THH:mm");
     document.querySelector("#options-announcement-type").value = "djcontrols";
+    document.querySelector("#options-announcement-title").value = "";
     document.querySelector("#options-announcement-level").value = "secondary";
     quill2.setText("\n");
     document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-success" id="options-announcement-add">Add</button>`;
@@ -971,151 +983,159 @@ function filterGlobalLogs(date) {
             att.scrollTop = 0;
             if (response.length > 0 && typeof response.forEach !== 'undefined')
             {
+                var formatted = {};
                 response.forEach(function (record) {
-                    var theClass = 'bg-dark';
+                    var theClass = 'bs-callout-default';
+                    if (typeof formatted[moment(record.createdAt).format("MM/DD/YYYY")] === 'undefined')
+                    {
+                        formatted[moment(record.createdAt).format("MM/DD/YYYY")] = [];
+                    }
                     if (record.event.startsWith("Show: ") || record.event.startsWith("Prerecord: "))
                     {
-                        theClass = "bg-danger-dark";
+                        theClass = "bs-callout-danger";
                     } else if (record.event.startsWith("Sports: "))
                     {
-                        theClass = "bg-success-dark";
+                        theClass = "bs-callout-success";
                     } else if (record.event.startsWith("Remote: "))
                     {
-                        theClass = "bg-purple";
+                        theClass = "bs-callout-purple";
                     } else if (record.event.startsWith("Genre: ") || record.event.startsWith("Playlist: "))
                     {
-                        theClass = "bg-info-dark";
+                        theClass = "bs-callout-info";
                     }
                     if (record.scheduledStart === null)
                     {
-                        att.innerHTML += `<div class="row ${theClass} m-1">
-                                <div class="col-3 text-primary-light">
+                        formatted[moment(record.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
+                                <div class="col-7 text-primary-light">
                                     ${record.event}
                                 </div>
-                                <div class="col-4 text-warning-light">
-                                    UN-SCHEDULED
-                                </div>
-                                <div class="col-4 text-success-light">
-                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${record.actualEnd !== null ? moment(record.actualEnd).format("YYYY-MM-DD h:mm A") : `IN PROGRESS`}
+                                <div class="col-4">
+                        <span class="text-warning-light">UNSCHEDULED</span><br />
+                        <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
                                     <div class="col-1">
                                         <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
                 <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
                 </button>
                                         </div>
-                            </div>`;
+                            </div>`);
                     } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)))
                     {
-                        att.innerHTML += `<div class="row ${theClass} m-1">
-                                <div class="col-3 text-primary-light">
+                        formatted[moment(record.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
+                                <div class="col-7 text-primary-light">
                                     ${record.event}
                                 </div>
-                                <div class="col-4 text-warning-light">
-                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
+                                <div class="col-4">
+                        <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                        <span class="text-success-light">FUTURE EVENT</span>
                                 </div>
-                                <div class="col-4 text-success-light">
-                                    FUTURE EVENT
-                                </div>
-                            </div>`;
+                                    <div class="col-1">
+                                        </div>
+                            </div>`);
                     } else if (record.actualStart !== null && record.actualEnd !== null)
                     {
                         if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10)
                         {
-                            att.innerHTML += `<div class="row ${theClass} m-1">
-                                <div class="col-3 text-primary-light">
+                            formatted[moment(record.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
+                                <div class="col-7 text-primary-light">
                                     ${record.event}
                                 </div>
-                                <div class="col-4 text-warning-light">
-                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
+                                <div class="col-4">
+                        <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                        <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
-                                <div class="col-4 text-success-light">
-                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.actualEnd).format("YYYY-MM-DD h:mm A")}
-                                </div>
-                                        <div class="col-1">
-                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                    <div class="col-1">
+                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
                 <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
                 </button>
                                         </div>
-                            </div>`;
+                            </div>`);
                         } else {
-                            att.innerHTML += `<div class="row ${theClass} m-1">
-                                <div class="col-3 text-primary-light">
+                            formatted[moment(record.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
+                                <div class="col-7 text-primary-light">
                                     ${record.event}
                                 </div>
-                                <div class="col-4 text-warning-light">
-                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
+                                <div class="col-4">
+                        <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                        <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
-                                <div class="col-4 text-success-light">
-                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.actualEnd).format("YYYY-MM-DD h:mm A")}
-                                </div>
-                                <div class="col-1">
-                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                    <div class="col-1">
+                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
                 <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
                 </button>
-                                </div>
-                            </div>`;
+                                        </div>
+                            </div>`);
                         }
                     } else if (record.actualStart !== null && record.actualEnd === null)
                     {
-                        att.innerHTML += `<div class="row ${theClass} m-1">
-                                <div class="col-3 text-primary-light">
+                        formatted[moment(record.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
+                                <div class="col-7 text-primary-light">
                                     ${record.event}
                                 </div>
-                                <div class="col-4 text-warning-light">
-                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
+                                <div class="col-4">
+                        <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                        <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
-                                <div class="col-4 text-success-light">
-                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: IN PROGRESS
-                                </div>
-                                <div class="col-1">
-                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                    <div class="col-1">
+                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
                 <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
                 </button>
                                         </div>
-                            </div>`;
+                            </div>`);
                     } else if (record.actualStart === null && record.actualEnd === null) {
-                        att.innerHTML += `<div class="row ${theClass} m-1">
-                                <div class="col-3 text-primary-light">
+                        formatted[moment(record.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
+                                <div class="col-7 text-primary-light">
                                     ${record.event}
                                 </div>
-                                <div class="col-4 text-warning-light">
-                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
+                                <div class="col-4">
+                        <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                        <span class="text-success-light">ABSENT / DID NOT AIR</span>
                                 </div>
-                                <div class="col-4 text-success-light">
-                                    DID NOT AIR / ABSENT
-                                </div>
-                            </div>`;
+                                    <div class="col-1">
+                                        </div>
+                            </div>`);
                     } else {
-                        att.innerHTML += `<div class="row ${theClass} m-1">
-                                <div class="col-3 text-primary-light">
+                        formatted[moment(record.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
+                                <div class="col-7 text-primary-light">
                                     ${record.event}
                                 </div>
-                                <div class="col-4 text-warning-light">
-                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
+                                <div class="col-4">
+                        <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                        <span class="text-success-light">NOT YET STARTED</span>
                                 </div>
-                                <div class="col-4 text-success-light">
-                                    SCHEDULED, NOT YET STARTED
-                                </div>
-                            </div>`;
+                                    <div class="col-1">
+                                        </div>
+                            </div>`);
                     }
                 });
+
+                for (var k in formatted) {
+                    /*
+                     att.innerHTML += `<div class="row bg-primary-dark m-1">
+                     <div class="col-3 text-primary-light">
+                     </div>
+                     <div class="col-4 text-warning-light">
+                     ${k}
+                     </div>
+                     <div class="col-4 text-success-light">
+                     </div>
+                     </div>`;
+                     */
+
+                    if (formatted[k].length > 0)
+                    {
+                        formatted[k].forEach(function (record) {
+                            att.innerHTML += record;
+                        });
+                    }
+                }
             }
         });
     } catch (e) {
         console.error(e);
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-            message: 'Error occurred din filterGlobalLogs.'
+            message: 'Error occurred in filterGlobalLogs.'
         });
     }
 }
@@ -1128,19 +1148,41 @@ document.querySelector("#btn-options-issues").onclick = function () {
         if (response.length > 0)
         {
             response.reverse();
+            var formatted = {};
             response.forEach(function (log) {
-                logs.innerHTML += `<div class="row bg-${log.loglevel}-dark m-1">
-                                <div class="col-4 text-warning-light">
-                                    ${moment(log.createdAt).format("YYYY-MM-DD h:mm A")}
+                if (typeof formatted[moment(log.createdAt).format("MM/DD/YYYY")] === 'undefined')
+                {
+                    formatted[moment(log.createdAt).format("MM/DD/YYYY")] = [];
+                }
+                formatted[moment(log.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout bs-callout-${log.loglevel}">
+                                <div class="col-2 text-warning-light">
+                                    ${moment(log.createdAt).format("h:mm:ss A")}
                                 </div>
-                                <div class="col-8 text-info-light">
+                                <div class="col-10 text-info-light">
                                 ${log.event}
                                 ${log.trackArtist !== null && log.trackArtist !== "" ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== "" ? ` - ${log.trackTitle}` : ``}
                                 ${log.trackAlbum !== null && log.trackAlbum !== "" ? `<br />Album: ${log.trackAlbum}` : ``}
                                 ${log.trackLabel !== null && log.trackLabel !== "" ? `<br />Label: ${log.trackLabel}` : ``}
                                 </div>
-                            </div>`;
+                            </div>`);
             });
+
+            for (var k in formatted) {
+
+                logs.innerHTML += `<div class="row bg-primary-dark m-1">
+                                <div class="col-12 text-info-light" style="text-align: center;">
+                                ${k}
+                                </div>
+                            </div>`;
+
+
+                if (formatted[k].length > 0)
+                {
+                    formatted[k].forEach(function (record) {
+                        logs.innerHTML += record;
+                    });
+                }
+            }
         }
         $("#options-modal-dj-logs").iziModal('open');
     });
@@ -1171,8 +1213,13 @@ document.querySelector("#btn-options-calendar").onclick = function () {
         var records = Calendar().get().sort(compare);
         if (records.length > 0)
         {
+            var formatted = {};
             records.forEach(function (event)
             {
+                if (typeof formatted[moment(event.start).format("MM/DD/YYYY")] === 'undefined')
+                {
+                    formatted[moment(event.start).format("MM/DD/YYYY")] = [];
+                }
                 var cell3 = ``;
                 if (event.verify === 'Valid')
                 {
@@ -1186,9 +1233,9 @@ document.querySelector("#btn-options-calendar").onclick = function () {
                 } else {
                     cell3 = `<span class="badge badge-dark">Manual</span>`;
                 }
-                calendar.innerHTML += `<div class="row m-1">
-                                <div class="col-3 text-warning-light">
-                                    ${moment(event.start).format("YYYY-MM-DD h:mm A")} - ${moment(event.end).format("YYYY-MM-DD h:mm A")}
+                formatted[moment(event.start).format("MM/DD/YYYY")].push(`<div class="row m-1">
+                                <div class="col-2 text-warning-light">
+                                    ${moment(event.start).format("h:mm A")} - ${moment(event.end).format("h:mm A")}
                                 </div>
                                 <div class="col-3 text-light">
                                     ${event.verify_titleHTML}
@@ -1196,15 +1243,32 @@ document.querySelector("#btn-options-calendar").onclick = function () {
                                 <div class="col-1">
                                     ${cell3}
                                 </div>
-                                    <div class="col-5 text-info-light">
+                                    <div class="col-6 text-info-light">
                                         ${event.verify_message}
                                         </div>
-                            </div>`;
+                            </div>`);
             });
+
+            for (var k in formatted) {
+
+                calendar.innerHTML += `<div class="row m-1 bg-primary-dark">
+                                <div class="col-12 text-info-light" style="text-align: center;">
+                                    ${k}
+                                </div>
+                            </div>`;
+
+
+                if (formatted[k].length > 0)
+                {
+                    formatted[k].forEach(function (record) {
+                        calendar.innerHTML += record;
+                    });
+                }
+            }
         }
 
         $("#options-modal-calendar").iziModal('open');
-    } catch (e) {
+    } catch (err) {
         console.error(err);
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
@@ -1239,15 +1303,16 @@ document.querySelector("#btn-options-announcements").onclick = function () {
             {
                 response.forEach(function (announcement)
                 {
-                    announcements.innerHTML += `<div class="row bg-${announcement.level}-dark m-1">
+                    announcements.innerHTML += `<div class="row bs-callout bs-callout-${announcement.level}">
                     <div class="col-3 text-warning-light">
-                        ${moment(announcement.starts).format("YYYY-MM-DD h:mm A")}<br />
-                        - ${moment(announcement.expires).format("YYYY-MM-DD h:mm A")}
+                        ${moment(announcement.starts).format("MM/DD/YYYY h:mm A")}<br />
+                        - ${moment(announcement.expires).format("MM/DD/YYYY h:mm A")}
                     </div>
                     <div class="col-2 text-success-light">
                         ${announcement.type}
                     </div>
                     <div class="col-5 text-light">
+                        <h4>${announcement.title}</h4>
                         ${announcement.announcement}
                     </div>
                     <div class="col-2 text-info-light">
@@ -1382,125 +1447,131 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                             response.attendance.forEach(function (record) {
                                 if (record.scheduledStart === null)
                                 {
-                                    att.innerHTML += `<div class="row bg-urgent-dark m-1">
-                                <div class="col-3 text-primary-light">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4 text-warning-light">
-                                    UN-SCHEDULED
-                                </div>
-                                <div class="col-4 text-success-light">
-                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${record.actualEnd !== null ? moment(record.actualEnd).format("YYYY-MM-DD h:mm A") : `IN PROGRESS`}
-                                </div>
-                                    <div class="col-1">
-                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                    att.innerHTML += `<div class="row bs-callout bs-callout-urgent">
+                            <div class="col-2 text-danger-light">
+                                ${moment(record.createdAt).format("MM/DD/YYYY")}
+                            </div>
+                            <div class="col-5 text-info-light">
+                                ${record.event}
+                            </div>
+                            <div class="col-4">
+                                <span class="text-warning-light">UN-SCHEDULED</span><br />
+                                <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                            </div>
+                            <div class="col-1">
+                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
                 <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
                 </button>
-                                        </div>
-                            </div>`;
+                            </div>
+                        </div>`;
                                 } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)))
                                 {
-                                    att.innerHTML += `<div class="row bg-dark m-1">
-                                <div class="col-3 text-primary-light">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4 text-warning-light">
-                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
-                                </div>
-                                <div class="col-4 text-success-light">
-                                    FUTURE EVENT
-                                </div>
-                            </div>`;
+                                    att.innerHTML += `<div class="row bs-callout bs-callout-default">
+                            <div class="col-2 text-danger-light">
+                                ${moment(record.createdAt).format("MM/DD/YYYY")}
+                            </div>
+                            <div class="col-5 text-info-light">
+                                ${record.event}
+                            </div>
+                            <div class="col-4">
+                                <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                                <span class="text-success-light">FUTURE EVENT</span>
+                            </div>
+                            <div class="col-1">
+                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                </button>
+                            </div>
+                        </div>`;
                                 } else if (record.actualStart !== null && record.actualEnd !== null)
                                 {
                                     if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10)
                                     {
-                                        att.innerHTML += `<div class="row bg-warning-dark m-1">
-                                <div class="col-3 text-primary-light">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4 text-warning-light">
-                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
-                                </div>
-                                <div class="col-4 text-success-light">
-                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.actualEnd).format("YYYY-MM-DD h:mm A")}
-                                </div>
-                                        <div class="col-1">
-                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                        att.innerHTML += `<div class="row bs-callout bs-callout-warning">
+                            <div class="col-2 text-danger-light">
+                                ${moment(record.createdAt).format("MM/DD/YYYY")}
+                            </div>
+                            <div class="col-5 text-info-light">
+                                ${record.event}
+                            </div>
+                            <div class="col-4">
+                                <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                                <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                            </div>
+                            <div class="col-1">
+                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
                 <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
                 </button>
-                                        </div>
-                            </div>`;
+                            </div>
+                        </div>`;
                                     } else {
-                                        att.innerHTML += `<div class="row bg-success-dark m-1">
-                                <div class="col-3 text-primary-light">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4 text-warning-light">
-                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
-                                </div>
-                                <div class="col-4 text-success-light">
-                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.actualEnd).format("YYYY-MM-DD h:mm A")}
-                                </div>
-                                <div class="col-1">
-                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                        att.innerHTML += `<div class="row bs-callout bs-callout-success">
+                            <div class="col-2 text-danger-light">
+                                ${moment(record.createdAt).format("MM/DD/YYYY")}
+                            </div>
+                            <div class="col-5 text-info-light">
+                                ${record.event}
+                            </div>
+                            <div class="col-4">
+                                <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                                <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                            </div>
+                            <div class="col-1">
+                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
                 <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
                 </button>
-                                </div>
-                            </div>`;
+                            </div>
+                        </div>`;
                                     }
                                 } else if (record.actualStart !== null && record.actualEnd === null)
                                 {
-                                    att.innerHTML += `<div class="row bg-info-dark m-1">
-                                <div class="col-3 text-primary-light">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4 text-warning-light">
-                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
-                                </div>
-                                <div class="col-4 text-success-light">
-                                    START: ${moment(record.actualStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: IN PROGRESS
-                                </div>
-                                <div class="col-1">
-                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                    att.innerHTML += `<div class="row bs-callout bs-callout-info">
+                            <div class="col-2 text-danger-light">
+                                ${moment(record.createdAt).format("MM/DD/YYYY")}
+                            </div>
+                            <div class="col-5 text-info-light">
+                                ${record.event}
+                            </div>
+                            <div class="col-4">
+                                <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                                <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                            </div>
+                            <div class="col-1">
+                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
                 <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
                 </button>
-                                        </div>
-                            </div>`;
+                            </div>
+                        </div>`;
                                 } else if (record.actualStart === null && record.actualEnd === null) {
-                                    att.innerHTML += `<div class="row bg-danger-dark m-1">
-                                <div class="col-3 text-primary-light">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4 text-warning-light">
-                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
-                                </div>
-                                <div class="col-4 text-success-light">
-                                    ABSENT
-                                </div>
-                            </div>`;
+                                    att.innerHTML += `<div class="row bs-callout bs-callout-danger">
+                            <div class="col-2 text-danger-light">
+                                ${moment(record.createdAt).format("MM/DD/YYYY")}
+                            </div>
+                            <div class="col-5 text-info-light">
+                                ${record.event}
+                            </div>
+                            <div class="col-4">
+                                <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                                <span class="text-success-light">ABSENT / DID NOT AIR</span>
+                            </div>
+                            <div class="col-1">
+                            </div>
+                        </div>`;
                                 } else {
-                                    att.innerHTML += `<div class="row bg-info-dark m-1">
-                                <div class="col-3 text-primary-light">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4 text-warning-light">
-                                    START: ${moment(record.scheduledStart).format("YYYY-MM-DD h:mm A")}<br />
-                                    END: ${moment(record.scheduledEnd).format("YYYY-MM-DD h:mm A")}
-                                </div>
-                                <div class="col-4 text-success-light">
-                                    SCHEDULED, BUT NOT YET STARTED
-                                </div>
-                            </div>`;
+                                    att.innerHTML += `<div class="row bs-callout bs-callout-info">
+                            <div class="col-2 text-danger-light">
+                                ${moment(record.createdAt).format("MM/DD/YYYY")}
+                            </div>
+                            <div class="col-5 text-info-light">
+                                ${record.event}
+                            </div>
+                            <div class="col-4">
+                                <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                                <span class="text-success-light">NOT YET STARTED</span>
+                            </div>
+                            <div class="col-1">
+                            </div>
+                        </div>`;
                                 }
                             });
                         }
@@ -1717,7 +1788,7 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                 if (DJData && DJData.XP && DJData.XP.rows && DJData.XP.rows.length > 0)
                 {
                     DJData.XP.rows.forEach(function (row) {
-                        xpLogs.innerHTML += `<div class="row ${row.type === 'remote' ? `bg-warning-dark` : `bg-info-dark`} m-1">
+                        xpLogs.innerHTML += `<div class="row bs-callout bs-callout-${row.type === 'remote' ? `warning` : `info`}">
                     <div class="col-3 text-warning-light">
                         ${moment(row.createdAt).format("YYYY-MM-DD h:mm A")}
                     </div>
@@ -1934,11 +2005,11 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                     if (response.length > 0)
                     {
                         response.forEach(function (log) {
-                            logs.innerHTML += `<div class="row bg-${log.loglevel}-dark m-1">
-                                <div class="col-4 text-warning-light">
-                                    ${moment(log.createdAt).format("YYYY-MM-DD h:mm A")}
+                            logs.innerHTML += `<div class="row bs-callout bs-callout-${log.loglevel}">
+                                <div class="col-2 text-warning-light">
+                                    ${moment(log.createdAt).format("h:mm:ss A")}
                                 </div>
-                                <div class="col-8 text-info-light">
+                                <div class="col-10 text-info-light">
                                 ${log.event}
                                 ${log.trackArtist !== null && log.trackArtist !== "" ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== "" ? ` - ${log.trackTitle}` : ``}
                                 ${log.trackAlbum !== null && log.trackAlbum !== "" ? `<br />Album: ${log.trackAlbum}` : ``}
@@ -1974,11 +2045,11 @@ document.querySelector(`#global-logs`).addEventListener("click", function (e) {
                     if (response.length > 0)
                     {
                         response.forEach(function (log) {
-                            logs.innerHTML += `<div class="row bg-${log.loglevel}-dark m-1">
-                                <div class="col-4 text-warning-light">
-                                    ${moment(log.createdAt).format("YYYY-MM-DD h:mm A")}
+                            logs.innerHTML += `<div class="row bs-callout bs-callout-${log.loglevel}">
+                                <div class="col-2 text-warning-light">
+                                    ${moment(log.createdAt).format("h:mm:ss A")}
                                 </div>
-                                <div class="col-8 text-info-light">
+                                <div class="col-10 text-info-light">
                                 ${log.event}
                                 ${log.trackArtist !== null && log.trackArtist !== "" ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== "" ? ` - ${log.trackTitle}` : ``}
                                 ${log.trackAlbum !== null && log.trackAlbum !== "" ? `<br />Album: ${log.trackAlbum}` : ``}
@@ -2226,6 +2297,7 @@ document.querySelector(`#options-announcements`).addEventListener("click", funct
                     document.querySelector("#options-announcement-starts").value = moment(response.starts).format("YYYY-MM-DD\THH:mm");
                     document.querySelector("#options-announcement-expires").value = moment(response.expires).format("YYYY-MM-DD\THH:mm");
                     document.querySelector("#options-announcement-type").value = response.type;
+                    document.querySelector("#options-announcement-title").value = response.title;
                     document.querySelector("#options-announcement-level").value = response.level;
                     quill2.clipboard.dangerouslyPasteHTML(response.announcement);
                     document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-success" id="options-announcement-edit-${response.ID}">Edit</button>`;
@@ -2248,7 +2320,7 @@ document.querySelector(`#options-announcement-button`).addEventListener("click",
             console.log(e.target.id);
             if (e.target.id.startsWith("options-announcement-edit-"))
             {
-                nodeRequest({method: 'POST', url: nodeURL + '/announcements/edit', data: {ID: parseInt(e.target.id.replace(`options-announcement-edit-`, ``)), starts: moment(document.querySelector("#options-announcement-starts").value).toISOString(true), expires: moment(document.querySelector("#options-announcement-expires").value).toISOString(true), type: document.querySelector("#options-announcement-type").value, level: document.querySelector("#options-announcement-level").value, announcement: quillGetHTML(quill2.getContents())}}, function (response) {
+                nodeRequest({method: 'POST', url: nodeURL + '/announcements/edit', data: {ID: parseInt(e.target.id.replace(`options-announcement-edit-`, ``)), starts: moment(document.querySelector("#options-announcement-starts").value).toISOString(true), expires: moment(document.querySelector("#options-announcement-expires").value).toISOString(true), type: document.querySelector("#options-announcement-type").value, level: document.querySelector("#options-announcement-level").value, title: document.querySelector("#options-announcement-title").value, announcement: quillGetHTML(quill2.getContents())}}, function (response) {
                     if (response === 'OK')
                     {
                         $("#options-modal-announcement").iziModal('close');
@@ -2283,7 +2355,7 @@ document.querySelector(`#options-announcement-button`).addEventListener("click",
             }
             if (e.target.id === "options-announcement-add")
             {
-                nodeRequest({method: 'POST', url: nodeURL + '/announcements/add', data: {starts: moment(document.querySelector("#options-announcement-starts").value).toISOString(true), expires: moment(document.querySelector("#options-announcement-expires").value).toISOString(true), type: document.querySelector("#options-announcement-type").value, level: document.querySelector("#options-announcement-level").value, announcement: quillGetHTML(quill2.getContents())}}, function (response) {
+                nodeRequest({method: 'POST', url: nodeURL + '/announcements/add', data: {starts: moment(document.querySelector("#options-announcement-starts").value).toISOString(true), expires: moment(document.querySelector("#options-announcement-expires").value).toISOString(true), type: document.querySelector("#options-announcement-type").value, level: document.querySelector("#options-announcement-level").value, title: document.querySelector("#options-announcement-title").value, announcement: quillGetHTML(quill2.getContents())}}, function (response) {
                     if (response === 'OK')
                     {
                         $("#options-modal-announcement").iziModal('close');
@@ -2904,6 +2976,10 @@ function doMeta(metan) {
                 $("#wait-modal").iziModal('close');
             }
         }
+
+        document.querySelector("#nowplaying").innerHTML = `${Meta.line1}<br />${Meta.line2}`;
+        bar.animate(Meta.percent);
+
         // Notify the DJ of a mandatory top of the hour break if they need to take one
         if (Meta.breakneeded && Meta.djcontrols === os.hostname())
         {
@@ -3166,8 +3242,9 @@ function checkAnnouncements() {
                 if (document.querySelector(`#attn-${datum.ID}`) === null)
                 {
                     var attn = document.querySelector("#announcements-body");
-                    attn.innerHTML += `<div class="attn attn-${datum.level} alert alert-${datum.level}" id="attn-${datum.ID}" role="alert">
-                        <i class="fas fa-bullhorn"></i> ${datum.announcement}
+                    attn.innerHTML += `<div class="attn attn-${datum.level} bs-callout bs-callout-${datum.level}" id="attn-${datum.ID}" role="alert">
+                        <h4><i class="fas fa-bullhorn"></i> ${datum.title}</h4>
+                        ${datum.announcement}
                     </div>`;
                     // If this DJ Controls is configured by WWSU to notify on technical problems, notify so.
                     if (client.emergencies && datum.announcement.startsWith("<strong>Problem reported by"))
@@ -3196,8 +3273,9 @@ function checkAnnouncements() {
                     }
                 } else {
                     var temp = document.querySelector(`#attn-${datum.ID}`);
-                    temp.className = `attn attn-${datum.level} alert alert-${datum.level}`;
-                    temp.innerHTML = `<i class="fas fa-bullhorn"></i> ${datum.announcement}`;
+                    temp.className = `attn attn-${datum.level} bs-callout bs-callout-${datum.level}`;
+                    temp.innerHTML = `<h4><i class="fas fa-bullhorn"></i> ${datum.title}</h4>
+                        ${datum.announcement}`;
                 }
             }
         } catch (e) {
@@ -3520,10 +3598,10 @@ function checkCalendar() {
                 if (Meta.state.startsWith("automation_") || Meta.state === "live_prerecord")
                 {
                     var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878');
-                    finalColor.red = Math.round(finalColor.red / 2);
-                    finalColor.green = Math.round(finalColor.green / 2);
-                    finalColor.blue = Math.round(finalColor.blue / 2);
-                    document.querySelector('#calendar-events').innerHTML += ` <div class="p-1 m-1" style="background-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue});">
+                    finalColor.red = Math.round(finalColor.red);
+                    finalColor.green = Math.round(finalColor.green);
+                    finalColor.blue = Math.round(finalColor.blue);
+                    document.querySelector('#calendar-events').innerHTML += ` <div class="bs-callout bs-callout-default" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgba(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}, 0.2);">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -3678,15 +3756,15 @@ function checkCalendar() {
                     if (moment(Meta.time).add(1, 'hours').isAfter(moment(event.start)) && moment(Meta.time).isBefore(moment(event.end)))
                     {
                         var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878');
-                        finalColor.red = Math.round(finalColor.red / 2);
-                        finalColor.green = Math.round(finalColor.green / 2);
-                        finalColor.blue = Math.round(finalColor.blue / 2);
+                        finalColor.red = Math.round(finalColor.red);
+                        finalColor.green = Math.round(finalColor.green);
+                        finalColor.blue = Math.round(finalColor.blue);
                         var stripped = event.title.replace("Show: ", "");
                         stripped = stripped.replace("Remote: ", "");
                         stripped = stripped.replace("Sports: ", "");
                         if (Meta.dj !== stripped)
                         {
-                            document.querySelector('#calendar-events').innerHTML += ` <div class="p-1 m-1" style="background-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue});">
+                            document.querySelector('#calendar-events').innerHTML += `  <div class="bs-callout bs-callout-default" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgba(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}, 0.2);">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -3756,7 +3834,7 @@ function checkCalendar() {
                     if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
                     {
                         doTopOfHour = true;
-                        document.querySelector('#calendar-events').innerHTML = ` <div class="p-1 m-1" style="background-color: #7f751d;">
+                        document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-warning">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -3774,7 +3852,7 @@ function checkCalendar() {
                     if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
                     {
                         doTopOfHour = true;
-                        document.querySelector('#calendar-events').innerHTML += ` <div class="p-1 m-1" style="background-color: #7f751d;">
+                        document.querySelector('#calendar-events').innerHTML += `  <div class="bs-callout bs-callout-warning">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -3792,10 +3870,10 @@ function checkCalendar() {
                 // First in the list of events, show the current show and how much time remains based on the schedule and whether or not something else will mandate this show
                 // ends early.
                 var finalColor = (typeof doColor !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(doColor)) ? hexRgb(doColor) : hexRgb('#787878');
-                finalColor.red = Math.round(finalColor.red / 2);
-                finalColor.green = Math.round(finalColor.green / 2);
-                finalColor.blue = Math.round(finalColor.blue / 2);
-                document.querySelector('#calendar-events').innerHTML = ` <div class="p-1 m-1" style="background-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue});">
+                finalColor.red = Math.round(finalColor.red);
+                finalColor.green = Math.round(finalColor.green);
+                finalColor.blue = Math.round(finalColor.blue);
+                document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-default" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgba(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}, 0.2);">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -4875,7 +4953,7 @@ function prepareEmergency() {
 }
 
 function sendEmergency() {
-    nodeRequest({method: 'POST', url: nodeURL + '/announcements/add', data: {type: 'djcontrols', level: 'danger', announcement: `<strong>Problem reported by ${Meta.dj}</strong>: ${document.querySelector("#emergency-issue").value}`}}, function (response) {
+    nodeRequest({method: 'POST', url: nodeURL + '/announcements/add', data: {type: 'djcontrols', level: 'danger', title: "Reported Problem", announcement: `<strong>${moment().format("MM/DD/YYYY hh:mm A")}</strong>: ${document.querySelector("#emergency-issue").value}`}}, function (response) {
         if (response === 'OK')
         {
             $("#emergency-modal").iziModal('close');
@@ -5220,13 +5298,15 @@ function processEas(data, replace = false)
                     if (document.querySelector(`#attn-eas-${datum.ID}`) === null)
                     {
                         var attn = document.querySelector("#announcements-body");
-                        attn.innerHTML += `<div class="attn-eas attn-eas-${datum.severity} alert alert-${className}" id="attn-eas-${datum.ID}" role="alert">
-                        <i class="fas fa-bolt"></i> <strong>${datum.alert}</strong> in effect for the counties ${datum.counties}.
+                        attn.innerHTML += `<div class="attn-eas attn-eas-${datum.severity} bs-callout bs-callout-${className}" id="attn-eas-${datum.ID}" role="alert">
+                        <h4><i class="fas fa-bolt"></i> ${datum.alert}</h4>
+                        EAS: <strong>${datum.alert}</strong> in effect for the counties ${datum.counties}.
                     </div>`;
                     } else {
                         var temp = document.querySelector(`#attn-eas-${datum.ID}`);
-                        temp.className = `attn-eas attn-eas-${datum.severity} alert alert-${className}`;
-                        temp.innerHTML = `<i class="fas fa-bolt"></i> <strong>${datum.alert}</strong> in effect for the counties ${datum.counties}.`;
+                        temp.className = `attn-eas attn-eas-${datum.severity} bs-callout bs-callout-${className}`;
+                        temp.innerHTML = `<h4><i class="fas fa-bolt"></i> ${datum.alert}</h4>
+                        EAS: <strong>${datum.alert}</strong> in effect for the counties ${datum.counties}.`;
                     }
                 });
             }
@@ -5348,13 +5428,14 @@ function processEas(data, replace = false)
                             if (document.querySelector(`#attn-eas-${data[key].ID}`) === null)
                             {
                                 var attn = document.querySelector("#announcements-body");
-                                attn.innerHTML += `<div class="attn-eas attn-eas-${data[key].severity} alert alert-${className}" id="attn-eas-${data[key].ID}" role="alert">
-                        <i class="fas fa-bolt"></i> <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.
-                    </div>`;
+                                attn.innerHTML += `<div class="attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className}" id="attn-eas-${data[key].ID}" role="alert">
+                        <h4><i class="fas fa-bolt"></i> ${data[key].alert}</h4>
+                        EAS: <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
                             } else {
                                 var temp = document.querySelector(`#attn-eas-${data[key].ID}`);
-                                temp.className = `attn-eas attn-eas-${data[key].severity} alert alert-${className}`;
-                                temp.innerHTML = `<i class="fas fa-bolt"></i> <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
+                                temp.className = `attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className}`;
+                                temp.innerHTML = `<h4><i class="fas fa-bolt"></i> ${data[key].alert}</h4>
+                        EAS: <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
                             }
                             if (data[key].severity === 'Extreme')
                             {
@@ -5452,13 +5533,14 @@ function processEas(data, replace = false)
                             if (document.querySelector(`#attn-eas-${data[key].ID}`) === null)
                             {
                                 var attn = document.querySelector("#announcements-body");
-                                attn.innerHTML += `<div class="attn-eas attn-eas-${data[key].severity} alert alert-${className}" id="attn-eas-${data[key].ID}" role="alert">
-                        <i class="fas fa-bolt"></i> <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.
-                    </div>`;
+                                attn.innerHTML += `<div class="attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className}" id="attn-eas-${data[key].ID}" role="alert">
+                        <h4><i class="fas fa-bolt"></i> ${data[key].alert}</h4>
+                        EAS: <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
                             } else {
                                 var temp = document.querySelector(`#attn-eas-${data[key].ID}`);
-                                temp.className = `attn-eas attn-eas-${data[key].severity} alert alert-${className}`;
-                                temp.innerHTML = `<i class="fas fa-bolt"></i> <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
+                                temp.className = `attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className}`;
+                                temp.innerHTML = `<h4><i class="fas fa-bolt"></i> ${data[key].alert}</h4>
+                        EAS: <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
                             }
                             break;
                         case 'remove':
@@ -5516,9 +5598,9 @@ function processStatus(data, replace = false)
                     {
                         prev.push(`attn-status-${datum.name}`);
                         var attn = document.querySelector("#announcements-body");
-                        attn.innerHTML += `<div class="attn-status attn-status-${datum.status} alert alert-${className}" id="attn-status-${datum.name}" role="alert">
-                        <i class="fas fa-server"></i> <strong>${datum.label}</strong> is reporting a problem: ${datum.data}
-                    </div>`;
+                        attn.innerHTML += `<div class="attn-status attn-status-${datum.status} bs-callout bs-callout-${className}" id="attn-status-${datum.name}" role="alert">
+                        <h4><i class="fas fa-server"></i> ${datum.label}</h4>
+                        <strong>${datum.label}</strong> is reporting a problem: ${datum.data}.`;
                         if (client.emergencies && datum.status < 3)
                         {
                             var notification = notifier.notify('System Problem', {
@@ -5531,8 +5613,9 @@ function processStatus(data, replace = false)
                     } else {
                         prev.push(`attn-status-${datum.name}`);
                         var temp = document.querySelector(`#attn-status-${datum.name}`);
-                        temp.className = `attn-status attn-status-${datum.status} alert alert-${className}`;
-                        temp.innerHTML = `<i class="fas fa-server"></i ><strong>${datum.label}</strong> is reporting a problem: ${datum.data}`;
+                        temp.className = `attn-status attn-status-${datum.status} bs-callout bs-callout-${className}`;
+                        temp.innerHTML = `<h4><i class="fas fa-server"></i> ${datum.label}</h4>
+                        <strong>${datum.label}</strong> is reporting a problem: ${datum.data}.`;
                     }
                     if (datum.name === 'silence' && datum.status <= 3)
                     {
@@ -5595,9 +5678,9 @@ function processStatus(data, replace = false)
                             if (document.querySelector(`#attn-status-${data[key].name}`) === null)
                             {
                                 var attn = document.querySelector("#announcements-body");
-                                attn.innerHTML += `<div class="attn-status attn-status-${data[key].status} alert alert-${className}" id="attn-status-${data[key].name}" role="alert">
-                        <i class="fas fa-server"></i> <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}
-                    </div>`;
+                                attn.innerHTML += `<div class="attn-status attn-status-${data[key].status} bs-callout bs-callout-${className}" id="attn-status-${data[key].name}" role="alert">
+                        <h4><i class="fas fa-server"></i> ${data[key].label}</h4>
+                        <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                                 if (client.emergencies && data[key].status < 3)
                                 {
                                     var notification = notifier.notify('System Problem', {
@@ -5609,8 +5692,9 @@ function processStatus(data, replace = false)
                                 }
                             } else {
                                 var temp = document.querySelector(`#attn-status-${data[key].name}`);
-                                temp.className = `attn-status attn-status-${data[key].status} alert alert-${className}`;
-                                temp.innerHTML = `<i class="fas fa-server"></i> <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}`;
+                                temp.className = `attn-status attn-status-${data[key].status} bs-callout bs-callout-${className}`;
+                                temp.innerHTML = `<h4><i class="fas fa-server"></i> ${data[key].label}</h4>
+                        <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                             }
                             if (data[key].name === 'silence' && data[key].status <= 3)
                             {
@@ -5658,9 +5742,9 @@ function processStatus(data, replace = false)
                             if (document.querySelector(`#attn-status-${data[key].name}`) === null)
                             {
                                 var attn = document.querySelector("#announcements-body");
-                                attn.innerHTML += `<div class="attn-status attn-status-${data[key].status} alert alert-${className}" id="attn-status-${data[key].name}" role="alert">
-                        <i class="fas fa-server"></i> <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}
-                    </div>`;
+                                attn.innerHTML += `<div class="attn-status attn-status-${data[key].status} bs-callout bs-callout-${className}" id="attn-status-${data[key].name}" role="alert">
+                        <h4><i class="fas fa-server"></i> ${data[key].label}</h4>
+                        <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                                 if (client.emergencies && data[key].status < 3)
                                 {
                                     var notification = notifier.notify('System Problem', {
@@ -5672,8 +5756,9 @@ function processStatus(data, replace = false)
                                 }
                             } else {
                                 var temp = document.querySelector(`#attn-status-${data[key].name}`);
-                                temp.className = `attn-status attn-status-${data[key].status} alert alert-${className}`;
-                                temp.innerHTML = `<i class="fas fa-server"></i> <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}`;
+                                temp.className = `attn-status attn-status-${data[key].status} bs-callout bs-callout-${className}`;
+                                temp.innerHTML = `<h4><i class="fas fa-server"></i> ${data[key].label}</h4>
+                        <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                             }
                             if (data[key].name === 'silence' && data[key].status <= 3)
                             {
