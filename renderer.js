@@ -1,4 +1,4 @@
-/* global iziToast, io, moment, Infinity, err, ProgressBar */
+/* global iziToast, io, moment, Infinity, err, ProgressBar, Taucharts */
 
 try {
 
@@ -766,7 +766,7 @@ try {
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
         zindex: 50
     });
-    
+
     // Create a seek progress bar in the Meta box
     var bar = new ProgressBar.Line(document.getElementById('nowplaying-seek'), {
         strokeWidth: 4,
@@ -2017,6 +2017,63 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                                 </div>
                             </div>`;
                         });
+
+                        document.querySelector('#dj-logs-listeners').innerHTML = '';
+                        nodeRequest({method: 'POST', url: nodeURL + '/listeners/get', data: {start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true)}}, function (response2) {
+
+                            if (response2.length > 1 && typeof response2.forEach === 'function')
+                            {
+                                var data = [];
+                                response2.forEach(function (listener) {
+                                    if (moment(listener.createdAt).isBefore(moment(response[0].createdAt)))
+                                        listener.createdAt = response[0].createdAt;
+                                    data.push({x: moment(listener.createdAt).toISOString(true), y: listener.listeners});
+                                });
+                                data.push({x: moment(response[response.length - 1].createdAt).toISOString(true), y: response[response.length - 1].listeners});
+                                new Taucharts.Chart({
+                                    data: data,
+                                    type: 'line',
+                                    x: 'x',
+                                    y: 'y',
+                                    color: 'wwsu-red',
+                                    guide: {
+                                        y: {label: {text: 'Online Listeners'}, autoScale: true, nice: true},
+                                        x: {label: {text: 'Time'}, autoScale: true, nice: false},
+                                        interpolate: 'step-after',
+                                        showGridLines: 'xy',
+                                    },
+                                    dimensions: {
+                                        x: {
+                                            type: 'measure',
+                                            scale: 'time'
+                                        },
+                                        y: {
+                                            type: 'measure',
+                                            scale: 'linear'
+                                        }
+                                    },
+                                    plugins: [
+                                        Taucharts.api.plugins.get('tooltip')({
+                                            formatters: {
+                                                x: {
+                                                    label: "Time",
+                                                    format: function (n) {
+                                                        return moment(n).format("LT");
+                                                    }
+                                                },
+                                                y: {
+                                                    label: "Online Listeners",
+                                                    format: function (n) {
+                                                        return n;
+                                                    }
+                                                }
+
+                                            }
+                                        })
+                                    ]
+                                }).renderTo('#dj-logs-listeners');
+                            }
+                        });
                     }
                     $("#options-modal-dj-logs").iziModal('open');
                 });
@@ -2056,6 +2113,63 @@ document.querySelector(`#global-logs`).addEventListener("click", function (e) {
                                 ${log.trackLabel !== null && log.trackLabel !== "" ? `<br />Label: ${log.trackLabel}` : ``}
                                 </div>
                             </div>`;
+                        });
+
+                        document.querySelector('#dj-logs-listeners').innerHTML = '';
+                        nodeRequest({method: 'POST', url: nodeURL + '/listeners/get', data: {start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true)}}, function (response2) {
+
+                            if (response2.length > 1 && typeof response2.forEach === 'function')
+                            {
+                                var data = [];
+                                response2.forEach(function (listener) {
+                                    if (moment(listener.createdAt).isBefore(moment(response[0].createdAt)))
+                                        listener.createdAt = response[0].createdAt;
+                                    data.push({x: moment(listener.createdAt).toISOString(true), y: listener.listeners});
+                                });
+                                data.push({x: moment(response[response.length - 1].createdAt).toISOString(true), y: response[response.length - 1].listeners});
+                                new Taucharts.Chart({
+                                    data: data,
+                                    type: 'line',
+                                    x: 'x',
+                                    y: 'y',
+                                    color: 'wwsu-red',
+                                    guide: {
+                                        y: {label: {text: 'Online Listeners'}, autoScale: true, nice: true},
+                                        x: {label: {text: 'Time'}, autoScale: true, nice: false},
+                                        interpolate: 'step-after',
+                                        showGridLines: 'xy',
+                                    },
+                                    dimensions: {
+                                        x: {
+                                            type: 'measure',
+                                            scale: 'time'
+                                        },
+                                        y: {
+                                            type: 'measure',
+                                            scale: 'linear'
+                                        }
+                                    },
+                                    plugins: [
+                                        Taucharts.api.plugins.get('tooltip')({
+                                            formatters: {
+                                                x: {
+                                                    label: "Time",
+                                                    format: function (n) {
+                                                        return moment(n).format("LT");
+                                                    }
+                                                },
+                                                y: {
+                                                    label: "Online Listeners",
+                                                    format: function (n) {
+                                                        return n;
+                                                    }
+                                                }
+
+                                            }
+                                        })
+                                    ]
+                                }).renderTo('#dj-logs-listeners');
+                            }
                         });
                     }
                     $("#options-modal-dj-logs").iziModal('open');
