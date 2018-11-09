@@ -669,8 +669,8 @@ try {
         modules: {
             toolbar: [
                 ['bold', 'italic', 'underline', 'strike', {'color': []}],
-                ['link'],
-                ['clean']
+                ['link', { 'indent': '-1'}, { 'indent': '+1' }, { 'list': 'ordered'}, { 'list': 'bullet' }, 'align'],
+                ['image', 'clean']
             ],
         },
         theme: 'snow',
@@ -4617,7 +4617,7 @@ function deleteMessage(message) {
                 overlay: false,
                 zindex: 1000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to delete message ${message} but an error was returned: ${response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to delete message ${message} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -4730,7 +4730,7 @@ function finishMute(recipient) {
                     overlay: false,
                     zindex: 1000
                 });
-                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to mute ${host} but an error was returned: ${response}`}}, function (response) {});
+                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to mute ${host} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
             }
             console.log(JSON.stringify(response));
         });
@@ -4775,7 +4775,7 @@ function finishBan(recipient) {
                     overlay: false,
                     zindex: 1000
                 });
-                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to ban ${host} but an error was returned: ${response}`}}, function (response) {});
+                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to ban ${host} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
             }
             console.log(JSON.stringify(response));
         });
@@ -4852,7 +4852,7 @@ function finishAttnRemove(ID) {
                     overlay: false,
                     zindex: 1000
                 });
-                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `Someone on ${os.hostname()} DJ Controls attempted to delete announcement ${ID} but an error was returned: ${response}`}}, function (response) {});
+                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `Someone on ${os.hostname()} DJ Controls attempted to delete announcement ${ID} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
             }
             console.log(JSON.stringify(response));
         });
@@ -4878,7 +4878,7 @@ function returnBreak() {
                 message: 'Cannot return from break. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to return from break, but an error was returned: ${response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to return from break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
     });
 }
@@ -4893,7 +4893,7 @@ function queuePSA(duration) {
                 message: 'Could not queue a PSA. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to queue a PSA, but an error was returned: ${response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to queue a PSA, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
     });
 }
@@ -4925,7 +4925,7 @@ function goLive() {
                 message: 'Cannot go live at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go live, but an error was returned: ${response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go live, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -4958,7 +4958,7 @@ function goRemote() {
                 message: 'Cannot go remote at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -4991,7 +4991,7 @@ function goSports() {
                 message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go sports, but an error was returned: ${response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go sports, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -5054,7 +5054,7 @@ function saveLog() {
                 title: 'An error occurred',
                 message: 'Error occurred trying to submit a log entry. Please email engineer@wwsu1069.org.'
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to add a log, but an error was returned: ${response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to add a log, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -5088,7 +5088,7 @@ function sendEmergency() {
                 title: 'An error occurred',
                 message: 'Error occurred trying to submit a problem. Please email your issue to engineer@wwsu1069.org instead.'
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to report a problem, but an error was returned: ${response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to report a problem, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -5122,7 +5122,7 @@ function sendDisplay() {
                 title: 'An error occurred',
                 message: 'Error occurred trying to submit a message to the display signs. Please email engineer@wwsu1069.org'
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to send a message to display signs, but an error was returned: ${response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to send a message to display signs, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -5137,20 +5137,20 @@ function endShow() {
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to end their show, but an error was returned: ${response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to end their show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         } else {
             $("#xp-modal").iziModal('open');
             document.querySelector(`#stat-showTime`).innerHTML = moment.duration(response.showTime || 0, "minutes").format();
-            document.querySelector(`#stat-showXP`).innerHTML = formatInt(response.showXP || 0);
+            document.querySelector(`#stat-showXP`).innerHTML = typeof response.showXP !== 'undefined' ? formatInt(response.showXP) : "-";
             document.querySelector(`#stat-listenerMinutes`).innerHTML = moment.duration(response.listenerMinutes || 0, "minutes").format();
-            document.querySelector(`#stat-listenerXP`).innerHTML = formatInt(response.listenerXP || 0);
+            document.querySelector(`#stat-listenerXP`).innerHTML = typeof response.listenerXP !== 'undefined' ? formatInt(response.listenerXP) : "-";
             document.querySelector(`#stat-messagesWeb`).innerHTML = response.messagesWeb || 0;
-            document.querySelector(`#stat-messagesXP`).innerHTML = formatInt(response.messagesXP || 0);
+            document.querySelector(`#stat-messagesXP`).innerHTML = typeof response.messagesXP !== 'undefined' ? formatInt(response.messagesXP) : "-";
             document.querySelector(`#stat-topAdds`).innerHTML = response.topAdds || 0;
-            document.querySelector(`#stat-topAddsXP`).innerHTML = formatInt(response.topAddsXP || 0);
-            document.querySelector(`#stat-IDsXP`).innerHTML = formatInt(response.IDsXP || 0);
-            document.querySelector(`#stat-subtotalXP`).innerHTML = formatInt(response.subtotalXP || 0);
-            document.querySelector(`#stat-totalXP`).innerHTML = formatInt(response.totalXP || 0);
+            document.querySelector(`#stat-topAddsXP`).innerHTML = typeof response.topAddsXP !== 'undefined' ? formatInt(response.topAddsXP) : "-";
+            document.querySelector(`#stat-IDsXP`).innerHTML = typeof response.IDsXP !== 'undefined' ? formatInt(response.IDsXP) : "-";
+            document.querySelector(`#stat-subtotalXP`).innerHTML = typeof response.subtotalXP !== 'undefined' ? formatInt(response.subtotalXP) : "-";
+            document.querySelector(`#stat-totalXP`).innerHTML = typeof response.totalXP !== 'undefined' ? formatInt(response.totalXP) : "-";
             /* DEPRECATED per request of GM
              var data = [];
              response.listeners.forEach(function (listener) {
@@ -5214,20 +5214,20 @@ function switchShow() {
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to switch show, but an error was returned: ${response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to switch show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         } else {
             $("#xp-modal").iziModal('open');
             document.querySelector(`#stat-showTime`).innerHTML = moment.duration(response.showTime || 0, "minutes").format();
-            document.querySelector(`#stat-showXP`).innerHTML = formatInt(response.showXP || 0);
+            document.querySelector(`#stat-showXP`).innerHTML = typeof response.showXP !== 'undefined' ? formatInt(response.showXP) : "-";
             document.querySelector(`#stat-listenerMinutes`).innerHTML = moment.duration(response.listenerMinutes || 0, "minutes").format();
-            document.querySelector(`#stat-listenerXP`).innerHTML = formatInt(response.listenerXP || 0);
+            document.querySelector(`#stat-listenerXP`).innerHTML = typeof response.listenerXP !== 'undefined' ? formatInt(response.listenerXP) : "-";
             document.querySelector(`#stat-messagesWeb`).innerHTML = response.messagesWeb || 0;
-            document.querySelector(`#stat-messagesXP`).innerHTML = formatInt(response.messagesXP || 0);
+            document.querySelector(`#stat-messagesXP`).innerHTML = typeof response.messagesXP !== 'undefined' ? formatInt(response.messagesXP) : "-";
             document.querySelector(`#stat-topAdds`).innerHTML = response.topAdds || 0;
-            document.querySelector(`#stat-topAddsXP`).innerHTML = formatInt(response.topAddsXP || 0);
-            document.querySelector(`#stat-IDsXP`).innerHTML = formatInt(response.IDsXP || 0);
-            document.querySelector(`#stat-subtotalXP`).innerHTML = formatInt(response.subtotalXP || 0);
-            document.querySelector(`#stat-totalXP`).innerHTML = formatInt(response.totalXP || 0);
+            document.querySelector(`#stat-topAddsXP`).innerHTML = typeof response.topAddsXP !== 'undefined' ? formatInt(response.topAddsXP) : "-";
+            document.querySelector(`#stat-IDsXP`).innerHTML = typeof response.IDsXP !== 'undefined' ? formatInt(response.IDsXP) : "-";
+            document.querySelector(`#stat-subtotalXP`).innerHTML = typeof response.subtotalXP !== 'undefined' ? formatInt(response.subtotalXP) : "-";
+            document.querySelector(`#stat-totalXP`).innerHTML = typeof response.totalXP !== 'undefined' ? formatInt(response.totalXP) : "-";
             /* DEPRECATED per request of GM
              var data = [];
              response.listeners.forEach(function (listener) {
@@ -5291,7 +5291,7 @@ function goBreak(halftime) {
                 message: 'Error occurred trying to go into break. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go to break, but an error was returned: ${response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go to break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -5308,7 +5308,7 @@ function playTopAdd() {
                 message: 'Error occurred trying to play a Top Add. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to play a Top Add, but an error was returned: ${response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to play a Top Add, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -5326,7 +5326,7 @@ function playLiner() {
                 message: 'Error occurred trying to play a liner. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to play a Liner, but an error was returned: ${response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to play a Liner, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
