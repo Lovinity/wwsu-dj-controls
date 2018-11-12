@@ -668,8 +668,8 @@ try {
     var quill2 = new Quill('#theannouncement', {
         modules: {
             toolbar: [
-                ['bold', 'italic', 'underline', 'strike', {'color': []}],
-                ['link', { 'indent': '-1'}, { 'indent': '+1' }, { 'list': 'ordered'}, { 'list': 'bullet' }, 'align'],
+                [{'size': ['small', false, 'large', 'huge']}, 'bold', 'italic', 'underline', 'strike', {'color': []}],
+                ['link', {'indent': '-1'}, { 'indent': '+1' }, {'list': 'ordered'}, {'list': 'bullet'}, {'align': []}],
                 ['image', 'clean']
             ],
         },
