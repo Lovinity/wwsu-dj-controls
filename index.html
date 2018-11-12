@@ -13,7 +13,6 @@
         <script src="assets/js/fontawesome.js"></script>
         <script src="assets/js/iziToast.min.js"></script>
         <script src="assets/js/iziModal.min.js"></script>
-        <script src="assets/js/move.min.js"></script>
         <script src="assets/js/moment.min.js"></script>
         <script src="assets/js/moment-duration-format.js"></script>
         <script src="assets/js/taffy-min.js"></script>
@@ -29,6 +28,8 @@
         <link rel="stylesheet" href="assets/styles/fontawesome.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/quill.snow.css" type="text/css">
         <link rel="stylesheet" type="text/css" href="assets/styles/taucharts.min.css">
+        <link href="assets/styles/trip.css" rel="stylesheet">
+        <script src="assets/js/trip.js"></script>
         <style>
             .btn-circle {
                 width: 30px;
@@ -414,6 +415,10 @@
 
         <div class="d-flex justify-content-center flex-wrap p-3 m-3">
             <div class="card p-1 m-3 text-white bg-dark" id="operations" style="width: 640px; height: 360px;">
+                <div id="wait-modal" class="bg-warning text-dark" style="font-size: 2em; text-align: center;">
+                    PLEASE WAIT...
+                    <div id="wait-text" style="font-size: 1.5em; text-align: center;"></div>
+                </div>
                 <div class="card-header text-center" style="font-size: 1.5em;">
                     WWSU Operations   
                     <span class="badge badge-secondary" id="operations-state">Unknown</span>
@@ -803,11 +808,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div id="wait-modal" class="bg-warning text-dark" style="font-size: 2em; text-align: center;">
-            PLEASE WAIT...
-            <div id="wait-text" style="font-size: 1.5em; text-align: center;"></div>
         </div>
 
         <div id="xp-modal" style="background-color: #363636; color: #ffffff;">
