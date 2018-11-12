@@ -59,6 +59,7 @@ try {
     }
     var prevQueueLength = 0;
     var queueLength = 0;
+    var trip;
 
     // These are used for keeping track of upcoming shows and notifying DJs to prevent people cutting into each other's shows.
     var calPriority = 0;
@@ -67,6 +68,7 @@ try {
     var calShow = '';
     var calNotified = false;
     var calStarts = null;
+    var calHint = false;
 
     // Clock stuff
     var date = moment(Meta.time);
@@ -695,8 +697,7 @@ try {
         overlayColor: 'rgba(0, 0, 0, 0.75)',
         timeout: false,
         pauseOnHover: true,
-        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-        zindex: 100
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)'
     });
 
     $("#emergency-modal").iziModal({
@@ -3489,12 +3490,12 @@ function checkCalendar() {
                     }
 
                     // Third priority: Radio shows. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
-                    if (event.title.startsWith("Show: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 5)
+                    if (event.title.startsWith("Show: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 3)
                     {
                         var summary = event.title.replace('Show: ', '');
                         var temp = summary.split(" - ");
 
-                        calPriorityN = 5;
+                        calPriorityN = 3;
                         calTypeN = 'Show';
                         calHostN = temp[0];
                         calShowN = temp[1];
@@ -3502,9 +3503,9 @@ function checkCalendar() {
                     }
 
                     // Fourth priority: Prerecords. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
-                    if (event.title.startsWith("Prerecord: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 2)
+                    if (event.title.startsWith("Prerecord: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 5)
                     {
-                        calPriorityN = 2;
+                        calPriorityN = 5;
                         calTypeN = 'Prerecord';
                         calHostN = '';
                         calShowN = event.title.replace('Prerecord: ', '');
@@ -3530,6 +3531,45 @@ function checkCalendar() {
             calShow = calShowN;
             calStarts = calStartsN;
             calPriority = calPriorityN;
+            calHint = false;
+        }
+
+        // Display tutorials when shows are upcoming
+        if ((Meta.state.startsWith("automation_") || Meta.state === 'live_prerecord') && !calHint)
+        {
+            calHint = true;
+            if (calType === "Show")
+            {
+
+                setTimeout(function () {
+                    trip = new Trip([
+                        {
+                            sel: $("#btn-golive"),
+                            content: `Welcome, ${calHost}! To begin your show, click "Live".`,
+                            expose: true,
+                            nextClickSelector: $("#btn-golive")
+                        },
+                        {
+                            sel: $("#go-live-modal"),
+                            content: `I filled in your DJ and show names automatically.<br />
+                            Write a show topic if you like, which will display on the website and display signs. <br />
+                            If desired, uncheck "enable website chat" to prevent others from messaging you.<br />
+                            <strong>Click "Go Live" when ready.</strong>`,
+                            expose: true,
+                            nextClickSelector: $("#live-go")
+                        },
+                        {
+                            sel: $("#operations"),
+                            content: `This box will now show how much time until you are live.<br />
+If you need more time, click +15-second PSA or +30-second PSA.<br />
+<strong>Show intros and other music queued after the IDs do not count in the queue countdown.</strong>`,
+                            expose: true,
+                            nextClickSelector: $("#operations")
+                        }
+                    ], {delay: -1, showCloseBox: true});
+                    trip.start();
+                }, 5000);
+            }
         }
 
         // Determine priority of what is currently on the air
@@ -3541,7 +3581,7 @@ function checkCalendar() {
         if (Meta.state === 'live_prerecord')
             curPriority = 5;
         if (Meta.state.startsWith("live_") && Meta.state !== 'live_prerecord')
-            curPriority = 4;
+            curPriority = 3;
         if (Meta.state.startsWith("automation_"))
             curPriority = 1;
 
