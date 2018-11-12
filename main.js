@@ -1,18 +1,18 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow} = require('electron');
 /*
-const electronInstaller = require('electron-winstaller');
-
-
-resultPromise = electronInstaller.createWindowsInstaller({
-    appDirectory: require('path').dirname(require.main.filename),
-    outputDirectory: require('path').dirname(require.main.filename) + '/build',
-    authors: 'WWSU 106.9 FM',
-    exe: 'wwsu-dj-controls.exe'
-  });
-
-resultPromise.then(() => console.log("It worked!"), (e) => console.log(`No dice: ${e.message}`));
-*/
+ const electronInstaller = require('electron-winstaller');
+ 
+ 
+ resultPromise = electronInstaller.createWindowsInstaller({
+ appDirectory: require('path').dirname(require.main.filename),
+ outputDirectory: require('path').dirname(require.main.filename) + '/build',
+ authors: 'WWSU 106.9 FM',
+ exe: 'wwsu-dj-controls.exe'
+ });
+ 
+ resultPromise.then(() => console.log("It worked!"), (e) => console.log(`No dice: ${e.message}`));
+ */
 
 
 
