@@ -447,7 +447,7 @@ try {
         navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
         overlayClose: false,
         overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 180000,
+        timeout: 300000,
         timeoutProgressbar: true,
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
@@ -608,7 +608,7 @@ try {
         navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
         overlayClose: false,
         overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 180000,
+        timeout: false,
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
         zindex: 62
@@ -671,7 +671,7 @@ try {
         modules: {
             toolbar: [
                 [{'size': ['small', false, 'large', 'huge']}, 'bold', 'italic', 'underline', 'strike', {'color': []}],
-                ['link', {'indent': '-1'}, { 'indent': '+1' }, {'list': 'ordered'}, {'list': 'bullet'}, {'align': []}],
+                ['link', {'indent': '-1'}, {'indent': '+1'}, {'list': 'ordered'}, {'list': 'bullet'}, {'align': []}],
                 ['image', 'clean']
             ],
         },
@@ -3258,6 +3258,31 @@ function doMeta(metan) {
                     document.querySelector('#btn-return').style.display = "inline";
                 } else if (Meta.state.includes('live_'))
                 {
+                    if (trip)
+                    {
+                        trip.stop();
+                        trip = new Trip([
+                            {
+                                sel: $("#operations"),
+                                content: `You are now live! Here are what these buttons do: <br />
+<strong>End Show</strong>: Click this when you are done with your show, and no one is going on after you. <br />
+<strong>Switch Show:</strong>: Click this when you are done with your show and another DJ is going on after you. </br>
+<strong>Take a Break</strong>: Click to go into break mode (plays PSAs). A "Resume Show" button will appear which when clicked brings you back on the air. <br />
+<strong>Play Top Add</strong>: Immediately plays a random Top Add (music we get to promote on the air). You earn XP for playing Top Adds. <br />
+<strong>Add a Log</strong>: It is mandatory to log all songs you play outside of RadioDJ (eg. Spotify, YouTube, iTunes, MP3s, etc). Click to log a song.`,
+                                expose: true,
+                                position: "s",
+                                nextClickSelector: $("#operations")
+                            }
+                        ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
+                                trip = null;
+                                console.log("trip closed");
+                            }, onTripEnd: (tripIndex, tripObject) => {
+                                trip = null;
+                                console.log("trip ended");
+                            }});
+                        trip.start();
+                    }
                     badge.className = 'badge badge-danger';
                     if (Meta.playing)
                     {
@@ -3271,6 +3296,30 @@ function doMeta(metan) {
                     document.querySelector('#btn-break').style.display = "inline";
                 } else if (Meta.state.includes('sports_') || Meta.state.includes('sportsremote_'))
                 {
+                    if (trip)
+                    {
+                        trip.stop();
+                        trip = new Trip([
+                            {
+                                sel: $("#operations"),
+                                content: `You are now live with sports! Here are what these buttons do: <br />
+<strong>End Show</strong>: Click this when you are done with the sports broadcast. <br />
+<strong>Take a Break</strong>: Click to go into break mode (plays PSAs). A "Resume Show" button will appear which when clicked brings you back on the air. <br />
+<strong>Extended Break</strong>: Click for halftime / long breaks (plays halftime music). A "Resume Show" button will appear which when clicked brings you back on the air. <br />
+<strong>Play Liner</strong>: Click to play a sports liner assigned to the sport being broadcast.`,
+                                expose: true,
+                                position: "s",
+                                nextClickSelector: $("#operations")
+                            }
+                        ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
+                                trip = null;
+                                console.log("trip closed");
+                            }, onTripEnd: (tripIndex, tripObject) => {
+                                trip = null;
+                                console.log("trip ended");
+                            }});
+                        trip.start();
+                    }
                     badge.className = 'badge badge-success';
                     if (Meta.playing)
                     {
@@ -3283,6 +3332,30 @@ function doMeta(metan) {
                     document.querySelector('#btn-halftime').style.display = "inline";
                 } else if (Meta.state.includes('remote_'))
                 {
+                    if (trip)
+                    {
+                        trip.stop();
+                        trip = new Trip([
+                            {
+                                sel: $("#operations"),
+                                content: `You are now live! Here are what these buttons do: <br />
+<strong>End Show</strong>: Click this when you are done with your show, and no one is going on after you. <br />
+<strong>Take a Break</strong>: Click to go into break mode (plays PSAs). A "Resume Show" button will appear which when clicked brings you back on the air. <br />
+<strong>Play Top Add</strong>: Immediately plays a random Top Add (music we get to promote on the air). <br />
+<strong>Add a Log</strong>: It is mandatory to log all songs you play outside of RadioDJ (eg. Spotify, YouTube, iTunes, MP3s, etc). Click to log a song.`,
+                                expose: true,
+                                position: "s",
+                                nextClickSelector: $("#operations")
+                            }
+                        ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
+                                trip = null;
+                                console.log("trip closed");
+                            }, onTripEnd: (tripIndex, tripObject) => {
+                                trip = null;
+                                console.log("trip ended");
+                            }});
+                        trip.start();
+                    }
                     badge.className = 'badge badge-purple';
                     if (Meta.playing)
                     {
@@ -3466,7 +3539,7 @@ function checkCalendar() {
                         calendar.push(event);
                     }
 
-                    // First priority: Sports broadcasts. Check for broadcasts scheduled to start within the next 15 minutes. Skip any scheduled to end in 15 minutes.
+                    // Sports broadcasts. Check for broadcasts scheduled to start within the next 15 minutes. Skip any scheduled to end in 15 minutes.
                     if (event.title.startsWith("Sports: ") && moment(Meta.time).add(15, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 10)
                     {
                         calPriorityN = 10;
@@ -3476,7 +3549,7 @@ function checkCalendar() {
                         calStartsN = event.start;
                     }
 
-                    // Second priority: Remote broadcasts. Check for broadcasts scheduled to start within the next 15 minutes. Skip any scheduled to end in 15 minutes.
+                    // Remote broadcasts. Check for broadcasts scheduled to start within the next 15 minutes. Skip any scheduled to end in 15 minutes.
                     if (event.title.startsWith("Remote: ") && moment(Meta.time).add(15, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 7)
                     {
                         var summary = event.title.replace('Remote: ', '');
@@ -3489,7 +3562,7 @@ function checkCalendar() {
                         calStartsN = event.start;
                     }
 
-                    // Third priority: Radio shows. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
+                    // Radio shows. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
                     if (event.title.startsWith("Show: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 3)
                     {
                         var summary = event.title.replace('Show: ', '');
@@ -3502,7 +3575,7 @@ function checkCalendar() {
                         calStartsN = event.start;
                     }
 
-                    // Fourth priority: Prerecords. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
+                    // Prerecords. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
                     if (event.title.startsWith("Prerecord: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 5)
                     {
                         calPriorityN = 5;
@@ -3532,6 +3605,12 @@ function checkCalendar() {
             calStarts = calStartsN;
             calPriority = calPriorityN;
             calHint = false;
+            // Cancel any active tutorials
+            if (trip)
+            {
+                trip.stop();
+                trip = null;
+            }
         }
 
         // Display tutorials when shows are upcoming
@@ -3545,8 +3624,9 @@ function checkCalendar() {
                     trip = new Trip([
                         {
                             sel: $("#btn-golive"),
-                            content: `Welcome, ${calHost}! To begin your show, click "Live".`,
+                            content: `Welcome, ${calHost}! To begin your show, click "Live". To skip the tutorial, click the x on this window.`,
                             expose: true,
+                            position: "e",
                             nextClickSelector: $("#btn-golive")
                         },
                         {
@@ -3554,19 +3634,102 @@ function checkCalendar() {
                             content: `I filled in your DJ and show names automatically.<br />
                             Write a show topic if you like, which will display on the website and display signs. <br />
                             If desired, uncheck "enable website chat" to prevent others from messaging you.<br />
-                            <strong>Click "Go Live" when ready.</strong>`,
+                            <strong>Click "Go Live" when ready.</strong> This will start a countdown until you're live.`,
                             expose: true,
+                            position: "n",
                             nextClickSelector: $("#live-go")
                         },
                         {
                             sel: $("#operations"),
-                            content: `This box will now show how much time until you are live.<br />
+                            content: `This box will now show how much time until you are live (click anywhere inside to continue the tutorial, or x to stop the tutorial).<br />
 If you need more time, click +15-second PSA or +30-second PSA.<br />
 <strong>Show intros and other music queued after the IDs do not count in the queue countdown.</strong>`,
                             expose: true,
+                            position: "s",
                             nextClickSelector: $("#operations")
                         }
-                    ], {delay: -1, showCloseBox: true});
+                    ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
+                            trip = null;
+                            console.log("trip closed");
+                        }});
+                    trip.start();
+                }, 5000);
+            }
+
+            // Remote broadcasts
+            if (calType === "Remote")
+            {
+                setTimeout(function () {
+                    trip = new Trip([
+                        {
+                            sel: $("#btn-goremote"),
+                            content: `Hello! To begin the scheduled remote broadcast ${calHost} - ${calShow}, click "Remote". To skip the tutorial, click the x on this window.`,
+                            expose: true,
+                            position: "e",
+                            nextClickSelector: $("#btn-goremote")
+                        },
+                        {
+                            sel: $("#go-remote-modal"),
+                            content: `I filled in your host and show names automatically.<br />
+                            Write a topic if you like, which will display on the website and display signs.<br />
+                            If desired, uncheck "enable website chat" to prevent others from messaging you.<br />
+                            Ensure your remote encoder is connected and streaming audio to the remote server, and then <strong>Click "Go Remote" when ready.</strong> This will start a countdown until you're live.`,
+                            expose: true,
+                            position: "n",
+                            nextClickSelector: $("#remote-go")
+                        },
+                        {
+                            sel: $("#operations"),
+                            content: `This box will now show how much time until your remote broadcast starts (click anywhere inside to continue the tutorial, or x to stop the tutorial).<br />
+If you need more time, click +15-second PSA or +30-second PSA.<br />
+<strong>Intros and other music queued after the IDs do not count in the queue countdown.</strong> A separate countdown will start after this one finishes so you know how much time is left in the intros / music.`,
+                            expose: true,
+                            position: "s",
+                            nextClickSelector: $("#operations")
+                        }
+                    ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
+                            trip = null;
+                            console.log("trip closed");
+                        }});
+                    trip.start();
+                }, 5000);
+            }
+
+            // Sports broadcasts
+            if (calType === "Sports")
+            {
+                setTimeout(function () {
+                    trip = new Trip([
+                        {
+                            sel: $("#btn-gosports"),
+                            content: `Hello! To begin the scheduled sports broadcast ${calShow}, click "Sports". To skip the tutorial, click the x on this window.`,
+                            expose: true,
+                            position: "e",
+                            nextClickSelector: $("#btn-gosports")
+                        },
+                        {
+                            sel: $("#go-sports-modal"),
+                            content: `I selected the scheduled sport automatically.<br />
+                            If desired, uncheck "enable website chat" to prevent others from messaging you.<br />
+                            If this broadcast is being done remotely (no OnAir Studio producer), check "Remote Sports Broadcast" and ensure you are streaming audio to the remote stream on the encoder before clicking Go Sports.<br />
+                            <strong>Click "Go Sports" when ready.</strong> This will start a countdown until you're live.`,
+                            expose: true,
+                            position: "n",
+                            nextClickSelector: $("#sports-go")
+                        },
+                        {
+                            sel: $("#operations"),
+                            content: `This box will now show how much time until your sports broadcast starts (click anywhere inside to continue the tutorial, or x to stop the tutorial).<br />
+If you need more time, click +15-second PSA or +30-second PSA.<br />
+<strong>Intros and other music queued after the IDs do not count in the queue countdown.</strong> A separate countdown will start after this one finishes so you know how much time is left in the intros / music.`,
+                            expose: true,
+                            position: "s",
+                            nextClickSelector: $("#operations")
+                        }
+                    ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
+                            trip = null;
+                            console.log("trip closed");
+                        }});
                     trip.start();
                 }, 5000);
             }
