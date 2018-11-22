@@ -36,8 +36,8 @@ try {
     // Define HTML elements
 
     // Define other variables
-    //var nodeURL = 'https://server.wwsu1069.org';
-    var nodeURL = 'http://localhost:1337';
+    var nodeURL = 'https://server.wwsu1069.org';
+    //var nodeURL = 'http://localhost:1337';
     var recordPadPath = "C:\\Program Files (x86)\\NCH Software\\Recordpad\\recordpad.exe";
     var recordPath = "S:\\OnAir recordings";
     var delay = 9000; // Subtract 1 second from the amount of on-air delay, as it takes about a second to process the recorder.
