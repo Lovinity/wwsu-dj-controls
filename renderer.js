@@ -14,7 +14,6 @@ try {
 
     // Define constants
     var fs = require("fs"); // file system
-    var os = require('os'); // OS
     var main = require('electron').remote.require('./main');
     const {remote} = window.require('electron');
     var notifier = require('./electron-notifications/index.js');
@@ -37,8 +36,8 @@ try {
     // Define HTML elements
 
     // Define other variables
-    var nodeURL = 'https://server.wwsu1069.org';
-    //var nodeURL = 'http://localhost:1337';
+    //var nodeURL = 'https://server.wwsu1069.org';
+    var nodeURL = 'http://localhost:1337';
     var recordPadPath = "C:\\Program Files (x86)\\NCH Software\\Recordpad\\recordpad.exe";
     var recordPath = "S:\\OnAir recordings";
     var delay = 9000; // Subtract 1 second from the amount of on-air delay, as it takes about a second to process the recorder.
@@ -631,7 +630,7 @@ try {
                                 var host = Recipients({ID: activeRecipient}).first().host;
                                 var label = Recipients({ID: activeRecipient}).first().label;
                                 var message = quillGetHTML(this.quill.getContents());
-                                nodeRequest({method: 'POST', url: nodeURL + '/messages/send', data: {from: os.hostname(), to: host, to_friendly: label, message: message}}, (response) => {
+                                nodeRequest({method: 'POST', url: nodeURL + '/messages/send', data: {from: client.host, to: host, to_friendly: label, message: message}}, (response) => {
                                     if (response === 'OK')
                                     {
                                         this.quill.setText('');
@@ -2472,29 +2471,6 @@ function moveSecondHands() {
 
 // FUNCTIONS FOR PROGRAM
 
-// Get a token for API endpoints requiring authorization
-function authorise(cb)
-{
-    socket.request({method: 'POST', url: nodeURL + '/user/auth', timeout: 3000, data: {email: tokens.email, password: tokens.password}}, function (body, JWR) {
-        if (!body)
-        {
-            authtoken = null;
-            cb(false);
-        } else {
-            try {
-                authtoken = body.token;
-                cb(authtoken);
-            } catch (e) {
-                console.error(e);
-                iziToast.show({
-                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                    message: 'Error occurred authorizing a Node request and passing it to callback.'
-                });
-            }
-        }
-    });
-}
-
 // This function calls authorise to get a token (if necessary), and then proceeds with the requested API call
 function nodeRequest(opts, cb) {
     opts.headers = {
@@ -2510,7 +2486,7 @@ function nodeRequest(opts, cb) {
                 try {
                     if (body.err && body.err === "Invalid Token!")
                     {
-                        authorise(function (token) {
+                        hostSocket(function (token) {
                             if (token)
                             {
                                 activeToken = token;
@@ -2588,20 +2564,75 @@ function waitFor(check, callback, count = 0)
 
 // Called on connection to WWSU to get data and subscribe to notifications
 function doSockets() {
-    onlineSocket();
-    metaSocket();
-    easSocket();
-    statusSocket();
-    calendarSocket();
-    messagesSocket();
-    recipientsSocket();
+    hostSocket(function (token) {
+        if (token)
+        {
+            onlineSocket();
+            metaSocket();
+            easSocket();
+            statusSocket();
+            calendarSocket();
+            messagesSocket();
+            recipientsSocket();
+        }
+    });
 }
+
+function hostSocket(cb = function(token) {})
+        {
+            socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
+                //console.log(body);
+                try {
+                    client = body;
+                    authtoken = client.token;
+                    if (!client.authorized)
+                    {
+                        var noConnection = document.getElementById('no-connection');
+                        noConnection.style.display = "inline";
+                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+                <h2 style="text-align: center; font-size: 4em; color: #F44336">Not Authorized!</h2>
+                <h2 style="text-align: center; font-size: 2em; color: #F44336">This DJ Controls has not been authorized for use with WWSU.</h2>
+                <h3 style="text-align: center; font-size: 1em; color: #F44336">Please authorize the host ${client.host}</h3>
+                <h3 style="text-align: center; font-size: 1em; color: #F44336">And then, restart this DJ Controls.</h3>
+            </div>`;
+                        cb(false);
+                    } else {
+                        cb(authtoken);
+                    }
+                    if (client.admin)
+                    {
+                        var temp = document.querySelector(`#options`);
+                        if (temp)
+                            temp.style.display = "inline";
+                        socket.post('/logs/get', {}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                //processLogs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED logs CONNECTION');
+                                setTimeout(messagesSocket, 10000);
+                            }
+                        });
+                    } else {
+                        var temp = document.querySelector(`#options`);
+                        if (temp)
+                            temp.style.display = "none";
+                    }
+                } catch (e) {
+                    console.error(e);
+                    console.log('FAILED HOST CONNECTION');
+                    setTimeout(hostSocket, 10000);
+                }
+            });
+        }
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
 {
     console.log('attempting online socket');
-    nodeRequest({method: 'post', url: nodeURL + '/recipients/add-computers', data: {host: os.hostname()}}, function (response) {
+    nodeRequest({method: 'post', url: nodeURL + '/recipients/add-computers', data: {host: client.host}}, function (response) {
         try {
             //main.notification(true, "Loaded", "DJ Controls is now loaded", null, 10000);
         } catch (e) {
@@ -2741,68 +2772,46 @@ function calendarSocket() {
 // Messages system
 function messagesSocket() {
     console.log('attempting messages socket');
-    nodeRequest({method: 'post', url: nodeURL + '/hosts/get', data: {host: os.hostname()}}, function (body) {
-        //console.log(body);
-        try {
-            client = body;
-            nodeRequest({method: 'post', url: nodeURL + '/messages/get', data: {host: os.hostname()}}, function (body2) {
-                //console.log(body);
-                try {
-                    processMessages(body2, true);
-                } catch (e) {
-                    //console.error(e);
-                    console.log(`FAILED messages CONNECTION via messages`);
-                    console.error(e);
-                    setTimeout(messagesSocket, 10000);
-                }
-            });
-
-            nodeRequest({method: 'post', url: nodeURL + '/requests/get', data: {}}, function (body3) {
-                //console.log(body);
-                try {
-                    processRequests(body3, true);
-                } catch (e) {
-                    //console.error(e);
-                    console.log(`FAILED messages CONNECTION via requests`);
-                    console.error(e);
-                    setTimeout(messagesSocket, 10000);
-                }
-            });
-
-            socket.post('/announcements/get', {type: client.emergencies ? 'all' : 'djcontrols'}, function serverResponded(body, JWR) {
-                //console.log(body);
-                try {
-                    processAnnouncements(body, true);
-                } catch (e) {
-                    console.error(e);
-                    console.log('FAILED Announcements CONNECTION');
-                    setTimeout(messagesSocket, 10000);
-                }
-            });
-
-            if (client.emergencies)
-            {
-                var temp = document.querySelector(`#options`);
-                if (temp)
-                    temp.style.display = "inline";
-                socket.post('/logs/get', {}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        //processLogs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED logs CONNECTION');
-                        setTimeout(messagesSocket, 10000);
-                    }
-                });
+    try {
+        nodeRequest({method: 'post', url: nodeURL + '/messages/get', data: {host: client.host}}, function (body2) {
+            //console.log(body);
+            try {
+                processMessages(body2, true);
+            } catch (e) {
+                //console.error(e);
+                console.log(`FAILED messages CONNECTION via messages`);
+                console.error(e);
+                setTimeout(messagesSocket, 10000);
             }
-        } catch (e) {
-            console.log(`FAILED messages CONNECTION`);
-            console.error(e);
-            setTimeout(messagesSocket, 10000);
-        }
-    });
+        });
+
+        nodeRequest({method: 'post', url: nodeURL + '/requests/get', data: {}}, function (body3) {
+            //console.log(body);
+            try {
+                processRequests(body3, true);
+            } catch (e) {
+                //console.error(e);
+                console.log(`FAILED messages CONNECTION via requests`);
+                console.error(e);
+                setTimeout(messagesSocket, 10000);
+            }
+        });
+
+        socket.post('/announcements/get', {type: client.admin ? 'all' : 'djcontrols'}, function serverResponded(body, JWR) {
+            //console.log(body);
+            try {
+                processAnnouncements(body, true);
+            } catch (e) {
+                console.error(e);
+                console.log('FAILED Announcements CONNECTION');
+                setTimeout(messagesSocket, 10000);
+            }
+        });
+    } catch (e) {
+        console.log(`FAILED messages CONNECTION`);
+        console.error(e);
+        setTimeout(messagesSocket, 10000);
+    }
 }
 
 // Retrieving a list of clients we can send/receive messages to/from
@@ -2839,7 +2848,7 @@ function doMeta(metan) {
         bar.animate(Meta.percent);
 
         // Notify the DJ of a mandatory top of the hour break if they need to take one
-        if (Meta.breakneeded && Meta.djcontrols === os.hostname())
+        if (Meta.breakneeded && Meta.djcontrols === client.host)
         {
             if (document.querySelector("#iziToast-breakneeded") === null && !breakNotified)
             {
@@ -2962,7 +2971,7 @@ function doMeta(metan) {
                     document.querySelector('#btn-psa15').style.display = "inline";
                     document.querySelector('#btn-psa30').style.display = "inline";
                     // If the system goes into disconnected mode, the host client should be notified of that!
-                } else if (Meta.state.includes('_break_disconnected') || Meta.state.includes('_halftime_disconnected') && Meta.djcontrols === os.hostname())
+                } else if (Meta.state.includes('_break_disconnected') || Meta.state.includes('_halftime_disconnected') && Meta.djcontrols === client.host)
                 {
                     if (document.querySelector("#iziToast-noremote") === null)
                         iziToast.show({
@@ -3232,7 +3241,7 @@ function checkAnnouncements() {
     }
 
     // Process all announcements for the announcements menu, if applicable
-    if (client.emergencies)
+    if (client.admin)
     {
         var announcements = document.querySelector('#options-announcements');
         announcements.innerHTML = ``;
@@ -3548,7 +3557,7 @@ function checkCalendar() {
             curPriority = 1;
 
         // Determine if the DJ should be notified of the upcoming program
-        if (curPriority <= calPriority && !calNotified && Meta.djcontrols === os.hostname() && Meta.dj !== `${calHost} - ${calShow}` && Meta.changingState === null)
+        if (curPriority <= calPriority && !calNotified && Meta.djcontrols === client.host && Meta.dj !== `${calHost} - ${calShow}` && Meta.changingState === null)
         {
             // Sports events should notify right away; allows for 15 minutes to transition
             if (calType === 'Sports')
@@ -4384,7 +4393,7 @@ function selectRecipient(recipient = null)
         };
 
         // Get only the relevant messages to show in the "new messages" box
-        var query = [{from: host, to: [os.hostname(), 'DJ', 'DJ-private']}, {to: host}];
+        var query = [{from: host, to: [client.host, 'DJ', 'DJ-private']}, {to: host}];
         if (host === 'website')
         {
             query = [{to: ['DJ', 'website']}];
@@ -4854,7 +4863,7 @@ function finishAttnRemove(ID) {
                     overlay: false,
                     zindex: 1000
                 });
-                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `Someone on ${os.hostname()} DJ Controls attempted to delete announcement ${ID} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `Someone on ${client.host} DJ Controls attempted to delete announcement ${ID} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
             }
             console.log(JSON.stringify(response));
         });
@@ -4917,7 +4926,7 @@ function prepareLive() {
 }
 
 function goLive() {
-    nodeRequest({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: document.querySelector('#live-topic').value, djcontrols: os.hostname(), webchat: document.querySelector('#live-webchat').checked}}, function (response) {
+    nodeRequest({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: document.querySelector('#live-topic').value, djcontrols: client.host, webchat: document.querySelector('#live-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
             $("#go-live-modal").iziModal('close');
@@ -4950,7 +4959,7 @@ function prepareRemote() {
 }
 
 function goRemote() {
-    nodeRequest({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: document.querySelector('#remote-topic').value, djcontrols: os.hostname(), webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
+    nodeRequest({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: document.querySelector('#remote-topic').value, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
             $("#go-remote-modal").iziModal('close');
@@ -4983,7 +4992,7 @@ function prepareSports() {
 function goSports() {
     var sportsOptions = document.getElementById('sports-sport');
     var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
-    nodeRequest({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, remote: document.querySelector('#sports-remote').checked, djcontrols: os.hostname(), webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
+    nodeRequest({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, remote: document.querySelector('#sports-remote').checked, djcontrols: client.host, webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
             $("#go-sports-modal").iziModal('close');
@@ -5103,7 +5112,7 @@ function prepareDisplay() {
 }
 
 function sendDisplay() {
-    nodeRequest({method: 'POST', url: nodeURL + '/messages/send', data: {from: os.hostname(), to: `display-public`, to_friendly: `Display (Public)`, message: document.querySelector("#display-message").value}}, function (response) {
+    nodeRequest({method: 'POST', url: nodeURL + '/messages/send', data: {from: client.host, to: `display-public`, to_friendly: `Display (Public)`, message: document.querySelector("#display-message").value}}, function (response) {
         if (response === 'OK')
         {
             $("#display-modal").iziModal('close');
@@ -6108,7 +6117,7 @@ function processMessages(data, replace = false)
                                     main.flashTaskbar();
                                 }
                                 break;
-                            case os.hostname():
+                            case client.host:
                             case 'all':
                                 var notification = notifier.notify('New Message', {
                                     message: `You have a new message from ${datum.from_friendly} (see DJ Controls).`,
@@ -6141,7 +6150,7 @@ function processMessages(data, replace = false)
                                 break;
                             case 'DJ':
                             case 'DJ-private':
-                                if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.webmessages) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === os.hostname())))
+                                if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.webmessages) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)))
                                 {
                                     var notification = notifier.notify('New Web Message', {
                                         message: `You have a new web message from ${datum.from_friendly} (see DJ Controls).`,
@@ -6223,7 +6232,7 @@ function processMessages(data, replace = false)
                                         main.flashTaskbar();
                                     }
                                     break;
-                                case os.hostname():
+                                case client.host:
                                 case 'all':
                                     var notification = notifier.notify('New Message', {
                                         message: `You have a new message from ${data[key].from_friendly} (see DJ Controls).`,
@@ -6256,7 +6265,7 @@ function processMessages(data, replace = false)
                                     break;
                                 case 'DJ':
                                 case 'DJ-private':
-                                    if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.webmessages) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === os.hostname())))
+                                    if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.webmessages) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)))
                                     {
                                         var notification = notifier.notify('New Web Message', {
                                             message: `You have a new web message from ${data[key].from_friendly} (see DJ Controls).`,
@@ -6338,7 +6347,7 @@ function processRequests(data, replace = false)
                 data[index].needsread = false;
                 if (prev.indexOf(datum.ID === -1))
                 {
-                    if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.requests) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === os.hostname())))
+                    if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.requests) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)))
                     {
                         data[index].needsread = true;
                         var notification = notifier.notify('Track Requested', {
@@ -6384,7 +6393,7 @@ function processRequests(data, replace = false)
                     {
                         case 'insert':
                             data[key].needsread = false;
-                            if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.requests) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === os.hostname())))
+                            if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.requests) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)))
                             {
                                 data[key].needsread = true;
                                 var notification = notifier.notify('Track Requested', {

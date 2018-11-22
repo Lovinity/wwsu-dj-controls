@@ -1,5 +1,6 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow} = require('electron');
+const {machineId, machineIdSync} = require('node-machine-id');
 /*
  const electronInstaller = require('electron-winstaller');
  
@@ -69,10 +70,6 @@ exports.flashTaskbar = () => {
     mainWindow.flashFrame(true);
 };
 
-exports.getMacAddress = () => {
-    require('getmac').getMac(function (err, macAddress) {
-        if (err)
-            throw err;
-        return macAddress;
-    });
+exports.getMachineID = () => {
+    return machineIdSync();
 };
