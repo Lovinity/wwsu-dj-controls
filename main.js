@@ -68,3 +68,11 @@ app.on('activate', function () {
 exports.flashTaskbar = () => {
     mainWindow.flashFrame(true);
 };
+
+exports.getMacAddress = () => {
+    require('getmac').getMac(function (err, macAddress) {
+        if (err)
+            throw err;
+        return macAddress;
+    });
+};
