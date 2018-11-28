@@ -22,7 +22,7 @@ try {
     //var Taucharts = require("taucharts");
 
     // Define data variables
-    var Meta = {time: moment().toISOString(), state: 'unknown', line1: '', line2: '', percent: 0};
+    var Meta = {time: moment().toISOString(), lastID: moment().toISOString(), state: 'unknown', line1: '', line2: '', queueFinish: null, trackFinish: null};
     var Calendar = TAFFY();
     var Status = TAFFY();
     var Messages = TAFFY();
@@ -59,6 +59,7 @@ try {
     var prevQueueLength = 0;
     var queueLength = 0;
     var trip;
+    var metaTimer;
 
     // These are used for keeping track of upcoming shows and notifying DJs to prevent people cutting into each other's shows.
     var calPriority = 0;
@@ -768,15 +769,18 @@ try {
     });
 
     // Create a seek progress bar in the Meta box
-    var bar = new ProgressBar.Line(document.getElementById('nowplaying-seek'), {
-        strokeWidth: 4,
-        easing: 'easeInOut',
-        duration: 500,
-        color: '#FFFF00',
-        trailColor: 'rgba(0, 0, 0, 0)',
-        trailWidth: 1,
-        svgStyle: {width: '100%', height: '100%'}
-    });
+    // DEPRECATED: we no longer support Meta.percent
+    /*
+     var bar = new ProgressBar.Line(document.getElementById('nowplaying-seek'), {
+     strokeWidth: 4,
+     easing: 'easeInOut',
+     duration: 500,
+     color: '#FFFF00',
+     trailColor: 'rgba(0, 0, 0, 0)',
+     trailWidth: 1,
+     svgStyle: {width: '100%', height: '100%'}
+     });
+     */
 
 
     $.fn.extend({
@@ -2829,9 +2833,28 @@ function recipientsSocket() {
     });
 }
 
-// Called on change to any metadata info
+// Called on change to any metadata info or by metaTick every second
 function doMeta(metan) {
     try {
+
+        // reset ticker timer on change to queue time
+        if (typeof metan.queueFinish !== 'undefined')
+        {
+            clearInterval(metaTimer);
+            clearTimeout(metaTimer);
+            metaTimer = setTimeout(function () {
+                metaTick();
+                metaTimer = setInterval(metaTick, 1000);
+            }, moment(Meta.queueFinish).diff(moment(Meta.queueFinish).startOf('second')));
+        }
+        // Reset ticker when time is provided
+        else if (typeof metan.time !== 'undefined')
+        {
+            clearInterval(metaTimer);
+            clearTimeout(metaTimer);
+            metaTimer = setInterval(metaTick, 1000);
+        }
+
         // If changingState, display please wait overlay
         if (typeof metan.changingState !== 'undefined')
         {
@@ -2844,11 +2867,16 @@ function doMeta(metan) {
             }
         }
 
-        document.querySelector("#nowplaying").innerHTML = `${Meta.line1}<br />${Meta.line2}`;
-        bar.animate(Meta.percent);
+        // Manage queueLength
+        prevQueueLength = queueLength;
+        queueLength = Meta.queueFinish !== null ? Math.round(moment(Meta.queueFinish).diff(moment(Meta.time), 'seconds')) : 0;
+        if (queueLength < 0)
+            queueLength = 0;
+
+        document.querySelector("#nowplaying").innerHTML = `<div class="text-warning m-1" style="position: absolute; top: 0; left: 0; font-size: 0.75em;">${Meta.trackFinish !== null ? moment.duration(moment(Meta.queueFinish).diff(moment(Meta.time), 'seconds'), "seconds").format() : ''}</div>${Meta.line1}<br />${Meta.line2}`;
 
         // Notify the DJ of a mandatory top of the hour break if they need to take one
-        if (Meta.breakneeded && Meta.djcontrols === client.host)
+        if (moment(Meta.time).minutes() >= 3 && moment(Meta.time).minutes() < 10 && moment(Meta.time).diff(moment(Meta.lastID), 'minutes') >= 15 && Meta.djcontrols === client.host)
         {
             if (document.querySelector("#iziToast-breakneeded") === null && !breakNotified)
             {
@@ -2889,14 +2917,9 @@ function doMeta(metan) {
             if (temp !== null)
                 iziToast.hide({}, temp);
         }
+
         if (typeof metan.playing !== 'undefined' && typeof metan.state === 'undefined')
             metan.state = Meta.state;
-
-        // Manage queueLength
-        prevQueueLength = queueLength;
-        queueLength = Math.round(Meta.queueLength);
-        if (queueLength < 0)
-            queueLength = 0;
 
         // Make queue timer show current queue length (when visible)
         var queueTime = document.querySelector("#queue-seconds");
@@ -3136,6 +3159,12 @@ function doMeta(metan) {
             message: 'Error occurred in the doMeta function.'
         });
     }
+}
+
+function metaTick()
+{
+    Meta.time = moment(Meta.time).add(1, 'seconds');
+    doMeta({});
 }
 
 // Shows a please wait box.
@@ -4004,27 +4033,9 @@ function checkCalendar() {
             if (doLabel !== null)
             {
                 var doTopOfHour = false;
-                if (!Meta.breakneeded)
+                if (moment(Meta.lastID).add(10, 'minutes').startOf('hour') !== moment(Meta.time).startOf('hour') && moment(Meta.time).diff(moment(Meta.time).startOf('hour'), 'minutes') < 10)
                 {
-                    var topOfHour = moment(Meta.time).add(1, 'hours').startOf('hour');
-                    // If the DJ is expected to do a top of the hour break at the next top of hour, show so on the clock and in the events list
-                    if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
-                    {
-                        doTopOfHour = true;
-                        document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-warning">
-                                    <div class="container">
-                                        <div class="row">
-                                            <div class="col-4">
-                                                ${moment(topOfHour).format("hh:mm A")}
-                                            </div>
-                                            <div class="col-8">
-                                                Mandatory Top-of-Hour Break
-                                            </div>
-                                        </div>
-                                    </div></div>` + document.querySelector('#calendar-events').innerHTML;
-                    }
-                } else {
-                    topOfHour = moment(Meta.time).startOf('hour');
+                    var topOfHour = moment(Meta.time).startOf('hour');
                     // This happens when the DJ has not yet taken their top of the hour break; keep the time in the events list the same until they take the break.
                     if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
                     {
@@ -4041,6 +4052,24 @@ function checkCalendar() {
                                         </div>
                                     </div></div>` + document.querySelector('#calendar-events').innerHTML;
 
+                    }
+                } else {
+                    var topOfHour = moment(Meta.time).add(1, 'hours').startOf('hour');
+                    // If the DJ is expected to do a top of the hour break at the next top of hour, show so on the clock and in the events list
+                    if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
+                    {
+                        doTopOfHour = true;
+                        document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-warning">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-4">
+                                                ${moment(topOfHour).format("hh:mm A")}
+                                            </div>
+                                            <div class="col-8">
+                                                Mandatory Top-of-Hour Break
+                                            </div>
+                                        </div>
+                                    </div></div>` + document.querySelector('#calendar-events').innerHTML;
                     }
                 }
 
@@ -4106,22 +4135,22 @@ function checkCalendar() {
                 // Then, shade the top of hour ID break on the clock if required
                 if (doTopOfHour)
                 {
-                    if (!Meta.breakneeded)
+                    if (moment(Meta.lastID).add(10, 'minutes').startOf('hour') !== moment(Meta.time).startOf('hour') && moment(Meta.time).diff(moment(Meta.time).startOf('hour'), 'minutes') < 10)
                     {
-                        var start = moment(Meta.time).add(1, 'hours').startOf('hour');
-                        var diff = moment(start).diff(moment(Meta.time), 'minutes');
-                        data.sectors.push({
-                            label: 'current minute',
-                            start: (6 * diff) + 6,
-                            size: 15,
-                            color: "#FFEB3B"
-                        });
-                    } else {
                         var start = moment(Meta.time).startOf('hour');
                         var diff = moment(Meta.time).diff(moment(start), 'minutes');
                         data.sectors.push({
                             label: 'current minute',
                             start: 360 - (diff * 6),
+                            size: 15,
+                            color: "#FFEB3B"
+                        });
+                    } else {
+                        var start = moment(Meta.time).add(1, 'hours').startOf('hour');
+                        var diff = moment(start).diff(moment(Meta.time), 'minutes');
+                        data.sectors.push({
+                            label: 'current minute',
+                            start: (6 * diff) + 6,
                             size: 15,
                             color: "#FFEB3B"
                         });
