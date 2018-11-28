@@ -2873,7 +2873,7 @@ function doMeta(metan) {
         if (queueLength < 0)
             queueLength = 0;
 
-        document.querySelector("#nowplaying").innerHTML = `<div class="text-warning m-1" style="position: absolute; top: 0; left: 0; font-size: 0.75em;">${Meta.trackFinish !== null ? moment.duration(moment(Meta.queueFinish).diff(moment(Meta.time), 'seconds'), "seconds").format() : ''}</div>${Meta.line1}<br />${Meta.line2}`;
+        document.querySelector("#nowplaying").innerHTML = `<div class="text-warning" style="position: absolute; top: -16px; left: 0px;">${Meta.trackFinish !== null ? moment.duration(moment(Meta.trackFinish).diff(moment(Meta.time), 'seconds'), "seconds").format() : ''}</div>${Meta.line1}<br />${Meta.line2}`;
 
         // Notify the DJ of a mandatory top of the hour break if they need to take one
         if (moment(Meta.time).minutes() >= 3 && moment(Meta.time).minutes() < 10 && moment(Meta.time).diff(moment(Meta.lastID), 'minutes') >= 15 && Meta.djcontrols === client.host)
