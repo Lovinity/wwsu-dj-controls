@@ -2579,54 +2579,54 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-        {
-            socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
-                //console.log(body);
-                try {
-                    client = body;
-                    authtoken = client.token;
-                    if (!client.authorized)
-                    {
-                        var noConnection = document.getElementById('no-connection');
-                        noConnection.style.display = "inline";
-                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+{
+    socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
+        //console.log(body);
+        try {
+            client = body;
+            authtoken = client.token;
+            if (!client.authorized)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "inline";
+                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Not Authorized!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">This DJ Controls has not been authorized for use with WWSU.</h2>
                 <h3 style="text-align: center; font-size: 1em; color: #F44336">Please authorize the host ${client.host}</h3>
                 <h3 style="text-align: center; font-size: 1em; color: #F44336">And then, restart this DJ Controls.</h3>
             </div>`;
-                        cb(false);
-                    } else {
-                        cb(authtoken);
+                cb(false);
+            } else {
+                cb(authtoken);
+            }
+            if (client.admin)
+            {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "inline";
+                socket.post('/logs/get', {}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        //processLogs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED logs CONNECTION');
+                        setTimeout(messagesSocket, 10000);
                     }
-                    if (client.admin)
-                    {
-                        var temp = document.querySelector(`#options`);
-                        if (temp)
-                            temp.style.display = "inline";
-                        socket.post('/logs/get', {}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                //processLogs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED logs CONNECTION');
-                                setTimeout(messagesSocket, 10000);
-                            }
-                        });
-                    } else {
-                        var temp = document.querySelector(`#options`);
-                        if (temp)
-                            temp.style.display = "none";
-                    }
-                } catch (e) {
-                    console.error(e);
-                    console.log('FAILED HOST CONNECTION');
-                    setTimeout(hostSocket, 10000);
-                }
-            });
+                });
+            } else {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            console.log('FAILED HOST CONNECTION');
+            setTimeout(hostSocket, 10000);
         }
+    });
+}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -3329,11 +3329,20 @@ function checkCalendar() {
         // Run through every event in memory, sorted by the comparison function, and add appropriate ones into our formatted calendar variable.
         if (records.length > 0)
         {
+
+            var nowEvent = null;
             records
                     .filter(event => !event.title.startsWith("Genre:") && !event.title.startsWith("Playlist:"))
                     .map(event =>
                     {
                         try {
+                            var stripped = event.title.replace("Show: ", "");
+                            stripped = stripped.replace("Remote: ", "");
+                            stripped = stripped.replace("Sports: ", "");
+
+                            if (Meta.dj === stripped && moment(event.end).isAfter(moment(Meta.time)))
+                                nowEvent = event;
+
                             // null start or end? Use a default to prevent errors.
                             if (!moment(event.start).isValid())
                                 event.start = moment(Meta.time).startOf('day');
@@ -3370,12 +3379,12 @@ function checkCalendar() {
                             }
 
                             // Radio shows. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
-                            if (event.title.startsWith("Show: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 3)
+                            if (event.title.startsWith("Show: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 5)
                             {
                                 var summary = event.title.replace('Show: ', '');
                                 var temp = summary.split(" - ");
 
-                                calPriorityN = 3;
+                                calPriorityN = 5;
                                 calTypeN = 'Show';
                                 calHostN = temp[0];
                                 calShowN = temp[1];
@@ -3383,12 +3392,22 @@ function checkCalendar() {
                             }
 
                             // Prerecords. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
-                            if (event.title.startsWith("Prerecord: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 5)
+                            if (event.title.startsWith("Prerecord: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 3)
                             {
-                                calPriorityN = 5;
+                                calPriorityN = 3;
                                 calTypeN = 'Prerecord';
                                 calHostN = '';
                                 calShowN = event.title.replace('Prerecord: ', '');
+                                calStartsN = event.start;
+                            }
+
+                            // OnAir Studio Prerecord Bookings.
+                            if (event.title.startsWith("OnAir Studio Prerecord Bookings ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).isAfter(moment(Meta.time)) && calPriorityN < 1)
+                            {
+                                calPriorityN = 1;
+                                calTypeN = 'Booking';
+                                calHostN = '';
+                                calShowN = event.title.replace('OnAir Studio Prerecord Bookings ', '');
                                 calStartsN = event.start;
                             }
 
@@ -3549,15 +3568,15 @@ function checkCalendar() {
             curPriority = 10;
         if (Meta.state.startsWith("remote_"))
             curPriority = 7;
-        if (Meta.state === 'live_prerecord')
-            curPriority = 5;
         if (Meta.state.startsWith("live_") && Meta.state !== 'live_prerecord')
+            curPriority = 5;
+        if (Meta.state === 'live_prerecord')
             curPriority = 3;
         if (Meta.state.startsWith("automation_"))
-            curPriority = 1;
+            curPriority = 2;
 
         // Determine if the DJ should be notified of the upcoming program
-        if (curPriority <= calPriority && !calNotified && Meta.djcontrols === client.host && Meta.dj !== `${calHost} - ${calShow}` && Meta.changingState === null)
+        if ((curPriority <= calPriority || nowEvent === null) && !calNotified && Meta.djcontrols === client.host && Meta.dj !== `${calHost} - ${calShow}` && Meta.changingState === null)
         {
             // Sports events should notify right away; allows for 15 minutes to transition
             if (calType === 'Sports')
@@ -3699,6 +3718,39 @@ function checkCalendar() {
                 });
             }
 
+            // OnAir Studio Reserve
+            if (calType === 'Booking' && calPriority < 7 && moment(Meta.time).isAfter(moment(calStarts)))
+            {
+                calNotified = true;
+                var notification = notifier.notify('OnAir Studio is Reserved', {
+                    message: 'Please wrap-up / end your show as soon as possible.',
+                    icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+                    duration: 900000,
+                });
+                main.flashTaskbar();
+                iziToast.show({
+                    class: 'flash-bg',
+                    title: 'Someone has reserved the OnAir Studio for prerecording!',
+                    message: `If you are doing your show in the OnAir Studio, please wrap up your show now and click "End Show".`,
+                    timeout: 900000,
+                    close: true,
+                    color: 'red',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: false,
+                    overlay: true,
+                    zindex: 501,
+                    layout: 2,
+                    image: `assets/images/prerecordOff.png`,
+                    maxWidth: 480,
+                    buttons: [
+                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+                                endShow();
+                                instance.hide({}, toast, 'button');
+                            }]
+                    ]
+                });
+            }
         }
 
         // Clear current list of events
