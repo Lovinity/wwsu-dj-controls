@@ -1,8 +1,8 @@
-/* global iziToast, io, moment, Infinity, err, ProgressBar, Taucharts */
+/* global iziToast, io, moment, Infinity, err, ProgressBar, Taucharts, response */
 
 try {
 
-    var development = true;
+    var development = false;
 
 // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -31,6 +31,7 @@ try {
     var Recipients = TAFFY();
     var Requests = TAFFY();
     var Logs = TAFFY();
+    var Djs = TAFFY();
     var DJData = {};
 
     // Define HTML elements
@@ -132,11 +133,11 @@ try {
                                         console.log(`DONE: ${response}`);
                                         if (!development)
                                         {
-                                            nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\automation\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                            nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\automation\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
                                                     .then(function (response2) {
                                                         if (response2 == 0)
                                                         {
-                                                            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started in ${recordPath}\\automation\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started in ${recordPath}\\automation\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
                                                             });
                                                         }
                                                         console.log(`RECORDFILE: ${response2}`)
@@ -285,11 +286,11 @@ try {
                                     console.log(response);
                                     if (!development)
                                     {
-                                        nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                        nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
                                                 .then(function (response2) {
                                                     if (response2 == 0)
                                                     {
-                                                        nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                        nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.show), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
                                                         });
                                                     }
                                                     console.log(response2);
@@ -342,6 +343,14 @@ try {
 
     socket.on('recipients', function (data) {
         processRecipients(data);
+    });
+
+    socket.on('djs', function (data) {
+        processDjs(data);
+    });
+
+    socket.on('xp', function (data) {
+        processXp(data);
     });
 
     var messageFlash = setInterval(function () {
@@ -552,6 +561,22 @@ try {
 
     $("#options-modal-dj-xp").iziModal({
         title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - DJ XP / Remote Credits</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 63
+    });
+
+    $("#options-modal-dj-xp-add").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Add XP / Remotes</h5>`,
         headerColor: '#363636',
         width: 800,
         focusInput: true,
@@ -931,7 +956,6 @@ document.querySelector("#options").onclick = function () {
 
 document.querySelector("#btn-options-djs").onclick = function () {
     try {
-        loadDJs();
         $("#options-modal-djs").iziModal('open');
     } catch (e) {
         console.error(e);
@@ -1341,10 +1365,24 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
             console.log(e.target.id);
             if (e.target.id.startsWith(`options-dj-`))
             {
-                if (e.target.id !== 'options-dj-add')
+                if (e.target.id !== 'options-dj-add' && e.target.id !== 'options-dj-mass-xp')
                 {
                     loadDJ(e.target.dataset.dj);
                     $("#options-modal-dj").iziModal('open');
+                } else if (e.target.id === 'options-dj-mass-xp')
+                {
+                    document.querySelector("#options-xp-date").value = moment(Meta.time).format("YYYY-MM-DD\THH:mm");
+                    document.querySelector("#options-xp-type").value = "default-default";
+                    document.querySelector("#options-xp-description").value = "";
+                    document.querySelector("#options-xp-amount").value = 0;
+                    document.querySelector("#options-xp-djs").style.display = "inline-block";
+                    document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success" id="options-xp-add">Add</button>`;
+                    Djs().each(dj => {
+                        var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
+                        if (temp)
+                            temp.checked = false;
+                    });
+                    $("#options-modal-dj-xp-add").iziModal('open');
                 } else {
                     var inputData = "";
                     iziToast.show({
@@ -1370,10 +1408,9 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                         buttons: [
                             ['<button><b>Submit</b></button>', function (instance, toast) {
                                     instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                    nodeRequest({method: 'POST', url: nodeURL + '/xp/add-dj', data: {dj: inputData}}, function (response) {
+                                    nodeRequest({method: 'POST', url: nodeURL + '/djs/add', data: {name: inputData, login: null}}, function (response) {
                                         if (response === 'OK')
                                         {
-                                            loadDJs();
                                             iziToast.show({
                                                 title: `DJ Added!`,
                                                 message: `DJ was added!`,
@@ -1451,10 +1488,9 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                     buttons: [
                         ['<button><b>Edit</b></button>', function (instance, toast) {
                                 instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                nodeRequest({method: 'POST', url: nodeURL + '/xp/edit-dj', data: {old: e.target.dataset.dj, new : inputData}}, function (response) {
+                                nodeRequest({method: 'POST', url: nodeURL + '/djs/edit', data: {dj: e.target.dataset.dj, name: inputData}}, function (response) {
                                     if (response === 'OK')
                                     {
-                                        loadDJs();
                                         iziToast.show({
                                             title: `DJ Edited!`,
                                             message: `DJ was edited!`,
@@ -1510,10 +1546,9 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                     buttons: [
                         ['<button><b>Remove</b></button>', function (instance, toast) {
                                 instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                nodeRequest({method: 'POST', url: nodeURL + '/xp/remove-dj', data: {dj: e.target.dataset.dj}}, function (response) {
+                                nodeRequest({method: 'POST', url: nodeURL + '/djs/remove', data: {dj: e.target.dataset.dj}}, function (response) {
                                     if (response === 'OK')
                                     {
-                                        loadDJs();
                                         iziToast.show({
                                             title: `DJ Removed!`,
                                             message: `DJ was removed!`,
@@ -1569,160 +1604,21 @@ document.querySelector(`#dj-xp-add-div`).addEventListener("click", function (e) 
             console.log(e.target.id);
             if (e.target.id === 'dj-xp-add')
             {
-                var type = 'undefined';
-                var subtype = 'undefined';
-                var date = moment().format("YYYY-MM-DD HH:mm:ss");
-                var description = "";
-                var amount = 0;
-                iziToast.show({
-                    timeout: 180000,
-                    overlay: true,
-                    displayMode: 'once',
-                    color: 'yellow',
-                    id: 'inputs',
-                    zindex: 999,
-                    layout: 2,
-                    image: `assets/images/xp.png`,
-                    maxWidth: 640,
-                    title: 'Add XP / Remote Credits',
-                    message: `Add XP or remote credits to ${e.target.dataset.dj}`,
-                    position: 'center',
-                    drag: false,
-                    closeOnClick: false,
-                    inputs: [
-                        [`<select><option value="0">Entry Type</option>
-                            <option value="1">Remote Credit: Remote Event</option>
-                            <option value="2">Remote Credit: CD Review</option>
-                            <option value="3">Remote Credit: Sports</option>
-                            <option value="4">Remote Credit: Production</option>
-                            <option value="5">Remote Credit: Playlist / Genre</option>
-                            <option value="99">Remote Credit: Other</option>
-                            <option value="101">XP: Show Time</option>
-                            <option value="102">XP: Listeners</option>
-                            <option value="103">XP: Legal ID</option>
-                            <option value="104">XP: Top Adds</option>
-                            <option value="105">XP: Web Messages</option>
-                            <option value="106">XP: Show Promotion</option>
-                            <option value="107">XP: Contribution to WWSU</option>
-                            <option value="199">XP: Other</option>
-                        </select>`, 'change', function (instance, toast, select, e) {
-                                //console.info(select.options[select.selectedIndex].value);
-
-                                switch (select.options[select.selectedIndex].value)
-                                {
-                                    case "0":
-                                        type = "undefined";
-                                        subtype = "undefined";
-                                        break;
-                                    case "1":
-                                        type = "remote";
-                                        subtype = "event";
-                                        break;
-                                    case "2":
-                                        type = "remote";
-                                        subtype = "cd-review";
-                                        break;
-                                    case "3":
-                                        type = "remote";
-                                        subtype = "sports";
-                                        break;
-                                    case "4":
-                                        type = "remote";
-                                        subtype = "production";
-                                        break;
-                                    case "5":
-                                        type = "remote";
-                                        subtype = "playlist";
-                                        break;
-                                    case "99":
-                                        type = "remote";
-                                        subtype = "other";
-                                        break;
-                                    case "101":
-                                        type = "xp";
-                                        subtype = "showtime";
-                                        break;
-                                    case "102":
-                                        type = "xp";
-                                        subtype = "listeners";
-                                        break;
-                                    case "103":
-                                        type = "xp";
-                                        subtype = "id";
-                                        break;
-                                    case "104":
-                                        type = "xp";
-                                        subtype = "topadd";
-                                        break;
-                                    case "105":
-                                        type = "xp";
-                                        subtype = "messages";
-                                        break;
-                                    case "106":
-                                        type = "xp";
-                                        subtype = "promotion";
-                                        break;
-                                    case "107":
-                                        type = "xp";
-                                        subtype = "contribution";
-                                        break;
-                                    case "199":
-                                        type = "xp";
-                                        subtype = "other";
-                                        break;
-                                }
-                            }, true],
-                        [`<input type="datetime-local" value="${moment().format("YYYY-MM-DD\THH:mm")}">`, 'keyup', function (instance, toast, input, e) {
-                                date = input.value;
-                            }],
-                        [`<input type="text" placeholder="Description">`, 'keyup', function (instance, toast, input, e) {
-                                description = input.value;
-                            }],
-                        [`<input type="text" placeholder="Amount">`, 'keyup', function (instance, toast, input, e) {
-                                amount = input.value;
-                            }],
-                    ],
-                    buttons: [
-                        ['<button><b>Submit</b></button>', function (instance, toast) {
-                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                nodeRequest({method: 'POST', url: nodeURL + '/xp/add', data: {dj: e.target.dataset.dj, type: type, subtype: subtype, description: description, date: moment(date).toISOString(true), amount: amount}}, function (response) {
-                                    if (response === 'OK')
-                                    {
-                                        loadDJ(e.target.dataset.dj);
-                                        iziToast.show({
-                                            title: `XP / Remote Credit Added!`,
-                                            message: `XP / Remote Credit was added!`,
-                                            timeout: 10000,
-                                            close: true,
-                                            color: 'green',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    } else {
-                                        console.dir(response);
-                                        iziToast.show({
-                                            title: `Failed to add XP / Remote Credit!`,
-                                            message: `There was an error trying to add XP / Remote Credit.`,
-                                            timeout: 10000,
-                                            close: true,
-                                            color: 'red',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    }
-                                });
-                            }],
-                        ['<button><b>Cancel</b></button>', function (instance, toast) {
-                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                            }],
-                    ]
+                document.querySelector("#options-xp-date").value = moment(Meta.time).format("YYYY-MM-DD\THH:mm");
+                document.querySelector("#options-xp-type").value = "default-default";
+                document.querySelector("#options-xp-description").value = "";
+                document.querySelector("#options-xp-amount").value = 0;
+                document.querySelector("#options-xp-djs").style.display = "inline-block";
+                document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success" id="options-xp-add">Add</button>`;
+                Djs().each(dj => {
+                    var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
+                    if (temp)
+                        temp.checked = false;
                 });
+                var temp = document.querySelector(`#options-xp-djs-i-${e.target.dataset.dj}`);
+                if (temp)
+                    temp.checked = true;
+                $("#options-modal-dj-xp-add").iziModal('open');
             }
         }
     } catch (err) {
@@ -1956,7 +1852,6 @@ document.querySelector(`#dj-xp-logs`).addEventListener("click", function (e) {
                                 nodeRequest({method: 'POST', url: nodeURL + '/xp/remove', data: {ID: parseInt(e.target.id.replace(`dj-xp-remove-`, ``))}}, function (response) {
                                     if (response === 'OK')
                                     {
-                                        loadDJ();
                                         iziToast.show({
                                             title: `Log removed!`,
                                             message: `Log was removed!`,
@@ -1991,6 +1886,29 @@ document.querySelector(`#dj-xp-logs`).addEventListener("click", function (e) {
                             }],
                     ]
                 });
+            }
+            if (e.target.id.startsWith(`dj-xp-edit-`))
+            {
+                var recordID = parseInt(e.target.id.replace(`dj-xp-edit-`, ``));
+                DJData.XP
+                        .filter(record => record.ID === recordID)
+                        .map(record => {
+                            document.querySelector("#options-xp-date").value = moment(record.createdAt).format("YYYY-MM-DD\THH:mm");
+                            document.querySelector("#options-xp-type").value = `${record.type}-${record.subtype}`;
+                            document.querySelector("#options-xp-description").value = record.description;
+                            document.querySelector("#options-xp-amount").value = parseFloat(record.amount);
+                            document.querySelector("#options-xp-djs").style.display = "none";
+                            document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success" id="options-xp-edit-${recordID}">Edit</button>`;
+                            Djs().each(dj => {
+                                var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
+                                if (temp)
+                                    temp.checked = false;
+                            });
+                            var temp = document.querySelector(`#options-xp-djs-i-${record.dj}`);
+                            if (temp)
+                                temp.checked = true;
+                        });
+                $("#options-modal-dj-xp-add").iziModal('open');
             }
         }
     } catch (err) {
@@ -2255,6 +2173,100 @@ document.querySelector(`#options-announcement-button`).addEventListener("click",
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred during the click event of #options-announcement-button.'
+        });
+    }
+});
+
+document.querySelector(`#options-xp-button`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith("options-xp-edit-"))
+            {
+                var types = document.querySelector("#options-xp-type").value.split("-");
+                nodeRequest({method: 'POST', url: nodeURL + '/xp/edit', data: {ID: parseInt(e.target.id.replace(`options-xp-edit-`, ``)), type: types[0], subtype: types[1], description: document.querySelector("#options-xp-description").value, amount: parseFloat(document.querySelector("#options-xp-amount").value), date: moment(document.querySelector("#options-xp-date").value).toISOString(true)}}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-dj-xp-add").iziModal('close');
+                        iziToast.show({
+                            title: `XP/Remote edited!`,
+                            message: `XP/Remote was edited!`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to edit XP-Remote!`,
+                            message: `There was an error trying to edit the XP/Remote.`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+            if (e.target.id === "options-xp-add")
+            {
+                var djs = [];
+                Djs().each(dj => {
+                    var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
+                    console.log(`Checking ${dj.ID}`);
+                    if (temp && temp.checked)
+                        djs.push(dj.ID);
+                });
+                console.dir(djs);
+                var types = document.querySelector("#options-xp-type").value.split("-");
+                nodeRequest({method: 'POST', url: nodeURL + '/xp/add', data: {djs: djs, type: types[0], subtype: types[1], description: document.querySelector("#options-xp-description").value, amount: parseFloat(document.querySelector("#options-xp-amount").value), date: moment(document.querySelector("#options-xp-date").value).toISOString(true)}}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-dj-xp-add").iziModal('close');
+                        iziToast.show({
+                            title: `XP/Remotes added!`,
+                            message: `XP/Remotes were added!`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to add XP/Remotes!`,
+                            message: `There was an error trying to add the XP/Remotes.`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-xp-button.'
         });
     }
 });
@@ -2583,54 +2595,84 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-{
-    socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
-        //console.log(body);
-        try {
-            client = body;
-            authtoken = client.token;
-            if (!client.authorized)
-            {
-                var noConnection = document.getElementById('no-connection');
-                noConnection.style.display = "inline";
-                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+        {
+            socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
+                //console.log(body);
+                try {
+                    client = body;
+                    authtoken = client.token;
+                    if (!client.authorized)
+                    {
+                        var noConnection = document.getElementById('no-connection');
+                        noConnection.style.display = "inline";
+                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Not Authorized!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">This DJ Controls has not been authorized for use with WWSU.</h2>
                 <h3 style="text-align: center; font-size: 1em; color: #F44336">Please authorize the host ${client.host}</h3>
                 <h3 style="text-align: center; font-size: 1em; color: #F44336">And then, restart this DJ Controls.</h3>
             </div>`;
-                cb(false);
-            } else {
-                cb(authtoken);
-            }
-            if (client.admin)
-            {
-                var temp = document.querySelector(`#options`);
-                if (temp)
-                    temp.style.display = "inline";
-                socket.post('/logs/get', {}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        //processLogs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED logs CONNECTION');
-                        setTimeout(messagesSocket, 10000);
+                        cb(false);
+                    } else {
+                        cb(authtoken);
                     }
-                });
-            } else {
-                var temp = document.querySelector(`#options`);
-                if (temp)
-                    temp.style.display = "none";
-            }
-        } catch (e) {
-            console.error(e);
-            console.log('FAILED HOST CONNECTION');
-            setTimeout(hostSocket, 10000);
+                    if (client.admin)
+                    {
+                        var temp = document.querySelector(`#options`);
+                        var restarter;
+                        if (temp)
+                            temp.style.display = "inline";
+
+                        // Subscribe to the logs socket
+                        socket.post('/logs/get', {}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                //processLogs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED logs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Get djs and subscribe to the dj socket
+                        nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                processDjs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED DJs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the XP socket
+                        nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED DJs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+                    } else {
+                        var temp = document.querySelector(`#options`);
+                        if (temp)
+                            temp.style.display = "none";
+                    }
+                } catch (e) {
+                    console.error(e);
+                    console.log('FAILED HOST CONNECTION');
+                    restarter = setTimeout(hostSocket, 10000);
+                }
+            });
         }
-    });
-}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -2702,11 +2744,11 @@ function metaSocket() {
                     nrc.run(`"${recordPadPath}" -done`)
                             .then(function (response) {
                                 console.log(`DONE: ${response}`);
-                                nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\${startRecording}\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
                                         .then(function (response2) {
                                             if (response2 == 0)
                                             {
-                                                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.dj), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.dj)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.show), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
                                                 });
                                             }
                                             console.log(`RECORDFILE: ${response2}`);
@@ -3369,7 +3411,7 @@ function checkCalendar() {
                             stripped = stripped.replace("Remote: ", "");
                             stripped = stripped.replace("Sports: ", "");
 
-                            if (Meta.dj === stripped && moment(event.end).isAfter(moment(Meta.time)))
+                            if (Meta.show === stripped && moment(event.end).isAfter(moment(Meta.time)))
                                 nowEvent = event;
 
                             // null start or end? Use a default to prevent errors.
@@ -3605,7 +3647,7 @@ function checkCalendar() {
             curPriority = 2;
 
         // Determine if the DJ should be notified of the upcoming program
-        if ((curPriority <= calPriority || nowEvent === null) && !calNotified && Meta.djcontrols === client.host && Meta.dj !== `${calHost} - ${calShow}` && Meta.changingState === null)
+        if ((curPriority <= calPriority || nowEvent === null) && !calNotified && Meta.djcontrols === client.host && Meta.show !== `${calHost} - ${calShow}` && Meta.changingState === null)
         {
             // Sports events should notify right away; allows for 15 minutes to transition
             if (calType === 'Sports')
@@ -3869,7 +3911,7 @@ function checkCalendar() {
                         stripped = stripped.replace("Remote: ", "");
                         stripped = stripped.replace("Sports: ", "");
                         // If the event we are processing is what is on the air right now, and the event has not yet ended...
-                        if (Meta.dj === stripped && moment(event.end).isAfter(moment(Meta.time)))
+                        if (Meta.show === stripped && moment(event.end).isAfter(moment(Meta.time)))
                         {
                             // Calculate base remaining time
                             timeLeft = moment(event.end).diff(moment(Meta.time), 'minutes');
@@ -3968,7 +4010,7 @@ function checkCalendar() {
                         var stripped = event.title.replace("Show: ", "");
                         stripped = stripped.replace("Remote: ", "");
                         stripped = stripped.replace("Sports: ", "");
-                        if (Meta.dj !== stripped)
+                        if (Meta.show !== stripped)
                         {
                             document.querySelector('#calendar-events').innerHTML += `  <div class="bs-callout bs-callout-default" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgba(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}, 0.2);">
                                     <div class="container">
@@ -4709,7 +4751,7 @@ function deleteMessage(message) {
                 overlay: false,
                 zindex: 1000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to delete message ${message} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to delete message ${message} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -4822,7 +4864,7 @@ function finishMute(recipient) {
                     overlay: false,
                     zindex: 1000
                 });
-                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to mute ${host} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to mute ${host} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
             }
             console.log(JSON.stringify(response));
         });
@@ -4867,7 +4909,7 @@ function finishBan(recipient) {
                     overlay: false,
                     zindex: 1000
                 });
-                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to ban ${host} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to ban ${host} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
             }
             console.log(JSON.stringify(response));
         });
@@ -4944,7 +4986,7 @@ function finishAttnRemove(ID) {
                     overlay: false,
                     zindex: 1000
                 });
-                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `Someone on ${client.host} DJ Controls attempted to delete announcement ${ID} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `Someone on ${client.host} DJ Controls attempted to delete announcement ${ID} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
             }
             console.log(JSON.stringify(response));
         });
@@ -4970,7 +5012,7 @@ function returnBreak() {
                 message: 'Cannot return from break. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to return from break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to return from break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
     });
 }
@@ -4985,7 +5027,7 @@ function queuePSA(duration) {
                 message: 'Could not queue a PSA. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to queue a PSA, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to queue a PSA, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
     });
 }
@@ -5017,7 +5059,7 @@ function goLive() {
                 message: 'Cannot go live at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go live, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go live, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -5050,7 +5092,7 @@ function goRemote() {
                 message: 'Cannot go remote at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -5083,7 +5125,7 @@ function goSports() {
                 message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go sports, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -5101,7 +5143,7 @@ function prepareLog() {
 function saveLog() {
     var thelog = 'DJ/Producer played a track.';
     var dateObject = moment(document.querySelector("#log-datetime").value);
-    nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.dj, loglevel: 'secondary', event: thelog, trackArtist: document.querySelector("#log-artist").value, trackTitle: document.querySelector("#log-title").value, trackAlbum: document.querySelector("#log-album").value, trackLabel: document.querySelector("#log-label").value, date: dateObject.toISOString()}}, function (response) {
+    nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.show, loglevel: 'secondary', event: thelog, trackArtist: document.querySelector("#log-artist").value, trackTitle: document.querySelector("#log-title").value, trackAlbum: document.querySelector("#log-album").value, trackLabel: document.querySelector("#log-label").value, date: dateObject.toISOString()}}, function (response) {
         if (response === 'OK')
         {
             $("#log-modal").iziModal('close');
@@ -5135,7 +5177,7 @@ function saveLog() {
                                 instance.hide({}, toast, 'button');
                             }],
                         ['<button>Playing No Tracks</button>', function (instance, toast, button, e, inputs) {
-                                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.dj, loglevel: 'secondary', event: 'DJ/Producer finished playing music.', trackArtist: '', trackTitle: '', trackAlbum: '', trackLabel: '', date: moment().toISOString(true)}}, function (response) {});
+                                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.show, loglevel: 'secondary', event: 'DJ/Producer finished playing music.', trackArtist: '', trackTitle: '', trackAlbum: '', trackLabel: '', date: moment().toISOString(true)}}, function (response) {});
                                 instance.hide({}, toast, 'button');
                             }]
                     ]
@@ -5146,7 +5188,7 @@ function saveLog() {
                 title: 'An error occurred',
                 message: 'Error occurred trying to submit a log entry. Please email engineer@wwsu1069.org.'
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to add a log, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to add a log, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -5180,7 +5222,7 @@ function sendEmergency() {
                 title: 'An error occurred',
                 message: 'Error occurred trying to submit a problem. Please email your issue to engineer@wwsu1069.org instead.'
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to report a problem, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to report a problem, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -5214,7 +5256,7 @@ function sendDisplay() {
                 title: 'An error occurred',
                 message: 'Error occurred trying to submit a message to the display signs. Please email engineer@wwsu1069.org'
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to send a message to display signs, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to send a message to display signs, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -5229,7 +5271,7 @@ function endShow() {
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to end their show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to end their show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         } else {
             $("#xp-modal").iziModal('open');
             document.querySelector(`#stat-showTime`).innerHTML = moment.duration(response.showTime || 0, "minutes").format();
@@ -5306,7 +5348,7 @@ function switchShow() {
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to switch show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to switch show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         } else {
             $("#xp-modal").iziModal('open');
             document.querySelector(`#stat-showTime`).innerHTML = moment.duration(response.showTime || 0, "minutes").format();
@@ -5383,7 +5425,7 @@ function goBreak(halftime) {
                 message: 'Error occurred trying to go into break. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'urgent', event: `DJ attempted to go to break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go to break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -5400,7 +5442,7 @@ function playTopAdd() {
                 message: 'Error occurred trying to play a Top Add. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to play a Top Add, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to play a Top Add, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -5418,7 +5460,7 @@ function playLiner() {
                 message: 'Error occurred trying to play a liner. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.dj, loglevel: 'warning', event: `DJ attempted to play a Liner, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to play a Liner, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -6570,39 +6612,10 @@ function processRequests(data, replace = false)
 }
 }
 
-function loadDJs() {
+function loadDJ(dj = null, reset = true) {
     try {
-        nodeRequest({method: 'POST', url: nodeURL + '/xp/get-djs', data: {}}, function (response) {
-            document.querySelector('#options-djs').innerHTML = `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                        <button type="button" id="options-dj-add" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-plus-circle"></i></button>
-                        <div style="text-align: center; font-size: 1em;">Add DJ</div>
-                    </div>`;
-            if (response.length > 0)
-            {
-                response.map((dj, index) => {
-                    document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                        <button type="button" id="options-dj-${index}" class="btn btn-wwsu-red btn-circle btn-xl border border-white" data-dj="${dj.dj}"><i class="fas fa-user" id="options-dj-i-${index}" data-dj="${dj.dj}"></i></button>
-                        <div style="text-align: center; font-size: 1em;">${dj.dj}</div>
-                    </div>`;
-                });
-            }
-        });
-    } catch (e) {
-        console.error(e);
-        iziToast.show({
-            title: 'An error occurred - Please check the logs',
-            message: `Error occurred in loadDJs.`
-        });
-    }
-}
-
-function loadDJ(dj = null) {
-    try {
-        DJData.XP = [];
-        DJData.attendance = [];
-        DJData.DJ = dj === null ? DJData.DJ || '' : dj;
-        nodeRequest({method: 'POST', url: nodeURL + '/xp/get', data: {dj: DJData.DJ}}, function (response) {
-            document.querySelector('#options-dj-name').innerHTML = DJData.DJ;
+        var afterFunction = function () {
+            document.querySelector('#options-dj-name').innerHTML = Djs({ID: parseInt(DJData.DJ)}).first().name;
             document.querySelector('#options-dj-buttons').innerHTML = `
                         <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
                                 <button type="button" id="btn-options-dj-edit" data-dj="${DJData.DJ}" class="btn btn-urgent btn-circle btn-xl border border-white"><i class="fas fa-pen"></i></button>
@@ -6619,7 +6632,7 @@ function loadDJ(dj = null) {
 `;
             var remote = 0;
             var totalXP = 0;
-            if (response.length > 0)
+            if (DJData.XP.length > 0)
             {
                 document.querySelector(`#dj-xp-add-div`).innerHTML = `Add <button type="button" id="dj-xp-add" class="close dj-xp-add" aria-label="Add XP/Remote" data-dj="${dj}">
                 <span aria-hidden="true"><i class="fas fa-plus text-white"></i></span>
@@ -6651,9 +6664,8 @@ function loadDJ(dj = null) {
                         });
                     }
                 };
-                response.sort(compare);
-                DJData.XP = response;
-                response.map(record => {
+                DJData.XP.sort(compare);
+                DJData.XP.map(record => {
                     if (record.type === "xp")
                         totalXP += record.amount;
 
@@ -6666,10 +6678,13 @@ function loadDJ(dj = null) {
                     <div class="col-2 text-success-light">
                         ${record.amount}
                     </div>
-                    <div class="col-6 text-info-light">
+                    <div class="col-5 text-info-light">
                         ${record.type}-${record.subtype}${record.description !== null && record.description !== '' ? `: ${record.description}` : ``}
                     </div>
-                    <div class="col-1 text-danger-light">
+                    <div class="col-2 text-danger-light">
+                        <button type="button" id="dj-xp-edit-${record.ID}" class="close dj-xp-edit" aria-label="Edit XP/Remote">
+                <span aria-hidden="true"><i class="fas fa-edit text-danger-light"></i></span>
+                </button>
                         <button type="button" id="dj-xp-remove-${record.ID}" class="close dj-xp-remove" aria-label="Remove XP/Remote">
                 <span aria-hidden="true"><i class="fas fa-trash text-danger-light"></i></span>
                 </button>
@@ -6681,20 +6696,35 @@ function loadDJ(dj = null) {
             document.querySelector('#dj-remotes').innerHTML = formatInt(remote || 0);
             document.querySelector('#dj-xp').innerHTML = formatInt(totalXP || 0);
 
-
-
-            // Populate attendance records
-            nodeRequest({method: 'POST', url: nodeURL + '/attendance/get', data: {dj: DJData.DJ}}, function (response2) {
-                var att = document.querySelector('#dj-attendance');
-                att.scrollTop = 0;
-                att.innerHTML = ``;
-                if (response2.length > 0)
-                {
-                    response2.reverse();
-                    response2.map(record => {
-                        if (record.scheduledStart === null)
-                        {
-                            att.innerHTML += `<div class="row bs-callout bs-callout-urgent">
+            var att = document.querySelector('#dj-attendance');
+            att.scrollTop = 0;
+            att.innerHTML = ``;
+            if (DJData.attendance.length > 0)
+            {
+                var compare = function (a, b) {
+                    try {
+                        if (moment(a.createdAt).valueOf() < moment(b.createdAt).valueOf())
+                            return 1;
+                        if (moment(a.createdAt).valueOf() > moment(b.createdAt).valueOf())
+                            return -1;
+                        if (a.ID > b.ID)
+                            return -1;
+                        if (b.ID > a.ID)
+                            return 1;
+                        return 0;
+                    } catch (e) {
+                        console.error(e);
+                        iziToast.show({
+                            title: 'An error occurred - Please check the logs',
+                            message: `Error occurred in the compare function of loadDJ.`
+                        });
+                    }
+                };
+                DJData.attendance.sort(compare);
+                DJData.attendance.map(record => {
+                    if (record.scheduledStart === null)
+                    {
+                        att.innerHTML += `<div class="row bs-callout bs-callout-urgent">
                             <div class="col-2 text-danger-light">
                                 ${moment(record.createdAt).format("MM/DD/YYYY")}
                             </div>
@@ -6711,9 +6741,9 @@ function loadDJ(dj = null) {
                 </button>
                             </div>
                         </div>`;
-                        } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)))
-                        {
-                            att.innerHTML += `<div class="row bs-callout bs-callout-default">
+                    } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)))
+                    {
+                        att.innerHTML += `<div class="row bs-callout bs-callout-default">
                             <div class="col-2 text-danger-light">
                                 ${moment(record.createdAt).format("MM/DD/YYYY")}
                             </div>
@@ -6730,11 +6760,11 @@ function loadDJ(dj = null) {
                 </button>
                             </div>
                         </div>`;
-                        } else if (record.actualStart !== null && record.actualEnd !== null)
+                    } else if (record.actualStart !== null && record.actualEnd !== null)
+                    {
+                        if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10)
                         {
-                            if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10)
-                            {
-                                att.innerHTML += `<div class="row bs-callout bs-callout-warning">
+                            att.innerHTML += `<div class="row bs-callout bs-callout-warning">
                             <div class="col-2 text-danger-light">
                                 ${moment(record.createdAt).format("MM/DD/YYYY")}
                             </div>
@@ -6751,8 +6781,8 @@ function loadDJ(dj = null) {
                 </button>
                             </div>
                         </div>`;
-                            } else {
-                                att.innerHTML += `<div class="row bs-callout bs-callout-success">
+                        } else {
+                            att.innerHTML += `<div class="row bs-callout bs-callout-success">
                             <div class="col-2 text-danger-light">
                                 ${moment(record.createdAt).format("MM/DD/YYYY")}
                             </div>
@@ -6769,10 +6799,10 @@ function loadDJ(dj = null) {
                 </button>
                             </div>
                         </div>`;
-                            }
-                        } else if (record.actualStart !== null && record.actualEnd === null)
-                        {
-                            att.innerHTML += `<div class="row bs-callout bs-callout-info">
+                        }
+                    } else if (record.actualStart !== null && record.actualEnd === null)
+                    {
+                        att.innerHTML += `<div class="row bs-callout bs-callout-info">
                             <div class="col-2 text-danger-light">
                                 ${moment(record.createdAt).format("MM/DD/YYYY")}
                             </div>
@@ -6789,8 +6819,8 @@ function loadDJ(dj = null) {
                 </button>
                             </div>
                         </div>`;
-                        } else if (record.actualStart === null && record.actualEnd === null) {
-                            att.innerHTML += `<div class="row bs-callout bs-callout-danger">
+                    } else if (record.actualStart === null && record.actualEnd === null) {
+                        att.innerHTML += `<div class="row bs-callout bs-callout-danger">
                             <div class="col-2 text-danger-light">
                                 ${moment(record.createdAt).format("MM/DD/YYYY")}
                             </div>
@@ -6804,8 +6834,8 @@ function loadDJ(dj = null) {
                             <div class="col-1">
                             </div>
                         </div>`;
-                        } else {
-                            att.innerHTML += `<div class="row bs-callout bs-callout-info">
+                    } else {
+                        att.innerHTML += `<div class="row bs-callout bs-callout-info">
                             <div class="col-2 text-danger-light">
                                 ${moment(record.createdAt).format("MM/DD/YYYY")}
                             </div>
@@ -6819,11 +6849,27 @@ function loadDJ(dj = null) {
                             <div class="col-1">
                             </div>
                         </div>`;
-                        }
-                    });
-                }
+                    }
+                });
+            }
+        };
+
+        if (reset)
+        {
+            DJData.XP = [];
+            DJData.attendance = [];
+            DJData.DJ = dj === null ? DJData.DJ || '' : dj;
+            nodeRequest({method: 'POST', url: nodeURL + '/xp/get', data: {dj: DJData.DJ}}, function (response) {
+                DJData.XP = response;
+                // Populate attendance records
+                nodeRequest({method: 'POST', url: nodeURL + '/attendance/get', data: {dj: DJData.DJ}}, function (response2) {
+                    DJData.attendance = response2;
+                    afterFunction();
+                });
             });
-        });
+        } else {
+            afterFunction();
+        }
     } catch (e) {
         console.error(e);
         iziToast.show({
@@ -6833,6 +6879,111 @@ function loadDJ(dj = null) {
 }
 }
 ;
+
+// Update recipients as changes happen
+function processDjs(data, replace = false)
+{
+    console.dir(data);
+    // Data processing
+    try {
+        if (replace)
+        {
+            Djs = TAFFY();
+            Djs.insert(data);
+
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
+                {
+                    switch (key)
+                    {
+                        case 'insert':
+                            Djs.insert(data[key]);
+                            break;
+                        case 'update':
+                            Djs({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Djs({ID: data[key]}).remove();
+                            break;
+                    }
+                }
+            }
+        }
+
+        document.querySelector("#options-xp-djs").innerHTML = ``;
+        document.querySelector('#options-djs').innerHTML = `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                        <button type="button" id="options-dj-add" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-plus-circle"></i></button>
+                        <div style="text-align: center; font-size: 1em;">Add DJ</div>
+                    </div>
+
+                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                        <button type="button" id="options-dj-mass-xp" class="btn btn-warning btn-circle btn-xl border border-white"><i class="fas fa-hand-holding-usd"></i></button>
+                        <div style="text-align: center; font-size: 1em;">Mass Add XP/Remotes</div>
+                    </div>`;
+
+        Djs().each(function (dj, index) {
+            document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                        <button type="button" id="options-dj-${dj.ID}" class="btn btn-wwsu-red btn-circle btn-xl border border-white" data-dj="${dj.ID}"><i class="fas fa-user" id="options-dj-i-${dj.ID}" data-dj="${dj.ID}"></i></button>
+                        <div style="text-align: center; font-size: 1em;">${dj.name}</div>
+                    </div>`;
+            document.querySelector("#options-xp-djs").innerHTML += `<div class="funkyradio">
+                            <div class="funkyradio-success">
+                                <input type="checkbox" value="" id="options-xp-djs-i-${dj.ID}">
+                                <label for="options-xp-djs-i-${dj.ID}">
+                                    ${dj.name}
+                                </label>
+                            </div>
+                        </div>`;
+        });
+
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred in the processDjs function.'
+        });
+}
+}
+
+function processXp(data)
+{
+    console.dir(data);
+    for (var key in data)
+    {
+        if (data.hasOwnProperty(key))
+        {
+            switch (key)
+            {
+                case 'insert':
+                    if (data[key].dj === parseInt(DJData.DJ))
+                    {
+                        DJData.XP.push(data[key]);
+                        loadDJ(DJData.DJ, false);
+                    }
+                    break;
+                case 'update':
+                    if (data[key].dj === parseInt(DJData.DJ))
+                    {
+                        DJData.XP
+                                .filter(record => record.ID === data[key].ID)
+                                .map((record, index) => DJData.XP[index] = data[key]);
+                        loadDJ(DJData.DJ, false);
+                    }
+                    break;
+                case 'remove':
+                    DJData.XP
+                            .filter(record => record.ID === data[key])
+                            .map((record, index) => {
+                                delete DJData.XP[index];
+                                loadDJ(DJData.DJ, false);
+                            });
+                    break;
+            }
+        }
+    }
+}
 
 function hexRgb(hex, options = {}) {
     try {

@@ -1029,11 +1029,11 @@
                     <div class="col-2 text-success-light">
                         Amount
                     </div>
-                    <div class="col-6 text-info-light">
+                    <div class="col-5 text-info-light">
                         Description
                     </div>
-                    <div class="col-1 text-danger-light">
-                        Delete
+                    <div class="col-2 text-danger-light">
+                        Action
                     </div>
                 </div>
             </div>
@@ -1131,10 +1131,37 @@
                 </div>
                 <div class="row">
                     <div class="col-3" id="options-announcement-button">
-
                     </div>
                 </div>
             </div>
+        </div>
+        <div id="options-modal-dj-xp-add" style="background-color: #363636; color: #ffffff;">
+            Category of XP/Remote: <select class="form-control" id="options-xp-type">
+                <option value="default-default">Entry Type</option>
+                <option value="remote-event">Remote Credit: Remote Event</option>
+                <option value="remote-cd">Remote Credit: CD Review</option>
+                <option value="remote-sports">Remote Credit: Sports</option>
+                <option value="remote-production">Remote Credit: Production</option>
+                <option value="remote-playlist">Remote Credit: Playlist / Genre</option>
+                <option value="remote-other">Remote Credit: Other</option>
+                <option value="xp-showtime">XP: Show Time</option>
+                <option value="xp-listeners">XP: Listeners</option>
+                <option value="xp-id">XP: Legal ID</option>
+                <option value="xp-topadd">XP: Top Adds</option>
+                <option value="xp-messages">XP: Web Messages</option>
+                <option value="xp-promotion">XP: Show Promotion</option>
+                <option value="xp-contribution">XP: Contribution to WWSU</option>
+                <option value="xp-other">XP: Other</option>
+            </select>
+            Date of XP/Remote: <input type="datetime-local" id="options-xp-date" class="form-control">
+            Description: <textarea class="form-control" id="options-xp-description" rows="2" placeholder=""></textarea>
+            Amount of XP / Remote credits: <input type="text" id="options-xp-amount" class="form-control" placeholder="0">
+            <div class="container m-1" id="options-xp-djs" style="height: 240px; overflow: scroll;">
+            </div>
+                            <div class="row">
+                    <div class="col-3" id="options-xp-button">
+                    </div>
+                </div>
         </div>
 
         <script>if (window.module)
