@@ -921,6 +921,10 @@
                     <div style="text-align: center; font-size: 1em;">Manage DJs</div>
                 </div>
                 <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                    <button type="button" id="btn-options-directors" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-address-card"></i></button>
+                    <div style="text-align: center; font-size: 1em;">Manage Directors</div>
+                </div>
+                <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
                     <button type="button" id="btn-options-announcements" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-bullhorn"></i></button>
                     <div style="text-align: center; font-size: 0.75em;">Manage Announcements</div>
                 </div>
@@ -944,6 +948,10 @@
         </div>
         <div id="options-modal-djs" style="background-color: #363636; color: #ffffff;">
             <div class="d-flex justify-content-start flex-wrap" id="options-djs">
+            </div>
+        </div>
+        <div id="options-modal-directors" style="background-color: #363636; color: #ffffff;">
+            <div class="d-flex justify-content-start flex-wrap" id="options-directors">
             </div>
         </div>
         <div id="options-modal-dj" style="background-color: #363636; color: #ffffff;">
@@ -1038,6 +1046,47 @@
                 </div>
             </div>
             <div class="container m-1" id="dj-xp-logs" style="height: 480px; overflow: scroll;">
+            </div>
+        </div>
+        <div id="options-modal-director" style="background-color: #363636; color: #ffffff;">
+            Director Name: <input type="text" id="options-director-name" class="form-control">
+            Timesheet Username: <input type="text" id="options-director-login" class="form-control">
+            Position: <input type="text" id="options-director-position" class="form-control">
+            <div class="funkyradio">
+                <div class="funkyradio-success">
+                    <input type="checkbox" value="" id="options-director-admin">
+                    <label for="options-director-admin">
+                        Administrator
+                    </label>
+                </div>
+            </div>
+            <div class="funkyradio">
+                <div class="funkyradio-success">
+                    <input type="checkbox" value="" id="options-director-assistant">
+                    <label for="options-director-assistant">
+                        Assistant Director / Intern
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3" id="options-director-button">
+                </div>
+            </div>
+        </div>
+        <div id="options-modal-timesheets" style="background-color: #363636; color: #ffffff; width: 1024px;">
+            <p>Click a clock to edit it.</p>
+            <p><span class="badge badge-primary">Approved</span><span class="badge badge-success">Still Clocked In</span><span class="badge badge-danger">Flagged / Not Approved</span></p>
+            <div class="container">    
+                <div class="row">
+                    <div class="col-sm-6 form-group">
+                        <div class="input-group" id="DateDemo">
+                            Filter by date: <input type='date' id='options-timesheets-date' />
+                            <input type="submit" class="btn btn-default" id="options-timesheets-filter" value="Filter">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-start flex-wrap" id="options-timesheets-records">
             </div>
         </div>
         <div id="options-modal-global-logs" style="background-color: #363636; color: #ffffff;">
@@ -1158,10 +1207,10 @@
             Amount of XP / Remote credits: <input type="text" id="options-xp-amount" class="form-control" placeholder="0">
             <div class="container m-1" id="options-xp-djs" style="height: 240px; overflow: scroll;">
             </div>
-                            <div class="row">
-                    <div class="col-3" id="options-xp-button">
-                    </div>
+            <div class="row">
+                <div class="col-3" id="options-xp-button">
                 </div>
+            </div>
         </div>
 
         <script>if (window.module)

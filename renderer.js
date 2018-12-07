@@ -2,7 +2,7 @@
 
 try {
 
-    var development = false;
+    var development = true;
 
 // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -29,10 +29,12 @@ try {
     var Announcements = TAFFY();
     var Eas = TAFFY();
     var Recipients = TAFFY();
+    var Directors = TAFFY();
     var Requests = TAFFY();
     var Logs = TAFFY();
     var Djs = TAFFY();
     var DJData = {};
+    var Timesheets = [];
 
     // Define HTML elements
 
@@ -349,6 +351,10 @@ try {
         processDjs(data);
     });
 
+    socket.on('directors', function (data) {
+        processDirectors(data);
+    });
+
     socket.on('xp', function (data) {
         processXp(data);
     });
@@ -511,6 +517,38 @@ try {
         zindex: 61
     });
 
+    $("#options-modal-directors").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Edit Directors</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 61
+    });
+
+    $("#options-modal-timesheets").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Timesheets</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 61
+    });
+
     $("#options-modal-announcements").iziModal({
         title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Announcements</h5>`,
         headerColor: '#363636',
@@ -529,6 +567,22 @@ try {
 
     $("#options-modal-dj").iziModal({
         title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - DJ</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 62
+    });
+
+    $("#options-modal-director").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Director</h5>`,
         headerColor: '#363636',
         width: 800,
         focusInput: true,
@@ -964,6 +1018,22 @@ document.querySelector("#btn-options-djs").onclick = function () {
             message: 'Error occurred during the click event of #btn-options-djs.'
         });
     }
+};
+
+document.querySelector("#btn-options-directors").onclick = function () {
+    try {
+        $("#options-modal-directors").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-directors.'
+        });
+    }
+};
+
+document.querySelector("#options-timesheets-filter").onclick = function () {
+    loadTimesheets(moment(document.querySelector("#options-timesheets-date").value));
 };
 
 document.querySelector("#options-announcements-add").onclick = function () {
@@ -1453,6 +1523,136 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred during the click event of #options-djs.'
+        });
+    }
+});
+
+document.querySelector(`#options-timesheets-records`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            if (e.target.id.startsWith(`timesheet-t-`))
+            {
+                var timesheetID = parseInt(e.target.id.replace(`timesheet-t-`, ``));
+                Timesheets
+                        .filter(record => record.ID === timesheetID)
+                        .map(record => {
+                            var inputData = {ID: record.ID, time_in: moment(record.time_in).format("YYYY-MM-DD\THH:mm"), time_out: moment(record.time_out).format("YYYY-MM-DD\THH:mm"), approved: record.approved};
+                            iziToast.show({
+                                timeout: 180000,
+                                overlay: true,
+                                displayMode: 'once',
+                                color: 'yellow',
+                                id: 'inputs',
+                                zindex: 999,
+                                layout: 2,
+                                image: `assets/images/log.png`,
+                                maxWidth: 480,
+                                title: 'Edit Timesheet',
+                                message: `Record created: ${moment(record.createdAt).format("LLLL")}<br />Record last updated: ${moment(record.updatedAt).format("LLLL")}`,
+                                position: 'center',
+                                drag: false,
+                                closeOnClick: false,
+                                inputs: [
+                                    [`<input type="datetime-local" value="${moment(record.time_in).format("YYYY-MM-DD\THH:mm")}">`, 'change', function (instance, toast, input, e) {
+                                            inputData.time_in = input.value;
+                                        }, true],
+                                    [`<input type="datetime-local" value="${moment(record.time_out).format("YYYY-MM-DD\THH:mm")}">`, 'change', function (instance, toast, input, e) {
+                                            inputData.time_out = input.value;
+                                        }, true],
+                                    [`<input type="checkbox"${record.approved ? ` checked` : ``}>`, 'change', function (instance, toast, input, e) {
+                                            inputData.approved = input.checked;
+                                        }, true],
+                                ],
+                                buttons: [
+                                    ['<button><b>Edit</b></button>', function (instance, toast) {
+                                            instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                            nodeRequest({method: 'POST', url: nodeURL + '/timesheet/edit', data: inputData}, function (response) {
+                                                if (response === 'OK')
+                                                {
+                                                    loadTimesheets(moment(document.querySelector("#options-timesheets-date").value));
+                                                    iziToast.show({
+                                                        title: `Timesheet Edited!`,
+                                                        message: `Timesheet record was edited!`,
+                                                        timeout: 10000,
+                                                        close: true,
+                                                        color: 'green',
+                                                        drag: false,
+                                                        position: 'center',
+                                                        closeOnClick: true,
+                                                        overlay: false,
+                                                        zindex: 1000
+                                                    });
+                                                } else {
+                                                    console.dir(response);
+                                                    iziToast.show({
+                                                        title: `Failed to edit timesheet!`,
+                                                        message: `There was an error trying to edit the timesheet.`,
+                                                        timeout: 10000,
+                                                        close: true,
+                                                        color: 'red',
+                                                        drag: false,
+                                                        position: 'center',
+                                                        closeOnClick: true,
+                                                        overlay: false,
+                                                        zindex: 1000
+                                                    });
+                                                }
+                                            });
+                                        }],
+                                    ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                            instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                        }],
+                                ]
+                            });
+                        });
+            }
+        }
+    } catch (err) {
+    }
+});
+
+document.querySelector(`#options-directors`).addEventListener("click", function (e) {
+    try {
+        console.log(e.target.id);
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith(`options-director-`))
+            {
+                console.log(`Director button clicked`);
+                if (e.target.id === 'options-director-new')
+                {
+                    console.log(`New director`);
+                    document.querySelector("#options-director-name").value = "";
+                    document.querySelector("#options-director-login").value = "";
+                    document.querySelector("#options-director-position").value = "";
+                    document.querySelector("#options-director-admin").checked = false;
+                    document.querySelector("#options-director-assistant").checked = false;
+                    document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-success" id="options-director-add">Add</button>`;
+                    $("#options-modal-director").iziModal('open');
+                } else if (e.target.id === "options-director-timesheets")
+                {
+                    document.querySelector("#options-timesheets-date").value = moment(Meta.time).startOf('week').format("YYYY-MM-DD");
+                    loadTimesheets(moment(Meta.time).startOf('week'));
+                    $("#options-modal-timesheets").iziModal('open');
+                } else {
+                    console.log(`Current director`);
+                    var director = parseInt(e.target.id.replace("options-director-", ""));
+                    var director2 = Directors({ID: director}).first();
+                    document.querySelector("#options-director-name").value = director2.name;
+                    document.querySelector("#options-director-login").value = director2.login;
+                    document.querySelector("#options-director-position").value = director2.position;
+                    document.querySelector("#options-director-admin").checked = director2.admin;
+                    document.querySelector("#options-director-assistant").checked = director2.assistant;
+                    document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-success" id="options-director-edit-${director}">Edit</button><button type="button" class="btn btn-danger" id="options-director-remove-${director}">Remove</button>`;
+                    $("#options-modal-director").iziModal('open');
+                }
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-directors.'
         });
     }
 });
@@ -2271,6 +2471,149 @@ document.querySelector(`#options-xp-button`).addEventListener("click", function 
     }
 });
 
+document.querySelector(`#options-director-button`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith("options-director-edit-"))
+            {
+                nodeRequest({method: 'POST', url: nodeURL + '/directors/edit', data: {ID: parseInt(e.target.id.replace(`options-director-edit-`, ``)), name: document.querySelector("#options-director-name").value, login: document.querySelector("#options-director-login").value, position: document.querySelector("#options-director-position").value, admin: document.querySelector("#options-director-admin").checked, assistant: document.querySelector("#options-director-assistant").checked}}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-director").iziModal('close');
+                        iziToast.show({
+                            title: `Director edited!`,
+                            message: `Director was edited!`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to edit Director!`,
+                            message: `There was an error trying to edit the Director.`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+            if (e.target.id === "options-director-add")
+            {
+                nodeRequest({method: 'POST', url: nodeURL + '/directors/add', data: {name: document.querySelector("#options-director-name").value, login: document.querySelector("#options-director-login").value, position: document.querySelector("#options-director-position").value, admin: document.querySelector("#options-director-admin").checked, assistant: document.querySelector("#options-director-assistant").checked}}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-director").iziModal('close');
+                        iziToast.show({
+                            title: `Director added!`,
+                            message: `Director was added!`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to add Director!`,
+                            message: `There was an error trying to add the Director.`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+            if (e.target.id.startsWith("options-director-remove-"))
+            {
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/trash.png`,
+                    maxWidth: 480,
+                    title: 'Remove director',
+                    message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove this director?',
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Remove</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                nodeRequest({method: 'POST', url: nodeURL + '/directors/remove', data: {ID: parseInt(e.target.id.replace(`options-director-remove-`, ``))}}, function (response) {
+                                    if (response === 'OK')
+                                    {
+                                        $("#options-modal-director").iziModal('close');
+                                        iziToast.show({
+                                            title: `Director removed!`,
+                                            message: `Director was removed!`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to remove director!`,
+                                            message: `There was an error trying to remove the director.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
+                    ]
+                });
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-director-button.'
+        });
+    }
+});
+
 document.querySelector(`#messages-unread`).addEventListener("click", function (e) {
     try {
         if (e.target) {
@@ -2595,84 +2938,98 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-        {
-            socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
-                //console.log(body);
-                try {
-                    client = body;
-                    authtoken = client.token;
-                    if (!client.authorized)
-                    {
-                        var noConnection = document.getElementById('no-connection');
-                        noConnection.style.display = "inline";
-                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+{
+    socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
+        //console.log(body);
+        try {
+            client = body;
+            authtoken = client.token;
+            if (!client.authorized)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "inline";
+                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Not Authorized!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">This DJ Controls has not been authorized for use with WWSU.</h2>
                 <h3 style="text-align: center; font-size: 1em; color: #F44336">Please authorize the host ${client.host}</h3>
                 <h3 style="text-align: center; font-size: 1em; color: #F44336">And then, restart this DJ Controls.</h3>
             </div>`;
-                        cb(false);
-                    } else {
-                        cb(authtoken);
+                cb(false);
+            } else {
+                cb(authtoken);
+            }
+            if (client.admin)
+            {
+                var temp = document.querySelector(`#options`);
+                var restarter;
+                if (temp)
+                    temp.style.display = "inline";
+
+                // Subscribe to the logs socket
+                socket.post('/logs/get', {}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        //processLogs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED logs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                    if (client.admin)
-                    {
-                        var temp = document.querySelector(`#options`);
-                        var restarter;
-                        if (temp)
-                            temp.style.display = "inline";
+                });
 
-                        // Subscribe to the logs socket
-                        socket.post('/logs/get', {}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                //processLogs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED logs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get djs and subscribe to the dj socket
-                        nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                processDjs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED DJs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the XP socket
-                        nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED DJs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-                    } else {
-                        var temp = document.querySelector(`#options`);
-                        if (temp)
-                            temp.style.display = "none";
+                // Get djs and subscribe to the dj socket
+                nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        processDjs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED DJs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                } catch (e) {
-                    console.error(e);
-                    console.log('FAILED HOST CONNECTION');
-                    restarter = setTimeout(hostSocket, 10000);
-                }
-            });
+                });
+
+                // Get directors and subscribe to the dj socket
+                nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        processDirectors(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED directors CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the XP socket
+                nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED XP CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+            } else {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            console.log('FAILED HOST CONNECTION');
+            restarter = setTimeout(hostSocket, 10000);
         }
+    });
+}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -4075,7 +4432,7 @@ function checkCalendar() {
             if (doLabel !== null)
             {
                 var doTopOfHour = false;
-                if (moment(Meta.lastID).add(10, 'minutes').startOf('hour') !== moment(Meta.time).startOf('hour') && moment(Meta.time).diff(moment(Meta.time).startOf('hour'), 'minutes') < 10)
+                if (!moment(Meta.lastID).add(10, 'minutes').startOf('hour').isSame(moment(Meta.time).startOf('hour')) && moment(Meta.time).diff(moment(Meta.time).startOf('hour'), 'minutes') < 10)
                 {
                     var topOfHour = moment(Meta.time).startOf('hour');
                     // This happens when the DJ has not yet taken their top of the hour break; keep the time in the events list the same until they take the break.
@@ -6947,6 +7304,65 @@ function processDjs(data, replace = false)
 }
 }
 
+// Update recipients as changes happen
+function processDirectors(data, replace = false)
+{
+    console.dir(data);
+    // Data processing
+    try {
+        if (replace)
+        {
+            Directors = TAFFY();
+            Directors.insert(data);
+
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
+                {
+                    switch (key)
+                    {
+                        case 'insert':
+                            Directors.insert(data[key]);
+                            break;
+                        case 'update':
+                            Directors({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Directors({ID: data[key]}).remove();
+                            break;
+                    }
+                }
+            }
+        }
+
+        document.querySelector('#options-directors').innerHTML = `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                        <button type="button" id="options-director-new" class="btn btn-primary btn-circle btn-xl border border-white"><i class="fas fa-plus-circle"></i></button>
+                        <div style="text-align: center; font-size: 1em;">Add Director</div>
+                    </div>
+
+                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                        <button type="button" id="options-director-timesheets" class="btn btn-info btn-circle btn-xl border border-white"><i class="fas fa-list-alt"></i></button>
+                        <div style="text-align: center; font-size: 1em;">Timesheets</div>
+                    </div>`;
+
+        Directors().each(function (director, index) {
+            document.querySelector('#options-directors').innerHTML += `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                        <button type="button" id="options-director-${director.ID}" class="btn ${director.present ? "btn-success" : "btn-danger"} btn-circle btn-xl border border-white" data-director="${director.ID}"><i class="fas fa-user" id="options-director-i-${director.ID}" data-director="${director.ID}"></i></button>
+                        <div style="text-align: center; font-size: 1em;">${director.name}</div>
+                    </div>`;
+        });
+
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred in the processDirectors function.'
+        });
+}
+}
+
+
 function processXp(data)
 {
     console.dir(data);
@@ -6982,6 +7398,213 @@ function processXp(data)
                     break;
             }
         }
+    }
+}
+
+function loadTimesheets(date)
+{
+    try {
+        var records = document.querySelector('#options-timesheets-records');
+        records.innerHTML = ``;
+        nodeRequest({method: 'POST', url: nodeURL + '/timesheet/get', data: {date: date.toISOString(true)}}, function (response) {
+            Timesheets = response;
+            var hours = {};
+            var lighterRow = false;
+            Timesheets.map((record, index) => {
+                var newRow = document.getElementById(`options-timesheets-director-${record.name.replace(/\W/g, '')}`);
+
+                // If there is not a row for this director yet, create one
+                if (!newRow || newRow === null)
+                {
+                    records.innerHTML += `<div id="options-timesheets-director-${record.name.replace(/\W/g, '')}" class="p-1 m-1 bs-callout bs-callout-default" style="width: 48%; position: relative;">
+                    <h4>${record.name}</h4>
+                    <div class="container">    
+                        <div class="row bg-primary">
+                            <div class="col text-info-light">
+                                Day
+                            </div>
+                            <div class="col text-success-light">
+                                Clock In
+                            </div>
+                            <div class="col text-danger-light">
+                                Clock Out
+                            </div>
+                        </div>
+                        <div class="row border border-secondary">
+                            <div class="col text-info-light">
+                            Sunday
+                            </div>
+                            <div class="col text-success-light" id="options-timesheets-director-cell-0-in-${record.name.replace(/\W/g, '')}">
+                            </div>
+                            <div class="col text-danger-light" id="options-timesheets-director-cell-0-out-${record.name.replace(/\W/g, '')}">
+                            </div>
+                        </div>
+                    <div class="row border border-secondary">
+                            <div class="col text-info-light">
+                            Monday
+                            </div>
+                            <div class="col text-success-light" id="options-timesheets-director-cell-1-in-${record.name.replace(/\W/g, '')}">
+                            </div>
+                            <div class="col text-danger-light" id="options-timesheets-director-cell-1-out-${record.name.replace(/\W/g, '')}">
+                            </div>
+                        </div>
+                    <div class="row border border-secondary">
+                            <div class="col text-info-light">
+                            Tuesday
+                            </div>
+                            <div class="col text-success-light" id="options-timesheets-director-cell-2-in-${record.name.replace(/\W/g, '')}">
+                            </div>
+                            <div class="col text-danger-light" id="options-timesheets-director-cell-2-out-${record.name.replace(/\W/g, '')}">
+                            </div>
+                        </div>
+                    <div class="row border border-secondary">
+                            <div class="col text-info-light">
+                            Wednesday
+                            </div>
+                            <div class="col text-success-light" id="options-timesheets-director-cell-3-in-${record.name.replace(/\W/g, '')}">
+                            </div>
+                            <div class="col text-danger-light" id="options-timesheets-director-cell-3-out-${record.name.replace(/\W/g, '')}">
+                            </div>
+                        </div>
+                    <div class="row border border-secondary">
+                            <div class="col text-info-light">
+                            Thursday
+                            </div>
+                            <div class="col text-success-light" id="options-timesheets-director-cell-4-in-${record.name.replace(/\W/g, '')}">
+                            </div>
+                            <div class="col text-danger-light" id="options-timesheets-director-cell-4-out-${record.name.replace(/\W/g, '')}">
+                            </div>
+                        </div>
+                    <div class="row border border-secondary">
+                            <div class="col text-info-light">
+                            Friday
+                            </div>
+                            <div class="col text-success-light" id="options-timesheets-director-cell-5-in-${record.name.replace(/\W/g, '')}">
+                            </div>
+                            <div class="col text-danger-light" id="options-timesheets-director-cell-5-out-${record.name.replace(/\W/g, '')}">
+                            </div>
+                        </div>
+                    <div class="row border border-secondary">
+                            <div class="col text-info-light">
+                            Saturday
+                            </div>
+                            <div class="col text-success-light" id="options-timesheets-director-cell-6-in-${record.name.replace(/\W/g, '')}">
+                            </div>
+                            <div class="col text-danger-light" id="options-timesheets-director-cell-6-out-${record.name.replace(/\W/g, '')}">
+                            </div>
+                        </div>
+                    <div class="row">
+                            <div class="col text-info-light">
+                            Hours
+                            </div>
+                            <div class="col text-warning-light" id="options-timesheets-director-cell-h-${record.name.replace(/\W/g, '')}">
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    `;
+                    hours[record.name] = moment.duration();
+                }
+
+                // Prepare clock moments
+                var clockin = moment(record.time_in);
+                var clockout = moment(record.time_out);
+                var clocknow = moment(Meta.time);
+                var clocknext = moment(date).add(1, 'weeks');
+                var clockday = moment(clockin).format('e');
+
+                // Determine status. 1 = approved, 2 = no time_out (clocked in), 0 = not approved.
+                var status = 1;
+                if (!record.approved)
+                    status = 0;
+                if (record.time_out === null)
+                    status = 2;
+
+                // If approved record, add its hours for the director. If clocked in record, add hours from time_in to current time.
+                if (status === 1)
+                    hours[record.name].add(clockout.diff(clockin));
+                if (status === 2)
+                    hours[record.name].add(clocknow.diff(clockin));
+
+
+                var inT = moment(clockin).format(`h:mm A`);
+                var outT = moment(clockout).format(`h:mm A`) || 'IN';
+
+                // For certain clock-ins and clock-outs, we may need to display the date as well, not just the time.
+                // If clock-in happened last week, show its date
+                if (moment(clockin).isBefore(moment(clockout).startOf('week')))
+                {
+                    inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                    clockday = moment(clockout).format('e');
+                }
+                // If clock-out happened next week, show its date
+                if (clockout !== null && moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')))
+                {
+                    outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                }
+                // If clock-out was not on the same day as clock-in, show date for clock-out.
+                if (clockout !== null && !moment(clockout).isSame(moment(clockin), 'day'))
+                {
+                    outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                }
+
+                // Fill in the timesheet records clock in
+                var cell = document.getElementById(`options-timesheets-director-cell-${clockday}-in-${record.name.replace(/\W/g, '')}`);
+                if (cell !== null)
+                {
+                    switch (status)
+                    {
+                        case 0:
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-danger" id="timesheet-t-${record.ID}">${inT}</span><br />`;
+                            break;
+                        case 1:
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-primary" id="timesheet-t-${record.ID}">${inT}</span><br />`;
+                            break;
+                        case 2:
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}">${inT}</span><br />`;
+                            break;
+                    }
+                }
+
+                // Fill in the timesheet records clock out
+                var cell = document.getElementById(`options-timesheets-director-cell-${clockday}-out-${record.name.replace(/\W/g, '')}`);
+                if (cell !== null)
+                {
+                    switch (status)
+                    {
+                        case 0:
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-danger" id="timesheet-t-${record.ID}">${outT}</span><br />`;
+                            break;
+                        case 1:
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-primary" id="timesheet-t-${record.ID}">${outT}</span><br />`;
+                            break;
+                        case 2:
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}">${outT}</span><br />`;
+                            break;
+                    }
+                }
+
+                // Iterate through each director and list their hours worked.
+                for (var key in hours)
+                {
+                    if (hours.hasOwnProperty(key))
+                    {
+                        var cell = document.getElementById(`options-timesheets-director-cell-h-${key.replace(/\W/g, '')}`);
+                        if (cell)
+                        {
+                            cell.innerHTML = `${hours[key].format('h', 1)}`;
+                        }
+                    }
+                }
+
+            });
+        });
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: 'Error occurred during loadTimesheets.'
+        });
     }
 }
 
