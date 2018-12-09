@@ -81,106 +81,47 @@ try {
     var minutesC = 0;
     var hours = date.hours();
     var hoursC = 0;
+    var recorderHour = -1;
+    var checkMinutes = -1;
     var clockInterval = setInterval(function () {
         date = moment(Meta.time);
         seconds = date.seconds();
         minutes = date.minutes();
         hours = date.hours();
+        var angle = 0;
         var dateStamp = document.getElementById("datestamp");
         dateStamp.innerHTML = date.format("dddd MM/DD/YYYY hh:mm A");
-        if (hoursC !== (hours + (Math.floor(minutes / 3) / 20)))
-        {
-            var containers = document.querySelectorAll('.hours-container');
-            if (containers)
-            {
-                for (var i = 0; i < containers.length; i++) {
-                    if (containers[i].angle === undefined) {
-                        containers[i].angle = 1.5;
-                    } else {
-                        containers[i].angle += 1.5;
-                    }
-                    containers[i].style.webkitTransform = 'rotateZ(' + containers[i].angle + 'deg)';
-                    containers[i].style.transform = 'rotateZ(' + containers[i].angle + 'deg)';
-                }
-                hoursC = Math.floor((hoursC * 20) + 1) / 20;
-                if (hoursC >= 24)
-                    hoursC = 0;
-            }
-        }
-        if (minutesC !== minutes)
-        {
-            var containers = document.querySelectorAll('.minutes-container');
-            if (containers)
-            {
-                for (var i = 0; i < containers.length; i++) {
-                    if (containers[i].angle === undefined) {
-                        containers[i].angle = 6;
-                    } else {
-                        containers[i].angle += 6;
-                    }
-                    containers[i].style.webkitTransform = 'rotateZ(' + containers[i].angle + 'deg)';
-                    containers[i].style.transform = 'rotateZ(' + containers[i].angle + 'deg)';
-                }
-                minutesC++;
-                if (minutesC >= 60)
-                {
-                    minutesC = 0;
-                    // Start a new recording if we are in automation
-                    if (Meta.state.startsWith("automation_"))
-                    {
-                        if (!development)
-                        {
-                            nrc.run(`"${recordPadPath}" -done`)
-                                    .then(function (response) {
-                                        console.log(`DONE: ${response}`);
-                                        if (!development)
-                                        {
-                                            nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\automation\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
-                                                    .then(function (response2) {
-                                                        if (response2 == 0)
-                                                        {
-                                                            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started in ${recordPath}\\automation\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                                                            });
-                                                        }
-                                                        console.log(`RECORDFILE: ${response2}`)
-                                                    })
-                                                    .catch(err => {
-                                                        console.error(err);
-                                                    });
-                                        }
-                                    })
-                                    .catch(err => {
-                                        console.error(err);
-                                    });
-                        }
-                    }
-                }
-            }
-        }
-        if (secondsC !== seconds)
-        {
-            var containers = document.querySelectorAll('.seconds-container');
-            if (containers)
-            {
-                for (var i = 0; i < containers.length; i++) {
-                    if (containers[i].angle === undefined) {
-                        containers[i].angle = 6;
-                    } else {
-                        containers[i].angle += 6;
-                    }
-                    containers[i].style.webkitTransform = 'rotateZ(' + containers[i].angle + 'deg)';
-                    containers[i].style.transform = 'rotateZ(' + containers[i].angle + 'deg)';
-                }
-                secondsC++;
-                if (secondsC >= 60)
-                {
-                    secondsC = 0;
 
-                    // We want to refresh announcements, calendar, and messages every minute.
-                    checkAnnouncements();
-                    checkCalendar();
-                    selectRecipient(activeRecipient);
-                }
+        // First, do the hour hand
+        angle = ((hours * (360 / 12)) + ((360 / 12) * (minutes / 60)));
+        var containers = document.querySelectorAll('.hours-container');
+        if (containers)
+        {
+            for (var i = 0; i < containers.length; i++) {
+                containers[i].style.webkitTransform = 'rotateZ(' + angle + 'deg)';
+                containers[i].style.transform = 'rotateZ(' + angle + 'deg)';
+            }
+        }
+
+        // Now do the minutes hand
+        angle = ((minutes * (360 / 60)) + ((360 / 60) * (seconds / 60)));
+        var containers = document.querySelectorAll('.minutes-container');
+        if (containers)
+        {
+            for (var i = 0; i < containers.length; i++) {
+                containers[i].style.webkitTransform = 'rotateZ(' + angle + 'deg)';
+                containers[i].style.transform = 'rotateZ(' + angle + 'deg)';
+            }
+        }
+
+        // Now do the seconds hand
+        angle = (seconds * (360 / 60));
+        var containers = document.querySelectorAll('.seconds-container');
+        if (containers)
+        {
+            for (var i = 0; i < containers.length; i++) {
+                containers[i].style.webkitTransform = 'rotateZ(' + angle + 'deg)';
+                containers[i].style.transform = 'rotateZ(' + angle + 'deg)';
             }
         }
     }, 100);
@@ -340,7 +281,6 @@ try {
 
     socket.on('requests', function (data) {
         processRequests(data);
-        console.dir(data);
     });
 
     socket.on('recipients', function (data) {
@@ -360,7 +300,6 @@ try {
     });
 
     socket.on('timesheet', function (data) {
-        console.dir(data);
         loadTimesheets(moment(document.querySelector("#options-timesheets-date").value));
     });
 
@@ -377,7 +316,6 @@ try {
         var flasher = document.querySelectorAll(".flash-bg");
         if (flasher !== null && flasher.length > 0)
         {
-            console.log(`FOUND IT`);
             document.querySelector("body").style.backgroundColor = '#ffffff';
             setTimeout(function () {
                 document.querySelector("body").style.backgroundColor = '#000000';
@@ -1066,7 +1004,6 @@ document.querySelector("#filter-global-logs").onclick = function () {
 function filterGlobalLogs(date) {
     try {
         nodeRequest({method: 'POST', url: nodeURL + '/attendance/get', data: {date: moment(date).toISOString(true)}}, function (response) {
-            console.dir(response);
             var att = document.querySelector('#global-logs');
             att.innerHTML = ``;
             att.scrollTop = 0;
@@ -1622,10 +1559,8 @@ document.querySelector(`#options-directors`).addEventListener("click", function 
             console.log(e.target.id);
             if (e.target.id.startsWith(`options-director-`))
             {
-                console.log(`Director button clicked`);
                 if (e.target.id === 'options-director-new')
                 {
-                    console.log(`New director`);
                     document.querySelector("#options-director-name").value = "";
                     document.querySelector("#options-director-login").value = "";
                     document.querySelector("#options-director-position").value = "";
@@ -1639,7 +1574,6 @@ document.querySelector(`#options-directors`).addEventListener("click", function 
                     loadTimesheets(moment(Meta.time).startOf('week'));
                     $("#options-modal-timesheets").iziModal('open');
                 } else {
-                    console.log(`Current director`);
                     var director = parseInt(e.target.id.replace("options-director-", ""));
                     var director2 = Directors({ID: director}).first();
                     document.querySelector("#options-director-name").value = director2.name;
@@ -2426,11 +2360,9 @@ document.querySelector(`#options-xp-button`).addEventListener("click", function 
                 var djs = [];
                 Djs().each(dj => {
                     var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
-                    console.log(`Checking ${dj.ID}`);
                     if (temp && temp.checked)
                         djs.push(dj.ID);
                 });
-                console.dir(djs);
                 var types = document.querySelector("#options-xp-type").value.split("-");
                 nodeRequest({method: 'POST', url: nodeURL + '/xp/add', data: {djs: djs, type: types[0], subtype: types[1], description: document.querySelector("#options-xp-description").value, amount: parseFloat(document.querySelector("#options-xp-amount").value), date: moment(document.querySelector("#options-xp-date").value).toISOString(true)}}, function (response) {
                     if (response === 'OK')
@@ -3261,6 +3193,9 @@ function doMeta(metan) {
                 metaTick();
                 metaTimer = setInterval(metaTick, 1000);
             }, moment(Meta.queueFinish).diff(moment(Meta.queueFinish).startOf('second')));
+
+            if (!Meta.state.startsWith("automation_") && Meta.state !== "live_prerecord")
+                checkCalendar();
         }
         // Reset ticker when time is provided
         else if (typeof metan.time !== 'undefined')
@@ -3580,6 +3515,48 @@ function metaTick()
 {
     Meta.time = moment(Meta.time).add(1, 'seconds');
     doMeta({});
+    checkCalendar();
+
+    if (recorderHour !== moment(Meta.time).hours())
+    {
+        recorderHour = moment(Meta.time).hours();
+        // Start a new recording if we are in automation
+        if (Meta.state.startsWith("automation_"))
+        {
+            if (!development)
+            {
+                nrc.run(`"${recordPadPath}" -done`)
+                        .then(function (response) {
+                            console.log(`DONE: ${response}`);
+                            if (!development)
+                            {
+                                nrc.run(`"${recordPadPath}" -recordfile "${recordPath}\\automation\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3"`)
+                                        .then(function (response2) {
+                                            if (response2 == 0)
+                                            {
+                                                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started.<br />Path: ${recordPath}\\automation\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                });
+                                            }
+                                            console.log(`RECORDFILE: ${response2}`)
+                                        })
+                                        .catch(err => {
+                                            console.error(err);
+                                        });
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                        });
+            }
+        }
+    }
+
+    if (checkMinutes !== moment(Meta.time).minutes())
+    {
+        checkMinutes = moment(Meta.time).minutes();
+        checkAnnouncements();
+        selectRecipient(activeRecipient);
+    }
 }
 
 // Shows a please wait box.
@@ -4236,29 +4213,29 @@ function checkCalendar() {
                     // Add upcoming shows to the clockwheel shading
                     if (event.title.startsWith("Show: ") || event.title.startsWith("Remote: ") || event.title.startsWith("Sports: ") || event.title.startsWith("Prerecord: "))
                     {
-                        if (moment(event.end).diff(moment(Meta.time), 'minutes') < (12 * 60))
+                        if (moment(event.end).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
                         {
                             if (moment(event.start).isAfter(moment(Meta.time)))
                             {
                                 data.sectors.push({
                                     label: event.title,
-                                    start: ((moment(event.start).diff(moment(Meta.time), 'minutes') / (12 * 60)) * 360) + 0.5,
-                                    size: ((moment(event.end).diff(moment(event.start), 'minutes') / (12 * 60)) * 360) - 0.5,
+                                    start: ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) + 0.5,
+                                    size: ((moment(event.end).diff(moment(event.start), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
                                     color: event.color || '#787878'
                                 });
                             } else {
                                 data.sectors.push({
                                     label: event.title,
                                     start: 0.5,
-                                    size: ((moment(event.end).diff(moment(Meta.time), 'minutes') / (12 * 60)) * 360) - 0.5,
+                                    size: ((moment(event.end).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
                                     color: event.color || '#787878'
                                 });
                             }
-                        } else if (moment(event.start).diff(moment(Meta.time), 'minutes') < (12 * 60))
+                        } else if (moment(event.start).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
                         {
                             if (moment(event.start).isAfter(moment(Meta.time)))
                             {
-                                var start = ((moment(event.start).diff(moment(Meta.time), 'minutes') / (12 * 60)) * 360);
+                                var start = ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360);
                                 data.sectors.push({
                                     label: event.title,
                                     start: start + 0.5,
@@ -4274,7 +4251,6 @@ function checkCalendar() {
                                 });
                             }
                         }
-                        console.dir(data.sectors);
                     }
                     // If we are doing a show, do a 1-hour clockwheel
                 } else {
@@ -4294,13 +4270,13 @@ function checkCalendar() {
                                 if (moment(event.start).isAfter(moment(Meta.time)))
                                 {
                                     doLabel = event.title;
-                                    doStart = ((moment(event.start).diff(moment(Meta.time), 'minutes') / 60) * 360);
-                                    doSize = ((moment(event.end).diff(moment(event.start), 'minutes') / 60) * 360) + 6;
+                                    doStart = ((moment(event.start).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360);
+                                    doSize = ((moment(event.end).diff(moment(event.start), 'seconds') / (60 * 60)) * 360);
                                     doColor = event.color || '#787878';
                                     currentStart = moment(event.start);
                                     currentEnd = moment(event.end);
                                 } else {
-                                    var theSize = ((moment(event.end).diff(moment(Meta.time), 'minutes') / 60) * 360) + 6;
+                                    var theSize = ((moment(event.end).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360);
                                     doLabel = event.title;
                                     doStart = 0;
                                     doSize = theSize;
@@ -4328,8 +4304,6 @@ function checkCalendar() {
                                 timeLeft2 -= 15;
                             if (timeLeft2 < 0)
                                 timeLeft2 = 0;
-                            console.log(`Timeleft: ${timeLeft}`);
-                            console.log(`TimeLeft2: ${timeLeft2}`);
                             // If timeLeft2 is less than timeleft, that means the currently live show needs to end earlier than the scheduled time.
                             if (timeLeft2 < timeLeft)
                             {
@@ -4352,8 +4326,8 @@ function checkCalendar() {
                             {
                                 if (moment(event.start).isAfter(moment(Meta.time)))
                                 {
-                                    var theStart = ((moment(event.start).diff(moment(Meta.time), 'minutes') / 60) * 360) + 6;
-                                    var theSize = ((moment(event.end).diff(moment(event.start), 'minutes') / 60) * 360);
+                                    var theStart = ((moment(event.start).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360);
+                                    var theSize = ((moment(event.end).diff(moment(event.start), 'seconds') / (60 * 60)) * 360);
                                     if ((theSize + theStart) > 360)
                                         theSize = 360 - theStart;
                                     data.sectors.push({
@@ -4366,7 +4340,7 @@ function checkCalendar() {
                                     data.sectors.push({
                                         label: event.title,
                                         start: 0,
-                                        size: ((moment(event.end).diff(moment(Meta.time), 'minutes') / 60) * 360) + 6,
+                                        size: ((moment(event.end).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360),
                                         color: "#000000"
                                     });
                                 }
@@ -4410,8 +4384,8 @@ function checkCalendar() {
             var start = moment(Meta.time).startOf('day');
             if (moment(Meta.time).hour() >= 12)
                 start.add(12, 'hours');
-            var diff = moment(Meta.time).diff(moment(start), 'minutes');
-            data.start = 0.5 * diff;
+            var diff = moment(Meta.time).diff(moment(start), 'seconds');
+            data.start = (360 / 12 / 60 / 60) * diff;
 
 // Show an indicator on the clock for the current hour (extra visual to show 12-hour clock mode)
             data.sectors.push({
@@ -4421,12 +4395,10 @@ function checkCalendar() {
                 color: "#000000"
             });
 
-            console.dir(data);
 
             var sectors = calculateSectors(data);
             var newSVG = document.getElementById("clock-program");
             newSVG.setAttribute("transform", `rotate(${data.start})`);
-            console.dir(sectors);
             sectors.map(function (sector) {
 
                 var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -4441,8 +4413,23 @@ function checkCalendar() {
             var temp = document.getElementById("calendar-title");
             temp.innerHTML = 'Clockwheel (next hour)';
             var start = moment(Meta.time).startOf('hour');
-            var diff = moment(Meta.time).diff(moment(start), 'minutes');
-            data.start = 6 * diff;
+            var diff = moment(Meta.time).diff(moment(start), 'seconds');
+            data.start = (360 / 60 / 60) * diff;
+
+            if (Meta.queueFinish !== null)
+            {
+                document.querySelector('#calendar-events').innerHTML += `  <div class="bs-callout bs-callout-primary">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-4">
+                                                ${moment(Meta.queueFinish).format("hh:mm:ss A")}
+                                            </div>
+                                            <div class="col-8">
+                                                RadioDJ Queue
+                                            </div>
+                                        </div>
+                                    </div></div>` + document.querySelector('#calendar-events').innerHTML;
+            }
 
 
             if (doLabel !== null)
@@ -4509,8 +4496,8 @@ function checkCalendar() {
                 {
                     if (moment(currentStart).isAfter(moment(Meta.time)))
                     {
-                        var theStart = ((moment(currentStart).diff(moment(Meta.time), 'minutes') / 60) * 360);
-                        var theSize = ((moment(currentEnd).diff(moment(currentStart), 'minutes') / 60) * 360) + 6;
+                        var theStart = ((moment(currentStart).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360);
+                        var theSize = ((moment(currentEnd).diff(moment(currentStart), 'seconds') / (60 * 60)) * 360);
                         data.sectors.push({
                             label: doLabel,
                             start: theStart,
@@ -4518,7 +4505,7 @@ function checkCalendar() {
                             color: doColor
                         });
                     } else {
-                        var theSize = ((moment(currentEnd).diff(moment(Meta.time), 'minutes') / 60) * 360) + 6;
+                        var theSize = ((moment(currentEnd).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360);
                         data.sectors.push({
                             label: doLabel,
                             start: 0,
@@ -4535,7 +4522,7 @@ function checkCalendar() {
                         color: doColor
                     });
                 } else {
-                    var theStart = ((moment(currentStart).diff(moment(Meta.time), 'minutes') / 60) * 360);
+                    var theStart = ((moment(currentStart).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360);
                     if (theStart < 360)
                     {
                         data.sectors.push({
@@ -4553,19 +4540,19 @@ function checkCalendar() {
                     if (moment(Meta.lastID).add(10, 'minutes').startOf('hour') !== moment(Meta.time).startOf('hour') && moment(Meta.time).diff(moment(Meta.time).startOf('hour'), 'minutes') < 10)
                     {
                         var start = moment(Meta.time).startOf('hour');
-                        var diff = moment(Meta.time).diff(moment(start), 'minutes');
+                        var diff = moment(Meta.time).diff(moment(start), 'seconds');
                         data.sectors.push({
                             label: 'current minute',
-                            start: 360 - (diff * 6),
+                            start: 360 - (diff * (360 / 60 / 60)),
                             size: 15,
                             color: "#FFEB3B"
                         });
                     } else {
                         var start = moment(Meta.time).add(1, 'hours').startOf('hour');
-                        var diff = moment(start).diff(moment(Meta.time), 'minutes');
+                        var diff = moment(start).diff(moment(Meta.time), 'seconds');
                         data.sectors.push({
                             label: 'current minute',
-                            start: (6 * diff) + 6,
+                            start: ((360 / 60 / 60) * diff),
                             size: 15,
                             color: "#FFEB3B"
                         });
@@ -4581,7 +4568,6 @@ function checkCalendar() {
                 color: "#000000"
             });
 
-            console.dir(data);
 
             var sectors = calculateSectors(data);
             var newSVG = document.getElementById("clock-program");
@@ -4595,7 +4581,44 @@ function checkCalendar() {
                 newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
 
                 newSVG.appendChild(newSector);
-            })
+            });
+
+            // Shade in queue time on the clockwheel
+            if (Meta.queueFinish !== null)
+            {
+                data.sectors = [];
+                var diff = moment(Meta.queueFinish).diff(moment(Meta.time), 'seconds');
+
+                if (diff < (60 * 60))
+                {
+                    data.sectors.push({
+                        label: 'queue time',
+                        start: 0,
+                        size: diff * 0.1,
+                        color: "#0000ff"
+                    });
+                } else {
+                    data.sectors.push({
+                        label: 'queue time',
+                        start: 0,
+                        size: 360,
+                        color: "#0000ff"
+                    });
+                }
+
+                var sectors = calculateSectors(data);
+                var newSVG = document.getElementById("queue-time");
+                newSVG.setAttribute("transform", `rotate(${data.start})`);
+                sectors.map(function (sector) {
+
+                    var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    newSector.setAttributeNS(null, 'fill', sector.color);
+                    newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
+                    newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
+
+                    newSVG.appendChild(newSector);
+                });
+            }
         }
     } catch (e) {
         console.error(e);
@@ -7256,7 +7279,6 @@ function loadDJ(dj = null, reset = true) {
 // Update recipients as changes happen
 function processDjs(data, replace = false)
 {
-    console.dir(data);
     // Data processing
     try {
         if (replace)
@@ -7323,7 +7345,6 @@ function processDjs(data, replace = false)
 // Update recipients as changes happen
 function processDirectors(data, replace = false)
 {
-    console.dir(data);
     // Data processing
     try {
         if (replace)
@@ -7381,7 +7402,6 @@ function processDirectors(data, replace = false)
 
 function processXp(data)
 {
-    console.dir(data);
     for (var key in data)
     {
         if (data.hasOwnProperty(key))
@@ -7684,24 +7704,17 @@ function calculateSectors(data) {
             a = item.size;
             if ((item.start + item.size) > 360)
                 a = 360 - item.start;
-            console.log(`a: ${a}`);
             aCalc = (a > 180) ? 180 : a;
-            console.log(`aCalc: ${aCalc}`);
             aRad = aCalc * Math.PI / 180;
-            console.log(`aRad: ${aRad}`);
-            console.log(`cos: ${Math.sqrt(2 * 80 * 80 - (2 * 80 * 80 * 0.5))}`);
             z = Math.sqrt(2 * l * l - (2 * l * l * Math.cos(aRad)));
-            console.log(`z: ${z}`);
             if (aCalc <= 90) {
                 x = l * Math.sin(aRad);
             } else {
                 x = l * Math.sin((180 - aCalc) * Math.PI / 180);
             }
-            console.log(`x: ${x}`);
 
             y = Math.sqrt(z * z - x * x);
             Y = y;
-            console.log(`Y: ${Y}`);
 
             if (a <= 180) {
                 X = l + x;
@@ -7710,8 +7723,6 @@ function calculateSectors(data) {
                 X = l - x;
                 arcSweep = 1;
             }
-            console.log(`X: ${X}`);
-            console.log(`arcSweep: ${arcSweep}`);
 
             sectors.push({
                 label: item.label,
