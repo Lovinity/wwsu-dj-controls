@@ -2,7 +2,7 @@
 
 try {
 
-    var development = true;
+    var development = false;
 
 // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -1626,7 +1626,7 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                     buttons: [
                         ['<button><b>Edit</b></button>', function (instance, toast) {
                                 instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                nodeRequest({method: 'POST', url: nodeURL + '/djs/edit', data: {dj: e.target.dataset.dj, name: inputData}}, function (response) {
+                                nodeRequest({method: 'POST', url: nodeURL + '/djs/edit', data: {ID: e.target.dataset.dj, name: inputData}}, function (response) {
                                     if (response === 'OK')
                                     {
                                         iziToast.show({
@@ -1684,7 +1684,7 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                     buttons: [
                         ['<button><b>Remove</b></button>', function (instance, toast) {
                                 instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                nodeRequest({method: 'POST', url: nodeURL + '/djs/remove', data: {dj: e.target.dataset.dj}}, function (response) {
+                                nodeRequest({method: 'POST', url: nodeURL + '/djs/remove', data: {ID: e.target.dataset.dj}}, function (response) {
                                     if (response === 'OK')
                                     {
                                         iziToast.show({
