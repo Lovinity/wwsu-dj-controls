@@ -924,6 +924,10 @@
                     <div style="text-align: center; font-size: 1em;">Manage Directors</div>
                 </div>
                 <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                    <button type="button" id="btn-options-djcontrols" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-users-cog"></i></button>
+                    <div style="text-align: center; font-size: 1em;">Manage DJ Controls</div>
+                </div>
+                <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
                     <button type="button" id="btn-options-announcements" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-bullhorn"></i></button>
                     <div style="text-align: center; font-size: 0.75em;">Manage Announcements</div>
                 </div>
@@ -1107,6 +1111,35 @@
             <div class="container m-1" id="global-logs" style="height: 480px; overflow: scroll;">
             </div>
         </div>
+        <div id="options-modal-djcontrols" style="background-color: #363636; color: #ffffff;">
+            <div class="container m-1">
+                <div class="row bg-primary-dark m-1">
+                    <div class="col-5 text-primary-light">
+                        Friendly Name
+                    </div>
+                    <div class="col-1 text-success-light">
+                        Auth
+                    </div>
+                    <div class="col-1 text-danger-light">
+                        Admin
+                    </div>
+                    <div class="col-1 text-warning-light">
+                        Reqs
+                    </div>
+                    <div class="col-1 text-warning-light">
+                        Issues
+                    </div>
+                    <div class="col-1 text-warning-light">
+                        Msgs
+                    </div>
+                    <div class="col-2 text-primary-light">
+                        Action
+                    </div>
+                </div>
+            </div>
+            <div class="container m-1" id="options-djcontrols" style="height: 480px; overflow: scroll;">
+            </div>
+        </div>
         <div id="options-modal-calendar" style="background-color: #363636; color: #ffffff;">
             <div class="container m-1">
                 <p>NOTE: This only verifies events for the next 7 days.</p>
@@ -1208,6 +1241,53 @@
             </div>
             <div class="row">
                 <div class="col-3" id="options-xp-button">
+                </div>
+            </div>
+        </div>
+        <div id="options-modal-host" style="background-color: #363636; color: #ffffff;">
+            Friendly Name: <input type="text" id="options-host-name" class="form-control" placeholder="">
+            <div class="funkyradio">
+                <div class="funkyradio-success">
+                    <input type="checkbox" value="" id="options-host-authorized">
+                    <label for="options-host-authorized">
+                        Authorized (DJ Controls can be used)
+                    </label>
+                </div>
+            </div>
+            <div class="funkyradio">
+                <div class="funkyradio-success">
+                    <input type="checkbox" value="" id="options-host-admin">
+                    <label for="options-host-admin">
+                        Administrator (Can access admin menu and change settings)
+                    </label>
+                </div>
+            </div>
+            <div class="funkyradio">
+                <div class="funkyradio-success">
+                    <input type="checkbox" value="" id="options-host-requests">
+                    <label for="options-host-requests">
+                        Notify on new Track Requests
+                    </label>
+                </div>
+            </div>
+            <div class="funkyradio">
+                <div class="funkyradio-success">
+                    <input type="checkbox" value="" id="options-host-emergencies">
+                    <label for="options-host-emergencies">
+                        Notify when WWSU experiences issues / emergencies
+                    </label>
+                </div>
+            </div>
+            <div class="funkyradio">
+                <div class="funkyradio-success">
+                    <input type="checkbox" value="" id="options-host-webmessages">
+                    <label for="options-host-webmessages">
+                        Notify when web/mobile users send a new message
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3" id="options-host-button">
                 </div>
             </div>
         </div>

@@ -2,7 +2,7 @@
 
 try {
 
-    var development = false;
+    var development = true;
 
 // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -33,6 +33,7 @@ try {
     var Requests = TAFFY();
     var Logs = TAFFY();
     var Djs = TAFFY();
+    var Hosts = TAFFY();
     var DJData = {};
     var Timesheets = [];
 
@@ -299,6 +300,10 @@ try {
         processXp(data);
     });
 
+    socket.on('hosts', function (data) {
+        processHosts(data);
+    });
+
     socket.on('timesheet', function (data) {
         loadTimesheets(moment(document.querySelector("#options-timesheets-date").value));
     });
@@ -525,7 +530,7 @@ try {
     });
 
     $("#options-modal-director").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Director</h5>`,
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Edit Director</h5>`,
         headerColor: '#363636',
         width: 800,
         focusInput: true,
@@ -538,6 +543,38 @@ try {
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
         zindex: 62
+    });
+
+    $("#options-modal-host").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Edit DJ Controls Host</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 62
+    });
+
+    $("#options-modal-djcontrols").iziModal({
+        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - DJ Controls Hosts</h5>`,
+        headerColor: '#363636',
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 61
     });
 
     $("#options-modal-dj-logs").iziModal({
@@ -1300,6 +1337,18 @@ document.querySelector("#btn-options-announcements").onclick = function () {
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred during the click event of #btn-options-calendar.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-djcontrols").onclick = function () {
+    try {
+        $("#options-modal-djcontrols").iziModal('open');
+    } catch (e) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-djcontrols.'
         });
     }
 };
@@ -2229,6 +2278,93 @@ document.querySelector(`#options-announcements`).addEventListener("click", funct
     }
 });
 
+document.querySelector(`#options-djcontrols`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith("options-djcontrols-remove-"))
+            {
+                var inputData = "";
+                var host = Hosts({ID: parseInt(e.target.id.replace(`options-djcontrols-remove-`, ``))}).first();
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/trash.png`,
+                    maxWidth: 480,
+                    title: 'Remove host',
+                    message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove host ' + host.friendlyname + '?',
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Remove</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                nodeRequest({method: 'POST', url: nodeURL + '/hosts/remove', data: {ID: parseInt(e.target.id.replace(`options-djcontrols-remove-`, ``))}}, function (response) {
+                                    if (response === 'OK')
+                                    {
+                                        checkAnnouncements();
+                                        iziToast.show({
+                                            title: `DJ Controls host removed!`,
+                                            message: `DJ Controls host was removed!`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to remove DJ Controls host!`,
+                                            message: `There was an error trying to remove the DJ Controls host. This might happen if you were trying to remove the only authorized admin; if so, make another host an authorized admin first.`,
+                                            timeout: 20000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
+                    ]
+                });
+            }
+            if (e.target.id.startsWith("options-djcontrols-edit-"))
+            {
+                var host = Hosts({ID: parseInt(e.target.id.replace(`options-djcontrols-edit-`, ``))}).first();
+                document.querySelector("#options-host-name").value = host.friendlyname;
+                document.querySelector("#options-host-authorized").checked = host.authorized;
+                document.querySelector("#options-host-admin").checked = host.admin;
+                document.querySelector("#options-host-requests").checked = host.requests;
+                document.querySelector("#options-host-emergencies").checked = host.emergencies;
+                document.querySelector("#options-host-webmessages").checked = host.webmessages;
+                document.querySelector("#options-host-button").innerHTML = `<button type="button" class="btn btn-success" id="options-host-edit-${host.ID}">Edit</button>`;
+                $("#options-modal-host").iziModal('open');
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-djcontrols.'
+        });
+    }
+});
+
 document.querySelector(`#options-announcement-button`).addEventListener("click", function (e) {
     try {
         if (e.target) {
@@ -2311,6 +2447,55 @@ document.querySelector(`#options-announcement-button`).addEventListener("click",
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred during the click event of #options-announcement-button.'
+        });
+    }
+});
+
+document.querySelector(`#options-host-button`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith("options-host-edit-"))
+            {
+                nodeRequest({method: 'POST', url: nodeURL + '/hosts/edit', data: {ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector("#options-host-name").value, authorized: document.querySelector("#options-host-authorized").checked, admin: document.querySelector("#options-host-admin").checked, requests: document.querySelector("#options-host-requests").checked, emergencies: document.querySelector("#options-host-emergencies").checked, webmessages: document.querySelector("#options-host-webmessages").checked}}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-host").iziModal('close');
+                        iziToast.show({
+                            title: `Host edited!`,
+                            message: `DJ Controls host was edited!`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to edit host!`,
+                            message: `There was an error trying to edit the DJ Controls host. This might happen if you're removing admin or authorized permissions from the only authorized admin host in the system. If this is true, ensure there is another authorized admin host first.`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-host-button.'
         });
     }
 });
@@ -2874,110 +3059,112 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-        {
-            socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
-                //console.log(body);
-                try {
-                    client = body;
-                    authtoken = client.token;
-                    if (!client.authorized)
-                    {
-                        var noConnection = document.getElementById('no-connection');
-                        noConnection.style.display = "inline";
-                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+{
+    socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
+        //console.log(body);
+        try {
+            client = body;
+            authtoken = client.token;
+            if (!client.authorized)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "inline";
+                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Not Authorized!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">This DJ Controls has not been authorized for use with WWSU.</h2>
-                <h3 style="text-align: center; font-size: 1em; color: #F44336">Please authorize the host ${client.host}</h3>
+                <h3 style="text-align: center; font-size: 1em; color: #F44336">Please use an admin DJ Controls to authorize the host ${client.friendlyname}</h3>
                 <h3 style="text-align: center; font-size: 1em; color: #F44336">And then, restart this DJ Controls.</h3>
             </div>`;
-                        cb(false);
-                    } else {
-                        cb(authtoken);
+                cb(false);
+            } else {
+                cb(authtoken);
+            }
+            if (client.admin)
+            {
+                if (client.otherHosts)
+                    processHosts(client.otherHosts, true);
+                var temp = document.querySelector(`#options`);
+                var restarter;
+                if (temp)
+                    temp.style.display = "inline";
+
+                // Subscribe to the logs socket
+                socket.post('/logs/get', {}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        //processLogs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED logs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                    if (client.admin)
-                    {
-                        var temp = document.querySelector(`#options`);
-                        var restarter;
-                        if (temp)
-                            temp.style.display = "inline";
+                });
 
-                        // Subscribe to the logs socket
-                        socket.post('/logs/get', {}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                //processLogs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED logs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get djs and subscribe to the dj socket
-                        nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                processDjs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED DJs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get directors and subscribe to the dj socket
-                        nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                processDirectors(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED directors CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the XP socket
-                        nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED XP CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the timesheet socket
-                        nodeRequest({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED TIMESHEET CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-                    } else {
-                        var temp = document.querySelector(`#options`);
-                        if (temp)
-                            temp.style.display = "none";
+                // Get djs and subscribe to the dj socket
+                nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        processDjs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED DJs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                } catch (e) {
-                    console.error(e);
-                    console.log('FAILED HOST CONNECTION');
-                    restarter = setTimeout(hostSocket, 10000);
-                }
-            });
+                });
+
+                // Get directors and subscribe to the dj socket
+                nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        processDirectors(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED directors CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the XP socket
+                nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED XP CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the timesheet socket
+                nodeRequest({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED TIMESHEET CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+            } else {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            console.log('FAILED HOST CONNECTION');
+            restarter = setTimeout(hostSocket, 10000);
         }
+    });
+}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -6261,7 +6448,7 @@ function processStatus(data, replace = false)
                         temp.innerHTML = `<h4><i class="fas fa-server"></i> ${datum.label}</h4>
                         <strong>${datum.label}</strong> is reporting a problem: ${datum.data}.`;
                     }
-                    if (datum.name === 'silence' && datum.status <= 3)
+                    if (datum.name === 'silence' && client.emergencies && datum.status <= 3)
                     {
                         iziToast.show({
                             title: 'Silence / Low Audio detected!',
@@ -6340,7 +6527,7 @@ function processStatus(data, replace = false)
                                 temp.innerHTML = `<h4><i class="fas fa-server"></i> ${data[key].label}</h4>
                         <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                             }
-                            if (data[key].name === 'silence' && data[key].status <= 3)
+                            if (data[key].name === 'silence' && data[key].status <= 3 && client.emergencies)
                             {
                                 iziToast.show({
                                     title: 'Silence / Low Audio detected!',
@@ -6404,7 +6591,7 @@ function processStatus(data, replace = false)
                                 temp.innerHTML = `<h4><i class="fas fa-server"></i> ${data[key].label}</h4>
                         <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                             }
-                            if (data[key].name === 'silence' && data[key].status <= 3)
+                            if (data[key].name === 'silence' && data[key].status <= 3 && client.emergencies)
                             {
                                 iziToast.show({
                                     title: 'Silence / Low Audio detected!',
@@ -7388,6 +7575,79 @@ function processDirectors(data, replace = false)
                         <button type="button" id="options-director-${director.ID}" class="btn ${director.present ? "btn-success" : "btn-danger"} btn-circle btn-xl border border-white" data-director="${director.ID}"><i class="fas fa-user" id="options-director-i-${director.ID}" data-director="${director.ID}"></i></button>
                         <div style="text-align: center; font-size: 1em;">${director.name}</div>
                     </div>`;
+        });
+
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred in the processDirectors function.'
+        });
+}
+}
+
+// Update recipients as changes happen
+function processHosts(data, replace = false)
+{
+    // Data processing
+    try {
+        if (replace)
+        {
+            Hosts = TAFFY();
+            Hosts.insert(data);
+
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
+                {
+                    switch (key)
+                    {
+                        case 'insert':
+                            Hosts.insert(data[key]);
+                            break;
+                        case 'update':
+                            Hosts({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Hosts({ID: data[key]}).remove();
+                            break;
+                    }
+                }
+            }
+        }
+
+        document.querySelector('#options-djcontrols').innerHTML = ``;
+
+        Hosts().each(function (host, index) {
+            document.querySelector('#options-djcontrols').innerHTML += `<div class="row m-1">
+                    <div class="col-5 text-primary-light">
+                        ${host.friendlyname}
+                    </div>
+                    <div class="col-1 text-success-light">
+                        ${host.authorized ? '<i class="fas fa-check text-success-light"></i>' : ''}
+                    </div>
+                    <div class="col-1 text-danger-light">
+                        ${host.admin ? '<i class="fas fa-check text-danger-light"></i>' : ''}
+                    </div>
+                    <div class="col-1 text-warning-light">
+                        ${host.requests ? '<i class="fas fa-check text-warning-light"></i>' : ''}
+                    </div>
+                    <div class="col-1 text-warning-light">
+                        ${host.emergencies ? '<i class="fas fa-check text-warning-light"></i>' : ''}
+                    </div>
+                    <div class="col-1 text-warning-light">
+                        ${host.webmessages ? '<i class="fas fa-check text-warning-light"></i>' : ''}
+                    </div>
+                                <div class="col-2 text-info-light">
+            ${client.host !== host.host ? `<button type="button" id="options-djcontrols-edit-${host.ID}" class="close" aria-label="Edit Host">
+                <span aria-hidden="true"><i class="fas fa-edit text-info-light"></i></span>
+                </button>
+                <button type="button" id="options-djcontrols-remove-${host.ID}" class="close" aria-label="Remove Host">
+                <span aria-hidden="true"><i class="fas fa-trash text-info-light"></i></span>
+                </button>` : `(YOU)`}
+            </div>
+                </div>`;
         });
 
     } catch (e) {
