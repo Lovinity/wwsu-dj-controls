@@ -6,17 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
- - Manage DJ Controls hosts through the administration menu.
  
 ### Changed
- - Silence detection will only notify DJ Controls where emergencies is set to true.
  
 ### Fixed
+ - Added webkit-transform on flickering elements. [Issue 1](https://github.com/Lovinity/wwsu-dj-controls/issues/1)
 
 ## [4.5.0] - 2018-12-14
 
 ### Added
- - Manage DJ Controls hosts through the administration menu.
+ - Manage DJ Controls hosts through the administration menu. [Issue 5](https://github.com/Lovinity/wwsu-dj-controls/issues/5)
  
 ### Changed
  - Silence detection will only notify DJ Controls where emergencies is set to true.

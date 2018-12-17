@@ -2,7 +2,7 @@
 
 try {
 
-    var development = true;
+    var development = false;
 
 // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -2679,7 +2679,7 @@ document.querySelector(`#options-director-button`).addEventListener("click", fun
                     image: `assets/images/trash.png`,
                     maxWidth: 480,
                     title: 'Remove director',
-                    message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove this director?',
+                    message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove this director? Timesheets records for this director will still remain in the system.',
                     position: 'center',
                     drag: false,
                     closeOnClick: false,
