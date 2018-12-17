@@ -2,7 +2,7 @@
 
 try {
 
-    var development = false;
+    var development = true;
 
 // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -948,6 +948,34 @@ document.querySelector("#btn-log-b").onclick = function () {
     prepareLog();
 };
 
+document.querySelector("#btn-view-log-b").onclick = function () {
+    document.querySelector('#dj-logs-listeners').innerHTML = '';
+    document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
+    $("#options-modal-dj-logs").iziModal('open');
+    nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: Meta.attendanceID}}, function (response) {
+        var logs = document.querySelector('#dj-show-logs');
+        logs.innerHTML = ``;
+        logs.scrollTop = 0;
+
+        if (response.length > 0)
+        {
+            response.map(log => {
+                logs.innerHTML += `<div class="row bs-callout bs-callout-${log.loglevel}">
+                                <div class="col-2 text-warning-light">
+                                    ${moment(log.createdAt).format("h:mm:ss A")}
+                                </div>
+                                <div class="col-10 text-info-light">
+                                ${log.event}
+                                ${log.trackArtist !== null && log.trackArtist !== "" ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== "" ? ` - ${log.trackTitle}` : ``}
+                                ${log.trackAlbum !== null && log.trackAlbum !== "" ? `<br />Album: ${log.trackAlbum}` : ``}
+                                ${log.trackLabel !== null && log.trackLabel !== "" ? `<br />Label: ${log.trackLabel}` : ``}
+                                </div>
+                            </div>`;
+            });
+        }
+    });
+}
+
 document.querySelector("#btn-emergency").onclick = function () {
     prepareEmergency();
 };
@@ -1040,6 +1068,7 @@ document.querySelector("#filter-global-logs").onclick = function () {
 
 function filterGlobalLogs(date) {
     try {
+        document.querySelector('#global-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
         nodeRequest({method: 'POST', url: nodeURL + '/attendance/get', data: {date: moment(date).toISOString(true)}}, function (response) {
             var att = document.querySelector('#global-logs');
             att.innerHTML = ``;
@@ -1200,6 +1229,9 @@ function filterGlobalLogs(date) {
 }
 
 document.querySelector("#btn-options-issues").onclick = function () {
+    document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
+    document.querySelector('#dj-logs-listeners').innerHTML = '';
+    $("#options-modal-dj-logs").iziModal('open');
     nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(7, 'days').toISOString(true), end: moment().toISOString(true)}}, function (response) {
         var logs = document.querySelector('#dj-show-logs');
         logs.innerHTML = ``;
@@ -1239,12 +1271,13 @@ document.querySelector("#btn-options-issues").onclick = function () {
                     formatted[k].map(record => logs.innerHTML += record);
             }
         }
-        $("#options-modal-dj-logs").iziModal('open');
     });
 };
 
 document.querySelector("#btn-options-calendar").onclick = function () {
     try {
+        document.querySelector('#calendar-verify').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
+        $("#options-modal-calendar").iziModal('open');
         var calendar = document.querySelector('#calendar-verify');
         calendar.innerHTML = ``;
         calendar.scrollTop = 0;
@@ -1317,8 +1350,6 @@ document.querySelector("#btn-options-calendar").onclick = function () {
                     formatted[k].map(record => calendar.innerHTML += record);
             }
         }
-
-        $("#options-modal-calendar").iziModal('open');
     } catch (err) {
         console.error(err);
         iziToast.show({
@@ -1330,6 +1361,7 @@ document.querySelector("#btn-options-calendar").onclick = function () {
 
 document.querySelector("#btn-options-announcements").onclick = function () {
     try {
+        document.querySelector('#options-announcements').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
         checkAnnouncements();
         $("#options-modal-announcements").iziModal('open');
     } catch (e) {
@@ -1428,8 +1460,13 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
             {
                 if (e.target.id !== 'options-dj-add' && e.target.id !== 'options-dj-mass-xp')
                 {
-                    loadDJ(e.target.dataset.dj);
+                    document.querySelector('#options-dj-name').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
+                    document.querySelector('#dj-remotes').innerHTML = `???`;
+                    document.querySelector('#dj-xp').innerHTML = `???`;
+                    document.querySelector('#options-dj-buttons').innerHTML = ``;
+                    document.querySelector('#dj-attendance').innerHTML = ``;
                     $("#options-modal-dj").iziModal('open');
+                    loadDJ(e.target.dataset.dj);
                 } else if (e.target.id === 'options-dj-mass-xp')
                 {
                     document.querySelector("#options-xp-date").value = moment(Meta.time).format("YYYY-MM-DD\THH:mm");
@@ -1620,8 +1657,9 @@ document.querySelector(`#options-directors`).addEventListener("click", function 
                 } else if (e.target.id === "options-director-timesheets")
                 {
                     document.querySelector("#options-timesheets-date").value = moment(Meta.time).startOf('week').format("YYYY-MM-DD");
-                    loadTimesheets(moment(Meta.time).startOf('week'));
+                    document.querySelector('#options-timesheets-records').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
                     $("#options-modal-timesheets").iziModal('open');
+                    loadTimesheets(moment(Meta.time).startOf('week'));
                 } else {
                     var director = parseInt(e.target.id.replace("options-director-", ""));
                     var director2 = Directors({ID: director}).first();
@@ -1823,6 +1861,9 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
         if (e.target) {
             if (e.target.id.startsWith(`dj-show-logs-`))
             {
+                document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
+                document.querySelector('#dj-logs-listeners').innerHTML = '';
+                $("#options-modal-dj-logs").iziModal('open');
                 nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``))}}, function (response) {
                     var logs = document.querySelector('#dj-show-logs');
                     logs.innerHTML = ``;
@@ -1843,8 +1884,6 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                                 </div>
                             </div>`;
                         });
-
-                        document.querySelector('#dj-logs-listeners').innerHTML = '';
                         nodeRequest({method: 'POST', url: nodeURL + '/listeners/get', data: {start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true)}}, function (response2) {
 
                             if (response2.length > 1)
@@ -1901,7 +1940,6 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                             }
                         });
                     }
-                    $("#options-modal-dj-logs").iziModal('open');
                 });
             }
         }
@@ -1920,6 +1958,9 @@ document.querySelector(`#global-logs`).addEventListener("click", function (e) {
         if (e.target) {
             if (e.target.id.startsWith(`dj-show-logs-`))
             {
+                document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
+                document.querySelector('#dj-logs-listeners').innerHTML = '';
+                $("#options-modal-dj-logs").iziModal('open');
                 nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``))}}, function (response) {
                     var logs = document.querySelector('#dj-show-logs');
                     logs.innerHTML = ``;
@@ -1941,7 +1982,6 @@ document.querySelector(`#global-logs`).addEventListener("click", function (e) {
                             </div>`;
                         });
 
-                        document.querySelector('#dj-logs-listeners').innerHTML = '';
                         nodeRequest({method: 'POST', url: nodeURL + '/listeners/get', data: {start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true)}}, function (response2) {
 
                             if (response2.length > 1)
@@ -1998,7 +2038,6 @@ document.querySelector(`#global-logs`).addEventListener("click", function (e) {
                             }
                         });
                     }
-                    $("#options-modal-dj-logs").iziModal('open');
                 });
             }
         }
@@ -2257,16 +2296,15 @@ document.querySelector(`#options-announcements`).addEventListener("click", funct
             }
             if (e.target.id.startsWith("options-announcements-edit-"))
             {
-                nodeRequest({method: 'POST', url: nodeURL + '/announcements/get', data: {type: "all", ID: parseInt(e.target.id.replace(`options-announcements-edit-`, ``))}}, function (response) {
-                    document.querySelector("#options-announcement-starts").value = moment(response.starts).format("YYYY-MM-DD\THH:mm");
-                    document.querySelector("#options-announcement-expires").value = moment(response.expires).format("YYYY-MM-DD\THH:mm");
-                    document.querySelector("#options-announcement-type").value = response.type;
-                    document.querySelector("#options-announcement-title").value = response.title;
-                    document.querySelector("#options-announcement-level").value = response.level;
-                    quill2.clipboard.dangerouslyPasteHTML(response.announcement);
-                    document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-success" id="options-announcement-edit-${response.ID}">Edit</button>`;
-                    $("#options-modal-announcement").iziModal('open');
-                });
+                var response = Announcements({ID: parseInt(e.target.id.replace(`options-announcements-edit-`, ``))}).first();
+                document.querySelector("#options-announcement-starts").value = moment(response.starts).format("YYYY-MM-DD\THH:mm");
+                document.querySelector("#options-announcement-expires").value = moment(response.expires).format("YYYY-MM-DD\THH:mm");
+                document.querySelector("#options-announcement-type").value = response.type;
+                document.querySelector("#options-announcement-title").value = response.title;
+                document.querySelector("#options-announcement-level").value = response.level;
+                quill2.clipboard.dangerouslyPasteHTML(response.announcement);
+                document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-success" id="options-announcement-edit-${response.ID}">Edit</button>`;
+                $("#options-modal-announcement").iziModal('open');
             }
         }
     } catch (err) {
@@ -3059,112 +3097,112 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-{
-    socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
-        //console.log(body);
-        try {
-            client = body;
-            authtoken = client.token;
-            if (!client.authorized)
-            {
-                var noConnection = document.getElementById('no-connection');
-                noConnection.style.display = "inline";
-                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+        {
+            socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
+                //console.log(body);
+                try {
+                    client = body;
+                    authtoken = client.token;
+                    if (!client.authorized)
+                    {
+                        var noConnection = document.getElementById('no-connection');
+                        noConnection.style.display = "inline";
+                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Not Authorized!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">This DJ Controls has not been authorized for use with WWSU.</h2>
                 <h3 style="text-align: center; font-size: 1em; color: #F44336">Please use an admin DJ Controls to authorize the host ${client.friendlyname}</h3>
                 <h3 style="text-align: center; font-size: 1em; color: #F44336">And then, restart this DJ Controls.</h3>
             </div>`;
-                cb(false);
-            } else {
-                cb(authtoken);
-            }
-            if (client.admin)
-            {
-                if (client.otherHosts)
-                    processHosts(client.otherHosts, true);
-                var temp = document.querySelector(`#options`);
-                var restarter;
-                if (temp)
-                    temp.style.display = "inline";
-
-                // Subscribe to the logs socket
-                socket.post('/logs/get', {}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        //processLogs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED logs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
+                        cb(false);
+                    } else {
+                        cb(authtoken);
                     }
-                });
+                    if (client.admin)
+                    {
+                        if (client.otherHosts)
+                            processHosts(client.otherHosts, true);
+                        var temp = document.querySelector(`#options`);
+                        var restarter;
+                        if (temp)
+                            temp.style.display = "inline";
 
-                // Get djs and subscribe to the dj socket
-                nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        processDjs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED DJs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Subscribe to the logs socket
+                        socket.post('/logs/get', {}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                //processLogs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED logs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
 
-                // Get directors and subscribe to the dj socket
-                nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        processDirectors(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED directors CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Get djs and subscribe to the dj socket
+                        nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                processDjs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED DJs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
 
-                // Subscribe to the XP socket
-                nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED XP CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Get directors and subscribe to the dj socket
+                        nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                processDirectors(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED directors CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
 
-                // Subscribe to the timesheet socket
-                nodeRequest({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED TIMESHEET CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
+                        // Subscribe to the XP socket
+                        nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED XP CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the timesheet socket
+                        nodeRequest({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED TIMESHEET CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+                    } else {
+                        var temp = document.querySelector(`#options`);
+                        if (temp)
+                            temp.style.display = "none";
                     }
-                });
-            } else {
-                var temp = document.querySelector(`#options`);
-                if (temp)
-                    temp.style.display = "none";
-            }
-        } catch (e) {
-            console.error(e);
-            console.log('FAILED HOST CONNECTION');
-            restarter = setTimeout(hostSocket, 10000);
+                } catch (e) {
+                    console.error(e);
+                    console.log('FAILED HOST CONNECTION');
+                    restarter = setTimeout(hostSocket, 10000);
+                }
+            });
         }
-    });
-}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -3480,214 +3518,216 @@ function doMeta(metan) {
         }
 
         // Do stuff if the state changed
-        if (typeof metan.state !== 'undefined')
+        if (typeof metan.state !== 'undefined' || typeof metan.playing !== 'undefined')
         {
             // Always re-do the calendar / clockwheel when states change.
             checkCalendar();
 
             // Have the WWSU Operations box display buttons and operations depending on which state we are in
-            $('#operations-body').animateCss('fadeOut faster', function () {
-                var badge = document.querySelector('#operations-state');
-                badge.innerHTML = Meta.state;
-                var actionButtons = document.querySelectorAll(".btn-operation");
-                for (var i = 0; i < actionButtons.length; i++) {
-                    actionButtons[i].style.display = "none";
-                }
-                document.querySelector('#queue').style.display = "none";
-                document.querySelector('#no-remote').style.display = "none";
-                document.querySelector('#please-wait').style.display = "none";
-                if (Meta.state === 'automation_on' || Meta.state === 'automation_break')
-                {
-                    badge.className = 'badge badge-primary';
-                    document.querySelector('#btn-golive').style.display = "inline";
-                    document.querySelector('#btn-goremote').style.display = "inline";
-                    document.querySelector('#btn-gosports').style.display = "inline";
-                } else if (Meta.state === 'automation_playlist')
-                {
-                    badge.className = 'badge badge-primary';
-                    document.querySelector('#btn-golive').style.display = "inline";
-                    document.querySelector('#btn-goremote').style.display = "inline";
-                    document.querySelector('#btn-gosports').style.display = "inline";
-                } else if (Meta.state === 'automation_genre')
-                {
-                    badge.className = 'badge badge-primary';
-                    document.querySelector('#btn-golive').style.display = "inline";
-                    document.querySelector('#btn-goremote').style.display = "inline";
-                    document.querySelector('#btn-gosports').style.display = "inline";
-                } else if (Meta.state === 'live_prerecord' || Meta.state === 'automation_prerecord')
-                {
-                    badge.className = 'badge badge-danger';
-                    document.querySelector('#btn-golive').style.display = "inline";
-                    document.querySelector('#btn-goremote').style.display = "inline";
-                    document.querySelector('#btn-gosports').style.display = "inline";
-                } else if (Meta.state.startsWith('automation_') || (Meta.state.includes('_returning') && !Meta.state.startsWith('sports')))
-                {
-                    document.querySelector('#queue').style.display = "inline";
-                    document.querySelector('#btn-psa15').style.display = "inline";
-                    document.querySelector('#btn-psa30').style.display = "inline";
-                } else if (Meta.state.startsWith('sports') && Meta.state.includes('_returning'))
-                {
-                    document.querySelector('#queue').style.display = "inline";
-                    document.querySelector('#btn-psa15').style.display = "inline";
-                    document.querySelector('#btn-psa30').style.display = "inline";
-                    // If the system goes into disconnected mode, the host client should be notified of that!
-                } else if (Meta.state.includes('_break_disconnected') || Meta.state.includes('_halftime_disconnected') && Meta.djcontrols === client.host)
-                {
-                    if (document.querySelector("#iziToast-noremote") === null)
-                        iziToast.show({
-                            id: 'iziToast-noremote',
-                            class: 'flash-bg',
-                            title: 'Lost Remote Connection!',
-                            message: `Please ensure you are streaming to the remote stream and that your internet connection is stable. Then, click "Resume Show".`,
-                            timeout: false,
-                            close: true,
-                            color: 'red',
-                            drag: false,
-                            position: 'Center',
-                            closeOnClick: false,
-                            overlay: true,
-                            zindex: 250,
-                            layout: 2,
-                            image: `assets/images/noRemote.png`,
-                            maxWidth: 480,
-                            buttons: [
-                                ['<button>Resume Show</button>', function (instance, toast, button, e, inputs) {
-                                        returnBreak();
-                                        instance.hide({}, toast, 'button');
-                                    }]
-                            ]
-                        });
-                    var notification = notifier.notify('Lost Remote Connection', {
-                        message: 'Check your connection to the remote stream, then resume broadcast in DJ Controls.',
-                        icon: 'https://d30y9cdsu7xlg0.cloudfront.net/png/244853-200.png',
-                        duration: 180000,
+            var badge = document.querySelector('#operations-state');
+            badge.innerHTML = Meta.state;
+            var actionButtons = document.querySelectorAll(".btn-operation");
+            for (var i = 0; i < actionButtons.length; i++) {
+                actionButtons[i].style.display = "none";
+            }
+            document.querySelector('#queue').style.display = "none";
+            document.querySelector('#no-remote').style.display = "none";
+            document.querySelector('#please-wait').style.display = "none";
+            if (Meta.state === 'automation_on' || Meta.state === 'automation_break')
+            {
+                badge.className = 'badge badge-primary';
+                document.querySelector('#btn-golive').style.display = "inline";
+                document.querySelector('#btn-goremote').style.display = "inline";
+                document.querySelector('#btn-gosports').style.display = "inline";
+            } else if (Meta.state === 'automation_playlist')
+            {
+                badge.className = 'badge badge-primary';
+                document.querySelector('#btn-golive').style.display = "inline";
+                document.querySelector('#btn-goremote').style.display = "inline";
+                document.querySelector('#btn-gosports').style.display = "inline";
+            } else if (Meta.state === 'automation_genre')
+            {
+                badge.className = 'badge badge-primary';
+                document.querySelector('#btn-golive').style.display = "inline";
+                document.querySelector('#btn-goremote').style.display = "inline";
+                document.querySelector('#btn-gosports').style.display = "inline";
+            } else if (Meta.state === 'live_prerecord' || Meta.state === 'automation_prerecord')
+            {
+                badge.className = 'badge badge-danger';
+                document.querySelector('#btn-golive').style.display = "inline";
+                document.querySelector('#btn-goremote').style.display = "inline";
+                document.querySelector('#btn-gosports').style.display = "inline";
+            } else if (Meta.state.startsWith('automation_') || (Meta.state.includes('_returning') && !Meta.state.startsWith('sports')))
+            {
+                document.querySelector('#queue').style.display = "inline";
+                document.querySelector('#btn-psa15').style.display = "inline";
+                document.querySelector('#btn-psa30').style.display = "inline";
+            } else if (Meta.state.startsWith('sports') && Meta.state.includes('_returning'))
+            {
+                document.querySelector('#queue').style.display = "inline";
+                document.querySelector('#btn-psa15').style.display = "inline";
+                document.querySelector('#btn-psa30').style.display = "inline";
+                // If the system goes into disconnected mode, the host client should be notified of that!
+            } else if (Meta.state.includes('_break_disconnected') || Meta.state.includes('_halftime_disconnected') && Meta.djcontrols === client.host)
+            {
+                if (document.querySelector("#iziToast-noremote") === null)
+                    iziToast.show({
+                        id: 'iziToast-noremote',
+                        class: 'flash-bg',
+                        title: 'Lost Remote Connection!',
+                        message: `Please ensure you are streaming to the remote stream and that your internet connection is stable. Then, click "Resume Show".`,
+                        timeout: false,
+                        close: true,
+                        color: 'red',
+                        drag: false,
+                        position: 'Center',
+                        closeOnClick: false,
+                        overlay: true,
+                        zindex: 250,
+                        layout: 2,
+                        image: `assets/images/noRemote.png`,
+                        maxWidth: 480,
+                        buttons: [
+                            ['<button>Resume Show</button>', function (instance, toast, button, e, inputs) {
+                                    returnBreak();
+                                    instance.hide({}, toast, 'button');
+                                }]
+                        ]
                     });
-                    main.flashTaskbar();
-                    document.querySelector('#no-remote').style.display = "inline";
-                    document.querySelector('#btn-resume').style.display = "inline";
-                } else if (Meta.state.includes('_break') || Meta.state.includes('_halftime'))
+                var notification = notifier.notify('Lost Remote Connection', {
+                    message: 'Check your connection to the remote stream, then resume broadcast in DJ Controls.',
+                    icon: 'https://d30y9cdsu7xlg0.cloudfront.net/png/244853-200.png',
+                    duration: 180000,
+                });
+                main.flashTaskbar();
+                document.querySelector('#no-remote').style.display = "inline";
+                document.querySelector('#btn-resume').style.display = "inline";
+            } else if (Meta.state.includes('_break') || Meta.state.includes('_halftime'))
+            {
+                document.querySelector('#btn-return').style.display = "inline";
+            } else if (Meta.state.includes('live_'))
+            {
+                /*
+                 if (trip)
+                 {
+                 trip.stop();
+                 trip = new Trip([
+                 {
+                 sel: $("#operations"),
+                 content: `You are now live! Here are what these buttons do: <br />
+                 <strong>End Show</strong>: Click this when you are done with your show, and no one is going on after you. <br />
+                 <strong>Switch Show:</strong>: Click this when you are done with your show and another DJ is going on after you. </br>
+                 <strong>Take a Break</strong>: Click to go into break mode (plays PSAs). A "Resume Show" button will appear which when clicked brings you back on the air. <br />
+                 <strong>Play Top Add</strong>: Immediately plays a random Top Add (music we get to promote on the air). You earn XP for playing Top Adds. <br />
+                 <strong>Add a Log</strong>: It is mandatory to log all songs you play outside of RadioDJ (eg. Spotify, YouTube, iTunes, MP3s, etc). Click to log a song.`,
+                 expose: true,
+                 position: "s",
+                 nextClickSelector: $("#operations")
+                 }
+                 ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
+                 trip = null;
+                 console.log("trip closed");
+                 }, onTripEnd: (tripIndex, tripObject) => {
+                 trip = null;
+                 console.log("trip ended");
+                 }});
+                 trip.start();
+                 }
+                 */
+                badge.className = 'badge badge-danger';
+                if (Meta.playing)
                 {
-                    document.querySelector('#btn-return').style.display = "inline";
-                } else if (Meta.state.includes('live_'))
-                {
-                    /*
-                     if (trip)
-                     {
-                     trip.stop();
-                     trip = new Trip([
-                     {
-                     sel: $("#operations"),
-                     content: `You are now live! Here are what these buttons do: <br />
-                     <strong>End Show</strong>: Click this when you are done with your show, and no one is going on after you. <br />
-                     <strong>Switch Show:</strong>: Click this when you are done with your show and another DJ is going on after you. </br>
-                     <strong>Take a Break</strong>: Click to go into break mode (plays PSAs). A "Resume Show" button will appear which when clicked brings you back on the air. <br />
-                     <strong>Play Top Add</strong>: Immediately plays a random Top Add (music we get to promote on the air). You earn XP for playing Top Adds. <br />
-                     <strong>Add a Log</strong>: It is mandatory to log all songs you play outside of RadioDJ (eg. Spotify, YouTube, iTunes, MP3s, etc). Click to log a song.`,
-                     expose: true,
-                     position: "s",
-                     nextClickSelector: $("#operations")
-                     }
-                     ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
-                     trip = null;
-                     console.log("trip closed");
-                     }, onTripEnd: (tripIndex, tripObject) => {
-                     trip = null;
-                     console.log("trip ended");
-                     }});
-                     trip.start();
-                     }
-                     */
-                    badge.className = 'badge badge-danger';
-                    if (Meta.playing)
-                    {
-                        document.querySelector('#queue').style.display = "inline";
-                    } else {
-                        document.querySelector('#btn-topadd').style.display = "inline";
-                        document.querySelector('#btn-log').style.display = "inline";
-                    }
+                    document.querySelector('#queue').style.display = "inline";
+                } else {
                     document.querySelector('#btn-endshow').style.display = "inline";
                     document.querySelector('#btn-switchshow').style.display = "inline";
                     document.querySelector('#btn-break').style.display = "inline";
-                } else if (Meta.state.includes('sports_') || Meta.state.includes('sportsremote_'))
+                    document.querySelector('#btn-topadd').style.display = "inline";
+                }
+                document.querySelector('#btn-log').style.display = "inline";
+                document.querySelector('#btn-view-log').style.display = "inline";
+            } else if (Meta.state.includes('sports_') || Meta.state.includes('sportsremote_'))
+            {
+                /*
+                 if (trip)
+                 {
+                 trip.stop();
+                 trip = new Trip([
+                 {
+                 sel: $("#operations"),
+                 content: `You are now live with sports! Here are what these buttons do: <br />
+                 <strong>End Show</strong>: Click this when you are done with the sports broadcast. <br />
+                 <strong>Take a Break</strong>: Click to go into break mode (plays PSAs). A "Resume Show" button will appear which when clicked brings you back on the air. <br />
+                 <strong>Extended Break</strong>: Click for halftime / long breaks (plays halftime music). A "Resume Show" button will appear which when clicked brings you back on the air. <br />
+                 <strong>Play Liner</strong>: Click to play a sports liner assigned to the sport being broadcast.`,
+                 expose: true,
+                 position: "s",
+                 nextClickSelector: $("#operations")
+                 }
+                 ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
+                 trip = null;
+                 console.log("trip closed");
+                 }, onTripEnd: (tripIndex, tripObject) => {
+                 trip = null;
+                 console.log("trip ended");
+                 }});
+                 trip.start();
+                 }
+                 */
+                badge.className = 'badge badge-success';
+                if (Meta.playing)
                 {
-                    /*
-                     if (trip)
-                     {
-                     trip.stop();
-                     trip = new Trip([
-                     {
-                     sel: $("#operations"),
-                     content: `You are now live with sports! Here are what these buttons do: <br />
-                     <strong>End Show</strong>: Click this when you are done with the sports broadcast. <br />
-                     <strong>Take a Break</strong>: Click to go into break mode (plays PSAs). A "Resume Show" button will appear which when clicked brings you back on the air. <br />
-                     <strong>Extended Break</strong>: Click for halftime / long breaks (plays halftime music). A "Resume Show" button will appear which when clicked brings you back on the air. <br />
-                     <strong>Play Liner</strong>: Click to play a sports liner assigned to the sport being broadcast.`,
-                     expose: true,
-                     position: "s",
-                     nextClickSelector: $("#operations")
-                     }
-                     ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
-                     trip = null;
-                     console.log("trip closed");
-                     }, onTripEnd: (tripIndex, tripObject) => {
-                     trip = null;
-                     console.log("trip ended");
-                     }});
-                     trip.start();
-                     }
-                     */
-                    badge.className = 'badge badge-success';
-                    if (Meta.playing)
-                    {
-                        document.querySelector('#queue').style.display = "inline";
-                    } else {
-                        document.querySelector('#btn-liner').style.display = "inline";
-                    }
+                    document.querySelector('#queue').style.display = "inline";
+                } else {
+                    document.querySelector('#btn-liner').style.display = "inline";
                     document.querySelector('#btn-endshow').style.display = "inline";
                     document.querySelector('#btn-break').style.display = "inline";
                     document.querySelector('#btn-halftime').style.display = "inline";
-                } else if (Meta.state.includes('remote_'))
+                }
+                document.querySelector('#btn-view-log').style.display = "inline";
+            } else if (Meta.state.includes('remote_'))
+            {
+                /*
+                 if (trip)
+                 {
+                 trip.stop();
+                 trip = new Trip([
+                 {
+                 sel: $("#operations"),
+                 content: `You are now live! Here are what these buttons do: <br />
+                 <strong>End Show</strong>: Click this when you are done with your show, and no one is going on after you. <br />
+                 <strong>Take a Break</strong>: Click to go into break mode (plays PSAs). A "Resume Show" button will appear which when clicked brings you back on the air. <br />
+                 <strong>Play Top Add</strong>: Immediately plays a random Top Add (music we get to promote on the air). <br />
+                 <strong>Add a Log</strong>: It is mandatory to log all songs you play outside of RadioDJ (eg. Spotify, YouTube, iTunes, MP3s, etc). Click to log a song.`,
+                 expose: true,
+                 position: "s",
+                 nextClickSelector: $("#operations")
+                 }
+                 ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
+                 trip = null;
+                 console.log("trip closed");
+                 }, onTripEnd: (tripIndex, tripObject) => {
+                 trip = null;
+                 console.log("trip ended");
+                 }});
+                 trip.start();
+                 }
+                 */
+                badge.className = 'badge badge-purple';
+                if (Meta.playing)
                 {
-                    /*
-                     if (trip)
-                     {
-                     trip.stop();
-                     trip = new Trip([
-                     {
-                     sel: $("#operations"),
-                     content: `You are now live! Here are what these buttons do: <br />
-                     <strong>End Show</strong>: Click this when you are done with your show, and no one is going on after you. <br />
-                     <strong>Take a Break</strong>: Click to go into break mode (plays PSAs). A "Resume Show" button will appear which when clicked brings you back on the air. <br />
-                     <strong>Play Top Add</strong>: Immediately plays a random Top Add (music we get to promote on the air). <br />
-                     <strong>Add a Log</strong>: It is mandatory to log all songs you play outside of RadioDJ (eg. Spotify, YouTube, iTunes, MP3s, etc). Click to log a song.`,
-                     expose: true,
-                     position: "s",
-                     nextClickSelector: $("#operations")
-                     }
-                     ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
-                     trip = null;
-                     console.log("trip closed");
-                     }, onTripEnd: (tripIndex, tripObject) => {
-                     trip = null;
-                     console.log("trip ended");
-                     }});
-                     trip.start();
-                     }
-                     */
-                    badge.className = 'badge badge-purple';
-                    if (Meta.playing)
-                    {
-                        document.querySelector('#queue').style.display = "inline";
-                    } else {
-                        document.querySelector('#btn-topadd').style.display = "inline";
-                        document.querySelector('#btn-log').style.display = "inline";
-                    }
+                    document.querySelector('#queue').style.display = "inline";
+                } else {
+                    document.querySelector('#btn-topadd').style.display = "inline";
                     document.querySelector('#btn-endshow').style.display = "inline";
                     document.querySelector('#btn-break').style.display = "inline";
-                } else {
                 }
-                $('#operations-body').animateCss('fadeIn faster', function () {});
-            });
+                document.querySelector('#btn-log').style.display = "inline";
+                document.querySelector('#btn-view-log').style.display = "inline";
+
+            } else {
+            }
+            $('#operations-body').animateCss('flipInX faster', function () {});
         }
     } catch (e) {
         console.error(e);
@@ -4605,7 +4645,7 @@ function checkCalendar() {
 
             if (Meta.queueFinish !== null)
             {
-                document.querySelector('#calendar-events').innerHTML += `  <div class="bs-callout bs-callout-primary">
+                document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-primary">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -4629,7 +4669,7 @@ function checkCalendar() {
                     if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
                     {
                         doTopOfHour = true;
-                        document.querySelector('#calendar-events').innerHTML += `  <div class="bs-callout bs-callout-warning">
+                        document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-warning">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -7703,8 +7743,9 @@ function loadTimesheets(date)
         if (!moment(date).isValid())
             date = moment(Meta.time);
         var records = document.querySelector('#options-timesheets-records');
-        records.innerHTML = ``;
+        records.innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
         nodeRequest({method: 'POST', url: nodeURL + '/timesheet/get', data: {date: date.toISOString(true)}}, function (response) {
+            records.innerHTML = ``;
             Timesheets = response;
             var hours = {};
             var lighterRow = false;
