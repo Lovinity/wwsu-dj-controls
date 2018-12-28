@@ -1,8 +1,8 @@
-/* global iziToast, io, moment, Infinity, err, ProgressBar, Taucharts, response */
+/* global iziToast, io, moment, Infinity, err, ProgressBar, Taucharts, response, responsiveVoice */
 
 try {
 
-    var development = true;
+    var development = false;
 
 // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -3097,112 +3097,112 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-        {
-            socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
-                //console.log(body);
-                try {
-                    client = body;
-                    authtoken = client.token;
-                    if (!client.authorized)
-                    {
-                        var noConnection = document.getElementById('no-connection');
-                        noConnection.style.display = "inline";
-                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+{
+    socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
+        //console.log(body);
+        try {
+            client = body;
+            authtoken = client.token;
+            if (!client.authorized)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "inline";
+                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Not Authorized!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">This DJ Controls has not been authorized for use with WWSU.</h2>
                 <h3 style="text-align: center; font-size: 1em; color: #F44336">Please use an admin DJ Controls to authorize the host ${client.friendlyname}</h3>
                 <h3 style="text-align: center; font-size: 1em; color: #F44336">And then, restart this DJ Controls.</h3>
             </div>`;
-                        cb(false);
-                    } else {
-                        cb(authtoken);
+                cb(false);
+            } else {
+                cb(authtoken);
+            }
+            if (client.admin)
+            {
+                if (client.otherHosts)
+                    processHosts(client.otherHosts, true);
+                var temp = document.querySelector(`#options`);
+                var restarter;
+                if (temp)
+                    temp.style.display = "inline";
+
+                // Subscribe to the logs socket
+                socket.post('/logs/get', {}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        //processLogs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED logs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                    if (client.admin)
-                    {
-                        if (client.otherHosts)
-                            processHosts(client.otherHosts, true);
-                        var temp = document.querySelector(`#options`);
-                        var restarter;
-                        if (temp)
-                            temp.style.display = "inline";
+                });
 
-                        // Subscribe to the logs socket
-                        socket.post('/logs/get', {}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                //processLogs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED logs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get djs and subscribe to the dj socket
-                        nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                processDjs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED DJs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get directors and subscribe to the dj socket
-                        nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                processDirectors(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED directors CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the XP socket
-                        nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED XP CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the timesheet socket
-                        nodeRequest({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED TIMESHEET CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-                    } else {
-                        var temp = document.querySelector(`#options`);
-                        if (temp)
-                            temp.style.display = "none";
+                // Get djs and subscribe to the dj socket
+                nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        processDjs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED DJs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                } catch (e) {
-                    console.error(e);
-                    console.log('FAILED HOST CONNECTION');
-                    restarter = setTimeout(hostSocket, 10000);
-                }
-            });
+                });
+
+                // Get directors and subscribe to the dj socket
+                nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        processDirectors(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED directors CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the XP socket
+                nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED XP CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the timesheet socket
+                nodeRequest({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED TIMESHEET CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+            } else {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            console.log('FAILED HOST CONNECTION');
+            restarter = setTimeout(hostSocket, 10000);
         }
+    });
+}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -3447,6 +3447,30 @@ function doMeta(metan) {
         queueLength = Meta.queueFinish !== null ? Math.round(moment(Meta.queueFinish).diff(moment(Meta.time), 'seconds')) : 0;
         if (queueLength < 0)
             queueLength = 0;
+
+        if (typeof metan.state !== 'undefined' && (metan.state === "sports_on" || metan.state === "sportsremote_on" || metan.state === "remote_on"))
+            responsiveVoice.speak("On the air");
+
+        if (typeof metan.state !== 'undefined' && (metan.state === "sports_returning" || metan.state === "sportsremote_returning" || metan.state === "remote_returning"))
+            responsiveVoice.speak(`${moment.duration(queueLength, 'seconds').format("m [minutes], s [seconds]")}`);
+
+        if (typeof metan.state !== 'undefined' && (metan.state === "automation_sports" || metan.state === "automation_sportsremote" || metan.state === "automation_remote"))
+            responsiveVoice.speak(`${moment.duration(queueLength, 'seconds').format("m [minutes], s [seconds]")}`);
+
+        if (typeof metan.state === 'undefined')
+        {
+            if (Meta.state === 'sports_returning' || Meta.state === 'sportsremote_returning' || Meta.state === 'remote_returning' || Meta.state === 'automation_sports' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote')
+            {
+                if (queueLength === 60)
+                    responsiveVoice.speak("1 minute");
+                if (queueLength === 30)
+                    responsiveVoice.speak("30 seconds");
+                if (queueLength === 15)
+                    responsiveVoice.speak("15 seconds");
+                if (queueLength === 5)
+                    responsiveVoice.speak("5 seconds");
+            }
+        }
 
         document.querySelector("#nowplaying").innerHTML = `<div class="text-warning" style="position: absolute; top: -16px; left: 0px;">${Meta.trackFinish !== null ? moment.duration(moment(Meta.trackFinish).diff(moment(Meta.time), 'seconds'), "seconds").format() : ''}</div>${Meta.line1}<br />${Meta.line2}`;
 
