@@ -148,6 +148,8 @@ try {
                     icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
                     duration: 60000
                 });
+                if (Meta.state.startsWith("sports_") || Meta.state.startsWith("sportsremote_") || Meta.state.startsWith("remote_"))
+                    responsiveVoice.speak(`DJ Controls connection has been lost`);
             }
         } catch (e) {
             iziToast.show({
@@ -165,6 +167,8 @@ try {
                 var noConnection = document.getElementById('no-connection');
                 noConnection.style.display = "none";
                 disconnected = false;
+                if (Meta.state.startsWith("sports_") || Meta.state.startsWith("sportsremote_") || Meta.state.startsWith("remote_"))
+                    responsiveVoice.speak(`DJ Controls connection was re-established`);
             }
             doSockets();
         } catch (e) {
@@ -3457,10 +3461,10 @@ function doMeta(metan) {
                 responsiveVoice.speak(`On break`);
 
             if (typeof metan.state !== 'undefined' && (metan.state === "sports_returning" || metan.state === "sportsremote_returning" || metan.state === "remote_returning"))
-                responsiveVoice.speak(`Get ready to return`);
+                responsiveVoice.speak(`Returning in ${moment.duration(queueLength, 'seconds').format("m [minutes], s [seconds]")}`);
 
             if (typeof metan.state !== 'undefined' && (metan.state === "automation_sports" || metan.state === "automation_sportsremote" || metan.state === "automation_remote"))
-                responsiveVoice.speak(`Get ready to go on the air`);
+                responsiveVoice.speak(`Going on the air in ${moment.duration(queueLength, 'seconds').format("m [minutes], s [seconds]")}`);
 
             if (typeof metan.state === 'undefined')
             {
@@ -6518,7 +6522,7 @@ function processStatus(data, replace = false)
                         temp.innerHTML = `<h4><i class="fas fa-server"></i> ${datum.label}</h4>
                         <strong>${datum.label}</strong> is reporting a problem: ${datum.data}.`;
                     }
-                    if (datum.name === 'silence' && client.emergencies && datum.status <= 3)
+                    if (datum.name === 'silence' && (client.emergencies || (typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)) && datum.status <= 3)
                     {
                         iziToast.show({
                             title: 'Silence / Low Audio detected!',
@@ -6541,6 +6545,8 @@ function processStatus(data, replace = false)
                             duration: 60000,
                         });
                         main.flashTaskbar();
+                        if (Meta.state.startsWith("sports_") || Meta.state.startsWith("sportsremote_") || Meta.state.startsWith("remote_"))
+                            responsiveVoice.speak(`Silence detected. Please check your audio connection.`);
                     }
                 });
             }
@@ -6597,7 +6603,7 @@ function processStatus(data, replace = false)
                                 temp.innerHTML = `<h4><i class="fas fa-server"></i> ${data[key].label}</h4>
                         <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                             }
-                            if (data[key].name === 'silence' && data[key].status <= 3 && client.emergencies)
+                            if (data[key].name === 'silence' && data[key].status <= 3 && (client.emergencies || (typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)))
                             {
                                 iziToast.show({
                                     title: 'Silence / Low Audio detected!',
@@ -6620,6 +6626,8 @@ function processStatus(data, replace = false)
                                     duration: 60000,
                                 });
                                 main.flashTaskbar();
+                                if (Meta.state.startsWith("sports_") || Meta.state.startsWith("sportsremote_") || Meta.state.startsWith("remote_"))
+                                    responsiveVoice.speak(`Silence detected. Please check your audio connection.`);
                             }
                             break;
                         case 'update':
@@ -6661,7 +6669,7 @@ function processStatus(data, replace = false)
                                 temp.innerHTML = `<h4><i class="fas fa-server"></i> ${data[key].label}</h4>
                         <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                             }
-                            if (data[key].name === 'silence' && data[key].status <= 3 && client.emergencies)
+                            if (data[key].name === 'silence' && data[key].status <= 3 && (client.emergencies || (typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)))
                             {
                                 iziToast.show({
                                     title: 'Silence / Low Audio detected!',
@@ -6684,6 +6692,8 @@ function processStatus(data, replace = false)
                                     duration: 60000,
                                 });
                                 main.flashTaskbar();
+                                if (Meta.state.startsWith("sports_") || Meta.state.startsWith("sportsremote_") || Meta.state.startsWith("remote_"))
+                                    responsiveVoice.speak(`Silence detected. Please check your audio connection.`);
                             }
                             break;
                         case 'remove':
