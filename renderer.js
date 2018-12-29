@@ -3448,27 +3448,33 @@ function doMeta(metan) {
         if (queueLength < 0)
             queueLength = 0;
 
-        if (typeof metan.state !== 'undefined' && (metan.state === "sports_on" || metan.state === "sportsremote_on" || metan.state === "remote_on"))
-            responsiveVoice.speak("On the air");
-
-        if (typeof metan.state !== 'undefined' && (metan.state === "sports_returning" || metan.state === "sportsremote_returning" || metan.state === "remote_returning"))
-            responsiveVoice.speak(`${moment.duration(queueLength, 'seconds').format("m [minutes], s [seconds]")}`);
-
-        if (typeof metan.state !== 'undefined' && (metan.state === "automation_sports" || metan.state === "automation_sportsremote" || metan.state === "automation_remote"))
-            responsiveVoice.speak(`${moment.duration(queueLength, 'seconds').format("m [minutes], s [seconds]")}`);
-
-        if (typeof metan.state === 'undefined')
+        if (Meta.djcontrols === client.host)
         {
-            if (Meta.state === 'sports_returning' || Meta.state === 'sportsremote_returning' || Meta.state === 'remote_returning' || Meta.state === 'automation_sports' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote')
+            if (typeof metan.state !== 'undefined' && (metan.state === "sports_on" || metan.state === "sportsremote_on" || metan.state === "remote_on"))
+                responsiveVoice.speak("On the air");
+
+            if (typeof metan.state !== 'undefined' && (metan.state === "sports_break" || metan.state === "sports_halftime" || metan.state === "remote_break" || metan.state === "sportsremote_break" || metan.state === "sportsremote_halftime"))
+                responsiveVoice.speak(`On break`);
+
+            if (typeof metan.state !== 'undefined' && (metan.state === "sports_returning" || metan.state === "sportsremote_returning" || metan.state === "remote_returning"))
+                responsiveVoice.speak(`Get ready to return`);
+
+            if (typeof metan.state !== 'undefined' && (metan.state === "automation_sports" || metan.state === "automation_sportsremote" || metan.state === "automation_remote"))
+                responsiveVoice.speak(`Get ready to go on the air`);
+
+            if (typeof metan.state === 'undefined')
             {
-                if (queueLength === 60)
-                    responsiveVoice.speak("1 minute");
-                if (queueLength === 30)
-                    responsiveVoice.speak("30 seconds");
-                if (queueLength === 15)
-                    responsiveVoice.speak("15 seconds");
-                if (queueLength === 5)
-                    responsiveVoice.speak("5 seconds");
+                if (Meta.state === 'sports_returning' || Meta.state === 'sportsremote_returning' || Meta.state === 'remote_returning' || Meta.state === 'automation_sports' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote')
+                {
+                    if (queueLength === 60)
+                        responsiveVoice.speak("1 minute");
+                    if (queueLength === 30)
+                        responsiveVoice.speak("30 seconds");
+                    if (queueLength === 15)
+                        responsiveVoice.speak("15 seconds");
+                    if (queueLength === 5)
+                        responsiveVoice.speak("5 seconds");
+                }
             }
         }
 
