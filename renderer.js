@@ -327,14 +327,21 @@ try {
         loadTimesheets(moment(document.querySelector("#options-timesheets-date").value));
     });
 
+    var messageFlash2;
     var messageFlash = setInterval(function () {
+        var messaging = document.querySelector("#messaging");
         if (totalUnread > 0 || totalRequests > 0)
         {
-            var messaging = document.querySelector("#messaging");
-            messaging.className = "card p-1 m-3 text-white bg-info";
-            setTimeout(function () {
+            if (messaging)
+                messaging.className = "card p-1 m-3 text-white bg-info";
+            messageFlash2 = setTimeout(function () {
+                if (messaging)
+                    messaging.className = "card p-1 m-3 text-white bg-dark";
+            }, 500);
+        } else {
+            if (messaging)
                 messaging.className = "card p-1 m-3 text-white bg-dark";
-            }, 4500);
+            clearTimeout(messageFlash2);
         }
 
         var flasher = document.querySelectorAll(".flash-bg");
@@ -345,7 +352,7 @@ try {
                 document.querySelector("body").style.backgroundColor = '#000000';
             }, 500);
         }
-    }, 5000);
+    }, 3000);
 
     // Define default settings for iziToast (overlaying messages)
     iziToast.settings({
@@ -369,8 +376,6 @@ try {
 
     // Pre-load all the modal windows
     $("#go-live-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Mics, Recorder, Action!</h5>`,
-        headerColor: '#363636',
         width: 640,
         focusInput: true,
         arrowKeys: false,
@@ -386,8 +391,6 @@ try {
     });
 
     $("#go-remote-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Remote Broadcast</h5>`,
-        headerColor: '#363636',
         width: 640,
         focusInput: true,
         arrowKeys: false,
@@ -437,8 +440,6 @@ try {
     });
 
     $("#messages-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Messages</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -2181,30 +2182,23 @@ document.querySelector(`#users`).addEventListener("click", function (e) {
                 var recipient = parseInt(e.target.id.replace(`users-o-ban-`, ``));
                 prepareBan(recipient);
             }
-            if (e.target.id.startsWith(`users-b`))
-            {
-                var recipient = parseInt(e.target.id.replace(`users-b-`, ``));
-                selectRecipient(recipient);
-            }
             if (e.target.id.startsWith(`users-l`))
             {
                 var recipient = parseInt(e.target.id.replace(`users-l-`, ``));
                 selectRecipient(recipient);
+                $('#navdrawerUsers').navdrawer('hide');
+            }
+            if (e.target.id.startsWith(`users-a`))
+            {
+                var recipient = parseInt(e.target.id.replace(`users-a-`, ``));
+                selectRecipient(recipient);
+                $('#navdrawerUsers').navdrawer('hide');
             }
             if (e.target.id.startsWith(`users-n`))
             {
                 var recipient = parseInt(e.target.id.replace(`users-n-`, ``));
                 selectRecipient(recipient);
-            }
-            if (e.target.id.startsWith(`users-c1`))
-            {
-                var recipient = parseInt(e.target.id.replace(`users-c1-`, ``));
-                selectRecipient(recipient);
-            }
-            if (e.target.id.startsWith(`users-c2`))
-            {
-                var recipient = parseInt(e.target.id.replace(`users-c2-`, ``));
-                selectRecipient(recipient);
+                $('#navdrawerUsers').navdrawer('hide');
             }
         }
     } catch (err) {
@@ -2843,11 +2837,21 @@ document.querySelector(`#announcements-body`).addEventListener("click", function
     try {
         if (e.target) {
             console.log(e.target.id);
-            if (e.target.id.startsWith(`attn-r`))
+            var theId;
+            if (e.target.id.startsWith(`attn-title-`))
             {
-                var ID = parseInt(e.target.id.replace(`attn-r-`, ``));
-                prepareAttnRemove(ID);
+                theId = e.target.id.replace(`attn-title-`, ``);
+            } else if (e.target.id.startsWith(`attn-heading-`))
+            {
+                theId = e.target.id.replace(`attn-heading-`, ``);
             }
+
+            var temp = document.querySelector(`#attn-${theId}`);
+            if (temp)
+                temp.classList.toggle("show");
+            var temp = document.querySelector(`#attn-collapse-${theId}`);
+            if (temp)
+                temp.classList.toggle("show");
         }
     } catch (err) {
         console.error(err);
@@ -3117,111 +3121,111 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-        {
-            socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
-                //console.log(body);
-                try {
-                    client = body;
-                    authtoken = client.token;
-                    if (!client.authorized)
-                    {
-                        var noConnection = document.getElementById('no-connection');
-                        noConnection.style.display = "inline";
-                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+{
+    socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
+        //console.log(body);
+        try {
+            client = body;
+            authtoken = client.token;
+            if (!client.authorized)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "inline";
+                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                        cb(false);
-                    } else {
-                        cb(authtoken);
+                cb(false);
+            } else {
+                cb(authtoken);
+            }
+            if (client.admin)
+            {
+                if (client.otherHosts)
+                    processHosts(client.otherHosts, true);
+                var temp = document.querySelector(`#options`);
+                var restarter;
+                if (temp)
+                    temp.style.display = "inline";
+
+                // Subscribe to the logs socket
+                socket.post('/logs/get', {}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        //processLogs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED logs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                    if (client.admin)
-                    {
-                        if (client.otherHosts)
-                            processHosts(client.otherHosts, true);
-                        var temp = document.querySelector(`#options`);
-                        var restarter;
-                        if (temp)
-                            temp.style.display = "inline";
+                });
 
-                        // Subscribe to the logs socket
-                        socket.post('/logs/get', {}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                //processLogs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED logs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get djs and subscribe to the dj socket
-                        nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                processDjs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED DJs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get directors and subscribe to the dj socket
-                        nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                processDirectors(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED directors CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the XP socket
-                        nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED XP CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the timesheet socket
-                        nodeRequest({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED TIMESHEET CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-                    } else {
-                        var temp = document.querySelector(`#options`);
-                        if (temp)
-                            temp.style.display = "none";
+                // Get djs and subscribe to the dj socket
+                nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        processDjs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED DJs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                } catch (e) {
-                    console.error(e);
-                    console.log('FAILED HOST CONNECTION');
-                    restarter = setTimeout(hostSocket, 10000);
-                }
-            });
+                });
+
+                // Get directors and subscribe to the dj socket
+                nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        processDirectors(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED directors CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the XP socket
+                nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED XP CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the timesheet socket
+                nodeRequest({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED TIMESHEET CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+            } else {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            console.log('FAILED HOST CONNECTION');
+            restarter = setTimeout(hostSocket, 10000);
         }
+    });
+}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -3861,85 +3865,197 @@ function pleaseWait() {
 
 // Check the current announcements from the Status system or the emergency alerts system. Color the Announcements box depending on the level of the most critical announcement.
 function checkAnnouncementColor() {
-    var temp = document.querySelectorAll(".attn-status-1");
-    var temp2 = document.querySelectorAll(".attn-status-2");
-    var temp3 = document.querySelectorAll(".attn-eas-Extreme");
-    var temp4 = document.querySelectorAll(".attn-eas-Severe");
-    var attn = document.querySelector("#announcements");
-
-    if (temp.length > 0 || temp3.length > 0)
-    {
-        attn.className = "card p-1 m-3 text-white bg-danger-dark";
-    } else if (temp2.length > 0 || temp4.length > 0)
-    {
-        attn.className = "card p-1 m-3 text-white bg-warning-dark";
-    } else {
-        attn.className = "card p-1 m-3 text-white bg-dark";
-    }
+    // DEPRECATED
 }
 
 // Re-do the announcements shown in the announcements box
 function checkAnnouncements() {
     var prev = [];
+    var prevStatus = [];
     // Add applicable announcements
-    Announcements({type: 'djcontrols'}).each(function (datum) {
+
+    Announcements({type: 'djcontrols'}).each(datum => {
         try {
             // Check to make sure the announcement is valid / not expired
             if (moment(datum.starts).isBefore(moment(Meta.time)) && moment(datum.expires).isAfter(moment(Meta.time)))
             {
                 prev.push(`attn-${datum.ID}`);
-                if (document.querySelector(`#attn-${datum.ID}`) === null)
+                if (datum.title === "Reported Problem")
                 {
-                    var attn = document.querySelector("#announcements-body");
-                    attn.innerHTML += `<div class="attn attn-${datum.level} bs-callout bs-callout-${datum.level} shadow-4" id="attn-${datum.ID}" role="alert">
-                        <h4><i class="fas fa-bullhorn"></i> ${datum.title}</h4>
-                        ${datum.announcement}
-                    </div>`;
-                    // If this DJ Controls is configured by WWSU to notify on technical problems, notify so.
-                    if (client.emergencies && datum.announcement.startsWith("<strong>Problem reported by"))
+                    prevStatus.push(`attn-status-report-${datum.ID}`);
+                    if (document.querySelector(`#attn-status-report-${datum.ID}`) === null)
                     {
-                        iziToast.show({
-                            title: 'Technical issue reported!',
-                            message: `${datum.announcement}`,
-                            timeout: false,
-                            close: true,
-                            color: 'red',
-                            drag: false,
-                            position: 'center',
-                            closeOnClick: false,
-                            overlay: true,
-                            zindex: 250,
-                            layout: 2,
-                            image: `assets/images/error.png`,
-                            maxWidth: 480,
-                        });
-                        var notification = notifier.notify('Problem Reported', {
-                            message: `A problem was reported. Please see DJ Controls.`,
-                            icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                            duration: (1000 * 60 * 60 * 24),
-                        });
-                        main.flashTaskbar();
+                        var temp = document.querySelector(`#attn-status`);
+                        if (!temp)
+                        {
+                            var attn = document.querySelector("#announcements-body");
+                            attn.innerHTML += `<div class="expansion-panel list-group-item bs-callout bs-callout-danger" id="attn-status">
+                            <a aria-controls="attn-collapse-status" aria-expanded="false" class="expansion-panel-toggler collapsed" data-toggle="collapse" id="attn-heading-status">
+                                <h4 id="attn-title-status">System Problems Detected</h4>
+                                <div class="expansion-panel-icon ml-3 text-white">
+                                    <i class="collapsed-show">v</i>
+                                    <i class="collapsed-hide">^</i>
+                                </div>
+                            </a>
+                            <div aria-labelledby="attn-heading-status" class="collapse" data-parent="#announcements-body" id="attn-collapse-status">
+                                <div class="expansion-panel-body text-white" id="attn-body-status">
+                            <small class="p-1">Minor issues should not affect operation. Major issues might affect operation. Critical issues render WWSU unstable.</small>
+                                    <p class="attn-status" id="attn-status-report-${datum.ID}"><span class="badge badge-purple m-1">Reported by DJ</span> ${datum.announcement}</p>
+                                </div>
+                            </div>
+                        </div>`;
+                        } else {
+                            var temp = document.querySelector(`#attn-status`);
+                            temp.className = `expansion-panel list-group-item bs-callout bs-callout-danger`;
+                            var temp = document.querySelector(`#attn-body-status`);
+                            temp.innerHTML += `<p class="attn-status" id="attn-status-report-${datum.ID}"><span class="badge badge-purple m-1">Reported by DJ</span> ${datum.announcement}</p>`;
+                        }
+                        // If this DJ Controls is configured by WWSU to notify on technical problems, notify so.
+                        if (client.emergencies)
+                        {
+                            iziToast.show({
+                                title: 'Technical issue reported!',
+                                message: `${datum.announcement}`,
+                                timeout: false,
+                                close: true,
+                                color: 'red',
+                                drag: false,
+                                position: 'center',
+                                closeOnClick: false,
+                                overlay: true,
+                                zindex: 250,
+                                layout: 2,
+                                image: `assets/images/error.png`,
+                                maxWidth: 480,
+                            });
+                            var notification = notifier.notify('Problem Reported', {
+                                message: `A problem was reported. Please see DJ Controls.`,
+                                icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
+                                duration: (1000 * 60 * 60 * 24),
+                            });
+                            main.flashTaskbar();
+                        }
+                    } else {
+                        var temp = document.querySelector(`#attn-status-report-${datum.ID}`);
+                        temp.innerHTML = `<span class="badge badge-purple m-1">Reported by DJ</span>${datum.announcement}`;
                     }
                 } else {
-                    var temp = document.querySelector(`#attn-${datum.ID}`);
-                    temp.className = `attn attn-${datum.level} bs-callout bs-callout-${datum.level} shadow-4`;
-                    temp.innerHTML = `<h4><i class="fas fa-bullhorn"></i> ${datum.title}</h4>
-                        ${datum.announcement}`;
+                    if (document.querySelector(`#attn-${datum.ID}`) === null)
+                    {
+                        var attn = document.querySelector("#announcements-body");
+                        attn.innerHTML += `<div class="expansion-panel list-group-item attn bs-callout bs-callout-${datum.level}" id="attn-${datum.ID}">
+                            <a aria-controls="attn-collapse-${datum.ID}" aria-expanded="false" class="expansion-panel-toggler collapsed" data-toggle="collapse" id="attn-heading-${datum.ID}">
+                                <h4 id="attn-title-${datum.ID}">${datum.title}</h4>
+                                <div class="expansion-panel-icon ml-3 text-white">
+                                    <i class="collapsed-show">v</i>
+                                    <i class="collapsed-hide">^</i>
+                                </div>
+                            </a>
+                            <div aria-labelledby="attn-heading-${datum.ID}" class="collapse" data-parent="#announcements-body" id="attn-collapse-${datum.ID}">
+                                <div class="expansion-panel-body text-white" id="attn-body-${datum.ID}">
+                                    ${datum.announcement}
+                                </div>
+                            </div>
+                        </div>`;
+                    } else {
+                        var temp = document.querySelector(`#attn-${datum.ID}`);
+                        temp.className = `expansion-panel list-group-item attn bs-callout bs-callout-${datum.level}`;
+                        var temp = document.querySelector(`#attn-title-${datum.ID}`);
+                        temp.innerHTML = datum.title;
+                        var temp = document.querySelector(`#attn-body-${datum.ID}`);
+                        temp.innerHTML = datum.announcement;
+                    }
                 }
             }
         } catch (e) {
             iziToast.show({
                 title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                message: 'Error occurred in the checkAnnouncements each. ' + e.message
+                message: 'Error occurred in the checkAnnouncements each djcontrols. ' + e.message
             });
             console.error(e);
         }
     });
 
+    var highestLevel = (prevStatus.length > 0) ? 1 : 5;
+    Status().each(datum => {
+        if (datum.status <= 3)
+        {
+            var badge = `<span class="badge badge-dark">Unknown</span>`;
+            switch (datum.status)
+            {
+                case 1:
+                    badge = `<span class="badge badge-danger m-1">CRITICAL</span>`;
+                    break;
+                case 2:
+                    badge = `<span class="badge badge-urgent m-1">Major</span>`;
+                    break;
+                case 3:
+                    badge = `<span class="badge badge-warning m-1">Minor</span>`;
+                    break;
+            }
+            prevStatus.push(`attn-status-${datum.name}`);
+            if (highestLevel > datum.status)
+                highestLevel = datum.status;
+            if (document.querySelector(`#attn-status-${datum.name}`) === null)
+            {
+                var temp = document.querySelector(`#attn-status`);
+                if (!temp)
+                {
+                    var attn = document.querySelector("#announcements-body");
+                    attn.innerHTML += `<div class="expansion-panel list-group-item bs-callout bs-callout-info" id="attn-status">
+                            <a aria-controls="attn-collapse-status" aria-expanded="false" class="expansion-panel-toggler collapsed" data-toggle="collapse" id="attn-heading-status">
+                                <h4 id="attn-title-status">System Problems Detected</h4>
+                                <div class="expansion-panel-icon ml-3 text-white">
+                                    <i class="collapsed-show">v</i>
+                                    <i class="collapsed-hide">^</i>
+                                </div>
+                            </a>
+                            <div aria-labelledby="attn-heading-status" class="collapse" data-parent="#announcements-body" id="attn-collapse-status">
+                                <div class="expansion-panel-body text-white" id="attn-body-status">
+                                <small class="p-1">Minor issues should not affect operation. Major issues might affect operation. Critical issues render WWSU unstable.</small>
+                                    <p class="attn-status" id="attn-status-${datum.name}">${badge}<strong>${datum.label}</strong>: ${datum.data}</p>
+                                </div>
+                            </div>
+                        </div>`;
+                } else {
+                    var temp = document.querySelector(`#attn-body-status`);
+                    temp.innerHTML += `<p class="attn-status" id="attn-status-${datum.name}">${badge}<strong>${datum.label}</strong>: ${datum.data}</p>`;
+                }
+            } else {
+                var temp = document.querySelector(`#attn-status-${datum.name}`);
+                temp.innerHTML = `${badge}<strong>${datum.label}</strong>: ${datum.data}`;
+            }
+        }
+    });
+
+    var temp = document.querySelector(`#attn-status`);
+    if (highestLevel === 1)
+    {
+        temp.className = `expansion-panel list-group-item bs-callout bs-callout-danger`;
+    } else if (highestLevel <= 3)
+    {
+        temp.className = `expansion-panel list-group-item bs-callout bs-callout-info`;
+    } else {
+        temp.className = `expansion-panel list-group-item bs-callout bs-callout-default`;
+    }
+
+    if (prevStatus.length <= 0)
+    {
+        var temp = document.querySelector(`#attn-status`);
+        temp.parentNode.removeChild(temp);
+    }
+
     // Remove announcements no longer valid from the announcements box
     var attn = document.querySelectorAll(".attn");
     for (var i = 0; i < attn.length; i++) {
         if (prev.indexOf(attn[i].id) === -1)
+            attn[i].parentNode.removeChild(attn[i]);
+    }
+
+    // Remove statuses no longer valid from the announcements box
+    var attn = document.querySelectorAll(".attn-status");
+    for (var i = 0; i < attn.length; i++) {
+        if (prevStatus.indexOf(attn[i].id) === -1)
             attn[i].parentNode.removeChild(attn[i]);
     }
 
@@ -4481,7 +4597,7 @@ function checkCalendar() {
                     finalColor.red = Math.round(finalColor.red);
                     finalColor.green = Math.round(finalColor.green);
                     finalColor.blue = Math.round(finalColor.blue);
-                    document.querySelector('#calendar-events').innerHTML += ` <div class="bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
+                    document.querySelector('#calendar-events').innerHTML += ` <div class="m-1 bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -4641,7 +4757,7 @@ function checkCalendar() {
                         stripped = stripped.replace("Sports: ", "");
                         if (Meta.show !== stripped)
                         {
-                            document.querySelector('#calendar-events').innerHTML += `  <div class="bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
+                            document.querySelector('#calendar-events').innerHTML += `  <div class="m-1 bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -4700,7 +4816,7 @@ function checkCalendar() {
 
             if (Meta.queueFinish !== null)
             {
-                document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-default shadow-2">
+                document.querySelector('#calendar-events').innerHTML = `  <div class="m-1 bs-callout bs-callout-default shadow-2">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -4724,7 +4840,7 @@ function checkCalendar() {
                     if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
                     {
                         doTopOfHour = true;
-                        document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-warning shadow-2">
+                        document.querySelector('#calendar-events').innerHTML = `  <div class="m-1 bs-callout bs-callout-warning shadow-2">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -4743,7 +4859,7 @@ function checkCalendar() {
                     if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
                     {
                         doTopOfHour = true;
-                        document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-warning shadow-2">
+                        document.querySelector('#calendar-events').innerHTML = `  <div class="m-1 bs-callout bs-callout-warning shadow-2">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -4763,7 +4879,7 @@ function checkCalendar() {
                 finalColor.red = Math.round(finalColor.red);
                 finalColor.green = Math.round(finalColor.green);
                 finalColor.blue = Math.round(finalColor.blue);
-                document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
+                document.querySelector('#calendar-events').innerHTML = `  <div class="m-1 bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -4942,40 +5058,41 @@ function checkRecipients() {
                 if (temp === null)
                 {
                     temp = document.querySelector(`#users`);
-                    temp.innerHTML += `<div class="p-1 bg-secondary" id="users-g-${key}">
-                        <h3 style="text-align: center; font-size: 1em; color: #ECEFF1">${key}</h3>
-                    </div>`;
+                    temp.innerHTML += `<p class="navdrawer-subheader">${key}</p>
+                    <ul class="navdrawer-nav" id="users-g-${key}">
+                    </ul>
+                    <div class="navdrawer-divider"></div>`;
                 }
                 if (recipients[key].length > 0)
                 {
                     recipients[key].map(recipient => {
                         var temp = document.querySelector(`#users-u-${recipient.ID}`);
-                        var theClass = 'dark';
+                        var theClass = '<i class="chip-icon bg-dark">OFF</i>';
                         // Online recipients in wwsu-red color, offline in dark color.
                         switch (recipient.status)
                         {
                             case 1:
-                                theClass = 'wwsu-red';
+                                theClass = '<i class="chip-icon bg-primary">ON</i>';
                                 break;
                             case 2:
-                                theClass = 'wwsu-red';
+                                theClass = '<i class="chip-icon bg-primary">ON</i>';
                                 break;
                             case 3:
-                                theClass = 'wwsu-red';
+                                theClass = '<i class="chip-icon bg-primary">ON</i>';
                                 break;
                             case 4:
-                                theClass = 'wwsu-red';
+                                theClass = '<i class="chip-icon bg-primary">ON</i>';
                                 break;
                             case 5:
-                                theClass = 'wwsu-red';
+                                theClass = '<i class="chip-icon bg-primary">ON</i>';
                                 break;
                             default:
-                                theClass = 'dark';
+                                theClass = '<i class="chip-icon bg-dark">OFF</i>';
                                 break;
                         }
                         // Make "Web Public" red if the webchat is enabled.
                         if (recipient.host === 'website' && Meta.webchat)
-                            theClass = 'wwsu-red';
+                            theClass = '<i class="chip-icon bg-primary">ON</i>';
                         if (temp !== null)
                         {
                             temp.remove();
@@ -4984,41 +5101,28 @@ function checkRecipients() {
                         // For web visitor recipients, add options for muting or banning
                         if (recipient.group === 'website' && recipient.host !== 'website')
                         {
-                            temp.innerHTML += `<div id="users-u-${recipient.ID}" class="recipient">
-                                <div id="users-b-${recipient.ID}" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;">
-                                                    <div class="container">
-  <div class="row">
-    <div class="col-9" id="users-c1-${recipient.ID}">
-      <span id="users-l-${recipient.ID}">${recipient.label}</span>
+                            temp.innerHTML += `
+<div id="users-u-${recipient.ID}" class="recipient nav-item nav-link${activeRecipient === recipient.ID ? ` active` : ``} d-flex justify-content-between align-items-center">
+<span id="users-l-${recipient.ID}" class="chip">${theClass}${recipient.label}</span>
+<div>
+<span class="badge badge-${recipient.unread > 0 ? 'primary' : 'secondary'} badge-pill" id="users-n-${recipient.host}">${recipient.unread}</span>
+<div class="dropdown">
+      <span id="users-o-${recipient.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
+      <div class="dropdown-menu" aria-labelledby="users-o-${recipient.ID}">
+        <a class="dropdown-item text-warning-dark" data-toggle="dropdown" id="users-o-mute-${recipient.ID}">Mute for 24 hours</a>
+        <a class="dropdown-item text-danger-dark" data-toggle="dropdown" id="users-o-ban-${recipient.ID}">Ban indefinitely</a>
+      </div>
     </div>
-    <div class="col-3" id="users-c2-${recipient.ID}" style="text-align: center;">
-                                                                                <div class="dropdown">
-      <span class='close' id="users-o-${recipient.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span><span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.host}">${recipient.unread}</span>
-                                                                                        <div class="dropdown-menu" aria-labelledby="users-o-${recipient.ID}">
-                                        <a class="dropdown-item text-warning-dark" data-toggle="dropdown" id="users-o-mute-${recipient.ID}">Mute for 24 hours</a>
-                                        <a class="dropdown-item text-danger-dark" data-toggle="dropdown" id="users-o-ban-${recipient.ID}">Ban indefinitely</a>
-                                    </div>
-    </div>
-  </div>
-</div> 
-                                </div>
-                            </div>
-                        </div>`;
+</div>
+</div>
+`;
                         } else {
-                            temp.innerHTML += `<div id="users-u-${recipient.ID}" class="recipient">
-                                <div id="users-b-${recipient.ID}" class="p-1 m-1 bg-${theClass} ${activeRecipient === recipient.ID ? 'border border-warning' : ''}" style="cursor: pointer;">
-                                                    <div class="container">
-  <div class="row">
-    <div class="col-9" id="users-c1-${recipient.ID}">
-      <span id="users-l-${recipient.ID}">${recipient.label}</span>
-    </div>
-    <div class="col-3" id="users-c2-${recipient.ID}" style="text-align: center;">
-    <span class="badge badge-${recipient.unread > 0 ? 'danger' : 'secondary'}" id="users-n-${recipient.ID}" style="float: right;">${recipient.unread}</span>
-    </div>
-  </div>
-</div> 
-                                </div>
-                        </div>`;
+                            temp.innerHTML += `
+<div id="users-u-${recipient.ID}" class="recipient nav-item nav-link${activeRecipient === recipient.ID ? ` active` : ``} d-flex justify-content-between align-items-center">
+<span id="users-l-${recipient.ID}" class="chip">${theClass}${recipient.label}</span>
+<div>
+<span class="badge badge-${recipient.unread > 0 ? 'primary' : 'secondary'} badge-pill" id="users-n-${recipient.host}">${recipient.unread}</span>
+</div>`;
                         }
                     });
                 }
@@ -5048,49 +5152,23 @@ function selectRecipient(recipient = null)
     try {
         activeRecipient = recipient;
 
-        var messages = document.querySelector("#messages");
+        var messages = document.querySelector("#messages-info");
         var messageIDs = [];
         messages.innerHTML = ``;
 
         Recipients().each(function (recipientb) {
-            // Update all the recipients, ensuring only the selected one has a yellow border
-            var temp = document.querySelector(`#users-b-${recipientb.ID}`);
+            // Update all the recipients, ensuring only the selected one is active
+            var temp = document.querySelector(`#users-u-${recipientb.ID}`);
             if (temp !== null)
             {
-                var theClass = 'dark';
-                switch (recipientb.status)
-                {
-                    case 1:
-                        theClass = 'wwsu-red';
-                        break;
-                    case 2:
-                        theClass = 'wwsu-red';
-                        break;
-                    case 3:
-                        theClass = 'wwsu-red';
-                        break;
-                    case 4:
-                        theClass = 'wwsu-red';
-                        break;
-                    case 5:
-                        theClass = 'wwsu-red';
-                        break;
-                    default:
-                        theClass = 'dark';
-                        break;
-                }
-                if (recipientb.host === 'website' && Meta.webchat)
-                    theClass = 'wwsu-red';
-                temp.className = `p-1 m-1 bg-${theClass}`;
+                temp.classList.remove('active');
             }
         });
 
         if (recipient === null)
         {
-            messages.innerHTML += `<div class="message m-2 bg-danger-dark" style="cursor: pointer;">
-                        <div class="m-1">
-                            <div>Please click a recipient on the left to view / send messages.</div>
-                        </div>
+            messages.innerHTML += `<div class="bs-callout bs-callout-info shadow-4">
+                            <div>To begin, click the menu icon in the top left corner and select a recipient.</div>
                     </div>`;
             return null;
         }
@@ -5100,75 +5178,39 @@ function selectRecipient(recipient = null)
         var status = Recipients({ID: recipient}).first().status;
         var label = Recipients({ID: recipient}).first().label;
 
-        var temp = document.querySelector(`#users-b-${ID}`);
+        var temp = document.querySelector(`#users-u-${ID}`);
         if (temp !== null)
         {
-            var theClass = 'dark';
-            switch (status)
-            {
-                case 1:
-                    theClass = 'wwsu-red';
-                    break;
-                case 2:
-                    theClass = 'wwsu-red';
-                    break;
-                case 3:
-                    theClass = 'wwsu-red';
-                    break;
-                case 4:
-                    theClass = 'wwsu-red';
-                    break;
-                case 5:
-                    theClass = 'wwsu-red';
-                    break;
-                default:
-                    theClass = 'dark';
-                    break;
-            }
-            if (host === 'website' && Meta.webchat)
-                theClass = 'wwsu-red';
-            temp.className = `p-1 m-1 bg-${theClass} border border-warning`;
+            temp.classList.add('active');
         }
 
         // Add labels at the top of the messages box to explain stuff
         if (recipient === null || typeof host === 'undefined')
         {
-            messages.innerHTML += `<div class="m-2 bg-danger-dark" style="cursor: pointer;">
-                        <div class="m-1">
-                            <div>Please click a recipient on the left to view / send messages.</div>
-                        </div>
+            messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
+                            <div>To begin, click the menu icon in the top left corner and select a recipient.</div>
                     </div>`;
         } else if (host === 'website' && Meta.webchat)
         {
-            messages.innerHTML += `<div class="m-2 bg-danger-dark" style="cursor: pointer;">
-                        <div class="m-1">
-                            <div>You are viewing messages sent publicly from the web. Messages you send will be visible to all web visitors.</div>
-                        </div>
+            messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
+                            <div>You are viewing public web messages. Messages sent will be visible by all web recipients.</div>
                     </div>`;
         } else if (host.startsWith("website-") && Meta.webchat) {
-            messages.innerHTML += `<div class="m-2 bg-danger-dark" style="cursor: pointer;">
-                        <div class="m-1">
-                            <div>You are viewing private messages from ${label}. Messages you send will ONLY be visible by ${label}. This visitor is currently ${status > 0 ? 'online' : 'offline'}.</div>
-                        </div>
+                        messages.innerHTML += `<div class="bs-callout bs-callout-info shadow-4">
+                            <div>You are viewing ${label}. Messages sent will only be visible to this recipient.</div>
                     </div>`;
         } else if (host === 'website' && !Meta.webchat)
         {
-            messages.innerHTML += `<div class="m-2 bg-dark" style="cursor: pointer;">
-                        <div class="m-1">
-                            <div>You are viewing messages sent publicly from the web. The web chat is currently disabled. Therefore, web visitors cannot send messages.</div>
-                        </div>
+            messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
+                            <div>You are viewing public web messages. The chat is currently disabled, therefore recipients cannot send you messages.</div>
                     </div>`;
         } else if (host.startsWith("website-") && !Meta.webchat) {
-            messages.innerHTML += `<div class="m-2 bg-dark" style="cursor: pointer;">
-                        <div class="m-1">
-                            <div>You are viewing private messages from ${label}. The web chat is currently disabled. Therefore, web visitors cannot send messages.</div>
-                        </div>
+            messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
+                            <div>You are viewing ${label}. The chat is currently disabled, therefore this recipient cannot send you messages.</div>
                     </div>`;
         } else {
-            messages.innerHTML += `<div class="m-2 bg-danger-dark" style="cursor: pointer;">
-                        <div class="m-1">
-                            <div>You are viewing messages from the computer ${label}. Messages you send will be delivered to the DJ Controls running on that computer. The DJ controls on this computer is currently ${status > 0 ? 'online' : 'offline'}.</div>
-                        </div>
+            messages.innerHTML += `<div class="bs-callout bs-callout-info shadow-4">
+                            <div>You are viewing the computer ${label}. Be aware that an online status does not necessarily mean someone's at the computer right now to read your message.</div>
                     </div>`;
         }
 
@@ -5238,9 +5280,9 @@ function selectRecipient(recipient = null)
                 if (temp === null)
                 {
                     var temp2 = document.querySelector(`#messages-unread`);
-                    temp2.innerHTML += `<div class="bs-callout bs-callout-primary shadow-4 message-n animated bounceIn slow" style="cursor: pointer;" id="message-n-m-${message.ID}">
+                    temp2.innerHTML += `<div class="m-1 bs-callout bs-callout-primary shadow-4 message-n animated bounceIn slow" style="cursor: pointer;" id="message-n-m-${message.ID}">
                                         <span class="close" id="message-n-x-${message.ID}" style="pointer-events: auto;">X</span>
-                                        <div class="m-1" id="message-n-a-${message.ID}" style="pointer-events: auto;">
+                                        <div id="message-n-a-${message.ID}" style="pointer-events: auto;">
                                             <div id="message-n-t-${message.ID}">${message.message}</div>
                                             <div id="message-n-b-${message.ID}" style="font-size: 0.66em;">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' (Private)' : ``}</span>
                                         </div>
@@ -5270,6 +5312,7 @@ function selectRecipient(recipient = null)
         checkRecipients();
 
         // Now, get other messages according to selected recipient
+        var messages = document.querySelector("#messages");
         var temp = document.querySelector(`#btn-messenger-unread`);
         temp.className = `notification badge badge-${totalUnread > 0 ? 'primary' : 'secondary'} shadow-4`;
         temp.innerHTML = totalUnread;
@@ -5290,7 +5333,7 @@ function selectRecipient(recipient = null)
                         var temp2 = document.querySelector(`#message-m-${message.ID}`);
                         if (temp2 === null)
                         {
-                            messages.innerHTML += `<div class="message m-2 bg-${message.needsread ? 'wwsu-red' : 'dark'}" id="message-m-${message.ID}" style="cursor: pointer;">
+                            messages.innerHTML += `<div class="message m-2 bs-callout bs-callout-${message.needsread ? 'primary' : 'secondary'} shadow-4" id="message-m-${message.ID}" style="cursor: pointer;">
                         <div class="m-1">
                               <div class="row">
     <div class="col-10" id="message-c1-${message.ID}">
@@ -5312,7 +5355,7 @@ function selectRecipient(recipient = null)
                         </div>
                     </div>`;
                         } else {
-                            temp2.className = `message m-2 bg-${message.needsread ? 'wwsu-red' : 'dark'}`;
+                            temp2.className = `message m-2 bs-callout bs-callout-${message.needsread ? 'primary' : 'secondary'} shadow-4`;
                             var temp3 = document.querySelector(`#message-t-${message.ID}`);
                             temp3.innerHTML = message.message;
                             var temp3 = document.querySelector(`#message-b-${message.ID}`);
@@ -5323,7 +5366,7 @@ function selectRecipient(recipient = null)
                         var temp2 = document.querySelector(`#message-m-${message.ID}`);
                         if (temp2 === null)
                         {
-                            messages.innerHTML += `<div class="message m-2 bg-${message.needsread ? 'wwsu-red' : 'dark'}" id="message-m-${message.ID}" style="cursor: pointer;">
+                            messages.innerHTML += `<div class="message m-2 bs-callout bs-callout-${message.needsread ? 'primary' : 'secondary'} shadow-4" id="message-m-${message.ID}" style="cursor: pointer;">
                         <div class="m-1">
                               <div class="row">
     <div class="col-10" id="message-c1-${message.ID}">
@@ -5343,7 +5386,7 @@ function selectRecipient(recipient = null)
                         </div>
                     </div>`;
                         } else {
-                            temp2.className = `message m-2 bg-${message.needsread ? 'wwsu-red' : 'dark'}`;
+                            temp2.className = `message m-2 bs-callout bs-callout-${message.needsread ? 'primary' : 'secondary'} shadow-4`;
                             var temp3 = document.querySelector(`#message-t-${message.ID}`);
                             temp3.innerHTML = message.message;
                             var temp3 = document.querySelector(`#message-b-${message.ID}`);
@@ -5733,32 +5776,32 @@ function goLive() {
     {
         _goLive();
     } else {
-                iziToast.show({
-                    timeout: 60000,
-                    overlay: true,
-                    displayMode: 'once',
-                    color: 'yellow',
-                    id: 'inputs',
-                    zindex: 999,
-                    layout: 2,
-                    image: `assets/images/goLive.png`,
-                    maxWidth: 480,
-                    title: 'You are about to begin an un-scheduled show',
-                    message: 'Directors will be notified if you go live! The clockwheel on DJ Controls may be wrong. And programmed show openers/returns/closers might not queue. Continue?',
-                    position: 'center',
-                    drag: false,
-                    closeOnClick: false,
-                    buttons: [
-                        ['<button><b>Continue</b></button>', function (instance, toast) {
-                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                _goLive();
-                            }],
-                        ['<button><b>Cancel</b></button>', function (instance, toast) {
-                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                $("#go-live-modal").iziModal('close');
-                            }],
-                    ]
-                });
+        iziToast.show({
+            timeout: 60000,
+            overlay: true,
+            displayMode: 'once',
+            color: 'yellow',
+            id: 'inputs',
+            zindex: 999,
+            layout: 2,
+            image: `assets/images/goLive.png`,
+            maxWidth: 480,
+            title: 'You are about to begin an un-scheduled show',
+            message: 'Directors will be notified if you go live! The clockwheel on DJ Controls may be wrong. And programmed show openers/returns/closers might not queue. Continue?',
+            position: 'center',
+            drag: false,
+            closeOnClick: false,
+            buttons: [
+                ['<button><b>Continue</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        _goLive();
+                    }],
+                ['<button><b>Cancel</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        $("#go-live-modal").iziModal('close');
+                    }],
+            ]
+        });
     }
 }
 
@@ -5802,32 +5845,32 @@ function goRemote() {
     {
         _goRemote();
     } else {
-                iziToast.show({
-                    timeout: 60000,
-                    overlay: true,
-                    displayMode: 'once',
-                    color: 'yellow',
-                    id: 'inputs',
-                    zindex: 999,
-                    layout: 2,
-                    image: `assets/images/goRemote.png`,
-                    maxWidth: 480,
-                    title: 'You are about to begin an un-scheduled remote broadcast',
-                    message: 'Directors will be notified if you begin the broadcast! The clockwheel on DJ Controls may be wrong. And programmed openers/returns/closers might not queue. Continue?',
-                    position: 'center',
-                    drag: false,
-                    closeOnClick: false,
-                    buttons: [
-                        ['<button><b>Continue</b></button>', function (instance, toast) {
-                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                _goRemote();
-                            }],
-                        ['<button><b>Cancel</b></button>', function (instance, toast) {
-                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                $("#go-remote-modal").iziModal('close');
-                            }],
-                    ]
-                });
+        iziToast.show({
+            timeout: 60000,
+            overlay: true,
+            displayMode: 'once',
+            color: 'yellow',
+            id: 'inputs',
+            zindex: 999,
+            layout: 2,
+            image: `assets/images/goRemote.png`,
+            maxWidth: 480,
+            title: 'You are about to begin an un-scheduled remote broadcast',
+            message: 'Directors will be notified if you begin the broadcast! The clockwheel on DJ Controls may be wrong. And programmed openers/returns/closers might not queue. Continue?',
+            position: 'center',
+            drag: false,
+            closeOnClick: false,
+            buttons: [
+                ['<button><b>Continue</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        _goRemote();
+                    }],
+                ['<button><b>Cancel</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        $("#go-remote-modal").iziModal('close');
+                    }],
+            ]
+        });
     }
 }
 
@@ -6295,26 +6338,10 @@ function processEas(data, replace = false)
                     }
                     if (document.querySelector(`#attn-eas-${datum.ID}`) === null)
                     {
-                        var attn = document.querySelector("#announcements-body");
-                        attn.innerHTML += `<div class="attn-eas attn-eas-${datum.severity} bs-callout bs-callout-${className} shadow-4" id="attn-eas-${datum.ID}" role="alert">
-                        <h4><i class="fas fa-bolt"></i> ${datum.alert}</h4>
-                        EAS: <strong>${datum.alert}</strong> in effect for the counties ${datum.counties}.
-                    </div>`;
+                        // TODO EAS Alert, counties, ID
                     } else {
-                        var temp = document.querySelector(`#attn-eas-${datum.ID}`);
-                        temp.className = `attn-eas attn-eas-${datum.severity} bs-callout bs-callout-${className} shadow-4`;
-                        temp.innerHTML = `<h4><i class="fas fa-bolt"></i> ${datum.alert}</h4>
-                        EAS: <strong>${datum.alert}</strong> in effect for the counties ${datum.counties}.`;
                     }
                 });
-            }
-
-            // Remove all Eas announcements no longer valid
-            var prev2 = Eas().select("ID");
-            var attn = document.querySelectorAll(".attn-eas");
-            for (var i = 0; i < attn.length; i++) {
-                if (prev2.indexOf(attn[i].id) === -1)
-                    attn[i].parentNode.removeChild(attn[i]);
             }
 
             // Go through the new data. If any IDs exists that did not exist before, consider it a new alert and make a notification.
@@ -6425,15 +6452,8 @@ function processEas(data, replace = false)
                             }
                             if (document.querySelector(`#attn-eas-${data[key].ID}`) === null)
                             {
-                                var attn = document.querySelector("#announcements-body");
-                                attn.innerHTML += `<div class="attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className} shadow-4" id="attn-eas-${data[key].ID}" role="alert">
-                        <h4><i class="fas fa-bolt"></i> ${data[key].alert}</h4>
-                        EAS: <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
+                                // TODO EAS
                             } else {
-                                var temp = document.querySelector(`#attn-eas-${data[key].ID}`);
-                                temp.className = `attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className} shadow-4`;
-                                temp.innerHTML = `<h4><i class="fas fa-bolt"></i> ${data[key].alert}</h4>
-                        EAS: <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
                             }
                             if (data[key].severity === 'Extreme')
                             {
@@ -6530,15 +6550,8 @@ function processEas(data, replace = false)
                             }
                             if (document.querySelector(`#attn-eas-${data[key].ID}`) === null)
                             {
-                                var attn = document.querySelector("#announcements-body");
-                                attn.innerHTML += `<div class="attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className} shadow-4" id="attn-eas-${data[key].ID}" role="alert">
-                        <h4><i class="fas fa-bolt"></i> ${data[key].alert}</h4>
-                        EAS: <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
+                                // TODO EAS
                             } else {
-                                var temp = document.querySelector(`#attn-eas-${data[key].ID}`);
-                                temp.className = `attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className} shadow-4`;
-                                temp.innerHTML = `<h4><i class="fas fa-bolt"></i> ${data[key].alert}</h4>
-                        EAS: <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
                             }
                             break;
                         case 'remove':
@@ -6579,26 +6592,8 @@ function processStatus(data, replace = false)
             if (data.length > 0)
             {
                 data.map(datum => {
-                    var className = 'secondary';
-                    if (datum.status === 1)
-                    {
-                        className = 'danger';
-                    } else if (datum.status === 2)
-                    {
-                        className = 'urgent';
-                    } else if (datum.status === 3)
-                    {
-                        className = 'warning';
-                    } else {
-                        return null;
-                    }
                     if (document.querySelector(`#attn-status-${datum.name}`) === null)
                     {
-                        prev.push(`attn-status-${datum.name}`);
-                        var attn = document.querySelector("#announcements-body");
-                        attn.innerHTML += `<div class="attn-status attn-status-${datum.status} bs-callout bs-callout-${className} shadow-4" id="attn-status-${datum.name}" role="alert">
-                        <h4><i class="fas fa-server"></i> ${datum.label}</h4>
-                        <strong>${datum.label}</strong> is reporting a problem: ${datum.data}.`;
                         if (client.emergencies && datum.status < 3)
                         {
                             var notification = notifier.notify('System Problem', {
@@ -6608,12 +6603,6 @@ function processStatus(data, replace = false)
                             });
                             main.flashTaskbar();
                         }
-                    } else {
-                        prev.push(`attn-status-${datum.name}`);
-                        var temp = document.querySelector(`#attn-status-${datum.name}`);
-                        temp.className = `attn-status attn-status-${datum.status} bs-callout bs-callout-${className} shadow-4`;
-                        temp.innerHTML = `<h4><i class="fas fa-server"></i> ${datum.label}</h4>
-                        <strong>${datum.label}</strong> is reporting a problem: ${datum.data}.`;
                     }
                     if (datum.name === 'silence' && (client.emergencies || (typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)) && datum.status <= 3)
                     {
@@ -6643,16 +6632,7 @@ function processStatus(data, replace = false)
                     }
                 });
             }
-
-            // Remove all Status announcements no longer valid
-
-            // Remove announcements no longer valid
-            var attn = document.querySelectorAll(".attn-status");
-            for (var i = 0; i < attn.length; i++) {
-                if (prev.indexOf(attn[i].id) === -1)
-                    attn[i].parentNode.removeChild(attn[i]);
-            }
-
+            checkAnnouncements();
         } else {
             for (var key in data)
             {
@@ -6662,25 +6642,8 @@ function processStatus(data, replace = false)
                     {
                         case 'insert':
                             Status.insert(data[key]);
-                            var className = 'secondary';
-                            if (data[key].status === 1)
-                            {
-                                className = 'danger';
-                            } else if (data[key].status === 2)
-                            {
-                                className = 'urgent';
-                            } else if (data[key].status === 3)
-                            {
-                                className = 'warning';
-                            } else {
-                                continue;
-                            }
                             if (document.querySelector(`#attn-status-${data[key].name}`) === null)
                             {
-                                var attn = document.querySelector("#announcements-body");
-                                attn.innerHTML += `<div class="attn-status attn-status-${data[key].status} bs-callout bs-callout-${className} shadow-4" id="attn-status-${data[key].name}" role="alert">
-                        <h4><i class="fas fa-server"></i> ${data[key].label}</h4>
-                        <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                                 if (client.emergencies && data[key].status < 3)
                                 {
                                     var notification = notifier.notify('System Problem', {
@@ -6690,11 +6653,6 @@ function processStatus(data, replace = false)
                                     });
                                     main.flashTaskbar();
                                 }
-                            } else {
-                                var temp = document.querySelector(`#attn-status-${data[key].name}`);
-                                temp.className = `attn-status attn-status-${data[key].status} bs-callout bs-callout-${className} shadow-4`;
-                                temp.innerHTML = `<h4><i class="fas fa-server"></i> ${data[key].label}</h4>
-                        <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                             }
                             if (data[key].name === 'silence' && data[key].status <= 3 && (client.emergencies || (typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)))
                             {
@@ -6735,18 +6693,9 @@ function processStatus(data, replace = false)
                             } else if (data[key].status === 3)
                             {
                                 className = 'warning';
-                            } else {
-                                var attn = document.querySelector(`#attn-status-${data[key].name}`);
-                                if (attn !== null)
-                                    attn.parentNode.removeChild(attn);
-                                continue;
                             }
                             if (document.querySelector(`#attn-status-${data[key].name}`) === null)
                             {
-                                var attn = document.querySelector("#announcements-body");
-                                attn.innerHTML += `<div class="attn-status attn-status-${data[key].status} bs-callout bs-callout-${className} shadow-4" id="attn-status-${data[key].name}" role="alert">
-                        <h4><i class="fas fa-server"></i> ${data[key].label}</h4>
-                        <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                                 if (client.emergencies && data[key].status < 3)
                                 {
                                     var notification = notifier.notify('System Problem', {
@@ -6756,11 +6705,6 @@ function processStatus(data, replace = false)
                                     });
                                     main.flashTaskbar();
                                 }
-                            } else {
-                                var temp = document.querySelector(`#attn-status-${data[key].name}`);
-                                temp.className = `attn-status attn-status-${data[key].status} bs-callout bs-callout-${className} shadow-4`;
-                                temp.innerHTML = `<h4><i class="fas fa-server"></i> ${data[key].label}</h4>
-                        <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                             }
                             if (data[key].name === 'silence' && data[key].status <= 3 && (client.emergencies || (typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)))
                             {
@@ -6791,13 +6735,11 @@ function processStatus(data, replace = false)
                             break;
                         case 'remove':
                             Status({ID: data[key]}).remove();
-                            var attn = document.querySelector(`#attn-status-${data[key].name}`);
-                            if (attn !== null)
-                                attn.parentNode.removeChild(attn);
                             break;
                     }
                 }
             }
+            checkAnnouncements();
         }
 
         checkAnnouncementColor();

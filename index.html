@@ -415,6 +415,66 @@
                 background-color: #5bc0de;
             }
 
+            .pulse {
+                overflow: visible;
+                position: relative;
+            }
+
+            .pulse::before {
+                content: '';
+                display: block;
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                background-color: inherit;
+                border-radius: inherit;
+                -webkit-transition: opacity .3s, -webkit-transform .3s;
+                transition: opacity .3s, -webkit-transform .3s;
+                transition: opacity .3s, transform .3s;
+                transition: opacity .3s, transform .3s, -webkit-transform .3s;
+                -webkit-animation: pulse-animation 1s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+                animation: pulse-animation 1s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+                z-index: -1;
+            }
+
+            @-webkit-keyframes pulse-animation {
+                0% {
+                    opacity: 1;
+                    -webkit-transform: scale(1);
+                    transform: scale(1);
+                }
+                50% {
+                    opacity: 0;
+                    -webkit-transform: scale(1.5);
+                    transform: scale(1.5);
+                }
+                100% {
+                    opacity: 0;
+                    -webkit-transform: scale(1.5);
+                    transform: scale(1.5);
+                }
+            }
+
+            @keyframes pulse-animation {
+                0% {
+                    opacity: 1;
+                    -webkit-transform: scale(1);
+                    transform: scale(1);
+                }
+                50% {
+                    opacity: 0;
+                    -webkit-transform: scale(1.5);
+                    transform: scale(1.5);
+                }
+                100% {
+                    opacity: 0;
+                    -webkit-transform: scale(1.5);
+                    transform: scale(1.5);
+                }
+            }
+
 
         </style>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -526,8 +586,10 @@
             </div>
 
             <div class="card p-1 m-3 text-white bg-dark" id="announcements" style="width: 640px; height: 360px;">
-                <div class="card-header text-center" style="font-size: 1.5em;">Announcements</div>
-                <div class="card-body" style="overflow: auto;" id="announcements-body">
+                <div class="card-header text-center" style="font-size: 1.5em;">Announcements<br /><span style="font-size: 0.5em;">Click to expand</span></div>
+                <div class="card-body" style="overflow: auto;">
+                    <div class="list-group text-white" id="announcements-body">
+                    </div>
                 </div>
             </div>
 
@@ -536,29 +598,29 @@
                 <div class="card-body">
                     <div class="container">
                         <div class="row">
-                            <div class="col-6">
+                            <div class="col-5">
                                 <div class="d-flex justify-content-start flex-wrap">
-                                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                                    <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                                         <button type="button" id="btn-emergency" class="btn btn-danger btn-float"><i class="fas fa-exclamation-triangle"></i></button>
                                         <div style="text-align: center; font-size: 1em;">Report a Problem</div>
                                     </div>
-                                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                                    <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                                         <button type="button" id="btn-requests" class="btn btn-info btn-float"><i class="fas fa-question-circle"></i></button>
                                         <span class="notification badge badge-secondary shadow-4" id="badge-track-requests">0</span>
                                         <div style="text-align: center; font-size: 1em;">Track Requests</div>
                                     </div>
-                                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                                    <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                                         <button type="button" id="btn-display" class="btn btn-purple btn-float"><i class="fas fa-tv"></i></button>
                                         <div style="text-align: center; font-size: 1em;">Display Signs</div>
                                     </div>
-                                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                                    <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                                         <button type="button" id="btn-messenger" class="btn btn-success btn-float"><i class="fas fa-comments"></i></button>
                                         <span class="notification badge badge-secondary shadow-4" id="btn-messenger-unread">0</span>
                                         <div style="text-align: center; font-size: 1em;">Messenger</div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-6">
+                            <div class="col-7">
                                 <div style="text-align: center; font-size: 1em;">Unread Messages<span style="font-size: 0.66em;"><br />Click a message to read/reply, X to hide.</span></div>
                                 <div style="overflow: auto; height: 220px; -webkit-transform:translate3d(0,0,0);" id="messages-unread">
                                 </div>
@@ -573,7 +635,7 @@
                 <div class="card-body">
                     <div class="container">
                         <div class="row">
-                            <div class="col-4">
+                            <div class="col-3">
                                 <article class="clock shadow-8">
                                     <svg class="chart" id="clock-program" style="z-index: 15; opacity: 0.66; position: absolute; width: 100%; height: 100%; top: 0; left: 0;">
                                     </svg>
@@ -588,10 +650,10 @@
                                     <div class="seconds-container">
                                         <div class="seconds" style="z-index: 20;"></div>
                                     </div>
+                                    <div id="datestamp" style="position: absolute; text-align: center; font-size: 1.5em; top: 150px;"></div>
                                 </article>
-                                <div id="datestamp" style="text-align: center; font-size: 1.5em;"></div>
                             </div>
-                            <div class="col-8" style="overflow: auto; height: 240px; -webkit-transform:translate3d(0,0,0);" id="calendar-events">
+                            <div class="col-9" style="overflow: auto; height: 240px; -webkit-transform:translate3d(0,0,0);" id="calendar-events">
                             </div>
                         </div>
                     </div>
@@ -602,16 +664,20 @@
 
 
         <div class="modal" id="go-live-modal" tabindex="-1" role="dialog">
-            <div class="modal-content text-dark" style="background: #fce6ea;">
+            <div class="modal-content text-dark bg-light-1">
                 <div class="modal-body">
+                    <header class="navbar navbar-full bg-primary doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Mics, Recorder, Action!</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
                     <form>
-                        <div class="form-row align-items-center">
+                        <div class="form-row align-items-center p-2">
                             <div class="col-6">
                                 <div class="floating-label">
                                     <label for="live-handle">DJ / Handle Name</label>
                                     <input class="form-control m-1" id="live-handle" type="text">
                                     <div class="invalid-feedback">
-                                        This DJ is not on the immediate show schedule
+                                        Not on the immediate schedule
                                     </div>
                                 </div>
                             </div>
@@ -620,13 +686,16 @@
                                     <label for="live-show">Show Name</label>
                                     <input class="form-control m-1" id="live-show" type="text">
                                     <div class="invalid-feedback">
-                                        This show is not on the immediate schedule
+                                        Not on the immediate schedule
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
-                            <textarea class="form-control mb-2" id="live-topic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
+                            <div class="floating-label">
+                                <label for="live-topic">Optional show topic(s), limited to 140 characters</label>
+                                <textarea class="form-control mb-2" id="live-topic" rows="3" maxlength="140"></textarea>
+                            </div>
                         </div>
                     </form>
                     <div class="custom-control custom-switch">
@@ -642,16 +711,20 @@
         </div>
 
         <div class="modal" id="go-remote-modal" tabindex="-1" role="dialog">
-            <div class="modal-content text-dark" style="background: #ede7f6;">
+            <div class="modal-content text-dark bg-light-1">
                 <div class="modal-body">
+                    <header class="navbar navbar-full bg-purple doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Remote Broadcast</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
                     <form>
-                        <div class="form-row align-items-center">
+                        <div class="form-row align-items-center p-2">
                             <div class="col-6">
                                 <div class="floating-label">
                                     <label for="remote-handle">DJ / Handle Name</label>
                                     <input class="form-control m-1" id="remote-handle" type="text">
                                     <div class="invalid-feedback">
-                                        This DJ is not on the immediate remote show schedule
+                                        Not on the immediate schedule
                                     </div>
                                 </div>
                             </div>
@@ -660,13 +733,16 @@
                                     <label for="remote-show">Show Name</label>
                                     <input class="form-control m-1" id="remote-show" type="text">
                                     <div class="invalid-feedback">
-                                        This remote show is not on the immediate schedule
+                                        Not on the immediate schedule
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
-                            <textarea class="form-control mb-2" id="remote-topic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
+                            <div class="floating-label">
+                                <label for="live-topic">Optional show topic(s), limited to 140 characters</label>
+                                <textarea class="form-control mb-2" id="remote-topic" rows="3" maxlength="140"></textarea>
+                            </div>
                         </div>
                     </form>
                     <div class="custom-control custom-switch">
@@ -764,28 +840,30 @@
             </div>
         </div>
 
-        <div id="messages-modal" style="background-color: #363636; color: #ffffff;">
-            <div style="width: 40%; float: left; color: #FFFFFF;">
-                <h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Recipients</h5>
-                <div style="text-align: center; font-size: 0.75em;">Click recipient to view messages.</div>
-            </div>
-            <div style="width: 59%; float: left; color: #FFFFFF;">
-                <h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Messages</h5>
-                <div style="text-align: center; font-size: 0.75em;">Unread messages are in red. Click a message to mark as read.</div>
-            </div>
-            <div style="width: 40%; height: 480px; float: left; overflow-y: auto; color: #FFFFFF;">
-                <div class="p-3 m-1" id="users">
-                </div>
-            </div>
-            <div id="messages" class="bg-secondary" style="width: 59%; height: 400px; float: left; overflow-y: auto; color: #FFFFFF;">
-                <div class="p-3 m-1" id="messages">
-                </div>
-            </div>
-            <div style="width: 59%; float: left; color: #FFFFFF;">
-                <div class="form-group">
-                    <div class="bg-light text-dark">
-                        <div id="themessage"></div>
+        <div class="modal" id="messages-modal" tabindex="-1" role="dialog" style="display: hidden;">
+            <div class="modal-content text-dark bg-light-1">
+                <div class="modal-body">
+                    <header class="navbar navbar-dark navbar-full bg-primary doc-navbar-default">
+                        <button aria-controls="navdrawerUsers" aria-expanded="false" aria-label="Toggle Navdrawer" class="navbar-toggler" data-target="#navdrawerUsers" data-toggle="navdrawer" data-type="temporary">
+                            <span class="fas fa-bars"></span>
+                        </button>
+                        <span class="navbar-brand mr-auto">Messenger</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
+                    <div aria-hidden="true" class="navdrawer navdrawer-temporary" id="navdrawerUsers" tabindex="-1">
+                        <div class="navdrawer-content">
+                            <div class="navdrawer-header">
+                                <a class="navbar-brand px-0" href="#">Recipients</a>
+                            </div>
+                            <div id="users"></div>
+                        </div>
                     </div>
+                    <div class="p-3 m-1 text-white" id="messages-info">
+                    </div>
+                    <div class="p-1 m-1 text-white" style="height: 400px; overflow-y: auto;" id="messages"></div>
+                </div>
+                <div id="themessage"></div>
+                <div class="modal-footer bg-light-1">
                 </div>
             </div>
         </div>
@@ -1210,12 +1288,10 @@
                     <option value="mobile">Mobile Apps</option>
                 </select>
                 Severity Level: <select class="form-control" id="options-announcement-level">
-                    <option value="secondary">Trivial (gray)</option>
-                    <option value="success">Success / Achievement (green)</option>
-                    <option value="info">Information (blue)</option>
-                    <option value="warning">High (yellow)</option>
-                    <option value="urgent">Very High (orange)</option>
-                    <option value="danger">Critical (red)</option>
+                    <option value="danger">Very Important (red)</option>
+                    <option value="warning">Maintenance / Expected Downtime (yellow)</option>
+                    <option value="info">Action Item / Deadline (blue)</option>
+                    <option value="trivial">Everything Else (gray)</option>
                 </select>
                 Announcement Title: <input type="text" id="options-announcement-title" class="form-control" placeholder="Please keep short and concise">
                 Announcement Text: <div class="form-group">
