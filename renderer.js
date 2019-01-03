@@ -40,8 +40,8 @@ try {
     // Define HTML elements
 
     // Define other variables
-    //var nodeURL = 'https://server.wwsu1069.org';
-    var nodeURL = 'http://localhost:1337';
+    var nodeURL = 'https://server.wwsu1069.org';
+    //var nodeURL = 'http://localhost:1337';
     var recordPadPath = "C:\\Program Files (x86)\\NCH Software\\Recordpad\\recordpad.exe";
     var recordPath = "S:\\OnAir recordings";
     var delay = 9000; // Subtract 1 second from the amount of on-air delay, as it takes about a second to process the recorder.
@@ -56,7 +56,7 @@ try {
     var totalRequests = 0;
     var breakNotified = false;
     var data = {
-        size: 160,
+        size: 140,
         start: 0, // angle to rotate pie chart by
         sectors: [] // start (angle from start), size (amount of angle to cover), label, color
     }
@@ -331,10 +331,10 @@ try {
         if (totalUnread > 0 || totalRequests > 0)
         {
             var messaging = document.querySelector("#messaging");
-            messaging.className = "card p-1 m-3 text-white bg-info-dark";
+            messaging.className = "card p-1 m-3 text-white bg-info";
             setTimeout(function () {
                 messaging.className = "card p-1 m-3 text-white bg-dark";
-            }, 2750);
+            }, 4500);
         }
 
         var flasher = document.querySelectorAll(".flash-bg");
@@ -343,9 +343,9 @@ try {
             document.querySelector("body").style.backgroundColor = '#ffffff';
             setTimeout(function () {
                 document.querySelector("body").style.backgroundColor = '#000000';
-            }, 250);
+            }, 500);
         }
-    }, 3000);
+    }, 5000);
 
     // Define default settings for iziToast (overlaying messages)
     iziToast.settings({
@@ -1793,6 +1793,7 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                                 nodeRequest({method: 'POST', url: nodeURL + '/djs/remove', data: {ID: e.target.dataset.dj}}, function (response) {
                                     if (response === 'OK')
                                     {
+                                        $("#options-modal-dj").iziModal('close');
                                         iziToast.show({
                                             title: `DJ Removed!`,
                                             message: `DJ was removed!`,
@@ -2862,38 +2863,38 @@ document.querySelector("#btn-messenger").onclick = function () {
 };
 
 document.querySelector("#live-handle").onkeyup = function () {
-    if (calType === 'Show' && document.querySelector("#live-handle").value === calHost && document.querySelector("#live-show").value === calShow)
+    if (calType === 'Show' && document.querySelector("#live-handle").value === calHost)
     {
-        document.querySelector("#live-noschedule").style.display = "none";
+        document.querySelector("#live-handle").className = "form-control m-1";
     } else {
-        document.querySelector("#live-noschedule").style.display = "inline";
+        document.querySelector("#live-handle").className = "form-control m-1 is-invalid";
     }
 };
 
 document.querySelector("#live-show").onkeyup = function () {
-    if (calType === 'Show' && document.querySelector("#live-handle").value === calHost && document.querySelector("#live-show").value === calShow)
+    if (calType === 'Show' && document.querySelector("#live-show").value === calShow)
     {
-        document.querySelector("#live-noschedule").style.display = "none";
+        document.querySelector("#live-show").className = "form-control m-1";
     } else {
-        document.querySelector("#live-noschedule").style.display = "inline";
+        document.querySelector("#live-show").className = "form-control m-1 is-invalid";
     }
 };
 
 document.querySelector("#remote-handle").onkeyup = function () {
-    if (calType === 'Remote' && document.querySelector("#remote-handle").value === calHost && document.querySelector("#remote-show").value === calShow)
+    if (calType === 'Remote' && document.querySelector("#remote-handle").value === calHost)
     {
-        document.querySelector("#remote-noschedule").style.display = "none";
+        document.querySelector("#remote-handle").className = "form-control m-1";
     } else {
-        document.querySelector("#remote-noschedule").style.display = "inline";
+        document.querySelector("#remote-handle").className = "form-control m-1 is-invalid";
     }
 };
 
 document.querySelector("#remote-show").onkeyup = function () {
-    if (calType === 'Remote' && document.querySelector("#remote-handle").value === calHost && document.querySelector("#remote-show").value === calShow)
+    if (calType === 'Remote' && document.querySelector("#remote-show").value === calShow)
     {
-        document.querySelector("#remote-noschedule").style.display = "none";
+        document.querySelector("#remote-show").className = "form-control m-1";
     } else {
-        document.querySelector("#remote-noschedule").style.display = "inline";
+        document.querySelector("#remote-show").className = "form-control m-1 is-invalid";
     }
 };
 
@@ -3552,9 +3553,11 @@ function doMeta(metan) {
         if (queueLength < 15 && document.querySelector('#queue').style.display !== "none")
         {
             var operations = document.querySelector("#operations");
-            operations.className = "card p-1 m-3 text-white bg-warning-dark";
+            operations.className = "card p-1 m-3 text-white";
+            operations.style.backgroundColor = "#ff6f00";
             setTimeout(function () {
                 operations.className = "card p-1 m-3 text-white bg-dark";
+                operations.style.backgroundColor = "";
             }, 250);
         }
 
@@ -3573,7 +3576,7 @@ function doMeta(metan) {
 
             // Have the WWSU Operations box display buttons and operations depending on which state we are in
             var badge = document.querySelector('#operations-state');
-            badge.innerHTML = Meta.state;
+            badge.innerHTML = `<i class="chip-icon fas fa-question bg-secondary"></i>${Meta.state}`;
             var actionButtons = document.querySelectorAll(".btn-operation");
             for (var i = 0; i < actionButtons.length; i++) {
                 actionButtons[i].style.display = "none";
@@ -3583,41 +3586,44 @@ function doMeta(metan) {
             document.querySelector('#please-wait').style.display = "none";
             if (Meta.state === 'automation_on' || Meta.state === 'automation_break')
             {
-                badge.className = 'badge badge-primary';
+                badge.innerHTML = `<i class="chip-icon fas fa-microphone-alt-slash bg-info"></i>${Meta.state}`;
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
                 document.querySelector('#btn-gosports').style.display = "inline";
             } else if (Meta.state === 'automation_playlist')
             {
-                badge.className = 'badge badge-primary';
+                badge.innerHTML = `<i class="chip-icon fas fa-list bg-info"></i>${Meta.state}`;
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
                 document.querySelector('#btn-gosports').style.display = "inline";
             } else if (Meta.state === 'automation_genre')
             {
-                badge.className = 'badge badge-primary';
+                badge.innerHTML = `<i class="chip-icon fas fa-music bg-info"></i>${Meta.state}`;
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
                 document.querySelector('#btn-gosports').style.display = "inline";
             } else if (Meta.state === 'live_prerecord' || Meta.state === 'automation_prerecord')
             {
-                badge.className = 'badge badge-danger';
+                badge.innerHTML = `<i class="chip-icon fas fa-compact-disc bg-primary"></i>${Meta.state}`;
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
                 document.querySelector('#btn-gosports').style.display = "inline";
             } else if (Meta.state.startsWith('automation_') || (Meta.state.includes('_returning') && !Meta.state.startsWith('sports')))
             {
+                badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`;
                 document.querySelector('#queue').style.display = "inline";
                 document.querySelector('#btn-psa15').style.display = "inline";
                 document.querySelector('#btn-psa30').style.display = "inline";
             } else if (Meta.state.startsWith('sports') && Meta.state.includes('_returning'))
             {
+                badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`;
                 document.querySelector('#queue').style.display = "inline";
                 document.querySelector('#btn-psa15').style.display = "inline";
                 document.querySelector('#btn-psa30').style.display = "inline";
                 // If the system goes into disconnected mode, the host client should be notified of that!
             } else if (Meta.state.includes('_break_disconnected') || Meta.state.includes('_halftime_disconnected') && Meta.djcontrols === client.host)
             {
+                badge.innerHTML = `<i class="chip-icon fas fa-wifi bg-danger"></i>${Meta.state}`;
                 if (document.querySelector("#iziToast-noremote") === null)
                     iziToast.show({
                         id: 'iziToast-noremote',
@@ -3652,6 +3658,7 @@ function doMeta(metan) {
                 document.querySelector('#btn-resume').style.display = "inline";
             } else if (Meta.state.includes('_break') || Meta.state.includes('_halftime'))
             {
+                badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`;
                 document.querySelector('#btn-return').style.display = "inline";
             } else if (Meta.state.includes('live_'))
             {
@@ -3682,7 +3689,7 @@ function doMeta(metan) {
                  trip.start();
                  }
                  */
-                badge.className = 'badge badge-danger';
+                badge.innerHTML = `<i class="chip-icon fas fa-microphone-alt bg-primary"></i>${Meta.state}`;
                 if (Meta.playing)
                 {
                     document.querySelector('#queue').style.display = "inline";
@@ -3722,7 +3729,7 @@ function doMeta(metan) {
                  trip.start();
                  }
                  */
-                badge.className = 'badge badge-success';
+                badge.innerHTML = `<i class="chip-icon fas fa-trophy bg-success"></i>${Meta.state}`;
                 if (Meta.playing)
                 {
                     document.querySelector('#queue').style.display = "inline";
@@ -3761,7 +3768,7 @@ function doMeta(metan) {
                  trip.start();
                  }
                  */
-                badge.className = 'badge badge-purple';
+                badge.innerHTML = `<i class="chip-icon fas fa-broadcast-tower bg-purple"></i>${Meta.state}`;
                 if (Meta.playing)
                 {
                     document.querySelector('#queue').style.display = "inline";
@@ -3838,7 +3845,7 @@ function metaTick()
 function pleaseWait() {
     try {
         var temp = document.querySelector('#operations');
-        var actionButtons = temp.querySelectorAll("#btn-circle");
+        var actionButtons = temp.querySelectorAll("#btn-float");
         for (var i = 0; i < actionButtons.length; i++) {
             actionButtons[i].style.display = "none";
         }
@@ -3884,7 +3891,7 @@ function checkAnnouncements() {
                 if (document.querySelector(`#attn-${datum.ID}`) === null)
                 {
                     var attn = document.querySelector("#announcements-body");
-                    attn.innerHTML += `<div class="attn attn-${datum.level} bs-callout bs-callout-${datum.level}" id="attn-${datum.ID}" role="alert">
+                    attn.innerHTML += `<div class="attn attn-${datum.level} bs-callout bs-callout-${datum.level} shadow-4" id="attn-${datum.ID}" role="alert">
                         <h4><i class="fas fa-bullhorn"></i> ${datum.title}</h4>
                         ${datum.announcement}
                     </div>`;
@@ -3915,7 +3922,7 @@ function checkAnnouncements() {
                     }
                 } else {
                     var temp = document.querySelector(`#attn-${datum.ID}`);
-                    temp.className = `attn attn-${datum.level} bs-callout bs-callout-${datum.level}`;
+                    temp.className = `attn attn-${datum.level} bs-callout bs-callout-${datum.level} shadow-4`;
                     temp.innerHTML = `<h4><i class="fas fa-bullhorn"></i> ${datum.title}</h4>
                         ${datum.announcement}`;
                 }
@@ -4474,7 +4481,7 @@ function checkCalendar() {
                     finalColor.red = Math.round(finalColor.red);
                     finalColor.green = Math.round(finalColor.green);
                     finalColor.blue = Math.round(finalColor.blue);
-                    document.querySelector('#calendar-events').innerHTML += ` <div class="bs-callout bs-callout-default" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgba(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}, 0.2);">
+                    document.querySelector('#calendar-events').innerHTML += ` <div class="bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -4634,7 +4641,7 @@ function checkCalendar() {
                         stripped = stripped.replace("Sports: ", "");
                         if (Meta.show !== stripped)
                         {
-                            document.querySelector('#calendar-events').innerHTML += `  <div class="bs-callout bs-callout-default" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgba(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}, 0.2);">
+                            document.querySelector('#calendar-events').innerHTML += `  <div class="bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -4693,7 +4700,7 @@ function checkCalendar() {
 
             if (Meta.queueFinish !== null)
             {
-                document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-primary">
+                document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-default shadow-2">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -4717,7 +4724,7 @@ function checkCalendar() {
                     if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
                     {
                         doTopOfHour = true;
-                        document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-warning">
+                        document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-warning shadow-2">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -4736,7 +4743,7 @@ function checkCalendar() {
                     if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
                     {
                         doTopOfHour = true;
-                        document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-warning">
+                        document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-warning shadow-2">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -4756,7 +4763,7 @@ function checkCalendar() {
                 finalColor.red = Math.round(finalColor.red);
                 finalColor.green = Math.round(finalColor.green);
                 finalColor.blue = Math.round(finalColor.blue);
-                document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-default" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgba(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}, 0.2);">
+                document.querySelector('#calendar-events').innerHTML = `  <div class="bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -5231,7 +5238,7 @@ function selectRecipient(recipient = null)
                 if (temp === null)
                 {
                     var temp2 = document.querySelector(`#messages-unread`);
-                    temp2.innerHTML += `<div class="m-1 bg-wwsu-red message-n animated bounceIn slow" style="cursor: pointer;" id="message-n-m-${message.ID}">
+                    temp2.innerHTML += `<div class="bs-callout bs-callout-primary shadow-4 message-n animated bounceIn slow" style="cursor: pointer;" id="message-n-m-${message.ID}">
                                         <span class="close" id="message-n-x-${message.ID}" style="pointer-events: auto;">X</span>
                                         <div class="m-1" id="message-n-a-${message.ID}" style="pointer-events: auto;">
                                             <div id="message-n-t-${message.ID}">${message.message}</div>
@@ -5264,7 +5271,7 @@ function selectRecipient(recipient = null)
 
         // Now, get other messages according to selected recipient
         var temp = document.querySelector(`#btn-messenger-unread`);
-        temp.className = `notification badge badge-${totalUnread > 0 ? 'danger' : 'secondary'}`;
+        temp.className = `notification badge badge-${totalUnread > 0 ? 'primary' : 'secondary'} shadow-4`;
         temp.innerHTML = totalUnread;
         var records = Messages(query).get().sort(compare);
 
@@ -5707,19 +5714,55 @@ function prepareLive() {
     document.querySelector("#live-handle").value = '';
     document.querySelector("#live-show").value = '';
     document.querySelector("#live-topic").value = '';
-    document.querySelector("#live-noschedule").style.display = "inline";
     document.querySelector("#live-webchat").checked = true;
+    document.querySelector("#live-handle").className = "form-control m-1 is-invalid";
+    document.querySelector("#live-show").className = "form-control m-1 is-invalid";
     // Auto-fill show host and name if one is scheduled to go on
     if (calType === 'Show')
     {
         document.querySelector("#live-handle").value = calHost;
         document.querySelector("#live-show").value = calShow;
-        document.querySelector("#live-noschedule").style.display = "none";
+        document.querySelector("#live-handle").className = "form-control m-1";
+        document.querySelector("#live-show").className = "form-control m-1";
     }
     $("#go-live-modal").iziModal('open');
 }
 
 function goLive() {
+    if (calType === 'Show' && document.querySelector("#live-handle").value === calHost && document.querySelector("#live-show").value === calShow)
+    {
+        _goLive();
+    } else {
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/goLive.png`,
+                    maxWidth: 480,
+                    title: 'You are about to begin an un-scheduled show',
+                    message: 'Directors will be notified if you go live! The clockwheel on DJ Controls may be wrong. And programmed show openers/returns/closers might not queue. Continue?',
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Continue</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                _goLive();
+                            }],
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                $("#go-live-modal").iziModal('close');
+                            }],
+                    ]
+                });
+    }
+}
+
+function _goLive() {
     nodeRequest({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: document.querySelector('#live-topic').value, djcontrols: client.host, webchat: document.querySelector('#live-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
@@ -5740,19 +5783,55 @@ function prepareRemote() {
     document.querySelector("#remote-handle").value = '';
     document.querySelector("#remote-show").value = '';
     document.querySelector("#remote-topic").value = '';
-    document.querySelector("#remote-noschedule").style.display = "inline";
+    document.querySelector("#remote-handle").className = "form-control m-1 is-invalid";
+    document.querySelector("#remote-show").className = "form-control m-1 is-invalid";
     document.querySelector("#remote-webchat").checked = true;
     // Auto fill remote host and show if one is scheduled to go on
     if (calType === 'Remote')
     {
         document.querySelector("#remote-handle").value = calHost;
         document.querySelector("#remote-show").value = calShow;
-        document.querySelector("#remote-noschedule").style.display = "none";
+        document.querySelector("#remote-handle").className = "form-control m-1";
+        document.querySelector("#remote-show").className = "form-control m-1";
     }
     $("#go-remote-modal").iziModal('open');
 }
 
 function goRemote() {
+    if (calType === 'Remote' && document.querySelector("#remote-handle").value === calHost && document.querySelector("#remote-show").value === calShow)
+    {
+        _goRemote();
+    } else {
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/goRemote.png`,
+                    maxWidth: 480,
+                    title: 'You are about to begin an un-scheduled remote broadcast',
+                    message: 'Directors will be notified if you begin the broadcast! The clockwheel on DJ Controls may be wrong. And programmed openers/returns/closers might not queue. Continue?',
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Continue</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                _goRemote();
+                            }],
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                $("#go-remote-modal").iziModal('close');
+                            }],
+                    ]
+                });
+    }
+}
+
+function _goRemote() {
     nodeRequest({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: document.querySelector('#remote-topic').value, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
@@ -6217,13 +6296,13 @@ function processEas(data, replace = false)
                     if (document.querySelector(`#attn-eas-${datum.ID}`) === null)
                     {
                         var attn = document.querySelector("#announcements-body");
-                        attn.innerHTML += `<div class="attn-eas attn-eas-${datum.severity} bs-callout bs-callout-${className}" id="attn-eas-${datum.ID}" role="alert">
+                        attn.innerHTML += `<div class="attn-eas attn-eas-${datum.severity} bs-callout bs-callout-${className} shadow-4" id="attn-eas-${datum.ID}" role="alert">
                         <h4><i class="fas fa-bolt"></i> ${datum.alert}</h4>
                         EAS: <strong>${datum.alert}</strong> in effect for the counties ${datum.counties}.
                     </div>`;
                     } else {
                         var temp = document.querySelector(`#attn-eas-${datum.ID}`);
-                        temp.className = `attn-eas attn-eas-${datum.severity} bs-callout bs-callout-${className}`;
+                        temp.className = `attn-eas attn-eas-${datum.severity} bs-callout bs-callout-${className} shadow-4`;
                         temp.innerHTML = `<h4><i class="fas fa-bolt"></i> ${datum.alert}</h4>
                         EAS: <strong>${datum.alert}</strong> in effect for the counties ${datum.counties}.`;
                     }
@@ -6347,12 +6426,12 @@ function processEas(data, replace = false)
                             if (document.querySelector(`#attn-eas-${data[key].ID}`) === null)
                             {
                                 var attn = document.querySelector("#announcements-body");
-                                attn.innerHTML += `<div class="attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className}" id="attn-eas-${data[key].ID}" role="alert">
+                                attn.innerHTML += `<div class="attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className} shadow-4" id="attn-eas-${data[key].ID}" role="alert">
                         <h4><i class="fas fa-bolt"></i> ${data[key].alert}</h4>
                         EAS: <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
                             } else {
                                 var temp = document.querySelector(`#attn-eas-${data[key].ID}`);
-                                temp.className = `attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className}`;
+                                temp.className = `attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className} shadow-4`;
                                 temp.innerHTML = `<h4><i class="fas fa-bolt"></i> ${data[key].alert}</h4>
                         EAS: <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
                             }
@@ -6452,12 +6531,12 @@ function processEas(data, replace = false)
                             if (document.querySelector(`#attn-eas-${data[key].ID}`) === null)
                             {
                                 var attn = document.querySelector("#announcements-body");
-                                attn.innerHTML += `<div class="attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className}" id="attn-eas-${data[key].ID}" role="alert">
+                                attn.innerHTML += `<div class="attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className} shadow-4" id="attn-eas-${data[key].ID}" role="alert">
                         <h4><i class="fas fa-bolt"></i> ${data[key].alert}</h4>
                         EAS: <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
                             } else {
                                 var temp = document.querySelector(`#attn-eas-${data[key].ID}`);
-                                temp.className = `attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className}`;
+                                temp.className = `attn-eas attn-eas-${data[key].severity} bs-callout bs-callout-${className} shadow-4`;
                                 temp.innerHTML = `<h4><i class="fas fa-bolt"></i> ${data[key].alert}</h4>
                         EAS: <strong>${data[key].alert}</strong> in effect for the counties ${data[key].counties}.`;
                             }
@@ -6517,7 +6596,7 @@ function processStatus(data, replace = false)
                     {
                         prev.push(`attn-status-${datum.name}`);
                         var attn = document.querySelector("#announcements-body");
-                        attn.innerHTML += `<div class="attn-status attn-status-${datum.status} bs-callout bs-callout-${className}" id="attn-status-${datum.name}" role="alert">
+                        attn.innerHTML += `<div class="attn-status attn-status-${datum.status} bs-callout bs-callout-${className} shadow-4" id="attn-status-${datum.name}" role="alert">
                         <h4><i class="fas fa-server"></i> ${datum.label}</h4>
                         <strong>${datum.label}</strong> is reporting a problem: ${datum.data}.`;
                         if (client.emergencies && datum.status < 3)
@@ -6532,7 +6611,7 @@ function processStatus(data, replace = false)
                     } else {
                         prev.push(`attn-status-${datum.name}`);
                         var temp = document.querySelector(`#attn-status-${datum.name}`);
-                        temp.className = `attn-status attn-status-${datum.status} bs-callout bs-callout-${className}`;
+                        temp.className = `attn-status attn-status-${datum.status} bs-callout bs-callout-${className} shadow-4`;
                         temp.innerHTML = `<h4><i class="fas fa-server"></i> ${datum.label}</h4>
                         <strong>${datum.label}</strong> is reporting a problem: ${datum.data}.`;
                     }
@@ -6599,7 +6678,7 @@ function processStatus(data, replace = false)
                             if (document.querySelector(`#attn-status-${data[key].name}`) === null)
                             {
                                 var attn = document.querySelector("#announcements-body");
-                                attn.innerHTML += `<div class="attn-status attn-status-${data[key].status} bs-callout bs-callout-${className}" id="attn-status-${data[key].name}" role="alert">
+                                attn.innerHTML += `<div class="attn-status attn-status-${data[key].status} bs-callout bs-callout-${className} shadow-4" id="attn-status-${data[key].name}" role="alert">
                         <h4><i class="fas fa-server"></i> ${data[key].label}</h4>
                         <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                                 if (client.emergencies && data[key].status < 3)
@@ -6613,7 +6692,7 @@ function processStatus(data, replace = false)
                                 }
                             } else {
                                 var temp = document.querySelector(`#attn-status-${data[key].name}`);
-                                temp.className = `attn-status attn-status-${data[key].status} bs-callout bs-callout-${className}`;
+                                temp.className = `attn-status attn-status-${data[key].status} bs-callout bs-callout-${className} shadow-4`;
                                 temp.innerHTML = `<h4><i class="fas fa-server"></i> ${data[key].label}</h4>
                         <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                             }
@@ -6665,7 +6744,7 @@ function processStatus(data, replace = false)
                             if (document.querySelector(`#attn-status-${data[key].name}`) === null)
                             {
                                 var attn = document.querySelector("#announcements-body");
-                                attn.innerHTML += `<div class="attn-status attn-status-${data[key].status} bs-callout bs-callout-${className}" id="attn-status-${data[key].name}" role="alert">
+                                attn.innerHTML += `<div class="attn-status attn-status-${data[key].status} bs-callout bs-callout-${className} shadow-4" id="attn-status-${data[key].name}" role="alert">
                         <h4><i class="fas fa-server"></i> ${data[key].label}</h4>
                         <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                                 if (client.emergencies && data[key].status < 3)
@@ -6679,7 +6758,7 @@ function processStatus(data, replace = false)
                                 }
                             } else {
                                 var temp = document.querySelector(`#attn-status-${data[key].name}`);
-                                temp.className = `attn-status attn-status-${data[key].status} bs-callout bs-callout-${className}`;
+                                temp.className = `attn-status attn-status-${data[key].status} bs-callout bs-callout-${className} shadow-4`;
                                 temp.innerHTML = `<h4><i class="fas fa-server"></i> ${data[key].label}</h4>
                         <strong>${data[key].label}</strong> is reporting a problem: ${data[key].data}.`;
                             }
@@ -7245,14 +7324,14 @@ function processRequests(data, replace = false)
                 if (document.querySelector(`#request-${datum.ID}`) === null)
                 {
                     var request = document.querySelector("#track-requests");
-                    request.innerHTML += `<div class="row request p-1 m-1" id="request-${datum.ID}">
+                    request.innerHTML += `<div class="row request m-1 bs-callout bs-callout-info shadow-4" id="request-${datum.ID}">
     <div class="col-8" id="request-i-${datum.ID}">
       <span id="request-t-${datum.ID}" class="text-primary-light">Track: ${datum.trackname}</span><br />
       <span id="request-u-${datum.ID}" class="text-warning-light">Requested By: ${datum.username}</span><br />
       <span id="request-m-${datum.ID}" class="text-success-light">Message: ${datum.message}</span><br />
     </div>
     <div class="col-4" style="text-align: center;">
-    <button type="button" class="btn btn-primary" id="request-b-${datum.ID}">Play/Queue Request</button>
+    <button type="button" class="btn btn-primary" id="request-b-${datum.ID}">Play/Queue Now</button>
     </div>
   </div>`;
                 } else {
@@ -7280,7 +7359,7 @@ function processRequests(data, replace = false)
         }
 
         var temp = document.querySelector(`#badge-track-requests`);
-        temp.className = `notification badge badge-${prev.length > 0 ? 'danger' : 'secondary'}`;
+        temp.className = `notification badge badge-${prev.length > 0 ? 'primary' : 'secondary'} shadow-4`;
         temp.innerHTML = prev.length;
 
 
@@ -7294,16 +7373,16 @@ function loadDJ(dj = null, reset = true) {
         var afterFunction = function () {
             document.querySelector('#options-dj-name').innerHTML = Djs({ID: parseInt(DJData.DJ)}).first().name;
             document.querySelector('#options-dj-buttons').innerHTML = `
-                        <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                                <button type="button" id="btn-options-dj-edit" data-dj="${DJData.DJ}" class="btn btn-urgent btn-circle btn-xl border border-white"><i class="fas fa-pen"></i></button>
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                                <button type="button" id="btn-options-dj-edit" data-dj="${DJData.DJ}" class="btn btn-warning btn-float"><i class="fas fa-pen"></i></button>
                                 <div style="text-align: center; font-size: 1em;">Edit</div>
                             </div>
-                            <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                                <button type="button" id="btn-options-dj-remove" data-dj="${DJData.DJ}" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-trash"></i></button>
+                            <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                                <button type="button" id="btn-options-dj-remove" data-dj="${DJData.DJ}" class="btn btn-danger btn-float"><i class="fas fa-trash"></i></button>
                                 <div style="text-align: center; font-size: 1em;">Remove</div>
                             </div>
-                        <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                                <button type="button" id="btn-options-dj-xp" data-dj="${DJData.DJ}" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-hand-holding-usd"></i></button>
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                                <button type="button" id="btn-options-dj-xp" data-dj="${DJData.DJ}" class="btn btn-purple btn-float"><i class="fas fa-hand-holding-usd"></i></button>
                                 <div style="text-align: center; font-size: 1em;">XP / Remote Credits</div>
                             </div>
 `;
@@ -7590,18 +7669,18 @@ function processDjs(data, replace = false)
 
         document.querySelector("#options-xp-djs").innerHTML = ``;
         document.querySelector('#options-djs').innerHTML = `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                        <button type="button" id="options-dj-add" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-plus-circle"></i></button>
+                        <button type="button" id="options-dj-add" class="btn btn-success btn-float"><i class="fas fa-plus-circle"></i></button>
                         <div style="text-align: center; font-size: 1em;">Add DJ</div>
                     </div>
 
                     <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                        <button type="button" id="options-dj-mass-xp" class="btn btn-warning btn-circle btn-xl border border-white"><i class="fas fa-hand-holding-usd"></i></button>
+                        <button type="button" id="options-dj-mass-xp" class="btn btn-warning btn-float"><i class="fas fa-hand-holding-usd"></i></button>
                         <div style="text-align: center; font-size: 1em;">Mass Add XP/Remotes</div>
                     </div>`;
 
         Djs().each(function (dj, index) {
             document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                        <button type="button" id="options-dj-${dj.ID}" class="btn btn-wwsu-red btn-circle btn-xl border border-white" data-dj="${dj.ID}"><i class="fas fa-user" id="options-dj-i-${dj.ID}" data-dj="${dj.ID}"></i></button>
+                        <button type="button" id="options-dj-${dj.ID}" class="btn btn-primary btn-float" data-dj="${dj.ID}"><i class="fas fa-user" id="options-dj-i-${dj.ID}" data-dj="${dj.ID}"></i></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
             document.querySelector("#options-xp-djs").innerHTML += `<div class="funkyradio">
@@ -7655,18 +7734,18 @@ function processDirectors(data, replace = false)
         }
 
         document.querySelector('#options-directors').innerHTML = `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                        <button type="button" id="options-director-new" class="btn btn-primary btn-circle btn-xl border border-white"><i class="fas fa-plus-circle"></i></button>
+                        <button type="button" id="options-director-new" class="btn btn-purple btn-float"><i class="fas fa-plus-circle"></i></button>
                         <div style="text-align: center; font-size: 1em;">Add Director</div>
                     </div>
 
                     <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                        <button type="button" id="options-director-timesheets" class="btn btn-info btn-circle btn-xl border border-white"><i class="fas fa-list-alt"></i></button>
+                        <button type="button" id="options-director-timesheets" class="btn btn-info btn-float"><i class="fas fa-list-alt"></i></button>
                         <div style="text-align: center; font-size: 1em;">Timesheets</div>
                     </div>`;
 
         Directors().each(function (director, index) {
             document.querySelector('#options-directors').innerHTML += `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                        <button type="button" id="options-director-${director.ID}" class="btn ${director.present ? "btn-success" : "btn-danger"} btn-circle btn-xl border border-white" data-director="${director.ID}"><i class="fas fa-user" id="options-director-i-${director.ID}" data-director="${director.ID}"></i></button>
+                        <button type="button" id="options-director-${director.ID}" class="btn ${director.present ? "btn-success" : "btn-danger"} btn-float" data-director="${director.ID}"><i class="fas fa-user" id="options-director-i-${director.ID}" data-director="${director.ID}"></i></button>
                         <div style="text-align: center; font-size: 1em;">${director.name}</div>
                     </div>`;
         });

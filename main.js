@@ -23,7 +23,7 @@ let mainWindow;
 
 function createWindow() {
     // Create the browser window.
-    mainWindow = new BrowserWindow({width: 1600, minWidth: 720, height: 900, backgroundColor: '#263238', resizable: true});
+    mainWindow = new BrowserWindow({width: 1600, minWidth: 800, height: 900, backgroundColor: '#263238', resizable: true});
     mainWindow.once('focus', () => mainWindow.flashFrame(false));
 
     // and load the index.html of the app.

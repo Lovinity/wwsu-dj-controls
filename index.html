@@ -9,7 +9,7 @@
         <meta charset="UTF-8">
         <title>WWSU DJ Controls</title>
         <script src="assets/js/jquery-3.3.1.min.js"></script>
-        <script src="assets/js/bootstrap/bootstrap.bundle.min.js"></script>
+        <script src="assets/js/material/material.min.js"></script>
         <script src="assets/js/fontawesome.js"></script>
         <script src="assets/js/iziToast.min.js"></script>
         <script src="assets/js/iziModal.min.js"></script>
@@ -22,7 +22,7 @@
         <script src="assets/js/d3.min.js" charset="utf-8"></script>
         <script src="assets/js/taucharts.min.js" type="text/javascript"></script>
         <script src='https://code.responsivevoice.org/responsivevoice.js'></script>
-        <link rel="stylesheet" href="assets/styles/bootstrap/mytheme.min.css" type="text/css">
+        <link rel="stylesheet" href="assets/styles/material/material.min.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/animate.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/iziToast.min.css" type="text/css">
         <link rel="stylesheet" href="assets/styles/iziModal.min.css" type="text/css">
@@ -32,6 +32,24 @@
         <link href="assets/styles/trip.css" rel="stylesheet">
         <script src="assets/js/trip.js"></script>
         <style>
+            ::-webkit-scrollbar {
+                width: 5px;
+            }
+            ::-webkit-scrollbar-track {
+                background: #FFF;
+                -webkit-box-shadow: inset 1px 1px 2px rgba(0,0,0,0.1);
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #CCC;
+                -webkit-box-shadow: inset 1px 1px 2px rgba(0,0,0,0.2);
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: #AAA;
+            }
+            ::-webkit-scrollbar-thumb:active {
+                background: #888;
+                -webkit-box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3);
+            }
             .btn-circle {
                 width: 30px;
                 height: 30px;
@@ -188,7 +206,7 @@
 
             .notification {
                 position:absolute;
-                top: 60px;
+                top: 40px;
                 right: 16px;
             }
 
@@ -225,9 +243,8 @@
             .bs-callout {
                 padding: 10px;
                 margin: 10px 0;
-                border: 1px solid #eee;
+                border: 0px solid #eee;
                 border-left-width: 5px;
-                border-radius: 3px;
             }
             .bs-callout h4 {
                 margin-top: 0;
@@ -243,60 +260,60 @@
                 margin-top: -5px;
             }
             .bs-callout-default {
-                border-color: #777;
-                background: rgba(119, 119, 119, 0.2);
+                border-color: #9e9e9e;
+                background: rgba(97, 97, 97, 1);
             }
             .bs-callout-default h4 {
-                color: #777;
+                color: #cfd8dc;
             }
             .bs-callout-secondary {
-                border-color: #777;
-                background: rgba(119, 119, 119, 0.2);
+                border-color: #9e9e9e;
+                background: rgba(97, 97, 97, 1);
             }
             .bs-callout-secondary h4 {
-                color: #777;
+                color: #cfd8dc;
             }
             .bs-callout-primary {
-                border-color: #428bca;
-                background: rgba(0, 123, 255, 0.2);
+                border-color: #e70d2f;
+                background: rgba(115, 6, 23, 1);
             }
             .bs-callout-primary h4 {
-                color: #428bca;
+                color: #faced5;
             }
             .bs-callout-success {
                 border-color: #5cb85c;
-                background: rgba(40, 167, 69, 0.2);
+                background: rgba(56, 142, 60, 1);
             }
             .bs-callout-success h4 {
-                color: #5cb85c;
+                color: #c8e6c9;
             }
             .bs-callout-danger {
-                border-color: #d9534f;
-                background: rgba(220, 53, 69, 0.2);
+                border-color: #f44336;
+                background: rgba(198, 40, 40, 1);
             }
             .bs-callout-danger h4 {
-                color: #d9534f;
+                color: #ffcdd2;
             }
             .bs-callout-warning {
-                border-color: #f0ad4e;
-                background: rgba(255, 193, 7, 0.2);
+                border-color: #ffc107;
+                background: rgba(153, 115, 4, 1);
             }
             .bs-callout-warning h4 {
-                color: #f0ad4e;
+                color: #ffecb3;
             }
             .bs-callout-info {
-                border-color: #5bc0de;
-                background: rgba(23, 162, 184, 0.2);
+                border-color: #2196f3;
+                background: rgba(25, 118, 210, 1);
             }
             .bs-callout-info h4 {
-                color: #5bc0de;
+                color: #bbdefb;
             }
             .bs-callout-urgent {
-                border-color: #fda45a;
-                background: rgba(253, 126, 20, 0.2);
+                border-color: #ff9800;
+                background: rgba(230, 81, 0, 1);
             }
             .bs-callout-urgent h4 {
-                color: #fda45a;
+                color: #ffe0b2;
             }
 
             .funkyradio div {
@@ -402,7 +419,7 @@
         </style>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
-    <body style="background-color: #000000; color: #ffffff;">
+    <body class="text-light bg-dark-1">
 
         <div id="no-connection" class="overlay">
             <div class="text container-fluid" style="text-align: center;">
@@ -419,7 +436,7 @@
                 </div>
                 <div class="card-header text-center" style="font-size: 1.5em;">
                     WWSU Operations   
-                    <span class="badge badge-secondary" id="operations-state">Unknown</span>
+                    <span class="chip shadow-2" style="margin-left: 10px;" id="operations-state"><i class="chip-icon fas fa-question bg-secondary"></i>Unknown</span>
                     <button type="button" class="close" id="options" aria-label="Options" style="display: none;">
                         <span aria-hidden="true" id="options-icon"><i class="fas fa-cogs text-white"></i></span>
                     </button>
@@ -440,69 +457,69 @@
                                 <h2 style="text-align: center; font-size: 2em; color: #FFC107">Please wait...</h2>
                             </div>
                         </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-return" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" id="btn-return-b" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-check"></i></button>
+                        <div class="p-1 m-1 btn-operation" id="btn-return" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-return-b" class="btn btn-float btn-success"><i class="fas fa-check"></i></button>
                             <div style="text-align: center; font-size: 1em;">Resume Show</div>
                         </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-psa15" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" id="btn-psa15-b" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-plus"></i></button>
+                        <div class="p-1 m-1 btn-operation" id="btn-psa15" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-psa15-b" class="btn btn-purple btn-float"><i class="fas fa-plus"></i></button>
                             <div style="text-align: center; font-size: 1em;">+15-second PSA</div>
                         </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-psa30" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" id="btn-psa30-b" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-plus"></i></button>
+                        <div class="p-1 m-1 btn-operation" id="btn-psa30" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-psa30-b" class="btn btn-purple btn-float"><i class="fas fa-plus"></i></button>
                             <div style="text-align: center; font-size: 1em;">+30-second PSA</div>
                         </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-golive" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" id="btn-golive-b" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-microphone-alt"></i></button>
+                        <div class="p-1 m-1 btn-operation" id="btn-golive" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-golive-b" class="btn btn-primary btn-float"><i class="fas fa-microphone-alt"></i></button>
                             <div style="text-align: center; font-size: 1em;">Live</div>
                         </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-goremote" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" id="btn-goremote-b" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-broadcast-tower"></i></button>
+                        <div class="p-1 m-1 btn-operation" id="btn-goremote" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-goremote-b" class="btn btn-purple btn-float"><i class="fas fa-broadcast-tower"></i></button>
                             <div style="text-align: center; font-size: 1em;">Remote</div>
                         </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-gosports" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" id="btn-gosports-b" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-trophy"></i></button>
+                        <div class="p-1 m-1 btn-operation" id="btn-gosports" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-gosports-b" class="btn btn-success btn-float"><i class="fas fa-trophy"></i></button>
                             <div style="text-align: center; font-size: 1em;">Sports</div>
                         </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-endshow" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" id="btn-endshow-b" class="btn btn-primary btn-circle btn-xl border border-white"><i class="fas fa-microphone-alt-slash"></i></button>
+                        <div class="p-1 m-1 btn-operation" id="btn-endshow" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-endshow-b" class="btn btn-info btn-float"><i class="fas fa-microphone-alt-slash"></i></button>
                             <div style="text-align: center; font-size: 1em;">End Show</div>
                         </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-switchshow" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" id="btn-switchshow-b" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-microphone-alt"></i></button>
+                        <div class="p-1 m-1 btn-operation" id="btn-switchshow" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-switchshow-b" class="btn btn-primary btn-float"><i class="fas fa-microphone-alt"></i></button>
                             <div style="text-align: center; font-size: 1em;">Switch Show</div>
                         </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-resume" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" id="btn-resume-b" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-check"></i></button>
+                        <div class="p-1 m-1 btn-operation" id="btn-resume" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-resume-b" class="btn btn-success btn-float"><i class="fas fa-check"></i></button>
                             <div style="text-align: center; font-size: 1em;">Resume Show</div>
                         </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-break" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" id="btn-break-b" class="btn btn-warning btn-circle btn-xl border border-white"><i class="fas fa-coffee"></i></button>
+                        <div class="p-1 m-1 btn-operation" id="btn-break" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-break-b" class="btn btn-warning btn-float"><i class="fas fa-coffee"></i></button>
                             <div style="text-align: center; font-size: 1em;">Take a Break</div>
                         </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-halftime" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" id="btn-halftime-b" class="btn btn-urgent btn-circle btn-xl border border-white"><i class="fas fa-hourglass"></i></button>
+                        <div class="p-1 m-1 btn-operation" id="btn-halftime" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-halftime-b" class="btn btn-urgent btn-float"><i class="fas fa-hourglass"></i></button>
                             <div style="text-align: center; font-size: 1em;">Extended Break</div>
                         </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-topadd" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" id="btn-topadd-b" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-headphones"></i></button>
+                        <div class="p-1 m-1 btn-operation" id="btn-topadd" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-topadd-b" class="btn btn-purple btn-float"><i class="fas fa-headphones"></i></button>
                             <div style="text-align: center; font-size: 1em;">Play Top Add</div>
                         </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-liner" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" id="btn-liner-b" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-angle-double-right"></i></button>
+                        <div class="p-1 m-1 btn-operation" id="btn-liner" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-liner-b" class="btn btn-purple btn-float"><i class="fas fa-angle-double-right"></i></button>
                             <div style="text-align: center; font-size: 1em;">Play Liner</div>
                         </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-log" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" id="btn-log-b" class="btn btn-secondary btn-circle btn-xl border border-white"><i class="fas fa-file"></i></button>
+                        <div class="p-1 m-1 btn-operation" id="btn-log" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-log-b" class="btn btn-trivial btn-float"><i class="fas fa-file"></i></button>
                             <div style="text-align: center; font-size: 1em;">Add a Log</div>
                         </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-view-log" style="width: 108px; text-align: center; display: none;">
-                            <button type="button" id="btn-view-log-b" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-file"></i></button>
+                        <div class="p-1 m-1 btn-operation" id="btn-view-log" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-view-log-b" class="btn btn-success btn-float"><i class="fas fa-file"></i></button>
                             <div style="text-align: center; font-size: 1em;">View Log</div>
                         </div>
                     </div>
                 </div>
-                <div class="card-footer bg-danger-dark" style="color: #FFFFFF; text-align: center; height: 64px;">
+                <div class="card-footer bg-dark-2 shadow-1" style="color: #FFFFFF; text-align: center; height: 64px;">
                     <div id="nowplaying-seek" style="height: 4px; opacity: 0.5;"></div>
                     <div style="color: #FFFFFF; font-size: 0.8em; position: relative;" id="nowplaying"></div>
                 </div>
@@ -522,28 +539,28 @@
                             <div class="col-6">
                                 <div class="d-flex justify-content-start flex-wrap">
                                     <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                                        <button type="button" id="btn-emergency" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-exclamation-triangle"></i></button>
+                                        <button type="button" id="btn-emergency" class="btn btn-danger btn-float"><i class="fas fa-exclamation-triangle"></i></button>
                                         <div style="text-align: center; font-size: 1em;">Report a Problem</div>
                                     </div>
                                     <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                                        <button type="button" id="btn-requests" class="btn btn-primary btn-circle btn-xl border border-white"><i class="fas fa-question-circle"></i></button>
-                                        <span class="notification badge badge-secondary" id="badge-track-requests">0</span>
+                                        <button type="button" id="btn-requests" class="btn btn-info btn-float"><i class="fas fa-question-circle"></i></button>
+                                        <span class="notification badge badge-secondary shadow-4" id="badge-track-requests">0</span>
                                         <div style="text-align: center; font-size: 1em;">Track Requests</div>
                                     </div>
                                     <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                                        <button type="button" id="btn-display" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-tv"></i></button>
+                                        <button type="button" id="btn-display" class="btn btn-purple btn-float"><i class="fas fa-tv"></i></button>
                                         <div style="text-align: center; font-size: 1em;">Display Signs</div>
                                     </div>
                                     <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                                        <button type="button" id="btn-messenger" class="btn btn-success btn-circle btn-xl border border-white"><i class="fas fa-comments"></i></button>
-                                        <span class="notification badge badge-secondary" id="btn-messenger-unread">0</span>
+                                        <button type="button" id="btn-messenger" class="btn btn-success btn-float"><i class="fas fa-comments"></i></button>
+                                        <span class="notification badge badge-secondary shadow-4" id="btn-messenger-unread">0</span>
                                         <div style="text-align: center; font-size: 1em;">Messenger</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div style="text-align: center; font-size: 1em;">Unread Messages<span style="font-size: 0.66em;"><br />Click a message to read/reply, X to hide.</span></div>
-                                <div style="overflow: auto; height: 220px; background-color: rgba(255, 255, 255, 0.3); -webkit-transform:translate3d(0,0,0);" id="messages-unread">
+                                <div style="overflow: auto; height: 220px; -webkit-transform:translate3d(0,0,0);" id="messages-unread">
                                 </div>
                             </div>
                         </div>
@@ -557,7 +574,7 @@
                     <div class="container">
                         <div class="row">
                             <div class="col-4">
-                                <article class="clock">
+                                <article class="clock shadow-8">
                                     <svg class="chart" id="clock-program" style="z-index: 15; opacity: 0.66; position: absolute; width: 100%; height: 100%; top: 0; left: 0;">
                                     </svg>
                                     <svg class="chart" id="queue-time" style="z-index: 15; opacity: 0.33; position: absolute; width: 100%; height: 100%; top: 0; left: 0;">
@@ -584,91 +601,82 @@
         </div>
 
 
-        <div id="go-live-modal">
-            <div style="background-color: #363636; color: #ffffff;">
-                <div class="media">
-                    <img class="d-flex mr-2" src="assets/images/golive.png" alt="Going Live">
-                    <div class="media-body">
-                        <form>
-                            <div class="form-row align-items-center">
-                                <div class="col-auto">
-                                    <input type="text" class="form-control mb-2 mb-sm-1" id="live-handle" placeholder="Handle / Nickname">
+        <div class="modal" id="go-live-modal" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark" style="background: #fce6ea;">
+                <div class="modal-body">
+                    <form>
+                        <div class="form-row align-items-center">
+                            <div class="col-6">
+                                <div class="floating-label">
+                                    <label for="live-handle">DJ / Handle Name</label>
+                                    <input class="form-control m-1" id="live-handle" type="text">
+                                    <div class="invalid-feedback">
+                                        This DJ is not on the immediate show schedule
+                                    </div>
                                 </div>
-                                <div class="col-auto">
-                                    <input type="text" class="form-control mb-2 mb-sm-1" id="live-show" placeholder="Show Name">
+                            </div>
+                            <div class="col-6">
+                                <div class="floating-label">
+                                    <label for="live-show">Show Name</label>
+                                    <input class="form-control m-1" id="live-show" type="text">
+                                    <div class="invalid-feedback">
+                                        This show is not on the immediate schedule
+                                    </div>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <textarea class="form-control mb-2" id="live-topic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
-                            </div>
-                        </form>
-                        <div class="funkyradio">
-                            <div class="funkyradio-success">
-                                <input type="checkbox" value="" id="live-webchat">
-                                <label for="live-webchat">
-                                    Enable Website Chat
-                                </label>
-                            </div>
                         </div>
-                        <div class="p-1 text-warning-light" role="alert" id="live-noschedule">
-                            <div class="bs-callout bs-callout-warning" role="alert">
-                                <h4>Not Scheduled</h4>
-                                The DJ/Show typed in is not currently scheduled. If you continue, attendance will not be logged, the clockwheel will be inaccurate, and programmed openers/returns/closers will not queue.
-                            </div>
+                        <div class="form-group">
+                            <textarea class="form-control mb-2" id="live-topic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
                         </div>
-                        <div class="row">
-                            <div class="col-3">
-                                <button type="button" class="btn btn-success" id="live-go">Go Live <img src="assets/images/live.png"></button>
-                            </div>
-                        </div>
+                    </form>
+                    <div class="custom-control custom-switch">
+                        <input class="custom-control-input" id="live-webchat" type="checkbox">
+                        <span class="custom-control-track"></span>
+                        <label class="custom-control-label" for="live-webchat">Allow listeners to send you messages</label>
                     </div>
+                </div>
+                <div class="modal-footer bg-light-1">
+                    <button type="button" class="btn btn-primary btn-lg" id="live-go">Start Your Show</button>
                 </div>
             </div>
         </div>
 
-        <div id="go-remote-modal">
-            <div style="background-color: #363636; color: #ffffff;">
-                <div class="media">
-                    <img class="d-flex mr-2" src="assets/images/goRemote.png" alt="Going Remote">
-                    <div class="media-body">
-                        <form>
-                            <div class="form-row align-items-center">
-                                <div class="col-auto">
-                                    <input type="text" class="form-control mb-2 mb-sm-1" id="remote-handle" placeholder="Host / Organization">
+        <div class="modal" id="go-remote-modal" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark" style="background: #ede7f6;">
+                <div class="modal-body">
+                    <form>
+                        <div class="form-row align-items-center">
+                            <div class="col-6">
+                                <div class="floating-label">
+                                    <label for="remote-handle">DJ / Handle Name</label>
+                                    <input class="form-control m-1" id="remote-handle" type="text">
+                                    <div class="invalid-feedback">
+                                        This DJ is not on the immediate remote show schedule
+                                    </div>
                                 </div>
-                                <div class="col-auto">
-                                    <input type="text" class="form-control mb-2 mb-sm-1" id="remote-show" placeholder="Show Name">
+                            </div>
+                            <div class="col-6">
+                                <div class="floating-label">
+                                    <label for="remote-show">Show Name</label>
+                                    <input class="form-control m-1" id="remote-show" type="text">
+                                    <div class="invalid-feedback">
+                                        This remote show is not on the immediate schedule
+                                    </div>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <textarea class="form-control mb-2" id="remote-topic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
-                            </div>
-                        </form>
-                        <div class="funkyradio">
-                            <div class="funkyradio-success">
-                                <input type="checkbox" value="" id="remote-webchat">
-                                <label for="remote-webchat">
-                                    Enable Website Chat
-                                </label>
-                            </div>
                         </div>
-                        <div class="p-1 text-warning-light" role="alert" id="remote-noschedule">
-                            <div class="bs-callout bs-callout-warning" role="alert">
-                                <h4>Not Scheduled</h4>
-                                The Host/Show typed in is not currently scheduled. If you continue, attendance will not be logged, the clockwheel will be inaccurate, and programmed openers/returns/closers will not queue.
-                            </div>
+                        <div class="form-group">
+                            <textarea class="form-control mb-2" id="remote-topic" rows="3" maxlength="140" placeholder="Optionally, describe today's show for the website and display signs. There is a 140 character limit. This message is exactly 140 characters."></textarea>
                         </div>
-                        <div class="p-1 m-1 bg-info-dark">
-                            <div class="m-1">
-                                Remember: Remote streams have an audio delay!
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-3">
-                                <button type="button" class="btn btn-success" id="remote-go">Go Remote <img src="assets/images/remote.png"></button>
-                            </div>
-                        </div>
+                    </form>
+                    <div class="custom-control custom-switch">
+                        <input class="custom-control-input" id="remote-webchat" type="checkbox">
+                        <span class="custom-control-track"></span>
+                        <label class="custom-control-label" for="live-webchat">Allow listeners to send you messages</label>
                     </div>
+                </div>
+                <div class="modal-footer bg-light-1">
+                    <button type="button" class="btn btn-purple btn-lg" id="remote-go">Start Remote Broadcast</button>
                 </div>
             </div>
         </div>
@@ -921,35 +929,35 @@
         <div id="options-modal" style="background-color: #363636; color: #ffffff;">
             <div class="d-flex justify-content-start flex-wrap">
                 <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-djs" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-microphone"></i></button>
+                    <button type="button" id="btn-options-djs" class="btn btn-purple btn-float"><i class="fas fa-microphone"></i></button>
                     <div style="text-align: center; font-size: 1em;">Manage DJs</div>
                 </div>
                 <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-directors" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-address-card"></i></button>
+                    <button type="button" id="btn-options-directors" class="btn btn-purple btn-float"><i class="fas fa-address-card"></i></button>
                     <div style="text-align: center; font-size: 1em;">Manage Directors</div>
                 </div>
                 <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-djcontrols" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-users-cog"></i></button>
+                    <button type="button" id="btn-options-djcontrols" class="btn btn-purple btn-float"><i class="fas fa-users-cog"></i></button>
                     <div style="text-align: center; font-size: 1em;">Manage DJ Controls</div>
                 </div>
                 <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-announcements" class="btn btn-purple btn-circle btn-xl border border-white"><i class="fas fa-bullhorn"></i></button>
+                    <button type="button" id="btn-options-announcements" class="btn btn-purple btn-float"><i class="fas fa-bullhorn"></i></button>
                     <div style="text-align: center; font-size: 0.75em;">Manage Announcements</div>
                 </div>
                 <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-logs" class="btn btn-secondary btn-circle btn-xl border border-white"><i class="fas fa-file"></i></button>
+                    <button type="button" id="btn-options-logs" class="btn btn-secondary btn-float"><i class="fas fa-file"></i></button>
                     <div style="text-align: center; font-size: 1em;">Logs</div>
                 </div>
                 <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-issues" class="btn btn-warning btn-circle btn-xl border border-white"><i class="fas fa-poo"></i></button>
+                    <button type="button" id="btn-options-issues" class="btn btn-warning btn-float"><i class="fas fa-poo"></i></button>
                     <div style="text-align: center; font-size: 1em;">Issues</div>
                 </div>
                 <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-calendar" class="btn btn-primary btn-circle btn-xl border border-white"><i class="fas fa-calendar"></i></button>
+                    <button type="button" id="btn-options-calendar" class="btn btn-info btn-float"><i class="fas fa-calendar"></i></button>
                     <div style="text-align: center; font-size: 1em;">Calendar Verification</div>
                 </div>
                 <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-radiodj" class="btn btn-danger btn-circle btn-xl border border-white"><i class="fas fa-sync"></i></button>
+                    <button type="button" id="btn-options-radiodj" class="btn btn-danger btn-float"><i class="fas fa-sync"></i></button>
                     <div style="text-align: center; font-size: 1em;">Switch RadioDJ</div>
                 </div>
             </div>
