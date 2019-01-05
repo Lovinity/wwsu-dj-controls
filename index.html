@@ -17,6 +17,7 @@
         <script src="assets/js/moment-duration-format.js"></script>
         <script src="assets/js/taffy-min.js"></script>
         <script src="assets/js/progress.js"></script>
+        <script src="assets/js/jdenticon.min.js"></script>
         <script src="assets/js/sails.io.js" autoConnect="false"></script>
         <script src="assets/js/quill.js"></script>
         <script src="assets/js/d3.min.js" charset="utf-8"></script>
@@ -701,7 +702,8 @@
                     <div class="custom-control custom-switch">
                         <input class="custom-control-input" id="live-webchat" type="checkbox">
                         <span class="custom-control-track"></span>
-                        <label class="custom-control-label" for="live-webchat">Allow listeners to send you messages</label>
+                        <label class="custom-control-label" for="live-webchat">Allow listeners to send you messages</label><br />
+                        <small>(You can mute individual users in the messenger if they cause problems)</small>
                     </div>
                 </div>
                 <div class="modal-footer bg-light-1">
@@ -748,7 +750,8 @@
                     <div class="custom-control custom-switch">
                         <input class="custom-control-input" id="remote-webchat" type="checkbox">
                         <span class="custom-control-track"></span>
-                        <label class="custom-control-label" for="live-webchat">Allow listeners to send you messages</label>
+                        <label class="custom-control-label" for="remote-webchat">Allow listeners to send you messages</label><br />
+                        <small>(You can mute individual users in the messenger if they cause problems)</small>
                     </div>
                 </div>
                 <div class="modal-footer bg-light-1">
@@ -757,62 +760,58 @@
             </div>
         </div>
 
-        <div id="go-sports-modal">
-            <div style="background-color: #363636; color: #ffffff;">
-                <div class="media">
-                    <img class="d-flex mr-2" src="assets/images/goSports.png" alt="Going Sports">
-                    <div class="media-body">
-                        <form>
-                            <div class="form-group">
-                                <label for="showname" style="color: #ffffff;">Which Sport are you Broadcasting?</label>
-                                <select class="form-control" id="sports-sport">
-                                    <option value="">Choose a sport...</option>
-                                    <option value="Men's Basketball">Men's Basketball</option>
-                                    <option value="Women's Basketball">Women's Basketball</option>
-                                    <option value="Men's Soccer">Men's Soccer</option>
-                                    <option value="Women's Soccer">Women's Soccer</option>
-                                    <option value="Men's Volleyball">Men's Volleyball</option>
-                                    <option value="Women's Volleyball">Women's Volleyball</option>
-                                    <option value="Men's Baseball">Men's Baseball</option>
-                                    <option value="Women's Baseball">Women's Baseball</option>
-                                    <option value="Men's Football">Men's Football</option>
-                                    <option value="Women's Football">Women's Football</option>
-                                </select>
-                            </div>
-                        </form>
-                        <div class="funkyradio">
-                            <div class="funkyradio-info">
-                                <input type="checkbox" value="" id="sports-remote">
-                                <label for="sports-remote">
-                                    Remote Sports Broadcast
-                                </label>
-                            </div>
-                        </div>
-                        <div class="funkyradio">
-                            <div class="funkyradio-success">
-                                <input type="checkbox" value="" id="sports-webchat">
-                                <label for="sports-webchat">
-                                    Enable Website Chat
-                                </label>
+        <div class="modal" id="go-sports-modal" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-1">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-success doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Raider Sports Broadcast</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
+                    <form>
+                        <div class="form-group">
+                            <div class="col-12">
+                                <div class="floating-label">
+                                    <label for="sports-sport">Sport being broadcast</label>
+                                    <select class="form-control" id="sports-sport">
+                                        <option value="">Choose a sport...</option>
+                                        <option value="Men's Basketball">Men's Basketball</option>
+                                        <option value="Women's Basketball">Women's Basketball</option>
+                                        <option value="Men's Soccer">Men's Soccer</option>
+                                        <option value="Women's Soccer">Women's Soccer</option>
+                                        <option value="Men's Volleyball">Men's Volleyball</option>
+                                        <option value="Women's Volleyball">Women's Volleyball</option>
+                                        <option value="Men's Baseball">Men's Baseball</option>
+                                        <option value="Women's Baseball">Women's Baseball</option>
+                                        <option value="Men's Football">Men's Football</option>
+                                        <option value="Women's Football">Women's Football</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Not on the immediate schedule
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="p-1 text-warning-light" role="alert" id="sports-noschedule">
-                            <div class="bs-callout bs-callout-warning" role="alert">
-                                <h4>Not Scheduled</h4>
-                                The selected sport is not currently scheduled. If you continue, attendance will not be logged, the clockwheel will be inaccurate, and programmed openers/liners/closers will not queue.
+                        <div class="form-group">
+                            <div class="floating-label">
+                                <label for="live-topic">Optional, provide more info for this broadcast limited to 140 characters</label>
+                                <textarea class="form-control mb-2" id="sports-topic" rows="3" maxlength="140"></textarea>
                             </div>
                         </div>
-                        <div class="p-1 m-1 bg-info-dark">
-                            <div class="m-1">
-                                Remember: Remote streams have an audio delay!
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-3">
-                                <button type="button" class="btn btn-success" id="sports-go">Go Sports <img src="assets/images/sports.png"></button>
-                            </div>
-                        </div>
+                    </form>
+                    <div class="custom-control custom-switch">
+                        <input class="custom-control-input" id="sports-remote" type="checkbox">
+                        <span class="custom-control-track"></span>
+                        <label class="custom-control-label" for="sports-remote">Remote broadcast</label>
                     </div>
+                    <div class="custom-control custom-switch">
+                        <input class="custom-control-input" id="sports-webchat" type="checkbox">
+                        <span class="custom-control-track"></span>
+                        <label class="custom-control-label" for="sports-webchat">Allow listeners to send you messages</label><br />
+                        <small>(You can mute individual users in the messenger if they cause problems)</small>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light-1">
+                    <button type="button" class="btn btn-success btn-lg" id="sports-go">Start Sports Broadcast</button>
                 </div>
             </div>
         </div>
@@ -841,16 +840,16 @@
         </div>
 
         <div class="modal" id="messages-modal" tabindex="-1" role="dialog" style="display: hidden;">
-            <div class="modal-content text-dark bg-light-1">
+            <div class="modal-content text-dark bg-light-2">
                 <div class="modal-body">
-                    <header class="navbar navbar-dark navbar-full bg-primary doc-navbar-default">
+                    <header class="navbar navbar-dark navbar-full bg-success doc-navbar-default">
                         <button aria-controls="navdrawerUsers" aria-expanded="false" aria-label="Toggle Navdrawer" class="navbar-toggler" data-target="#navdrawerUsers" data-toggle="navdrawer" data-type="temporary">
-                            <span class="fas fa-bars"></span>
+                            <span class="fas fa-users"></span>
                         </button>
-                        <span class="navbar-brand mr-auto">Messenger</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <span class="navbar-brand mr-auto" id="messenger-title">Messenger</span>
+                        <div class="iziModal-header-buttons"><span id="messenger-buttons"></span><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
                     </header>
-                    <div aria-hidden="true" class="navdrawer navdrawer-temporary" id="navdrawerUsers" tabindex="-1">
+                    <div aria-hidden="true" class="navdrawer navdrawer-temporary" id="navdrawerUsers" style="width: 25rem;" tabindex="-1">
                         <div class="navdrawer-content">
                             <div class="navdrawer-header">
                                 <a class="navbar-brand px-0" href="#">Recipients</a>
@@ -860,7 +859,7 @@
                     </div>
                     <div class="p-3 m-1 text-white" id="messages-info">
                     </div>
-                    <div class="p-1 m-1 text-white" style="height: 400px; overflow-y: auto;" id="messages"></div>
+                    <div class="p-1 m-1 text-dark" style="height: 400px; overflow-y: auto;" id="messages"></div>
                 </div>
                 <div id="themessage"></div>
                 <div class="modal-footer bg-light-1">
@@ -868,34 +867,52 @@
             </div>
         </div>
 
-        <div id="emergency-modal">
-            <div style="background-color: #363636; color: #ffffff;">
-                In the box below, please explain the problem. When you submit, directors will be notified, and an announcement will be posted for other DJs.
-                <form>
-                    <div class="form-group">
-                        <textarea class="form-control mb-2" id="emergency-issue" rows="3" placeholder=""></textarea>
+        <div class="modal" id="emergency-modal" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-1">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-danger doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Report a Problem</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
+                    <form class="p-2">
+                        <div class="form-group">
+                            <div class="floating-label">
+                                <label for="emergency-issue">Please describe the issue(s) you are encountering (256 character max).</label>
+                                <textarea class="form-control mb-2" id="emergency-issue" rows="3" maxlength="256"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="bs-callout bs-callout-info shadow-4 text-white">
+                        When you submit an issue, directors will be notified. In addition, an announcement will be posted under "System Problems Detected" so other DJs are aware.
                     </div>
-                </form>
-                <div class="row">
-                    <div class="col-3">
-                        <button type="button" class="btn btn-success" id="emergency-go">Submit Problem</button>
-                    </div>
+                </div>
+                <div class="modal-footer bg-light-1">
+                    <button type="button" class="btn btn-danger btn-lg" id="emergency-go">Submit</button>
                 </div>
             </div>
         </div>
 
-        <div id="display-modal">
-            <div style="background-color: #363636; color: #ffffff;">
-                Type a message below to display on the public display signs for 60 seconds. Audio-capable signs will also read the message aloud.
-                <form>
-                    <div class="form-group">
-                        <textarea class="form-control mb-2" id="display-message" rows="3" placeholder=""></textarea>
+        <div class="modal" id="display-modal" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-1">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-purple doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Display Sign Message</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
+                    <form class="p-2">
+                        <div class="form-group">
+                            <div class="floating-label">
+                                <label for="display-message">Type your message for the display signs (256 character limit)</label>
+                                <textarea class="form-control mb-2" id="display-message" rows="3" maxlength="256"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="bs-callout bs-callout-info shadow-4 text-white">
+                        The message you type will be displayed on all public display signs for 1 minute. In addition, the lobby display sign will read the message aloud to any guests sitting in the lobby.
                     </div>
-                </form>
-                <div class="row">
-                    <div class="col-3">
-                        <button type="button" class="btn btn-success" id="display-go">Send Message</button>
-                    </div>
+                </div>
+                <div class="modal-footer bg-light-1">
+                    <button type="button" class="btn btn-purple btn-lg" id="display-go">Submit</button>
                 </div>
             </div>
         </div>
@@ -998,43 +1015,55 @@
             </div>
         </div>
 
-        <div id="requests-modal" style="background-color: #363636; color: #ffffff;">
-            <p style="font-size: 1em; text-align: center;">Playing requests are optional. Automation will play any requests you ignore after your show.</p>
-            <div class="container" id="track-requests">
+        <div class="modal" id="requests-modal" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-3">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-info doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Track Requests</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
+                    <div class="bs-callout bs-callout-info shadow-4 text-white">
+                        Playing requests are optional. Requests do not disappear from this list until played in RadioDJ.
+                    </div>
+                    <div class="container" id="track-requests">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light-1">
+                </div>
             </div>
         </div>
 
         <div id="options-modal" style="background-color: #363636; color: #ffffff;">
             <div class="d-flex justify-content-start flex-wrap">
-                <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                     <button type="button" id="btn-options-djs" class="btn btn-purple btn-float"><i class="fas fa-microphone"></i></button>
                     <div style="text-align: center; font-size: 1em;">Manage DJs</div>
                 </div>
-                <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                     <button type="button" id="btn-options-directors" class="btn btn-purple btn-float"><i class="fas fa-address-card"></i></button>
                     <div style="text-align: center; font-size: 1em;">Manage Directors</div>
                 </div>
-                <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                     <button type="button" id="btn-options-djcontrols" class="btn btn-purple btn-float"><i class="fas fa-users-cog"></i></button>
                     <div style="text-align: center; font-size: 1em;">Manage DJ Controls</div>
                 </div>
-                <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                     <button type="button" id="btn-options-announcements" class="btn btn-purple btn-float"><i class="fas fa-bullhorn"></i></button>
                     <div style="text-align: center; font-size: 0.75em;">Manage Announcements</div>
                 </div>
-                <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                     <button type="button" id="btn-options-logs" class="btn btn-secondary btn-float"><i class="fas fa-file"></i></button>
                     <div style="text-align: center; font-size: 1em;">Logs</div>
                 </div>
-                <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                     <button type="button" id="btn-options-issues" class="btn btn-warning btn-float"><i class="fas fa-poo"></i></button>
                     <div style="text-align: center; font-size: 1em;">Issues</div>
                 </div>
-                <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                     <button type="button" id="btn-options-calendar" class="btn btn-info btn-float"><i class="fas fa-calendar"></i></button>
                     <div style="text-align: center; font-size: 1em;">Calendar Verification</div>
                 </div>
-                <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                     <button type="button" id="btn-options-radiodj" class="btn btn-danger btn-float"><i class="fas fa-sync"></i></button>
                     <div style="text-align: center; font-size: 1em;">Switch RadioDJ</div>
                 </div>

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Announce queue times, silence, and connection changes on sports, sportsremote, and remote broadcasts. [Issue 19](https://github.com/Lovinity/wwsu-dj-controls/issues/19)
 
 ### Changed
+ - Implementing Material Design on top of Bootstrap for the user interface. Shadow effects and more vivid colors.
+ - Announcements are now expand/collapse accordions. System problems condensed into one announcement. EAS / Weather alerts condensed into one announcement.
+ - Several windows re-designed for material design, especially the messenger.
+ - WWSU Operations state badge changed to a chip.
 
 ### Fixed
  - DJs on the air might not get a silence detection warning if the DJ Controls they were using does not have client.emergencies being true.

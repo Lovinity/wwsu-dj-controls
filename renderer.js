@@ -1,4 +1,4 @@
-/* global iziToast, io, moment, Infinity, err, ProgressBar, Taucharts, response, responsiveVoice */
+/* global iziToast, io, moment, Infinity, err, ProgressBar, Taucharts, response, responsiveVoice, jdenticon */
 
 try {
 
@@ -50,7 +50,7 @@ try {
     var disconnected = true;
     var theStatus = 4;
     var calendar = []; // Contains calendar events for the next 24 hours
-    var activeRecipient = 0;
+    var activeRecipient = null;
     var client = {};
     var totalUnread = 0;
     var totalRequests = 0;
@@ -383,7 +383,7 @@ try {
         navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
         overlayClose: false,
         overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 180000,
+        timeout: false,
         timeoutProgressbar: true,
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
@@ -398,7 +398,7 @@ try {
         navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
         overlayClose: false,
         overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 180000,
+        timeout: false,
         timeoutProgressbar: true,
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
@@ -406,8 +406,6 @@ try {
     });
 
     $("#go-sports-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Raider Sports</h5>`,
-        headerColor: '#363636',
         width: 640,
         focusInput: true,
         arrowKeys: false,
@@ -415,7 +413,7 @@ try {
         navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
         overlayClose: false,
         overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 180000,
+        timeout: false,
         timeoutProgressbar: true,
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
@@ -432,7 +430,7 @@ try {
         navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
         overlayClose: false,
         overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 300000,
+        timeout: false,
         timeoutProgressbar: true,
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
@@ -780,8 +778,6 @@ try {
     });
 
     $("#emergency-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Report a Problem</h5>`,
-        headerColor: '#363636',
         width: 640,
         focusInput: true,
         arrowKeys: false,
@@ -789,16 +785,14 @@ try {
         navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
         overlayClose: false,
         overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 180000,
         timeoutProgressbar: true,
         pauseOnHover: true,
+        timeout: false,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
         zindex: 50
     });
 
     $("#display-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Display Sign Message</h5>`,
-        headerColor: '#363636',
         width: 640,
         focusInput: true,
         arrowKeys: false,
@@ -806,7 +800,7 @@ try {
         navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
         overlayClose: false,
         overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 180000,
+        timeout: false,
         timeoutProgressbar: true,
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
@@ -823,7 +817,7 @@ try {
         navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
         overlayClose: false,
         overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 60000,
+        timeout: 180000,
         timeoutProgressbar: true,
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
@@ -831,8 +825,6 @@ try {
     });
 
     $("#requests-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Requested Tracks</h5>`,
-        headerColor: '#363636',
         width: 640,
         focusInput: true,
         arrowKeys: false,
@@ -840,7 +832,7 @@ try {
         navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
         overlayClose: false,
         overlayColor: 'rgba(0, 0, 0, 0.75)',
-        timeout: 180000,
+        timeout: false,
         timeoutProgressbar: true,
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
@@ -2200,6 +2192,12 @@ document.querySelector(`#users`).addEventListener("click", function (e) {
                 selectRecipient(recipient);
                 $('#navdrawerUsers').navdrawer('hide');
             }
+            if (e.target.id.startsWith(`users-u`))
+            {
+                var recipient = parseInt(e.target.id.replace(`users-u-`, ``));
+                selectRecipient(recipient);
+                $('#navdrawerUsers').navdrawer('hide');
+            }
         }
     } catch (err) {
         console.error(err);
@@ -2210,22 +2208,35 @@ document.querySelector(`#users`).addEventListener("click", function (e) {
     }
 });
 
+document.querySelector(`#messenger-buttons`).addEventListener("click", function (e) {
+    try {
+        console.log(e.target.id);
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith(`users-o-mute`))
+            {
+                var recipient = parseInt(e.target.id.replace(`users-o-mute-`, ``));
+                prepareMute(recipient);
+            }
+            if (e.target.id.startsWith(`users-o-ban`))
+            {
+                var recipient = parseInt(e.target.id.replace(`users-o-ban-`, ``));
+                prepareBan(recipient);
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #messenger-buttons.'
+        });
+    }
+});
+
 document.querySelector(`#messages`).addEventListener("click", function (e) {
     try {
         if (e.target) {
             console.log(e.target.id);
-            if (e.target.id.startsWith(`message-o-mute`))
-            {
-                var recipient = Messages({ID: parseInt(e.target.id.replace(`message-o-mute-`, ``))}).first().from;
-                var ID = Recipients({host: recipient}).first().ID;
-                prepareMute(ID);
-            }
-            if (e.target.id.startsWith(`message-o-ban`))
-            {
-                var recipient = Messages({ID: parseInt(e.target.id.replace(`message-o-ban-`, ``))}).first().from;
-                var ID = Recipients({host: recipient}).first().ID;
-                prepareBan(ID);
-            }
             if (e.target.id.startsWith(`message-o-delete`))
             {
                 deleteMessage(e.target.id.replace(`message-o-delete-`, ``));
@@ -2905,9 +2916,9 @@ document.querySelector("#remote-show").onkeyup = function () {
 document.querySelector("#sports-sport").addEventListener("change", function () {
     if (calType === 'Sports' && document.querySelector("#sports-sport").value === calShow)
     {
-        document.querySelector("#sports-noschedule").style.display = "none";
+        document.querySelector("#sports-sport").className = "form-control m-1";
     } else {
-        document.querySelector("#sports-noschedule").style.display = "inline";
+        document.querySelector("#sports-sport").className = "form-control m-1 is-invalid";
     }
 });
 
@@ -3121,111 +3132,111 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-{
-    socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
-        //console.log(body);
-        try {
-            client = body;
-            authtoken = client.token;
-            if (!client.authorized)
-            {
-                var noConnection = document.getElementById('no-connection');
-                noConnection.style.display = "inline";
-                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+        {
+            socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
+                //console.log(body);
+                try {
+                    client = body;
+                    authtoken = client.token;
+                    if (!client.authorized)
+                    {
+                        var noConnection = document.getElementById('no-connection');
+                        noConnection.style.display = "inline";
+                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                cb(false);
-            } else {
-                cb(authtoken);
-            }
-            if (client.admin)
-            {
-                if (client.otherHosts)
-                    processHosts(client.otherHosts, true);
-                var temp = document.querySelector(`#options`);
-                var restarter;
-                if (temp)
-                    temp.style.display = "inline";
-
-                // Subscribe to the logs socket
-                socket.post('/logs/get', {}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        //processLogs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED logs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
+                        cb(false);
+                    } else {
+                        cb(authtoken);
                     }
-                });
+                    if (client.admin)
+                    {
+                        if (client.otherHosts)
+                            processHosts(client.otherHosts, true);
+                        var temp = document.querySelector(`#options`);
+                        var restarter;
+                        if (temp)
+                            temp.style.display = "inline";
 
-                // Get djs and subscribe to the dj socket
-                nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        processDjs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED DJs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Subscribe to the logs socket
+                        socket.post('/logs/get', {}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                //processLogs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED logs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
 
-                // Get directors and subscribe to the dj socket
-                nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        processDirectors(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED directors CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Get djs and subscribe to the dj socket
+                        nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                processDjs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED DJs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
 
-                // Subscribe to the XP socket
-                nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED XP CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Get directors and subscribe to the dj socket
+                        nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                processDirectors(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED directors CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
 
-                // Subscribe to the timesheet socket
-                nodeRequest({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED TIMESHEET CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
+                        // Subscribe to the XP socket
+                        nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED XP CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the timesheet socket
+                        nodeRequest({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED TIMESHEET CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+                    } else {
+                        var temp = document.querySelector(`#options`);
+                        if (temp)
+                            temp.style.display = "none";
                     }
-                });
-            } else {
-                var temp = document.querySelector(`#options`);
-                if (temp)
-                    temp.style.display = "none";
-            }
-        } catch (e) {
-            console.error(e);
-            console.log('FAILED HOST CONNECTION');
-            restarter = setTimeout(hostSocket, 10000);
+                } catch (e) {
+                    console.error(e);
+                    console.log('FAILED HOST CONNECTION');
+                    restarter = setTimeout(hostSocket, 10000);
+                }
+            });
         }
-    });
-}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -3898,17 +3909,19 @@ function checkAnnouncements() {
                                 </div>
                             </a>
                             <div aria-labelledby="attn-heading-status" class="collapse" data-parent="#announcements-body" id="attn-collapse-status">
-                                <div class="expansion-panel-body text-white" id="attn-body-status">
-                            <small class="p-1">Minor issues should not affect operation. Major issues might affect operation. Critical issues render WWSU unstable.</small>
-                                    <p class="attn-status" id="attn-status-report-${datum.ID}"><span class="badge badge-purple m-1">Reported by DJ</span> ${datum.announcement}</p>
+                                <div class="expansion-panel-body text-white">
+                            <div id="attn-body-status">
+                                    <p class="attn-status shadow-2 bg-secondary" id="attn-status-report-${datum.ID}"><span class="badge badge-purple m-1">Reported by DJ</span> ${datum.announcement}</p>
                                 </div>
+                            <small class="p-1">Major and critical issues could affect your ability to run a show.</small>
+                            </div>
                             </div>
                         </div>`;
                         } else {
                             var temp = document.querySelector(`#attn-status`);
                             temp.className = `expansion-panel list-group-item bs-callout bs-callout-danger`;
                             var temp = document.querySelector(`#attn-body-status`);
-                            temp.innerHTML += `<p class="attn-status" id="attn-status-report-${datum.ID}"><span class="badge badge-purple m-1">Reported by DJ</span> ${datum.announcement}</p>`;
+                            temp.innerHTML += `<p class="attn-status shadow-2 bg-secondary" id="attn-status-report-${datum.ID}"><span class="badge badge-purple m-1">Reported by DJ</span> ${datum.announcement}</p>`;
                         }
                         // If this DJ Controls is configured by WWSU to notify on technical problems, notify so.
                         if (client.emergencies)
@@ -4002,7 +4015,7 @@ function checkAnnouncements() {
                 if (!temp)
                 {
                     var attn = document.querySelector("#announcements-body");
-                    attn.innerHTML += `<div class="expansion-panel list-group-item bs-callout bs-callout-info" id="attn-status">
+                                                            attn.innerHTML += `<div class="expansion-panel list-group-item bs-callout bs-callout-danger" id="attn-status">
                             <a aria-controls="attn-collapse-status" aria-expanded="false" class="expansion-panel-toggler collapsed" data-toggle="collapse" id="attn-heading-status">
                                 <h4 id="attn-title-status">System Problems Detected</h4>
                                 <div class="expansion-panel-icon ml-3 text-white">
@@ -4011,15 +4024,17 @@ function checkAnnouncements() {
                                 </div>
                             </a>
                             <div aria-labelledby="attn-heading-status" class="collapse" data-parent="#announcements-body" id="attn-collapse-status">
-                                <div class="expansion-panel-body text-white" id="attn-body-status">
-                                <small class="p-1">Minor issues should not affect operation. Major issues might affect operation. Critical issues render WWSU unstable.</small>
-                                    <p class="attn-status" id="attn-status-${datum.name}">${badge}<strong>${datum.label}</strong>: ${datum.data}</p>
+                                <div class="expansion-panel-body text-white">
+                            <div id="attn-body-status">
+                                    <p class="attn-status shadow-2 bg-secondary" id="attn-status-${datum.name}">${badge}<strong>${datum.label}</strong>: ${datum.data}</p>
                                 </div>
+                            <small class="p-1">Major and critical issues could affect your ability to run a show.</small>
+                            </div>
                             </div>
                         </div>`;
                 } else {
                     var temp = document.querySelector(`#attn-body-status`);
-                    temp.innerHTML += `<p class="attn-status" id="attn-status-${datum.name}">${badge}<strong>${datum.label}</strong>: ${datum.data}</p>`;
+                    temp.innerHTML += `<p class="attn-status shadow-2 bg-secondary" id="attn-status-${datum.name}">${badge}<strong>${datum.label}</strong>: ${datum.data}</p>`;
                 }
             } else {
                 var temp = document.querySelector(`#attn-status-${datum.name}`);
@@ -4029,7 +4044,7 @@ function checkAnnouncements() {
     });
 
     var temp = document.querySelector(`#attn-status`);
-    if (highestLevel === 1)
+    if (highestLevel === 1 || highestLevel === 2)
     {
         temp.className = `expansion-panel list-group-item bs-callout bs-callout-danger`;
     } else if (highestLevel <= 3)
@@ -5098,32 +5113,13 @@ function checkRecipients() {
                             temp.remove();
                         }
                         temp = document.querySelector(`#users-g-${key}`);
-                        // For web visitor recipients, add options for muting or banning
-                        if (recipient.group === 'website' && recipient.host !== 'website')
-                        {
-                            temp.innerHTML += `
+                        temp.innerHTML += `
 <div id="users-u-${recipient.ID}" class="recipient nav-item nav-link${activeRecipient === recipient.ID ? ` active` : ``} d-flex justify-content-between align-items-center">
-<span id="users-l-${recipient.ID}" class="chip">${theClass}${recipient.label}</span>
+<span id="users-l-${recipient.ID}">${theClass}${recipient.label}</span>
 <div>
 <span class="badge badge-${recipient.unread > 0 ? 'primary' : 'secondary'} badge-pill" id="users-n-${recipient.host}">${recipient.unread}</span>
-<div class="dropdown">
-      <span id="users-o-${recipient.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></span>
-      <div class="dropdown-menu" aria-labelledby="users-o-${recipient.ID}">
-        <a class="dropdown-item text-warning-dark" data-toggle="dropdown" id="users-o-mute-${recipient.ID}">Mute for 24 hours</a>
-        <a class="dropdown-item text-danger-dark" data-toggle="dropdown" id="users-o-ban-${recipient.ID}">Ban indefinitely</a>
-      </div>
-    </div>
-</div>
 </div>
 `;
-                        } else {
-                            temp.innerHTML += `
-<div id="users-u-${recipient.ID}" class="recipient nav-item nav-link${activeRecipient === recipient.ID ? ` active` : ``} d-flex justify-content-between align-items-center">
-<span id="users-l-${recipient.ID}" class="chip">${theClass}${recipient.label}</span>
-<div>
-<span class="badge badge-${recipient.unread > 0 ? 'primary' : 'secondary'} badge-pill" id="users-n-${recipient.host}">${recipient.unread}</span>
-</div>`;
-                        }
                     });
                 }
 
@@ -5165,23 +5161,26 @@ function selectRecipient(recipient = null)
             }
         });
 
-        if (recipient === null)
-        {
-            messages.innerHTML += `<div class="bs-callout bs-callout-info shadow-4">
-                            <div>To begin, click the menu icon in the top left corner and select a recipient.</div>
-                    </div>`;
-            return null;
-        }
-
         var host = Recipients({ID: recipient}).first().host;
         var ID = Recipients({ID: recipient}).first().ID;
         var status = Recipients({ID: recipient}).first().status;
         var label = Recipients({ID: recipient}).first().label;
+        var theTime = Recipients({ID: recipient}).first().time;
 
         var temp = document.querySelector(`#users-u-${ID}`);
         if (temp !== null)
         {
             temp.classList.add('active');
+        }
+
+        var temp = document.querySelector(`#messenger-buttons`);
+        if (ID && host && host.startsWith('website-'))
+        {
+            if (temp)
+                temp.innerHTML = `<button class="navbar-toggler" id="users-o-mute-${ID}"><i class="fas fa-ban"></i></button>`;
+        } else {
+            if (temp)
+                temp.innerHTML = ``;
         }
 
         // Add labels at the top of the messages box to explain stuff
@@ -5196,8 +5195,21 @@ function selectRecipient(recipient = null)
                             <div>You are viewing public web messages. Messages sent will be visible by all web recipients.</div>
                     </div>`;
         } else if (host.startsWith("website-") && Meta.webchat) {
-                        messages.innerHTML += `<div class="bs-callout bs-callout-info shadow-4">
-                            <div>You are viewing ${label}. Messages sent will only be visible to this recipient.</div>
+            messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
+                            <div class="container">
+                            <div class="row">
+                            <div class="col-3">
+                            ${jdenticon.toSvg(host, 96)}
+                            </div>
+                            <div class="col-9">
+                            <div class="text-white">
+                                <h4>${label}</h4>
+                                <p>Messages sent will only be visible to this visitor.</p>
+                                ${status === 0 ? `<p>Last Seen: ${moment(theTime).format("LLL")}</p>` : ``}
+                            </div>
+                            </div>
+                            </div>
+                            </div>
                     </div>`;
         } else if (host === 'website' && !Meta.webchat)
         {
@@ -5206,11 +5218,36 @@ function selectRecipient(recipient = null)
                     </div>`;
         } else if (host.startsWith("website-") && !Meta.webchat) {
             messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
-                            <div>You are viewing ${label}. The chat is currently disabled, therefore this recipient cannot send you messages.</div>
+                            <div class="container">
+                            <div class="row">
+                            <div class="col-3">
+                            ${jdenticon.toSvg(host, 96)}
+                            </div>
+                            <div class="col-9">
+                            <div class="text-white">
+                                <h4>${label}</h4>
+                                <p>The web chat is currently disabled; this visitor cannot send you messages</p>
+                                ${status === 0 ? `<p>Last Seen: ${moment(theTime).format("LLL")}</p>` : ``}
+                            </div>
+                            </div>
+                            </div>
+                            </div>
                     </div>`;
         } else {
-            messages.innerHTML += `<div class="bs-callout bs-callout-info shadow-4">
-                            <div>You are viewing the computer ${label}. Be aware that an online status does not necessarily mean someone's at the computer right now to read your message.</div>
+            messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
+                            <div class="container">
+                            <div class="row">
+                            <div class="col-3">
+                            ${jdenticon.toSvg(host, 96)}
+                            </div>
+                            <div class="col-9">
+                            <div class="text-white">
+                                <h4>${label}</h4>
+                                ${status === 0 ? `<p>Last Seen: ${moment(theTime).format("LLL")}</p>` : `Note: Just because a computer is online does not necessarily mean someone is there to read your message.`}
+                            </div>
+                            </div>
+                            </div>
+                            </div>
                     </div>`;
         }
 
@@ -5323,76 +5360,28 @@ function selectRecipient(recipient = null)
             records.map(message => {
 
                 messageIDs.push(`message-m-${message.ID}`);
-
-                var temp = document.querySelector(`#message-m-${message.ID}`);
-                if (temp === null)
+                var temp2 = document.querySelector(`#message-m-${message.ID}`);
+                if (temp2 === null)
                 {
-                    // Messages from website visitors should offer the options delete message, mute user, or ban user.
-                    if (message.from.startsWith("website-"))
-                    {
-                        var temp2 = document.querySelector(`#message-m-${message.ID}`);
-                        if (temp2 === null)
-                        {
-                            messages.innerHTML += `<div class="message m-2 bs-callout bs-callout-${message.needsread ? 'primary' : 'secondary'} shadow-4" id="message-m-${message.ID}" style="cursor: pointer;">
-                        <div class="m-1">
-                              <div class="row">
-    <div class="col-10" id="message-c1-${message.ID}">
-                            <div id="message-t-${message.ID}">${message.message}</div>
-                            <div style="font-size: 0.66em;" id="message-b-${message.ID}">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' for DJ (Private)' : ` for ${message.to_friendly}`}</div>
+                    messages.innerHTML += `
+<div class="message m-2 container shadow-1 border-left ${message.needsread ? `border-primary` : `border-light`} bg-light-1" style="width: 96%; border-left-width: 5px !important;" id="message-m-${message.ID}">
+  <div class="row text-dark">
+    <div class="col-2">
+      ${jdenticon.toSvg(message.from, 64)}
     </div>
-    <div class="col-2" id="message-c2-${message.ID}" style="text-align: center;">
-<div class="dropdown">
-                                <span class='close' id="message-o-${message.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="pointer-events: auto;"><i class="fas fa-ellipsis-v"></i></span>
-                                <div class="dropdown-menu" aria-labelledby="message-o-${message.ID}" style="pointer-events: auto;">
-                                    <a class="dropdown-item text-primary" data-toggle="dropdown" id="message-o-delete-${message.ID}">Delete Message</a>
-                                    <a class="dropdown-item text-warning-dark" data-toggle="dropdown" id="message-o-mute-${message.ID}">Mute for 24 hours</a>
-                                    <a class="dropdown-item text-danger-dark" data-toggle="dropdown" id="message-o-ban-${message.ID}">Ban indefinitely</a>
-                                </div>
-                            </div>
+    <div class="col-8">
+      <small>${message.from_friendly} -> ${(message.to === 'DJ-private') ? 'DJ (Private)' : `${message.to_friendly}`}</small>
+      <div id="message-t-${message.ID}">${message.message}</div>
+    </div>
+    <div class="col-2">
+      <small>${moment(message.createdAt).format("hh:mm A")}</small>
     </div>
   </div>
-</div> 
-                        </div>
-                    </div>`;
-                        } else {
-                            temp2.className = `message m-2 bs-callout bs-callout-${message.needsread ? 'primary' : 'secondary'} shadow-4`;
-                            var temp3 = document.querySelector(`#message-t-${message.ID}`);
-                            temp3.innerHTML = message.message;
-                            var temp3 = document.querySelector(`#message-b-${message.ID}`);
-                            temp3.innerHTML = `${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? '(Private)' : ''}`;
-                        }
-                        // All other messages should just offer delete message as an option
-                    } else {
-                        var temp2 = document.querySelector(`#message-m-${message.ID}`);
-                        if (temp2 === null)
-                        {
-                            messages.innerHTML += `<div class="message m-2 bs-callout bs-callout-${message.needsread ? 'primary' : 'secondary'} shadow-4" id="message-m-${message.ID}" style="cursor: pointer;">
-                        <div class="m-1">
-                              <div class="row">
-    <div class="col-10" id="message-c1-${message.ID}">
-                            <div id="message-t-${message.ID}">${message.message}</div>
-                            <div style="font-size: 0.66em;" id="message-b-${message.ID}">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' for DJ (Private)' : ` for ${message.to_friendly}`}</div>
-    </div>
-    <div class="col-2" id="message-c2-${message.ID}" style="text-align: center;">
-<div class="dropdown">
-                                <span class='close' id="message-o-${message.ID}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="pointer-events: auto;"><i class="fas fa-ellipsis-v"></i></span>
-                                <div class="dropdown-menu" aria-labelledby="message-o-${message.ID}" style="pointer-events: auto;">
-                                    <a class="dropdown-item text-primary" data-toggle="dropdown" id="message-o-delete-${message.ID}">Delete Message</a>
-                                </div>
-                            </div>
-    </div>
-  </div>
-</div> 
-                        </div>
-                    </div>`;
-                        } else {
-                            temp2.className = `message m-2 bs-callout bs-callout-${message.needsread ? 'primary' : 'secondary'} shadow-4`;
-                            var temp3 = document.querySelector(`#message-t-${message.ID}`);
-                            temp3.innerHTML = message.message;
-                            var temp3 = document.querySelector(`#message-b-${message.ID}`);
-                            temp3.innerHTML = `${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' for DJ (Private)' : ` for ${message.to_friendly}`}`;
-                        }
-                    }
+</div>`;
+                } else {
+                    temp2.className = `message m-2 container shadow-1 border-left ${message.needsread ? `border-primary` : `border-light`} bg-light-1`;
+                    var temp3 = document.querySelector(`#message-t-${message.ID}`);
+                    temp3.innerHTML = message.message;
                 }
             });
         }
@@ -5484,7 +5473,7 @@ function prepareMute(recipient) {
         var label = Recipients({ID: recipient}).first().label;
         iziToast.show({
             title: `Confirm mute of ${label}`,
-            message: `Muting this person will cause them to lose access to WWSU for 24 hours. Only mute people causing a legitimate annoyance.`,
+            message: `A mute causes this person to lose access to the chat for 24 hours and deletes all messages they sent. Only mute someone who is causing a legitimate disruption or threat of safety / integrity.`,
             timeout: 60000,
             close: true,
             color: 'yellow',
@@ -5798,7 +5787,6 @@ function goLive() {
                     }],
                 ['<button><b>Cancel</b></button>', function (instance, toast) {
                         instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                        $("#go-live-modal").iziModal('close');
                     }],
             ]
         });
@@ -5809,6 +5797,7 @@ function _goLive() {
     nodeRequest({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: document.querySelector('#live-topic').value, djcontrols: client.host, webchat: document.querySelector('#live-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
+            selectRecipient(null);
             $("#go-live-modal").iziModal('close');
         } else {
             iziToast.show({
@@ -5867,7 +5856,6 @@ function goRemote() {
                     }],
                 ['<button><b>Cancel</b></button>', function (instance, toast) {
                         instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                        $("#go-remote-modal").iziModal('close');
                     }],
             ]
         });
@@ -5878,6 +5866,7 @@ function _goRemote() {
     nodeRequest({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: document.querySelector('#remote-topic').value, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
+            selectRecipient(null);
             $("#go-remote-modal").iziModal('close');
         } else {
             iziToast.show({
@@ -5893,24 +5882,62 @@ function _goRemote() {
 
 function prepareSports() {
     document.querySelector('#sports-sport').value = "";
-    document.querySelector("#sports-noschedule").style.display = "inline";
+    document.querySelector("#sports-sport").className = "form-control m-1 is-invalid";
+    document.querySelector('#sports-topic').value = "";
     document.querySelector("#sports-remote").checked = false;
     document.querySelector("#sports-webchat").checked = true;
     // Auto fill the sport dropdown if a sport is scheduled
     if (calType === 'Sports')
     {
         document.querySelector("#sports-sport").value = calShow;
-        document.querySelector("#sports-noschedule").style.display = "none";
+        document.querySelector('#sports-topic').value = "";
+        document.querySelector("#sports-sport").className = "form-control m-1";
+        document.querySelector("#sports-remote").checked = false;
+        document.querySelector("#sports-webchat").checked = true;
     }
     $("#go-sports-modal").iziModal('open');
 }
 
 function goSports() {
+    if (calType === 'Sports' && document.querySelector("#remote-show").value === calShow)
+    {
+        _goSports();
+    } else {
+        iziToast.show({
+            timeout: 60000,
+            overlay: true,
+            displayMode: 'once',
+            color: 'yellow',
+            id: 'inputs',
+            zindex: 999,
+            layout: 2,
+            image: `assets/images/goSports.png`,
+            maxWidth: 480,
+            title: 'You are about to begin an un-scheduled sports broadcast',
+            message: 'Directors will be notified if you begin the broadcast! The clockwheel on DJ Controls may be wrong. And programmed openers/returns/liners/closers might not queue. Continue?',
+            position: 'center',
+            drag: false,
+            closeOnClick: false,
+            buttons: [
+                ['<button><b>Continue</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        _goSports();
+                    }],
+                ['<button><b>Cancel</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                    }],
+            ]
+        });
+    }
+}
+
+function _goSports() {
     var sportsOptions = document.getElementById('sports-sport');
     var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
-    nodeRequest({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, remote: document.querySelector('#sports-remote').checked, djcontrols: client.host, webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
+    nodeRequest({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, topic: document.querySelector('#sports-topic').value, remote: document.querySelector('#sports-remote').checked, djcontrols: client.host, webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
+            selectRecipient(null);
             $("#go-sports-modal").iziModal('close');
         } else {
             iziToast.show({
@@ -7266,23 +7293,23 @@ function processRequests(data, replace = false)
                 if (document.querySelector(`#request-${datum.ID}`) === null)
                 {
                     var request = document.querySelector("#track-requests");
-                    request.innerHTML += `<div class="row request m-1 bs-callout bs-callout-info shadow-4" id="request-${datum.ID}">
+                    request.innerHTML += `<div class="row request m-2 bg-light-1 border-left border-info shadow-4" id="request-${datum.ID}" style="border-left-width: 5px !important;">
     <div class="col-8" id="request-i-${datum.ID}">
-      <span id="request-t-${datum.ID}" class="text-primary-light">Track: ${datum.trackname}</span><br />
-      <span id="request-u-${datum.ID}" class="text-warning-light">Requested By: ${datum.username}</span><br />
-      <span id="request-m-${datum.ID}" class="text-success-light">Message: ${datum.message}</span><br />
+      <h6 id="request-t-${datum.ID}">${datum.trackname}</h6>
+      <span id="request-u-${datum.ID}">Requested By: ${datum.username !== null && datum.username !== '' ? datum.username : `Anonymous`}</span><br />
+      <small id="request-m-${datum.ID}">${datum.message}</small>
     </div>
     <div class="col-4" style="text-align: center;">
-    <button type="button" class="btn btn-primary" id="request-b-${datum.ID}">Play/Queue Now</button>
+    <button type="button" class="btn btn-primary" id="request-b-${datum.ID}">Play Now</button>
     </div>
   </div>`;
                 } else {
                     var temp = document.querySelector(`#request-t-${datum.ID}`);
-                    temp.innerHTML = `Track: ${datum.trackname}`;
+                    temp.innerHTML = `${datum.trackname}`;
                     var temp = document.querySelector(`#request-u-${datum.ID}`);
-                    temp.innerHTML = `Requested By: ${datum.username}`;
+                    temp.innerHTML = `Requested By: ${datum.username !== null && datum.username !== '' ? datum.username : `Anonymous`}`;
                     var temp = document.querySelector(`#request-m-${datum.ID}`);
-                    temp.innerHTML = `Message: ${datum.message}`;
+                    temp.innerHTML = `${datum.message}`;
                 }
             } catch (e) {
                 iziToast.show({
@@ -7610,18 +7637,18 @@ function processDjs(data, replace = false)
         }
 
         document.querySelector("#options-xp-djs").innerHTML = ``;
-        document.querySelector('#options-djs').innerHTML = `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+        document.querySelector('#options-djs').innerHTML = `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                         <button type="button" id="options-dj-add" class="btn btn-success btn-float"><i class="fas fa-plus-circle"></i></button>
                         <div style="text-align: center; font-size: 1em;">Add DJ</div>
                     </div>
 
-                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                    <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                         <button type="button" id="options-dj-mass-xp" class="btn btn-warning btn-float"><i class="fas fa-hand-holding-usd"></i></button>
                         <div style="text-align: center; font-size: 1em;">Mass Add XP/Remotes</div>
                     </div>`;
 
         Djs().each(function (dj, index) {
-            document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+            document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                         <button type="button" id="options-dj-${dj.ID}" class="btn btn-primary btn-float" data-dj="${dj.ID}"><i class="fas fa-user" id="options-dj-i-${dj.ID}" data-dj="${dj.ID}"></i></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
@@ -7675,18 +7702,18 @@ function processDirectors(data, replace = false)
             }
         }
 
-        document.querySelector('#options-directors').innerHTML = `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+        document.querySelector('#options-directors').innerHTML = `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                         <button type="button" id="options-director-new" class="btn btn-purple btn-float"><i class="fas fa-plus-circle"></i></button>
                         <div style="text-align: center; font-size: 1em;">Add Director</div>
                     </div>
 
-                    <div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+                    <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                         <button type="button" id="options-director-timesheets" class="btn btn-info btn-float"><i class="fas fa-list-alt"></i></button>
                         <div style="text-align: center; font-size: 1em;">Timesheets</div>
                     </div>`;
 
         Directors().each(function (director, index) {
-            document.querySelector('#options-directors').innerHTML += `<div class="p-1 m-1" style="width: 108px; text-align: center; position: relative;">
+            document.querySelector('#options-directors').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                         <button type="button" id="options-director-${director.ID}" class="btn ${director.present ? "btn-success" : "btn-danger"} btn-float" data-director="${director.ID}"><i class="fas fa-user" id="options-director-i-${director.ID}" data-director="${director.ID}"></i></button>
                         <div style="text-align: center; font-size: 1em;">${director.name}</div>
                     </div>`;
@@ -8134,3 +8161,18 @@ function calculateSectors(data) {
 function formatInt(number) {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
+
+function getInitials(name) {
+    var _nameSplit = name.split(' ');
+    var _initials;
+
+    //Get initials from name
+    if (_nameSplit.length > 1) {
+        _initials = _nameSplit[0].charAt(0).toUpperCase() + _nameSplit[1].charAt(0).toUpperCase();
+    } else {
+        _initials = _nameSplit[0].charAt(0).toUpperCase();
+    }
+
+    return _initials;
+}
+;
