@@ -421,8 +421,6 @@ try {
     });
 
     $("#log-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Logs, Logs, and More Logs</h5>`,
-        headerColor: '#363636',
         width: 640,
         focusInput: true,
         arrowKeys: false,
@@ -452,8 +450,6 @@ try {
     });
 
     $("#options-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Options / Administration</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -468,8 +464,6 @@ try {
     });
 
     $("#options-modal-djs").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Choose a DJ</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -484,8 +478,6 @@ try {
     });
 
     $("#options-modal-directors").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Edit Directors</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -808,8 +800,6 @@ try {
     });
 
     $("#xp-modal").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Your Show is Complete</h5>`,
-        headerColor: '#363636',
         width: 640,
         focusInput: true,
         arrowKeys: false,
@@ -1463,6 +1453,101 @@ document.querySelector("#btn-options-radiodj").onclick = function () {
 
 };
 
+document.querySelector(`#options-modal-djs`).addEventListener("click", function (e) {
+    try {
+        console.log(e.target.id);
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith(`options-dj-`))
+            {
+                if (e.target.id === 'options-dj-mass-xp')
+                {
+                    document.querySelector("#options-xp-date").value = moment(Meta.time).format("YYYY-MM-DD\THH:mm");
+                    document.querySelector("#options-xp-type").value = "default-default";
+                    document.querySelector("#options-xp-description").value = "";
+                    document.querySelector("#options-xp-amount").value = 0;
+                    document.querySelector("#options-xp-djs").style.display = "inline-block";
+                    document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success" id="options-xp-add">Add</button>`;
+                    Djs().each(dj => {
+                        var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
+                        if (temp)
+                            temp.checked = false;
+                    });
+                    $("#options-modal-dj-xp-add").iziModal('open');
+                } else if (e.target.id === 'options-dj-add') {
+                    var inputData = "";
+                    iziToast.show({
+                        timeout: 180000,
+                        overlay: true,
+                        displayMode: 'once',
+                        color: 'yellow',
+                        id: 'inputs',
+                        zindex: 999,
+                        layout: 2,
+                        image: `assets/images/renameDJ.png`,
+                        maxWidth: 480,
+                        title: 'Case-Sensitive DJ Name',
+                        message: 'Make sure you type it correctly and it matches what you use on Google Calendar (if applicable)!',
+                        position: 'center',
+                        drag: false,
+                        closeOnClick: false,
+                        inputs: [
+                            ['<input type="text">', 'keyup', function (instance, toast, input, e) {
+                                    inputData = input.value;
+                                }, true],
+                        ],
+                        buttons: [
+                            ['<button><b>Submit</b></button>', function (instance, toast) {
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                    nodeRequest({method: 'POST', url: nodeURL + '/djs/add', data: {name: inputData, login: null}}, function (response) {
+                                        if (response === 'OK')
+                                        {
+                                            iziToast.show({
+                                                title: `DJ Added!`,
+                                                message: `DJ was added!`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to add DJ!`,
+                                                message: `There was an error trying to add the new DJ.`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }],
+                            ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                }],
+                        ]
+                    });
+                }
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-modal-djs.'
+        });
+    }
+});
+
 document.querySelector(`#options-djs`).addEventListener("click", function (e) {
     try {
         console.log(e.target.id);
@@ -1650,7 +1735,7 @@ document.querySelector(`#options-timesheets-records`).addEventListener("click", 
     }
 });
 
-document.querySelector(`#options-directors`).addEventListener("click", function (e) {
+document.querySelector(`#options-modal-directors`).addEventListener("click", function (e) {
     try {
         console.log(e.target.id);
         if (e.target) {
@@ -1672,17 +1757,34 @@ document.querySelector(`#options-directors`).addEventListener("click", function 
                     document.querySelector('#options-timesheets-records').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
                     $("#options-modal-timesheets").iziModal('open');
                     loadTimesheets(moment(Meta.time).startOf('week'));
-                } else {
-                    var director = parseInt(e.target.id.replace("options-director-", ""));
-                    var director2 = Directors({ID: director}).first();
-                    document.querySelector("#options-director-name").value = director2.name;
-                    document.querySelector("#options-director-login").value = director2.login;
-                    document.querySelector("#options-director-position").value = director2.position;
-                    document.querySelector("#options-director-admin").checked = director2.admin;
-                    document.querySelector("#options-director-assistant").checked = director2.assistant;
-                    document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-success" id="options-director-edit-${director}">Edit</button><button type="button" class="btn btn-danger" id="options-director-remove-${director}">Remove</button>`;
-                    $("#options-modal-director").iziModal('open');
                 }
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-modal-directors.'
+        });
+    }
+});
+
+document.querySelector(`#options-directors`).addEventListener("click", function (e) {
+    try {
+        console.log(e.target.id);
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith(`options-director-`))
+            {
+                var director = parseInt(e.target.id.replace("options-director-", ""));
+                var director2 = Directors({ID: director}).first();
+                document.querySelector("#options-director-name").value = director2.name;
+                document.querySelector("#options-director-login").value = director2.login;
+                document.querySelector("#options-director-position").value = director2.position;
+                document.querySelector("#options-director-admin").checked = director2.admin;
+                document.querySelector("#options-director-assistant").checked = director2.assistant;
+                document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-success" id="options-director-edit-${director}">Edit</button><button type="button" class="btn btn-danger" id="options-director-remove-${director}">Remove</button>`;
+                $("#options-modal-director").iziModal('open');
             }
         }
     } catch (err) {
@@ -3132,111 +3234,111 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-        {
-            socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
-                //console.log(body);
-                try {
-                    client = body;
-                    authtoken = client.token;
-                    if (!client.authorized)
-                    {
-                        var noConnection = document.getElementById('no-connection');
-                        noConnection.style.display = "inline";
-                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+{
+    socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
+        //console.log(body);
+        try {
+            client = body;
+            authtoken = client.token;
+            if (!client.authorized)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "inline";
+                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                        cb(false);
-                    } else {
-                        cb(authtoken);
+                cb(false);
+            } else {
+                cb(authtoken);
+            }
+            if (client.admin)
+            {
+                if (client.otherHosts)
+                    processHosts(client.otherHosts, true);
+                var temp = document.querySelector(`#options`);
+                var restarter;
+                if (temp)
+                    temp.style.display = "inline";
+
+                // Subscribe to the logs socket
+                socket.post('/logs/get', {}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        //processLogs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED logs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                    if (client.admin)
-                    {
-                        if (client.otherHosts)
-                            processHosts(client.otherHosts, true);
-                        var temp = document.querySelector(`#options`);
-                        var restarter;
-                        if (temp)
-                            temp.style.display = "inline";
+                });
 
-                        // Subscribe to the logs socket
-                        socket.post('/logs/get', {}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                //processLogs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED logs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get djs and subscribe to the dj socket
-                        nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                processDjs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED DJs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get directors and subscribe to the dj socket
-                        nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                processDirectors(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED directors CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the XP socket
-                        nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED XP CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the timesheet socket
-                        nodeRequest({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED TIMESHEET CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-                    } else {
-                        var temp = document.querySelector(`#options`);
-                        if (temp)
-                            temp.style.display = "none";
+                // Get djs and subscribe to the dj socket
+                nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        processDjs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED DJs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                } catch (e) {
-                    console.error(e);
-                    console.log('FAILED HOST CONNECTION');
-                    restarter = setTimeout(hostSocket, 10000);
-                }
-            });
+                });
+
+                // Get directors and subscribe to the dj socket
+                nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        processDirectors(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED directors CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the XP socket
+                nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED XP CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the timesheet socket
+                nodeRequest({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED TIMESHEET CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+            } else {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            console.log('FAILED HOST CONNECTION');
+            restarter = setTimeout(hostSocket, 10000);
         }
+    });
+}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -4015,7 +4117,7 @@ function checkAnnouncements() {
                 if (!temp)
                 {
                     var attn = document.querySelector("#announcements-body");
-                                                            attn.innerHTML += `<div class="expansion-panel list-group-item bs-callout bs-callout-danger" id="attn-status">
+                    attn.innerHTML += `<div class="expansion-panel list-group-item bs-callout bs-callout-danger" id="attn-status">
                             <a aria-controls="attn-collapse-status" aria-expanded="false" class="expansion-panel-toggler collapsed" data-toggle="collapse" id="attn-heading-status">
                                 <h4 id="attn-title-status">System Problems Detected</h4>
                                 <div class="expansion-panel-icon ml-3 text-white">
@@ -7637,19 +7739,11 @@ function processDjs(data, replace = false)
         }
 
         document.querySelector("#options-xp-djs").innerHTML = ``;
-        document.querySelector('#options-djs').innerHTML = `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                        <button type="button" id="options-dj-add" class="btn btn-success btn-float"><i class="fas fa-plus-circle"></i></button>
-                        <div style="text-align: center; font-size: 1em;">Add DJ</div>
-                    </div>
-
-                    <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                        <button type="button" id="options-dj-mass-xp" class="btn btn-warning btn-float"><i class="fas fa-hand-holding-usd"></i></button>
-                        <div style="text-align: center; font-size: 1em;">Mass Add XP/Remotes</div>
-                    </div>`;
+        document.querySelector('#options-djs').innerHTML = ``;
 
         Djs().each(function (dj, index) {
             document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                        <button type="button" id="options-dj-${dj.ID}" class="btn btn-primary btn-float" data-dj="${dj.ID}"><i class="fas fa-user" id="options-dj-i-${dj.ID}" data-dj="${dj.ID}"></i></button>
+                        <button type="button" id="options-dj-${dj.ID}" class="btn btn-primary btn-float" style="position: relative;" data-dj="${dj.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`DJ ${dj.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
             document.querySelector("#options-xp-djs").innerHTML += `<div class="funkyradio">
@@ -7702,19 +7796,11 @@ function processDirectors(data, replace = false)
             }
         }
 
-        document.querySelector('#options-directors').innerHTML = `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                        <button type="button" id="options-director-new" class="btn btn-purple btn-float"><i class="fas fa-plus-circle"></i></button>
-                        <div style="text-align: center; font-size: 1em;">Add Director</div>
-                    </div>
-
-                    <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                        <button type="button" id="options-director-timesheets" class="btn btn-info btn-float"><i class="fas fa-list-alt"></i></button>
-                        <div style="text-align: center; font-size: 1em;">Timesheets</div>
-                    </div>`;
+        document.querySelector('#options-directors').innerHTML = ``;
 
         Directors().each(function (director, index) {
             document.querySelector('#options-directors').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                        <button type="button" id="options-director-${director.ID}" class="btn ${director.present ? "btn-success" : "btn-danger"} btn-float" data-director="${director.ID}"><i class="fas fa-user" id="options-director-i-${director.ID}" data-director="${director.ID}"></i></button>
+                        <button type="button" id="options-director-${director.ID}" class="btn ${director.present ? "btn-success" : "btn-danger"} btn-float" style="position: relative;" data-director="${director.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`Director ${director.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${director.name}</div>
                     </div>`;
         });

@@ -816,31 +816,57 @@
             </div>
         </div>
 
-        <div id="log-modal">
-            <div style="background-color: #363636; color: #ffffff;">
-                <div class="media">
-                    <img class="d-flex mr-2" src="assets/images/log.png" alt="Add a Log">
-                    <div class="media-body">
-                        <div class="alert alert-info" role="alert">
-                            You do not need to log any tracks that you play in RadioDJ; those are logged automatically by the system.
-                        </div>
-                        <input type="datetime-local" id="log-datetime" class="form-control">
-                        <input type="text" id="log-artist" class="form-control" placeholder="Track Artist (if applicable)">
-                        <input type="text" id="log-title" class="form-control" placeholder="Track Title (if applicable)">
-                        <input type="text" id="log-album" class="form-control" placeholder="Track Album (if applicable)">
-                        <input type="text" id="log-label" class="form-control" placeholder="Track Record Label (if applicable)">
-                        <div class="row">
-                            <div class="col-3">
-                                <button type="button" class="btn btn-success" id="log-add">Add entry</button>
+        <div class="modal" id="log-modal" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-3">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-trivial doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Add a Log</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
+                    <div class="bs-callout bs-callout-info shadow-4 text-white">
+                        You do not need to log anything played in RadioDJ; those are logged automatically.
+                    </div>
+                    <form>
+                        <div class="form-group p-1">
+                            <div class="floating-label">
+                                <label for="log-datetime">Date and Time of the log</label>
+                                <input type="datetime-local" id="log-datetime" class="form-control">
                             </div>
                         </div>
-                    </div>
+                        <div class="form-group p-1">
+                            <div class="floating-label">
+                                <label for="log-artist">Artist (if applicable)</label>
+                                <input type="text" id="log-artist" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group p-1">
+                            <div class="floating-label">
+                                <label for="log-title">Title (if applicable)</label>
+                                <input type="text" id="log-title" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group p-1">
+                            <div class="floating-label">
+                                <label for="log-title">Album (if applicable)</label>
+                                <input type="text" id="log-album" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group p-1">
+                            <div class="floating-label">
+                                <label for="log-label">Record Label (if applicable)</label>
+                                <input type="text" id="log-label" class="form-control">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light-1">
+                    <button type="button" class="btn btn-trivial btn-lg" id="log-add">Add Log</button>
                 </div>
             </div>
         </div>
 
         <div class="modal" id="messages-modal" tabindex="-1" role="dialog" style="display: hidden;">
-            <div class="modal-content text-dark bg-light-2">
+            <div class="modal-content text-dark bg-light-3">
                 <div class="modal-body">
                     <header class="navbar navbar-dark navbar-full bg-success doc-navbar-default">
                         <button aria-controls="navdrawerUsers" aria-expanded="false" aria-label="Toggle Navdrawer" class="navbar-toggler" data-target="#navdrawerUsers" data-toggle="navdrawer" data-type="temporary">
@@ -868,7 +894,7 @@
         </div>
 
         <div class="modal" id="emergency-modal" tabindex="-1" role="dialog">
-            <div class="modal-content text-dark bg-light-1">
+            <div class="modal-content text-dark bg-light-3">
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-danger doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Report a Problem</span>
@@ -893,7 +919,7 @@
         </div>
 
         <div class="modal" id="display-modal" tabindex="-1" role="dialog">
-            <div class="modal-content text-dark bg-light-1">
+            <div class="modal-content text-dark bg-light-3">
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-purple doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Display Sign Message</span>
@@ -917,100 +943,70 @@
             </div>
         </div>
 
-        <div id="xp-modal" style="background-color: #363636; color: #ffffff;">
-            <div class="bs-callout bs-callout-info" role="alert">
-                <h4>Access MP3 recordings of the broadcast</h4>
-                Go to Computer -> S drive -> OnAir recordings folder. Shows are in live, sports broadcasts in sports, and remote broadcasts in remote. Breaks were automatically removed. There may be more than one MP3 for your show. File names are in the format "Host name - Show name (date and time)".
-            </div>
-            <p style="font-size: 2em; text-align: center;">Statistics / XP earned</p>
-            <div class="container">
-                <div class="row text-primary-light">
-                    <div class="col-7">
-                        Statistic
+        <div class="modal" id="xp-modal" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-3">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-success doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Broadcast is Complete</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
+                    <div class="bs-callout bs-callout-info text-white shadow-4" role="alert">
+                        <h4>We recorded your broadcast automatically!</h4>
+                        <p>To access: go to Computer -> S drive -> OnAir Recordings -> live/remote/sports</p>
+                        <p>MP3 file names: DJ/handle name - show name (date and time).</p>
+                        <p>Breaks were automatically removed.</p>
                     </div>
-                    <div class="col-3">
-                        Value
-                    </div>
-                    <div class="col-2">
-                        XP Earned
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-7">
-                        Length of show:
-                    </div>
-                    <div class="col-3" id="stat-showTime">
-                        0
-                    </div>
-                    <div class="col-2 text-success-light" id="stat-showXP">
-                        0
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-7">
-                        Online listener minutes:
-                    </div>
-                    <div class="col-3" id="stat-listenerMinutes">
-                        0
-                    </div>
-                    <div class="col-2 text-success-light" id="stat-listenerXP">
-                        0
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-7">
-                        Messages sent to web visitors:
-                    </div>
-                    <div class="col-3" id="stat-messagesWeb">
-                        0
-                    </div>
-                    <div class="col-2 text-success-light" id="stat-messagesXP">
-                        0
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-7">
-                        Top Adds played:
-                    </div>
-                    <div class="col-3" id="stat-topAdds">
-                        0
-                    </div>
-                    <div class="col-2 text-success-light" id="stat-topAddsXP">
-                        0
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-7">
-                        On-time Top of the Hour breaks:
-                    </div>
-                    <div class="col-3">
-                        -
-                    </div>
-                    <div class="col-2 text-success-light" id="stat-IDsXP">
-                        0
+                    <h2 style="text-align: center;">Statistics / XP earned</h2>
+                    <div class="card">
+                        <table class="table table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">Statistic</th>
+                                    <th scope="col">Value</th>
+                                    <th scope="col">XP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-primary">
+                                    <td>Show Time:</td>
+                                    <td id="stat-showTime">0</td>
+                                    <td id="stat-showXP">0</td>
+                                </tr>
+                                <tr class="table-info">
+                                    <td>Online Listener Minutes:</td>
+                                    <td id="stat-listenerMinutes">0</td>
+                                    <td id="stat-listenerXP">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Messages sent to web:</td>
+                                    <td id="stat-messagesWeb">0</td>
+                                    <td id="stat-messagesXP">0</td>
+                                </tr>
+                                <tr class="table-purple">
+                                    <td>Top Adds Played:</td>
+                                    <td id="stat-topAdds">0</td>
+                                    <td id="stat-topAddsXP">0</td>
+                                </tr>
+                                <tr class="table-warning">
+                                    <td>XP for on-time top-of-hour breaks:</td>
+                                    <td>-</td>
+                                    <td id="stat-IDsXP">0</td>
+                                </tr>
+                                <tr class="table-success">
+                                    <td>total XP earned this show:</td>
+                                    <td>-</td>
+                                    <td id="stat-subtotalXP">0</td>
+                                </tr>
+                                <tr class="table-secondary">
+                                    <td>total XP earned to date:</td>
+                                    <td>-</td>
+                                    <td id="stat-totalXP">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-7">
-                        Total XP earned this show:
-                    </div>
-                    <div class="col-3">
-                        -
-                    </div>
-                    <div class="col-2 text-success-light" id="stat-subtotalXP">
-                        0
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-7">
-                        Total XP earned to date:
-                    </div>
-                    <div class="col-3">
-                        -
-                    </div>
-                    <div class="col-2 text-info-light" id="stat-totalXP">
-                        0
-                    </div>
+                <div class="modal-footer bg-light-1">
                 </div>
             </div>
         </div>
@@ -1033,50 +1029,88 @@
             </div>
         </div>
 
-        <div id="options-modal" style="background-color: #363636; color: #ffffff;">
-            <div class="d-flex justify-content-start flex-wrap">
-                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-djs" class="btn btn-purple btn-float"><i class="fas fa-microphone"></i></button>
-                    <div style="text-align: center; font-size: 1em;">Manage DJs</div>
+        <div class="modal" id="options-modal" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-3">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-danger doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Options / Administration</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
+                    <div class="d-flex justify-content-start flex-wrap">
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-djs" class="btn btn-purple btn-float"><i class="fas fa-microphone"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Manage DJs</div>
+                        </div>
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-directors" class="btn btn-purple btn-float"><i class="fas fa-address-card"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Manage Directors</div>
+                        </div>
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-djcontrols" class="btn btn-purple btn-float"><i class="fas fa-users-cog"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Manage DJ Controls</div>
+                        </div>
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-announcements" class="btn btn-purple btn-float"><i class="fas fa-bullhorn"></i></button>
+                            <div style="text-align: center; font-size: 0.75em;">Manage Announcements</div>
+                        </div>
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-logs" class="btn btn-secondary btn-float"><i class="fas fa-file"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Logs</div>
+                        </div>
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-issues" class="btn btn-warning btn-float"><i class="fas fa-poo"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Issues</div>
+                        </div>
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-calendar" class="btn btn-info btn-float"><i class="fas fa-calendar"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Calendar Verification</div>
+                        </div>
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-radiodj" class="btn btn-danger btn-float"><i class="fas fa-sync"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Switch RadioDJ</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-directors" class="btn btn-purple btn-float"><i class="fas fa-address-card"></i></button>
-                    <div style="text-align: center; font-size: 1em;">Manage Directors</div>
-                </div>
-                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-djcontrols" class="btn btn-purple btn-float"><i class="fas fa-users-cog"></i></button>
-                    <div style="text-align: center; font-size: 1em;">Manage DJ Controls</div>
-                </div>
-                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-announcements" class="btn btn-purple btn-float"><i class="fas fa-bullhorn"></i></button>
-                    <div style="text-align: center; font-size: 0.75em;">Manage Announcements</div>
-                </div>
-                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-logs" class="btn btn-secondary btn-float"><i class="fas fa-file"></i></button>
-                    <div style="text-align: center; font-size: 1em;">Logs</div>
-                </div>
-                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-issues" class="btn btn-warning btn-float"><i class="fas fa-poo"></i></button>
-                    <div style="text-align: center; font-size: 1em;">Issues</div>
-                </div>
-                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-calendar" class="btn btn-info btn-float"><i class="fas fa-calendar"></i></button>
-                    <div style="text-align: center; font-size: 1em;">Calendar Verification</div>
-                </div>
-                <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                    <button type="button" id="btn-options-radiodj" class="btn btn-danger btn-float"><i class="fas fa-sync"></i></button>
-                    <div style="text-align: center; font-size: 1em;">Switch RadioDJ</div>
+                <div class="modal-footer bg-light-1">
                 </div>
             </div>
         </div>
-        <div id="options-modal-djs" style="background-color: #363636; color: #ffffff;">
-            <div class="d-flex justify-content-start flex-wrap" id="options-djs">
+
+        <div class="modal" id="options-modal-djs" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-3">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-purple doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">DJ Management</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
+                    <div class="d-flex justify-content-start flex-wrap" id="options-djs">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light-1">
+                    <button type="button" class="btn btn-success btn-lg" id="options-dj-add">New DJ</button>
+                    <button type="button" class="btn btn-purple btn-lg" id="options-dj-mass-xp">Add XP/Remotes</button>
+                </div>
             </div>
         </div>
-        <div id="options-modal-directors" style="background-color: #363636; color: #ffffff;">
-            <div class="d-flex justify-content-start flex-wrap" id="options-directors">
+        
+        <div class="modal" id="options-modal-directors" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-3">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-purple doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Director Management</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
+                    <div class="d-flex justify-content-start flex-wrap" id="options-directors">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light-1">
+                    <button type="button" class="btn btn-success btn-lg" id="options-director-new">New Director</button>
+                    <button type="button" class="btn btn-info btn-lg" id="options-director-timesheets">Timesheets</button>
+                </div>
             </div>
         </div>
+
+
         <div id="options-modal-dj" style="background-color: #363636; color: #ffffff;">
             <p style="font-size: 2em; text-align: center;" id="options-dj-name"></p>
             <div class="container">
