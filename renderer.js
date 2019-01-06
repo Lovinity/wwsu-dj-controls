@@ -1077,10 +1077,17 @@ function filterGlobalLogs(date) {
             {
                 var formatted = {};
                 response.map(record => {
-                    var theClass = 'bs-callout-default';
-                    if (typeof formatted[moment(record.createdAt).format("MM/DD/YYYY")] === 'undefined')
+                    var theDate;
+                    if (record.actualStart !== null)
                     {
-                        formatted[moment(record.createdAt).format("MM/DD/YYYY")] = [];
+                        theDate = moment(record.actualStart);
+                    } else {
+                        theDate = moment(record.scheduledStart);
+                    }
+                    var theClass = 'bs-callout-default';
+                    if (typeof formatted[moment(theDate).format("MM/DD/YYYY")] === 'undefined')
+                    {
+                        formatted[moment(theDate).format("MM/DD/YYYY")] = [];
                     }
                     if (record.event.startsWith("Show: ") || record.event.startsWith("Prerecord: "))
                     {
@@ -1097,7 +1104,7 @@ function filterGlobalLogs(date) {
                     }
                     if (record.scheduledStart === null)
                     {
-                        formatted[moment(record.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
+                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
                                 <div class="col-7 text-primary-light">
                                     ${record.event}
                                 </div>
@@ -1113,7 +1120,7 @@ function filterGlobalLogs(date) {
                             </div>`);
                     } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)))
                     {
-                        formatted[moment(record.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
+                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
                                 <div class="col-7 text-primary-light">
                                     ${record.event}
                                 </div>
@@ -1128,7 +1135,7 @@ function filterGlobalLogs(date) {
                     {
                         if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10)
                         {
-                            formatted[moment(record.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
+                            formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
                                 <div class="col-7 text-primary-light">
                                     ${record.event}
                                 </div>
@@ -1143,7 +1150,7 @@ function filterGlobalLogs(date) {
                                         </div>
                             </div>`);
                         } else {
-                            formatted[moment(record.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
+                            formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
                                 <div class="col-7 text-primary-light">
                                     ${record.event}
                                 </div>
@@ -1160,7 +1167,7 @@ function filterGlobalLogs(date) {
                         }
                     } else if (record.actualStart !== null && record.actualEnd === null)
                     {
-                        formatted[moment(record.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
+                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
                                 <div class="col-7 text-primary-light">
                                     ${record.event}
                                 </div>
@@ -1175,7 +1182,7 @@ function filterGlobalLogs(date) {
                                         </div>
                             </div>`);
                     } else if (record.actualStart === null && record.actualEnd === null) {
-                        formatted[moment(record.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
+                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
                                 <div class="col-7 text-primary-light">
                                     ${record.event}
                                 </div>
@@ -1187,7 +1194,7 @@ function filterGlobalLogs(date) {
                                         </div>
                             </div>`);
                     } else {
-                        formatted[moment(record.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
+                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
                                 <div class="col-7 text-primary-light">
                                     ${record.event}
                                 </div>
