@@ -538,8 +538,6 @@ try {
     });
 
     $("#options-modal-director").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Edit Director</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -586,8 +584,6 @@ try {
     });
 
     $("#options-modal-dj-logs").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Logs</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -602,8 +598,6 @@ try {
     });
 
     $("#options-modal-dj-xp").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - DJ XP / Remote Credits</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -960,11 +954,12 @@ document.querySelector("#btn-view-log-b").onclick = function () {
         if (response.length > 0)
         {
             response.map(log => {
-                logs.innerHTML += `<div class="row bs-callout bs-callout-${log.loglevel}">
-                                <div class="col-2 text-warning-light">
+                
+                logs.innerHTML += `<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
+                                <div class="col-3 text-primary">
                                     ${moment(log.createdAt).format("h:mm:ss A")}
                                 </div>
-                                <div class="col-10 text-info-light">
+                                <div class="col-9 text-secondary">
                                 ${log.event}
                                 ${log.trackArtist !== null && log.trackArtist !== "" ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== "" ? ` - ${log.trackTitle}` : ``}
                                 ${log.trackAlbum !== null && log.trackAlbum !== "" ? `<br />Album: ${log.trackAlbum}` : ``}
@@ -1252,11 +1247,11 @@ document.querySelector("#btn-options-issues").onclick = function () {
                 {
                     formatted[moment(log.createdAt).format("MM/DD/YYYY")] = [];
                 }
-                formatted[moment(log.createdAt).format("MM/DD/YYYY")].push(`<div class="row bs-callout bs-callout-${log.loglevel}">
-                                <div class="col-2 text-warning-light">
+                formatted[moment(log.createdAt).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
+                                <div class="col-3 text-primary">
                                     ${moment(log.createdAt).format("h:mm:ss A")}
                                 </div>
-                                <div class="col-10 text-info-light">
+                                <div class="col-9 text-secondary">
                                 ${log.event}
                                 ${log.trackArtist !== null && log.trackArtist !== "" ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== "" ? ` - ${log.trackTitle}` : ``}
                                 ${log.trackAlbum !== null && log.trackAlbum !== "" ? `<br />Album: ${log.trackAlbum}` : ``}
@@ -1756,7 +1751,7 @@ document.querySelector(`#options-modal-directors`).addEventListener("click", fun
                     document.querySelector("#options-director-position").value = "";
                     document.querySelector("#options-director-admin").checked = false;
                     document.querySelector("#options-director-assistant").checked = false;
-                    document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-success" id="options-director-add">Add</button>`;
+                    document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-success btn-lg" id="options-director-add">Add</button>`;
                     $("#options-modal-director").iziModal('open');
                 } else if (e.target.id === "options-director-timesheets")
                 {
@@ -1786,11 +1781,12 @@ document.querySelector(`#options-directors`).addEventListener("click", function 
                 var director = parseInt(e.target.id.replace("options-director-", ""));
                 var director2 = Directors({ID: director}).first();
                 document.querySelector("#options-director-name").value = director2.name;
-                document.querySelector("#options-director-login").value = director2.login;
+                document.querySelector("#options-director-login").value = "";
                 document.querySelector("#options-director-position").value = director2.position;
                 document.querySelector("#options-director-admin").checked = director2.admin;
                 document.querySelector("#options-director-assistant").checked = director2.assistant;
-                document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-success" id="options-director-edit-${director}">Edit</button><button type="button" class="btn btn-danger" id="options-director-remove-${director}">Remove</button>`;
+                document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-urgent btn-lg" id="options-director-edit-${director}">Edit</button>
+                <button type="button" class="btn btn-danger btn-lg" id="options-director-remove-${director}">Remove</button>`;
                 $("#options-modal-director").iziModal('open');
             }
         }
@@ -1994,11 +1990,11 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                     if (response.length > 0)
                     {
                         response.map(log => {
-                            logs.innerHTML += `<div class="row bs-callout bs-callout-${log.loglevel}">
-                                <div class="col-2 text-warning-light">
+                            logs.innerHTML += `<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
+                                <div class="col-3 text-primary">
                                     ${moment(log.createdAt).format("h:mm:ss A")}
                                 </div>
-                                <div class="col-10 text-info-light">
+                                <div class="col-9 text-secondary">
                                 ${log.event}
                                 ${log.trackArtist !== null && log.trackArtist !== "" ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== "" ? ` - ${log.trackTitle}` : ``}
                                 ${log.trackAlbum !== null && log.trackAlbum !== "" ? `<br />Album: ${log.trackAlbum}` : ``}
@@ -2091,11 +2087,11 @@ document.querySelector(`#global-logs`).addEventListener("click", function (e) {
                     if (response.length > 0)
                     {
                         response.map(log => {
-                            logs.innerHTML += `<div class="row bs-callout bs-callout-${log.loglevel}">
-                                <div class="col-2 text-warning-light">
+                            logs.innerHTML += `<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
+                                <div class="col-3 text-primary">
                                     ${moment(log.createdAt).format("h:mm:ss A")}
                                 </div>
-                                <div class="col-10 text-info-light">
+                                <div class="col-9 text-secondary">
                                 ${log.event}
                                 ${log.trackArtist !== null && log.trackArtist !== "" ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== "" ? ` - ${log.trackTitle}` : ``}
                                 ${log.trackAlbum !== null && log.trackAlbum !== "" ? `<br />Album: ${log.trackAlbum}` : ``}
@@ -7457,9 +7453,7 @@ function loadDJ(dj = null, reset = true) {
             var totalXP = 0;
             if (DJData.XP.length > 0)
             {
-                document.querySelector(`#dj-xp-add-div`).innerHTML = `Add <button type="button" id="dj-xp-add" class="close dj-xp-add" aria-label="Add XP/Remote" data-dj="${dj}">
-                <span aria-hidden="true"><i class="fas fa-plus text-white"></i></span>
-                </button>`;
+                document.querySelector(`#dj-xp-add-div`).innerHTML = `<button type="button" class="btn btn-success btn-lg" id="dj-xp-add" data-dj="${dj}">Add</button>`;
                 var xpLogs = document.querySelector(`#dj-xp-logs`);
                 xpLogs.innerHTML = ``;
                 xpLogs.scrollTop = 0;
@@ -7494,22 +7488,22 @@ function loadDJ(dj = null, reset = true) {
 
                     if (record.type === "remote")
                         remote += record.amount;
-                    xpLogs.innerHTML += `<div class="row bs-callout bs-callout-${record.type === 'remote' ? `warning` : `info`}">
-                    <div class="col-3 text-warning-light">
+                    xpLogs.innerHTML += `<div class="row m-1 bg-light-1 border-left border-${record.type === 'remote' ? `warning` : `info`} shadow-2" style="border-left-width: 5px !important;">
+                    <div class="col-3 text-primary">
                         ${moment(record.createdAt).format("YYYY-MM-DD h:mm A")}
                     </div>
-                    <div class="col-2 text-success-light">
+                    <div class="col-2 text-success">
                         ${record.amount}
                     </div>
-                    <div class="col-5 text-info-light">
+                    <div class="col-5 text-secondary">
                         ${record.type}-${record.subtype}${record.description !== null && record.description !== '' ? `: ${record.description}` : ``}
                     </div>
-                    <div class="col-2 text-danger-light">
+                    <div class="col-2 text-dark">
                         <button type="button" id="dj-xp-edit-${record.ID}" class="close dj-xp-edit" aria-label="Edit XP/Remote">
-                <span aria-hidden="true"><i class="fas fa-edit text-danger-light"></i></span>
+                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
                 </button>
                         <button type="button" id="dj-xp-remove-${record.ID}" class="close dj-xp-remove" aria-label="Remove XP/Remote">
-                <span aria-hidden="true"><i class="fas fa-trash text-danger-light"></i></span>
+                <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
                 </button>
                     </div>
                 </div>
