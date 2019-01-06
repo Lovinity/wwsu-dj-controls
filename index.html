@@ -1092,7 +1092,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="modal" id="options-modal-directors" tabindex="-1" role="dialog">
             <div class="modal-content text-dark bg-light-3">
                 <div class="modal-body">
@@ -1110,52 +1110,51 @@
             </div>
         </div>
 
-
-        <div id="options-modal-dj" style="background-color: #363636; color: #ffffff;">
-            <p style="font-size: 2em; text-align: center;" id="options-dj-name"></p>
-            <div class="container">
-                <div class="row">
-                    <div class="col-6">
-                        <p style="font-size: 1.5em; text-align: center;">Overview</p>
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-6">
-                                    Remote Credits
-                                </div>
-                                <div class="col-3" id="dj-remotes">
-                                    Unknown
-                                </div>
+        <div class="modal" id="options-modal-dj" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-3">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-purple doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white" id="options-dj-name">DJ Management</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
+                    <div class="d-flex justify-content-around flex-wrap">
+                        <div class="card p-1 m-1 bg-light-2">
+                            <div class="card-body">
+                                <h4 class="card-title" style="text-align: center;">XP</h4>
+                                <p class="card-text" style="text-align: center; font-size: 4em;" id="dj-xp"></p>
                             </div>
-                            <div class="row">
-                                <div class="col-6">
-                                    Total XP
-                                </div>
-                                <div class="col-3" id="dj-xp">
-                                    Unknown
-                                </div>
+                        </div>
+                        <div class="card p-1 m-1 bg-light-2">
+                            <div class="card-body">
+                                <h4 class="card-title" style="text-align: center;">Remotes</h4>
+                                <p class="card-text" style="text-align: center; font-size: 4em;" id="dj-remotes"></p>
+                            </div>
+                        </div>
+                        <div class="card p-1 m-1 bg-light-2">
+                            <div class="card-body">
+                                <h4 class="card-title" style="text-align: center;">OnAir Hours</h4>
+                                <p class="card-text" style="text-align: center; font-size: 4em;" id="dj-showtime"></p>
+                            </div>
+                        </div>
+                        <div class="card p-1 m-1 bg-light-2">
+                            <div class="card-body">
+                                <h4 class="card-title" style="text-align: center;">Listener Hours</h4>
+                                <p class="card-text" style="text-align: center; font-size: 4em;" id="dj-listenertime"></p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-6">
-                        <div class="d-flex justify-content-start flex-wrap" id="options-dj-buttons">
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12">
-                        <p style="font-size: 1.5em; text-align: center;">Attendance History</p>
-                    </div>
+                    <p style="font-size: 1.5em; text-align: center;">Attendance History</p>
                     <div class="container m-1">
-                        <div class="row bg-primary-dark m-1">
-                            <div class="col-2 text-danger-light">
+                        <div class="row m-1 bg-light-1 shadow-2">
+                            <div class="col-2 text-danger">
                                 Date
                             </div>
-                            <div class="col-5 text-info-light">
+                            <div class="col-5 text-info">
                                 Event
                             </div>
                             <div class="col-4">
-                                <span class="text-warning-light">Scheduled Time</span><br />
-                                <span class="text-success-light">Actual Time</span>
+                                <span class="text-secondary">Scheduled Time</span><br />
+                                <span class="text-primary">Actual Time</span>
                             </div>
                             <div class="col-1">
                                 Log
@@ -1165,8 +1164,11 @@
                     <div class="container m-1" id="dj-attendance" style="height: 240px; overflow: scroll;">
                     </div>
                 </div>
+                <div class="modal-footer bg-light-1" id="options-dj-buttons">
+                </div>
             </div>
         </div>
+
         <div id="options-modal-dj-logs" style="background-color: #363636; color: #ffffff;">
             <div class="container m-1">
                 <div class="row bg-primary-dark m-1">

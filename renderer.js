@@ -524,8 +524,6 @@ try {
     });
 
     $("#options-modal-dj").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - DJ</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -1560,6 +1558,8 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                     document.querySelector('#options-dj-name').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
                     document.querySelector('#dj-remotes').innerHTML = `???`;
                     document.querySelector('#dj-xp').innerHTML = `???`;
+                    document.querySelector('#dj-showtime').innerHTML = `???`;
+                    document.querySelector('#dj-listenertime').innerHTML = `???`;
                     document.querySelector('#options-dj-buttons').innerHTML = ``;
                     document.querySelector('#dj-attendance').innerHTML = ``;
                     $("#options-modal-dj").iziModal('open');
@@ -3234,111 +3234,111 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-{
-    socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
-        //console.log(body);
-        try {
-            client = body;
-            authtoken = client.token;
-            if (!client.authorized)
-            {
-                var noConnection = document.getElementById('no-connection');
-                noConnection.style.display = "inline";
-                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+        {
+            socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
+                //console.log(body);
+                try {
+                    client = body;
+                    authtoken = client.token;
+                    if (!client.authorized)
+                    {
+                        var noConnection = document.getElementById('no-connection');
+                        noConnection.style.display = "inline";
+                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                cb(false);
-            } else {
-                cb(authtoken);
-            }
-            if (client.admin)
-            {
-                if (client.otherHosts)
-                    processHosts(client.otherHosts, true);
-                var temp = document.querySelector(`#options`);
-                var restarter;
-                if (temp)
-                    temp.style.display = "inline";
-
-                // Subscribe to the logs socket
-                socket.post('/logs/get', {}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        //processLogs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED logs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
+                        cb(false);
+                    } else {
+                        cb(authtoken);
                     }
-                });
+                    if (client.admin)
+                    {
+                        if (client.otherHosts)
+                            processHosts(client.otherHosts, true);
+                        var temp = document.querySelector(`#options`);
+                        var restarter;
+                        if (temp)
+                            temp.style.display = "inline";
 
-                // Get djs and subscribe to the dj socket
-                nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        processDjs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED DJs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Subscribe to the logs socket
+                        socket.post('/logs/get', {}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                //processLogs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED logs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
 
-                // Get directors and subscribe to the dj socket
-                nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        processDirectors(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED directors CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Get djs and subscribe to the dj socket
+                        nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                processDjs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED DJs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
 
-                // Subscribe to the XP socket
-                nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED XP CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Get directors and subscribe to the dj socket
+                        nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                processDirectors(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED directors CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
 
-                // Subscribe to the timesheet socket
-                nodeRequest({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED TIMESHEET CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
+                        // Subscribe to the XP socket
+                        nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED XP CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the timesheet socket
+                        nodeRequest({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED TIMESHEET CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+                    } else {
+                        var temp = document.querySelector(`#options`);
+                        if (temp)
+                            temp.style.display = "none";
                     }
-                });
-            } else {
-                var temp = document.querySelector(`#options`);
-                if (temp)
-                    temp.style.display = "none";
-            }
-        } catch (e) {
-            console.error(e);
-            console.log('FAILED HOST CONNECTION');
-            restarter = setTimeout(hostSocket, 10000);
+                } catch (e) {
+                    console.error(e);
+                    console.log('FAILED HOST CONNECTION');
+                    restarter = setTimeout(hostSocket, 10000);
+                }
+            });
         }
-    });
-}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -4146,20 +4146,18 @@ function checkAnnouncements() {
     });
 
     var temp = document.querySelector(`#attn-status`);
-    if (highestLevel === 1 || highestLevel === 2)
+    if (temp)
     {
-        temp.className = `expansion-panel list-group-item bs-callout bs-callout-danger`;
-    } else if (highestLevel <= 3)
-    {
-        temp.className = `expansion-panel list-group-item bs-callout bs-callout-info`;
-    } else {
-        temp.className = `expansion-panel list-group-item bs-callout bs-callout-default`;
-    }
+        if (highestLevel === 1 || highestLevel === 2)
+        {
+            temp.className = `expansion-panel list-group-item bs-callout bs-callout-danger`;
+        } else if (highestLevel <= 3)
+        {
+            temp.className = `expansion-panel list-group-item bs-callout bs-callout-info`;
+        }
 
-    if (prevStatus.length <= 0)
-    {
-        var temp = document.querySelector(`#attn-status`);
-        temp.parentNode.removeChild(temp);
+        if (prevStatus.length <= 0)
+            temp.parentNode.removeChild(temp);
     }
 
     // Remove announcements no longer valid from the announcements box
@@ -7442,21 +7440,12 @@ function processRequests(data, replace = false)
 function loadDJ(dj = null, reset = true) {
     try {
         var afterFunction = function () {
-            document.querySelector('#options-dj-name').innerHTML = Djs({ID: parseInt(DJData.DJ)}).first().name;
+            var DJName = Djs({ID: parseInt(DJData.DJ)}).first().name;
+            document.querySelector('#options-dj-name').innerHTML = `${jdenticon.toSvg(`DJ ${DJName}`, 48)}   ${DJName}`;
             document.querySelector('#options-dj-buttons').innerHTML = `
-                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                                <button type="button" id="btn-options-dj-edit" data-dj="${DJData.DJ}" class="btn btn-warning btn-float"><i class="fas fa-pen"></i></button>
-                                <div style="text-align: center; font-size: 1em;">Edit</div>
-                            </div>
-                            <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                                <button type="button" id="btn-options-dj-remove" data-dj="${DJData.DJ}" class="btn btn-danger btn-float"><i class="fas fa-trash"></i></button>
-                                <div style="text-align: center; font-size: 1em;">Remove</div>
-                            </div>
-                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                                <button type="button" id="btn-options-dj-xp" data-dj="${DJData.DJ}" class="btn btn-purple btn-float"><i class="fas fa-hand-holding-usd"></i></button>
-                                <div style="text-align: center; font-size: 1em;">XP / Remote Credits</div>
-                            </div>
-`;
+            <button type="button" class="btn btn-urgent btn-lg" id="btn-options-dj-edit" data-dj="${DJData.DJ}">Edit</button>
+            <button type="button" class="btn btn-danger btn-lg" id="btn-options-dj-remove" data-dj="${DJData.DJ}">Remove</button>
+            <button type="button" class="btn btn-purple btn-lg" id="btn-options-dj-xp" data-dj="${DJData.DJ}">XP / Remotes</button>`;
             var remote = 0;
             var totalXP = 0;
             if (DJData.XP.length > 0)
@@ -7526,13 +7515,17 @@ function loadDJ(dj = null, reset = true) {
             var att = document.querySelector('#dj-attendance');
             att.scrollTop = 0;
             att.innerHTML = ``;
+            var showTime = 0;
+            var listenerMinutes = 0;
             if (DJData.attendance.length > 0)
             {
                 var compare = function (a, b) {
                     try {
-                        if (moment(a.createdAt).valueOf() < moment(b.createdAt).valueOf())
+                        var theDateA = a.actualStart !== null ? a.actualStart : a.scheduledStart;
+                        var theDateB = b.actualStart !== null ? b.actualStart : b.scheduledStart;
+                        if (moment(theDateA).valueOf() < moment(theDateB).valueOf())
                             return 1;
-                        if (moment(a.createdAt).valueOf() > moment(b.createdAt).valueOf())
+                        if (moment(theDateA).valueOf() > moment(theDateB).valueOf())
                             return -1;
                         if (a.ID > b.ID)
                             return -1;
@@ -7549,41 +7542,48 @@ function loadDJ(dj = null, reset = true) {
                 };
                 DJData.attendance.sort(compare);
                 DJData.attendance.map(record => {
+
+                    if (record.showTime !== null)
+                        showTime += record.showTime;
+                    if (record.listenerMinutes !== null)
+                        listenerMinutes += record.listenerMinutes;
+
+                    var theDate = record.actualStart !== null ? record.actualStart : record.scheduledStart;
                     if (record.scheduledStart === null)
                     {
-                        att.innerHTML += `<div class="row bs-callout bs-callout-urgent">
-                            <div class="col-2 text-danger-light">
-                                ${moment(record.createdAt).format("MM/DD/YYYY")}
+                        att.innerHTML += `<div class="row m-1 bg-light-1 border-left border-urgent shadow-2" style="border-left-width: 5px !important;">
+                            <div class="col-2 text-danger">
+                                ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
-                            <div class="col-5 text-info-light">
+                            <div class="col-5 text-info">
                                 ${record.event}
                             </div>
                             <div class="col-4">
-                                <span class="text-warning-light">UN-SCHEDULED</span><br />
-                                <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                                <span class="text-secondary">UN-SCHEDULED</span><br />
+                                <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
                             <div class="col-1">
                                 <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
-                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
                         </div>`;
                     } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)))
                     {
-                        att.innerHTML += `<div class="row bs-callout bs-callout-default">
-                            <div class="col-2 text-danger-light">
-                                ${moment(record.createdAt).format("MM/DD/YYYY")}
+                        att.innerHTML += `<div class="row m-1 bg-light-1 border-left border-secondary shadow-2" style="border-left-width: 5px !important;">
+                            <div class="col-2 text-danger">
+                                ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
-                            <div class="col-5 text-info-light">
+                            <div class="col-5 text-info">
                                 ${record.event}
                             </div>
                             <div class="col-4">
-                                <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                                <span class="text-success-light">FUTURE EVENT</span>
+                                <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                                <span class="text-primary">FUTURE EVENT</span>
                             </div>
                             <div class="col-1">
                                 <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
-                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
                         </div>`;
@@ -7591,93 +7591,96 @@ function loadDJ(dj = null, reset = true) {
                     {
                         if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10)
                         {
-                            att.innerHTML += `<div class="row bs-callout bs-callout-warning">
-                            <div class="col-2 text-danger-light">
-                                ${moment(record.createdAt).format("MM/DD/YYYY")}
+                            att.innerHTML += `<div class="row m-1 bg-light-1 border-left border-warning shadow-2" style="border-left-width: 5px !important;">
+                            <div class="col-2 text-danger">
+                                ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
-                            <div class="col-5 text-info-light">
+                            <div class="col-5 text-info">
                                 ${record.event}
                             </div>
                             <div class="col-4">
-                                <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                                <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                                <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                                <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
                             <div class="col-1">
                                 <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
-                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
                         </div>`;
                         } else {
-                            att.innerHTML += `<div class="row bs-callout bs-callout-success">
-                            <div class="col-2 text-danger-light">
-                                ${moment(record.createdAt).format("MM/DD/YYYY")}
+                            att.innerHTML += `<div class="row m-1 bg-light-1 border-left border-success shadow-2" style="border-left-width: 5px !important;">
+                            <div class="col-2 text-danger">
+                                ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
-                            <div class="col-5 text-info-light">
+                            <div class="col-5 text-info">
                                 ${record.event}
                             </div>
                             <div class="col-4">
-                                <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                                <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                                <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                                <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
                             <div class="col-1">
                                 <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
-                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
                         </div>`;
                         }
                     } else if (record.actualStart !== null && record.actualEnd === null)
                     {
-                        att.innerHTML += `<div class="row bs-callout bs-callout-info">
-                            <div class="col-2 text-danger-light">
-                                ${moment(record.createdAt).format("MM/DD/YYYY")}
+                        att.innerHTML += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;">
+                            <div class="col-2 text-danger">
+                                ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
-                            <div class="col-5 text-info-light">
+                            <div class="col-5 text-info">
                                 ${record.event}
                             </div>
                             <div class="col-4">
-                                <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                                <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                                <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                                <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
                             <div class="col-1">
                                 <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
-                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
                         </div>`;
                     } else if (record.actualStart === null && record.actualEnd === null) {
-                        att.innerHTML += `<div class="row bs-callout bs-callout-danger">
-                            <div class="col-2 text-danger-light">
-                                ${moment(record.createdAt).format("MM/DD/YYYY")}
+                        att.innerHTML += `<div class="row m-1 bg-light-1 border-left border-danger shadow-2" style="border-left-width: 5px !important;">
+                            <div class="col-2 text-danger">
+                                ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
-                            <div class="col-5 text-info-light">
+                            <div class="col-5 text-info">
                                 ${record.event}
                             </div>
                             <div class="col-4">
-                                <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                                <span class="text-success-light">ABSENT / DID NOT AIR</span>
+                                <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                                <span class="text-primary">ABSENT / DID NOT AIR</span>
                             </div>
                             <div class="col-1">
                             </div>
                         </div>`;
                     } else {
-                        att.innerHTML += `<div class="row bs-callout bs-callout-info">
-                            <div class="col-2 text-danger-light">
-                                ${moment(record.createdAt).format("MM/DD/YYYY")}
+                        att.innerHTML += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;">
+                            <div class="col-2 text-danger">
+                                ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
-                            <div class="col-5 text-info-light">
+                            <div class="col-5 text-info">
                                 ${record.event}
                             </div>
                             <div class="col-4">
-                                <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                                <span class="text-success-light">NOT YET STARTED</span>
+                                <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                                <span class="text-primary">NOT YET STARTED</span>
                             </div>
                             <div class="col-1">
                             </div>
                         </div>`;
                     }
                 });
+
+                document.querySelector('#dj-showtime').innerHTML = formatInt(Math.floor(showTime / 60));
+                document.querySelector('#dj-listenertime').innerHTML = formatInt(Math.floor(listenerMinutes / 60));
             }
         };
 
@@ -7691,6 +7694,7 @@ function loadDJ(dj = null, reset = true) {
                 // Populate attendance records
                 nodeRequest({method: 'POST', url: nodeURL + '/attendance/get', data: {dj: DJData.DJ}}, function (response2) {
                     DJData.attendance = response2;
+                    console.dir(response2);
                     afterFunction();
                 });
             });
