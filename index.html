@@ -956,55 +956,39 @@
                         <p>MP3 file names: DJ/handle name - show name (date and time).</p>
                         <p>Breaks were automatically removed.</p>
                     </div>
-                    <h2 style="text-align: center;">Statistics / XP earned</h2>
-                    <div class="card">
-                        <table class="table table-hover">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th scope="col">Statistic</th>
-                                    <th scope="col">Value</th>
-                                    <th scope="col">XP</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="table-primary">
-                                    <td>Show Time:</td>
-                                    <td id="stat-showTime">0</td>
-                                    <td id="stat-showXP">0</td>
-                                </tr>
-                                <tr class="table-info">
-                                    <td>Online Listener Minutes:</td>
-                                    <td id="stat-listenerMinutes">0</td>
-                                    <td id="stat-listenerXP">0</td>
-                                </tr>
-                                <tr>
-                                    <td>Messages sent to web:</td>
-                                    <td id="stat-messagesWeb">0</td>
-                                    <td id="stat-messagesXP">0</td>
-                                </tr>
-                                <tr class="table-purple">
-                                    <td>Top Adds Played:</td>
-                                    <td id="stat-topAdds">0</td>
-                                    <td id="stat-topAddsXP">0</td>
-                                </tr>
-                                <tr class="table-warning">
-                                    <td>XP for on-time top-of-hour breaks:</td>
-                                    <td>-</td>
-                                    <td id="stat-IDsXP">0</td>
-                                </tr>
-                                <tr class="table-success">
-                                    <td>total XP earned this show:</td>
-                                    <td>-</td>
-                                    <td id="stat-subtotalXP">0</td>
-                                </tr>
-                                <tr class="table-secondary">
-                                    <td>total XP earned to date:</td>
-                                    <td>-</td>
-                                    <td id="stat-totalXP">0</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <p style="font-size: 1.5em; text-align: center;">Your WWSU Statistics</p>
+                    <div class="d-flex justify-content-around flex-wrap">
+                        <div class="card p-1 m-1 bg-light-2">
+                            <div class="card-body">
+                                <h4 class="card-title" style="text-align: center;">XP</h4>
+                                <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-totalXP">10,000</p>
+                                <p class="card-text" style="text-align: center; font-size: 1em;" id="stat-subtotalXP">0 this show</p>
+                            </div>
+                        </div>
+                        <div class="card p-1 m-1 bg-light-2">
+                            <div class="card-body">
+                                <h4 class="card-title" style="text-align: center;">Remote<br />Credits</h4>
+                                <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-remoteCredits">10</p>
+                                <p class="card-text" style="text-align: center; font-size: 1em;">this semester</p>
+                            </div>
+                        </div>
+                        <div class="card p-1 m-1 bg-light-2">
+                            <div class="card-body">
+                                <h4 class="card-title" style="text-align: center;">OnAir Hours</h4>
+                                <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-totalShowTime">1,000</p>
+                                <p class="card-text" style="text-align: center; font-size: 1em;" id="stat-showTime">0.0 this show</p>
+                            </div>
+                        </div>
+                        <div class="card p-1 m-1 bg-light-2">
+                            <div class="card-body">
+                                <h4 class="card-title" style="text-align: center;">Listener Hours</h4>
+                                <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-totalListeners">1,000</p>
+                                <p class="card-text" style="text-align: center; font-size: 1em;" id="stat-listenerMinutes">0.0 this show</p>
+                            </div>
+                        </div>
                     </div>
+                    <div style="width: 100%"><small style="text-align: center;">XP is earned for remote credits, show time, listeners, web messages sent during show, on-time top-of-hour breaks, and top adds played.</small></div>
+                    <div style="width: 100%"><small style="text-align: center;">Please contact a director if you think you have more remote credits than what is being reported here.</small></div>
                 </div>
                 <div class="modal-footer bg-light-1">
                 </div>
@@ -1269,226 +1253,249 @@
             </div>
         </div>
 
-        <div id="options-modal-timesheets" style="background-color: #363636; color: #ffffff; width: 1024px;">
-            <p>Click a clock to edit it.</p>
-            <p><span class="badge badge-primary">Approved</span><span class="badge badge-success">Still Clocked In</span><span class="badge badge-danger">Flagged / Not Approved</span></p>
-            <div class="container">    
-                <div class="row">
-                    <div class="col-sm-6 form-group">
-                        <div class="input-group" id="DateDemo">
-                            Filter by date: <input type='date' id='options-timesheets-date' />
-                            <input type="submit" class="btn btn-default" id="options-timesheets-filter" value="Filter">
+        <div class="modal" id="options-modal-timesheets" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-3">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-info doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Timesheets</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
+                    <div class="bs-callout bs-callout-info shadow-4 text-white">
+                        Click a clock to edit. 
+                        <p><span class="badge badge-success m-1">Approved</span><span class="badge badge-info m-1">Still Clocked In</span><span class="badge badge-danger m-1">Flagged / Not Approved</span></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="options-timesheets-date">Filter by week</label>
+                        <input type='date' id='options-timesheets-date' />
+                        <input type="submit" class="btn btn-primary" id="options-timesheets-filter" value="Filter">
+                    </div>
+                    <div class="d-flex justify-content-start flex-wrap" id="options-timesheets-records">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light-1">
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="options-modal-global-logs" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-3">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-secondary doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Global Logs</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
+                    <div class="form-group">
+                        <label for="options-timesheets-date">Filter by day</label>
+                        <input type='date' id='global-log-filter' />
+                        <input type="submit" class="btn btn-primary" id="filter-global-logs" value="Filter">
+                    </div>
+                    <div class="container m-1">
+                        <div class="row m-1 bg-light-1 shadow-2">
+                            <div class="col-7 text-info">
+                                Event
+                            </div>
+                            <div class="col-4">
+                                <span class="text-secondary">Scheduled Time</span><br />
+                                <span class="text-primary">Actual Time</span>
+                            </div>
+                            <div class="col-1">
+                                Log
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container m-1" id="global-logs" style="height: 480px; overflow: scroll;">
+                    </div>
+                    <div class="modal-footer bg-light-1">
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="options-modal-djcontrols" style="background-color: #363636; color: #ffffff;">
+                <div class="container m-1">
+                    <div class="row bg-primary-dark m-1">
+                        <div class="col-5 text-primary-light">
+                            Friendly Name
+                        </div>
+                        <div class="col-1 text-success-light">
+                            Auth
+                        </div>
+                        <div class="col-1 text-danger-light">
+                            Admin
+                        </div>
+                        <div class="col-1 text-warning-light">
+                            Reqs
+                        </div>
+                        <div class="col-1 text-warning-light">
+                            Issues
+                        </div>
+                        <div class="col-1 text-warning-light">
+                            Msgs
+                        </div>
+                        <div class="col-2 text-primary-light">
+                            Action
+                        </div>
+                    </div>
+                </div>
+                <div class="container m-1" id="options-djcontrols" style="height: 480px; overflow: scroll;">
+                </div>
+            </div>
+            <div id="options-modal-calendar" style="background-color: #363636; color: #ffffff;">
+                <div class="container m-1">
+                    <p>NOTE: This only verifies events for the next 7 days.</p>
+                    <p>NOTE 2: Changes to Google Calendar may take up to 5 minutes to reflect in the system.</p>
+                    <div class="row bg-primary-dark m-1">
+                        <div class="col-2 text-warning-light">
+                            Start / End
+                        </div>
+                        <div class="col-3 text-light">
+                            Event
+                        </div>
+                        <div class="col-1">
+                            Status
+                        </div>
+                        <div class="col-6 text-info-light">
+                            Information
+                        </div>
+                    </div>
+                </div>
+                <div class="container m-1" id="calendar-verify" style="height: 480px; overflow: scroll;">
+                </div>
+            </div>
+            <div id="options-modal-announcements" style="background-color: #363636; color: #ffffff;">
+                <div class="container m-1">
+                    <button type="button" id="options-announcements-add" class="btn btn-success">Add</button>
+                    <div class="row bg-primary-dark m-1">
+                        <div class="col-3 text-warning-light">
+                            Starts / Expires
+                        </div>
+                        <div class="col-2 text-success-light">
+                            Type
+                        </div>
+                        <div class="col-5 text-light">
+                            Announcement
+                        </div>
+                        <div class="col-2 text-info-light">
+                            Action
+                        </div>
+                    </div>
+                </div>
+                <div class="container m-1" id="options-announcements" style="height: 480px; overflow: scroll;">
+                </div>
+            </div>
+            <div id="options-modal-announcement">
+                <div style="background-color: #363636; color: #ffffff;">
+                    Starts: <input type="datetime-local" id="options-announcement-starts" class="form-control">
+                    Expires: <input type="datetime-local" id="options-announcement-expires" class="form-control">
+                    Announcement for: <select class="form-control" id="options-announcement-type">
+                        <option value="djcontrols">DJ Controls</option>
+                        <option value="website">Website / Listener's Corner</option>
+                        <option value="timesheet">Clock In/Out Computer</option>
+                        <option value="display-internal">Internal Display Sign (Slide)</option>
+                        <option value="display-internal-sticky">Internal Display Sign (Sticky)</option>
+                        <option value="display-public">Public Display Sign (Slide)</option>
+                        <option value="mobile">Mobile Apps</option>
+                    </select>
+                    Severity Level: <select class="form-control" id="options-announcement-level">
+                        <option value="danger">Very Important (red)</option>
+                        <option value="warning">Maintenance / Expected Downtime (yellow)</option>
+                        <option value="info">Action Item / Deadline (blue)</option>
+                        <option value="trivial">Everything Else (gray)</option>
+                    </select>
+                    Announcement Title: <input type="text" id="options-announcement-title" class="form-control" placeholder="Please keep short and concise">
+                    Announcement Text: <div class="form-group">
+                        <div class="bg-light text-dark">
+                            <div id="theannouncement" class="form-control"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3" id="options-announcement-button">
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="d-flex justify-content-start flex-wrap" id="options-timesheets-records">
-            </div>
-        </div>
-        <div id="options-modal-global-logs" style="background-color: #363636; color: #ffffff;">
-            <input type="date" id="global-log-filter"> <button type="button" id="filter-global-logs" class="btn btn-primary">Filter</button>
-            <div class="container m-1">
-                <div class="row bg-primary-dark m-1">
-                    <div class="col-7 text-primary-light">
-                        Event
-                    </div>
-                    <div class="col-4">
-                        <span class="text-warning-light">Scheduled Time</span><br />
-                        <span class="text-success-light">Actual Time</span>
-                    </div>
-                    <div class="col-1">
-                        Log
-                    </div>
-                </div>
-            </div>
-            <div class="container m-1" id="global-logs" style="height: 480px; overflow: scroll;">
-            </div>
-        </div>
-        <div id="options-modal-djcontrols" style="background-color: #363636; color: #ffffff;">
-            <div class="container m-1">
-                <div class="row bg-primary-dark m-1">
-                    <div class="col-5 text-primary-light">
-                        Friendly Name
-                    </div>
-                    <div class="col-1 text-success-light">
-                        Auth
-                    </div>
-                    <div class="col-1 text-danger-light">
-                        Admin
-                    </div>
-                    <div class="col-1 text-warning-light">
-                        Reqs
-                    </div>
-                    <div class="col-1 text-warning-light">
-                        Issues
-                    </div>
-                    <div class="col-1 text-warning-light">
-                        Msgs
-                    </div>
-                    <div class="col-2 text-primary-light">
-                        Action
-                    </div>
-                </div>
-            </div>
-            <div class="container m-1" id="options-djcontrols" style="height: 480px; overflow: scroll;">
-            </div>
-        </div>
-        <div id="options-modal-calendar" style="background-color: #363636; color: #ffffff;">
-            <div class="container m-1">
-                <p>NOTE: This only verifies events for the next 7 days.</p>
-                <p>NOTE 2: Changes to Google Calendar may take up to 5 minutes to reflect in the system.</p>
-                <div class="row bg-primary-dark m-1">
-                    <div class="col-2 text-warning-light">
-                        Start / End
-                    </div>
-                    <div class="col-3 text-light">
-                        Event
-                    </div>
-                    <div class="col-1">
-                        Status
-                    </div>
-                    <div class="col-6 text-info-light">
-                        Information
-                    </div>
-                </div>
-            </div>
-            <div class="container m-1" id="calendar-verify" style="height: 480px; overflow: scroll;">
-            </div>
-        </div>
-        <div id="options-modal-announcements" style="background-color: #363636; color: #ffffff;">
-            <div class="container m-1">
-                <button type="button" id="options-announcements-add" class="btn btn-success">Add</button>
-                <div class="row bg-primary-dark m-1">
-                    <div class="col-3 text-warning-light">
-                        Starts / Expires
-                    </div>
-                    <div class="col-2 text-success-light">
-                        Type
-                    </div>
-                    <div class="col-5 text-light">
-                        Announcement
-                    </div>
-                    <div class="col-2 text-info-light">
-                        Action
-                    </div>
-                </div>
-            </div>
-            <div class="container m-1" id="options-announcements" style="height: 480px; overflow: scroll;">
-            </div>
-        </div>
-        <div id="options-modal-announcement">
-            <div style="background-color: #363636; color: #ffffff;">
-                Starts: <input type="datetime-local" id="options-announcement-starts" class="form-control">
-                Expires: <input type="datetime-local" id="options-announcement-expires" class="form-control">
-                Announcement for: <select class="form-control" id="options-announcement-type">
-                    <option value="djcontrols">DJ Controls</option>
-                    <option value="website">Website / Listener's Corner</option>
-                    <option value="timesheet">Clock In/Out Computer</option>
-                    <option value="display-internal">Internal Display Sign (Slide)</option>
-                    <option value="display-internal-sticky">Internal Display Sign (Sticky)</option>
-                    <option value="display-public">Public Display Sign (Slide)</option>
-                    <option value="mobile">Mobile Apps</option>
+            <div id="options-modal-dj-xp-add" style="background-color: #363636; color: #ffffff;">
+                Category of XP/Remote: <select class="form-control" id="options-xp-type">
+                    <option value="default-default">Entry Type</option>
+                    <option value="remote-event">Remote Credit: Remote Event</option>
+                    <option value="remote-cd">Remote Credit: CD Review</option>
+                    <option value="remote-sports">Remote Credit: Sports</option>
+                    <option value="remote-production">Remote Credit: Production</option>
+                    <option value="remote-playlist">Remote Credit: Playlist / Genre</option>
+                    <option value="remote-other">Remote Credit: Other</option>
+                    <option value="xp-showtime">XP: Show Time</option>
+                    <option value="xp-listeners">XP: Listeners</option>
+                    <option value="xp-id">XP: Legal ID</option>
+                    <option value="xp-topadd">XP: Top Adds</option>
+                    <option value="xp-messages">XP: Web Messages</option>
+                    <option value="xp-promotion">XP: Show Promotion</option>
+                    <option value="xp-contribution">XP: Contribution to WWSU</option>
+                    <option value="xp-other">XP: Other</option>
                 </select>
-                Severity Level: <select class="form-control" id="options-announcement-level">
-                    <option value="danger">Very Important (red)</option>
-                    <option value="warning">Maintenance / Expected Downtime (yellow)</option>
-                    <option value="info">Action Item / Deadline (blue)</option>
-                    <option value="trivial">Everything Else (gray)</option>
-                </select>
-                Announcement Title: <input type="text" id="options-announcement-title" class="form-control" placeholder="Please keep short and concise">
-                Announcement Text: <div class="form-group">
-                    <div class="bg-light text-dark">
-                        <div id="theannouncement" class="form-control"></div>
+                Date of XP/Remote: <input type="datetime-local" id="options-xp-date" class="form-control">
+                Description: <textarea class="form-control" id="options-xp-description" rows="2" placeholder=""></textarea>
+                Amount of XP / Remote credits: <input type="text" id="options-xp-amount" class="form-control" placeholder="0">
+                <div class="container m-1" id="options-xp-djs" style="height: 240px; overflow: scroll;">
+                </div>
+                <div class="row">
+                    <div class="col-3" id="options-xp-button">
+                    </div>
+                </div>
+            </div>
+            <div id="options-modal-host" style="background-color: #363636; color: #ffffff;">
+                Friendly Name: <input type="text" id="options-host-name" class="form-control" placeholder="">
+                <div class="funkyradio">
+                    <div class="funkyradio-success">
+                        <input type="checkbox" value="" id="options-host-authorized">
+                        <label for="options-host-authorized">
+                            Authorized (DJ Controls can be used)
+                        </label>
+                    </div>
+                </div>
+                <div class="funkyradio">
+                    <div class="funkyradio-success">
+                        <input type="checkbox" value="" id="options-host-admin">
+                        <label for="options-host-admin">
+                            Administrator (Can access admin menu and change settings)
+                        </label>
+                    </div>
+                </div>
+                <div class="funkyradio">
+                    <div class="funkyradio-success">
+                        <input type="checkbox" value="" id="options-host-requests">
+                        <label for="options-host-requests">
+                            Notify on new Track Requests
+                        </label>
+                    </div>
+                </div>
+                <div class="funkyradio">
+                    <div class="funkyradio-success">
+                        <input type="checkbox" value="" id="options-host-emergencies">
+                        <label for="options-host-emergencies">
+                            Notify when WWSU experiences issues / emergencies
+                        </label>
+                    </div>
+                </div>
+                <div class="funkyradio">
+                    <div class="funkyradio-success">
+                        <input type="checkbox" value="" id="options-host-webmessages">
+                        <label for="options-host-webmessages">
+                            Notify when web/mobile users send a new message
+                        </label>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-3" id="options-announcement-button">
+                    <div class="col-3" id="options-host-button">
                     </div>
                 </div>
             </div>
-        </div>
-        <div id="options-modal-dj-xp-add" style="background-color: #363636; color: #ffffff;">
-            Category of XP/Remote: <select class="form-control" id="options-xp-type">
-                <option value="default-default">Entry Type</option>
-                <option value="remote-event">Remote Credit: Remote Event</option>
-                <option value="remote-cd">Remote Credit: CD Review</option>
-                <option value="remote-sports">Remote Credit: Sports</option>
-                <option value="remote-production">Remote Credit: Production</option>
-                <option value="remote-playlist">Remote Credit: Playlist / Genre</option>
-                <option value="remote-other">Remote Credit: Other</option>
-                <option value="xp-showtime">XP: Show Time</option>
-                <option value="xp-listeners">XP: Listeners</option>
-                <option value="xp-id">XP: Legal ID</option>
-                <option value="xp-topadd">XP: Top Adds</option>
-                <option value="xp-messages">XP: Web Messages</option>
-                <option value="xp-promotion">XP: Show Promotion</option>
-                <option value="xp-contribution">XP: Contribution to WWSU</option>
-                <option value="xp-other">XP: Other</option>
-            </select>
-            Date of XP/Remote: <input type="datetime-local" id="options-xp-date" class="form-control">
-            Description: <textarea class="form-control" id="options-xp-description" rows="2" placeholder=""></textarea>
-            Amount of XP / Remote credits: <input type="text" id="options-xp-amount" class="form-control" placeholder="0">
-            <div class="container m-1" id="options-xp-djs" style="height: 240px; overflow: scroll;">
-            </div>
-            <div class="row">
-                <div class="col-3" id="options-xp-button">
-                </div>
-            </div>
-        </div>
-        <div id="options-modal-host" style="background-color: #363636; color: #ffffff;">
-            Friendly Name: <input type="text" id="options-host-name" class="form-control" placeholder="">
-            <div class="funkyradio">
-                <div class="funkyradio-success">
-                    <input type="checkbox" value="" id="options-host-authorized">
-                    <label for="options-host-authorized">
-                        Authorized (DJ Controls can be used)
-                    </label>
-                </div>
-            </div>
-            <div class="funkyradio">
-                <div class="funkyradio-success">
-                    <input type="checkbox" value="" id="options-host-admin">
-                    <label for="options-host-admin">
-                        Administrator (Can access admin menu and change settings)
-                    </label>
-                </div>
-            </div>
-            <div class="funkyradio">
-                <div class="funkyradio-success">
-                    <input type="checkbox" value="" id="options-host-requests">
-                    <label for="options-host-requests">
-                        Notify on new Track Requests
-                    </label>
-                </div>
-            </div>
-            <div class="funkyradio">
-                <div class="funkyradio-success">
-                    <input type="checkbox" value="" id="options-host-emergencies">
-                    <label for="options-host-emergencies">
-                        Notify when WWSU experiences issues / emergencies
-                    </label>
-                </div>
-            </div>
-            <div class="funkyradio">
-                <div class="funkyradio-success">
-                    <input type="checkbox" value="" id="options-host-webmessages">
-                    <label for="options-host-webmessages">
-                        Notify when web/mobile users send a new message
-                    </label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-3" id="options-host-button">
-                </div>
-            </div>
-        </div>
 
-        <script>if (window.module)
+            <script>if (window.module)
                 module = window.module;</script>
-        <script>
+            <script>
 
-            // You can also require other files to run in this process
-            require('./renderer.js');
-        </script>
+                // You can also require other files to run in this process
+                require('./renderer.js');
+            </script>
     </body>
 </html>

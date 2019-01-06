@@ -492,8 +492,6 @@ try {
     });
 
     $("#options-modal-timesheets").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Timesheets</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -628,8 +626,6 @@ try {
     });
 
     $("#options-modal-global-logs").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Global Logs</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -792,7 +788,7 @@ try {
     });
 
     $("#xp-modal").iziModal({
-        width: 640,
+        width: 800,
         focusInput: true,
         arrowKeys: false,
         navigateCaption: false,
@@ -805,6 +801,8 @@ try {
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
         zindex: 50
     });
+    
+    $("#xp-modal").iziModal('open');
 
     $("#requests-modal").iziModal({
         width: 640,
@@ -1079,49 +1077,49 @@ function filterGlobalLogs(date) {
                     } else {
                         theDate = moment(record.scheduledStart);
                     }
-                    var theClass = 'bs-callout-default';
+                    var theClass = 'secondary';
                     if (typeof formatted[moment(theDate).format("MM/DD/YYYY")] === 'undefined')
                     {
                         formatted[moment(theDate).format("MM/DD/YYYY")] = [];
                     }
                     if (record.event.startsWith("Show: ") || record.event.startsWith("Prerecord: "))
                     {
-                        theClass = "bs-callout-danger";
+                        theClass = "danger";
                     } else if (record.event.startsWith("Sports: "))
                     {
-                        theClass = "bs-callout-success";
+                        theClass = "success";
                     } else if (record.event.startsWith("Remote: "))
                     {
-                        theClass = "bs-callout-purple";
+                        theClass = "purple";
                     } else if (record.event.startsWith("Genre: ") || record.event.startsWith("Playlist: "))
                     {
-                        theClass = "bs-callout-info";
+                        theClass = "info";
                     }
                     if (record.scheduledStart === null)
                     {
-                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
-                                <div class="col-7 text-primary-light">
+                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+                                <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
                                 <div class="col-4">
-                        <span class="text-warning-light">UNSCHEDULED</span><br />
-                        <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                        <span class="text-secondary">UNSCHEDULED</span><br />
+                        <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
                                     <div class="col-1">
                                         <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
-                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                                         </div>
                             </div>`);
                     } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)))
                     {
-                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
-                                <div class="col-7 text-primary-light">
+                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+                                <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
                                 <div class="col-4">
-                        <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                        <span class="text-success-light">FUTURE EVENT</span>
+                        <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                        <span class="text-primary">FUTURE EVENT</span>
                                 </div>
                                     <div class="col-1">
                                         </div>
@@ -1130,72 +1128,72 @@ function filterGlobalLogs(date) {
                     {
                         if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10)
                         {
-                            formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
-                                <div class="col-7 text-primary-light">
+                            formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+                                <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
                                 <div class="col-4">
-                        <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                        <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                        <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                        <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
                                     <div class="col-1">
                         <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
-                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                                         </div>
                             </div>`);
                         } else {
-                            formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
-                                <div class="col-7 text-primary-light">
+                            formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+                                <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
                                 <div class="col-4">
-                        <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                        <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                        <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                        <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
                                     <div class="col-1">
                         <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
-                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                                         </div>
                             </div>`);
                         }
                     } else if (record.actualStart !== null && record.actualEnd === null)
                     {
-                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
-                                <div class="col-7 text-primary-light">
+                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+                                <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
                                 <div class="col-4">
-                        <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                        <span class="text-success-light">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                        <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                        <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
                                     <div class="col-1">
                         <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
-                <span aria-hidden="true"><i class="fas fa-file text-white"></i></span>
+                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                                         </div>
                             </div>`);
                     } else if (record.actualStart === null && record.actualEnd === null) {
-                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
-                                <div class="col-7 text-primary-light">
+                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+                                <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
                                 <div class="col-4">
-                        <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                        <span class="text-success-light">ABSENT / DID NOT AIR</span>
+                        <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                        <span class="text-primary">ABSENT / DID NOT AIR</span>
                                 </div>
                                     <div class="col-1">
                                         </div>
                             </div>`);
                     } else {
-                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row bs-callout ${theClass}">
-                                <div class="col-7 text-primary-light">
+                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+                                <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
                                 <div class="col-4">
-                        <span class="text-warning-light">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                        <span class="text-success-light">NOT YET STARTED</span>
+                        <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                        <span class="text-primary">NOT YET STARTED</span>
                                 </div>
                                     <div class="col-1">
                                         </div>
@@ -6197,66 +6195,13 @@ function endShow() {
             nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to end their show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         } else {
             $("#xp-modal").iziModal('open');
-            document.querySelector(`#stat-showTime`).innerHTML = moment.duration(response.showTime || 0, "minutes").format();
-            document.querySelector(`#stat-showXP`).innerHTML = typeof response.showXP !== 'undefined' ? formatInt(response.showXP) : "-";
-            document.querySelector(`#stat-listenerMinutes`).innerHTML = moment.duration(response.listenerMinutes || 0, "minutes").format();
-            document.querySelector(`#stat-listenerXP`).innerHTML = typeof response.listenerXP !== 'undefined' ? formatInt(response.listenerXP) : "-";
-            document.querySelector(`#stat-messagesWeb`).innerHTML = response.messagesWeb || 0;
-            document.querySelector(`#stat-messagesXP`).innerHTML = typeof response.messagesXP !== 'undefined' ? formatInt(response.messagesXP) : "-";
-            document.querySelector(`#stat-topAdds`).innerHTML = response.topAdds || 0;
-            document.querySelector(`#stat-topAddsXP`).innerHTML = typeof response.topAddsXP !== 'undefined' ? formatInt(response.topAddsXP) : "-";
-            document.querySelector(`#stat-IDsXP`).innerHTML = typeof response.IDsXP !== 'undefined' ? formatInt(response.IDsXP) : "-";
-            document.querySelector(`#stat-subtotalXP`).innerHTML = typeof response.subtotalXP !== 'undefined' ? formatInt(response.subtotalXP) : "-";
-            document.querySelector(`#stat-totalXP`).innerHTML = typeof response.totalXP !== 'undefined' ? formatInt(response.totalXP) : "-";
-            /* DEPRECATED per request of GM
-             var data = [];
-             response.listeners.forEach(function (listener) {
-             data.push({x: listener.createdAt, y: listener.listeners});
-             });
-             document.querySelector(`#listenerChart`).innerHTML = ``;
-             new Taucharts.Chart({
-             data: data,
-             type: 'line',
-             x: 'x',
-             y: 'y',
-             color: 'wwsu-red',
-             guide: {
-             y: {label: {text: 'Online Listeners'}, autoScale: true, nice: true},
-             x: {label: {text: 'Time'}, autoScale: true, nice: false},
-             interpolate: 'step-after',
-             showGridLines: 'xy',
-             },
-             dimensions: {
-             x: {
-             type: 'measure',
-             scale: 'time'
-             },
-             y: {
-             type: 'measure',
-             scale: 'linear'
-             }
-             },
-             plugins: [
-             Taucharts.api.plugins.get('tooltip')({
-             formatters: {
-             x: {
-             label: "Time",
-             format: function (n) {
-             return moment(n).format("LT");
-             }
-             },
-             y: {
-             label: "Online Listeners",
-             format: function (n) {
-             return n;
-             }
-             }
-             
-             }
-             })
-             ]
-             }).renderTo('#listenerChart');
-             */
+            document.querySelector(`#stat-showTime`).innerHTML = `${parseInt((response.showTime || 0) / 6) / 10} this show`;
+            document.querySelector(`#stat-listenerMinutes`).innerHTML = `${parseInt((response.listenerMinutes || 0) / 6) / 10} this show`;
+            document.querySelector(`#stat-subtotalXP`).innerHTML = typeof response.subtotalXP !== 'undefined' ? `${formatInt(response.subtotalXP)} this show` : ``;
+            document.querySelector(`#stat-totalXP`).innerHTML = typeof response.totalXP !== 'undefined' ? formatInt(response.totalXP) : `-`;
+            document.querySelector(`#stat-remoteCredits`).innerHTML = typeof response.remoteCredits !== 'undefined' ? formatInt(response.remoteCredits) : `-`;
+            document.querySelector(`#stat-totalShowTime`).innerHTML = typeof response.totalShowTime !== 'undefined' ? formatInt(parseInt(response.totalShowTime / 60)) : `-`;
+            document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.totalListeners !== 'undefined' ? formatInt(parseInt(response.totalListeners / 60)) : `-`;
         }
         console.log(JSON.stringify(response));
     });
@@ -6274,66 +6219,13 @@ function switchShow() {
             nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to switch show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         } else {
             $("#xp-modal").iziModal('open');
-            document.querySelector(`#stat-showTime`).innerHTML = moment.duration(response.showTime || 0, "minutes").format();
-            document.querySelector(`#stat-showXP`).innerHTML = typeof response.showXP !== 'undefined' ? formatInt(response.showXP) : "-";
-            document.querySelector(`#stat-listenerMinutes`).innerHTML = moment.duration(response.listenerMinutes || 0, "minutes").format();
-            document.querySelector(`#stat-listenerXP`).innerHTML = typeof response.listenerXP !== 'undefined' ? formatInt(response.listenerXP) : "-";
-            document.querySelector(`#stat-messagesWeb`).innerHTML = response.messagesWeb || 0;
-            document.querySelector(`#stat-messagesXP`).innerHTML = typeof response.messagesXP !== 'undefined' ? formatInt(response.messagesXP) : "-";
-            document.querySelector(`#stat-topAdds`).innerHTML = response.topAdds || 0;
-            document.querySelector(`#stat-topAddsXP`).innerHTML = typeof response.topAddsXP !== 'undefined' ? formatInt(response.topAddsXP) : "-";
-            document.querySelector(`#stat-IDsXP`).innerHTML = typeof response.IDsXP !== 'undefined' ? formatInt(response.IDsXP) : "-";
-            document.querySelector(`#stat-subtotalXP`).innerHTML = typeof response.subtotalXP !== 'undefined' ? formatInt(response.subtotalXP) : "-";
-            document.querySelector(`#stat-totalXP`).innerHTML = typeof response.totalXP !== 'undefined' ? formatInt(response.totalXP) : "-";
-            /* DEPRECATED per request of GM
-             var data = [];
-             response.listeners.forEach(function (listener) {
-             data.push({x: listener.createdAt, y: listener.listeners});
-             });
-             document.querySelector(`#listenerChart`).innerHTML = ``;
-             new Taucharts.Chart({
-             data: data,
-             type: 'line',
-             x: 'x',
-             y: 'y',
-             color: 'wwsu-red',
-             guide: {
-             y: {label: {text: 'Online Listeners'}, autoScale: true, nice: true},
-             x: {label: {text: 'Time'}, autoScale: true, nice: false},
-             interpolate: 'step-after',
-             showGridLines: 'xy',
-             },
-             dimensions: {
-             x: {
-             type: 'measure',
-             scale: 'time'
-             },
-             y: {
-             type: 'measure',
-             scale: 'linear'
-             }
-             },
-             plugins: [
-             Taucharts.api.plugins.get('tooltip')({
-             formatters: {
-             x: {
-             label: "Time",
-             format: function (n) {
-             return moment(n).format("LT");
-             }
-             },
-             y: {
-             label: "Online Listeners",
-             format: function (n) {
-             return n;
-             }
-             }
-             
-             }
-             })
-             ]
-             }).renderTo('#listenerChart');
-             */
+            document.querySelector(`#stat-showTime`).innerHTML = `${parseInt((response.showTime || 0) / 6) / 10} this show`;
+            document.querySelector(`#stat-listenerMinutes`).innerHTML = `${parseInt((response.listenerMinutes || 0) / 6) / 10} this show`;
+            document.querySelector(`#stat-subtotalXP`).innerHTML = typeof response.subtotalXP !== 'undefined' ? `${formatInt(response.subtotalXP)} this show` : ``;
+            document.querySelector(`#stat-totalXP`).innerHTML = typeof response.totalXP !== 'undefined' ? formatInt(response.totalXP) : `-`;
+            document.querySelector(`#stat-remoteCredits`).innerHTML = typeof response.remoteCredits !== 'undefined' ? formatInt(response.remoteCredits) : `-`;
+            document.querySelector(`#stat-totalShowTime`).innerHTML = typeof response.totalShowTime !== 'undefined' ? formatInt(parseInt(response.totalShowTime / 60)) : `-`;
+            document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.totalListeners !== 'undefined' ? formatInt(parseInt(response.totalListeners / 60)) : `-`;
         }
         console.log(JSON.stringify(response));
     });
@@ -7948,90 +7840,94 @@ function loadTimesheets(date)
                 // If there is not a row for this director yet, create one
                 if (!newRow || newRow === null)
                 {
-                    records.innerHTML += `<div id="options-timesheets-director-${record.name.replace(/\W/g, '')}" class="p-1 m-1 bs-callout bs-callout-default" style="width: 48%; position: relative;">
-                    <h4>${record.name}</h4>
+                    records.innerHTML += `<div id="options-timesheets-director-${record.name.replace(/\W/g, '')}" class="card p-1 m-1 bg-light-1" style="width: 48%; position: relative;">
+                    <div class="card-body">
+                    <h5 class="card-title">${record.name}</h5>
+                    <p class="card-text">
                     <div class="container">    
-                        <div class="row bg-primary">
-                            <div class="col text-info-light">
+                        <div class="row shadow-2">
+                            <div class="col text-dark">
                                 Day
                             </div>
-                            <div class="col text-success-light">
+                            <div class="col text-dark">
                                 Clock In
                             </div>
-                            <div class="col text-danger-light">
+                            <div class="col text-dark">
                                 Clock Out
                             </div>
                         </div>
-                        <div class="row border border-secondary">
-                            <div class="col text-info-light">
-                            Sunday
+                        <div class="row border border-dark">
+                            <div class="col text-dark">
+                            Sun
                             </div>
-                            <div class="col text-success-light" id="options-timesheets-director-cell-0-in-${record.name.replace(/\W/g, '')}">
+                            <div class="col" id="options-timesheets-director-cell-0-in-${record.name.replace(/\W/g, '')}">
                             </div>
-                            <div class="col text-danger-light" id="options-timesheets-director-cell-0-out-${record.name.replace(/\W/g, '')}">
-                            </div>
-                        </div>
-                    <div class="row border border-secondary">
-                            <div class="col text-info-light">
-                            Monday
-                            </div>
-                            <div class="col text-success-light" id="options-timesheets-director-cell-1-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col text-danger-light" id="options-timesheets-director-cell-1-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col" id="options-timesheets-director-cell-0-out-${record.name.replace(/\W/g, '')}">
                             </div>
                         </div>
-                    <div class="row border border-secondary">
-                            <div class="col text-info-light">
-                            Tuesday
+                    <div class="row border border-dark">
+                            <div class="col text-dark">
+                            Mon
                             </div>
-                            <div class="col text-success-light" id="options-timesheets-director-cell-2-in-${record.name.replace(/\W/g, '')}">
+                            <div class="col" id="options-timesheets-director-cell-1-in-${record.name.replace(/\W/g, '')}">
                             </div>
-                            <div class="col text-danger-light" id="options-timesheets-director-cell-2-out-${record.name.replace(/\W/g, '')}">
-                            </div>
-                        </div>
-                    <div class="row border border-secondary">
-                            <div class="col text-info-light">
-                            Wednesday
-                            </div>
-                            <div class="col text-success-light" id="options-timesheets-director-cell-3-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col text-danger-light" id="options-timesheets-director-cell-3-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col" id="options-timesheets-director-cell-1-out-${record.name.replace(/\W/g, '')}">
                             </div>
                         </div>
-                    <div class="row border border-secondary">
-                            <div class="col text-info-light">
-                            Thursday
+                    <div class="row border border-dark">
+                            <div class="col text-dark">
+                            Tues
                             </div>
-                            <div class="col text-success-light" id="options-timesheets-director-cell-4-in-${record.name.replace(/\W/g, '')}">
+                            <div class="col" id="options-timesheets-director-cell-2-in-${record.name.replace(/\W/g, '')}">
                             </div>
-                            <div class="col text-danger-light" id="options-timesheets-director-cell-4-out-${record.name.replace(/\W/g, '')}">
-                            </div>
-                        </div>
-                    <div class="row border border-secondary">
-                            <div class="col text-info-light">
-                            Friday
-                            </div>
-                            <div class="col text-success-light" id="options-timesheets-director-cell-5-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col text-danger-light" id="options-timesheets-director-cell-5-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col" id="options-timesheets-director-cell-2-out-${record.name.replace(/\W/g, '')}">
                             </div>
                         </div>
-                    <div class="row border border-secondary">
-                            <div class="col text-info-light">
-                            Saturday
+                    <div class="row border border-dark">
+                            <div class="col text-dark">
+                            Wed
                             </div>
-                            <div class="col text-success-light" id="options-timesheets-director-cell-6-in-${record.name.replace(/\W/g, '')}">
+                            <div class="col" id="options-timesheets-director-cell-3-in-${record.name.replace(/\W/g, '')}">
                             </div>
-                            <div class="col text-danger-light" id="options-timesheets-director-cell-6-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col" id="options-timesheets-director-cell-3-out-${record.name.replace(/\W/g, '')}">
+                            </div>
+                        </div>
+                    <div class="row border border-dark">
+                            <div class="col text-dark">
+                            Thur
+                            </div>
+                            <div class="col" id="options-timesheets-director-cell-4-in-${record.name.replace(/\W/g, '')}">
+                            </div>
+                            <div class="col" id="options-timesheets-director-cell-4-out-${record.name.replace(/\W/g, '')}">
+                            </div>
+                        </div>
+                    <div class="row border border-dark">
+                            <div class="col text-dark">
+                            Fri
+                            </div>
+                            <div class="col" id="options-timesheets-director-cell-5-in-${record.name.replace(/\W/g, '')}">
+                            </div>
+                            <div class="col" id="options-timesheets-director-cell-5-out-${record.name.replace(/\W/g, '')}">
+                            </div>
+                        </div>
+                    <div class="row border border-dark">
+                            <div class="col text-dark">
+                            Sat
+                            </div>
+                            <div class="col" id="options-timesheets-director-cell-6-in-${record.name.replace(/\W/g, '')}">
+                            </div>
+                            <div class="col" id="options-timesheets-director-cell-6-out-${record.name.replace(/\W/g, '')}">
                             </div>
                         </div>
                     <div class="row">
-                            <div class="col text-info-light">
+                            <div class="col text-primary">
                             Hours
                             </div>
-                            <div class="col text-warning-light" id="options-timesheets-director-cell-h-${record.name.replace(/\W/g, '')}">
+                            <div class="col text-primary" id="options-timesheets-director-cell-h-${record.name.replace(/\W/g, '')}">
                             </div>
                         </div>
+                    </div>
+                    </p>
                     </div>
                     </div>
                     `;
@@ -8090,10 +7986,10 @@ function loadTimesheets(date)
                             cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-danger" id="timesheet-t-${record.ID}">${inT}</span><br />`;
                             break;
                         case 1:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-primary" id="timesheet-t-${record.ID}">${inT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}">${inT}</span><br />`;
                             break;
                         case 2:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}">${inT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-info" id="timesheet-t-${record.ID}">${inT}</span><br />`;
                             break;
                     }
                 }
@@ -8108,10 +8004,10 @@ function loadTimesheets(date)
                             cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-danger" id="timesheet-t-${record.ID}">${outT}</span><br />`;
                             break;
                         case 1:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-primary" id="timesheet-t-${record.ID}">${outT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}">${outT}</span><br />`;
                             break;
                         case 2:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}">${outT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-info" id="timesheet-t-${record.ID}">${outT}</span><br />`;
                             break;
                     }
                 }
