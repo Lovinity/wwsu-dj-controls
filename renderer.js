@@ -506,8 +506,6 @@ try {
     });
 
     $("#options-modal-announcements").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Announcements</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -550,8 +548,6 @@ try {
     });
 
     $("#options-modal-host").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Edit DJ Controls Host</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -608,8 +604,6 @@ try {
     });
 
     $("#options-modal-dj-xp-add").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Add XP / Remotes</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -652,8 +646,6 @@ try {
     });
 
     $("#options-modal-announcement").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Add/Edit Announcement</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -1034,11 +1026,11 @@ document.querySelector("#options-timesheets-filter").onclick = function () {
 document.querySelector("#options-announcements-add").onclick = function () {
     document.querySelector("#options-announcement-starts").value = moment().format("YYYY-MM-DD\THH:mm");
     document.querySelector("#options-announcement-expires").value = moment({year: 3000, month: 1, day: 1, hour: 0, minute: 0, second: 0}).format("YYYY-MM-DD\THH:mm");
-    document.querySelector("#options-announcement-type").value = "djcontrols";
+    document.querySelector("#options-announcement-type").value = "undefined";
     document.querySelector("#options-announcement-title").value = "";
-    document.querySelector("#options-announcement-level").value = "secondary";
+    document.querySelector("#options-announcement-level").value = "undefined";
     quill2.setText("\n");
-    document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-success" id="options-announcement-add">Add</button>`;
+    document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-success btn-lg" id="options-announcement-add">Add</button>`;
     $("#options-modal-announcement").iziModal('open');
 };
 
@@ -1457,11 +1449,11 @@ document.querySelector(`#options-modal-djs`).addEventListener("click", function 
                 if (e.target.id === 'options-dj-mass-xp')
                 {
                     document.querySelector("#options-xp-date").value = moment(Meta.time).format("YYYY-MM-DD\THH:mm");
-                    document.querySelector("#options-xp-type").value = "default-default";
+                    document.querySelector("#options-xp-type").value = "undefined-undefined";
                     document.querySelector("#options-xp-description").value = "";
                     document.querySelector("#options-xp-amount").value = 0;
                     document.querySelector("#options-xp-djs").style.display = "inline-block";
-                    document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success" id="options-xp-add">Add</button>`;
+                    document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add">Add</button>`;
                     Djs().each(dj => {
                         var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
                         if (temp)
@@ -1563,11 +1555,11 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                 } else if (e.target.id === 'options-dj-mass-xp')
                 {
                     document.querySelector("#options-xp-date").value = moment(Meta.time).format("YYYY-MM-DD\THH:mm");
-                    document.querySelector("#options-xp-type").value = "default-default";
+                    document.querySelector("#options-xp-type").value = "undefined-undefined";
                     document.querySelector("#options-xp-description").value = "";
                     document.querySelector("#options-xp-amount").value = 0;
                     document.querySelector("#options-xp-djs").style.display = "inline-block";
-                    document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success" id="options-xp-add">Add</button>`;
+                    document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add">Add</button>`;
                     Djs().each(dj => {
                         var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
                         if (temp)
@@ -1942,11 +1934,11 @@ document.querySelector(`#dj-xp-add-div`).addEventListener("click", function (e) 
             if (e.target.id === 'dj-xp-add')
             {
                 document.querySelector("#options-xp-date").value = moment(Meta.time).format("YYYY-MM-DD\THH:mm");
-                document.querySelector("#options-xp-type").value = "default-default";
+                document.querySelector("#options-xp-type").value = "undefined-undefined";
                 document.querySelector("#options-xp-description").value = "";
                 document.querySelector("#options-xp-amount").value = 0;
                 document.querySelector("#options-xp-djs").style.display = "inline-block";
-                document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success" id="options-xp-add">Add</button>`;
+                document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add">Add</button>`;
                 Djs().each(dj => {
                     var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
                     if (temp)
@@ -2236,7 +2228,7 @@ document.querySelector(`#dj-xp-logs`).addEventListener("click", function (e) {
                             document.querySelector("#options-xp-description").value = record.description;
                             document.querySelector("#options-xp-amount").value = parseFloat(record.amount);
                             document.querySelector("#options-xp-djs").style.display = "none";
-                            document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success" id="options-xp-edit-${recordID}">Edit</button>`;
+                            document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-xp-edit-${recordID}">Edit</button>`;
                             Djs().each(dj => {
                                 var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
                                 if (temp)
@@ -2427,7 +2419,7 @@ document.querySelector(`#options-announcements`).addEventListener("click", funct
                 document.querySelector("#options-announcement-title").value = response.title;
                 document.querySelector("#options-announcement-level").value = response.level;
                 quill2.clipboard.dangerouslyPasteHTML(response.announcement);
-                document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-success" id="options-announcement-edit-${response.ID}">Edit</button>`;
+                document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-urgent btn-lg" id="options-announcement-edit-${response.ID}">Edit</button>`;
                 $("#options-modal-announcement").iziModal('open');
             }
         }
@@ -2514,7 +2506,7 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
                 document.querySelector("#options-host-requests").checked = host.requests;
                 document.querySelector("#options-host-emergencies").checked = host.emergencies;
                 document.querySelector("#options-host-webmessages").checked = host.webmessages;
-                document.querySelector("#options-host-button").innerHTML = `<button type="button" class="btn btn-success" id="options-host-edit-${host.ID}">Edit</button>`;
+                document.querySelector("#options-host-button").innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-host-edit-${host.ID}">Edit</button>`;
                 $("#options-modal-host").iziModal('open');
             }
         }
@@ -4193,24 +4185,23 @@ function checkAnnouncements() {
             }
         };
         Announcements().get().sort(compare).map(announcement => {
-            announcements.innerHTML += `<div class="row bs-callout bs-callout-${announcement.level}">
-                    <div class="col-3 text-warning-light">
+            announcements.innerHTML += `<div class="row m-1 bg-light-1 border-left border-${announcement.level} shadow-2" style="border-left-width: 5px !important;">
+                    <div class="col-4 text-primary">
                         ${moment(announcement.starts).format("MM/DD/YYYY h:mm A")}<br />
                         - ${moment(announcement.expires).format("MM/DD/YYYY h:mm A")}
                     </div>
-                    <div class="col-2 text-success-light">
+                    <div class="col-2 text-secondary">
                         ${announcement.type}
                     </div>
-                    <div class="col-5 text-light">
-                        <h4>${announcement.title}</h4>
-                        ${announcement.announcement}
+                    <div class="col-4 text-dark">
+                        ${announcement.title}
                     </div>
-                    <div class="col-2 text-info-light">
+                    <div class="col-2 text-dark">
                 <button type="button" id="options-announcements-edit-${announcement.ID}" class="close" aria-label="Edit Announcement">
-                <span aria-hidden="true"><i class="fas fa-edit text-info-light"></i></span>
+                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
                 </button>
                 <button type="button" id="options-announcements-remove-${announcement.ID}" class="close" aria-label="Remove Announcement">
-                <span aria-hidden="true"><i class="fas fa-trash text-info-light"></i></span>
+                <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
                 </button>
                     </div>
                 </div>
@@ -7639,14 +7630,11 @@ function processDjs(data, replace = false)
                         <button type="button" id="options-dj-${dj.ID}" class="btn btn-primary btn-float" style="position: relative;" data-dj="${dj.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`DJ ${dj.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
-            document.querySelector("#options-xp-djs").innerHTML += `<div class="funkyradio">
-                            <div class="funkyradio-success">
-                                <input type="checkbox" value="" id="options-xp-djs-i-${dj.ID}">
-                                <label for="options-xp-djs-i-${dj.ID}">
-                                    ${dj.name}
-                                </label>
-                            </div>
-                        </div>`;
+            document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
+  <input class="custom-control-input" id="options-xp-djs-i-${dj.ID}" type="checkbox">
+  <span class="custom-control-track"></span>
+  <label class="custom-control-label" for="options-xp-djs-i-${dj.ID}">${dj.name}</label>
+</div>`;
         });
 
     } catch (e) {
