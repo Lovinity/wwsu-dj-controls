@@ -566,8 +566,6 @@ try {
     });
 
     $("#options-modal-djcontrols").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - DJ Controls Hosts</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -640,8 +638,6 @@ try {
     });
 
     $("#options-modal-calendar").iziModal({
-        title: `<h5 class="mt-0" style="text-align: center; font-size: 2em; color: #FFFFFF">Administration - Calendar Verification</h5>`,
-        headerColor: '#363636',
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -801,8 +797,6 @@ try {
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
         zindex: 50
     });
-    
-    $("#xp-modal").iziModal('open');
 
     $("#requests-modal").iziModal({
         width: 640,
@@ -1260,8 +1254,8 @@ document.querySelector("#btn-options-issues").onclick = function () {
 
             for (var k in formatted) {
 
-                logs.innerHTML += `<div class="row bg-primary-dark m-1">
-                                <div class="col-12 text-info-light" style="text-align: center;">
+                logs.innerHTML += `<div class="row bg-info m-1">
+                                <div class="col-12 text-light" style="text-align: center;">
                                 ${k}
                                 </div>
                             </div>`;
@@ -1309,29 +1303,31 @@ document.querySelector("#btn-options-calendar").onclick = function () {
                     formatted[moment(event.start).format("MM/DD/YYYY")] = [];
                 }
                 var cell3 = ``;
+                var theClass = `secondary`;
                 if (event.verify === 'Valid')
                 {
                     cell3 = `<span class="badge badge-success">Valid</span>`;
+                    theClass = `success`;
                 } else if (event.verify === 'Invalid')
                 {
                     cell3 = `<span class="badge badge-danger">Invalid</span>`;
+                    theClass = `danger`;
                 } else if (event.verify === 'Check')
                 {
                     cell3 = `<span class="badge badge-warning">Check</span>`;
+                    theClass = `warning`;
                 } else {
                     cell3 = `<span class="badge badge-dark">Manual</span>`;
+                    theClass = `secondary`;
                 }
-                formatted[moment(event.start).format("MM/DD/YYYY")].push(`<div class="row m-1">
-                                <div class="col-2 text-warning-light">
+                formatted[moment(event.start).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+                                <div class="col-3 text-primary">
                                     ${moment(event.start).format("h:mm A")} - ${moment(event.end).format("h:mm A")}
                                 </div>
-                                <div class="col-3 text-light">
+                                <div class="col-3 text-secondary">
                                     ${event.verify_titleHTML}
                                 </div>
-                                <div class="col-1">
-                                    ${cell3}
-                                </div>
-                                    <div class="col-6 text-info-light">
+                                    <div class="col-6 text-info">
                                         ${event.verify_message}
                                         </div>
                             </div>`);
@@ -1339,8 +1335,8 @@ document.querySelector("#btn-options-calendar").onclick = function () {
 
             for (var k in formatted) {
 
-                calendar.innerHTML += `<div class="row m-1 bg-primary-dark">
-                                <div class="col-12 text-info-light" style="text-align: center;">
+                calendar.innerHTML += `<div class="row m-1 bg-info">
+                                <div class="col-12 text-light" style="text-align: center;">
                                     ${k}
                                 </div>
                             </div>`;
@@ -4154,7 +4150,7 @@ function checkAnnouncements() {
             temp.className = `expansion-panel list-group-item bs-callout bs-callout-danger`;
         } else if (highestLevel <= 3)
         {
-            temp.className = `expansion-panel list-group-item bs-callout bs-callout-info`;
+            temp.className = `expansion-panel list-group-item bs-callout bs-callout-default`;
         }
 
         if (prevStatus.length <= 0)
@@ -7746,30 +7742,30 @@ function processHosts(data, replace = false)
 
         Hosts().each(function (host, index) {
             document.querySelector('#options-djcontrols').innerHTML += `<div class="row m-1">
-                    <div class="col-5 text-primary-light">
+                    <div class="col-5">
                         ${host.friendlyname}
                     </div>
-                    <div class="col-1 text-success-light">
+                    <div class="col-1">
                         ${host.authorized ? '<i class="fas fa-check text-success-light"></i>' : ''}
                     </div>
-                    <div class="col-1 text-danger-light">
+                    <div class="col-1">
                         ${host.admin ? '<i class="fas fa-check text-danger-light"></i>' : ''}
                     </div>
-                    <div class="col-1 text-warning-light">
+                    <div class="col-1">
                         ${host.requests ? '<i class="fas fa-check text-warning-light"></i>' : ''}
                     </div>
-                    <div class="col-1 text-warning-light">
+                    <div class="col-1">
                         ${host.emergencies ? '<i class="fas fa-check text-warning-light"></i>' : ''}
                     </div>
-                    <div class="col-1 text-warning-light">
+                    <div class="col-1">
                         ${host.webmessages ? '<i class="fas fa-check text-warning-light"></i>' : ''}
                     </div>
-                                <div class="col-2 text-info-light">
+                                <div class="col-2">
             ${client.host !== host.host ? `<button type="button" id="options-djcontrols-edit-${host.ID}" class="close" aria-label="Edit Host">
-                <span aria-hidden="true"><i class="fas fa-edit text-info-light"></i></span>
+                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
                 </button>
                 <button type="button" id="options-djcontrols-remove-${host.ID}" class="close" aria-label="Remove Host">
-                <span aria-hidden="true"><i class="fas fa-trash text-info-light"></i></span>
+                <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
                 </button>` : `(YOU)`}
             </div>
                 </div>`;

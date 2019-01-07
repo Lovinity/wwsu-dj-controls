@@ -267,6 +267,13 @@
             .bs-callout-default h4 {
                 color: #cfd8dc;
             }
+            .bs-callout-trivial {
+                border-color: #9e9e9e;
+                background: rgba(97, 97, 97, 1);
+            }
+            .bs-callout-trivial h4 {
+                color: #cfd8dc;
+            }
             .bs-callout-secondary {
                 border-color: #9e9e9e;
                 background: rgba(97, 97, 97, 1);
@@ -587,7 +594,7 @@
             </div>
 
             <div class="card p-1 m-3 text-white bg-dark" id="announcements" style="width: 640px; height: 360px;">
-                <div class="card-header text-center" style="font-size: 1.5em;">Announcements<br /><span style="font-size: 0.5em;">Click to expand</span></div>
+                <div class="card-header text-center" style="font-size: 1.5em;">Announcements<br /><span style="font-size: 0.5em;">Click for more information</span></div>
                 <div class="card-body" style="overflow: auto;">
                     <div class="list-group text-white" id="announcements-body">
                     </div>
@@ -961,28 +968,28 @@
                         <div class="card p-1 m-1 bg-light-2">
                             <div class="card-body">
                                 <h4 class="card-title" style="text-align: center;">XP</h4>
-                                <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-totalXP">10,000</p>
+                                <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-totalXP">0</p>
                                 <p class="card-text" style="text-align: center; font-size: 1em;" id="stat-subtotalXP">0 this show</p>
                             </div>
                         </div>
                         <div class="card p-1 m-1 bg-light-2">
                             <div class="card-body">
                                 <h4 class="card-title" style="text-align: center;">Remote<br />Credits</h4>
-                                <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-remoteCredits">10</p>
+                                <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-remoteCredits">0</p>
                                 <p class="card-text" style="text-align: center; font-size: 1em;">this semester</p>
                             </div>
                         </div>
                         <div class="card p-1 m-1 bg-light-2">
                             <div class="card-body">
                                 <h4 class="card-title" style="text-align: center;">OnAir Hours</h4>
-                                <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-totalShowTime">1,000</p>
-                                <p class="card-text" style="text-align: center; font-size: 1em;" id="stat-showTime">0.0 this show</p>
+                                <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-totalShowTime">0</p>
+                                <p class="card-text" style="text-align: center; font-size: 1em;" id="stat-showTime">0 this show</p>
                             </div>
                         </div>
                         <div class="card p-1 m-1 bg-light-2">
                             <div class="card-body">
                                 <h4 class="card-title" style="text-align: center;">Listener Hours</h4>
-                                <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-totalListeners">1,000</p>
+                                <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-totalListeners">0</p>
                                 <p class="card-text" style="text-align: center; font-size: 1em;" id="stat-listenerMinutes">0.0 this show</p>
                             </div>
                         </div>
@@ -1309,193 +1316,211 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-
-            <div id="options-modal-djcontrols" style="background-color: #363636; color: #ffffff;">
-                <div class="container m-1">
-                    <div class="row bg-primary-dark m-1">
-                        <div class="col-5 text-primary-light">
-                            Friendly Name
-                        </div>
-                        <div class="col-1 text-success-light">
-                            Auth
-                        </div>
-                        <div class="col-1 text-danger-light">
-                            Admin
-                        </div>
-                        <div class="col-1 text-warning-light">
-                            Reqs
-                        </div>
-                        <div class="col-1 text-warning-light">
-                            Issues
-                        </div>
-                        <div class="col-1 text-warning-light">
-                            Msgs
-                        </div>
-                        <div class="col-2 text-primary-light">
-                            Action
+        <div class="modal" id="options-modal-djcontrols" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-3">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-purple doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Hosts / DJ Controls Management</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
+                    <div class="container m-1">
+                        <div class="row bg-light-1 m-1 shadow-4">
+                            <div class="col-5">
+                                Friendly Name
+                            </div>
+                            <div class="col-1">
+                                Auth
+                            </div>
+                            <div class="col-1">
+                                Admin
+                            </div>
+                            <div class="col-1">
+                                Reqs
+                            </div>
+                            <div class="col-1">
+                                Issues
+                            </div>
+                            <div class="col-1">
+                                Msgs
+                            </div>
+                            <div class="col-2">
+                                Action
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="container m-1" id="options-djcontrols" style="height: 480px; overflow: scroll;">
+                    <div class="container m-1" id="options-djcontrols" style="height: 480px; overflow: scroll;">
+                    </div>
+                    <div class="modal-footer bg-light-1">
+                    </div>
                 </div>
             </div>
-            <div id="options-modal-calendar" style="background-color: #363636; color: #ffffff;">
-                <div class="container m-1">
-                    <p>NOTE: This only verifies events for the next 7 days.</p>
-                    <p>NOTE 2: Changes to Google Calendar may take up to 5 minutes to reflect in the system.</p>
-                    <div class="row bg-primary-dark m-1">
-                        <div class="col-2 text-warning-light">
+        </div>
+
+        <div class="modal" id="options-modal-calendar" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-3">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-info doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Google Calendar Verification</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                    </header>
+                    <div class="bs-callout bs-callout-info shadow-4 text-white">
+                        This only verifies events for today and the next 7 days. Changes to Google Calendar may take up to 5 minutes to reflect in the system.
+                    </div>
+                    <div class="row m-1 bg-light-1 shadow-2">
+                        <div class="col-3 text-primary">
                             Start / End
                         </div>
-                        <div class="col-3 text-light">
+                        <div class="col-3 text-secondary">
                             Event
                         </div>
-                        <div class="col-1">
-                            Status
-                        </div>
-                        <div class="col-6 text-info-light">
+                        <div class="col-6 text-info">
                             Information
                         </div>
                     </div>
-                </div>
-                <div class="container m-1" id="calendar-verify" style="height: 480px; overflow: scroll;">
-                </div>
-            </div>
-            <div id="options-modal-announcements" style="background-color: #363636; color: #ffffff;">
-                <div class="container m-1">
-                    <button type="button" id="options-announcements-add" class="btn btn-success">Add</button>
-                    <div class="row bg-primary-dark m-1">
-                        <div class="col-3 text-warning-light">
-                            Starts / Expires
-                        </div>
-                        <div class="col-2 text-success-light">
-                            Type
-                        </div>
-                        <div class="col-5 text-light">
-                            Announcement
-                        </div>
-                        <div class="col-2 text-info-light">
-                            Action
-                        </div>
+                    <div class="container m-1" id="calendar-verify" style="height: 480px; overflow: scroll;">
                     </div>
-                </div>
-                <div class="container m-1" id="options-announcements" style="height: 480px; overflow: scroll;">
-                </div>
-            </div>
-            <div id="options-modal-announcement">
-                <div style="background-color: #363636; color: #ffffff;">
-                    Starts: <input type="datetime-local" id="options-announcement-starts" class="form-control">
-                    Expires: <input type="datetime-local" id="options-announcement-expires" class="form-control">
-                    Announcement for: <select class="form-control" id="options-announcement-type">
-                        <option value="djcontrols">DJ Controls</option>
-                        <option value="website">Website / Listener's Corner</option>
-                        <option value="timesheet">Clock In/Out Computer</option>
-                        <option value="display-internal">Internal Display Sign (Slide)</option>
-                        <option value="display-internal-sticky">Internal Display Sign (Sticky)</option>
-                        <option value="display-public">Public Display Sign (Slide)</option>
-                        <option value="mobile">Mobile Apps</option>
-                    </select>
-                    Severity Level: <select class="form-control" id="options-announcement-level">
-                        <option value="danger">Very Important (red)</option>
-                        <option value="warning">Maintenance / Expected Downtime (yellow)</option>
-                        <option value="info">Action Item / Deadline (blue)</option>
-                        <option value="trivial">Everything Else (gray)</option>
-                    </select>
-                    Announcement Title: <input type="text" id="options-announcement-title" class="form-control" placeholder="Please keep short and concise">
-                    Announcement Text: <div class="form-group">
-                        <div class="bg-light text-dark">
-                            <div id="theannouncement" class="form-control"></div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-3" id="options-announcement-button">
-                        </div>
+                    <div class="modal-footer bg-light-1">
                     </div>
                 </div>
             </div>
-            <div id="options-modal-dj-xp-add" style="background-color: #363636; color: #ffffff;">
-                Category of XP/Remote: <select class="form-control" id="options-xp-type">
-                    <option value="default-default">Entry Type</option>
-                    <option value="remote-event">Remote Credit: Remote Event</option>
-                    <option value="remote-cd">Remote Credit: CD Review</option>
-                    <option value="remote-sports">Remote Credit: Sports</option>
-                    <option value="remote-production">Remote Credit: Production</option>
-                    <option value="remote-playlist">Remote Credit: Playlist / Genre</option>
-                    <option value="remote-other">Remote Credit: Other</option>
-                    <option value="xp-showtime">XP: Show Time</option>
-                    <option value="xp-listeners">XP: Listeners</option>
-                    <option value="xp-id">XP: Legal ID</option>
-                    <option value="xp-topadd">XP: Top Adds</option>
-                    <option value="xp-messages">XP: Web Messages</option>
-                    <option value="xp-promotion">XP: Show Promotion</option>
-                    <option value="xp-contribution">XP: Contribution to WWSU</option>
-                    <option value="xp-other">XP: Other</option>
+        </div>
+
+        <div id="options-modal-announcements" style="background-color: #363636; color: #ffffff;">
+            <div class="container m-1">
+                <button type="button" id="options-announcements-add" class="btn btn-success">Add</button>
+                <div class="row bg-primary-dark m-1">
+                    <div class="col-3 text-warning-light">
+                        Starts / Expires
+                    </div>
+                    <div class="col-2 text-success-light">
+                        Type
+                    </div>
+                    <div class="col-5 text-light">
+                        Announcement
+                    </div>
+                    <div class="col-2 text-info-light">
+                        Action
+                    </div>
+                </div>
+            </div>
+            <div class="container m-1" id="options-announcements" style="height: 480px; overflow: scroll;">
+            </div>
+        </div>
+        <div id="options-modal-announcement">
+            <div style="background-color: #363636; color: #ffffff;">
+                Starts: <input type="datetime-local" id="options-announcement-starts" class="form-control">
+                Expires: <input type="datetime-local" id="options-announcement-expires" class="form-control">
+                Announcement for: <select class="form-control" id="options-announcement-type">
+                    <option value="djcontrols">DJ Controls</option>
+                    <option value="website">Website / Listener's Corner</option>
+                    <option value="timesheet">Clock In/Out Computer</option>
+                    <option value="display-internal">Internal Display Sign (Slide)</option>
+                    <option value="display-internal-sticky">Internal Display Sign (Sticky)</option>
+                    <option value="display-public">Public Display Sign (Slide)</option>
+                    <option value="mobile">Mobile Apps</option>
                 </select>
-                Date of XP/Remote: <input type="datetime-local" id="options-xp-date" class="form-control">
-                Description: <textarea class="form-control" id="options-xp-description" rows="2" placeholder=""></textarea>
-                Amount of XP / Remote credits: <input type="text" id="options-xp-amount" class="form-control" placeholder="0">
-                <div class="container m-1" id="options-xp-djs" style="height: 240px; overflow: scroll;">
-                </div>
-                <div class="row">
-                    <div class="col-3" id="options-xp-button">
-                    </div>
-                </div>
-            </div>
-            <div id="options-modal-host" style="background-color: #363636; color: #ffffff;">
-                Friendly Name: <input type="text" id="options-host-name" class="form-control" placeholder="">
-                <div class="funkyradio">
-                    <div class="funkyradio-success">
-                        <input type="checkbox" value="" id="options-host-authorized">
-                        <label for="options-host-authorized">
-                            Authorized (DJ Controls can be used)
-                        </label>
-                    </div>
-                </div>
-                <div class="funkyradio">
-                    <div class="funkyradio-success">
-                        <input type="checkbox" value="" id="options-host-admin">
-                        <label for="options-host-admin">
-                            Administrator (Can access admin menu and change settings)
-                        </label>
-                    </div>
-                </div>
-                <div class="funkyradio">
-                    <div class="funkyradio-success">
-                        <input type="checkbox" value="" id="options-host-requests">
-                        <label for="options-host-requests">
-                            Notify on new Track Requests
-                        </label>
-                    </div>
-                </div>
-                <div class="funkyradio">
-                    <div class="funkyradio-success">
-                        <input type="checkbox" value="" id="options-host-emergencies">
-                        <label for="options-host-emergencies">
-                            Notify when WWSU experiences issues / emergencies
-                        </label>
-                    </div>
-                </div>
-                <div class="funkyradio">
-                    <div class="funkyradio-success">
-                        <input type="checkbox" value="" id="options-host-webmessages">
-                        <label for="options-host-webmessages">
-                            Notify when web/mobile users send a new message
-                        </label>
+                Severity Level: <select class="form-control" id="options-announcement-level">
+                    <option value="danger">Very Important (red)</option>
+                    <option value="warning">Maintenance / Expected Downtime (yellow)</option>
+                    <option value="info">Action Item / Deadline (blue)</option>
+                    <option value="trivial">Everything Else (gray)</option>
+                </select>
+                Announcement Title: <input type="text" id="options-announcement-title" class="form-control" placeholder="Please keep short and concise">
+                Announcement Text: <div class="form-group">
+                    <div class="bg-light text-dark">
+                        <div id="theannouncement" class="form-control"></div>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-3" id="options-host-button">
+                    <div class="col-3" id="options-announcement-button">
                     </div>
                 </div>
             </div>
+        </div>
+        <div id="options-modal-dj-xp-add" style="background-color: #363636; color: #ffffff;">
+            Category of XP/Remote: <select class="form-control" id="options-xp-type">
+                <option value="default-default">Entry Type</option>
+                <option value="remote-event">Remote Credit: Remote Event</option>
+                <option value="remote-cd">Remote Credit: CD Review</option>
+                <option value="remote-sports">Remote Credit: Sports</option>
+                <option value="remote-production">Remote Credit: Production</option>
+                <option value="remote-playlist">Remote Credit: Playlist / Genre</option>
+                <option value="remote-other">Remote Credit: Other</option>
+                <option value="xp-showtime">XP: Show Time</option>
+                <option value="xp-listeners">XP: Listeners</option>
+                <option value="xp-id">XP: Legal ID</option>
+                <option value="xp-topadd">XP: Top Adds</option>
+                <option value="xp-messages">XP: Web Messages</option>
+                <option value="xp-promotion">XP: Show Promotion</option>
+                <option value="xp-contribution">XP: Contribution to WWSU</option>
+                <option value="xp-other">XP: Other</option>
+            </select>
+            Date of XP/Remote: <input type="datetime-local" id="options-xp-date" class="form-control">
+            Description: <textarea class="form-control" id="options-xp-description" rows="2" placeholder=""></textarea>
+            Amount of XP / Remote credits: <input type="text" id="options-xp-amount" class="form-control" placeholder="0">
+            <div class="container m-1" id="options-xp-djs" style="height: 240px; overflow: scroll;">
+            </div>
+            <div class="row">
+                <div class="col-3" id="options-xp-button">
+                </div>
+            </div>
+        </div>
+        <div id="options-modal-host" style="background-color: #363636; color: #ffffff;">
+            Friendly Name: <input type="text" id="options-host-name" class="form-control" placeholder="">
+            <div class="funkyradio">
+                <div class="funkyradio-success">
+                    <input type="checkbox" value="" id="options-host-authorized">
+                    <label for="options-host-authorized">
+                        Authorized (DJ Controls can be used)
+                    </label>
+                </div>
+            </div>
+            <div class="funkyradio">
+                <div class="funkyradio-success">
+                    <input type="checkbox" value="" id="options-host-admin">
+                    <label for="options-host-admin">
+                        Administrator (Can access admin menu and change settings)
+                    </label>
+                </div>
+            </div>
+            <div class="funkyradio">
+                <div class="funkyradio-success">
+                    <input type="checkbox" value="" id="options-host-requests">
+                    <label for="options-host-requests">
+                        Notify on new Track Requests
+                    </label>
+                </div>
+            </div>
+            <div class="funkyradio">
+                <div class="funkyradio-success">
+                    <input type="checkbox" value="" id="options-host-emergencies">
+                    <label for="options-host-emergencies">
+                        Notify when WWSU experiences issues / emergencies
+                    </label>
+                </div>
+            </div>
+            <div class="funkyradio">
+                <div class="funkyradio-success">
+                    <input type="checkbox" value="" id="options-host-webmessages">
+                    <label for="options-host-webmessages">
+                        Notify when web/mobile users send a new message
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3" id="options-host-button">
+                </div>
+            </div>
+        </div>
 
-            <script>if (window.module)
+        <script>if (window.module)
                 module = window.module;</script>
-            <script>
+        <script>
 
-                // You can also require other files to run in this process
-                require('./renderer.js');
-            </script>
+            // You can also require other files to run in this process
+            require('./renderer.js');
+        </script>
     </body>
 </html>
