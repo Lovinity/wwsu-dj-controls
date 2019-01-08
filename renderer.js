@@ -6183,7 +6183,7 @@ function endShow() {
             document.querySelector(`#stat-totalXP`).innerHTML = typeof response.totalXP !== 'undefined' ? formatInt(response.totalXP) : `-`;
             document.querySelector(`#stat-remoteCredits`).innerHTML = typeof response.remoteCredits !== 'undefined' ? formatInt(response.remoteCredits) : `-`;
             document.querySelector(`#stat-totalShowTime`).innerHTML = typeof response.totalShowTime !== 'undefined' ? formatInt(parseInt(response.totalShowTime / 60)) : `-`;
-            document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.totalListeners !== 'undefined' ? formatInt(parseInt(response.totalListeners / 60)) : `-`;
+            document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.totalListenerMinutes !== 'undefined' ? formatInt(parseInt(response.totalListenerMinutes / 60)) : `-`;
         }
         console.log(JSON.stringify(response));
     });
@@ -6207,7 +6207,7 @@ function switchShow() {
             document.querySelector(`#stat-totalXP`).innerHTML = typeof response.totalXP !== 'undefined' ? formatInt(response.totalXP) : `-`;
             document.querySelector(`#stat-remoteCredits`).innerHTML = typeof response.remoteCredits !== 'undefined' ? formatInt(response.remoteCredits) : `-`;
             document.querySelector(`#stat-totalShowTime`).innerHTML = typeof response.totalShowTime !== 'undefined' ? formatInt(parseInt(response.totalShowTime / 60)) : `-`;
-            document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.totalListeners !== 'undefined' ? formatInt(parseInt(response.totalListeners / 60)) : `-`;
+            document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.totalListenerMinutes !== 'undefined' ? formatInt(parseInt(response.totalListenerMinutes / 60)) : `-`;
         }
         console.log(JSON.stringify(response));
     });
