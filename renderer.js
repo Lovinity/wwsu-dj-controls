@@ -127,13 +127,15 @@ try {
         }
     }, 100);
 
-    // Read in WWSU Node username and password from uncommitted tokens file
-    var tokens = JSON.parse(fs.readFileSync(`${remote.app.getAppPath()}/tokens.json`));
-
     // Connect the socket
     io.sails.url = nodeURL;
     io.sails.query = `host=${main.getMachineID()}`;
     var socket = io.sails.connect();
+
+    // register requests
+    var hostReq = new WWSUreq(socket, main.getMachineID(), 'host', '/auth/host', 'Host');
+    var directorReq = new WWSUreq(socket, main.getMachineID(), 'name', '/auth/director', 'Director');
+    var adminDirectorReq = new WWSUreq(socket, main.getMachineID(), 'name', '/auth/admin-director', 'Administrator Director');
 
     socket.on('connect_error', function () {
         var noConnection = document.getElementById('no-connection');
@@ -253,7 +255,7 @@ try {
                                                 .then(function (response2) {
                                                     if (response2 == 0)
                                                     {
-                                                        nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.show), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                        hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.show), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
                                                         });
                                                     }
                                                     console.log(response2);
@@ -676,7 +678,7 @@ try {
                                 var host = Recipients({ID: activeRecipient}).first().host;
                                 var label = Recipients({ID: activeRecipient}).first().label;
                                 var message = quillGetHTML(this.quill.getContents());
-                                nodeRequest({method: 'POST', url: nodeURL + '/messages/send', data: {from: client.host, to: host, to_friendly: label, message: message}}, (response) => {
+                                hostReq.request({method: 'POST', url: nodeURL + '/messages/send', data: {from: client.host, to: host, to_friendly: label, message: message}}, (response) => {
                                     if (response === 'OK')
                                     {
                                         this.quill.setText('');
@@ -930,7 +932,7 @@ document.querySelector("#btn-view-log-b").onclick = function () {
     document.querySelector('#dj-logs-listeners').innerHTML = '';
     document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
     $("#options-modal-dj-logs").iziModal('open');
-    nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: Meta.attendanceID}}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: Meta.attendanceID}}, function (response) {
         var logs = document.querySelector('#dj-show-logs');
         logs.innerHTML = ``;
         logs.scrollTop = 0;
@@ -938,7 +940,7 @@ document.querySelector("#btn-view-log-b").onclick = function () {
         if (response.length > 0)
         {
             response.map(log => {
-                
+
                 logs.innerHTML += `<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-3 text-primary">
                                     ${moment(log.createdAt).format("h:mm:ss A")}
@@ -1048,7 +1050,7 @@ document.querySelector("#filter-global-logs").onclick = function () {
 function filterGlobalLogs(date) {
     try {
         document.querySelector('#global-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
-        nodeRequest({method: 'POST', url: nodeURL + '/attendance/get', data: {date: moment(date).toISOString(true)}}, function (response) {
+        hostReq.request({method: 'POST', url: nodeURL + '/attendance/get', data: {date: moment(date).toISOString(true)}}, function (response) {
             var att = document.querySelector('#global-logs');
             att.innerHTML = ``;
             att.scrollTop = 0;
@@ -1218,7 +1220,7 @@ document.querySelector("#btn-options-issues").onclick = function () {
     document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
     document.querySelector('#dj-logs-listeners').innerHTML = '';
     $("#options-modal-dj-logs").iziModal('open');
-    nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(7, 'days').toISOString(true), end: moment().toISOString(true)}}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(7, 'days').toISOString(true), end: moment().toISOString(true)}}, function (response) {
         var logs = document.querySelector('#dj-show-logs');
         logs.innerHTML = ``;
         logs.scrollTop = 0;
@@ -1392,7 +1394,7 @@ document.querySelector("#btn-options-radiodj").onclick = function () {
             buttons: [
                 ['<button><b>Switch RadioDJ</b></button>', function (instance, toast) {
                         instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                        nodeRequest({method: 'POST', url: nodeURL + '/state/change-radio-dj', data: {}}, function (response) {
+                        directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/state/change-radio-dj', data: {}}, function (response) {
                             if (response === 'OK')
                             {
                                 iziToast.show({
@@ -1485,7 +1487,7 @@ document.querySelector(`#options-modal-djs`).addEventListener("click", function 
                         buttons: [
                             ['<button><b>Submit</b></button>', function (instance, toast) {
                                     instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                    nodeRequest({method: 'POST', url: nodeURL + '/djs/add', data: {name: inputData, login: null}}, function (response) {
+                                    directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/djs/add', data: {name: inputData, login: null}}, function (response) {
                                         if (response === 'OK')
                                         {
                                             iziToast.show({
@@ -1591,7 +1593,7 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                         buttons: [
                             ['<button><b>Submit</b></button>', function (instance, toast) {
                                     instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                    nodeRequest({method: 'POST', url: nodeURL + '/djs/add', data: {name: inputData, login: null}}, function (response) {
+                                    directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/djs/add', data: {name: inputData, login: null}}, function (response) {
                                         if (response === 'OK')
                                         {
                                             iziToast.show({
@@ -1679,7 +1681,7 @@ document.querySelector(`#options-timesheets-records`).addEventListener("click", 
                                 buttons: [
                                     ['<button><b>Edit</b></button>', function (instance, toast) {
                                             instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                            nodeRequest({method: 'POST', url: nodeURL + '/timesheet/edit', data: inputData}, function (response) {
+                                            adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + '/timesheet/edit', data: inputData}, function (response) {
                                                 if (response === 'OK')
                                                 {
                                                     iziToast.show({
@@ -1816,7 +1818,7 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                     buttons: [
                         ['<button><b>Edit</b></button>', function (instance, toast) {
                                 instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                nodeRequest({method: 'POST', url: nodeURL + '/djs/edit', data: {ID: e.target.dataset.dj, name: inputData}}, function (response) {
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/djs/edit', data: {ID: e.target.dataset.dj, name: inputData}}, function (response) {
                                     if (response === 'OK')
                                     {
                                         iziToast.show({
@@ -1874,7 +1876,7 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                     buttons: [
                         ['<button><b>Remove</b></button>', function (instance, toast) {
                                 instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                nodeRequest({method: 'POST', url: nodeURL + '/djs/remove', data: {ID: e.target.dataset.dj}}, function (response) {
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/djs/remove', data: {ID: e.target.dataset.dj}}, function (response) {
                                     if (response === 'OK')
                                     {
                                         $("#options-modal-dj").iziModal('close');
@@ -1968,7 +1970,7 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                 document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
                 document.querySelector('#dj-logs-listeners').innerHTML = '';
                 $("#options-modal-dj-logs").iziModal('open');
-                nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``))}}, function (response) {
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``))}}, function (response) {
                     var logs = document.querySelector('#dj-show-logs');
                     logs.innerHTML = ``;
                     logs.scrollTop = 0;
@@ -1988,7 +1990,7 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                                 </div>
                             </div>`;
                         });
-                        nodeRequest({method: 'POST', url: nodeURL + '/listeners/get', data: {start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true)}}, function (response2) {
+                        hostReq.request({method: 'POST', url: nodeURL + '/listeners/get', data: {start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true)}}, function (response2) {
 
                             if (response2.length > 1)
                             {
@@ -2065,7 +2067,7 @@ document.querySelector(`#global-logs`).addEventListener("click", function (e) {
                 document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
                 document.querySelector('#dj-logs-listeners').innerHTML = '';
                 $("#options-modal-dj-logs").iziModal('open');
-                nodeRequest({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``))}}, function (response) {
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``))}}, function (response) {
                     var logs = document.querySelector('#dj-show-logs');
                     logs.innerHTML = ``;
                     logs.scrollTop = 0;
@@ -2086,7 +2088,7 @@ document.querySelector(`#global-logs`).addEventListener("click", function (e) {
                             </div>`;
                         });
 
-                        nodeRequest({method: 'POST', url: nodeURL + '/listeners/get', data: {start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true)}}, function (response2) {
+                        hostReq.request({method: 'POST', url: nodeURL + '/listeners/get', data: {start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true)}}, function (response2) {
 
                             if (response2.length > 1)
                             {
@@ -2179,7 +2181,7 @@ document.querySelector(`#dj-xp-logs`).addEventListener("click", function (e) {
                     buttons: [
                         ['<button><b>Remove</b></button>', function (instance, toast) {
                                 instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                nodeRequest({method: 'POST', url: nodeURL + '/xp/remove', data: {ID: parseInt(e.target.id.replace(`dj-xp-remove-`, ``))}}, function (response) {
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/xp/remove', data: {ID: parseInt(e.target.id.replace(`dj-xp-remove-`, ``))}}, function (response) {
                                     if (response === 'OK')
                                     {
                                         iziToast.show({
@@ -2371,7 +2373,7 @@ document.querySelector(`#options-announcements`).addEventListener("click", funct
                     buttons: [
                         ['<button><b>Remove</b></button>', function (instance, toast) {
                                 instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                nodeRequest({method: 'POST', url: nodeURL + '/announcements/remove', data: {ID: parseInt(e.target.id.replace(`options-announcements-remove-`, ``))}}, function (response) {
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/announcements/remove', data: {ID: parseInt(e.target.id.replace(`options-announcements-remove-`, ``))}}, function (response) {
                                     if (response === 'OK')
                                     {
                                         checkAnnouncements();
@@ -2458,7 +2460,7 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
                     buttons: [
                         ['<button><b>Remove</b></button>', function (instance, toast) {
                                 instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                nodeRequest({method: 'POST', url: nodeURL + '/hosts/remove', data: {ID: parseInt(e.target.id.replace(`options-djcontrols-remove-`, ``))}}, function (response) {
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/hosts/remove', data: {ID: parseInt(e.target.id.replace(`options-djcontrols-remove-`, ``))}}, function (response) {
                                     if (response === 'OK')
                                     {
                                         checkAnnouncements();
@@ -2525,7 +2527,7 @@ document.querySelector(`#options-announcement-button`).addEventListener("click",
             console.log(e.target.id);
             if (e.target.id.startsWith("options-announcement-edit-"))
             {
-                nodeRequest({method: 'POST', url: nodeURL + '/announcements/edit', data: {ID: parseInt(e.target.id.replace(`options-announcement-edit-`, ``)), starts: moment(document.querySelector("#options-announcement-starts").value).toISOString(true), expires: moment(document.querySelector("#options-announcement-expires").value).toISOString(true), type: document.querySelector("#options-announcement-type").value, level: document.querySelector("#options-announcement-level").value, title: document.querySelector("#options-announcement-title").value, announcement: quillGetHTML(quill2.getContents())}}, function (response) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/announcements/edit', data: {ID: parseInt(e.target.id.replace(`options-announcement-edit-`, ``)), starts: moment(document.querySelector("#options-announcement-starts").value).toISOString(true), expires: moment(document.querySelector("#options-announcement-expires").value).toISOString(true), type: document.querySelector("#options-announcement-type").value, level: document.querySelector("#options-announcement-level").value, title: document.querySelector("#options-announcement-title").value, announcement: quillGetHTML(quill2.getContents())}}, function (response) {
                     if (response === 'OK')
                     {
                         checkAnnouncements();
@@ -2561,7 +2563,7 @@ document.querySelector(`#options-announcement-button`).addEventListener("click",
             }
             if (e.target.id === "options-announcement-add")
             {
-                nodeRequest({method: 'POST', url: nodeURL + '/announcements/add', data: {starts: moment(document.querySelector("#options-announcement-starts").value).toISOString(true), expires: moment(document.querySelector("#options-announcement-expires").value).toISOString(true), type: document.querySelector("#options-announcement-type").value, level: document.querySelector("#options-announcement-level").value, title: document.querySelector("#options-announcement-title").value, announcement: quillGetHTML(quill2.getContents())}}, function (response) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/announcements/add', data: {starts: moment(document.querySelector("#options-announcement-starts").value).toISOString(true), expires: moment(document.querySelector("#options-announcement-expires").value).toISOString(true), type: document.querySelector("#options-announcement-type").value, level: document.querySelector("#options-announcement-level").value, title: document.querySelector("#options-announcement-title").value, announcement: quillGetHTML(quill2.getContents())}}, function (response) {
                     if (response === 'OK')
                     {
                         checkAnnouncements();
@@ -2611,7 +2613,7 @@ document.querySelector(`#options-host-button`).addEventListener("click", functio
             console.log(e.target.id);
             if (e.target.id.startsWith("options-host-edit-"))
             {
-                nodeRequest({method: 'POST', url: nodeURL + '/hosts/edit', data: {ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector("#options-host-name").value, authorized: document.querySelector("#options-host-authorized").checked, admin: document.querySelector("#options-host-admin").checked, requests: document.querySelector("#options-host-requests").checked, emergencies: document.querySelector("#options-host-emergencies").checked, webmessages: document.querySelector("#options-host-webmessages").checked}}, function (response) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/hosts/edit', data: {ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector("#options-host-name").value, authorized: document.querySelector("#options-host-authorized").checked, admin: document.querySelector("#options-host-admin").checked, requests: document.querySelector("#options-host-requests").checked, emergencies: document.querySelector("#options-host-emergencies").checked, webmessages: document.querySelector("#options-host-webmessages").checked}}, function (response) {
                     if (response === 'OK')
                     {
                         $("#options-modal-host").iziModal('close');
@@ -2661,7 +2663,7 @@ document.querySelector(`#options-xp-button`).addEventListener("click", function 
             if (e.target.id.startsWith("options-xp-edit-"))
             {
                 var types = document.querySelector("#options-xp-type").value.split("-");
-                nodeRequest({method: 'POST', url: nodeURL + '/xp/edit', data: {ID: parseInt(e.target.id.replace(`options-xp-edit-`, ``)), type: types[0], subtype: types[1], description: document.querySelector("#options-xp-description").value, amount: parseFloat(document.querySelector("#options-xp-amount").value), date: moment(document.querySelector("#options-xp-date").value).toISOString(true)}}, function (response) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/xp/edit', data: {ID: parseInt(e.target.id.replace(`options-xp-edit-`, ``)), type: types[0], subtype: types[1], description: document.querySelector("#options-xp-description").value, amount: parseFloat(document.querySelector("#options-xp-amount").value), date: moment(document.querySelector("#options-xp-date").value).toISOString(true)}}, function (response) {
                     if (response === 'OK')
                     {
                         $("#options-modal-dj-xp-add").iziModal('close');
@@ -2703,7 +2705,7 @@ document.querySelector(`#options-xp-button`).addEventListener("click", function 
                         djs.push(dj.ID);
                 });
                 var types = document.querySelector("#options-xp-type").value.split("-");
-                nodeRequest({method: 'POST', url: nodeURL + '/xp/add', data: {djs: djs, type: types[0], subtype: types[1], description: document.querySelector("#options-xp-description").value, amount: parseFloat(document.querySelector("#options-xp-amount").value), date: moment(document.querySelector("#options-xp-date").value).toISOString(true)}}, function (response) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/xp/add', data: {djs: djs, type: types[0], subtype: types[1], description: document.querySelector("#options-xp-description").value, amount: parseFloat(document.querySelector("#options-xp-amount").value), date: moment(document.querySelector("#options-xp-date").value).toISOString(true)}}, function (response) {
                     if (response === 'OK')
                     {
                         $("#options-modal-dj-xp-add").iziModal('close');
@@ -2752,7 +2754,7 @@ document.querySelector(`#options-director-button`).addEventListener("click", fun
             console.log(e.target.id);
             if (e.target.id.startsWith("options-director-edit-"))
             {
-                nodeRequest({method: 'POST', url: nodeURL + '/directors/edit', data: {ID: parseInt(e.target.id.replace(`options-director-edit-`, ``)), name: document.querySelector("#options-director-name").value, login: document.querySelector("#options-director-login").value, position: document.querySelector("#options-director-position").value, admin: document.querySelector("#options-director-admin").checked, assistant: document.querySelector("#options-director-assistant").checked}}, function (response) {
+                adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + '/directors/edit', data: {ID: parseInt(e.target.id.replace(`options-director-edit-`, ``)), name: document.querySelector("#options-director-name").value, login: document.querySelector("#options-director-login").value, position: document.querySelector("#options-director-position").value, admin: document.querySelector("#options-director-admin").checked, assistant: document.querySelector("#options-director-assistant").checked}}, function (response) {
                     if (response === 'OK')
                     {
                         $("#options-modal-director").iziModal('close');
@@ -2787,7 +2789,7 @@ document.querySelector(`#options-director-button`).addEventListener("click", fun
             }
             if (e.target.id === "options-director-add")
             {
-                nodeRequest({method: 'POST', url: nodeURL + '/directors/add', data: {name: document.querySelector("#options-director-name").value, login: document.querySelector("#options-director-login").value, position: document.querySelector("#options-director-position").value, admin: document.querySelector("#options-director-admin").checked, assistant: document.querySelector("#options-director-assistant").checked}}, function (response) {
+                adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + '/directors/add', data: {name: document.querySelector("#options-director-name").value, login: document.querySelector("#options-director-login").value, position: document.querySelector("#options-director-position").value, admin: document.querySelector("#options-director-admin").checked, assistant: document.querySelector("#options-director-assistant").checked}}, function (response) {
                     if (response === 'OK')
                     {
                         $("#options-modal-director").iziModal('close');
@@ -2840,7 +2842,7 @@ document.querySelector(`#options-director-button`).addEventListener("click", fun
                     buttons: [
                         ['<button><b>Remove</b></button>', function (instance, toast) {
                                 instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                nodeRequest({method: 'POST', url: nodeURL + '/directors/remove', data: {ID: parseInt(e.target.id.replace(`options-director-remove-`, ``))}}, function (response) {
+                                adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + '/directors/remove', data: {ID: parseInt(e.target.id.replace(`options-director-remove-`, ``))}}, function (response) {
                                     if (response === 'OK')
                                     {
                                         $("#options-modal-director").iziModal('close');
@@ -3115,79 +3117,6 @@ function moveSecondHands() {
 
 // FUNCTIONS FOR PROGRAM
 
-// This function calls authorise to get a token (if necessary), and then proceeds with the requested API call
-function nodeRequest(opts, cb) {
-    opts.headers = {
-        'Authorization': 'Bearer ' + activeToken
-    };
-
-    try {
-        socket.request(opts, function serverResponded(body, JWR) {
-            if (!body)
-            {
-                cb(false);
-            } else {
-                try {
-                    if (body.err && body.err === "Invalid Token!")
-                    {
-                        hostSocket(function (token) {
-                            if (token)
-                            {
-                                activeToken = token;
-                                opts.headers = {
-                                    'Authorization': 'Bearer ' + activeToken
-                                };
-                                socket.request(opts, function serverResponded(body, JWR) {
-                                    if (!body)
-                                    {
-                                        cb(false);
-                                    } else {
-                                        try {
-                                            cb(body);
-                                        } catch (e) {
-                                            console.error(e);
-                                            iziToast.show({
-                                                title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                                                message: 'Error occurred in nodeRequest callback 2.'
-                                            });
-                                        }
-                                    }
-                                });
-                            }
-                        });
-                    } else {
-                        cb(body);
-                    }
-                } catch (e) {
-                    console.error(e);
-                    iziToast.show({
-                        title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                        message: 'Error occurred in nodeRequest callback 1.'
-                    });
-                }
-            }
-        });
-    } catch (e) {
-        console.error(e);
-        iziToast.show({
-            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-            message: 'Error occurred making a Node request.'
-        });
-    }
-    //} else {
-    //try {
-    //    cb(false);
-    //} catch (e) {
-    //    console.error(e);
-    //    iziToast.show({
-    //        title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-    //        message: 'Error occurred in nodeRequest callback.'
-    //    });
-    //}
-    //}
-    //});
-}
-
 // Wait for a condition to be met, and then execute the callback. Fails after 1200 frames.
 function waitFor(check, callback, count = 0)
 {
@@ -3223,117 +3152,115 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-        {
-            socket.post('/hosts/get', {host: main.getMachineID()}, function (body) {
-                //console.log(body);
-                try {
-                    client = body;
-                    authtoken = client.token;
-                    if (!client.authorized)
-                    {
-                        var noConnection = document.getElementById('no-connection');
-                        noConnection.style.display = "inline";
-                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+{
+    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+        //console.log(body);
+        try {
+            client = body;
+            //authtoken = client.token;
+            if (!client.authorized)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "inline";
+                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                        cb(false);
-                    } else {
-                        cb(authtoken);
+                cb(false);
+            } else {
+                cb(true);
+            }
+            if (client.admin)
+            {
+                if (client.otherHosts)
+                    processHosts(client.otherHosts, true);
+                var temp = document.querySelector(`#options`);
+                var restarter;
+                if (temp)
+                    temp.style.display = "inline";
+
+                // Subscribe to the logs socket
+                hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        //processLogs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED logs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                    if (client.admin)
-                    {
-                        if (client.otherHosts)
-                            processHosts(client.otherHosts, true);
-                        var temp = document.querySelector(`#options`);
-                        var restarter;
-                        if (temp)
-                            temp.style.display = "inline";
+                });
 
-                        // Subscribe to the logs socket
-                        socket.post('/logs/get', {}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                //processLogs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED logs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get djs and subscribe to the dj socket
-                        nodeRequest({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                processDjs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED DJs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get directors and subscribe to the dj socket
-                        nodeRequest({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                processDirectors(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED directors CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the XP socket
-                        nodeRequest({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED XP CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the timesheet socket
-                        nodeRequest({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED TIMESHEET CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-                    } else {
-                        var temp = document.querySelector(`#options`);
-                        if (temp)
-                            temp.style.display = "none";
+                // Get djs and subscribe to the dj socket
+                hostReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDjs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED DJs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                } catch (e) {
-                    console.error(e);
-                    console.log('FAILED HOST CONNECTION');
-                    restarter = setTimeout(hostSocket, 10000);
-                }
-            });
+                });
+
+                // Get directors and subscribe to the dj socket
+                hostReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDirectors(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED directors CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the XP socket
+                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED XP CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the timesheet socket
+                hostReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED TIMESHEET CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+            } else {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            console.log('FAILED HOST CONNECTION');
+            restarter = setTimeout(hostSocket, 10000);
         }
+    });
+}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
 {
     console.log('attempting online socket');
-    nodeRequest({method: 'post', url: nodeURL + '/recipients/add-computers', data: {host: client.host}}, function (response) {
+    hostReq.request({method: 'post', url: nodeURL + '/recipients/add-computers', data: {host: client.host}}, function (response) {
         try {
             //main.notification(true, "Loaded", "DJ Controls is now loaded", null, 10000);
         } catch (e) {
@@ -3347,7 +3274,7 @@ function onlineSocket()
 // Gets wwsu metadata
 function metaSocket() {
     console.log('attempting meta socket');
-    socket.post('/meta/get', {}, function serverResponded(body, JWR) {
+    hostReq.request({method: 'POST', url: '/meta/get', data: {}}, function (body) {
         try {
             var startRecording = null;
             for (var key in body)
@@ -3403,7 +3330,7 @@ function metaSocket() {
                                         .then(function (response2) {
                                             if (response2 == 0)
                                             {
-                                                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.show), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: (startRecording === 'automation' ? 'automation' : Meta.show), loglevel: 'info', event: `A recording was started in ${recordPath}\\${startRecording}\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
                                                 });
                                             }
                                             console.log(`RECORDFILE: ${response2}`);
@@ -3429,7 +3356,7 @@ function metaSocket() {
 function easSocket()
 {
     console.log('attempting eas socket');
-    socket.post('/eas/get', {}, function serverResponded(body, JWR) {
+    hostReq.request({method: 'POST', url: '/eas/get', data: {}}, function (body) {
         try {
             processEas(body, true);
         } catch (e) {
@@ -3443,7 +3370,7 @@ function easSocket()
 // Status checks
 function statusSocket() {
     console.log('attempting statuc socket');
-    socket.post('/status/get', {}, function serverResponded(body, JWR) {
+    hostReq.request({method: 'POST', url: '/status/get', data: {}}, function (body) {
         //console.log(body);
         try {
             processStatus(body, true);
@@ -3458,7 +3385,7 @@ function statusSocket() {
 // Event calendar from Google
 function calendarSocket() {
     console.log('attempting calendar socket');
-    socket.post('/calendar/get', {}, function serverResponded(body, JWR) {
+    hostReq.request({method: 'POST', url: '/calendar/get', data: {}}, function (body) {
         //console.log(body);
         try {
             processCalendar(body, true);
@@ -3474,7 +3401,7 @@ function calendarSocket() {
 function messagesSocket() {
     console.log('attempting messages socket');
     try {
-        nodeRequest({method: 'post', url: nodeURL + '/messages/get', data: {host: client.host}}, function (body2) {
+        hostReq.request({method: 'post', url: nodeURL + '/messages/get', data: {host: client.host}}, function (body2) {
             //console.log(body);
             try {
                 processMessages(body2, true);
@@ -3486,7 +3413,7 @@ function messagesSocket() {
             }
         });
 
-        nodeRequest({method: 'post', url: nodeURL + '/requests/get', data: {}}, function (body3) {
+        hostReq.request({method: 'post', url: nodeURL + '/requests/get', data: {}}, function (body3) {
             //console.log(body);
             try {
                 processRequests(body3, true);
@@ -3497,8 +3424,7 @@ function messagesSocket() {
                 setTimeout(messagesSocket, 10000);
             }
         });
-
-        socket.post('/announcements/get', {type: client.admin ? 'all' : 'djcontrols'}, function serverResponded(body, JWR) {
+        hostReq.request({method: 'POST', url: '/announcements/get', data: {type: client.admin ? 'all' : 'djcontrols'}}, function (body) {
             //console.log(body);
             try {
                 processAnnouncements(body, true);
@@ -3518,7 +3444,7 @@ function messagesSocket() {
 // Retrieving a list of clients we can send/receive messages to/from
 function recipientsSocket() {
     console.log('attempting recipients socket');
-    socket.post('/recipients/get', {}, function serverResponded(body, JWR) {
+    hostReq.request({method: 'POST', url: '/recipients/get', data: {}}, function (body) {
         //console.log(body);
         try {
             processRecipients(body, true);
@@ -3922,7 +3848,7 @@ function metaTick()
                                         .then(function (response2) {
                                             if (response2 == 0)
                                             {
-                                                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started.<br />Path: ${recordPath}\\automation\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                                                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started.<br />Path: ${recordPath}\\automation\\${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
                                                 });
                                             }
                                             console.log(`RECORDFILE: ${response2}`)
@@ -4097,10 +4023,9 @@ function checkAnnouncements() {
                     badge = `<span class="badge badge-warning m-1">Minor</span>`;
                     break;
             }
-            prevStatus.push(`attn-status-${datum.name}`);
             if (highestLevel > datum.status)
                 highestLevel = datum.status;
-            if (document.querySelector(`#attn-status-${datum.name}`) === null)
+            if (document.querySelector(`#attn-status-${datum.name}`) === null && prevStatus.indexOf(`attn-status-${datum.name}`) === -1)
             {
                 var temp = document.querySelector(`#attn-status`);
                 if (!temp)
@@ -4129,8 +4054,10 @@ function checkAnnouncements() {
                 }
             } else {
                 var temp = document.querySelector(`#attn-status-${datum.name}`);
-                temp.innerHTML = `${badge}<strong>${datum.label}</strong>: ${datum.data}`;
+                if (temp)
+                    temp.innerHTML = `${badge}<strong>${datum.label}</strong>: ${datum.data}`;
             }
+            prevStatus.push(`attn-status-${datum.name}`);
         }
     });
 
@@ -4149,6 +4076,66 @@ function checkAnnouncements() {
             temp.parentNode.removeChild(temp);
     }
 
+    var prevEas = [];
+    var highestEas = 5;
+    Eas().each(datum => {
+        var badge = `<span class="badge badge-dark">Unknown</span>`;
+        switch (datum.severity)
+        {
+            case 'extreme':
+                badge = `<span class="badge badge-danger m-1">EXTREME</span>`;
+                highestEas = 1;
+                break;
+            case 'severe':
+                badge = `<span class="badge badge-urgent m-1">Severe</span>`;
+                if (highestEas > 2)
+                    highestEas = 2;
+                break;
+            case 'moderate':
+                badge = `<span class="badge badge-warning m-1">Moderate</span>`;
+                if (highestEas > 3)
+                    highestEas = 3;
+                break;
+            case 'minor':
+                badge = `<span class="badge badge-trivial m-1">Minor</span>`;
+                if (highestEas > 4)
+                    highestEas = 4;
+                break;
+        }
+        if (document.querySelector(`#attn-eas-${datum.ID}`) === null && prevEas.indexOf(`attn-eas-${datum.ID}`) === -1)
+        {
+            var temp = document.querySelector(`#attn-eas`);
+            if (!temp)
+            {
+                var attn = document.querySelector("#announcements-body");
+                attn.innerHTML += `<div class="expansion-panel list-group-item bs-callout bs-callout-danger" id="attn-eas">
+                            <a aria-controls="attn-collapse-eas" aria-expanded="false" class="expansion-panel-toggler collapsed" data-toggle="collapse" id="attn-heading-eas">
+                                <h4 id="attn-title-eas">Emergency / Weather Alerts</h4>
+                                <div class="expansion-panel-icon ml-3 text-white">
+                                    <i class="collapsed-show">v</i>
+                                    <i class="collapsed-hide">^</i>
+                                </div>
+                            </a>
+                            <div aria-labelledby="attn-heading-eas" class="collapse" data-parent="#announcements-body" id="attn-collapse-eas">
+                                <div class="expansion-panel-body text-white">
+                            <div id="attn-body-eas">
+                                    <p class="attn-eas shadow-2 bg-secondary" id="attn-eas-${datum.ID}">${badge}<strong>${datum.alert}</strong> in effect for the counties ${datum.counties}</p>
+                                </div>
+                            </div>
+                            </div>
+                        </div>`;
+            } else {
+                var temp = document.querySelector(`#attn-body-eas`);
+                temp.innerHTML += `<p class="attn-eas shadow-2 bg-secondary" id="attn-eas-${datum.ID}">${badge}<strong>${datum.alert}</strong> in effect for the counties ${datum.counties}</p>`;
+            }
+        } else {
+            var temp = document.querySelector(`#attn-eas-${datum.ID}`);
+            if (temp)
+                temp.innerHTML = `${badge}<strong>${datum.alert}</strong> in effect for the counties ${datum.counties}`;
+        }
+        prevEas.push(`attn-eas-${datum.ID}`);
+    });
+
     // Remove announcements no longer valid from the announcements box
     var attn = document.querySelectorAll(".attn");
     for (var i = 0; i < attn.length; i++) {
@@ -4160,6 +4147,13 @@ function checkAnnouncements() {
     var attn = document.querySelectorAll(".attn-status");
     for (var i = 0; i < attn.length; i++) {
         if (prevStatus.indexOf(attn[i].id) === -1)
+            attn[i].parentNode.removeChild(attn[i]);
+    }
+
+    // Remove eas alerts no longer valid from the announcements box
+    var attn = document.querySelectorAll(".attn-eas");
+    for (var i = 0; i < attn.length; i++) {
+        if (prevEas.indexOf(attn[i].id) === -1)
             attn[i].parentNode.removeChild(attn[i]);
     }
 
@@ -5521,7 +5515,7 @@ function markRead(message = null)
 
 // Called when the user requests to have a message deleted
 function deleteMessage(message) {
-    nodeRequest({method: 'POST', url: nodeURL + '/messages/remove', data: {ID: message}}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/messages/remove', data: {ID: message}}, function (response) {
         if (response === 'OK')
         {
             iziToast.show({
@@ -5549,7 +5543,7 @@ function deleteMessage(message) {
                 overlay: false,
                 zindex: 1000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to delete message ${message} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to delete message ${message} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -5634,7 +5628,7 @@ function prepareBan(recipient) {
 function finishMute(recipient) {
     try {
         var host = Recipients({ID: recipient}).first().host;
-        nodeRequest({method: 'POST', url: nodeURL + '/discipline/ban-day', data: {host: host}}, function (response) {
+        hostReq.request({method: 'POST', url: nodeURL + '/discipline/ban-day', data: {host: host}}, function (response) {
             if (response === 'OK')
             {
                 iziToast.show({
@@ -5662,7 +5656,7 @@ function finishMute(recipient) {
                     overlay: false,
                     zindex: 1000
                 });
-                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to mute ${host} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to mute ${host} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
             }
             console.log(JSON.stringify(response));
         });
@@ -5679,7 +5673,7 @@ function finishMute(recipient) {
 function finishBan(recipient) {
     try {
         var host = Recipients({ID: recipient}).first().host;
-        nodeRequest({method: 'POST', url: nodeURL + '/discipline/ban-indefinite', data: {host: host}}, function (response) {
+        hostReq.request({method: 'POST', url: nodeURL + '/discipline/ban-indefinite', data: {host: host}}, function (response) {
             if (response === 'OK')
             {
                 iziToast.show({
@@ -5707,7 +5701,7 @@ function finishBan(recipient) {
                     overlay: false,
                     zindex: 1000
                 });
-                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to ban ${host} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to ban ${host} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
             }
             console.log(JSON.stringify(response));
         });
@@ -5756,7 +5750,7 @@ function prepareAttnRemove(ID) {
 // Finalizes and removes an announcement
 function finishAttnRemove(ID) {
     try {
-        nodeRequest({method: 'POST', url: nodeURL + '/announcements/remove', data: {ID: ID}}, function (response) {
+        directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/announcements/remove', data: {ID: ID}}, function (response) {
             if (response === 'OK')
             {
                 iziToast.show({
@@ -5784,7 +5778,7 @@ function finishAttnRemove(ID) {
                     overlay: false,
                     zindex: 1000
                 });
-                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `Someone on ${client.host} DJ Controls attempted to delete announcement ${ID} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `Someone on ${client.host} DJ Controls attempted to delete announcement ${ID} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
             }
             console.log(JSON.stringify(response));
         });
@@ -5801,7 +5795,7 @@ function finishAttnRemove(ID) {
 
 
 function returnBreak() {
-    nodeRequest({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
         console.log(JSON.stringify(response));
         if (response !== 'OK')
         {
@@ -5810,13 +5804,13 @@ function returnBreak() {
                 message: 'Cannot return from break. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to return from break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to return from break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
     });
 }
 
 function queuePSA(duration) {
-    nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-psa', data: {duration: duration}}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/songs/queue-psa', data: {duration: duration}}, function (response) {
         console.log(JSON.stringify(response));
         if (response !== 'OK')
         {
@@ -5825,7 +5819,7 @@ function queuePSA(duration) {
                 message: 'Could not queue a PSA. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to queue a PSA, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to queue a PSA, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
     });
 }
@@ -5882,7 +5876,7 @@ function goLive() {
 }
 
 function _goLive() {
-    nodeRequest({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: document.querySelector('#live-topic').value, djcontrols: client.host, webchat: document.querySelector('#live-webchat').checked}}, function (response) {
+    hostReq.request({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: document.querySelector('#live-topic').value, djcontrols: client.host, webchat: document.querySelector('#live-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
             selectRecipient(null);
@@ -5893,7 +5887,7 @@ function _goLive() {
                 message: 'Cannot go live at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go live, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go live, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -5951,7 +5945,7 @@ function goRemote() {
 }
 
 function _goRemote() {
-    nodeRequest({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: document.querySelector('#remote-topic').value, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: document.querySelector('#remote-topic').value, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
             selectRecipient(null);
@@ -5962,7 +5956,7 @@ function _goRemote() {
                 message: 'Cannot go remote at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -6022,7 +6016,7 @@ function goSports() {
 function _goSports() {
     var sportsOptions = document.getElementById('sports-sport');
     var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
-    nodeRequest({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, topic: document.querySelector('#sports-topic').value, remote: document.querySelector('#sports-remote').checked, djcontrols: client.host, webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, topic: document.querySelector('#sports-topic').value, remote: document.querySelector('#sports-remote').checked, djcontrols: client.host, webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
             selectRecipient(null);
@@ -6033,7 +6027,7 @@ function _goSports() {
                 message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -6051,7 +6045,7 @@ function prepareLog() {
 function saveLog() {
     var thelog = 'DJ/Producer played a track.';
     var dateObject = moment(document.querySelector("#log-datetime").value);
-    nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.show, loglevel: 'secondary', event: thelog, trackArtist: document.querySelector("#log-artist").value, trackTitle: document.querySelector("#log-title").value, trackAlbum: document.querySelector("#log-album").value, trackLabel: document.querySelector("#log-label").value, date: dateObject.toISOString()}}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.show, loglevel: 'secondary', event: thelog, trackArtist: document.querySelector("#log-artist").value, trackTitle: document.querySelector("#log-title").value, trackAlbum: document.querySelector("#log-album").value, trackLabel: document.querySelector("#log-label").value, date: dateObject.toISOString()}}, function (response) {
         if (response === 'OK')
         {
             $("#log-modal").iziModal('close');
@@ -6085,7 +6079,7 @@ function saveLog() {
                                 instance.hide({}, toast, 'button');
                             }],
                         ['<button>Playing No Tracks</button>', function (instance, toast, button, e, inputs) {
-                                nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.show, loglevel: 'secondary', event: 'DJ/Producer finished playing music.', trackArtist: '', trackTitle: '', trackAlbum: '', trackLabel: '', date: moment().toISOString(true)}}, function (response) {});
+                                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.show, loglevel: 'secondary', event: 'DJ/Producer finished playing music.', trackArtist: '', trackTitle: '', trackAlbum: '', trackLabel: '', date: moment().toISOString(true)}}, function (response) {});
                                 instance.hide({}, toast, 'button');
                             }]
                     ]
@@ -6096,7 +6090,7 @@ function saveLog() {
                 title: 'An error occurred',
                 message: 'Error occurred trying to submit a log entry. Please email engineer@wwsu1069.org.'
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to add a log, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to add a log, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -6109,7 +6103,8 @@ function prepareEmergency() {
 }
 
 function sendEmergency() {
-    nodeRequest({method: 'POST', url: nodeURL + '/announcements/add', data: {type: 'djcontrols', level: 'danger', title: "Reported Problem", announcement: `<strong>${moment().format("MM/DD/YYYY hh:mm A")}</strong>: ${document.querySelector("#emergency-issue").value}`}}, function (response) {
+    // TODO fix this; can't use announcements anymore
+    hostReq.request({method: 'POST', url: nodeURL + '/announcements/add-problem', data: {information: `<strong>${moment().format("MM/DD/YYYY hh:mm A")}</strong>: ${document.querySelector("#emergency-issue").value}`}}, function (response) {
         if (response === 'OK')
         {
             $("#emergency-modal").iziModal('close');
@@ -6130,7 +6125,7 @@ function sendEmergency() {
                 title: 'An error occurred',
                 message: 'Error occurred trying to submit a problem. Please email your issue to engineer@wwsu1069.org instead.'
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to report a problem, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to report a problem, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -6143,7 +6138,7 @@ function prepareDisplay() {
 }
 
 function sendDisplay() {
-    nodeRequest({method: 'POST', url: nodeURL + '/messages/send', data: {from: client.host, to: `display-public`, to_friendly: `Display (Public)`, message: document.querySelector("#display-message").value}}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/messages/send', data: {from: client.host, to: `display-public`, to_friendly: `Display (Public)`, message: document.querySelector("#display-message").value}}, function (response) {
         if (response === 'OK')
         {
             $("#display-modal").iziModal('close');
@@ -6164,14 +6159,14 @@ function sendDisplay() {
                 title: 'An error occurred',
                 message: 'Error occurred trying to submit a message to the display signs. Please email engineer@wwsu1069.org'
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to send a message to display signs, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to send a message to display signs, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
 }
 
 function endShow() {
-    nodeRequest({method: 'POST', url: nodeURL + '/state/automation'}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/state/automation'}, function (response) {
         if (typeof response.showTime === 'undefined')
         {
             iziToast.show({
@@ -6179,7 +6174,7 @@ function endShow() {
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to end their show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to end their show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         } else {
             $("#xp-modal").iziModal('open');
             document.querySelector(`#stat-showTime`).innerHTML = `${parseInt((response.showTime || 0) / 6) / 10} this show`;
@@ -6195,7 +6190,7 @@ function endShow() {
 }
 
 function switchShow() {
-    nodeRequest({method: 'POST', url: nodeURL + '/state/automation', data: {transition: true}}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/state/automation', data: {transition: true}}, function (response) {
         if (typeof response.showTime === 'undefined')
         {
             iziToast.show({
@@ -6203,7 +6198,7 @@ function switchShow() {
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to switch show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to switch show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         } else {
             $("#xp-modal").iziModal('open');
             document.querySelector(`#stat-showTime`).innerHTML = `${parseInt((response.showTime || 0) / 6) / 10} this show`;
@@ -6219,7 +6214,7 @@ function switchShow() {
 }
 
 function goBreak(halftime) {
-    nodeRequest({method: 'POST', url: nodeURL + '/state/break', data: {halftime: halftime}}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/state/break', data: {halftime: halftime}}, function (response) {
         if (response !== 'OK')
         {
             iziToast.show({
@@ -6227,7 +6222,7 @@ function goBreak(halftime) {
                 message: 'Error occurred trying to go into break. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go to break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go to break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -6236,7 +6231,7 @@ function goBreak(halftime) {
 function playTopAdd() {
     $("#wait-modal").iziModal('open');
     document.querySelector("#wait-text").innerHTML = 'Queuing/playing Top Add';
-    nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-add'}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/songs/queue-add'}, function (response) {
         if (response !== 'OK')
         {
             iziToast.show({
@@ -6244,7 +6239,7 @@ function playTopAdd() {
                 message: 'Error occurred trying to play a Top Add. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to play a Top Add, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to play a Top Add, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -6254,7 +6249,7 @@ function playTopAdd() {
 function playLiner() {
     $("#wait-modal").iziModal('open');
     document.querySelector("#wait-text").innerHTML = 'Queuing/playing Liner';
-    nodeRequest({method: 'POST', url: nodeURL + '/songs/queue-liner'}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/songs/queue-liner'}, function (response) {
         if (response !== 'OK')
         {
             iziToast.show({
@@ -6262,7 +6257,7 @@ function playLiner() {
                 message: 'Error occurred trying to play a liner. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            nodeRequest({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to play a Liner, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to play a Liner, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -6272,7 +6267,7 @@ function playLiner() {
 // Finalizes and issues a mute
 function queueRequest(requestID) {
     try {
-        nodeRequest({method: 'POST', url: nodeURL + '/requests/queue', data: {ID: requestID}}, function (response) {
+        hostReq.request({method: 'POST', url: nodeURL + '/requests/queue', data: {ID: requestID}}, function (response) {
             if (response === 'OK')
             {
                 iziToast.show({
@@ -6326,32 +6321,6 @@ function processEas(data, replace = false)
             // Replace with the new data
             Eas = TAFFY();
             Eas.insert(data);
-
-
-            // Add Eas-based announcements
-            if (data.length > 0)
-            {
-                data.map(datum => {
-                    var className = 'secondary';
-                    if (datum.severity === 'Extreme')
-                    {
-                        className = 'danger';
-                    } else if (datum.severity === 'Severe')
-                    {
-                        className = 'urgent';
-                    } else if (datum.severity === 'Moderate')
-                    {
-                        className = 'warning';
-                    } else {
-                        className = 'info';
-                    }
-                    if (document.querySelector(`#attn-eas-${datum.ID}`) === null)
-                    {
-                        // TODO EAS Alert, counties, ID
-                    } else {
-                    }
-                });
-            }
 
             // Go through the new data. If any IDs exists that did not exist before, consider it a new alert and make a notification.
             Eas().each(function (record)
@@ -6574,6 +6543,7 @@ function processEas(data, replace = false)
             }
         }
 
+        checkAnnouncements();
         checkAnnouncementColor();
 
     } catch (e) {
@@ -7365,8 +7335,9 @@ function loadDJ(dj = null, reset = true) {
                     if (record.type === "xp")
                         totalXP += record.amount;
 
-                    if (record.type === "remote")
+                    if (record.type === "remote" && moment(record.createdAt).isSameOrAfter(moment(DJData.startOfSemester)))
                         remote += record.amount;
+                    
                     xpLogs.innerHTML += `<div class="row m-1 bg-light-1 border-left border-${record.type === 'remote' ? `warning` : `info`} shadow-2" style="border-left-width: 5px !important;">
                     <div class="col-3 text-primary">
                         ${moment(record.createdAt).format("YYYY-MM-DD h:mm A")}
@@ -7569,10 +7540,11 @@ function loadDJ(dj = null, reset = true) {
             DJData.XP = [];
             DJData.attendance = [];
             DJData.DJ = dj === null ? DJData.DJ || '' : dj;
-            nodeRequest({method: 'POST', url: nodeURL + '/xp/get', data: {dj: DJData.DJ}}, function (response) {
-                DJData.XP = response;
+            hostReq.request({method: 'POST', url: nodeURL + '/xp/get', data: {dj: DJData.DJ}}, function (response) {
+                DJData.XP = response.data;
+                DJData.startOfSemester = response.startOfSemester;
                 // Populate attendance records
-                nodeRequest({method: 'POST', url: nodeURL + '/attendance/get', data: {dj: DJData.DJ}}, function (response2) {
+                hostReq.request({method: 'POST', url: nodeURL + '/attendance/get', data: {dj: DJData.DJ}}, function (response2) {
                     DJData.attendance = response2;
                     console.dir(response2);
                     afterFunction();
@@ -7704,7 +7676,6 @@ function processHosts(data, replace = false)
         {
             Hosts = TAFFY();
             Hosts.insert(data);
-
         } else {
             for (var key in data)
             {
@@ -7714,12 +7685,26 @@ function processHosts(data, replace = false)
                     {
                         case 'insert':
                             Hosts.insert(data[key]);
+                            if (data[key].host === main.getMachineID())
+                            {
+                                socket.disconnect();
+                                socket.reconnect();
+                            }
                             break;
                         case 'update':
                             Hosts({ID: data[key].ID}).update(data[key]);
+                            // Changes to this host should cause a refresh of the socket
+                            if (data[key].host === main.getMachineID())
+                            {
+                                socket.disconnect();
+                                socket.reconnect();
+                            }
                             break;
                         case 'remove':
                             Hosts({ID: data[key]}).remove();
+                            // If this host no longer exists, disconnect the socket
+                            if (!Hosts({host: main.getMachineID()}).first())
+                                socket.disconnect();
                             break;
                     }
                 }
@@ -7813,7 +7798,7 @@ function loadTimesheets(date)
             date = moment(Meta.time);
         var records = document.querySelector('#options-timesheets-records');
         records.innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
-        nodeRequest({method: 'POST', url: nodeURL + '/timesheet/get', data: {date: date.toISOString(true)}}, function (response) {
+        hostReq.request({method: 'POST', url: nodeURL + '/timesheet/get', data: {date: date.toISOString(true)}}, function (response) {
             records.innerHTML = ``;
             Timesheets = response;
             var hours = {};

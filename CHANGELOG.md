@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
  - Announce queue times, silence, and connection changes on sports, sportsremote, and remote broadcasts. [Issue 19](https://github.com/Lovinity/wwsu-dj-controls/issues/19)
+ - wwsu.js. Currently not fully implemented in DJ Controls, but using the WWSUreq class for easy management of the new authentication system in v5.0.0.
 
 ### Changed
  - Implementing Material Design on top of Bootstrap for the user interface. Shadow effects and more vivid colors.
