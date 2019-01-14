@@ -4071,7 +4071,6 @@ function checkAnnouncements() {
         {
             temp.className = `expansion-panel list-group-item bs-callout bs-callout-default`;
         }
-
         if (prevStatus.length <= 0)
             temp.parentNode.removeChild(temp);
     }
@@ -4082,21 +4081,21 @@ function checkAnnouncements() {
         var badge = `<span class="badge badge-dark">Unknown</span>`;
         switch (datum.severity)
         {
-            case 'extreme':
+            case 'Extreme':
                 badge = `<span class="badge badge-danger m-1">EXTREME</span>`;
                 highestEas = 1;
                 break;
-            case 'severe':
+            case 'Severe':
                 badge = `<span class="badge badge-urgent m-1">Severe</span>`;
                 if (highestEas > 2)
                     highestEas = 2;
                 break;
-            case 'moderate':
+            case 'Moderate':
                 badge = `<span class="badge badge-warning m-1">Moderate</span>`;
                 if (highestEas > 3)
                     highestEas = 3;
                 break;
-            case 'minor':
+            case 'Minor':
                 badge = `<span class="badge badge-trivial m-1">Minor</span>`;
                 if (highestEas > 4)
                     highestEas = 4;
@@ -4108,7 +4107,7 @@ function checkAnnouncements() {
             if (!temp)
             {
                 var attn = document.querySelector("#announcements-body");
-                attn.innerHTML += `<div class="expansion-panel list-group-item bs-callout bs-callout-danger" id="attn-eas">
+                attn.innerHTML += `<div class="expansion-panel list-group-item bs-callout bs-callout-${highestEas <= 2 ? `danger` : `trivial`}" id="attn-eas">
                             <a aria-controls="attn-collapse-eas" aria-expanded="false" class="expansion-panel-toggler collapsed" data-toggle="collapse" id="attn-heading-eas">
                                 <h4 id="attn-title-eas">Emergency / Weather Alerts</h4>
                                 <div class="expansion-panel-icon ml-3 text-white">
@@ -4125,10 +4124,17 @@ function checkAnnouncements() {
                             </div>
                         </div>`;
             } else {
+                var temp = document.querySelector(`#attn-eas`);
+                if (temp)
+                    temp.className = `expansion-panel list-group-item bs-callout bs-callout-${highestEas <= 2 ? `danger` : `trivial`}`;
                 var temp = document.querySelector(`#attn-body-eas`);
-                temp.innerHTML += `<p class="attn-eas shadow-2 bg-secondary" id="attn-eas-${datum.ID}">${badge}<strong>${datum.alert}</strong> in effect for the counties ${datum.counties}</p>`;
+                if (temp)
+                    temp.innerHTML += `<p class="attn-eas shadow-2 bg-secondary" id="attn-eas-${datum.ID}">${badge}<strong>${datum.alert}</strong> in effect for the counties ${datum.counties}</p>`;
             }
         } else {
+            var temp = document.querySelector(`#attn-eas`);
+            if (temp)
+                temp.className = `expansion-panel list-group-item bs-callout bs-callout-${highestEas <= 2 ? `danger` : `trivial`}`;
             var temp = document.querySelector(`#attn-eas-${datum.ID}`);
             if (temp)
                 temp.innerHTML = `${badge}<strong>${datum.alert}</strong> in effect for the counties ${datum.counties}`;
@@ -4150,11 +4156,25 @@ function checkAnnouncements() {
             attn[i].parentNode.removeChild(attn[i]);
     }
 
+    if (prevStatus.length <= 0)
+    {
+        var temp = document.querySelector(`#attn-status`);
+        if (temp)
+            temp.parentNode.removeChild(temp);
+    }
+
     // Remove eas alerts no longer valid from the announcements box
     var attn = document.querySelectorAll(".attn-eas");
     for (var i = 0; i < attn.length; i++) {
         if (prevEas.indexOf(attn[i].id) === -1)
             attn[i].parentNode.removeChild(attn[i]);
+    }
+
+    if (prevEas.length <= 0)
+    {
+        var temp = document.querySelector(`#attn-eas`);
+        if (temp)
+            temp.parentNode.removeChild(temp);
     }
 
     // Process all announcements for the announcements menu, if applicable
@@ -7337,7 +7357,7 @@ function loadDJ(dj = null, reset = true) {
 
                     if (record.type === "remote" && moment(record.createdAt).isSameOrAfter(moment(DJData.startOfSemester)))
                         remote += record.amount;
-                    
+
                     xpLogs.innerHTML += `<div class="row m-1 bg-light-1 border-left border-${record.type === 'remote' ? `warning` : `info`} shadow-2" style="border-left-width: 5px !important;">
                     <div class="col-3 text-primary">
                         ${moment(record.createdAt).format("YYYY-MM-DD h:mm A")}

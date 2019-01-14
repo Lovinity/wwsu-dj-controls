@@ -4,7 +4,7 @@
 class WWSUdb {
 
     constructor(db) {
-        this.db = db;
+        this._db = db;
 
         this.onInsert = () => {
         };
@@ -14,6 +14,10 @@ class WWSUdb {
         };
         this.onReplace = () => {
         };
+    }
+    
+    get db() {
+        return this._db;
     }
 
     setOnInsert(fn) {
@@ -37,9 +41,9 @@ class WWSUdb {
         {
             if (query.constructor === Array)
             {
-                this.db().remove();
-                this.db.insert(query);
-                this.onReplace(this.db());
+                this._db().remove();
+                this._db.insert(query);
+                this.onReplace(this._db());
             }
             return null;
         } else {
@@ -50,16 +54,16 @@ class WWSUdb {
                     switch (key)
                     {
                         case 'insert':
-                            this.db.insert(query[key]);
-                            this.onInsert(query[key], this.db());
+                            this._db.insert(query[key]);
+                            this.onInsert(query[key], this._db());
                             break;
                         case 'update':
-                            this.db({ID: query[key].ID}).update(query[key]);
-                            this.onUpdate(query[key], this.db());
+                            this._db({ID: query[key].ID}).update(query[key]);
+                            this.onUpdate(query[key], this._db());
                             break;
                         case 'remove':
-                            this.db({ID: query[key]}).remove();
-                            this.onRemove(query[key], this.db());
+                            this._db({ID: query[key]}).remove();
+                            this.onRemove(query[key], this._db());
                             break;
                     }
                 }
@@ -67,10 +71,10 @@ class WWSUdb {
     }
     }
 
-    replaceData(WWSUreq, path)
+    replaceData(WWSUreq, path, data = {})
     {
         try {
-            WWSUreq.request({method: 'POST', url: path, data: {}}, (body) => {
+            WWSUreq.request({method: 'POST', url: path, data: data}, (body) => {
                 this.query(body, true);
             });
         } catch (e) {
@@ -222,7 +226,7 @@ class WWSUreq {
     }
 
     _promptLogin(opts, cb) {
-        var selection = [];
+        var selection = [`<option value="">--SELECT A USER--</option>`];
         if (opts.db !== null)
         {
             opts.db.each((user) => {
