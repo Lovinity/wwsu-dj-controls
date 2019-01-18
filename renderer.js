@@ -37,8 +37,6 @@ try {
     var DJData = {};
     var Timesheets = [];
 
-    // Define HTML elements
-
     // Define other variables
     var nodeURL = 'https://server.wwsu1069.org';
     //var nodeURL = 'http://localhost:1337';
@@ -64,6 +62,7 @@ try {
     var queueLength = 0;
     var trip;
     var metaTimer;
+    var isHost = false;
 
     // These are used for keeping track of upcoming shows and notifying DJs to prevent people cutting into each other's shows.
     var calPriority = 0;
@@ -873,15 +872,15 @@ try {
 // OnClick handlers
 
 document.querySelector("#btn-return-b").onclick = function () {
-    returnBreak();
+    promptIfNotHost(`return from break`, function() { returnBreak(); });
 };
 
 document.querySelector("#btn-psa15-b").onclick = function () {
-    queuePSA(15);
+    promptIfNotHost(`queue a 15 second PSA`, function() { queuePSA(15); });
 };
 
 document.querySelector("#btn-psa30-b").onclick = function () {
-    queuePSA(30);
+    promptIfNotHost(`queue a 30 second PSA`, function() { queuePSA(30); });
 };
 
 document.querySelector("#btn-golive-b").onclick = function () {
@@ -897,31 +896,31 @@ document.querySelector("#btn-gosports-b").onclick = function () {
 };
 
 document.querySelector("#btn-endshow-b").onclick = function () {
-    endShow();
+    promptIfNotHost(`end the show`, function() { endShow(); });
 };
 
 document.querySelector("#btn-switchshow-b").onclick = function () {
-    switchShow();
+    promptIfNotHost(`switch shows`, function() { switchShow(); });
 };
 
 document.querySelector("#btn-resume-b").onclick = function () {
-    returnBreak();
+    promptIfNotHost(`return from break`, function() { returnBreak(); });
 };
 
 document.querySelector("#btn-break-b").onclick = function () {
-    goBreak(false);
+    promptIfNotHost(`take a break`, function() { goBreak(false); });
 };
 
 document.querySelector("#btn-halftime-b").onclick = function () {
-    goBreak(true);
+    promptIfNotHost(`take an extended break`, function() { goBreak(true); });
 };
 
 document.querySelector("#btn-topadd-b").onclick = function () {
-    playTopAdd();
+    promptIfNotHost(`play a Top Add`, function() { playTopAdd(); });
 };
 
 document.querySelector("#btn-liner-b").onclick = function () {
-    playLiner();
+    promptIfNotHost(`play a liner`, function() { playLiner(); });
 };
 
 document.querySelector("#btn-log-b").onclick = function () {
@@ -3156,109 +3155,109 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-        {
-            hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
-                //console.log(body);
-                try {
-                    client = body;
-                    //authtoken = client.token;
-                    if (!client.authorized)
-                    {
-                        var noConnection = document.getElementById('no-connection');
-                        noConnection.style.display = "inline";
-                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+{
+    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+        //console.log(body);
+        try {
+            client = body;
+            //authtoken = client.token;
+            if (!client.authorized)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "inline";
+                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                        cb(false);
-                    } else {
-                        cb(true);
+                cb(false);
+            } else {
+                cb(true);
+            }
+            if (client.admin)
+            {
+                if (client.otherHosts)
+                    processHosts(client.otherHosts, true);
+                var temp = document.querySelector(`#options`);
+                var restarter;
+                if (temp)
+                    temp.style.display = "inline";
+
+                // Subscribe to the logs socket
+                hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        //processLogs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED logs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                    if (client.admin)
-                    {
-                        if (client.otherHosts)
-                            processHosts(client.otherHosts, true);
-                        var temp = document.querySelector(`#options`);
-                        var restarter;
-                        if (temp)
-                            temp.style.display = "inline";
+                });
 
-                        // Subscribe to the logs socket
-                        hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                //processLogs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED logs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get djs and subscribe to the dj socket
-                        hostReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                processDjs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED DJs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get directors and subscribe to the dj socket
-                        hostReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                processDirectors(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED directors CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the XP socket
-                        hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED XP CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the timesheet socket
-                        hostReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED TIMESHEET CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-                    } else {
-                        var temp = document.querySelector(`#options`);
-                        if (temp)
-                            temp.style.display = "none";
+                // Get djs and subscribe to the dj socket
+                hostReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDjs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED DJs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                } catch (e) {
-                    console.error(e);
-                    console.log('FAILED HOST CONNECTION');
-                    restarter = setTimeout(hostSocket, 10000);
-                }
-            });
+                });
+
+                // Get directors and subscribe to the dj socket
+                hostReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDirectors(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED directors CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the XP socket
+                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED XP CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the timesheet socket
+                hostReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED TIMESHEET CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+            } else {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            console.log('FAILED HOST CONNECTION');
+            restarter = setTimeout(hostSocket, 10000);
         }
+    });
+}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -3503,7 +3502,7 @@ function doMeta(metan) {
         if (queueLength < 0)
             queueLength = 0;
 
-        if (Meta.djcontrols === client.host)
+        if (isHost)
         {
             if (typeof metan.state !== 'undefined' && (metan.state === "sports_on" || metan.state === "sportsremote_on" || metan.state === "remote_on"))
                 responsiveVoice.speak("On the air");
@@ -3536,7 +3535,7 @@ function doMeta(metan) {
         document.querySelector("#nowplaying").innerHTML = `<div class="text-warning" style="position: absolute; top: -16px; left: 0px;">${Meta.trackFinish !== null ? moment.duration(moment(Meta.trackFinish).diff(moment(Meta.time), 'seconds'), "seconds").format() : ''}</div>${Meta.line1}<br />${Meta.line2}`;
 
         // Notify the DJ of a mandatory top of the hour break if they need to take one
-        if (moment(Meta.time).minutes() >= 3 && moment(Meta.time).minutes() < 10 && moment(Meta.time).diff(moment(Meta.lastID), 'minutes') >= 15 && Meta.djcontrols === client.host)
+        if (moment(Meta.time).minutes() >= 3 && moment(Meta.time).minutes() < 10 && moment(Meta.time).diff(moment(Meta.lastID), 'minutes') >= 15 && isHost)
         {
             if (document.querySelector("#iziToast-breakneeded") === null && !breakNotified)
             {
@@ -3622,24 +3621,28 @@ function doMeta(metan) {
             document.querySelector('#please-wait').style.display = "none";
             if (Meta.state === 'automation_on' || Meta.state === 'automation_break')
             {
+                isHost = false;
                 badge.innerHTML = `<i class="chip-icon fas fa-microphone-alt-slash bg-info"></i>${Meta.state}`;
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
                 document.querySelector('#btn-gosports').style.display = "inline";
             } else if (Meta.state === 'automation_playlist')
             {
+                isHost = false;
                 badge.innerHTML = `<i class="chip-icon fas fa-list bg-info"></i>${Meta.state}`;
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
                 document.querySelector('#btn-gosports').style.display = "inline";
             } else if (Meta.state === 'automation_genre')
             {
+                isHost = false;
                 badge.innerHTML = `<i class="chip-icon fas fa-music bg-info"></i>${Meta.state}`;
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
                 document.querySelector('#btn-gosports').style.display = "inline";
             } else if (Meta.state === 'live_prerecord' || Meta.state === 'automation_prerecord')
             {
+                isHost = false;
                 badge.innerHTML = `<i class="chip-icon fas fa-compact-disc bg-primary"></i>${Meta.state}`;
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
@@ -3657,7 +3660,7 @@ function doMeta(metan) {
                 document.querySelector('#btn-psa15').style.display = "inline";
                 document.querySelector('#btn-psa30').style.display = "inline";
                 // If the system goes into disconnected mode, the host client should be notified of that!
-            } else if (Meta.state.includes('_break_disconnected') || Meta.state.includes('_halftime_disconnected') && Meta.djcontrols === client.host)
+            } else if (Meta.state.includes('_break_disconnected') || Meta.state.includes('_halftime_disconnected') && isHost)
             {
                 badge.innerHTML = `<i class="chip-icon fas fa-wifi bg-danger"></i>${Meta.state}`;
                 if (document.querySelector("#iziToast-noremote") === null)
@@ -4516,7 +4519,7 @@ function checkCalendar() {
             curPriority = 2;
 
         // Determine if the DJ should be notified of the upcoming program
-        if ((curPriority <= calPriority || nowEvent === null) && !calNotified && Meta.djcontrols === client.host && Meta.show !== `${calHost} - ${calShow}` && Meta.changingState === null)
+        if ((curPriority <= calPriority || nowEvent === null) && !calNotified && isHost && Meta.show !== `${calHost} - ${calShow}` && Meta.changingState === null)
         {
             // Sports events should notify right away; allows for 15 minutes to transition
             if (calType === 'Sports')
@@ -5903,6 +5906,7 @@ function _goLive() {
     hostReq.request({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: document.querySelector('#live-topic').value, djcontrols: client.host, webchat: document.querySelector('#live-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
+            isHost = true;
             selectRecipient(null);
             $("#go-live-modal").iziModal('close');
         } else {
@@ -5972,6 +5976,7 @@ function _goRemote() {
     hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: document.querySelector('#remote-topic').value, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
+            isHost = true;
             selectRecipient(null);
             $("#go-remote-modal").iziModal('close');
         } else {
@@ -6043,6 +6048,7 @@ function _goSports() {
     hostReq.request({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, topic: document.querySelector('#sports-topic').value, remote: document.querySelector('#sports-remote').checked, djcontrols: client.host, webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
+            isHost = true;
             selectRecipient(null);
             $("#go-sports-modal").iziModal('close');
         } else {
@@ -6055,6 +6061,41 @@ function _goSports() {
         }
         console.log(JSON.stringify(response));
     });
+}
+
+function promptIfNotHost(action, fn)
+{
+    if (isHost)
+    {
+        fn();
+    } else {
+        iziToast.show({
+            timeout: 60000,
+            overlay: true,
+            displayMode: 'once',
+            color: 'yellow',
+            id: 'inputs',
+            zindex: 999,
+            layout: 2,
+            image: ``,
+            maxWidth: 480,
+            title: 'Confirm action',
+            message: `Are you sure you want to ${action}? You might interfere with the current broadcast.`,
+            position: 'center',
+            drag: false,
+            closeOnClick: false,
+            buttons: [
+                ['<button><b>Yes</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        isHost = true;
+                        fn();
+                    }],
+                ['<button><b>No</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                    }],
+            ]
+        });
+    }
 }
 
 function prepareLog() {
@@ -6607,7 +6648,7 @@ function processStatus(data, replace = false)
                             main.flashTaskbar();
                         }
                     }
-                    if (datum.name === 'silence' && (client.emergencies || (typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)) && datum.status <= 3)
+                    if (datum.name === 'silence' && (client.emergencies || isHost) && datum.status <= 3)
                     {
                         iziToast.show({
                             title: 'Silence / Low Audio detected!',
@@ -6657,7 +6698,7 @@ function processStatus(data, replace = false)
                                     main.flashTaskbar();
                                 }
                             }
-                            if (data[key].name === 'silence' && data[key].status <= 3 && (client.emergencies || (typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)))
+                            if (data[key].name === 'silence' && data[key].status <= 3 && (client.emergencies || isHost))
                             {
                                 iziToast.show({
                                     title: 'Silence / Low Audio detected!',
@@ -6709,7 +6750,7 @@ function processStatus(data, replace = false)
                                     main.flashTaskbar();
                                 }
                             }
-                            if (data[key].name === 'silence' && data[key].status <= 3 && (client.emergencies || (typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)))
+                            if (data[key].name === 'silence' && data[key].status <= 3 && (client.emergencies || isHost))
                             {
                                 iziToast.show({
                                     title: 'Silence / Low Audio detected!',
@@ -6974,7 +7015,7 @@ function processMessages(data, replace = false)
                                 break;
                             case 'DJ':
                             case 'DJ-private':
-                                if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.webmessages) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)))
+                                if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.webmessages) || (!Meta.state.includes("automation_") && isHost)))
                                 {
                                     var notification = notifier.notify('New Web Message', {
                                         message: `You have a new web message from ${datum.from_friendly} (see DJ Controls).`,
@@ -7089,7 +7130,7 @@ function processMessages(data, replace = false)
                                     break;
                                 case 'DJ':
                                 case 'DJ-private':
-                                    if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.webmessages) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)))
+                                    if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.webmessages) || (!Meta.state.includes("automation_") && isHost)))
                                     {
                                         var notification = notifier.notify('New Web Message', {
                                             message: `You have a new web message from ${data[key].from_friendly} (see DJ Controls).`,
@@ -7171,7 +7212,7 @@ function processRequests(data, replace = false)
                 data[index].needsread = false;
                 if (prev.indexOf(datum.ID === -1))
                 {
-                    if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.requests) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)))
+                    if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.requests) || (!Meta.state.includes("automation_") && isHost)))
                     {
                         data[index].needsread = true;
                         var notification = notifier.notify('Track Requested', {
@@ -7217,7 +7258,7 @@ function processRequests(data, replace = false)
                     {
                         case 'insert':
                             data[key].needsread = false;
-                            if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.requests) || (!Meta.state.includes("automation_") && typeof Meta.djcontrols !== 'undefined' && Meta.djcontrols === client.host)))
+                            if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.requests) || (!Meta.state.includes("automation_") && isHost)))
                             {
                                 data[key].needsread = true;
                                 var notification = notifier.notify('Track Requested', {
