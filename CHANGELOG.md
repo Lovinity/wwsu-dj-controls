@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Announcements are now expand/collapse accordions. System problems condensed into one announcement. EAS / Weather alerts condensed into one announcement.
  - Several windows re-designed for material design, especially the messenger.
  - WWSU Operations state badge changed to a chip.
+ - Optimized loading of DJs and logs to run faster.
 
 ### Fixed
  - DJs on the air might not get a silence detection warning if the DJ Controls they were using does not have client.emergencies being true.

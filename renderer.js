@@ -934,14 +934,14 @@ document.querySelector("#btn-view-log-b").onclick = function () {
     $("#options-modal-dj-logs").iziModal('open');
     hostReq.request({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: Meta.attendanceID}}, function (response) {
         var logs = document.querySelector('#dj-show-logs');
-        logs.innerHTML = ``;
         logs.scrollTop = 0;
 
         if (response.length > 0)
         {
+            var newLog = ``;
             response.map(log => {
 
-                logs.innerHTML += `<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
+                newLog += `<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-3 text-primary">
                                     ${moment(log.createdAt).format("h:mm:ss A")}
                                 </div>
@@ -953,6 +953,8 @@ document.querySelector("#btn-view-log-b").onclick = function () {
                                 </div>
                             </div>`;
             });
+
+            logs.innerHTML = newLog;
         }
     });
 }
@@ -1972,13 +1974,13 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                 $("#options-modal-dj-logs").iziModal('open');
                 hostReq.request({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``))}}, function (response) {
                     var logs = document.querySelector('#dj-show-logs');
-                    logs.innerHTML = ``;
                     logs.scrollTop = 0;
 
+                    var newLog = ``;
                     if (response.length > 0)
                     {
                         response.map(log => {
-                            logs.innerHTML += `<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
+                            newLog += `<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-3 text-primary">
                                     ${moment(log.createdAt).format("h:mm:ss A")}
                                 </div>
@@ -1990,6 +1992,7 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                                 </div>
                             </div>`;
                         });
+                        logs.innerHTML = newLog;
                         hostReq.request({method: 'POST', url: nodeURL + '/listeners/get', data: {start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true)}}, function (response2) {
 
                             if (response2.length > 1)
@@ -2069,13 +2072,13 @@ document.querySelector(`#global-logs`).addEventListener("click", function (e) {
                 $("#options-modal-dj-logs").iziModal('open');
                 hostReq.request({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``))}}, function (response) {
                     var logs = document.querySelector('#dj-show-logs');
-                    logs.innerHTML = ``;
                     logs.scrollTop = 0;
 
+                    var newLog = ``;
                     if (response.length > 0)
                     {
                         response.map(log => {
-                            logs.innerHTML += `<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
+                            newLog += `<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-3 text-primary">
                                     ${moment(log.createdAt).format("h:mm:ss A")}
                                 </div>
@@ -2087,6 +2090,7 @@ document.querySelector(`#global-logs`).addEventListener("click", function (e) {
                                 </div>
                             </div>`;
                         });
+                        logs.innerHTML = newLog;
 
                         hostReq.request({method: 'POST', url: nodeURL + '/listeners/get', data: {start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true)}}, function (response2) {
 
@@ -3152,109 +3156,109 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-{
-    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
-        //console.log(body);
-        try {
-            client = body;
-            //authtoken = client.token;
-            if (!client.authorized)
-            {
-                var noConnection = document.getElementById('no-connection');
-                noConnection.style.display = "inline";
-                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+        {
+            hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+                //console.log(body);
+                try {
+                    client = body;
+                    //authtoken = client.token;
+                    if (!client.authorized)
+                    {
+                        var noConnection = document.getElementById('no-connection');
+                        noConnection.style.display = "inline";
+                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                cb(false);
-            } else {
-                cb(true);
-            }
-            if (client.admin)
-            {
-                if (client.otherHosts)
-                    processHosts(client.otherHosts, true);
-                var temp = document.querySelector(`#options`);
-                var restarter;
-                if (temp)
-                    temp.style.display = "inline";
-
-                // Subscribe to the logs socket
-                hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        //processLogs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED logs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
+                        cb(false);
+                    } else {
+                        cb(true);
                     }
-                });
+                    if (client.admin)
+                    {
+                        if (client.otherHosts)
+                            processHosts(client.otherHosts, true);
+                        var temp = document.querySelector(`#options`);
+                        var restarter;
+                        if (temp)
+                            temp.style.display = "inline";
 
-                // Get djs and subscribe to the dj socket
-                hostReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDjs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED DJs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Subscribe to the logs socket
+                        hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                //processLogs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED logs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
 
-                // Get directors and subscribe to the dj socket
-                hostReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDirectors(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED directors CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Get djs and subscribe to the dj socket
+                        hostReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDjs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED DJs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
 
-                // Subscribe to the XP socket
-                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED XP CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Get directors and subscribe to the dj socket
+                        hostReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDirectors(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED directors CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
 
-                // Subscribe to the timesheet socket
-                hostReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED TIMESHEET CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
+                        // Subscribe to the XP socket
+                        hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED XP CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the timesheet socket
+                        hostReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED TIMESHEET CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+                    } else {
+                        var temp = document.querySelector(`#options`);
+                        if (temp)
+                            temp.style.display = "none";
                     }
-                });
-            } else {
-                var temp = document.querySelector(`#options`);
-                if (temp)
-                    temp.style.display = "none";
-            }
-        } catch (e) {
-            console.error(e);
-            console.log('FAILED HOST CONNECTION');
-            restarter = setTimeout(hostSocket, 10000);
+                } catch (e) {
+                    console.error(e);
+                    console.log('FAILED HOST CONNECTION');
+                    restarter = setTimeout(hostSocket, 10000);
+                }
+            });
         }
-    });
-}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -7324,7 +7328,6 @@ function loadDJ(dj = null, reset = true) {
             {
                 document.querySelector(`#dj-xp-add-div`).innerHTML = `<button type="button" class="btn btn-success btn-lg" id="dj-xp-add" data-dj="${dj}">Add</button>`;
                 var xpLogs = document.querySelector(`#dj-xp-logs`);
-                xpLogs.innerHTML = ``;
                 xpLogs.scrollTop = 0;
 
                 var compare = function (a, b) {
@@ -7350,6 +7353,8 @@ function loadDJ(dj = null, reset = true) {
                         });
                     }
                 };
+
+                var newXPLogs = ``;
                 DJData.XP.sort(compare);
                 DJData.XP.map(record => {
                     if (record.type === "xp")
@@ -7358,7 +7363,7 @@ function loadDJ(dj = null, reset = true) {
                     if (record.type === "remote" && moment(record.createdAt).isSameOrAfter(moment(DJData.startOfSemester)))
                         remote += record.amount;
 
-                    xpLogs.innerHTML += `<div class="row m-1 bg-light-1 border-left border-${record.type === 'remote' ? `warning` : `info`} shadow-2" style="border-left-width: 5px !important;">
+                    newXPLogs += `<div class="row m-1 bg-light-1 border-left border-${record.type === 'remote' ? `warning` : `info`} shadow-2" style="border-left-width: 5px !important;">
                     <div class="col-3 text-primary">
                         ${moment(record.createdAt).format("YYYY-MM-DD h:mm A")}
                     </div>
@@ -7379,15 +7384,18 @@ function loadDJ(dj = null, reset = true) {
                 </div>
 `;
                 });
+
+                xpLogs.innerHTML = newXPLogs;
             }
             document.querySelector('#dj-remotes').innerHTML = formatInt(remote || 0);
             document.querySelector('#dj-xp').innerHTML = formatInt(totalXP || 0);
 
             var att = document.querySelector('#dj-attendance');
             att.scrollTop = 0;
-            att.innerHTML = ``;
             var showTime = 0;
             var listenerMinutes = 0;
+
+            var newAtt = ``;
             if (DJData.attendance.length > 0)
             {
                 var compare = function (a, b) {
@@ -7422,7 +7430,7 @@ function loadDJ(dj = null, reset = true) {
                     var theDate = record.actualStart !== null ? record.actualStart : record.scheduledStart;
                     if (record.scheduledStart === null)
                     {
-                        att.innerHTML += `<div class="row m-1 bg-light-1 border-left border-urgent shadow-2" style="border-left-width: 5px !important;">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-urgent shadow-2" style="border-left-width: 5px !important;">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7441,7 +7449,7 @@ function loadDJ(dj = null, reset = true) {
                         </div>`;
                     } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)))
                     {
-                        att.innerHTML += `<div class="row m-1 bg-light-1 border-left border-secondary shadow-2" style="border-left-width: 5px !important;">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-secondary shadow-2" style="border-left-width: 5px !important;">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7462,7 +7470,7 @@ function loadDJ(dj = null, reset = true) {
                     {
                         if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10)
                         {
-                            att.innerHTML += `<div class="row m-1 bg-light-1 border-left border-warning shadow-2" style="border-left-width: 5px !important;">
+                            newAtt += `<div class="row m-1 bg-light-1 border-left border-warning shadow-2" style="border-left-width: 5px !important;">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7480,7 +7488,7 @@ function loadDJ(dj = null, reset = true) {
                             </div>
                         </div>`;
                         } else {
-                            att.innerHTML += `<div class="row m-1 bg-light-1 border-left border-success shadow-2" style="border-left-width: 5px !important;">
+                            newAtt += `<div class="row m-1 bg-light-1 border-left border-success shadow-2" style="border-left-width: 5px !important;">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7500,7 +7508,7 @@ function loadDJ(dj = null, reset = true) {
                         }
                     } else if (record.actualStart !== null && record.actualEnd === null)
                     {
-                        att.innerHTML += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7518,7 +7526,7 @@ function loadDJ(dj = null, reset = true) {
                             </div>
                         </div>`;
                     } else if (record.actualStart === null && record.actualEnd === null) {
-                        att.innerHTML += `<div class="row m-1 bg-light-1 border-left border-danger shadow-2" style="border-left-width: 5px !important;">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-danger shadow-2" style="border-left-width: 5px !important;">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7533,7 +7541,7 @@ function loadDJ(dj = null, reset = true) {
                             </div>
                         </div>`;
                     } else {
-                        att.innerHTML += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7549,6 +7557,8 @@ function loadDJ(dj = null, reset = true) {
                         </div>`;
                     }
                 });
+
+                att.innerHTML = newAtt;
 
                 document.querySelector('#dj-showtime').innerHTML = formatInt(Math.floor(showTime / 60));
                 document.querySelector('#dj-listenertime').innerHTML = formatInt(Math.floor(listenerMinutes / 60));
