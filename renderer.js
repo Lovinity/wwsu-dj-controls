@@ -2,7 +2,7 @@
 
 try {
 
-    var development = false;
+    var development = true;
 
 // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -872,15 +872,21 @@ try {
 // OnClick handlers
 
 document.querySelector("#btn-return-b").onclick = function () {
-    promptIfNotHost(`return from break`, function() { returnBreak(); });
+    promptIfNotHost(`return from break`, function () {
+        returnBreak();
+    });
 };
 
 document.querySelector("#btn-psa15-b").onclick = function () {
-    promptIfNotHost(`queue a 15 second PSA`, function() { queuePSA(15); });
+    promptIfNotHost(`queue a 15 second PSA`, function () {
+        queuePSA(15);
+    });
 };
 
 document.querySelector("#btn-psa30-b").onclick = function () {
-    promptIfNotHost(`queue a 30 second PSA`, function() { queuePSA(30); });
+    promptIfNotHost(`queue a 30 second PSA`, function () {
+        queuePSA(30);
+    });
 };
 
 document.querySelector("#btn-golive-b").onclick = function () {
@@ -896,31 +902,45 @@ document.querySelector("#btn-gosports-b").onclick = function () {
 };
 
 document.querySelector("#btn-endshow-b").onclick = function () {
-    promptIfNotHost(`end the show`, function() { endShow(); });
+    promptIfNotHost(`end the show`, function () {
+        endShow();
+    });
 };
 
 document.querySelector("#btn-switchshow-b").onclick = function () {
-    promptIfNotHost(`switch shows`, function() { switchShow(); });
+    promptIfNotHost(`switch shows`, function () {
+        switchShow();
+    });
 };
 
 document.querySelector("#btn-resume-b").onclick = function () {
-    promptIfNotHost(`return from break`, function() { returnBreak(); });
+    promptIfNotHost(`return from break`, function () {
+        returnBreak();
+    });
 };
 
 document.querySelector("#btn-break-b").onclick = function () {
-    promptIfNotHost(`take a break`, function() { goBreak(false); });
+    promptIfNotHost(`take a break`, function () {
+        goBreak(false);
+    });
 };
 
 document.querySelector("#btn-halftime-b").onclick = function () {
-    promptIfNotHost(`take an extended break`, function() { goBreak(true); });
+    promptIfNotHost(`take an extended break`, function () {
+        goBreak(true);
+    });
 };
 
 document.querySelector("#btn-topadd-b").onclick = function () {
-    promptIfNotHost(`play a Top Add`, function() { playTopAdd(); });
+    promptIfNotHost(`play a Top Add`, function () {
+        playTopAdd();
+    });
 };
 
 document.querySelector("#btn-liner-b").onclick = function () {
-    promptIfNotHost(`play a liner`, function() { playLiner(); });
+    promptIfNotHost(`play a liner`, function () {
+        playLiner();
+    });
 };
 
 document.querySelector("#btn-log-b").onclick = function () {
@@ -2897,38 +2917,32 @@ document.querySelector(`#options-director-button`).addEventListener("click", fun
 document.querySelector(`#messages-unread`).addEventListener("click", function (e) {
     try {
         if (e.target) {
-            console.log(e.target.id);
-            if (e.target.id.startsWith(`message-n-m`))
+            console.dir(e.target);
+            var target = null;
+            if (e.target.offsetParent !== null && e.target.offsetParent.id !== `messages-unread` && !e.target.id.startsWith("message-n-x-"))
             {
-                var message = Messages({ID: parseInt(e.target.id.replace(`message-n-m-`, ``))}).first();
-                var host = (message.to === 'DJ' ? 'website' : message.from);
-                selectRecipient(Recipients({host: host}).first().ID || null);
-                $("#messages-modal").iziModal('open');
-            }
-            if (e.target.id.startsWith(`message-n-t`))
-            {
-                var message = Messages({ID: parseInt(e.target.id.replace(`message-n-t-`, ``))}).first();
-                var host = (message.to === 'DJ' ? 'website' : message.from);
-                selectRecipient(Recipients({host: host}).first().ID || null);
-                $("#messages-modal").iziModal('open');
-            }
-            if (e.target.id.startsWith(`message-n-b`))
-            {
-                var message = Messages({ID: parseInt(e.target.id.replace(`message-n-b-`, ``))}).first();
-                var host = (message.to === 'DJ' ? 'website' : message.from);
-                selectRecipient(Recipients({host: host}).first().ID || null);
-                $("#messages-modal").iziModal('open');
-            }
-            if (e.target.id.startsWith(`message-n-a`))
-            {
-                var message = Messages({ID: parseInt(e.target.id.replace(`message-n-a-`, ``))}).first();
-                var host = (message.to === 'DJ' ? 'website' : message.from);
-                selectRecipient(Recipients({host: host}).first().ID || null);
-                $("#messages-modal").iziModal('open');
-            }
-            if (e.target.id.startsWith(`message-n-x`))
-            {
-                markRead(parseInt(e.target.id.replace(`message-n-x-`, ``)));
+                if (e.target.offsetParent.id.startsWith("message-n-m-"))
+                {
+                    target = parseInt(e.target.offsetParent.id.replace(`message-n-m-`, ``));
+                    var message = Messages({ID: target}).first();
+                    var host = (message.to === 'DJ' ? 'website' : message.from);
+                    selectRecipient(Recipients({host: host}).first().ID || null);
+                    $("#messages-modal").iziModal('open');
+                }
+            } else {
+                if (e.target.id.startsWith("message-n-x-"))
+                {
+                    target = parseInt(e.target.id.replace(`message-n-x-`, ``));
+                    markRead(target);
+                }
+                if (e.target.id.startsWith("message-n-m-"))
+                {
+                    target = parseInt(e.target.id.replace(`message-n-m-`, ``));
+                    var message = Messages({ID: target}).first();
+                    var host = (message.to === 'DJ' ? 'website' : message.from);
+                    selectRecipient(Recipients({host: host}).first().ID || null);
+                    $("#messages-modal").iziModal('open');
+                }
             }
         }
     } catch (err) {
@@ -3155,109 +3169,109 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-{
-    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
-        //console.log(body);
-        try {
-            client = body;
-            //authtoken = client.token;
-            if (!client.authorized)
-            {
-                var noConnection = document.getElementById('no-connection');
-                noConnection.style.display = "inline";
-                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+        {
+            hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+                //console.log(body);
+                try {
+                    client = body;
+                    //authtoken = client.token;
+                    if (!client.authorized)
+                    {
+                        var noConnection = document.getElementById('no-connection');
+                        noConnection.style.display = "inline";
+                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                cb(false);
-            } else {
-                cb(true);
-            }
-            if (client.admin)
-            {
-                if (client.otherHosts)
-                    processHosts(client.otherHosts, true);
-                var temp = document.querySelector(`#options`);
-                var restarter;
-                if (temp)
-                    temp.style.display = "inline";
-
-                // Subscribe to the logs socket
-                hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        //processLogs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED logs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
+                        cb(false);
+                    } else {
+                        cb(true);
                     }
-                });
+                    if (client.admin)
+                    {
+                        if (client.otherHosts)
+                            processHosts(client.otherHosts, true);
+                        var temp = document.querySelector(`#options`);
+                        var restarter;
+                        if (temp)
+                            temp.style.display = "inline";
 
-                // Get djs and subscribe to the dj socket
-                hostReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDjs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED DJs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Subscribe to the logs socket
+                        hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                //processLogs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED logs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
 
-                // Get directors and subscribe to the dj socket
-                hostReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDirectors(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED directors CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Get djs and subscribe to the dj socket
+                        hostReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDjs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED DJs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
 
-                // Subscribe to the XP socket
-                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED XP CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Get directors and subscribe to the dj socket
+                        hostReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDirectors(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED directors CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
 
-                // Subscribe to the timesheet socket
-                hostReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED TIMESHEET CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
+                        // Subscribe to the XP socket
+                        hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED XP CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the timesheet socket
+                        hostReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED TIMESHEET CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+                    } else {
+                        var temp = document.querySelector(`#options`);
+                        if (temp)
+                            temp.style.display = "none";
                     }
-                });
-            } else {
-                var temp = document.querySelector(`#options`);
-                if (temp)
-                    temp.style.display = "none";
-            }
-        } catch (e) {
-            console.error(e);
-            console.log('FAILED HOST CONNECTION');
-            restarter = setTimeout(hostSocket, 10000);
+                } catch (e) {
+                    console.error(e);
+                    console.log('FAILED HOST CONNECTION');
+                    restarter = setTimeout(hostSocket, 10000);
+                }
+            });
         }
-    });
-}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
