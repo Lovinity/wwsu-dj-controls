@@ -2871,8 +2871,8 @@ document.querySelector(`#options-director-button`).addEventListener("click", fun
                                         $("#options-modal-director").iziModal('close');
                                         iziToast.show({
                                             title: `Director removed!`,
-                                            message: `Director was removed!`,
-                                            timeout: 10000,
+                                            message: `Director was removed! <br /><strong>WARNING!!!</strong> If you gave access for this director to run DJ Controls on their personal computer(s), you may want to revoke access by removing them from Manage Hosts.`,
+                                            timeout: 30000,
                                             close: true,
                                             color: 'green',
                                             drag: false,
