@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file as of versio
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) as of version 4.5.0.
 
-## [Unreleased]
+## [unreleased]
 ### Added
  - Announce queue times, silence, and connection changes on sports, sportsremote, and remote broadcasts. [Issue 19](https://github.com/Lovinity/wwsu-dj-controls/issues/19)
  - wwsu.js. Currently not fully implemented in DJ Controls, but using the WWSUreq class for easy management of the new authentication system in v5.0.0.
@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - WWSU Operations state badge changed to a chip.
  - Optimized loading of DJs and logs to run faster.
  - Use local isHost instead of deprecated Meta.djcontrols
+ - Manage DJ buttons; the color of each DJ button represents the following: Green, they did a show in the last week. Yellow, they did a show in the last month. Red, they didn't do any shows in the last month.
 
 ### Fixed
  - DJs on the air might not get a silence detection warning if the DJ Controls they were using does not have client.emergencies being true.
