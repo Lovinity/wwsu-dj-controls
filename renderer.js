@@ -3855,6 +3855,7 @@ function metaTick()
     if (recorderHour !== moment(Meta.time).hours())
     {
         recorderHour = moment(Meta.time).hours();
+        processDjs();
         // Start a new recording if we are in automation
         if (Meta.state.startsWith("automation_"))
         {
@@ -7649,7 +7650,7 @@ function loadDJ(dj = null, reset = true) {
 ;
 
 // Update recipients as changes happen
-function processDjs(data, replace = false)
+function processDjs(data = {}, replace = false)
 {
     // Data processing
     try {
