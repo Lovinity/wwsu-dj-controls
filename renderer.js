@@ -1476,6 +1476,7 @@ document.querySelector(`#options-modal-djs`).addEventListener("click", function 
                     document.querySelector("#options-xp-description").value = "";
                     document.querySelector("#options-xp-amount").value = 0;
                     document.querySelector("#options-xp-djs").style.display = "inline-block";
+                    document.querySelector("#options-xp-djs-none").style.display = "none";
                     document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add">Add</button>`;
                     Djs().each(dj => {
                         var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
@@ -1582,6 +1583,7 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                     document.querySelector("#options-xp-description").value = "";
                     document.querySelector("#options-xp-amount").value = 0;
                     document.querySelector("#options-xp-djs").style.display = "inline-block";
+                    document.querySelector("#options-xp-djs-none").style.display = "none";
                     document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add">Add</button>`;
                     Djs().each(dj => {
                         var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
@@ -1827,7 +1829,7 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                     image: `assets/images/renameDJ.png`,
                     maxWidth: 480,
                     title: 'Case-Sensitive DJ Name',
-                    message: 'Make sure you type it correctly and it matches what you use on Google Calendar (if applicable)! If you provide the name of a DJ that already exists, all XP and logs from this DJ will be merged with the other DJ.',
+                    message: 'Make sure you type it correctly and it matches what you use on Google Calendar (if applicable)! If you provide the name of a DJ that already exists, all Notes, Remote Credits, XP, and logs from this DJ will be merged with the other DJ.',
                     position: 'center',
                     drag: false,
                     closeOnClick: false,
@@ -1890,7 +1892,7 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                     image: `assets/images/trash.png`,
                     maxWidth: 480,
                     title: 'Remove DJ',
-                    message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove ' + e.target.dataset.dj + '? All XP and remotes will be lost (but logs will remain in the database)!',
+                    message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove ' + e.target.dataset.dj + '? All notes, remote credits, and XP will be lost (but show logs will remain in the database)!',
                     position: 'center',
                     drag: false,
                     closeOnClick: false,
@@ -1961,6 +1963,7 @@ document.querySelector(`#dj-xp-add-div`).addEventListener("click", function (e) 
                 document.querySelector("#options-xp-description").value = "";
                 document.querySelector("#options-xp-amount").value = 0;
                 document.querySelector("#options-xp-djs").style.display = "inline-block";
+                document.querySelector("#options-xp-djs-none").style.display = "none";
                 document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add">Add</button>`;
                 Djs().each(dj => {
                     var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
@@ -2196,8 +2199,8 @@ document.querySelector(`#dj-xp-logs`).addEventListener("click", function (e) {
                     layout: 2,
                     image: `assets/images/trash.png`,
                     maxWidth: 480,
-                    title: 'Remove XP/Remote',
-                    message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove this XP/Remote log?',
+                    title: 'Remove Note/Remote/XP',
+                    message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove this note/remote/XP log?',
                     position: 'center',
                     drag: false,
                     closeOnClick: false,
@@ -2253,6 +2256,7 @@ document.querySelector(`#dj-xp-logs`).addEventListener("click", function (e) {
                             document.querySelector("#options-xp-description").value = record.description;
                             document.querySelector("#options-xp-amount").value = parseFloat(record.amount);
                             document.querySelector("#options-xp-djs").style.display = "none";
+                            document.querySelector("#options-xp-djs-none").style.display = "inline-block";
                             document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-xp-edit-${recordID}">Edit</button>`;
                             Djs().each(dj => {
                                 var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
@@ -2691,8 +2695,8 @@ document.querySelector(`#options-xp-button`).addEventListener("click", function 
                     {
                         $("#options-modal-dj-xp-add").iziModal('close');
                         iziToast.show({
-                            title: `XP/Remote edited!`,
-                            message: `XP/Remote was edited!`,
+                            title: `Note/remote/XP edited!`,
+                            message: `Note/remote/XP was edited!`,
                             timeout: 10000,
                             close: true,
                             color: 'green',
@@ -2705,8 +2709,8 @@ document.querySelector(`#options-xp-button`).addEventListener("click", function 
                     } else {
                         console.dir(response);
                         iziToast.show({
-                            title: `Failed to edit XP-Remote!`,
-                            message: `There was an error trying to edit the XP/Remote.`,
+                            title: `Failed to edit Note/remote/XP!`,
+                            message: `There was an error trying to edit the note/remote/XP.`,
                             timeout: 10000,
                             close: true,
                             color: 'red',
@@ -2733,8 +2737,8 @@ document.querySelector(`#options-xp-button`).addEventListener("click", function 
                     {
                         $("#options-modal-dj-xp-add").iziModal('close');
                         iziToast.show({
-                            title: `XP/Remotes added!`,
-                            message: `XP/Remotes were added!`,
+                            title: `Note/remote/XP added!`,
+                            message: `Note/remote/XP was added!`,
                             timeout: 10000,
                             close: true,
                             color: 'green',
@@ -2747,8 +2751,8 @@ document.querySelector(`#options-xp-button`).addEventListener("click", function 
                     } else {
                         console.dir(response);
                         iziToast.show({
-                            title: `Failed to add XP/Remotes!`,
-                            message: `There was an error trying to add the XP/Remotes.`,
+                            title: `Failed to add Note/remote/XP!`,
+                            message: `There was an error trying to add the Note/remote/XP.`,
                             timeout: 10000,
                             close: true,
                             color: 'red',
@@ -7377,7 +7381,7 @@ function loadDJ(dj = null, reset = true) {
             document.querySelector('#options-dj-buttons').innerHTML = `
             <button type="button" class="btn btn-urgent btn-lg" id="btn-options-dj-edit" data-dj="${DJData.DJ}">Edit</button>
             <button type="button" class="btn btn-danger btn-lg" id="btn-options-dj-remove" data-dj="${DJData.DJ}">Remove</button>
-            <button type="button" class="btn btn-purple btn-lg" id="btn-options-dj-xp" data-dj="${DJData.DJ}">XP / Remotes</button>`;
+            <button type="button" class="btn btn-purple btn-lg" id="btn-options-dj-xp" data-dj="${DJData.DJ}">Notes/Remotes/XP</button>`;
             var remote = 0;
             var totalXP = 0;
             if (DJData.XP.length > 0)
@@ -7388,6 +7392,10 @@ function loadDJ(dj = null, reset = true) {
 
                 var compare = function (a, b) {
                     try {
+                        if (a.type === "note" && b.type !== "note")
+                            return -1;
+                        if (b.type === "note" && a.type !== "note")
+                            return 1;
                         if (a.type === "remote" && b.type !== "remote")
                             return -1;
                         if (b.type === "remote" && a.type !== "remote")
@@ -7413,13 +7421,22 @@ function loadDJ(dj = null, reset = true) {
                 var newXPLogs = ``;
                 DJData.XP.sort(compare);
                 DJData.XP.map(record => {
+                    var theClass = `secondary`;
+
                     if (record.type === "xp")
+                    {
                         totalXP += record.amount;
+                        theClass = `info`;
+                    }
 
-                    if (record.type === "remote" && moment(record.createdAt).isSameOrAfter(moment(DJData.startOfSemester)))
-                        remote += record.amount;
+                    if (record.type === "remote")
+                    {
+                        theClass = `warning`;
+                        if (moment(record.createdAt).isSameOrAfter(moment(DJData.startOfSemester)))
+                            remote += record.amount;
+                    }
 
-                    newXPLogs += `<div class="row m-1 bg-light-1 border-left border-${record.type === 'remote' ? `warning` : `info`} shadow-2" style="border-left-width: 5px !important;">
+                    newXPLogs += `<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
                     <div class="col-3 text-primary">
                         ${moment(record.createdAt).format("YYYY-MM-DD h:mm A")}
                     </div>
@@ -7658,7 +7675,6 @@ function processDjs(data = {}, replace = false)
         {
             Djs = TAFFY();
             Djs.insert(data);
-
         } else {
             for (var key in data)
             {
@@ -7685,9 +7701,9 @@ function processDjs(data = {}, replace = false)
 
         Djs().each(function (dj, index) {
             var djClass = `danger`;
-            if (moment(Meta.time).diff(moment(dj.lastSeen), 'days') <= 30)
+            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
                 djClass = `warning`;
-            if (moment(Meta.time).diff(moment(dj.lastSeen), 'days') <= 7)
+            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
                 djClass = `success`;
 
             document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
