@@ -4,12 +4,19 @@ All notable changes to this project will be documented in this file as of versio
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) as of version 4.5.0.
 
-## [unreleased]
+## [5.0.2] - 2019-02-02
 ### Added
  - Remote/XP screens now allow for adding of notes to DJs. Notes/remotes/XP logs will now appear in this order: Notes first (brown), then remotes (yellow), then XP (blue).
+ - Ability to add sticky slides to public display signs via announcements.
+ - Set display time in seconds for display sign and website announcements.
+ - Topics for live, remote, and sports will default to what's in Google Calendar (first 140 characters) if nothing is typed in the box when starting a broadcast.
+ - Added sanitization for dashes in record filepaths so that RadioDJ does not get metadata confused.
 
 ### Changed
  - Changed how DJ button attendance colors are calculated by using hours instead of days.
+
+### Removed
+ - Removed form elements as they were causing the application to refresh when the enter key was pressed. Using div containers instead.
 
 ## [5.0.1] - 2019-01-28
 ### Added

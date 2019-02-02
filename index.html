@@ -679,28 +679,28 @@
                         <span class="navbar-brand mr-auto text-white">Mics, Recorder, Action!</span>
                         <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
                     </header>
-                    <form>
-                        <div class="form-row align-items-center p-2">
-                            <div class="form-group col-6">
-                                <label for="live-handle">DJ / Handle Name</label>
-                                <input class="form-control m-1" id="live-handle" type="text">
-                                <div class="invalid-feedback">
-                                    Not on the immediate schedule
-                                </div>
-                            </div>
-                            <div class="form-group col-6">
-                                <label for="live-show">Show Name</label>
-                                <input class="form-control m-1" id="live-show" type="text">
-                                <div class="invalid-feedback">
-                                    Not on the immediate schedule
-                                </div>
+
+                    <div class="form-row align-items-center p-2">
+                        <div class="form-group col-6">
+                            <label for="live-handle">DJ / Handle Name</label>
+                            <input class="form-control m-1" id="live-handle" type="text">
+                            <div class="invalid-feedback">
+                                Not on the immediate schedule
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="live-topic">Optional show topic(s), limited to 140 characters</label>
-                            <textarea class="form-control mb-2" id="live-topic" rows="3" maxlength="140"></textarea>
+                        <div class="form-group col-6">
+                            <label for="live-show">Show Name</label>
+                            <input class="form-control m-1" id="live-show" type="text">
+                            <div class="invalid-feedback">
+                                Not on the immediate schedule
+                            </div>
                         </div>
-                    </form>
+                    </div>
+                    <div class="form-group">
+                        <label for="live-topic">Optional show topic(s), limited to 140 characters</label>
+                        <textarea class="form-control mb-2" id="live-topic" rows="3" maxlength="140"></textarea>
+                    </div>
+
                     <div class="custom-control custom-switch">
                         <input class="custom-control-input" id="live-webchat" type="checkbox">
                         <span class="custom-control-track"></span>
@@ -721,28 +721,28 @@
                         <span class="navbar-brand mr-auto text-white">Remote Broadcast</span>
                         <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
                     </header>
-                    <form>
-                        <div class="form-row align-items-center p-2">
-                            <div class="form-group col-6">
-                                <label for="remote-handle">DJ / Handle Name</label>
-                                <input class="form-control m-1" id="remote-handle" type="text">
-                                <div class="invalid-feedback">
-                                    Not on the immediate schedule
-                                </div>
-                            </div>
-                            <div class="form-group col-6">
-                                <label for="remote-show">Show Name</label>
-                                <input class="form-control m-1" id="remote-show" type="text">
-                                <div class="invalid-feedback">
-                                    Not on the immediate schedule
-                                </div>
+
+                    <div class="form-row align-items-center p-2">
+                        <div class="form-group col-6">
+                            <label for="remote-handle">DJ / Handle Name</label>
+                            <input class="form-control m-1" id="remote-handle" type="text">
+                            <div class="invalid-feedback">
+                                Not on the immediate schedule
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="live-topic">Optional show topic(s), limited to 140 characters</label>
-                            <textarea class="form-control mb-2" id="remote-topic" rows="3" maxlength="140"></textarea>
+                        <div class="form-group col-6">
+                            <label for="remote-show">Show Name</label>
+                            <input class="form-control m-1" id="remote-show" type="text">
+                            <div class="invalid-feedback">
+                                Not on the immediate schedule
+                            </div>
                         </div>
-                    </form>
+                    </div>
+                    <div class="form-group">
+                        <label for="live-topic">Optional show topic(s), limited to 140 characters</label>
+                        <textarea class="form-control mb-2" id="remote-topic" rows="3" maxlength="140"></textarea>
+                    </div>
+
                     <div class="custom-control custom-switch">
                         <input class="custom-control-input" id="remote-webchat" type="checkbox">
                         <span class="custom-control-track"></span>
@@ -763,31 +763,31 @@
                         <span class="navbar-brand mr-auto text-white">Raider Sports Broadcast</span>
                         <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
                     </header>
-                    <form>
-                        <div class="form-group">
-                            <label for="sports-sport">Sport being broadcast</label>
-                            <select class="form-control" id="sports-sport">
-                                <option value="">Choose a sport...</option>
-                                <option value="Men's Basketball">Men's Basketball</option>
-                                <option value="Women's Basketball">Women's Basketball</option>
-                                <option value="Men's Soccer">Men's Soccer</option>
-                                <option value="Women's Soccer">Women's Soccer</option>
-                                <option value="Men's Volleyball">Men's Volleyball</option>
-                                <option value="Women's Volleyball">Women's Volleyball</option>
-                                <option value="Men's Baseball">Men's Baseball</option>
-                                <option value="Women's Softball">Women's Softball</option>
-                                <option value="Men's Football">Men's Football</option>
-                                <option value="Women's Football">Women's Football</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Not on the immediate schedule
-                            </div>
+
+                    <div class="form-group">
+                        <label for="sports-sport">Sport being broadcast</label>
+                        <select class="form-control" id="sports-sport">
+                            <option value="">Choose a sport...</option>
+                            <option value="Men's Basketball">Men's Basketball</option>
+                            <option value="Women's Basketball">Women's Basketball</option>
+                            <option value="Men's Soccer">Men's Soccer</option>
+                            <option value="Women's Soccer">Women's Soccer</option>
+                            <option value="Men's Volleyball">Men's Volleyball</option>
+                            <option value="Women's Volleyball">Women's Volleyball</option>
+                            <option value="Men's Baseball">Men's Baseball</option>
+                            <option value="Women's Softball">Women's Softball</option>
+                            <option value="Men's Football">Men's Football</option>
+                            <option value="Women's Football">Women's Football</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Not on the immediate schedule
                         </div>
-                        <div class="form-group">
-                            <label for="live-topic">Optional, provide more info for this broadcast limited to 140 characters</label>
-                            <textarea class="form-control mb-2" id="sports-topic" rows="3" maxlength="140"></textarea>
-                        </div>
-                    </form>
+                    </div>
+                    <div class="form-group">
+                        <label for="live-topic">Optional, provide more info for this broadcast limited to 140 characters</label>
+                        <textarea class="form-control mb-2" id="sports-topic" rows="3" maxlength="140"></textarea>
+                    </div>
+
                     <div class="custom-control custom-switch">
                         <input class="custom-control-input" id="sports-remote" type="checkbox">
                         <span class="custom-control-track"></span>
@@ -816,28 +816,28 @@
                     <div class="bs-callout bs-callout-info shadow-4 text-white">
                         You do not need to log anything played in RadioDJ; those are logged automatically.
                     </div>
-                    <form>
-                        <div class="form-group p-1">
-                            <label for="log-datetime">Date and Time of the log</label>
-                            <input type="datetime-local" id="log-datetime" class="form-control">
-                        </div>
-                        <div class="form-group p-1">
-                            <label for="log-artist">Artist (if applicable)</label>
-                            <input type="text" id="log-artist" class="form-control">
-                        </div>
-                        <div class="form-group p-1">
-                            <label for="log-title">Title (if applicable)</label>
-                            <input type="text" id="log-title" class="form-control">
-                        </div>
-                        <div class="form-group p-1">
-                            <label for="log-title">Album (if applicable)</label>
-                            <input type="text" id="log-album" class="form-control">
-                        </div>
-                        <div class="form-group p-1">
-                            <label for="log-label">Record Label (if applicable)</label>
-                            <input type="text" id="log-label" class="form-control">
-                        </div>
-                    </form>
+
+                    <div class="form-group p-1">
+                        <label for="log-datetime">Date and Time of the log</label>
+                        <input type="datetime-local" id="log-datetime" class="form-control">
+                    </div>
+                    <div class="form-group p-1">
+                        <label for="log-artist">Artist (if applicable)</label>
+                        <input type="text" id="log-artist" class="form-control">
+                    </div>
+                    <div class="form-group p-1">
+                        <label for="log-title">Title (if applicable)</label>
+                        <input type="text" id="log-title" class="form-control">
+                    </div>
+                    <div class="form-group p-1">
+                        <label for="log-title">Album (if applicable)</label>
+                        <input type="text" id="log-album" class="form-control">
+                    </div>
+                    <div class="form-group p-1">
+                        <label for="log-label">Record Label (if applicable)</label>
+                        <input type="text" id="log-label" class="form-control">
+                    </div>
+
                 </div>
                 <div class="modal-footer bg-light-1">
                     <button type="button" class="btn btn-trivial btn-lg" id="log-add">Add Log</button>
@@ -880,12 +880,12 @@
                         <span class="navbar-brand mr-auto text-white">Report a Problem</span>
                         <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
                     </header>
-                    <form class="p-2">
+                    <div class="p-2">
                         <div class="form-group">
                             <label for="emergency-issue">Please describe the issue(s) you are encountering (256 character max).</label>
                             <textarea class="form-control mb-2" id="emergency-issue" rows="3" maxlength="256"></textarea>
                         </div>
-                    </form>
+                    </div>
                     <div class="bs-callout bs-callout-info shadow-4 text-white">
                         When you submit an issue, directors will be notified. In addition, an announcement will be posted under "System Problems Detected" so other DJs are aware.
                     </div>
@@ -903,12 +903,12 @@
                         <span class="navbar-brand mr-auto text-white">Display Sign Message</span>
                         <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
                     </header>
-                    <form class="p-2">
+                    <div class="p-2">
                         <div class="form-group">
                             <label for="display-message">Type your message for the display signs (256 character limit)</label>
                             <textarea class="form-control mb-2" id="display-message" rows="3" maxlength="256"></textarea>
                         </div>
-                    </form>
+                    </div>
                     <div class="bs-callout bs-callout-info shadow-4 text-white">
                         The message you type will be displayed on all public display signs for 1 minute. In addition, the lobby display sign will read the message aloud to any guests sitting in the lobby.
                     </div>
@@ -1193,30 +1193,30 @@
                         <span class="navbar-brand mr-auto text-white">Manage Director</span>
                         <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
                     </header>
-                    <form>
-                        <div class="form-group">
-                            <label for="options-director-name">Director Name</label>
-                            <input class="form-control m-1" id="options-director-name" type="text">
-                        </div>
-                        <div class="form-group">
-                            <label for="options-director-login">Change Login / Password</label>
-                            <input class="form-control m-1" id="options-director-login" type="password">
-                        </div>
-                        <div class="form-group">
-                            <label for="options-director-position">Position / Title</label>
-                            <input class="form-control m-1" id="options-director-position" type="text">
-                        </div>
-                        <div class="form-group custom-control custom-switch">
-                            <input class="custom-control-input" id="options-director-admin" type="checkbox">
-                            <span class="custom-control-track"></span>
-                            <label class="custom-control-label" for="options-director-admin">Administrator Access</label><br />
-                        </div>
-                        <div class="form-group custom-control custom-switch">
-                            <input class="custom-control-input" id="options-director-assistant" type="checkbox">
-                            <span class="custom-control-track"></span>
-                            <label class="custom-control-label" for="options-director-assistant">Assistant Director / Intern</label><br />
-                        </div>
-                    </form>
+
+                    <div class="form-group">
+                        <label for="options-director-name">Director Name</label>
+                        <input class="form-control m-1" id="options-director-name" type="text">
+                    </div>
+                    <div class="form-group">
+                        <label for="options-director-login">Change Login / Password</label>
+                        <input class="form-control m-1" id="options-director-login" type="password">
+                    </div>
+                    <div class="form-group">
+                        <label for="options-director-position">Position / Title</label>
+                        <input class="form-control m-1" id="options-director-position" type="text">
+                    </div>
+                    <div class="form-group custom-control custom-switch">
+                        <input class="custom-control-input" id="options-director-admin" type="checkbox">
+                        <span class="custom-control-track"></span>
+                        <label class="custom-control-label" for="options-director-admin">Administrator Access</label><br />
+                    </div>
+                    <div class="form-group custom-control custom-switch">
+                        <input class="custom-control-input" id="options-director-assistant" type="checkbox">
+                        <span class="custom-control-track"></span>
+                        <label class="custom-control-label" for="options-director-assistant">Assistant Director / Intern</label><br />
+                    </div>
+
                 </div>
                 <div class="modal-footer bg-light-1" id="options-director-button">
                 </div>
@@ -1387,7 +1387,7 @@
                         <span class="navbar-brand mr-auto text-white">Manage Announcement</span>
                         <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
                     </header>
-                    <form class="p-1 m-1">
+                    <div class="p-1 m-1">
                         <div class="form-group">
                             <label for="options-announcement-starts">Starts</label>
                             <input type="datetime-local" id="options-announcement-starts" class="form-control">
@@ -1421,10 +1421,14 @@
                             </select>
                         </div>
                         <div class="form-group">
+                            <label for="options-announcement-displaytime">Display Time in seconds [between 5 and 60] (Display Signs and Website announcements only)</label>
+                            <input type="text" id="options-announcement-displaytime" class="form-control" placeholder="15">
+                        </div>
+                        <div class="form-group">
                             <label for="options-announcement-title">Title (short and concise)</label>
                             <input type="text" id="options-announcement-title" class="form-control">
                         </div>
-                    </form>
+                    </div>
                     <div id="theannouncement" class="form-control"></div>
                     <div class="modal-footer bg-light-1" id="options-announcement-button">
                     </div>
@@ -1439,7 +1443,7 @@
                         <span class="navbar-brand mr-auto text-white">Manage Notes/Remotes/XP</span>
                         <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
                     </header>
-                    <form class="p-1 m-1">
+                    <div class="p-1 m-1">
                         <div class="form-group">
                             <label for="options-xp-type">Entry Category</label>
                             <select class="form-control" id="options-xp-type">
@@ -1484,7 +1488,7 @@
                             </div>
                             <div class="container m-1 text-white" id="options-xp-djs-none" style="height: 240px; overflow: scroll; display: none;"><div class="m-1 bs-callout bs-callout-warning">You cannot select DJs when editing an entry. To change, add/remove this entry appropriately for each DJ.</div></div>
                         </div>
-                    </form>
+                    </div>
                     <div class="modal-footer bg-light-1" id="options-xp-button">
                     </div>
                 </div>
@@ -1498,7 +1502,7 @@
                         <span class="navbar-brand mr-auto text-white">Manage Host</span>
                         <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
                     </header>
-                    <form class="p-1 m-1">
+                    <div class="p-1 m-1">
                         <div class="form-group">
                             <label for="options-host-name">Friendly Name</label>
                             <input type="text" id="options-host-name" class="form-control" placeholder="">
@@ -1538,7 +1542,7 @@
                                 <label class="custom-control-label" for="options-host-webmessages">Host should notify of new messages from web/mobile (DJ Controls only)</label>
                             </div>
                         </div>
-                    </form>
+                    </div>
                     <div class="modal-footer bg-light-1" id="options-host-button">
                     </div>
                 </div>
