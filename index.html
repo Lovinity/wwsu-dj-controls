@@ -1048,7 +1048,7 @@
                 </div>
                 <div class="modal-footer bg-light-1">
                     <button type="button" class="btn btn-success btn-lg" id="options-dj-add">New DJ</button>
-                    <button type="button" class="btn btn-purple btn-lg" id="options-dj-mass-xp">Add XP/Remotes</button>
+                    <button type="button" class="btn btn-purple btn-lg" id="options-dj-mass-xp">Add Note/Remote/XP</button>
                 </div>
             </div>
         </div>
@@ -1086,7 +1086,7 @@
                         </div>
                         <div class="card p-1 m-1 bg-light-2">
                             <div class="card-body">
-                                <h4 class="card-title" style="text-align: center;">Remotes</h4>
+                                <h4 class="card-title" style="text-align: center;">Remote<br />Credits</h4>
                                 <p class="card-text" style="text-align: center; font-size: 4em;" id="dj-remotes"></p>
                             </div>
                         </div>
@@ -1159,7 +1159,7 @@
             <div class="modal-content text-dark bg-light-3">
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-purple doc-navbar-default">
-                        <span class="navbar-brand mr-auto text-white">XP / Remotes</span>
+                        <span class="navbar-brand mr-auto text-white">Notes / Remotes / XP</span>
                         <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
                     </header>
                     <div class="container m-1">
@@ -1436,14 +1436,20 @@
             <div class="modal-content text-dark bg-light-1">
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-success doc-navbar-default">
-                        <span class="navbar-brand mr-auto text-white">Manage XP / Remotes</span>
+                        <span class="navbar-brand mr-auto text-white">Manage Notes/Remotes/XP</span>
                         <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
                     </header>
                     <form class="p-1 m-1">
                         <div class="form-group">
-                            <label for="options-xp-type">Remote Credit/XP: Category</label>
+                            <label for="options-xp-type">Entry Category</label>
                             <select class="form-control" id="options-xp-type">
                                 <option value="undefined-undefined"></option>
+                                <option value="note-discipline">Note: Disciplinary Action</option>
+                                <option value="note-show">Note: Show</option>
+                                <option value="note-meeting">Note: DJ Meeting</option>
+                                <option value="note-correspondence">Note: Correspondence</option>
+                                <option value="note-action">Note: Action Item</option>
+                                <option value="note-other">Note: Other</option>
                                 <option value="remote-event">Remote Credit: Remote Event</option>
                                 <option value="remote-cd">Remote Credit: CD Review</option>
                                 <option value="remote-sports">Remote Credit: Sports</option>
@@ -1469,10 +1475,14 @@
                             <textarea class="form-control" id="options-xp-description" rows="2"></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="options-xp-amount">Amount</label>
+                            <label for="options-xp-amount">Amount (Remote Credits / XP)</label>
                             <input type="text" id="options-xp-amount" class="form-control" placeholder="0">
                         </div>
-                        <div class="container m-1" id="options-xp-djs" style="height: 240px; overflow: scroll;">
+                        <div class="form-group">
+                            <label for="options-xp-djs">Applicable DJs</label>
+                            <div class="container m-1" id="options-xp-djs" style="height: 240px; overflow: scroll;">
+                            </div>
+                            <div class="container m-1 text-white" id="options-xp-djs-none" style="height: 240px; overflow: scroll; display: none;"><div class="m-1 bs-callout bs-callout-warning">You cannot select DJs when editing an entry. To change, add/remove this entry appropriately for each DJ.</div></div>
                         </div>
                     </form>
                     <div class="modal-footer bg-light-1" id="options-xp-button">

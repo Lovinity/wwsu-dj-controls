@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file as of versio
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) as of version 4.5.0.
 
+## [unreleased]
+### Added
+ - Remote/XP screens now allow for adding of notes to DJs. Notes/remotes/XP logs will now appear in this order: Notes first (brown), then remotes (yellow), then XP (blue).
+
+### Changed
+ - Changed how DJ button attendance colors are calculated by using hours instead of days.
+
 ## [5.0.1] - 2019-01-28
 ### Added
  - Announce queue times, silence, and connection changes on sports, sportsremote, and remote broadcasts. [Issue 19](https://github.com/Lovinity/wwsu-dj-controls/issues/19)
