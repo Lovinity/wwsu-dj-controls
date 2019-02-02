@@ -2,7 +2,7 @@
 
 try {
 
-    var development = false;
+    var development = true;
 
 // Define hexrgb constants
     var hexChars = 'a-f\\d';
