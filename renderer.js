@@ -7449,9 +7449,9 @@ function loadDJ(dj = null, reset = true) {
             var DJName = Djs({ID: parseInt(DJData.DJ)}).first().name;
             document.querySelector('#options-dj-name').innerHTML = `${jdenticon.toSvg(`DJ ${DJName}`, 48)}   ${DJName}`;
             document.querySelector('#options-dj-buttons').innerHTML = `
-            <button type="button" class="btn btn-urgent btn-lg" id="btn-options-dj-edit" data-dj="${DJData.DJ}">Edit</button>
-            <button type="button" class="btn btn-danger btn-lg" id="btn-options-dj-remove" data-dj="${DJData.DJ}">Remove</button>
-            <button type="button" class="btn btn-purple btn-lg" id="btn-options-dj-xp" data-dj="${DJData.DJ}">Notes/Remotes/XP</button>`;
+            <button type="button" class="btn btn-urgent btn-lg" id="btn-options-dj-edit" data-dj="${DJData.DJ}" title="Edit this DJ">Edit</button>
+            <button type="button" class="btn btn-danger btn-lg" id="btn-options-dj-remove" data-dj="${DJData.DJ}" title="Remove this DJ">Remove</button>
+            <button type="button" class="btn btn-purple btn-lg" id="btn-options-dj-xp" data-dj="${DJData.DJ}" title="View/Edit/Add/Remove the notes / remote credits / XP of this DJ">Notes/Remotes/XP</button>`;
             var remote = 0;
             var totalXP = 0;
             if (DJData.XP.length > 0)
@@ -7573,7 +7573,7 @@ function loadDJ(dj = null, reset = true) {
                     var theDate = record.actualStart !== null ? record.actualStart : record.scheduledStart;
                     if (record.scheduledStart === null)
                     {
-                        newAtt += `<div class="row m-1 bg-light-1 border-left border-urgent shadow-2" style="border-left-width: 5px !important;">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-urgent shadow-2" style="border-left-width: 5px !important;" title="The DJ went on the air when they were not scheduled to be on.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7585,14 +7585,14 @@ function loadDJ(dj = null, reset = true) {
                                 <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
                             <div class="col-1">
-                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
                         </div>`;
                     } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)))
                     {
-                        newAtt += `<div class="row m-1 bg-light-1 border-left border-secondary shadow-2" style="border-left-width: 5px !important;">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-secondary shadow-2" style="border-left-width: 5px !important;" title="This scheduled show has not aired yet.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7604,7 +7604,7 @@ function loadDJ(dj = null, reset = true) {
                                 <span class="text-primary">FUTURE EVENT</span>
                             </div>
                             <div class="col-1">
-                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
@@ -7613,7 +7613,7 @@ function loadDJ(dj = null, reset = true) {
                     {
                         if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10)
                         {
-                            newAtt += `<div class="row m-1 bg-light-1 border-left border-warning shadow-2" style="border-left-width: 5px !important;">
+                            newAtt += `<div class="row m-1 bg-light-1 border-left border-warning shadow-2" style="border-left-width: 5px !important;" title="The DJ signed on or off 10 or more minutes before or after scheduled time.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7625,13 +7625,13 @@ function loadDJ(dj = null, reset = true) {
                                 <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
                             <div class="col-1">
-                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
                         </div>`;
                         } else {
-                            newAtt += `<div class="row m-1 bg-light-1 border-left border-success shadow-2" style="border-left-width: 5px !important;">
+                            newAtt += `<div class="row m-1 bg-light-1 border-left border-success shadow-2" style="border-left-width: 5px !important;" title="This show was scheduled and on time.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7643,7 +7643,7 @@ function loadDJ(dj = null, reset = true) {
                                 <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
                             <div class="col-1">
-                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
@@ -7651,7 +7651,7 @@ function loadDJ(dj = null, reset = true) {
                         }
                     } else if (record.actualStart !== null && record.actualEnd === null)
                     {
-                        newAtt += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;" title="This show is still ongoing.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7663,13 +7663,13 @@ function loadDJ(dj = null, reset = true) {
                                 <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
                             <div class="col-1">
-                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
                         </div>`;
                     } else if (record.actualStart === null && record.actualEnd === null) {
-                        newAtt += `<div class="row m-1 bg-light-1 border-left border-danger shadow-2" style="border-left-width: 5px !important;">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-danger shadow-2" style="border-left-width: 5px !important;" title="This show was scheduled, but the DJ did not go on the air.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7684,7 +7684,7 @@ function loadDJ(dj = null, reset = true) {
                             </div>
                         </div>`;
                     } else {
-                        newAtt += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;" title="This show is scheduled, but has not begun yet.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>

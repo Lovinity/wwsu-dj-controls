@@ -485,12 +485,11 @@
                 }
             }
 
-
         </style>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body class="text-light bg-dark-1">
-            <audio id="remoteAudio"></audio>
+        <audio id="remoteAudio"></audio>
 
         <div id="no-connection" class="overlay">
             <div class="text container-fluid" style="text-align: center;">
@@ -508,7 +507,7 @@
                 <div class="card-header text-center" style="font-size: 1.5em;">
                     WWSU Operations   
                     <span class="chip shadow-2" style="margin-left: 10px;" id="operations-state"><i class="chip-icon fas fa-question bg-secondary"></i>Unknown</span>
-                    <button type="button" class="close" id="options" aria-label="Options" style="display: none;">
+                    <button type="button" class="close" id="options" aria-label="Options" style="display: none;" title="Access/modify settings, DJs, announcements, logs, and more.">
                         <span aria-hidden="true" id="options-icon"><i class="fas fa-cogs text-white"></i></span>
                     </button>
                 </div>
@@ -516,8 +515,8 @@
                     <div class="d-flex justify-content-start flex-wrap">
                         <div class="p-1 m-1" id="queue" style="width: 216px; text-align: center; display: none;">
                             <div style="text-align: center; font-size: 2em;">Queue:</div>
-                            <div class="text-warning" id="queue-seconds" style="text-align: center; font-size: 4em;">???</div>
-                            <div class="text-info" id="queue-music" style="text-align: center; font-size: 2em; display: none;">+ Music</div>
+                            <div class="text-warning" id="queue-seconds" style="text-align: center; font-size: 4em;" title="Amount of time until you are on the air.">???</div>
+                            <div class="text-info" id="queue-music" style="text-align: center; font-size: 2em; display: none;" title="This queue time does not include additional music/openers queued in automation.">+ Music</div>
                         </div>
                         <div class="p-1 m-1" id="no-remote" style="width: 216px; text-align: center; display: none;">
                             <div class="text-danger" style="text-align: center; font-size: 1.5em;">Lost connection to remote stream!</div>
@@ -529,68 +528,68 @@
                             </div>
                         </div>
                         <div class="p-1 m-1 btn-operation" id="btn-return" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-return-b" class="btn btn-float btn-success"><i class="fas fa-check"></i></button>
+                            <button type="button" id="btn-return-b" class="btn btn-float btn-success" title="Come out of break and resume the broadcast."><i class="fas fa-check"></i></button>
                             <div style="text-align: center; font-size: 1em;">Resume Show</div>
                         </div>
                         <div class="p-1 m-1 btn-operation" id="btn-psa15" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-psa15-b" class="btn btn-purple btn-float"><i class="fas fa-plus"></i></button>
+                            <button type="button" id="btn-psa15-b" class="btn btn-purple btn-float" title="Give yourself 15 more seconds via queuing a PSA."><i class="fas fa-plus"></i></button>
                             <div style="text-align: center; font-size: 1em;">+15-second PSA</div>
                         </div>
                         <div class="p-1 m-1 btn-operation" id="btn-psa30" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-psa30-b" class="btn btn-purple btn-float"><i class="fas fa-plus"></i></button>
+                            <button type="button" id="btn-psa30-b" class="btn btn-purple btn-float" title="Give yourself 30 more seconds via queuing a PSA."><i class="fas fa-plus"></i></button>
                             <div style="text-align: center; font-size: 1em;">+30-second PSA</div>
                         </div>
                         <div class="p-1 m-1 btn-operation" id="btn-golive" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-golive-b" class="btn btn-primary btn-float"><i class="fas fa-microphone-alt"></i></button>
+                            <button type="button" id="btn-golive-b" class="btn btn-primary btn-float" title="Begin a live broadcast from the OnAir studio"><i class="fas fa-microphone-alt"></i></button>
                             <div style="text-align: center; font-size: 1em;">Live</div>
                         </div>
                         <div class="p-1 m-1 btn-operation" id="btn-goremote" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-goremote-b" class="btn btn-purple btn-float"><i class="fas fa-broadcast-tower"></i></button>
+                            <button type="button" id="btn-goremote-b" class="btn btn-purple btn-float" title="Begin a broadcast streamed from a remote location."><i class="fas fa-broadcast-tower"></i></button>
                             <div style="text-align: center; font-size: 1em;">Remote</div>
                         </div>
                         <div class="p-1 m-1 btn-operation" id="btn-gosports" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-gosports-b" class="btn btn-success btn-float"><i class="fas fa-trophy"></i></button>
+                            <button type="button" id="btn-gosports-b" class="btn btn-success btn-float" title="Begin a sports broadcast produced in the OnAir studio."><i class="fas fa-trophy"></i></button>
                             <div style="text-align: center; font-size: 1em;">Sports</div>
                         </div>
                         <div class="p-1 m-1 btn-operation" id="btn-endshow" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-endshow-b" class="btn btn-info btn-float"><i class="fas fa-microphone-alt-slash"></i></button>
+                            <button type="button" id="btn-endshow-b" class="btn btn-info btn-float" title="End your show and go to automation."><i class="fas fa-microphone-alt-slash"></i></button>
                             <div style="text-align: center; font-size: 1em;">End Show</div>
                         </div>
                         <div class="p-1 m-1 btn-operation" id="btn-switchshow" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-switchshow-b" class="btn btn-primary btn-float"><i class="fas fa-microphone-alt"></i></button>
+                            <button type="button" id="btn-switchshow-b" class="btn btn-primary btn-float" title="If another DJ is going on the air after you, click to end your show and go to break."><i class="fas fa-microphone-alt"></i></button>
                             <div style="text-align: center; font-size: 1em;">Switch Show</div>
                         </div>
                         <div class="p-1 m-1 btn-operation" id="btn-resume" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-resume-b" class="btn btn-success btn-float"><i class="fas fa-check"></i></button>
+                            <button type="button" id="btn-resume-b" class="btn btn-success btn-float" title="Come out of break and resume the broadcast."><i class="fas fa-check"></i></button>
                             <div style="text-align: center; font-size: 1em;">Resume Show</div>
                         </div>
                         <div class="p-1 m-1 btn-operation" id="btn-break" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-break-b" class="btn btn-warning btn-float"><i class="fas fa-coffee"></i></button>
+                            <button type="button" id="btn-break-b" class="btn btn-warning btn-float" title="Go into break. Automation will play PSAs until you click the proceeding resume show button."><i class="fas fa-coffee"></i></button>
                             <div style="text-align: center; font-size: 1em;">Take a Break</div>
                         </div>
                         <div class="p-1 m-1 btn-operation" id="btn-halftime" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-halftime-b" class="btn btn-urgent btn-float"><i class="fas fa-hourglass"></i></button>
+                            <button type="button" id="btn-halftime-b" class="btn btn-urgent btn-float" title="Go into extended break. Automation will play sports music until you click the proceeding resume show button."><i class="fas fa-hourglass"></i></button>
                             <div style="text-align: center; font-size: 1em;">Extended Break</div>
                         </div>
                         <div class="p-1 m-1 btn-operation" id="btn-topadd" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-topadd-b" class="btn btn-purple btn-float"><i class="fas fa-headphones"></i></button>
+                            <button type="button" id="btn-topadd-b" class="btn btn-purple btn-float" title="Promote new artist music by playing a Top Add."><i class="fas fa-headphones"></i></button>
                             <div style="text-align: center; font-size: 1em;">Play Top Add</div>
                         </div>
                         <div class="p-1 m-1 btn-operation" id="btn-liner" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-liner-b" class="btn btn-purple btn-float"><i class="fas fa-angle-double-right"></i></button>
+                            <button type="button" id="btn-liner-b" class="btn btn-purple btn-float" title="Play a quick liner to identify the station/sports."><i class="fas fa-angle-double-right"></i></button>
                             <div style="text-align: center; font-size: 1em;">Play Liner</div>
                         </div>
                         <div class="p-1 m-1 btn-operation" id="btn-log" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-log-b" class="btn btn-trivial btn-float"><i class="fas fa-file"></i></button>
+                            <button type="button" id="btn-log-b" class="btn btn-trivial btn-float" title="Log a track you played outside of the automation system."><i class="fas fa-file"></i></button>
                             <div style="text-align: center; font-size: 1em;">Add a Log</div>
                         </div>
                         <div class="p-1 m-1 btn-operation" id="btn-view-log" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-view-log-b" class="btn btn-success btn-float"><i class="fas fa-file"></i></button>
+                            <button type="button" id="btn-view-log-b" class="btn btn-success btn-float" title="View your current show log."><i class="fas fa-file"></i></button>
                             <div style="text-align: center; font-size: 1em;">View Log</div>
                         </div>
                     </div>
                 </div>
-                <div class="card-footer bg-dark-2 shadow-1" style="color: #FFFFFF; text-align: center; height: 64px;">
+                <div class="card-footer bg-dark-2 shadow-1" style="color: #FFFFFF; text-align: center; height: 64px;" title="This is what website and display sign visitors see is currently playing on WWSU.">
                     <div id="nowplaying-seek" style="height: 4px; opacity: 0.5;"></div>
                     <div style="color: #FFFFFF; font-size: 0.8em; position: relative;" id="nowplaying"></div>
                 </div>
@@ -612,20 +611,20 @@
                             <div class="col-5">
                                 <div class="d-flex justify-content-start flex-wrap">
                                     <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                                        <button type="button" id="btn-emergency" class="btn btn-danger btn-float"><i class="fas fa-exclamation-triangle"></i></button>
+                                        <button type="button" id="btn-emergency" class="btn btn-danger btn-float" title="Report a technical issue; directors will be notified and an announcement will appear for other DJs."><i class="fas fa-exclamation-triangle"></i></button>
                                         <div style="text-align: center; font-size: 1em;">Report a Problem</div>
                                     </div>
                                     <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                                        <button type="button" id="btn-requests" class="btn btn-info btn-float"><i class="fas fa-question-circle"></i></button>
+                                        <button type="button" id="btn-requests" class="btn btn-info btn-float" title="View tracks requested by listeners. Optionally, play the tracks you want to play."><i class="fas fa-question-circle"></i></button>
                                         <span class="notification badge badge-secondary shadow-4" id="badge-track-requests">0</span>
                                         <div style="text-align: center; font-size: 1em;">Track Requests</div>
                                     </div>
                                     <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                                        <button type="button" id="btn-display" class="btn btn-purple btn-float"><i class="fas fa-tv"></i></button>
+                                        <button type="button" id="btn-display" class="btn btn-purple btn-float" title="Have a message display and read aloud on the station display signs."><i class="fas fa-tv"></i></button>
                                         <div style="text-align: center; font-size: 1em;">Display Signs</div>
                                     </div>
                                     <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                                        <button type="button" id="btn-messenger" class="btn btn-success btn-float"><i class="fas fa-comments"></i></button>
+                                        <button type="button" id="btn-messenger" class="btn btn-success btn-float" title="Open the messenger to chat with online listeners and with other DJ Controls."><i class="fas fa-comments"></i></button>
                                         <span class="notification badge badge-secondary shadow-4" id="btn-messenger-unread">0</span>
                                         <div style="text-align: center; font-size: 1em;">Messenger</div>
                                     </div>
@@ -647,7 +646,7 @@
                     <div class="container">
                         <div class="row">
                             <div class="col-3">
-                                <article class="clock shadow-8">
+                                <article class="clock shadow-8" title="This clock displays the official station time. The clock is shaded in different colors to represent upcoming events and when they are scheduled.">
                                     <svg class="chart" id="clock-program" style="z-index: 15; opacity: 0.66; position: absolute; width: 100%; height: 100%; top: 0; left: 0;">
                                     </svg>
                                     <svg class="chart" id="queue-time" style="z-index: 15; opacity: 0.33; position: absolute; width: 100%; height: 100%; top: 0; left: 0;">
@@ -664,7 +663,7 @@
                                     <div id="datestamp" style="position: absolute; text-align: center; font-size: 1.5em; top: 150px;"></div>
                                 </article>
                             </div>
-                            <div class="col-9" style="overflow: auto; height: 240px; -webkit-transform:translate3d(0,0,0);" id="calendar-events">
+                            <div class="col-9" style="overflow: auto; height: 240px; -webkit-transform:translate3d(0,0,0);" id="calendar-events" title="List of upcoming events.">
                             </div>
                         </div>
                     </div>
@@ -679,18 +678,18 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-primary doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Mics, Recorder, Action!</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close this window"></a></div>
                     </header>
 
                     <div class="form-row align-items-center p-2">
-                        <div class="form-group col-6">
+                        <div class="form-group col-6" title="DJ / Handle name">
                             <label for="live-handle">DJ / Handle Name</label>
                             <input class="form-control m-1" id="live-handle" type="text">
                             <div class="invalid-feedback">
                                 Not on the immediate schedule
                             </div>
                         </div>
-                        <div class="form-group col-6">
+                        <div class="form-group col-6" title="Show name">
                             <label for="live-show">Show Name</label>
                             <input class="form-control m-1" id="live-show" type="text">
                             <div class="invalid-feedback">
@@ -698,12 +697,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="live-topic">Optional show topic(s), limited to 140 characters</label>
+                    <div class="form-group" title="Show topic(s) for listeners to see, limited to 140 characters.">
+                        <label for="live-topic">Optional show topic(s) for listeners to see, limited to 140 characters</label>
                         <textarea class="form-control mb-2" id="live-topic" rows="3" maxlength="140"></textarea>
                     </div>
 
-                    <div class="custom-control custom-switch">
+                    <div class="custom-control custom-switch" title="Allow listeners to send you messages?">
                         <input class="custom-control-input" id="live-webchat" type="checkbox">
                         <span class="custom-control-track"></span>
                         <label class="custom-control-label" for="live-webchat">Allow listeners to send you messages</label><br />
@@ -711,7 +710,7 @@
                     </div>
                 </div>
                 <div class="modal-footer bg-light-1">
-                    <button type="button" class="btn btn-primary btn-lg" id="live-go">Start Your Show</button>
+                    <button type="button" class="btn btn-primary btn-lg" id="live-go" title="Start your show now!">Start Your Show</button>
                 </div>
             </div>
         </div>
@@ -721,18 +720,18 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-purple doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Remote Broadcast</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close this window"></a></div>
                     </header>
 
                     <div class="form-row align-items-center p-2">
-                        <div class="form-group col-6">
+                        <div class="form-group col-6" title="DJ / Handle name">
                             <label for="remote-handle">DJ / Handle Name</label>
                             <input class="form-control m-1" id="remote-handle" type="text">
                             <div class="invalid-feedback">
                                 Not on the immediate schedule
                             </div>
                         </div>
-                        <div class="form-group col-6">
+                        <div class="form-group col-6" title="Show name">
                             <label for="remote-show">Show Name</label>
                             <input class="form-control m-1" id="remote-show" type="text">
                             <div class="invalid-feedback">
@@ -740,12 +739,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="live-topic">Optional show topic(s), limited to 140 characters</label>
+                    <div class="form-group" title="Optional show topic(s) for listeners to see, limited to 140 characters">
+                        <label for="live-topic">Optional show topic(s) for listeners to see, limited to 140 characters</label>
                         <textarea class="form-control mb-2" id="remote-topic" rows="3" maxlength="140"></textarea>
                     </div>
 
-                    <div class="custom-control custom-switch">
+                    <div class="custom-control custom-switch" title="Allow listeners to send you messages?">
                         <input class="custom-control-input" id="remote-webchat" type="checkbox">
                         <span class="custom-control-track"></span>
                         <label class="custom-control-label" for="remote-webchat">Allow listeners to send you messages</label><br />
@@ -753,7 +752,7 @@
                     </div>
                 </div>
                 <div class="modal-footer bg-light-1">
-                    <button type="button" class="btn btn-purple btn-lg" id="remote-go">Start Remote Broadcast</button>
+                    <button type="button" class="btn btn-purple btn-lg" id="remote-go" title="Start remote broadcast now!">Start Remote Broadcast</button>
                 </div>
             </div>
         </div>
@@ -763,10 +762,10 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-success doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Raider Sports Broadcast</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close this window"></a></div>
                     </header>
 
-                    <div class="form-group">
+                    <div class="form-group" title="Choose which sport is being broadcast">
                         <label for="sports-sport">Sport being broadcast</label>
                         <select class="form-control" id="sports-sport">
                             <option value="">Choose a sport...</option>
@@ -785,7 +784,7 @@
                             Not on the immediate schedule
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" title="Optionally provide more info about this broadcast for listeners to see, limited to 140 characters.">
                         <label for="live-topic">Optional, provide more info for this broadcast limited to 140 characters</label>
                         <textarea class="form-control mb-2" id="sports-topic" rows="3" maxlength="140"></textarea>
                     </div>
@@ -795,7 +794,7 @@
                         <span class="custom-control-track"></span>
                         <label class="custom-control-label" for="sports-remote">Remote broadcast</label>
                     </div>
-                    <div class="custom-control custom-switch">
+                    <div class="custom-control custom-switch" title="Allow listeners to send you messages?">
                         <input class="custom-control-input" id="sports-webchat" type="checkbox">
                         <span class="custom-control-track"></span>
                         <label class="custom-control-label" for="sports-webchat">Allow listeners to send you messages</label><br />
@@ -803,7 +802,7 @@
                     </div>
                 </div>
                 <div class="modal-footer bg-light-1">
-                    <button type="button" class="btn btn-success btn-lg" id="sports-go">Start Sports Broadcast</button>
+                    <button type="button" class="btn btn-success btn-lg" id="sports-go" title="Start sports broadcast now!">Start Sports Broadcast</button>
                 </div>
             </div>
         </div>
@@ -813,36 +812,36 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-trivial doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Add a Log</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close this window"></a></div>
                     </header>
                     <div class="bs-callout bs-callout-info shadow-4 text-white">
                         You do not need to log anything played in RadioDJ; those are logged automatically.
                     </div>
 
-                    <div class="form-group p-1">
+                    <div class="form-group p-1" title="Date and time of the log">
                         <label for="log-datetime">Date and Time of the log</label>
                         <input type="datetime-local" id="log-datetime" class="form-control">
                     </div>
-                    <div class="form-group p-1">
+                    <div class="form-group p-1" title="Artist (if applicable)">
                         <label for="log-artist">Artist (if applicable)</label>
                         <input type="text" id="log-artist" class="form-control">
                     </div>
-                    <div class="form-group p-1">
+                    <div class="form-group p-1" title="Title (if applicable)">
                         <label for="log-title">Title (if applicable)</label>
                         <input type="text" id="log-title" class="form-control">
                     </div>
-                    <div class="form-group p-1">
+                    <div class="form-group p-1" title="Album (if applicable)">
                         <label for="log-title">Album (if applicable)</label>
                         <input type="text" id="log-album" class="form-control">
                     </div>
-                    <div class="form-group p-1">
+                    <div class="form-group p-1" title="Record Label (if applicable)">
                         <label for="log-label">Record Label (if applicable)</label>
                         <input type="text" id="log-label" class="form-control">
                     </div>
 
                 </div>
                 <div class="modal-footer bg-light-1">
-                    <button type="button" class="btn btn-trivial btn-lg" id="log-add">Add Log</button>
+                    <button type="button" class="btn btn-trivial btn-lg" id="log-add" title="Log this track">Add Log</button>
                 </div>
             </div>
         </div>
@@ -851,11 +850,11 @@
             <div class="modal-content text-dark bg-light-3">
                 <div class="modal-body">
                     <header class="navbar navbar-dark navbar-full bg-success doc-navbar-default">
-                        <button aria-controls="navdrawerUsers" aria-expanded="false" aria-label="Toggle Navdrawer" class="navbar-toggler" data-target="#navdrawerUsers" data-toggle="navdrawer" data-type="temporary">
+                        <button aria-controls="navdrawerUsers" aria-expanded="false" aria-label="Toggle Navdrawer" class="navbar-toggler" data-target="#navdrawerUsers" data-toggle="navdrawer" data-type="temporary" title="Open the list of chat recipients to choose a recipient to view / send messages to.">
                             <span class="fas fa-users"></span>
                         </button>
                         <span class="navbar-brand mr-auto" id="messenger-title">Messenger</span>
-                        <div class="iziModal-header-buttons"><span id="messenger-buttons"></span><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><span id="messenger-buttons"></span><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close this window"></a></div>
                     </header>
                     <div aria-hidden="true" class="navdrawer navdrawer-temporary" id="navdrawerUsers" style="width: 25rem;" tabindex="-1">
                         <div class="navdrawer-content">
@@ -880,20 +879,20 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-danger doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Report a Problem</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close this window"></a></div>
                     </header>
                     <div class="p-2">
-                        <div class="form-group">
-                            <label for="emergency-issue">Please describe the issue(s) you are encountering (256 character max).</label>
+                        <div class="form-group" title="Describe the problem you are encountering, limited to 256 characters.">
+                            <label for="emergency-issue">Please describe the problem you are encountering (256 character max).</label>
                             <textarea class="form-control mb-2" id="emergency-issue" rows="3" maxlength="256"></textarea>
                         </div>
                     </div>
                     <div class="bs-callout bs-callout-info shadow-4 text-white">
-                        When you submit an issue, directors will be notified. In addition, an announcement will be posted under "System Problems Detected" so other DJs are aware.
+                        When you submit a problem, directors will be notified. In addition, an announcement will be posted under "System Problems Detected" so other DJs are aware.
                     </div>
                 </div>
                 <div class="modal-footer bg-light-1">
-                    <button type="button" class="btn btn-danger btn-lg" id="emergency-go">Submit</button>
+                    <button type="button" class="btn btn-danger btn-lg" id="emergency-go" title="Submit Problem">Submit Problem</button>
                 </div>
             </div>
         </div>
@@ -903,10 +902,10 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-purple doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Display Sign Message</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close this window"></a></div>
                     </header>
                     <div class="p-2">
-                        <div class="form-group">
+                        <div class="form-group" title="Type a message to be displayed / read aloud on the display signs. Limited to 256 characters.">
                             <label for="display-message">Type your message for the display signs (256 character limit)</label>
                             <textarea class="form-control mb-2" id="display-message" rows="3" maxlength="256"></textarea>
                         </div>
@@ -916,7 +915,7 @@
                     </div>
                 </div>
                 <div class="modal-footer bg-light-1">
-                    <button type="button" class="btn btn-purple btn-lg" id="display-go">Submit</button>
+                    <button type="button" class="btn btn-purple btn-lg" id="display-go" title="Submit Message to Display Signs">Submit Message</button>
                 </div>
             </div>
         </div>
@@ -926,7 +925,7 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-success doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Broadcast is Complete</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
                     <div class="bs-callout bs-callout-info text-white shadow-4" role="alert">
                         <h4>We recorded your broadcast automatically!</h4>
@@ -934,30 +933,30 @@
                         <p>MP3 file names: DJ/handle name - show name (date and time).</p>
                         <p>Breaks were automatically removed.</p>
                     </div>
-                    <p style="font-size: 1.5em; text-align: center;">Your WWSU Statistics</p>
+                    <p style="font-size: 1.5em; text-align: center;">Your overall WWSU Statistics</p>
                     <div class="d-flex justify-content-around flex-wrap">
-                        <div class="card p-1 m-1 bg-light-2">
+                        <div class="card p-1 m-1 bg-light-2" title="XP (experience) is earned through airing your radio show, getting online listeners, sending web messages, taking top of the hour ID breaks on time, playing Top Adds, and earning remote credits.">
                             <div class="card-body">
                                 <h4 class="card-title" style="text-align: center;">XP</h4>
                                 <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-totalXP">0</p>
                                 <p class="card-text" style="text-align: center; font-size: 1em;" id="stat-subtotalXP">0 this show</p>
                             </div>
                         </div>
-                        <div class="card p-1 m-1 bg-light-2">
+                        <div class="card p-1 m-1 bg-light-2" title="Total remote credits earned so far this semester (earned by contributing to the station outside of your show). Show times are prioritized based on how many credits you earned for the semester.">
                             <div class="card-body">
                                 <h4 class="card-title" style="text-align: center;">Remote<br />Credits</h4>
                                 <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-remoteCredits">0</p>
                                 <p class="card-text" style="text-align: center; font-size: 1em;">this semester</p>
                             </div>
                         </div>
-                        <div class="card p-1 m-1 bg-light-2">
+                        <div class="card p-1 m-1 bg-light-2" title="On-The-Air time. This includes prerecorded shows.">
                             <div class="card-body">
                                 <h4 class="card-title" style="text-align: center;">OnAir Hours</h4>
                                 <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-totalShowTime">0</p>
                                 <p class="card-text" style="text-align: center; font-size: 1em;" id="stat-showTime">0 this show</p>
                             </div>
                         </div>
-                        <div class="card p-1 m-1 bg-light-2">
+                        <div class="card p-1 m-1 bg-light-2" title="Online listener hours (1 online listener listening for 1 minute is 1 listener minute.) (FM listeners cannot be tracked.)">
                             <div class="card-body">
                                 <h4 class="card-title" style="text-align: center;">Listener Hours</h4>
                                 <p class="card-text" style="text-align: center; font-size: 4em;" id="stat-totalListeners">0</p>
@@ -965,7 +964,7 @@
                             </div>
                         </div>
                     </div>
-                    <div style="width: 100%"><small style="text-align: center;">XP is earned for remote credits, show time, listeners, web messages sent during show, on-time top-of-hour breaks, and top adds played.</small></div>
+                    <div style="width: 100%"><small style="text-align: center;">XP is earned for remote credits, show time, online listeners, web messages sent during show, on-time top-of-hour breaks, and top adds played.</small></div>
                     <div style="width: 100%"><small style="text-align: center;">Please contact a director if you think you have more remote credits than what is being reported here.</small></div>
                 </div>
                 <div class="modal-footer bg-light-1">
@@ -978,7 +977,7 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-info doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Track Requests</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
                     <div class="bs-callout bs-callout-info shadow-4 text-white">
                         Playing requests are optional. Requests do not disappear from this list until played in RadioDJ.
@@ -996,39 +995,39 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-danger doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Options / Administration</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
                     <div class="d-flex justify-content-start flex-wrap">
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                            <button type="button" id="btn-options-djs" class="btn btn-purple btn-float"><i class="fas fa-microphone"></i></button>
+                            <button type="button" id="btn-options-djs" class="btn btn-purple btn-float" title="View/Add/Remove/Edit DJs, their attendance history, their notes / remote credits / XP, and their show logs."><i class="fas fa-microphone"></i></button>
                             <div style="text-align: center; font-size: 1em;">Manage DJs</div>
                         </div>
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                            <button type="button" id="btn-options-directors" class="btn btn-purple btn-float"><i class="fas fa-address-card"></i></button>
+                            <button type="button" id="btn-options-directors" class="btn btn-purple btn-float" title="View/Add/Remove/Edit Directors and their timesheets."><i class="fas fa-address-card"></i></button>
                             <div style="text-align: center; font-size: 1em;">Manage Directors</div>
                         </div>
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                            <button type="button" id="btn-options-djcontrols" class="btn btn-purple btn-float"><i class="fas fa-users-cog"></i></button>
+                            <button type="button" id="btn-options-djcontrols" class="btn btn-purple btn-float" title="Manage which computers / DJ Controls are allowed to connect to the WWSU system and what roles they serve."><i class="fas fa-users-cog"></i></button>
                             <div style="text-align: center; font-size: 1em;">Manage Hosts</div>
                         </div>
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                            <button type="button" id="btn-options-announcements" class="btn btn-purple btn-float"><i class="fas fa-bullhorn"></i></button>
+                            <button type="button" id="btn-options-announcements" class="btn btn-purple btn-float" title="View/Add/Remove/Edit announcements (DJ Controls, website, timesheet computer, etc) and slides on the display signs."><i class="fas fa-bullhorn"></i></button>
                             <div style="text-align: center; font-size: 0.75em;">Manage Announcements</div>
                         </div>
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                            <button type="button" id="btn-options-logs" class="btn btn-secondary btn-float"><i class="fas fa-file"></i></button>
+                            <button type="button" id="btn-options-logs" class="btn btn-secondary btn-float" title="View logs of all the shows and programming aired, filtered by date and grouped by program/show."><i class="fas fa-file"></i></button>
                             <div style="text-align: center; font-size: 1em;">Logs</div>
                         </div>
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                            <button type="button" id="btn-options-issues" class="btn btn-warning btn-float"><i class="fas fa-poo"></i></button>
+                            <button type="button" id="btn-options-issues" class="btn btn-warning btn-float" title="View issues that were logged by the system in the last 7 days, such as technical issues or DJs not doing their show."><i class="fas fa-poo"></i></button>
                             <div style="text-align: center; font-size: 1em;">Issues</div>
                         </div>
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                            <button type="button" id="btn-options-calendar" class="btn btn-info btn-float"><i class="fas fa-calendar"></i></button>
+                            <button type="button" id="btn-options-calendar" class="btn btn-info btn-float" title="Check to see if you properly formatted events in the WWSU Events Google Calendar."><i class="fas fa-calendar"></i></button>
                             <div style="text-align: center; font-size: 1em;">Calendar Verification</div>
                         </div>
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                            <button type="button" id="btn-options-radiodj" class="btn btn-danger btn-float"><i class="fas fa-sync"></i></button>
+                            <button type="button" id="btn-options-radiodj" class="btn btn-danger btn-float" title="Change which RadioDJ is currently operating automation."><i class="fas fa-sync"></i></button>
                             <div style="text-align: center; font-size: 1em;">Switch RadioDJ</div>
                         </div>
                     </div>
@@ -1043,14 +1042,14 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-purple doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">DJ Management</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
                     <div class="d-flex justify-content-start flex-wrap" id="options-djs">
                     </div>
                 </div>
                 <div class="modal-footer bg-light-1">
-                    <button type="button" class="btn btn-success btn-lg" id="options-dj-add">New DJ</button>
-                    <button type="button" class="btn btn-purple btn-lg" id="options-dj-mass-xp">Add Note/Remote/XP</button>
+                    <button type="button" class="btn btn-success btn-lg" id="options-dj-add" title="Add a new DJ into the system">New DJ</button>
+                    <button type="button" class="btn btn-purple btn-lg" id="options-dj-mass-xp" title="Mass-add notes, remote credits, or XP to multiple DJs.">Add Note/Remote/XP</button>
                 </div>
             </div>
         </div>
@@ -1060,14 +1059,14 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-purple doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Director Management</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
                     <div class="d-flex justify-content-start flex-wrap" id="options-directors">
                     </div>
                 </div>
                 <div class="modal-footer bg-light-1">
-                    <button type="button" class="btn btn-success btn-lg" id="options-director-new">New Director</button>
-                    <button type="button" class="btn btn-info btn-lg" id="options-director-timesheets">Timesheets</button>
+                    <button type="button" class="btn btn-success btn-lg" id="options-director-new" title="Add a new director into the system.">New Director</button>
+                    <button type="button" class="btn btn-info btn-lg" id="options-director-timesheets" title="View and edit timesheets, filtered by week.">Timesheets</button>
                 </div>
             </div>
         </div>
@@ -1077,35 +1076,35 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-purple doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white" id="options-dj-name">DJ Management</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
                     <div class="d-flex justify-content-around flex-wrap">
-                        <div class="card p-1 m-1 bg-light-2">
+                        <div class="card p-1 m-1 bg-light-2" title="XP (experience) is earned through airing their radio show, getting online listeners, sending web messages, taking top of the hour ID breaks on time, playing Top Adds, and earning remote credits.">
                             <div class="card-body">
                                 <h4 class="card-title" style="text-align: center;">XP</h4>
                                 <p class="card-text" style="text-align: center; font-size: 4em;" id="dj-xp"></p>
                             </div>
                         </div>
-                        <div class="card p-1 m-1 bg-light-2">
+                        <div class="card p-1 m-1 bg-light-2" title="Remote Credits this DJ has earned so far since the start of the configured semester.">
                             <div class="card-body">
                                 <h4 class="card-title" style="text-align: center;">Remote<br />Credits</h4>
                                 <p class="card-text" style="text-align: center; font-size: 4em;" id="dj-remotes"></p>
                             </div>
                         </div>
-                        <div class="card p-1 m-1 bg-light-2">
+                        <div class="card p-1 m-1 bg-light-2" title="Total On-Air time in hours this DJ has served, including prerecorded shows.">
                             <div class="card-body">
                                 <h4 class="card-title" style="text-align: center;">OnAir Hours</h4>
                                 <p class="card-text" style="text-align: center; font-size: 4em;" id="dj-showtime"></p>
                             </div>
                         </div>
-                        <div class="card p-1 m-1 bg-light-2">
+                        <div class="card p-1 m-1 bg-light-2" title="Total online listener hours this DJ has collected when their shows were airing.">
                             <div class="card-body">
                                 <h4 class="card-title" style="text-align: center;">Listener Hours</h4>
                                 <p class="card-text" style="text-align: center; font-size: 4em;" id="dj-listenertime"></p>
                             </div>
                         </div>
                     </div>
-                    <p style="font-size: 1.5em; text-align: center;">Attendance History</p>
+                    <p style="font-size: 1.5em; text-align: center;" >Attendance History</p>
                     <div class="container m-1">
                         <div class="row m-1 bg-light-1 shadow-2">
                             <div class="col-2 text-danger">
@@ -1296,19 +1295,19 @@
                                 Friendly Name
                             </div>
                             <div class="col-1">
-                                Auth
+                                <i class="fas fa-check-circle text-dark"></i>
                             </div>
                             <div class="col-1">
-                                Admin
+                                <i class="fas fa-phone-volume text-dark"></i>
                             </div>
                             <div class="col-1">
-                                Reqs
+                                <i class="fas fa-headphones text-dark"></i>
                             </div>
                             <div class="col-1">
-                                Issues
+                                <i class="fas fa-microphone-slash text-dark"></i>
                             </div>
                             <div class="col-1">
-                                Msgs
+                                <i class="fas fa-circle text-dark"></i>
                             </div>
                             <div class="col-2">
                                 Action

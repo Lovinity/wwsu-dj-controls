@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file as of versio
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) as of version 4.5.0.
 
+## [Unreleased]
+### Added
+ - A bunch of tooltips to help DJ Controls users make more sense of what they are doing or seeing.
+
+### Changed
+ - The manage hosts overview screen shows authorized, can make calls, can answer calls, records audio, and detects silence... instead of the other settings.
+
 ## [5.0.2] - 2019-02-02
 ### Added
  - Remote/XP screens now allow for adding of notes to DJs. Notes/remotes/XP logs will now appear in this order: Notes first (brown), then remotes (yellow), then XP (blue).
