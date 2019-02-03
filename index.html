@@ -1135,7 +1135,7 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-secondary doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Log</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
                     <div class="container m-1">
                         <div class="row m-1 bg-light-1 shadow-2">
@@ -1161,7 +1161,7 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-purple doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Notes / Remotes / XP</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
                     <div class="container m-1">
                         <div class="row m-1 bg-light-1 shadow-2">
@@ -1192,27 +1192,27 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-purple doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Manage Director</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
 
-                    <div class="form-group">
-                        <label for="options-director-name">Director Name</label>
+                    <div class="form-group" title="Full name of the director">
+                        <label for="options-director-name">Director's Full Name</label>
                         <input class="form-control m-1" id="options-director-name" type="text">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" title="Type a new password to change the existing password of this director.">
                         <label for="options-director-login">Change Login / Password</label>
                         <input class="form-control m-1" id="options-director-login" type="password">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" title="Describe this director's position">
                         <label for="options-director-position">Position / Title</label>
                         <input class="form-control m-1" id="options-director-position" type="text">
                     </div>
-                    <div class="form-group custom-control custom-switch">
+                    <div class="form-group custom-control custom-switch" title="Should this director be allowed to perform administrative actions (such as editing other directors)?">
                         <input class="custom-control-input" id="options-director-admin" type="checkbox">
                         <span class="custom-control-track"></span>
                         <label class="custom-control-label" for="options-director-admin">Administrator Access</label><br />
                     </div>
-                    <div class="form-group custom-control custom-switch">
+                    <div class="form-group custom-control custom-switch" title="Is this director an intern / assistant?">
                         <input class="custom-control-input" id="options-director-assistant" type="checkbox">
                         <span class="custom-control-track"></span>
                         <label class="custom-control-label" for="options-director-assistant">Assistant Director / Intern</label><br />
@@ -1229,13 +1229,13 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-info doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Timesheets</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
                     <div class="bs-callout bs-callout-info shadow-4 text-white">
                         Click a clock to edit. 
                         <p><span class="badge badge-success m-1">Approved</span><span class="badge badge-info m-1">Still Clocked In</span><span class="badge badge-danger m-1">Flagged / Not Approved</span></p>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" title="Choose a date falling within the week of timesheet records you want to view.">
                         <label for="options-timesheets-date">Filter by week</label>
                         <input type='date' id='options-timesheets-date' />
                         <input type="submit" class="btn btn-primary" id="options-timesheets-filter" value="Filter">
@@ -1253,9 +1253,9 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-secondary doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Global Logs</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
-                    <div class="form-group">
+                    <div class="form-group" title="View logs of the specified day.">
                         <label for="options-timesheets-date">Filter by day</label>
                         <input type='date' id='global-log-filter' />
                         <input type="submit" class="btn btn-primary" id="filter-global-logs" value="Filter">
@@ -1287,27 +1287,24 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-purple doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Hosts / DJ Controls Management</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
                     <div class="container m-1">
                         <div class="row bg-light-1 m-1 shadow-4">
-                            <div class="col-5">
+                            <div class="col-6">
                                 Friendly Name
                             </div>
-                            <div class="col-1">
+                            <div class="col-1" title="Is this host authorized to connect to WWSU?">
                                 <i class="fas fa-check-circle text-dark"></i>
                             </div>
-                            <div class="col-1">
+                            <div class="col-1" title="Will this host allow access to the administration menu? (DJ Controls only)">
+                                <i class="fas fa-cog text-dark"></i>
+                            </div>
+                            <div class="col-1" title="Is this host allowed to make audio calls (start remote broadcasts) (DJ Controls only)?">
                                 <i class="fas fa-phone-volume text-dark"></i>
                             </div>
-                            <div class="col-1">
+                            <div class="col-1" title="Is this host allowed to answer and play audio calls (eg. OnAir DJ Controls may want this on to transmit remote audio over the air) (DJ Controls only)?">
                                 <i class="fas fa-headphones text-dark"></i>
-                            </div>
-                            <div class="col-1">
-                                <i class="fas fa-microphone-slash text-dark"></i>
-                            </div>
-                            <div class="col-1">
-                                <i class="fas fa-circle text-dark"></i>
                             </div>
                             <div class="col-2">
                                 Action
@@ -1327,7 +1324,7 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-info doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Google Calendar Verification</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
                     <div class="bs-callout bs-callout-info shadow-4 text-white">
                         This only verifies events for today and the next 7 days. Changes to Google Calendar may take up to 5 minutes to reflect in the system.
@@ -1356,7 +1353,7 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-purple doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Announcements</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
                     <div class="row m-1 bg-light-1 shadow-2">
                         <div class="col-4 text-primary">
@@ -1375,7 +1372,7 @@
                     <div class="container m-1" id="options-announcements" style="height: 480px; overflow: scroll;">
                     </div>
                     <div class="modal-footer bg-light-1">
-                        <button type="button" class="btn btn-success btn-lg" id="options-announcements-add">New</button>
+                        <button type="button" class="btn btn-success btn-lg" id="options-announcements-add" title="Add a new announcement">New</button>
                     </div>
                 </div>
             </div>
@@ -1386,19 +1383,19 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-purple doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Manage Announcement</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
                     <div class="p-1 m-1">
-                        <div class="form-group">
+                        <div class="form-group" title="Start date for this announcement">
                             <label for="options-announcement-starts">Starts</label>
                             <input type="datetime-local" id="options-announcement-starts" class="form-control">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" title="Expiration for this announcement">
                             <label for="options-announcement-expires">Expires</label>
                             <input type="datetime-local" id="options-announcement-expires" class="form-control">
                         </div>
-                        <div class="form-group">
-                            <label for="options-announcement-type">Type / Display on</label>
+                        <div class="form-group" title="Where should this announcement display?">
+                            <label for="options-announcement-type">Display on</label>
                             <select class="form-control" id="options-announcement-type">
                                 <option value="undefined"></option>
                                 <option value="djcontrols">DJ Controls</option>
@@ -1411,7 +1408,7 @@
                                 <option value="mobile">Mobile Apps</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" title="Type / color of announcement">
                             <label for="options-announcement-level">Level of Importance (color)</label>
                             <select class="form-control" id="options-announcement-level">
                                 <option value="undefined"></option>
@@ -1421,11 +1418,11 @@
                                 <option value="trivial">Everything Else (gray)</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" title="For display sign announcements and website announcements, the time to display in seconds between 5 and 60.">
                             <label for="options-announcement-displaytime">Display Time in seconds [between 5 and 60] (Display Signs and Website announcements only)</label>
                             <input type="text" id="options-announcement-displaytime" class="form-control" placeholder="15">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" title="Announcement title (keep very short and concise)">
                             <label for="options-announcement-title">Title (short and concise)</label>
                             <input type="text" id="options-announcement-title" class="form-control">
                         </div>
@@ -1442,10 +1439,10 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-success doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Manage Notes/Remotes/XP</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
                     <div class="p-1 m-1">
-                        <div class="form-group">
+                        <div class="form-group" title="Choose entry type">
                             <label for="options-xp-type">Entry Category</label>
                             <select class="form-control" id="options-xp-type">
                                 <option value="undefined-undefined"></option>
@@ -1471,19 +1468,19 @@
                                 <option value="xp-other">XP: Other</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="options-xp-date">Earned on</label>
+                        <div class="form-group" title="Date the XP/remote was earned on, or date of note">
+                            <label for="options-xp-date">Earned on / date</label>
                             <input type="datetime-local" id="options-xp-date" class="form-control">
                         </div>
-                        <div class="form-group">
-                            <label for="options-xp-description">Description</label>
+                        <div class="form-group" title="Description of remote/XP, or the note">
+                            <label for="options-xp-description">Description / note</label>
                             <textarea class="form-control" id="options-xp-description" rows="2"></textarea>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" title="Number of XP/remote credits earned">
                             <label for="options-xp-amount">Amount (Remote Credits / XP)</label>
                             <input type="text" id="options-xp-amount" class="form-control" placeholder="0">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" title="Select which DJs this Note / XP / Remote credit entry applies to">
                             <label for="options-xp-djs">Applicable DJs</label>
                             <div class="container m-1" id="options-xp-djs" style="height: 240px; overflow: scroll;">
                             </div>
@@ -1501,46 +1498,74 @@
                 <div class="modal-body">
                     <header class="navbar navbar-full bg-purple doc-navbar-default">
                         <span class="navbar-brand mr-auto text-white">Manage Host</span>
-                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
                     <div class="p-1 m-1">
-                        <div class="form-group">
+                        <div class="form-group" title="Friendly name / label for this host">
                             <label for="options-host-name">Friendly Name</label>
                             <input type="text" id="options-host-name" class="form-control" placeholder="">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" title="Should this host be allowed to connect to WWSU?">
                             <div class="custom-control custom-switch">
                                 <input class="custom-control-input" id="options-host-authorized" type="checkbox">
                                 <span class="custom-control-track"></span>
                                 <label class="custom-control-label" for="options-host-authorized">Authorize host to connect to WWSU</label>
                             </div>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" title="Should this host allow access to the administration menu?">
                             <div class="custom-control custom-switch">
                                 <input class="custom-control-input" id="options-host-admin" type="checkbox">
                                 <span class="custom-control-track"></span>
                                 <label class="custom-control-label" for="options-host-admin">Administrator (can access menu and change settings; DJ Controls hosts only)</label>
                             </div>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" title="Should this host be allowed to start remote broadcasts / make audio calls to other applicable DJ Controls?">
+                            <div class="custom-control custom-switch">
+                                <input class="custom-control-input" id="options-host-makecalls" type="checkbox">
+                                <span class="custom-control-track"></span>
+                                <label class="custom-control-label" for="options-host-makecalls">Host can make audio calls / start remote broadcasts. (DJ Controls only)</label>
+                            </div>
+                        </div>
+                        <div class="form-group" title="Should this host answer/accept audio calls and play them through configured output device during a remote broadcast?">
+                            <div class="custom-control custom-switch">
+                                <input class="custom-control-input" id="options-host-answercalls" type="checkbox">
+                                <span class="custom-control-track"></span>
+                                <label class="custom-control-label" for="options-host-answercalls">Host can answer / play audio calls during a remote broadcast. (DJ Controls only)</label>
+                            </div>
+                        </div>
+                        <div class="form-group" title="Should this host monitor its configured input device for silence and report silence to WWSU?">
+                            <div class="custom-control custom-switch">
+                                <input class="custom-control-input" id="options-host-silence" type="checkbox">
+                                <span class="custom-control-track"></span>
+                                <label class="custom-control-label" for="options-host-silence">Host is responsible for monitoring for, and reporting, silence via its input device. (DJ Controls only)</label>
+                            </div>
+                        </div>
+                        <div class="form-group" title="Should this host record audio / programming from its input device and save it?">
+                            <div class="custom-control custom-switch">
+                                <input class="custom-control-input" id="options-host-record" type="checkbox">
+                                <span class="custom-control-track"></span>
+                                <label class="custom-control-label" for="options-host-record">Host is responsible for recording and saving radio shows via its input device. (DJ Controls only)</label>
+                            </div>
+                        </div>
+                        <div class="form-group" title="Should this host always display notifications when new tracks are requested?">
                             <div class="custom-control custom-switch">
                                 <input class="custom-control-input" id="options-host-requests" type="checkbox">
                                 <span class="custom-control-track"></span>
-                                <label class="custom-control-label" for="options-host-requests">Host should notify of new track requests (DJ Controls only)</label>
+                                <label class="custom-control-label" for="options-host-requests">Host should always notify of new track requests (DJ Controls only)</label>
                             </div>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" title="Should this host display notifications when problems are detected or reported?">
                             <div class="custom-control custom-switch">
                                 <input class="custom-control-input" id="options-host-emergencies" type="checkbox">
                                 <span class="custom-control-track"></span>
                                 <label class="custom-control-label" for="options-host-emergencies">Host should notify of system problems (DJ Controls only)</label>
                             </div>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" title="Should this host always display notifications when new messages are received from web/mobile users?">
                             <div class="custom-control custom-switch">
                                 <input class="custom-control-input" id="options-host-webmessages" type="checkbox">
                                 <span class="custom-control-track"></span>
-                                <label class="custom-control-label" for="options-host-webmessages">Host should notify of new messages from web/mobile (DJ Controls only)</label>
+                                <label class="custom-control-label" for="options-host-webmessages">Host should always notify of new messages from web/mobile (DJ Controls only)</label>
                             </div>
                         </div>
                     </div>

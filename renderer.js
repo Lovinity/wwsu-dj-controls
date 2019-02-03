@@ -172,16 +172,16 @@ try {
     peer.on('open', () => {
         console.log(`peer opened`);
         /*
-        getAudio(
-                function (MediaStream) {
-                    console.log('now calling');
-                    var call = peer.call(`wwsu-1`, MediaStream);
-                    call.on('stream', onReceiveStream);
-                }
-        );
-        */
+         getAudio(
+         function (MediaStream) {
+         console.log('now calling');
+         var call = peer.call(`wwsu-1`, MediaStream);
+         call.on('stream', onReceiveStream);
+         }
+         );
+         */
     });
-    
+
     peer.on('call', (connection) => {
         onReceiveCall(connection);
     })
@@ -1110,7 +1110,7 @@ document.querySelector("#options-announcements-add").onclick = function () {
     document.querySelector("#options-announcement-title").value = "";
     document.querySelector("#options-announcement-level").value = "undefined";
     quill2.setText("\n");
-    document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-success btn-lg" id="options-announcement-add">Add</button>`;
+    document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-success btn-lg" id="options-announcement-add" title="Add announcement">Add</button>`;
     $("#options-modal-announcement").iziModal('open');
 };
 
@@ -1172,7 +1172,7 @@ function filterGlobalLogs(date) {
                         <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
                                     <div class="col-1">
-                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                                         </div>
@@ -1203,7 +1203,7 @@ function filterGlobalLogs(date) {
                         <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
                                     <div class="col-1">
-                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                                         </div>
@@ -1218,7 +1218,7 @@ function filterGlobalLogs(date) {
                         <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
                                     <div class="col-1">
-                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                                         </div>
@@ -1235,7 +1235,7 @@ function filterGlobalLogs(date) {
                         <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
                                     <div class="col-1">
-                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                                         </div>
@@ -1376,23 +1376,28 @@ document.querySelector("#btn-options-calendar").onclick = function () {
                 }
                 var cell3 = ``;
                 var theClass = `secondary`;
+                var theTitle = `This event does not have a recognized prefix. Please check the prefix if this event was meant to trigger something.`;
                 if (event.verify === 'Valid')
                 {
                     cell3 = `<span class="badge badge-success">Valid</span>`;
                     theClass = `success`;
+                    theTitle = `This event is good.`;
                 } else if (event.verify === 'Invalid')
                 {
                     cell3 = `<span class="badge badge-danger">Invalid</span>`;
                     theClass = `danger`;
+                    theTitle = `This event will not trigger due to critical issues.`;
                 } else if (event.verify === 'Check')
                 {
                     cell3 = `<span class="badge badge-warning">Check</span>`;
                     theClass = `warning`;
+                    theTitle = `This event is good, but has minor issues.`;
                 } else {
                     cell3 = `<span class="badge badge-dark">Manual</span>`;
                     theClass = `secondary`;
+                    theTitle = `This event does not have a recognized prefix. Please check the prefix if this event was meant to trigger something.`;
                 }
-                formatted[moment(event.start).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+                formatted[moment(event.start).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;" title="${theTitle}">
                                 <div class="col-3 text-primary">
                                     ${moment(event.start).format("h:mm A")} - ${moment(event.end).format("h:mm A")}
                                 </div>
@@ -1534,7 +1539,7 @@ document.querySelector(`#options-modal-djs`).addEventListener("click", function 
                     document.querySelector("#options-xp-amount").value = 0;
                     document.querySelector("#options-xp-djs").style.display = "inline-block";
                     document.querySelector("#options-xp-djs-none").style.display = "none";
-                    document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add">Add</button>`;
+                    document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add" title="Add Note/Remote/XP">Add</button>`;
                     Djs().each(dj => {
                         var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
                         if (temp)
@@ -1641,7 +1646,7 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                     document.querySelector("#options-xp-amount").value = 0;
                     document.querySelector("#options-xp-djs").style.display = "inline-block";
                     document.querySelector("#options-xp-djs-none").style.display = "none";
-                    document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add">Add</button>`;
+                    document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add" title="Add Note/Remote/XP">Add</button>`;
                     Djs().each(dj => {
                         var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
                         if (temp)
@@ -1819,7 +1824,7 @@ document.querySelector(`#options-modal-directors`).addEventListener("click", fun
                     document.querySelector("#options-director-position").value = "";
                     document.querySelector("#options-director-admin").checked = false;
                     document.querySelector("#options-director-assistant").checked = false;
-                    document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-success btn-lg" id="options-director-add">Add</button>`;
+                    document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-success btn-lg" id="options-director-add" title="Add director into the system">Add</button>`;
                     $("#options-modal-director").iziModal('open');
                 } else if (e.target.id === "options-director-timesheets")
                 {
@@ -1853,7 +1858,7 @@ document.querySelector(`#options-directors`).addEventListener("click", function 
                 document.querySelector("#options-director-position").value = director2.position;
                 document.querySelector("#options-director-admin").checked = director2.admin;
                 document.querySelector("#options-director-assistant").checked = director2.assistant;
-                document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-urgent btn-lg" id="options-director-edit-${director}">Edit</button>
+                document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-urgent btn-lg" id="options-director-edit-${director}" title="Edit this director">Edit</button>
                 <button type="button" class="btn btn-danger btn-lg" id="options-director-remove-${director}">Remove</button>`;
                 $("#options-modal-director").iziModal('open');
             }
@@ -2021,7 +2026,7 @@ document.querySelector(`#dj-xp-add-div`).addEventListener("click", function (e) 
                 document.querySelector("#options-xp-amount").value = 0;
                 document.querySelector("#options-xp-djs").style.display = "inline-block";
                 document.querySelector("#options-xp-djs-none").style.display = "none";
-                document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add">Add</button>`;
+                document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add" title="Add Note/Remote/XP">Add</button>`;
                 Djs().each(dj => {
                     var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
                     if (temp)
@@ -2314,7 +2319,7 @@ document.querySelector(`#dj-xp-logs`).addEventListener("click", function (e) {
                             document.querySelector("#options-xp-amount").value = parseFloat(record.amount);
                             document.querySelector("#options-xp-djs").style.display = "none";
                             document.querySelector("#options-xp-djs-none").style.display = "inline-block";
-                            document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-xp-edit-${recordID}">Edit</button>`;
+                            document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-xp-edit-${recordID}" title="Edit Note/Remote/XP">Edit</button>`;
                             Djs().each(dj => {
                                 var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
                                 if (temp)
@@ -2506,7 +2511,7 @@ document.querySelector(`#options-announcements`).addEventListener("click", funct
                 document.querySelector("#options-announcement-title").value = response.title;
                 document.querySelector("#options-announcement-level").value = response.level;
                 quill2.clipboard.dangerouslyPasteHTML(response.announcement);
-                document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-urgent btn-lg" id="options-announcement-edit-${response.ID}">Edit</button>`;
+                document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-urgent btn-lg" id="options-announcement-edit-${response.ID}" title="Edit Announcement">Edit</button>`;
                 $("#options-modal-announcement").iziModal('open');
             }
         }
@@ -2590,10 +2595,13 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
                 document.querySelector("#options-host-name").value = host.friendlyname;
                 document.querySelector("#options-host-authorized").checked = host.authorized;
                 document.querySelector("#options-host-admin").checked = host.admin;
+                document.querySelector("#options-host-makecalls").checked = host.makeCalls;
+                document.querySelector("#options-host-answercalls").checked = host.answerCalls;
+                document.querySelector("#options-host-silence").checked = host.silenceDetection;
                 document.querySelector("#options-host-requests").checked = host.requests;
                 document.querySelector("#options-host-emergencies").checked = host.emergencies;
                 document.querySelector("#options-host-webmessages").checked = host.webmessages;
-                document.querySelector("#options-host-button").innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-host-edit-${host.ID}">Edit</button>`;
+                document.querySelector("#options-host-button").innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-host-edit-${host.ID}" title="Edit host">Edit</button>`;
                 $("#options-modal-host").iziModal('open');
             }
         }
@@ -2698,7 +2706,7 @@ document.querySelector(`#options-host-button`).addEventListener("click", functio
             console.log(e.target.id);
             if (e.target.id.startsWith("options-host-edit-"))
             {
-                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/hosts/edit', data: {ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector("#options-host-name").value, authorized: document.querySelector("#options-host-authorized").checked, admin: document.querySelector("#options-host-admin").checked, requests: document.querySelector("#options-host-requests").checked, emergencies: document.querySelector("#options-host-emergencies").checked, webmessages: document.querySelector("#options-host-webmessages").checked}}, function (response) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/hosts/edit', data: {ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector("#options-host-name").value, authorized: document.querySelector("#options-host-authorized").checked, admin: document.querySelector("#options-host-admin").checked, requests: document.querySelector("#options-host-requests").checked, emergencies: document.querySelector("#options-host-emergencies").checked, webmessages: document.querySelector("#options-host-webmessages").checked, makeCalls: document.querySelector("#options-host-makecalls").checked, answerCalls: document.querySelector("#options-host-answercalls").checked, silenceDetection: document.querySelector("#options-host-silence").checked, recordAudio: document.querySelector("#options-record").checked}}, function (response) {
                     if (response === 'OK')
                     {
                         $("#options-modal-host").iziModal('close');
@@ -3231,109 +3239,109 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-        {
-            hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
-                //console.log(body);
-                try {
-                    client = body;
-                    //authtoken = client.token;
-                    if (!client.authorized)
-                    {
-                        var noConnection = document.getElementById('no-connection');
-                        noConnection.style.display = "inline";
-                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+{
+    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+        //console.log(body);
+        try {
+            client = body;
+            //authtoken = client.token;
+            if (!client.authorized)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "inline";
+                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                        cb(false);
-                    } else {
-                        cb(true);
+                cb(false);
+            } else {
+                cb(true);
+            }
+            if (client.admin)
+            {
+                if (client.otherHosts)
+                    processHosts(client.otherHosts, true);
+                var temp = document.querySelector(`#options`);
+                var restarter;
+                if (temp)
+                    temp.style.display = "inline";
+
+                // Subscribe to the logs socket
+                hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        //processLogs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED logs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                    if (client.admin)
-                    {
-                        if (client.otherHosts)
-                            processHosts(client.otherHosts, true);
-                        var temp = document.querySelector(`#options`);
-                        var restarter;
-                        if (temp)
-                            temp.style.display = "inline";
+                });
 
-                        // Subscribe to the logs socket
-                        hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                //processLogs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED logs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get djs and subscribe to the dj socket
-                        hostReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                processDjs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED DJs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get directors and subscribe to the dj socket
-                        hostReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                processDirectors(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED directors CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the XP socket
-                        hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED XP CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the timesheet socket
-                        hostReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED TIMESHEET CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-                    } else {
-                        var temp = document.querySelector(`#options`);
-                        if (temp)
-                            temp.style.display = "none";
+                // Get djs and subscribe to the dj socket
+                hostReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDjs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED DJs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
                     }
-                } catch (e) {
-                    console.error(e);
-                    console.log('FAILED HOST CONNECTION');
-                    restarter = setTimeout(hostSocket, 10000);
-                }
-            });
+                });
+
+                // Get directors and subscribe to the dj socket
+                hostReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDirectors(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED directors CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the XP socket
+                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED XP CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the timesheet socket
+                hostReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED TIMESHEET CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+            } else {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            console.log('FAILED HOST CONNECTION');
+            restarter = setTimeout(hostSocket, 10000);
         }
+    });
+}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -4295,10 +4303,10 @@ function checkAnnouncements() {
                         ${announcement.title}
                     </div>
                     <div class="col-2 text-dark">
-                <button type="button" id="options-announcements-edit-${announcement.ID}" class="close" aria-label="Edit Announcement">
+                <button type="button" id="options-announcements-edit-${announcement.ID}" class="close" aria-label="Edit Announcement" title="Edit this announcement">
                 <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
                 </button>
-                <button type="button" id="options-announcements-remove-${announcement.ID}" class="close" aria-label="Remove Announcement">
+                <button type="button" id="options-announcements-remove-${announcement.ID}" class="close" aria-label="Remove Announcement" title="Remove this announcement">
                 <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
                 </button>
                     </div>
@@ -7456,7 +7464,7 @@ function loadDJ(dj = null, reset = true) {
             var totalXP = 0;
             if (DJData.XP.length > 0)
             {
-                document.querySelector(`#dj-xp-add-div`).innerHTML = `<button type="button" class="btn btn-success btn-lg" id="dj-xp-add" data-dj="${dj}">Add</button>`;
+                document.querySelector(`#dj-xp-add-div`).innerHTML = `<button type="button" class="btn btn-success btn-lg" id="dj-xp-add" data-dj="${dj}" title="Add a Note / Remote Credit / XP">Add</button>`;
                 var xpLogs = document.querySelector(`#dj-xp-logs`);
                 xpLogs.scrollTop = 0;
 
@@ -7492,21 +7500,24 @@ function loadDJ(dj = null, reset = true) {
                 DJData.XP.sort(compare);
                 DJData.XP.map(record => {
                     var theClass = `secondary`;
+                    var theTitle = `This is a note.`;
 
                     if (record.type === "xp")
                     {
                         totalXP += record.amount;
                         theClass = `info`;
+                        theTitle = `This is an XP entry.`;
                     }
 
                     if (record.type === "remote")
                     {
                         theClass = `warning`;
+                        theTitle = `This is a remote credit entry.`;
                         if (moment(record.createdAt).isSameOrAfter(moment(DJData.startOfSemester)))
                             remote += record.amount;
                     }
 
-                    newXPLogs += `<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+                    newXPLogs += `<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;" title="${theTitle}">
                     <div class="col-3 text-primary">
                         ${moment(record.createdAt).format("YYYY-MM-DD h:mm A")}
                     </div>
@@ -7517,10 +7528,10 @@ function loadDJ(dj = null, reset = true) {
                         ${record.type}-${record.subtype}${record.description !== null && record.description !== '' ? `: ${record.description}` : ``}
                     </div>
                     <div class="col-2 text-dark">
-                        <button type="button" id="dj-xp-edit-${record.ID}" class="close dj-xp-edit" aria-label="Edit XP/Remote">
+                        <button type="button" id="dj-xp-edit-${record.ID}" class="close dj-xp-edit" aria-label="Edit XP/Remote" title="Edit this record">
                 <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
                 </button>
-                        <button type="button" id="dj-xp-remove-${record.ID}" class="close dj-xp-remove" aria-label="Remove XP/Remote">
+                        <button type="button" id="dj-xp-remove-${record.ID}" class="close dj-xp-remove" aria-label="Remove XP/Remote" title="Remove this record">
                 <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
                 </button>
                     </div>
@@ -7738,63 +7749,63 @@ function loadDJ(dj = null, reset = true) {
 
 // Update recipients as changes happen
 function processDjs(data = {}, replace = false)
+{
+    // Data processing
+    try {
+        if (replace)
         {
-            // Data processing
-            try {
-                if (replace)
+            Djs = TAFFY();
+            Djs.insert(data);
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
                 {
-                    Djs = TAFFY();
-                    Djs.insert(data);
-                } else {
-                    for (var key in data)
+                    switch (key)
                     {
-                        if (data.hasOwnProperty(key))
-                        {
-                            switch (key)
-                            {
-                                case 'insert':
-                                    Djs.insert(data[key]);
-                                    break;
-                                case 'update':
-                                    Djs({ID: data[key].ID}).update(data[key]);
-                                    break;
-                                case 'remove':
-                                    Djs({ID: data[key]}).remove();
-                                    break;
-                            }
-                        }
+                        case 'insert':
+                            Djs.insert(data[key]);
+                            break;
+                        case 'update':
+                            Djs({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Djs({ID: data[key]}).remove();
+                            break;
                     }
                 }
+            }
+        }
 
-                document.querySelector("#options-xp-djs").innerHTML = ``;
-                document.querySelector('#options-djs').innerHTML = ``;
+        document.querySelector("#options-xp-djs").innerHTML = ``;
+        document.querySelector('#options-djs').innerHTML = ``;
 
-                Djs().each(function (dj, index) {
-                    var djClass = `danger`;
-                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
-                        djClass = `warning`;
-                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
-                        djClass = `success`;
+        Djs().each(function (dj, index) {
+            var djClass = `danger`;
+            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
+                djClass = `warning`;
+            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
+                djClass = `success`;
 
-                    document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+            document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                         <button type="button" id="options-dj-${dj.ID}" class="btn btn-${djClass} btn-float" style="position: relative;" data-dj="${dj.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`DJ ${dj.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
-                    document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
+            document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
   <input class="custom-control-input" id="options-xp-djs-i-${dj.ID}" type="checkbox">
   <span class="custom-control-track"></span>
   <label class="custom-control-label" for="options-xp-djs-i-${dj.ID}">${dj.name}</label>
 </div>`;
-                });
+        });
 
-            } catch (e) {
-                console.error(e);
-                iziToast.show({
-                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                    message: 'Error occurred in the processDjs function.'
-                });
-        }
-        }
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred in the processDjs function.'
+        });
+}
+}
 
 // Update recipients as changes happen
 function processDirectors(data, replace = false)
@@ -7893,31 +7904,28 @@ function processHosts(data, replace = false)
 
         Hosts().each(function (host, index) {
             document.querySelector('#options-djcontrols').innerHTML += `<div class="row m-1">
-                    <div class="col-5">
-                        ${host.friendlyname}
+                    <div class="col-6">
+                        ${host.friendlyname} <span class="m-2">${host.silenceDetection ? `<i class="fas fa-microphone-slash text-dark" title="${host.friendlyname} is responsible for reporting silence to WWSU."></i>` : ''}${host.recordAudio ? `<i class="fas fa-circle text-dark" title="${host.friendlyname} is responsible for recording and saving radio programming."></i>` : ''}</span>
                     </div>
-                    <div class="col-1">
-                        ${host.authorized ? '<i class="fas fa-check text-success-light"></i>' : ''}
+                    <div class="col-1" title="${host.authorized ? `${host.friendlyname} is authorized to connect to WWSU.` : `${host.friendlyname} is NOT authorized to connect to WWSU.`}">
+                        ${host.authorized ? '<i class="fas fa-check-circle text-dark"></i>' : ''}
                     </div>
-                    <div class="col-1">
-                        ${host.admin ? '<i class="fas fa-check text-danger-light"></i>' : ''}
+                    <div class="col-1" title="${host.admin ? `${host.friendlyname} will display and allow access to the administration menu.` : `${host.friendlyname} will NOT display and allow access to the administration menu.`}">
+                        ${host.admin ? '<i class="fas fa-cog text-dark"></i>' : ''}
                     </div>
-                    <div class="col-1">
-                        ${host.requests ? '<i class="fas fa-check text-warning-light"></i>' : ''}
+                    <div class="col-1" title="${host.makeCalls ? `${host.friendlyname} can make audio calls / start remote broadcasts.` : `${host.friendlyname} can NOT make audio calls / start remote broadcasts.`}">
+                        ${host.makeCalls ? '<i class="fas fa-phone-volume text-dark"></i>' : ''}
                     </div>
-                    <div class="col-1">
-                        ${host.emergencies ? '<i class="fas fa-check text-warning-light"></i>' : ''}
-                    </div>
-                    <div class="col-1">
-                        ${host.webmessages ? '<i class="fas fa-check text-warning-light"></i>' : ''}
+                    <div class="col-1" title="${host.answerCalls ? `${host.friendlyname} can answer / play incoming audio calls.` : `${host.friendlyname} can NOT answer / play incoming audio calls.`}">
+                        ${host.answerCalls ? '<i class="fas fa-headphones text-dark"></i>' : ''}
                     </div>
                                 <div class="col-2">
-            ${client.host !== host.host ? `<button type="button" id="options-djcontrols-edit-${host.ID}" class="close" aria-label="Edit Host">
+            ${client.host !== host.host ? `<button type="button" id="options-djcontrols-edit-${host.ID}" class="close" aria-label="Edit Host" title="Edit ${host.friendlyname} / settings">
                 <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
                 </button>
-                <button type="button" id="options-djcontrols-remove-${host.ID}" class="close" aria-label="Remove Host">
+                <button type="button" id="options-djcontrols-remove-${host.ID}" class="close" aria-label="Remove Host" title="Remove ${host.friendlyname}">
                 <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
-                </button>` : `(YOU)`}
+                </button>` : `<span title="To prevent accidental lock-out, you cannot edit / remove your own host. Please use another DJ Controls to edit your host.">(YOU)</span>`}
             </div>
                 </div>`;
         });
@@ -8130,13 +8138,13 @@ function loadTimesheets(date)
                     switch (status)
                     {
                         case 0:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-danger" id="timesheet-t-${record.ID}">${inT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-danger" id="timesheet-t-${record.ID}" title="This timesheet record is NOT approved. Click to edit.">${inT}</span><br />`;
                             break;
                         case 1:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}">${inT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}" title="This timesheet record is approved. Click to edit.">${inT}</span><br />`;
                             break;
                         case 2:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-info" id="timesheet-t-${record.ID}">${inT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-info" id="timesheet-t-${record.ID}" title="This timesheet record does not contain a clock-out time yet. Click to edit.">${inT}</span><br />`;
                             break;
                     }
                 }
@@ -8148,13 +8156,13 @@ function loadTimesheets(date)
                     switch (status)
                     {
                         case 0:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-danger" id="timesheet-t-${record.ID}">${outT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-danger" id="timesheet-t-${record.ID}" title="This timesheet record is NOT approved. Click to edit.">${outT}</span><br />`;
                             break;
                         case 1:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}">${outT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}" title="This timesheet record is approved. Click to edit.">${outT}</span><br />`;
                             break;
                         case 2:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-info" id="timesheet-t-${record.ID}">${outT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-info" id="timesheet-t-${record.ID}" title="This timesheet record does not contain a clock-out time yet. Click to edit.">${outT}</span><br />`;
                             break;
                     }
                 }
