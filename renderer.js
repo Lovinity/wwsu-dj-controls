@@ -1,6 +1,7 @@
 /* global iziToast, io, moment, Infinity, err, ProgressBar, Taucharts, response, responsiveVoice, jdenticon, SIP */
 
 try {
+    window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
     var development = true;
 
@@ -19,31 +20,6 @@ try {
     var notifier = require('./electron-notifications/index.js');
     var nrc = require("node-run-cmd");
     var Sanitize = require("sanitize-filename");
-    
-    // Set up peer audio calling
-    var userAgent = new SIP.UA({uri: `${main.getMachineID()}@server.wwsu1069.org`});
-    
-    var options = {
-        media: {
-            constraints: {
-                audio: true,
-                video: false
-            },
-            render: {
-                remote: {
-                    audio: document.getElementById('remoteAudio')
-                },
-                local: {
-                    audio: document.getElementById('localAudio')
-                }
-            }
-        }
-    };
-    
-    userAgent.on('invite', function (session) {
-        console.dir(session);
-        session.accept();
-    });
 
     // Define data variables
     var Meta = {time: moment().toISOString(), lastID: moment().toISOString(), state: 'unknown', line1: '', line2: '', queueFinish: null, trackFinish: null};
@@ -156,6 +132,53 @@ try {
     io.sails.url = nodeURL;
     io.sails.query = `host=${main.getMachineID()}`;
     var socket = io.sails.connect();
+
+    var peer = new Peer(`wwsu-2`);
+
+    function getAudio(successCallback) {
+        console.log(`getting audio`);
+        navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: false
+        })
+                .then((stream) => successCallback(stream));
+    }
+
+    function onReceiveCall(call) {
+
+        console.log('peer is calling...');
+        console.log(call);
+
+        getAudio(
+                function (MediaStream) {
+                    call.answer(MediaStream);
+                    console.log('answering call started...');
+                }
+        );
+
+        call.on('stream', onReceiveStream);
+    }
+
+    function onReceiveStream(stream) {
+        console.log(`received stream`);
+        var audio = document.querySelector('#remoteAudio');
+        audio.src = window.URL.createObjectURL(stream);
+        audio.onloadedmetadata = function (e) {
+            console.log('now playing the audio');
+            audio.play();
+        }
+    }
+
+    peer.on('open', () => {
+        console.log(`peer opened`);
+        getAudio(
+                function (MediaStream) {
+                    console.log('now calling');
+                    var call = peer.call(`wwsu-1`, MediaStream);
+                    call.on('stream', onReceiveStream);
+                }
+        );
+    });
 
     // register requests
     var hostReq = new WWSUreq(socket, main.getMachineID(), 'host', '/auth/host', 'Host');
