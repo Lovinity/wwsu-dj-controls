@@ -3556,7 +3556,7 @@ function doMeta(metan) {
         document.querySelector("#nowplaying").innerHTML = `<div class="text-warning" style="position: absolute; top: -16px; left: 0px;">${Meta.trackFinish !== null ? moment.duration(moment(Meta.trackFinish).diff(moment(Meta.time), 'seconds'), "seconds").format() : ''}</div>${Meta.line1}<br />${Meta.line2}`;
 
         // Notify the DJ of a mandatory top of the hour break if they need to take one
-        if (moment(Meta.time).minutes() >= 3 && moment(Meta.time).minutes() < 10 && moment(Meta.time).diff(moment(Meta.lastID), 'minutes') >= 15 && isHost)
+        if (moment(Meta.time).minutes() >= 2 && moment(Meta.time).minutes() < 5 && moment(Meta.time).diff(moment(Meta.lastID), 'minutes') >= 10 && isHost)
         {
             if (document.querySelector("#iziToast-breakneeded") === null && !breakNotified)
             {
@@ -3571,7 +3571,7 @@ function doMeta(metan) {
                     id: 'iziToast-breakneeded',
                     class: 'flash-bg',
                     title: `Do not forget Top of the Hour Break!`,
-                    message: `Unless you are about to end your show, please find a graceful stopping point within the next few minutes and then click "take a break".`,
+                    message: `Unless you are ending your show, you need to take a break before 5 minutes (:05) past the hour. Click "Take a Break" to take one now.`,
                     timeout: false,
                     close: true,
                     color: 'yellow',
@@ -5089,21 +5089,21 @@ function checkCalendar() {
                 {
                     if (moment(Meta.lastID).add(10, 'minutes').startOf('hour') !== moment(Meta.time).startOf('hour') && moment(Meta.time).diff(moment(Meta.time).startOf('hour'), 'minutes') < 10)
                     {
-                        var start = moment(Meta.time).startOf('hour');
+                        var start = moment(Meta.time).startOf('hour').subtract(5, 'minutes');
                         var diff = moment(Meta.time).diff(moment(start), 'seconds');
                         data.sectors.push({
                             label: 'current minute',
                             start: 360 - (diff * (360 / 60 / 60)),
-                            size: 15,
+                            size: 60,
                             color: "#FFEB3B"
                         });
                     } else {
-                        var start = moment(Meta.time).add(1, 'hours').startOf('hour');
+                        var start = moment(Meta.time).add(1, 'hours').startOf('hour').subtract(5, 'minutes');
                         var diff = moment(start).diff(moment(Meta.time), 'seconds');
                         data.sectors.push({
                             label: 'current minute',
                             start: ((360 / 60 / 60) * diff),
-                            size: 15,
+                            size: 60,
                             color: "#FFEB3B"
                         });
                     }
