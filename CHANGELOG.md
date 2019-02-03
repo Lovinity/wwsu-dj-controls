@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
  - The manage hosts overview screen shows authorized, can make calls, can answer calls, records audio, and detects silence... instead of the other settings.
+ - Top of hour break is now shaded between :55 and :05 after, and reminders are triggered at :02 after instead of :03 after, to comply with the new break settings in WWSU server.
 
 ## [5.0.2] - 2019-02-02
 ### Added
