@@ -45,7 +45,7 @@ try {
     var delay = 9000; // Subtract 1 second from the amount of on-air delay, as it takes about a second to process the recorder.
     var activeToken = "";
 
-    var peer = new Peer();
+    var peer = new Peer(`WWSU-1`);
     var disconnected = true;
     var theStatus = 4;
     var calendar = []; // Contains calendar events for the next 24 hours
@@ -140,7 +140,7 @@ try {
 
     // Connect peer
     console.log(`PEER connecting...`);
-    var peerConn = peer.connect('WWSU-f75d64b87966fdd38a576557959a04f4fa595eb6964372dbb37bc326cd876007');
+    var peerConn = peer.connect('WWSU-2');
     peerConn.on('open', function () {
         // here you have conn.id
         console.log(`PEER CONNECTED. Sending message...`);
