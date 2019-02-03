@@ -171,6 +171,7 @@ try {
 
     peer.on('open', () => {
         console.log(`peer opened`);
+        /*
         getAudio(
                 function (MediaStream) {
                     console.log('now calling');
@@ -178,7 +179,12 @@ try {
                     call.on('stream', onReceiveStream);
                 }
         );
+        */
     });
+    
+    peer.on('call', (connection) => {
+        onReceiveCall(connection);
+    })
 
     // register requests
     var hostReq = new WWSUreq(socket, main.getMachineID(), 'host', '/auth/host', 'Host');
