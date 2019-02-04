@@ -2694,7 +2694,7 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
                                         console.dir(response);
                                         iziToast.show({
                                             title: `Failed to remove DJ Controls host!`,
-                                            message: `There was an error trying to remove the DJ Controls host. This might happen if you were trying to remove the only authorized admin; if so, make another host an authorized admin first.`,
+                                            message: `There was an error trying to remove the DJ Controls host. ${response}.`,
                                             timeout: 20000,
                                             close: true,
                                             color: 'red',
@@ -2702,7 +2702,8 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
                                             position: 'center',
                                             closeOnClick: true,
                                             overlay: false,
-                                            zindex: 1000
+                                            zindex: 1000,
+                                            maxWidth: 480
                                         });
                                     }
                                 });
@@ -2715,16 +2716,63 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
             }
             if (e.target.id.startsWith("options-djcontrols-edit-"))
             {
+                var checkCaution = () => {
+                    if (document.querySelector("#options-host-makecalls").checked && (document.querySelector("#options-host-record").checked || document.querySelector("#options-host-silence").checked))
+                    {
+                        document.querySelector("#options-host-makecalls").classList.add("is-invalid");
+                    } else {
+                        document.querySelector("#options-host-makecalls").classList.remove("is-invalid");
+                    }
+                };
+                document.querySelector("#options-host-makecalls").onchange = checkCaution;
+                document.querySelector("#options-host-record").onchange = checkCaution;
+                document.querySelector("#options-host-silence").onchange = checkCaution;
+
                 var host = Hosts({ID: parseInt(e.target.id.replace(`options-djcontrols-edit-`, ``))}).first();
                 document.querySelector("#options-host-name").value = host.friendlyname;
                 document.querySelector("#options-host-authorized").checked = host.authorized;
                 document.querySelector("#options-host-admin").checked = host.admin;
                 document.querySelector("#options-host-makecalls").checked = host.makeCalls;
                 document.querySelector("#options-host-answercalls").checked = host.answerCalls;
+                document.querySelector("#options-host-record").checked = host.recordAudio;
                 document.querySelector("#options-host-silence").checked = host.silenceDetection;
                 document.querySelector("#options-host-requests").checked = host.requests;
                 document.querySelector("#options-host-emergencies").checked = host.emergencies;
                 document.querySelector("#options-host-webmessages").checked = host.webmessages;
+                
+                checkCaution();
+
+                if (Hosts({authorized: true, admin: true}).get().length <= 1 && host.authorized && host.admin)
+                {
+                    document.querySelector("#options-host-authorized").disabled = true;
+                    document.querySelector("#options-host-admin").disabled = true;
+                    document.querySelector("#options-host-authorized").classList.add("is-invalid");
+                    document.querySelector("#options-host-admin").classList.add("is-invalid");
+                } else {
+                    document.querySelector("#options-host-authorized").disabled = false;
+                    document.querySelector("#options-host-admin").disabled = false;
+                    document.querySelector("#options-host-authorized").classList.remove("is-invalid");
+                    document.querySelector("#options-host-admin").classList.remove("is-invalid");
+                }
+
+                if (Hosts({silenceDetection: true}).get().length <= 1 && !host.silenceDetection)
+                {
+                    document.querySelector("#options-host-silence").disabled = true;
+                    document.querySelector("#options-host-silence").classList.add("is-invalid");
+                } else {
+                    document.querySelector("#options-host-silence").disabled = false;
+                    document.querySelector("#options-host-silence").classList.remove("is-invalid");
+                }
+
+                if (Hosts({recordAudio: true}).get().length <= 1 && !host.recordAudio)
+                {
+                    document.querySelector("#options-host-record").disabled = true;
+                    document.querySelector("#options-host-record").classList.add("is-invalid");
+                } else {
+                    document.querySelector("#options-host-record").disabled = false;
+                    document.querySelector("#options-host-record").classList.remove("is-invalid");
+                }
+
                 document.querySelector("#options-host-button").innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-host-edit-${host.ID}" title="Edit host">Edit</button>`;
                 $("#options-modal-host").iziModal('open');
             }
@@ -2850,7 +2898,7 @@ document.querySelector(`#options-host-button`).addEventListener("click", functio
                         console.dir(response);
                         iziToast.show({
                             title: `Failed to edit host!`,
-                            message: `There was an error trying to edit the DJ Controls host. This might happen if you're removing admin or authorized permissions from the only authorized admin host in the system. If this is true, ensure there is another authorized admin host first.`,
+                            message: `There was an error trying to edit the DJ Controls host. ${response}`,
                             timeout: 10000,
                             close: true,
                             color: 'red',
@@ -2858,7 +2906,8 @@ document.querySelector(`#options-host-button`).addEventListener("click", functio
                             position: 'center',
                             closeOnClick: true,
                             overlay: false,
-                            zindex: 1000
+                            zindex: 1000,
+                            maxWidth: 480
                         });
                     }
                 });
@@ -8188,7 +8237,7 @@ function processDirectors(data, replace = false)
         document.querySelector('#options-directors').innerHTML = ``;
 
         Directors().each(function (director, index) {
-            document.querySelector('#options-directors').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+            document.querySelector('#options-directors').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${director.name} is currently ${director.present ? "clocked IN" : "clocked OUT"} as of ${moment(director.since).format("LLL")}">
                         <button type="button" id="options-director-${director.ID}" class="btn ${director.present ? "btn-success" : "btn-danger"} btn-float" style="position: relative;" data-director="${director.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`Director ${director.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${director.name}</div>
                     </div>`;
