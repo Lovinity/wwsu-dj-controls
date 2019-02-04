@@ -1583,63 +1583,78 @@
                             <div class="custom-control custom-switch">
                                 <input class="custom-control-input" id="options-host-authorized" type="checkbox">
                                 <span class="custom-control-track"></span>
-                                <label class="custom-control-label" for="options-host-authorized">Authorize host to connect to WWSU</label>
+                                <label class="custom-control-label" for="options-host-authorized"><strong>authorized:</strong> Authorize host to connect to WWSU</label>
+                                <div class="invalid-feedback">
+                                    Forcefully enabled: This is the only authorized admin host. Please make another host an authorized admin if you want to disable this.
+                                </div>
                             </div>
                         </div>
                         <div class="form-group" title="Should this host allow access to the administration menu?">
                             <div class="custom-control custom-switch">
                                 <input class="custom-control-input" id="options-host-admin" type="checkbox">
                                 <span class="custom-control-track"></span>
-                                <label class="custom-control-label" for="options-host-admin">Administrator (can access menu and change settings; DJ Controls hosts only)</label>
+                                <label class="custom-control-label" for="options-host-admin"><strong>admin:</strong> Host can access menu and change settings (DJ Controls hosts only)</label>
+                                <div class="invalid-feedback">
+                                    Forcefully enabled: This is the only authorized admin host. Please make another host an authorized admin if you want to disable this.
+                                </div>
                             </div>
                         </div>
                         <div class="form-group" title="Should this host be allowed to start remote broadcasts / make audio calls to other applicable DJ Controls?">
                             <div class="custom-control custom-switch">
                                 <input class="custom-control-input" id="options-host-makecalls" type="checkbox">
                                 <span class="custom-control-track"></span>
-                                <label class="custom-control-label" for="options-host-makecalls">Host can make audio calls / start remote broadcasts. (DJ Controls only)</label>
+                                <label class="custom-control-label" for="options-host-makecalls"><strong>makeCalls:</strong> Host can make audio calls / start remote broadcasts. (DJ Controls only)</label>
+                                <div class="invalid-feedback">
+                                    CAUTION! recordAudio or silenceDetection is also enabled, which is NOT recommended when makeCalls is enabled (input device conflict).
+                                </div>
                             </div>
                         </div>
                         <div class="form-group" title="Should this host answer/accept audio calls and play them through configured output device during a remote broadcast?">
                             <div class="custom-control custom-switch">
                                 <input class="custom-control-input" id="options-host-answercalls" type="checkbox">
                                 <span class="custom-control-track"></span>
-                                <label class="custom-control-label" for="options-host-answercalls">Host can answer / play audio calls during a remote broadcast. (DJ Controls only)</label>
+                                <label class="custom-control-label" for="options-host-answercalls"><strong>answerCalls:</strong> Host can answer / play audio calls during a remote broadcast. (DJ Controls only)</label>
                             </div>
                         </div>
                         <div class="form-group" title="Should this host monitor its configured input device for silence and report silence to WWSU?">
                             <div class="custom-control custom-switch">
                                 <input class="custom-control-input" id="options-host-silence" type="checkbox">
                                 <span class="custom-control-track"></span>
-                                <label class="custom-control-label" for="options-host-silence">Host is responsible for monitoring for, and reporting, silence via its input device. (DJ Controls only)</label>
+                                <label class="custom-control-label" for="options-host-silence"><strong>silenceDetection:</strong> Host is responsible for monitoring for, and reporting, silence via its input device. (DJ Controls only)</label>
+                                <div class="invalid-feedback">
+                                    Forcefully disabled: Another host is currently responsible for this. Please disable this setting on the other host if you want to enable this.
+                                </div>
                             </div>
                         </div>
                         <div class="form-group" title="Should this host record audio / programming from its input device and save it?">
                             <div class="custom-control custom-switch">
                                 <input class="custom-control-input" id="options-host-record" type="checkbox">
                                 <span class="custom-control-track"></span>
-                                <label class="custom-control-label" for="options-host-record">Host is responsible for recording and saving radio shows via its input device. (DJ Controls only)</label>
+                                <label class="custom-control-label" for="options-host-record"><strong>recordAudio:</strong> Host is responsible for recording and saving radio shows via its input device. (DJ Controls only)</label>
+                                <div class="invalid-feedback">
+                                    Forcefully disabled: Another host is currently responsible for this. Please disable this setting on the other host if you want to enable this.
+                                </div>
                             </div>
                         </div>
                         <div class="form-group" title="Should this host always display notifications when new tracks are requested?">
                             <div class="custom-control custom-switch">
                                 <input class="custom-control-input" id="options-host-requests" type="checkbox">
                                 <span class="custom-control-track"></span>
-                                <label class="custom-control-label" for="options-host-requests">Host should always notify of new track requests (DJ Controls only)</label>
+                                <label class="custom-control-label" for="options-host-requests"><strong>requests:</strong> Host should always notify of new track requests (DJ Controls only)</label>
                             </div>
                         </div>
                         <div class="form-group" title="Should this host display notifications when problems are detected or reported?">
                             <div class="custom-control custom-switch">
                                 <input class="custom-control-input" id="options-host-emergencies" type="checkbox">
                                 <span class="custom-control-track"></span>
-                                <label class="custom-control-label" for="options-host-emergencies">Host should notify of system problems (DJ Controls only)</label>
+                                <label class="custom-control-label" for="options-host-emergencies"><strong>emergencies:</strong> Host should notify of system problems (DJ Controls only)</label>
                             </div>
                         </div>
                         <div class="form-group" title="Should this host always display notifications when new messages are received from web/mobile users?">
                             <div class="custom-control custom-switch">
                                 <input class="custom-control-input" id="options-host-webmessages" type="checkbox">
                                 <span class="custom-control-track"></span>
-                                <label class="custom-control-label" for="options-host-webmessages">Host should always notify of new messages from web/mobile (DJ Controls only)</label>
+                                <label class="custom-control-label" for="options-host-webmessages"><strong>webmessages:</strong>Host should always notify of new messages from web/mobile (DJ Controls only)</label>
                             </div>
                         </div>
                     </div>

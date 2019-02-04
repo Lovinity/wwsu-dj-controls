@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
  - A bunch of tooltips to help DJ Controls users make more sense of what they are doing or seeing.
+ - Hosts edit screen has all available options, and will prevent editing of options with a warning if changing it would cause a conflict.
 
 ### Changed
  - The manage hosts overview screen shows authorized, can make calls, can answer calls, records audio, and detects silence... instead of the other settings.
