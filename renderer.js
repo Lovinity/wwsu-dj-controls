@@ -37,6 +37,108 @@ try {
     var DJData = {};
     var Timesheets = [];
 
+    // Define peerJS and stream variables. These will be set after getting information about this host's settings.
+    var peer;
+    var peerStream;
+    var analyserStream;
+    var audioContext = new AudioContext();
+    var analyser = audioContext.createAnalyser();
+    var processor;
+    analyser.smoothingTimeConstant = 0.8;
+    analyser.fftSize = 1024;
+
+    function createAudioMeter(audioContext, clipLevel, averaging, clipLag) {
+        processor = audioContext.createScriptProcessor(512);
+        processor.onaudioprocess = volumeAudioProcess;
+        processor.clipping = false;
+        processor.lastClip = 0;
+        processor.volume = 0;
+        processor.clipLevel = clipLevel || 0.98;
+        processor.averaging = averaging || 0.98;
+        processor.clipLag = clipLag || 750;
+
+        // this will have no effect, since we don't copy the input to the output,
+        // but works around a current Chrome bug.
+        processor.connect(audioContext.destination);
+
+        processor.checkClipping =
+                function () {
+                    if (!this.clipping)
+                        return false;
+                    if ((this.lastClip + this.clipLag) < window.performance.now())
+                        this.clipping = false;
+                    return this.clipping;
+                };
+
+        processor.shutdown =
+                function () {
+                    this.disconnect();
+                    this.onaudioprocess = null;
+                };
+
+        return processor;
+    }
+
+    function volumeAudioProcess(event) {
+        var buf = event.inputBuffer.getChannelData(0);
+        var bufLength = buf.length;
+        var sum = 0;
+        var x;
+
+        // Do a root-mean-square on the samples: sum up the squares...
+        for (var i = 0; i < bufLength; i++) {
+            x = buf[i];
+            if (Math.abs(x) >= this.clipLevel) {
+                this.clipping = true;
+                this.lastClip = window.performance.now();
+            }
+            sum += x * x;
+        }
+
+        // ... then take the square root of the sum.
+        var rms = Math.sqrt(sum / bufLength);
+
+        // Now smooth this out with the averaging factor applied
+        // to the previous sample - take the max here because we
+        // want "fast attack, slow release."
+        this.volume = Math.max(rms, this.volume * this.averaging);
+    }
+
+    function drawLoop(meter, gain, terminate = false) {
+        var temp = document.querySelector(`#remote-vu`);
+        var temp2 = document.querySelector(`#sportsremote-vu`);
+        if (!terminate)
+        {
+            if (temp !== null)
+            {
+                temp.style.width = `${meter.volume * 200}%`;
+
+                // check if we're currently clipping
+                if (meter.checkClipping())
+                    temp.className = "progress-bar bg-danger";
+                else
+                    temp.className = "progress-bar bg-success";
+            }
+
+            if (temp2 !== null)
+            {
+                temp2.style.width = `${meter.volume * 200}%`;
+
+                // check if we're currently clipping
+                if (meter.checkClipping())
+                    temp2.className = "progress-bar bg-danger";
+                else
+                    temp2.className = "progress-bar bg-success";
+            }
+
+            // set up the next visual callback
+            rafID = window.requestAnimationFrame(() => {
+                drawLoop(meter, gain);
+            });
+    }
+    }
+
+
     // Define other variables
     var nodeURL = 'https://server.wwsu1069.org';
     //var nodeURL = 'http://localhost:1337';
@@ -133,15 +235,31 @@ try {
     io.sails.query = `host=${main.getMachineID()}`;
     var socket = io.sails.connect();
 
-    var peer = new Peer(`wwsu-2`);
-
-    function getAudio(successCallback) {
+    function getAudio(device) {
+        drawLoop(null, null, true);
         console.log(`getting audio`);
         navigator.mediaDevices.getUserMedia({
-            audio: true,
+            "audio": {
+                deviceId: device ? {exact: device} : undefined,
+                echoCancellation: false,
+                AutoGainControl: true,
+                noiseSuppression: false,
+                channelCount: 2
+            },
             video: false
         })
-                .then((stream) => successCallback(stream));
+                .then((stream) => {
+                    console.log(`getUserMedia initiated`);
+                    peerStream = stream;
+
+                    analyserStream = audioContext.createMediaStreamSource(stream);
+                    var meter = createAudioMeter(audioContext);
+                    analyserStream.connect(meter);
+
+                    drawLoop(meter);
+
+                    // TODO: Finish this; connect to audiocontext
+                });
     }
 
     function onReceiveCall(call) {
@@ -168,23 +286,6 @@ try {
             audio.play();
         }
     }
-
-    peer.on('open', () => {
-        console.log(`peer opened`);
-        /*
-         getAudio(
-         function (MediaStream) {
-         console.log('now calling');
-         var call = peer.call(`wwsu-1`, MediaStream);
-         call.on('stream', onReceiveStream);
-         }
-         );
-         */
-    });
-
-    peer.on('call', (connection) => {
-        onReceiveCall(connection);
-    })
 
     // register requests
     var hostReq = new WWSUreq(socket, main.getMachineID(), 'host', '/auth/host', 'Host');
@@ -463,6 +564,21 @@ try {
     });
 
     $("#go-sports-modal").iziModal({
+        width: 640,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 50
+    });
+
+    $("#go-sportsremote-modal").iziModal({
         width: 640,
         focusInput: true,
         arrowKeys: false,
@@ -957,6 +1073,10 @@ document.querySelector("#btn-gosports-b").onclick = function () {
     prepareSports();
 };
 
+document.querySelector("#btn-gosportsremote-b").onclick = function () {
+    prepareSportsRemote();
+};
+
 document.querySelector("#btn-endshow-b").onclick = function () {
     promptIfNotHost(`end the show`, function () {
         endShow();
@@ -1060,6 +1180,10 @@ document.querySelector("#remote-go").onclick = function () {
 
 document.querySelector("#sports-go").onclick = function () {
     goSports();
+};
+
+document.querySelector("#sportsremote-go").onclick = function () {
+    goSportsRemote();
 };
 
 document.querySelector("#log-add").onclick = function () {
@@ -2987,7 +3111,6 @@ document.querySelector(`#options-director-button`).addEventListener("click", fun
 document.querySelector(`#messages-unread`).addEventListener("click", function (e) {
     try {
         if (e.target) {
-            console.dir(e.target);
             var target = null;
             if (e.target.offsetParent !== null && e.target.offsetParent.id !== `messages-unread` && !e.target.id.startsWith("message-n-x-"))
             {
@@ -3099,6 +3222,15 @@ document.querySelector("#sports-sport").addEventListener("change", function () {
         document.querySelector("#sports-sport").className = "form-control m-1";
     } else {
         document.querySelector("#sports-sport").className = "form-control m-1 is-invalid";
+    }
+});
+
+document.querySelector("#sportsremote-sport").addEventListener("change", function () {
+    if (calType === 'Sports' && document.querySelector("#sportsremote-sport").value === calShow)
+    {
+        document.querySelector("#sportsremote-sport").className = "form-control m-1";
+    } else {
+        document.querySelector("#sportsremote-sport").className = "form-control m-1 is-invalid";
     }
 });
 
@@ -3239,109 +3371,149 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-{
-    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
-        //console.log(body);
-        try {
-            client = body;
-            //authtoken = client.token;
-            if (!client.authorized)
-            {
-                var noConnection = document.getElementById('no-connection');
-                noConnection.style.display = "inline";
-                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+        {
+            drawLoop(null, null, true);
+            hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+                //console.log(body);
+                try {
+                    client = body;
+                    //authtoken = client.token;
+                    if (!client.authorized)
+                    {
+                        var noConnection = document.getElementById('no-connection');
+                        noConnection.style.display = "inline";
+                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                cb(false);
-            } else {
-                cb(true);
-            }
-            if (client.admin)
-            {
-                if (client.otherHosts)
-                    processHosts(client.otherHosts, true);
-                var temp = document.querySelector(`#options`);
-                var restarter;
-                if (temp)
-                    temp.style.display = "inline";
+                        cb(false);
+                    } else {
+                        cb(true);
 
-                // Subscribe to the logs socket
-                hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        //processLogs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED logs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Disconnect current peer if it exists
+                        try {
+                            peer.destroy();
+                        } catch (e) {
+                            // Ignore errors
+                        }
 
-                // Get djs and subscribe to the dj socket
-                hostReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDjs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED DJs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                        // Determine if we should start a new peer
+                        if (client.makeCalls || client.answerCalls)
+                        {
+                            peer = new Peer(`wwsu-${client.host}`);
 
-                // Get directors and subscribe to the dj socket
-                hostReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDirectors(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED directors CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                            // TODO: Define peer events
+                            peer.on('open', () => {
+                                console.log(`peer opened`);
+                                /*
+                                 getAudio(
+                                 function (MediaStream) {
+                                 console.log('now calling');
+                                 var call = peer.call(`wwsu-1`, MediaStream);
+                                 call.on('stream', onReceiveStream);
+                                 }
+                                 );
+                                 */
+                            });
 
-                // Subscribe to the XP socket
-                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED XP CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
+                            peer.on('call', (connection) => {
+                                onReceiveCall(connection);
+                            })
+                        }
 
-                // Subscribe to the timesheet socket
-                hostReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED TIMESHEET CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
+                        // Determine if it is applicable to initiate the user media
+                        if (client.makeCalls || client.silenceDetection || client.recordAudio)
+                        {
+                            console.log(`Initiating getUserMedia`);
+                            getAudio();
+                        }
+
                     }
-                });
-            } else {
-                var temp = document.querySelector(`#options`);
-                if (temp)
-                    temp.style.display = "none";
-            }
-        } catch (e) {
-            console.error(e);
-            console.log('FAILED HOST CONNECTION');
-            restarter = setTimeout(hostSocket, 10000);
+                    if (client.admin)
+                    {
+                        if (client.otherHosts)
+                            processHosts(client.otherHosts, true);
+                        var temp = document.querySelector(`#options`);
+                        var restarter;
+                        if (temp)
+                            temp.style.display = "inline";
+
+                        // Subscribe to the logs socket
+                        hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                //processLogs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED logs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Get djs and subscribe to the dj socket
+                        hostReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDjs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED DJs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Get directors and subscribe to the dj socket
+                        hostReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDirectors(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED directors CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the XP socket
+                        hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED XP CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the timesheet socket
+                        hostReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED TIMESHEET CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+                    } else {
+                        var temp = document.querySelector(`#options`);
+                        if (temp)
+                            temp.style.display = "none";
+                    }
+                } catch (e) {
+                    console.error(e);
+                    console.log('FAILED HOST CONNECTION');
+                    restarter = setTimeout(hostSocket, 10000);
+                }
+            });
         }
-    });
-}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -3535,6 +3707,7 @@ function recipientsSocket() {
         //console.log(body);
         try {
             processRecipients(body, true);
+            prepareSportsRemote();
         } catch (e) {
             console.error(e);
             console.log('FAILED recipients CONNECTION');
@@ -3710,6 +3883,7 @@ function doMeta(metan) {
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
                 document.querySelector('#btn-gosports').style.display = "inline";
+                document.querySelector('#btn-gosportsremote').style.display = "inline";
             } else if (Meta.state === 'automation_playlist')
             {
                 isHost = false;
@@ -3717,6 +3891,7 @@ function doMeta(metan) {
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
                 document.querySelector('#btn-gosports').style.display = "inline";
+                document.querySelector('#btn-gosportsremote').style.display = "inline";
             } else if (Meta.state === 'automation_genre')
             {
                 isHost = false;
@@ -3724,6 +3899,7 @@ function doMeta(metan) {
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
                 document.querySelector('#btn-gosports').style.display = "inline";
+                document.querySelector('#btn-gosportsremote').style.display = "inline";
             } else if (Meta.state === 'live_prerecord' || Meta.state === 'automation_prerecord')
             {
                 isHost = false;
@@ -3731,6 +3907,7 @@ function doMeta(metan) {
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
                 document.querySelector('#btn-gosports').style.display = "inline";
+                document.querySelector('#btn-gosportsremote').style.display = "inline";
             } else if (Meta.state.startsWith('automation_') || (Meta.state.includes('_returning') && !Meta.state.startsWith('sports')))
             {
                 badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`;
@@ -5185,7 +5362,6 @@ function checkCalendar() {
             var sectors = calculateSectors(data);
             var newSVG = document.getElementById("clock-program");
             newSVG.setAttribute("transform", `rotate(${data.start})`);
-            console.dir(sectors);
             sectors.map(function (sector) {
 
                 var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -6031,6 +6207,44 @@ function prepareRemote() {
         document.querySelector("#remote-handle").className = "form-control m-1";
         document.querySelector("#remote-show").className = "form-control m-1";
     }
+
+    // Populate input devices
+    navigator.mediaDevices.enumerateDevices()
+            .then((devices) => {
+                var temp = document.querySelector("#remote-input");
+                if (temp !== null)
+                {
+                    temp.innerHTML = ``;
+
+                    devices.map((device, index) => {
+                        if (device.kind === 'audioinput') {
+                            temp.innerHTML += `<option value="${device.deviceId}">${device.label || 'Microphone ' + (index + 1)}</option>`;
+                        }
+                    });
+
+                    temp.onchange = () => {
+                        getAudio(temp.value);
+                    };
+                }
+            });
+
+    // Populate hosts that can be audio-called
+    var temp2 = document.querySelector("#remote-host");
+    if (temp2 !== null)
+    {
+        temp2.innerHTML = ``;
+        Hosts({authorized: true, answerCalls: true}).each((host) => {
+            console.dir(host);
+            if (host.host !== client.host)
+            {
+                Recipients({host: host.host, status: 2}).each((recipient) => {
+                    console.dir(recipient);
+                    temp2.innerHTML += `<option value="${host.host}">${host.friendlyname}</option>`;
+                });
+            }
+        });
+    }
+
     $("#go-remote-modal").iziModal('open');
 }
 
@@ -6091,7 +6305,6 @@ function prepareSports() {
     document.querySelector("#sports-sport").className = "form-control m-1 is-invalid";
     document.querySelector('#sports-topic').value = "";
     document.querySelector('#sports-topic').placeholder = "";
-    document.querySelector("#sports-remote").checked = false;
     document.querySelector("#sports-webchat").checked = true;
     // Auto fill the sport dropdown if a sport is scheduled
     if (calType === 'Sports')
@@ -6100,7 +6313,6 @@ function prepareSports() {
         document.querySelector('#sports-topic').value = "";
         document.querySelector('#sports-topic').placeholder = calTopic;
         document.querySelector("#sports-sport").className = "form-control m-1";
-        document.querySelector("#sports-remote").checked = false;
         document.querySelector("#sports-webchat").checked = true;
     }
     $("#go-sports-modal").iziModal('open');
@@ -6142,7 +6354,7 @@ function goSports() {
 function _goSports() {
     var sportsOptions = document.getElementById('sports-sport');
     var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
-    hostReq.request({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, topic: (document.querySelector('#sports-topic').value !== `` || calType !== `Sports`) ? document.querySelector('#sports-topic').value : calTopic, remote: document.querySelector('#sports-remote').checked, djcontrols: client.host, webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, topic: (document.querySelector('#sports-topic').value !== `` || calType !== `Sports`) ? document.querySelector('#sports-topic').value : calTopic, webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
             isHost = true;
@@ -6155,6 +6367,116 @@ function _goSports() {
                 timeout: 10000
             });
             hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+        }
+        console.log(JSON.stringify(response));
+    });
+}
+
+function prepareSportsRemote() {
+    document.querySelector('#sportsremote-sport').value = "";
+    document.querySelector("#sportsremote-sport").className = "form-control m-1 is-invalid";
+    document.querySelector('#sportsremote-topic').value = "";
+    document.querySelector('#sportsremote-topic').placeholder = "";
+    document.querySelector("#sportsremote-webchat").checked = true;
+    // Auto fill the sport dropdown if a sport is scheduled
+    if (calType === 'Sports')
+    {
+        document.querySelector("#sportsremote-sport").value = calShow;
+        document.querySelector('#sportsremote-topic').value = "";
+        document.querySelector('#sportsremote-topic').placeholder = calTopic;
+        document.querySelector("#sportsremote-sport").className = "form-control m-1";
+        document.querySelector("#sportsremote-webchat").checked = true;
+    }
+    
+      // Populate input devices
+    navigator.mediaDevices.enumerateDevices()
+            .then((devices) => {
+                var temp = document.querySelector("#sportsremote-input");
+                if (temp !== null)
+                {
+                    temp.innerHTML = ``;
+
+                    devices.map((device, index) => {
+                        if (device.kind === 'audioinput') {
+                            temp.innerHTML += `<option value="${device.deviceId}">${device.label || 'Microphone ' + (index + 1)}</option>`;
+                        }
+                    });
+
+                    temp.onchange = () => {
+                        getAudio(temp.value);
+                    };
+                }
+            });
+
+    // Populate hosts that can be audio-called
+    var temp2 = document.querySelector("#sportsremote-host");
+    if (temp2 !== null)
+    {
+        temp2.innerHTML = ``;
+        Hosts({authorized: true, answerCalls: true}).each((host) => {
+            console.dir(host);
+            if (host.host !== client.host)
+            {
+                Recipients({host: host.host, status: 2}).each((recipient) => {
+                    console.dir(recipient);
+                    temp2.innerHTML += `<option value="${host.host}">${host.friendlyname}</option>`;
+                });
+            }
+        });
+    }
+    
+    $("#go-sportsremote-modal").iziModal('open');
+}
+
+function goSportsRemote() {
+    if (calType === 'Sports' && document.querySelector("#sportsremote-sport").value === calShow)
+    {
+        _goSportsRemote();
+    } else {
+        iziToast.show({
+            timeout: 60000,
+            overlay: true,
+            displayMode: 'once',
+            color: 'yellow',
+            id: 'inputs',
+            zindex: 999,
+            layout: 2,
+            image: `assets/images/goSports.png`,
+            maxWidth: 480,
+            title: 'You are about to begin an un-scheduled sports broadcast',
+            message: 'Directors will be notified if you begin the broadcast! The clockwheel on DJ Controls may be wrong. And programmed openers/returns/liners/closers might not queue. Continue?',
+            position: 'center',
+            drag: false,
+            closeOnClick: false,
+            buttons: [
+                ['<button><b>Continue</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        _goSportsRemote();
+                    }],
+                ['<button><b>Cancel</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                    }],
+            ]
+        });
+    }
+}
+
+function _goSportsRemote() {
+    var sportsOptions = document.getElementById('sportsremote-sport');
+    var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
+    hostReq.request({method: 'POST', url: nodeURL + '/state/sports-remote', data: {sport: selectedOption, topic: (document.querySelector('#sportsremote-topic').value !== `` || calType !== `Sports`) ? document.querySelector('#sportsremote-topic').value : calTopic, webchat: document.querySelector('#sportsremote-webchat').checked}}, function (response) {
+        if (response === 'OK')
+        {
+            isHost = true;
+            selectRecipient(null);
+            $("#go-sportsremote-modal").iziModal('close');
+        } else {
+            iziToast.show({
+                title: 'An error occurred',
+                message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
+                timeout: 10000
+            });
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
     });
@@ -6720,7 +7042,6 @@ function processEas(data, replace = false)
 // Update recipients as changes happen
 function processStatus(data, replace = false)
 {
-    console.dir(data);
     // Data processing
     try {
         if (replace)
@@ -7730,7 +8051,6 @@ function loadDJ(dj = null, reset = true) {
                 // Populate attendance records
                 hostReq.request({method: 'POST', url: nodeURL + '/attendance/get', data: {dj: DJData.DJ}}, function (response2) {
                     DJData.attendance = response2;
-                    console.dir(response2);
                     afterFunction();
                 });
             });
@@ -7749,70 +8069,70 @@ function loadDJ(dj = null, reset = true) {
 
 // Update recipients as changes happen
 function processDjs(data = {}, replace = false)
-{
-    // Data processing
-    try {
-        if (replace)
         {
-            Djs = TAFFY();
-            Djs.insert(data);
-        } else {
-            for (var key in data)
-            {
-                if (data.hasOwnProperty(key))
+            // Data processing
+            try {
+                if (replace)
                 {
-                    switch (key)
+                    Djs = TAFFY();
+                    Djs.insert(data);
+                } else {
+                    for (var key in data)
                     {
-                        case 'insert':
-                            Djs.insert(data[key]);
-                            break;
-                        case 'update':
-                            Djs({ID: data[key].ID}).update(data[key]);
-                            break;
-                        case 'remove':
-                            Djs({ID: data[key]}).remove();
-                            break;
+                        if (data.hasOwnProperty(key))
+                        {
+                            switch (key)
+                            {
+                                case 'insert':
+                                    Djs.insert(data[key]);
+                                    break;
+                                case 'update':
+                                    Djs({ID: data[key].ID}).update(data[key]);
+                                    break;
+                                case 'remove':
+                                    Djs({ID: data[key]}).remove();
+                                    break;
+                            }
+                        }
                     }
                 }
-            }
-        }
 
-        document.querySelector("#options-xp-djs").innerHTML = ``;
-        document.querySelector('#options-djs').innerHTML = ``;
+                document.querySelector("#options-xp-djs").innerHTML = ``;
+                document.querySelector('#options-djs').innerHTML = ``;
 
-        Djs().each(function (dj, index) {
-            var djClass = `danger`;
-            var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
-            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
-            {
-                djClass = `warning`;
-                djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
-            }
-            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
-            {
-                djClass = `success`;
-                djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
-            }
+                Djs().each(function (dj, index) {
+                    var djClass = `danger`;
+                    var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
+                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
+                    {
+                        djClass = `warning`;
+                        djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
+                    }
+                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
+                    {
+                        djClass = `success`;
+                        djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
+                    }
 
-            document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
+                    document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
                         <button type="button" id="options-dj-${dj.ID}" class="btn btn-${djClass} btn-float" style="position: relative;" data-dj="${dj.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`DJ ${dj.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
-            document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
+                    document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
   <input class="custom-control-input" id="options-xp-djs-i-${dj.ID}" type="checkbox">
   <span class="custom-control-track"></span>
   <label class="custom-control-label" for="options-xp-djs-i-${dj.ID}">${dj.name}</label>
 </div>`;
-        });
+                });
 
-    } catch (e) {
-        console.error(e);
-        iziToast.show({
-            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-            message: 'Error occurred in the processDjs function.'
-        });
-}
-}
+            } catch (e) {
+                console.error(e);
+                iziToast.show({
+                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                    message: 'Error occurred in the processDjs function.'
+                });
+        }
+        }
 
 // Update recipients as changes happen
 function processDirectors(data, replace = false)

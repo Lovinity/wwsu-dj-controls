@@ -551,6 +551,10 @@
                             <button type="button" id="btn-gosports-b" class="btn btn-success btn-float" title="Begin a sports broadcast produced in the OnAir studio."><i class="fas fa-trophy"></i></button>
                             <div style="text-align: center; font-size: 1em;">Sports</div>
                         </div>
+                        <div class="p-1 m-1 btn-operation" id="btn-gosportsremote" style="width: 96px; text-align: center; display: none;">
+                            <button type="button" id="btn-gosportsremote-b" class="btn btn-purple btn-float" title="Begin a sports broadcast produced remotely."><i class="fas fa-trophy"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Sports Remote</div>
+                        </div>
                         <div class="p-1 m-1 btn-operation" id="btn-endshow" style="width: 96px; text-align: center; display: none;">
                             <button type="button" id="btn-endshow-b" class="btn btn-info btn-float" title="End your show and go to automation."><i class="fas fa-microphone-alt-slash"></i></button>
                             <div style="text-align: center; font-size: 1em;">End Show</div>
@@ -743,7 +747,21 @@
                         <label for="live-topic">Optional show topic(s) for listeners to see, limited to 140 characters</label>
                         <textarea class="form-control mb-2" id="remote-topic" rows="3" maxlength="140"></textarea>
                     </div>
-
+                    <div class="form-group" title="Choose your input device for this broadcast">
+                        <label for="remote-input">Input device</label>
+                        <select class="form-control" id="remote-input">
+                            <option value="">Choose an input device...</option>
+                        </select>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" id="remote-vu" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="form-group" title="Choose which host to initiate the audio call to">
+                        <label for="remote-host">Host to transmit remote audio to</label>
+                        <select class="form-control" id="remote-host">
+                            <option value="">Choose a host...</option>
+                        </select>
+                    </div>
                     <div class="custom-control custom-switch" title="Allow listeners to send you messages?">
                         <input class="custom-control-input" id="remote-webchat" type="checkbox">
                         <span class="custom-control-track"></span>
@@ -788,12 +806,6 @@
                         <label for="live-topic">Optional, provide more info for this broadcast limited to 140 characters</label>
                         <textarea class="form-control mb-2" id="sports-topic" rows="3" maxlength="140"></textarea>
                     </div>
-
-                    <div class="custom-control custom-switch">
-                        <input class="custom-control-input" id="sports-remote" type="checkbox">
-                        <span class="custom-control-track"></span>
-                        <label class="custom-control-label" for="sports-remote">Remote broadcast</label>
-                    </div>
                     <div class="custom-control custom-switch" title="Allow listeners to send you messages?">
                         <input class="custom-control-input" id="sports-webchat" type="checkbox">
                         <span class="custom-control-track"></span>
@@ -803,6 +815,65 @@
                 </div>
                 <div class="modal-footer bg-light-1">
                     <button type="button" class="btn btn-success btn-lg" id="sports-go" title="Start sports broadcast now!">Start Sports Broadcast</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal" id="go-sportsremote-modal" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-1">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-purple doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Remote Raider Sports Broadcast</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close this window"></a></div>
+                    </header>
+
+                    <div class="form-group" title="Choose which sport is being broadcast">
+                        <label for="sportsremote-sport">Sport being broadcast</label>
+                        <select class="form-control" id="sportsremote-sport">
+                            <option value="">Choose a sport...</option>
+                            <option value="Men's Basketball">Men's Basketball</option>
+                            <option value="Women's Basketball">Women's Basketball</option>
+                            <option value="Men's Soccer">Men's Soccer</option>
+                            <option value="Women's Soccer">Women's Soccer</option>
+                            <option value="Men's Volleyball">Men's Volleyball</option>
+                            <option value="Women's Volleyball">Women's Volleyball</option>
+                            <option value="Men's Baseball">Men's Baseball</option>
+                            <option value="Women's Softball">Women's Softball</option>
+                            <option value="Men's Football">Men's Football</option>
+                            <option value="Women's Football">Women's Football</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Not on the immediate schedule
+                        </div>
+                    </div>
+                    <div class="form-group" title="Optionally provide more info about this broadcast for listeners to see, limited to 140 characters.">
+                        <label for="live-topic">Optional, provide more info for this broadcast limited to 140 characters</label>
+                        <textarea class="form-control mb-2" id="sportsremote-topic" rows="3" maxlength="140"></textarea>
+                    </div>
+                    <div class="form-group" title="Choose your input device for this broadcast">
+                        <label for="sportsremote-input">Input device</label>
+                        <select class="form-control" id="sportsremote-input">
+                            <option value="">Choose an input device...</option>
+                        </select>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" id="sportsremote-vu" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="form-group" title="Choose which host to initiate the audio call to">
+                        <label for="sportsremote-host">Host to transmit remote audio to</label>
+                        <select class="form-control" id="sportsremote-host">
+                            <option value="">Choose a host...</option>
+                        </select>
+                    </div>
+                    <div class="custom-control custom-switch" title="Allow listeners to send you messages?">
+                        <input class="custom-control-input" id="sportsremote-webchat" type="checkbox">
+                        <span class="custom-control-track"></span>
+                        <label class="custom-control-label" for="sportsremote-webchat">Allow listeners to send you messages</label><br />
+                        <small>(You can mute individual users in the messenger if they cause problems)</small>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light-1">
+                    <button type="button" class="btn btn-purple btn-lg" id="sportsremote-go" title="Start sports broadcast now!">Start Remote Sports Broadcast</button>
                 </div>
             </div>
         </div>
