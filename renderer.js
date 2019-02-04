@@ -6191,6 +6191,16 @@ function _goLive() {
 }
 
 function prepareRemote() {
+    if (!client.makeCalls)
+    {
+        iziToast.show({
+            title: 'Cannot do remote broadcast',
+            message: `This DJ Controls is not allowed to make audio calls. Therefore, a remote broadcast cannot be started on this DJ Controls. If this is an error, on an administrator DJ Controls, go to manage hosts, and assign the make calls permission to ${client.friendlyname}.`,
+            timeout: 60000,
+            maxWidth: 480,
+        });
+        return null;
+    }
     document.querySelector("#remote-handle").value = '';
     document.querySelector("#remote-show").value = '';
     document.querySelector("#remote-topic").value = '';
@@ -6373,6 +6383,16 @@ function _goSports() {
 }
 
 function prepareSportsRemote() {
+    if (!client.makeCalls)
+    {
+        iziToast.show({
+            title: 'Cannot do remote sports broadcast',
+            message: `This DJ Controls is not allowed to make audio calls. Therefore, a remote sports broadcast cannot be started on this DJ Controls. If this is an error, on an administrator DJ Controls, go to manage hosts, and assign the make calls permission to ${client.friendlyname}.`,
+            timeout: 60000,
+            maxWidth: 480,
+        });
+        return null;
+    }
     document.querySelector('#sportsremote-sport').value = "";
     document.querySelector("#sportsremote-sport").className = "form-control m-1 is-invalid";
     document.querySelector('#sportsremote-topic').value = "";
@@ -6387,8 +6407,8 @@ function prepareSportsRemote() {
         document.querySelector("#sportsremote-sport").className = "form-control m-1";
         document.querySelector("#sportsremote-webchat").checked = true;
     }
-    
-      // Populate input devices
+
+    // Populate input devices
     navigator.mediaDevices.enumerateDevices()
             .then((devices) => {
                 var temp = document.querySelector("#sportsremote-input");
@@ -6424,7 +6444,7 @@ function prepareSportsRemote() {
             }
         });
     }
-    
+
     $("#go-sportsremote-modal").iziModal('open');
 }
 
