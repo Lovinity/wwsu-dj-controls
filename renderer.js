@@ -120,14 +120,14 @@ try {
         });
 
         peer.on('close', () => {
-            console.log(`Peer destroyed. Re-establishing peer in 10 seconds.`);
+            console.log(`Peer destroyed.`);
             try {
                 peer = undefined;
                 hostReq.request({method: 'POST', url: '/recipients/register-peer', data: {peer: null}}, function (body) {});
             } catch (ee) {
 
             }
-            setTimeout(setupPeer, 10000);
+            //setTimeout(setupPeer, 10000);
         });
 
         peer.on('call', (connection) => {
