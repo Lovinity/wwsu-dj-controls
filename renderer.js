@@ -131,9 +131,10 @@ try {
         });
 
         peer.on('call', (connection) => {
+            console.log(`Incoming call from ${connection.peer}`);
             if (client.answerCalls)
             {
-                console.log(`Incoming call; allowed to answer. Checking hosts.`);
+                console.log(`Allowed to answer. Checking hosts.`);
                 try {
                     var recipient = Recipients({peer: connection.peer}).first();
                 } catch (e) {
@@ -159,8 +160,9 @@ try {
         });
     }
 
-    function startCall(peer, cb) {
+    function startCall(peerID, cb) {
         $("#connecting-modal").iziModal('open');
+        console.log(`Trying to call ${peerID}`);
         try {
             // Terminate any existing outgoing calls first
             outgoingCall.close();
@@ -169,14 +171,16 @@ try {
         } catch (ee) {
             // Ignore errors
         }
-        tryingCall = {peer: peer, cb: cb};
-        outgoingCall = peer.call(peer);
+        
+        tryingCall = {peer: peerID, cb: cb};
+        outgoingCall = peer.call(peerID);
 
         callTimerSlot = 30;
 
         callTimer = setInterval(() => {
             callTimerSlot -= 1;
-
+            console.dir(outgoingCall);
+            
             if (outgoingCall && outgoingCall.open)
             {
                 clearInterval(callTimer);
