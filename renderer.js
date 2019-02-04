@@ -160,8 +160,9 @@ try {
         });
     }
 
-    function startCall(peerID, cb) {
-        $("#connecting-modal").iziModal('open');
+    function startCall(peerID, cb, reconnect = false) {
+        if (!reconnect)
+            $("#connecting-modal").iziModal('open');
         console.log(`Trying to call ${peerID}`);
         try {
             // Terminate any existing outgoing calls first
@@ -185,38 +186,94 @@ try {
             {
                 clearInterval(callTimer);
                 $("#connecting-modal").iziModal('close');
-                cb();
+
+                outgoingCall.on(`close`, () => {
+                    var attempt = 0;
+                    var doAttempt = () => {
+                        attempt++;
+                        console.log(`CALL CLOSED. Trying to re-connect attempt ${attempt}...`);
+                        startCall(peerID, (success) => {
+                            if (success)
+                            {
+                                console.log(`re-connected`);
+                            }
+                        });
+                    };
+
+                    doAttempt();
+                });
+
+                cb(true);
             } else {
                 if (callTimerSlot <= 1)
                 {
                     try {
                         outgoingCall.close();
                         outgoingCall = undefined;
+                        cb(false);
                     } catch (eee) {
                         // ignore errors
                     }
 
                     clearInterval(callTimer);
 
-                    $("#connecting-modal").iziModal('close');
-                    iziToast.show({
-                        titleColor: '#000000',
-                        messageColor: '#000000',
-                        color: 'red',
-                        close: true,
-                        overlay: false,
-                        overlayColor: 'rgba(0, 0, 0, 0.75)',
-                        zindex: 100,
-                        layout: 1,
-                        imageWidth: 100,
-                        image: ``,
-                        progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                        closeOnClick: true,
-                        position: 'center',
-                        timeout: 30000,
-                        title: 'Call not answered',
-                        message: `The host you were trying to call did not answer after 30 seconds.`
-                    });
+                    if (!reconnect)
+                    {
+                        $("#connecting-modal").iziModal('close');
+                        iziToast.show({
+                            titleColor: '#000000',
+                            messageColor: '#000000',
+                            color: 'red',
+                            close: true,
+                            overlay: false,
+                            overlayColor: 'rgba(0, 0, 0, 0.75)',
+                            zindex: 100,
+                            layout: 1,
+                            imageWidth: 100,
+                            image: ``,
+                            progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                            closeOnClick: true,
+                            position: 'center',
+                            timeout: 30000,
+                            title: 'Call not answered',
+                            message: `The host you were trying to call did not answer after 30 seconds.`
+                        });
+                    } else {
+                        if (Meta.state.startsWith("remote_"))
+                        {
+                            prepareRemote();
+                        } else if (Meta.state.startsWith("sportsremote_"))
+                        {
+                            prepareSportsRemote();
+                        }
+
+                        $("#connecting-modal").iziModal('close');
+                        var notification = notifier.notify('Lost Audio Connection', {
+                            message: 'Lost audio call. Please check your network and DJ Controls.',
+                            icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+                            duration: 900000,
+                        });
+                        main.flashTaskbar();
+
+                        iziToast.show({
+                            titleColor: '#000000',
+                            messageColor: '#000000',
+                            color: 'red',
+                            close: true,
+                            overlay: false,
+                            overlayColor: 'rgba(0, 0, 0, 0.75)',
+                            zindex: 100,
+                            layout: 1,
+                            imageWidth: 100,
+                            image: ``,
+                            progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                            closeOnClick: true,
+                            position: 'center',
+                            timeout: 30000,
+                            title: 'Lost Audio Connection',
+                            message: `Audio call was dropped. Please check your internet and restart the broadcast.`
+                        });
+                    }
                 }
             }
         }, 1000);
@@ -6502,23 +6559,26 @@ function goRemote() {
 function _goRemote() {
     var remoteOptions = document.getElementById('remote-host');
     var selectedOption = remoteOptions.options[remoteOptions.selectedIndex].value;
-    startCall(selectedOption, () => {
-        hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || calType !== `Remote`) ? document.querySelector('#remote-topic').value : calTopic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
-            if (response === 'OK')
-            {
-                isHost = true;
-                selectRecipient(null);
-                $("#go-remote-modal").iziModal('close');
-            } else {
-                iziToast.show({
-                    title: 'An error occurred',
-                    message: 'Cannot go remote at this time. Please try again in 15-30 seconds.',
-                    timeout: 10000
-                });
-                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
-            }
-            console.log(JSON.stringify(response));
-        });
+    startCall(selectedOption, (success) => {
+        if (success)
+        {
+            hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || calType !== `Remote`) ? document.querySelector('#remote-topic').value : calTopic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
+                if (response === 'OK')
+                {
+                    isHost = true;
+                    selectRecipient(null);
+                    $("#go-remote-modal").iziModal('close');
+                } else {
+                    iziToast.show({
+                        title: 'An error occurred',
+                        message: 'Cannot go remote at this time. Please try again in 15-30 seconds.',
+                        timeout: 10000
+                    });
+                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+                }
+                console.log(JSON.stringify(response));
+            });
+        }
     });
 }
 
@@ -6696,27 +6756,30 @@ function goSportsRemote() {
 function _goSportsRemote() {
     var remoteOptions = document.getElementById('sportsremote-host');
     var selectedOption = remoteOptions.options[remoteOptions.selectedIndex].value;
-    startCall(selectedOption, () => {
-        console.log(`CALL STARTED`);
-        return null;
-        var sportsOptions = document.getElementById('sportsremote-sport');
-        var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
-        hostReq.request({method: 'POST', url: nodeURL + '/state/sports-remote', data: {sport: selectedOption, topic: (document.querySelector('#sportsremote-topic').value !== `` || calType !== `Sports`) ? document.querySelector('#sportsremote-topic').value : calTopic, webchat: document.querySelector('#sportsremote-webchat').checked}}, function (response) {
-            if (response === 'OK')
-            {
-                isHost = true;
-                selectRecipient(null);
-                $("#go-sportsremote-modal").iziModal('close');
-            } else {
-                iziToast.show({
-                    title: 'An error occurred',
-                    message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
-                    timeout: 10000
-                });
-                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
-            }
-            console.log(JSON.stringify(response));
-        });
+    startCall(selectedOption, (success) => {
+        if (success)
+        {
+            console.log(`CALL STARTED`);
+            return null;
+            var sportsOptions = document.getElementById('sportsremote-sport');
+            var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
+            hostReq.request({method: 'POST', url: nodeURL + '/state/sports-remote', data: {sport: selectedOption, topic: (document.querySelector('#sportsremote-topic').value !== `` || calType !== `Sports`) ? document.querySelector('#sportsremote-topic').value : calTopic, webchat: document.querySelector('#sportsremote-webchat').checked}}, function (response) {
+                if (response === 'OK')
+                {
+                    isHost = true;
+                    selectRecipient(null);
+                    $("#go-sportsremote-modal").iziModal('close');
+                } else {
+                    iziToast.show({
+                        title: 'An error occurred',
+                        message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
+                        timeout: 10000
+                    });
+                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+                }
+                console.log(JSON.stringify(response));
+            });
+        }
     });
 }
 
