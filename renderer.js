@@ -63,11 +63,10 @@ try {
         peer = new Peer();
 
         // TODO: Define peer events
-        peer.on('open', () => {
-            console.log(`peer opened`);
-
+        peer.on('open', (id) => {
+            console.log(`peer opened with id ${id}`);
             // Update database with the peer ID
-            hostReq.request({method: 'POST', url: '/recipients/register-peer', data: {peer: peer.id}}, function (body) {
+            hostReq.request({method: 'POST', url: '/recipients/register-peer', data: {peer: id}}, function (body) {
                 if (tryingCall && tryingCall.peer && tryingCall.cb)
                 {
                     startCall(tryingCall.peer, tryingCall.cb)
@@ -173,7 +172,7 @@ try {
         }
         
         tryingCall = {peer: peerID, cb: cb};
-        outgoingCall = peer.call(peerID);
+        outgoingCall = peer.call(peerID, peerStream);
 
         callTimerSlot = 30;
 
@@ -252,8 +251,8 @@ try {
     function onReceiveStream(stream) {
         console.log(`received stream`);
         var audio = document.querySelector('#remoteAudio');
-        audio.src = window.URL.createObjectURL(stream);
-        audio.onloadedmetadata = function (e) {
+        audio.srcObject = stream;
+        audio.canplay = function (e) {
             console.log('now playing the audio');
             audio.play();
         }
