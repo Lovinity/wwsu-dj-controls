@@ -6448,7 +6448,7 @@ function prepareRemote() {
         temp2.innerHTML = ``;
         Hosts({authorized: true, answerCalls: true}).each((host) => {
             console.dir(host);
-            Recipients({host: host}).each((recipient) => {
+            Recipients({host: host.host}).each((recipient) => {
                 console.dir(recipient);
                 if (host.host !== client.host && recipient.peer !== null)
                 {
@@ -6642,7 +6642,7 @@ function prepareSportsRemote() {
         temp2.innerHTML = ``;
         Hosts({authorized: true, answerCalls: true}).each((host) => {
             console.dir(host);
-            Recipients({host: host}).each((recipient) => {
+            Recipients({host: host.host}).each((recipient) => {
                 console.dir(recipient);
                 if (host.host !== client.host && recipient.peer !== null)
                 {
