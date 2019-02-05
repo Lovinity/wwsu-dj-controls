@@ -40,9 +40,11 @@ try {
     // Define peerJS and stream variables. These will be set after getting information about this host's settings.
     var peer;
     window.peerStream = undefined;
+    var outgoingPeer;
     var outgoingCall;
     var incomingCall;
     var tryingCall;
+    var waitingFor;
     var analyserStream;
     var callTimer;
     var callTimerSlot;
@@ -67,9 +69,9 @@ try {
             console.log(`peer opened with id ${id}`);
             // Update database with the peer ID
             hostReq.request({method: 'POST', url: '/recipients/register-peer', data: {peer: id}}, function (body) {
-                if (tryingCall && tryingCall.peer && tryingCall.cb)
+                if (tryingCall && tryingCall.host && tryingCall.cb)
                 {
-                    startCall(tryingCall.peer, tryingCall.cb)
+                    startCall(tryingCall.host, tryingCall.cb)
                 }
                 /*
                  getAudio(
@@ -88,26 +90,39 @@ try {
             if (err.type === `peer-unavailable`)
             {
                 $("#connecting-modal").iziModal('close');
+
+                if (document.querySelector(`.peerjs-waiting`) !== null)
+                    iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
+
                 iziToast.show({
+                    class: `peerjs-waiting`,
                     titleColor: '#000000',
                     messageColor: '#000000',
                     color: 'red',
-                    close: true,
-                    overlay: false,
+                    close: false,
+                    overlay: true,
                     overlayColor: 'rgba(0, 0, 0, 0.75)',
                     zindex: 1000,
                     layout: 1,
                     imageWidth: 100,
                     image: ``,
+                    maxWidth: 480,
                     progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                    closeOnClick: true,
+                    closeOnClick: false,
                     position: 'center',
-                    timeout: 15000,
+                    timeout: false,
                     title: 'Error establishing audio call',
-                    message: `The host you were trying to call is not available at this time. Please try again in a minute.`
+                    message: `${tryingCall.friendlyname} is not available at this time. I will wait for the host to report online and then start the broadcast. If you wish to cancel this, please click "cancel".`,
+                    buttons: [
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                waitingFor = undefined;
+                                tryingCall = undefined;
+                            }]
+                    ]
                 });
                 try {
-                    tryingCall = undefined;
+                    waitingFor = tryingCall;
                     clearInterval(callTimer);
                     outgoingCall.close();
                     outgoingCall = undefined;
@@ -127,7 +142,10 @@ try {
             } catch (ee) {
 
             }
-            //setTimeout(setupPeer, 10000);
+            setTimeout(() => {
+                if (!peer || peer.destroyed)
+                    setupPeer();
+            }, 10000);
         });
 
         peer.on('call', (connection) => {
@@ -160,12 +178,145 @@ try {
         });
     }
 
-    function startCall(peerID, cb, reconnect = false) {
+    function startCall(hostID, cb, reconnect = false) {
+        var callFailed = (me) => {
+            try {
+                outgoingCall.close();
+                outgoingCall = undefined;
+                cb(false);
+            } catch (eee) {
+                // ignore errors
+            }
+
+            clearInterval(callTimer);
+
+            if (!reconnect)
+            {
+                $("#connecting-modal").iziModal('close');
+                iziToast.show({
+                    titleColor: '#000000',
+                    messageColor: '#000000',
+                    color: 'red',
+                    close: true,
+                    overlay: false,
+                    overlayColor: 'rgba(0, 0, 0, 0.75)',
+                    zindex: 100,
+                    layout: 1,
+                    imageWidth: 100,
+                    image: ``,
+                    progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                    closeOnClick: true,
+                    position: 'center',
+                    timeout: 30000,
+                    title: 'Call not answered',
+                    message: `The host you were trying to call did not answer.`
+                });
+            } else {
+                if (Meta.state.startsWith("remote_"))
+                {
+                    prepareRemote();
+                } else if (Meta.state.startsWith("sportsremote_"))
+                {
+                    prepareSportsRemote();
+                }
+
+                if (me) {
+                    $("#connecting-modal").iziModal('close');
+                    var notification = notifier.notify('Lost Audio Connection', {
+                        message: 'Network error. Please check DJ Controls.',
+                        icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+                        duration: 900000,
+                    });
+                    main.flashTaskbar();
+
+                    iziToast.show({
+                        titleColor: '#000000',
+                        messageColor: '#000000',
+                        color: 'red',
+                        close: true,
+                        overlay: false,
+                        overlayColor: 'rgba(0, 0, 0, 0.75)',
+                        zindex: 100,
+                        layout: 1,
+                        imageWidth: 100,
+                        image: ``,
+                        progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                        closeOnClick: true,
+                        position: 'center',
+                        timeout: 30000,
+                        title: 'Lost Audio Connection - You went offline',
+                        message: `Audio call was dropped. This is probably caused by a network issue on your end. Please check your network connection and then restart the broadcast.`
+                    });
+                } else {
+                    waitingFor = {host: hostID, cb: cb};
+
+                    $("#connecting-modal").iziModal('close');
+                    var notification = notifier.notify('Lost Audio Connection', {
+                        message: 'Other DJ Controls dropped out. Please check DJ Controls.',
+                        icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+                        duration: 900000,
+                    });
+                    main.flashTaskbar();
+
+                    if (document.querySelector(`.peerjs-waiting`) !== null)
+                        iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
+
+                    iziToast.show({
+                        id: `peerjs-waiting`,
+                        titleColor: '#000000',
+                        messageColor: '#000000',
+                        color: 'red',
+                        close: false,
+                        overlay: true,
+                        overlayColor: 'rgba(0, 0, 0, 0.75)',
+                        zindex: 1000,
+                        layout: 1,
+                        imageWidth: 100,
+                        image: ``,
+                        maxWidth: 480,
+                        progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                        closeOnClick: false,
+                        position: 'center',
+                        timeout: false,
+                        title: 'Lost Audio Connection - Other DJ Controls',
+                        message: `${tryingCall.friendlyname} dropped from the network. I will wait for the host to report online and then restart the call. If you wish to cancel this, please click "cancel".`,
+                        buttons: [
+                            ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                    waitingFor = undefined;
+                                    tryingCall = undefined;
+                                }]
+                        ]
+                    });
+                }
+            }
+        };
+
+        try {
+            var host = Hosts({host: hostID}).first();
+        } catch (e) {
+            console.log(`INVALID HOST`);
+            callFailed(false);
+        }
+
+        console.log(`Trying to call ${host.friendlyname}`);
+
+        tryingCall = {host: hostID, cb: cb, friendlyname: host.friendlyname};
+
         if (!reconnect)
             $("#connecting-modal").iziModal('open');
-        console.log(`Trying to call ${peerID}`);
+
+        try {
+            var peerID = Recipients({host: host.host}).first().peer;
+            if (peerID === null)
+                callFailed(false);
+        } catch (e) {
+            callFailed(false);
+        }
+
         try {
             // Terminate any existing outgoing calls first
+            waitingFor = undefined;
             outgoingCall.close();
             outgoingCall = undefined;
             clearInterval(callTimer);
@@ -173,10 +324,9 @@ try {
             // Ignore errors
         }
 
-        tryingCall = {peer: peerID, cb: cb};
         outgoingCall = peer.call(peerID, window.peerStream);
 
-        callTimerSlot = 30;
+        callTimerSlot = 15;
 
         callTimer = setInterval(() => {
             callTimerSlot -= 1;
@@ -187,93 +337,46 @@ try {
                 clearInterval(callTimer);
                 $("#connecting-modal").iziModal('close');
 
-                outgoingCall.on(`close`, () => {
-                    var attempt = 0;
-                    var doAttempt = () => {
-                        attempt++;
-                        console.log(`CALL CLOSED. Trying to re-connect attempt ${attempt}...`);
-                        startCall(peerID, (success) => {
-                            if (success)
-                            {
-                                console.log(`re-connected`);
-                            }
-                        });
-                    };
+                if (document.querySelector(`.peerjs-waiting`) !== null)
+                    iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
 
-                    doAttempt();
+                if (reconnect)
+                {
+                    iziToast.show({
+                        titleColor: '#000000',
+                        messageColor: '#000000',
+                        color: 'green',
+                        close: true,
+                        overlay: false,
+                        overlayColor: 'rgba(0, 0, 0, 0.75)',
+                        zindex: 1000,
+                        layout: 1,
+                        imageWidth: 100,
+                        image: ``,
+                        progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                        closeOnClick: true,
+                        position: 'center',
+                        timeout: 10000,
+                        title: 'Audio Call Re-Established',
+                        message: `The audio call was re-established.`
+                    });
+                }
+
+                outgoingCall.on(`close`, () => {
+                    console.log(`CALL CLOSED. Trying to re-connect...`);
+                    startCall(host.host, (success) => {
+                        if (success)
+                        {
+                            console.log(`re-connected`);
+                        }
+                    }, true);
                 });
 
                 cb(true);
             } else {
                 if (callTimerSlot <= 1)
                 {
-                    try {
-                        outgoingCall.close();
-                        outgoingCall = undefined;
-                        cb(false);
-                    } catch (eee) {
-                        // ignore errors
-                    }
-
-                    clearInterval(callTimer);
-
-                    if (!reconnect)
-                    {
-                        $("#connecting-modal").iziModal('close');
-                        iziToast.show({
-                            titleColor: '#000000',
-                            messageColor: '#000000',
-                            color: 'red',
-                            close: true,
-                            overlay: false,
-                            overlayColor: 'rgba(0, 0, 0, 0.75)',
-                            zindex: 100,
-                            layout: 1,
-                            imageWidth: 100,
-                            image: ``,
-                            progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                            closeOnClick: true,
-                            position: 'center',
-                            timeout: 30000,
-                            title: 'Call not answered',
-                            message: `The host you were trying to call did not answer after 30 seconds.`
-                        });
-                    } else {
-                        if (Meta.state.startsWith("remote_"))
-                        {
-                            prepareRemote();
-                        } else if (Meta.state.startsWith("sportsremote_"))
-                        {
-                            prepareSportsRemote();
-                        }
-
-                        $("#connecting-modal").iziModal('close');
-                        var notification = notifier.notify('Lost Audio Connection', {
-                            message: 'Lost audio call. Please check your network and DJ Controls.',
-                            icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
-                            duration: 900000,
-                        });
-                        main.flashTaskbar();
-
-                        iziToast.show({
-                            titleColor: '#000000',
-                            messageColor: '#000000',
-                            color: 'red',
-                            close: true,
-                            overlay: false,
-                            overlayColor: 'rgba(0, 0, 0, 0.75)',
-                            zindex: 100,
-                            layout: 1,
-                            imageWidth: 100,
-                            image: ``,
-                            progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                            closeOnClick: true,
-                            position: 'center',
-                            timeout: 30000,
-                            title: 'Lost Audio Connection',
-                            message: `Audio call was dropped. Please check your internet and restart the broadcast.`
-                        });
-                    }
+                    callFailed(true);
                 }
             }
         }, 1000);
@@ -6514,7 +6617,7 @@ function prepareRemote() {
                 console.dir(recipient);
                 if (host.host !== client.host && recipient.peer !== null)
                 {
-                    temp2.innerHTML += `<option value="${recipient.peer}">${host.friendlyname}</option>`;
+                    temp2.innerHTML += `<option value="${host.host}">${host.friendlyname}</option>`;
                 }
             });
         });
@@ -6711,7 +6814,7 @@ function prepareSportsRemote() {
                 console.dir(recipient);
                 if (host.host !== client.host && recipient.peer !== null)
                 {
-                    temp2.innerHTML += `<option value="${recipient.peer}">${host.friendlyname}</option>`;
+                    temp2.innerHTML += `<option value="${host.host}">${host.friendlyname}</option>`;
                 }
             });
         });
@@ -7607,13 +7710,18 @@ function processRecipients(data, replace = false)
     try {
         if (replace)
         {
-            Recipients = TAFFY();
-
             if (data.length > 0)
             {
-                data.map((datum, index) => data[index].unread = 0);
+                data.map((datum, index) => {
+                    data[index].unread = 0;
+
+                    var temp = Recipients({ID: datum.ID}).first();
+                    if (waitingFor && waitingFor.host === datum.host && datum.peer !== null && (!temp || temp === null || typeof temp.host === `undefined` || temp.peer !== datum.peer))
+                        startCall(waitingFor.host, waitingFor.cb, true);
+                });
             }
 
+            Recipients = TAFFY();
             Recipients.insert(data);
         } else {
             for (var key in data)
@@ -7625,9 +7733,14 @@ function processRecipients(data, replace = false)
                         case 'insert':
                             data[key].unread = 0;
                             Recipients.insert(data[key]);
+                            if (waitingFor && waitingFor.host === data[key].host && data[key].peer !== null)
+                                startCall(waitingFor.host, waitingFor.cb, true);
                             break;
                         case 'update':
                             data[key].unread = 0;
+                            var temp = Recipients({ID: data[key].ID}).first();
+                            if (temp && waitingFor && waitingFor.host === data[key].host && data[key].peer !== null && temp.peer !== data[key].peer)
+                                startCall(waitingFor.host, waitingFor.cb, true);
                             Recipients({ID: data[key].ID}).update(data[key]);
                             break;
                         case 'remove':
