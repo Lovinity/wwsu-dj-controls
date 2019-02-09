@@ -613,6 +613,7 @@ try {
     var hostReq = new WWSUreq(socket, main.getMachineID(), 'host', '/auth/host', 'Host');
     var directorReq = new WWSUreq(socket, main.getMachineID(), 'name', '/auth/director', 'Director');
     var adminDirectorReq = new WWSUreq(socket, main.getMachineID(), 'name', '/auth/admin-director', 'Administrator Director');
+    var noReq = new WWSUreq(socket, main.getMachineID());
 
 
     socket.on('connect_error', function () {
@@ -3822,7 +3823,7 @@ function hostSocket(cb = function(token) {})
                 });
 
                 // Get djs and subscribe to the dj socket
-                hostReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
                     //console.log(body);
                     try {
                         processDjs(body, true);
@@ -3835,7 +3836,7 @@ function hostSocket(cb = function(token) {})
                 });
 
                 // Get directors and subscribe to the dj socket
-                hostReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
                     //console.log(body);
                     try {
                         processDirectors(body, true);
@@ -3860,7 +3861,7 @@ function hostSocket(cb = function(token) {})
                 });
 
                 // Subscribe to the timesheet socket
-                hostReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
                     //console.log(body);
                     try {
                     } catch (e) {
@@ -3901,7 +3902,7 @@ function onlineSocket()
 // Gets wwsu metadata
 function metaSocket() {
     console.log('attempting meta socket');
-    hostReq.request({method: 'POST', url: '/meta/get', data: {}}, function (body) {
+    noReq.request({method: 'POST', url: '/meta/get', data: {}}, function (body) {
         try {
             var startRecording = null;
             for (var key in body)
@@ -3983,7 +3984,7 @@ function metaSocket() {
 function easSocket()
 {
     console.log('attempting eas socket');
-    hostReq.request({method: 'POST', url: '/eas/get', data: {}}, function (body) {
+    noReq.request({method: 'POST', url: '/eas/get', data: {}}, function (body) {
         try {
             processEas(body, true);
         } catch (e) {
@@ -3997,7 +3998,7 @@ function easSocket()
 // Status checks
 function statusSocket() {
     console.log('attempting statuc socket');
-    hostReq.request({method: 'POST', url: '/status/get', data: {}}, function (body) {
+    noReq.request({method: 'POST', url: '/status/get', data: {}}, function (body) {
         //console.log(body);
         try {
             processStatus(body, true);
@@ -4012,7 +4013,7 @@ function statusSocket() {
 // Event calendar from Google
 function calendarSocket() {
     console.log('attempting calendar socket');
-    hostReq.request({method: 'POST', url: '/calendar/get', data: {}}, function (body) {
+    noReq.request({method: 'POST', url: '/calendar/get', data: {}}, function (body) {
         //console.log(body);
         try {
             processCalendar(body, true);
@@ -4051,7 +4052,7 @@ function messagesSocket() {
                 setTimeout(messagesSocket, 10000);
             }
         });
-        hostReq.request({method: 'POST', url: '/announcements/get', data: {type: client.admin ? 'all' : 'djcontrols'}}, function (body) {
+        noReq.request({method: 'POST', url: '/announcements/get', data: {type: client.admin ? 'all' : 'djcontrols'}}, function (body) {
             //console.log(body);
             try {
                 processAnnouncements(body, true);
@@ -8725,7 +8726,7 @@ function loadTimesheets(date)
             date = moment(Meta.time);
         var records = document.querySelector('#options-timesheets-records');
         records.innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
-        hostReq.request({method: 'POST', url: nodeURL + '/timesheet/get', data: {date: date.toISOString(true)}}, function (response) {
+        noReq.request({method: 'POST', url: nodeURL + '/timesheet/get', data: {date: date.toISOString(true)}}, function (response) {
             records.innerHTML = ``;
             Timesheets = response;
             var hours = {};
