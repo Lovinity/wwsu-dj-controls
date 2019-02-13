@@ -89,8 +89,6 @@ try {
                     gain.gain.value = 3;
             }
 
-            console.log(gain.gain.value);
-
 
             var temp = document.querySelector(`#remote-vu`);
             var temp2 = document.querySelector(`#sportsremote-vu`);
