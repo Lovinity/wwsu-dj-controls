@@ -89,9 +89,6 @@ try {
                     gain.gain.value = 3;
             }
 
-            console.log(gain.gain.value);
-
-
             var temp = document.querySelector(`#remote-vu`);
             var temp2 = document.querySelector(`#sportsremote-vu`);
 
@@ -3898,6 +3895,13 @@ function hostSocket(cb = function(token) {})
                         if (client.makeCalls || client.answerCalls)
                         {
                             setupPeer();
+                            var temp = document.querySelector(`#audio-call`);
+                            if (temp !== null)
+                                temp.style.display = "inline";
+                        } else {
+                            var temp = document.querySelector(`#audio-call`);
+                            if (temp !== null)
+                                temp.style.display = "none";
                         }
 
                         // Determine if it is applicable to initiate the user media
@@ -4341,6 +4345,34 @@ function doMeta(metan) {
         // Do stuff if the state changed
         if (typeof metan.state !== 'undefined' || typeof metan.playing !== 'undefined')
         {
+            if (Meta.state.startsWith("remote_") || Meta.state.startsWith("sportsremote_"))
+            {
+                if (!Meta.playing)
+                {
+                    var temp = document.querySelector(`#remoteAudio`);
+                    if (temp !== null)
+                        temp.muted = false;
+                } else {
+                    var temp = document.querySelector(`#remoteAudio`);
+                    if (temp !== null)
+                        temp.muted = true;
+                }
+                
+                // Stop outgoing calls when going into halftime
+            } else {
+                var temp = document.querySelector(`#remoteAudio`);
+                if (temp !== null)
+                    temp.muted = true;
+
+                // Stop any ongoing outbound calls when no longer doing a remote or sports remote broadcast
+                try {
+                    outgoingCall.close();
+                    outgoingCall = undefined;
+                } catch (eee) {
+                    // ignore errors
+                }
+            }
+
             // Always re-do the calendar / clockwheel when states change.
             checkCalendar();
 

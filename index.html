@@ -510,8 +510,11 @@
                 <div class="card-header text-center" style="font-size: 1.5em;">
                     WWSU Operations   
                     <span class="chip shadow-2" style="margin-left: 10px;" id="operations-state"><i class="chip-icon fas fa-question bg-secondary"></i>Unknown</span>
-                    <button type="button" class="close" id="options" aria-label="Options" style="display: none;" title="Access/modify settings, DJs, announcements, logs, and more.">
+                    <button type="button" class="close p-2" id="options" aria-label="Options" style="display: none;" title="Access/modify settings, DJs, announcements, logs, and more.">
                         <span aria-hidden="true" id="options-icon"><i class="fas fa-cogs text-white"></i></span>
+                    </button>
+                    <button type="button" class="close p-2" id="audio-call" aria-label="Audio Call" style="display: none;" title="Audio calling status. Click for settings.">
+                        <span aria-hidden="true" id="audio-call-span"><i class="fas fa-phone" style="color: rgb(16, 16, 16);" id="audio-call-icon"></i></span>
                     </button>
                 </div>
                 <div class="card-body" id="operations-body" style="overflow: auto;">
