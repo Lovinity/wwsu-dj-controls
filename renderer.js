@@ -113,6 +113,32 @@ try {
                 else
                     temp2.className = "progress-bar bg-success";
             }
+
+            if (typeof outgoingCall !== 'undefined')
+            {
+                var temp3 = document.querySelector(`#audio-call-icon`);
+                if (temp3 !== null)
+                {
+                    var percent = window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0;
+                    temp3.style.color = `rgb(0, ${percent < 100 ? parseInt(percent + 155) : 255}, 0)`;
+                }
+            } else if (typeof waitingFor !== 'undefined') {
+                var temp3 = document.querySelector(`#audio-call-icon`);
+                if (temp3 !== null)
+                    temp3.style.color = `rgb(255, 0, 0)`;
+            } else if (typeof tryingCall !== 'undefined') {
+                var temp3 = document.querySelector(`#audio-call-icon`);
+                if (temp3 !== null)
+                    temp3.style.color = `rgb(255, 255, 0)`;
+            } else if (typeof incomingCall !== 'undefined') {
+                var temp3 = document.querySelector(`#audio-call-icon`);
+                if (temp3 !== null)
+                    temp3.style.color = `rgb(0, 0, 255)`;
+            } else {
+                var temp3 = document.querySelector(`#audio-call-icon`);
+                if (temp3 !== null)
+                    temp3.style.color = `rgb(16, 16, 16)`;
+            }
         } catch (eee) {
             // ignore errors
             console.error(eee);
@@ -4357,7 +4383,7 @@ function doMeta(metan) {
                     if (temp !== null)
                         temp.muted = true;
                 }
-                
+
                 // Stop outgoing calls when going into halftime
             } else {
                 var temp = document.querySelector(`#remoteAudio`);
