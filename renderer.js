@@ -319,7 +319,9 @@ try {
                         incomingCloseIgnore = true;
                         incomingCall.close();
                         incomingCall = undefined;
+                        incomingCloseIgnore = false;
                     } catch (ee) {
+                        incomingCloseIgnore = false;
                         // Ignore errors
                     }
                     connection.answer();
@@ -331,6 +333,7 @@ try {
 
                         if (!incomingCloseIgnore)
                         {
+                            console.log(`Not ignoring!`);
                             var callDropFn = () => {
                                 if (Meta.state === 'sportsremote_on' || Meta.state === 'remote_on')
                                 {
