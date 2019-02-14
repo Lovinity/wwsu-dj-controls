@@ -513,7 +513,7 @@
                     <button type="button" class="close p-2" id="options" aria-label="Options" style="display: none;" title="Access/modify settings, DJs, announcements, logs, and more.">
                         <span aria-hidden="true" id="options-icon"><i class="fas fa-cogs text-white"></i></span>
                     </button>
-                    <button type="button" class="close p-2" id="audio-call" aria-label="Audio Call" style="display: none;" title="Audio calling status. Click for settings.">
+                    <button type="button" class="close p-2" id="audio-call" aria-label="Audio Call" title="Audio calling status. Click for settings.">
                         <span aria-hidden="true" id="audio-call-span"><i class="fas fa-phone" style="color: rgb(16, 16, 16);" id="audio-call-icon"></i></span>
                     </button>
                 </div>
@@ -880,6 +880,47 @@
                 </div>
                 <div class="modal-footer bg-light-1">
                     <button type="button" class="btn btn-purple btn-lg" id="sportsremote-go" title="Start sports broadcast now!">Start Remote Sports Broadcast</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="audio-call-modal" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-1">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-secondary doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Audio Settings</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close this window"></a></div>
+                    </header>
+
+                    <div class="form-group" title="Choose the main input device for silence detection and audio recording">
+                        <label for="main-input">Main Input Device (silence detection and audio recording)</label>
+                        <select class="form-control" id="main-input">
+                            <option value="">Choose an input device...</option>
+                        </select>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" id="main-vu" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" title="Choose the input device used for audio calls">
+                        <label for="call-input">Audio Call Input Device</label>
+                        <select class="form-control" id="call-input">
+                            <option value="">Choose an input device...</option>
+                        </select>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" id="call-vu" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" title="Choose the output device which audio calls will play through">
+                        <label for="call-output">Audio Call Output Device</label>
+                        <select class="form-control" id="call-output">
+                            <option value="">Choose an output device...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light-1">
+                    <span class="text-secondary">Settings are saved as you change them</span>
                 </div>
             </div>
         </div>
