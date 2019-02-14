@@ -271,6 +271,10 @@ try {
                     }
                     connection.answer();
                     connection.on('stream', onReceiveStream);
+                    connection.on(`close`, () => {
+                        console.log(`CALL CLOSED.`);
+                        incomingCall = undefined;
+                    });
                     incomingCall = connection;
                 } else {
                     console.log(`Peer ${connection.peer} is NOT authorized. Ignoring call.`);
@@ -466,6 +470,7 @@ try {
                 outgoingCall.on(`close`, () => {
                     console.log(`CALL CLOSED.`);
                     // Premature close if we are still in remote or sportsremote state. Try to reconnect.
+                    outgoingCall = undefined;
                     if (Meta.state.startsWith(`remote_`) || Meta.state.startsWith(`sportsremote_`))
                     {
                         console.log(`Reconnecting...`);
@@ -4381,18 +4386,18 @@ function doMeta(metan) {
                 if (!Meta.playing)
                 {
                     var temp = document.querySelector(`#remoteAudio`);
-                    //if (temp !== null)
-                        //temp.muted = false;
+                    if (temp !== null)
+                        temp.muted = false;
                 } else {
                     var temp = document.querySelector(`#remoteAudio`);
-                    //if (temp !== null)
-                        //temp.muted = true;
+                    if (temp !== null)
+                        temp.muted = true;
                 }
 
             } else {
                 var temp = document.querySelector(`#remoteAudio`);
-                //if (temp !== null)
-                    //temp.muted = true;
+                if (temp !== null)
+                    temp.muted = true;
                 try {
                     outgoingCall.close();
                     outgoingCall = undefined;
