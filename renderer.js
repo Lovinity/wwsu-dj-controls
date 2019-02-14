@@ -275,10 +275,12 @@ try {
                     waitingFor = tryingCall;
                     clearInterval(callTimer);
                     outgoingCloseIgnore = true;
+                    console.log(`Closing call via peer-unavailable`);
                     outgoingCall.close();
                     outgoingCall = undefined;
+                    outgoingCloseIgnore = false;
                 } catch (ee) {
-
+                    outgoingCloseIgnore = false;
                 }
             }
 
@@ -360,10 +362,13 @@ try {
         var callFailed = (me) => {
             try {
                 outgoingCloseIgnore = true;
+                console.log(`Closing call via startCall call failed`);
                 outgoingCall.close();
                 outgoingCall = undefined;
+                outgoingCloseIgnore = false;
                 cb(false);
             } catch (eee) {
+                outgoingCloseIgnore = false;
                 // ignore errors
             }
 
@@ -464,10 +469,13 @@ try {
             // Terminate any existing outgoing calls first
             waitingFor = undefined;
             outgoingCloseIgnore = true;
+            console.log(`Closing call via startCall`);
             outgoingCall.close();
             outgoingCall = undefined;
+            outgoingCloseIgnore = false;
             clearInterval(callTimer);
         } catch (ee) {
+            outgoingCloseIgnore = false;
             // Ignore errors
         }
 
@@ -483,6 +491,8 @@ try {
             {
                 clearInterval(callTimer);
                 $("#connecting-modal").iziModal('close');
+                
+                tryingCall = undefined;
 
                 if (document.querySelector(`.peerjs-waiting`) !== null)
                     iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
@@ -516,6 +526,7 @@ try {
 
                     if (!outgoingCloseIgnore)
                     {
+                        console.log(`Not ignoring!`);
                         if (Meta.state.startsWith(`remote_`) || Meta.state.startsWith(`sportsremote_`) || Meta.state === `automation_remote` || Meta.state === `automation_sportsremote`)
                         {
                             console.log(`Reconnecting...`);
@@ -7481,9 +7492,12 @@ function endShow() {
 
             try {
                 outgoingCloseIgnore = true;
+                console.log(`Closing call via endShow`);
                 outgoingCall.close();
                 outgoingCall = undefined;
+                outgoingCloseIgnore = false;
             } catch (eee) {
+                outgoingCloseIgnore = false;
                 // ignore errors
             }
         }
@@ -7513,9 +7527,12 @@ function switchShow() {
 
             try {
                 outgoingCloseIgnore = true;
+                console.log(`Closing call via switchShow`);
                 outgoingCall.close();
                 outgoingCall = undefined;
+                outgoingCloseIgnore = false;
             } catch (eee) {
+                outgoingCloseIgnore = false;
                 // ignore errors
             }
         }
