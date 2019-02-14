@@ -509,7 +509,7 @@ try {
                     console.log(`CALL CLOSED.`);
                     // Premature close if we are still in remote or sportsremote state. Try to reconnect.
                     outgoingCall = undefined;
-                    if (Meta.state.startsWith(`remote_`) || Meta.state.startsWith(`sportsremote_`))
+                    if (Meta.state.startsWith(`remote_`) || Meta.state.startsWith(`sportsremote_`) || Meta.state === `automation_remote` || Meta.state === `automation_sportsremote`)
                     {
                         console.log(`Reconnecting...`);
                         startCall(host.host, (success) => {
