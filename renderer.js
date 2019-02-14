@@ -317,6 +317,7 @@ try {
                     try {
                         // Close any other active incoming calls
                         incomingCloseIgnore = true;
+                        console.log(`Call ended via peer.on call`);
                         incomingCall.close();
                         incomingCall = undefined;
                         incomingCloseIgnore = false;
@@ -324,10 +325,11 @@ try {
                         incomingCloseIgnore = false;
                         // Ignore errors
                     }
-                    connection.answer();
+                                        incomingCall = connection;
+                    incomingCall.answer();
                     clearTimeout(callDropTimer);
-                    connection.on('stream', onReceiveStream);
-                    connection.on(`close`, () => {
+                    incomingCall.on('stream', onReceiveStream);
+                    incomingCall.on(`close`, () => {
                         console.log(`CALL CLOSED.`);
                         incomingCall = undefined;
 
@@ -353,7 +355,6 @@ try {
 
                         incomingCloseIgnore = false;
                     });
-                    incomingCall = connection;
                 } else {
                     console.log(`Peer ${connection.peer} is NOT authorized. Ignoring call.`);
                 }
@@ -7088,6 +7089,7 @@ function _goRemote() {
     startCall(selectedOption, (success) => {
         if (success)
         {
+            return null;
             hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || calType !== `Remote`) ? document.querySelector('#remote-topic').value : calTopic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
                 if (response === 'OK')
                 {
