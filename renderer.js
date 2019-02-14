@@ -363,14 +363,6 @@ try {
                     message: `The host you were trying to call did not answer.`
                 });
             } else {
-                if (Meta.state.startsWith("remote_"))
-                {
-                    prepareRemote();
-                } else if (Meta.state.startsWith("sportsremote_"))
-                {
-                    prepareSportsRemote();
-                }
-
                 if (me) {
                     $("#connecting-modal").iziModal('close');
                     var notification = notifier.notify('Lost Audio Connection', {
@@ -4466,7 +4458,6 @@ function recipientsSocket() {
         //console.log(body);
         try {
             processRecipients(body, true);
-            prepareSportsRemote();
         } catch (e) {
             console.error(e);
             console.log('FAILED recipients CONNECTION');
@@ -7278,8 +7269,6 @@ function _goSportsRemote() {
     startCall(selectedOption, (success) => {
         if (success)
         {
-            console.log(`CALL STARTED`);
-            return null;
             var sportsOptions = document.getElementById('sportsremote-sport');
             var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
             hostReq.request({method: 'POST', url: nodeURL + '/state/sports-remote', data: {sport: selectedOption, topic: (document.querySelector('#sportsremote-topic').value !== `` || calType !== `Sports`) ? document.querySelector('#sportsremote-topic').value : calTopic, webchat: document.querySelector('#sportsremote-webchat').checked}}, function (response) {
