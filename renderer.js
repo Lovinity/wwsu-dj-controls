@@ -213,7 +213,7 @@ try {
             // Ignore errors
         }
 
-        peer = new Peer();
+        peer = new Peer({debug: 3, config: {'iceServers': [{urls: "stun:stun.4.google.com:19302"}, {urls: "stun:stun.3.google.com:19302"}, {urls: "stun:stun.2.google.com:19302"}, {urls: "stun:stun.l.google.com:19302"}]}});
 
         peer.on('open', (id) => {
             console.log(`peer opened with id ${id}`);
