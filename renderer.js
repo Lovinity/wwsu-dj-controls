@@ -4645,17 +4645,17 @@ function doMeta(metan) {
                 if (!Meta.playing)
                 {
                     var temp = document.querySelector(`#remoteAudio`);
-                    //if (temp !== null)
-                        //temp.muted = false;
+                    if (temp !== null)
+                        temp.muted = false;
                 } else {
                     var temp = document.querySelector(`#remoteAudio`);
-                    //if (temp !== null)
-                        //temp.muted = true;
+                    if (temp !== null)
+                        temp.muted = true;
                 }
 
             } else {
-                //if (temp !== null)
-                    //temp.muted = true;
+                if (temp !== null)
+                    temp.muted = true;
             }
 
             // Always re-do the calendar / clockwheel when states change.
@@ -7092,7 +7092,6 @@ function _goRemote() {
     startCall(selectedOption, (success) => {
         if (success)
         {
-            return null;
             hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || calType !== `Remote`) ? document.querySelector('#remote-topic').value : calTopic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
                 if (response === 'OK')
                 {
