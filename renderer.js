@@ -4645,17 +4645,17 @@ function doMeta(metan) {
                 if (!Meta.playing)
                 {
                     var temp = document.querySelector(`#remoteAudio`);
-                    if (temp !== null)
-                        temp.muted = false;
+                    //if (temp !== null)
+                        //temp.muted = false;
                 } else {
                     var temp = document.querySelector(`#remoteAudio`);
-                    if (temp !== null)
-                        temp.muted = true;
+                    //if (temp !== null)
+                        //temp.muted = true;
                 }
 
             } else {
-                if (temp !== null)
-                    temp.muted = true;
+                //if (temp !== null)
+                    //temp.muted = true;
             }
 
             // Always re-do the calendar / clockwheel when states change.
