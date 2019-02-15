@@ -4642,6 +4642,21 @@ function doMeta(metan) {
         // Do stuff if the state changed
         if (typeof metan.state !== 'undefined' || typeof metan.playing !== 'undefined')
         {
+            // Disconnect outgoing calls on breaks
+            if (Meta.state === "remote_break" || Meta.state === "sportsremote_break" || Meta.state === "sportsremote_halftime")
+            {
+                try {
+                    outgoingCloseIgnore = true;
+                    console.log(`Closing call via doMeta break`);
+                    outgoingCall.close();
+                    outgoingCall = undefined;
+                    outgoingCloseIgnore = false;
+                } catch (eee) {
+                    outgoingCloseIgnore = false;
+                }
+            }
+
+            // Mute incoming audio if something is playing
             if (Meta.state.startsWith("remote_") || Meta.state.startsWith("sportsremote_"))
             {
                 if (!Meta.playing)
@@ -4655,6 +4670,7 @@ function doMeta(metan) {
                         temp.muted = true;
                 }
 
+                // Mute audio if not in any sportremote nor remote state
             } else {
                 if (temp !== null)
                     temp.muted = true;
@@ -4757,6 +4773,8 @@ function doMeta(metan) {
             {
                 badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`;
                 document.querySelector('#btn-return').style.display = "inline";
+                document.querySelector('#btn-endshow').style.display = "inline";
+                document.querySelector('#btn-switchshow').style.display = "inline";
             } else if (Meta.state.includes('live_'))
             {
                 /*
@@ -4790,6 +4808,8 @@ function doMeta(metan) {
                 if (Meta.playing)
                 {
                     document.querySelector('#queue').style.display = "inline";
+                    document.querySelector('#btn-endshow').style.display = "inline";
+                    document.querySelector('#btn-switchshow').style.display = "inline";
                 } else {
                     document.querySelector('#btn-endshow').style.display = "inline";
                     document.querySelector('#btn-switchshow').style.display = "inline";
@@ -4830,6 +4850,8 @@ function doMeta(metan) {
                 if (Meta.playing)
                 {
                     document.querySelector('#queue').style.display = "inline";
+                    document.querySelector('#btn-endshow').style.display = "inline";
+                    document.querySelector('#btn-switchshow').style.display = "inline";
                 } else {
                     document.querySelector('#btn-liner').style.display = "inline";
                     document.querySelector('#btn-endshow').style.display = "inline";
@@ -4869,6 +4891,8 @@ function doMeta(metan) {
                 if (Meta.playing)
                 {
                     document.querySelector('#queue').style.display = "inline";
+                    document.querySelector('#btn-endshow').style.display = "inline";
+                    document.querySelector('#btn-switchshow').style.display = "inline";
                 } else {
                     document.querySelector('#btn-topadd').style.display = "inline";
                     document.querySelector('#btn-endshow').style.display = "inline";
@@ -6254,29 +6278,29 @@ function checkCalendar() {
                     });
                 }
 
-            var sectors = calculateSectors(data);
-            var newSVG = document.getElementById("clock-program");
-            newSVG.setAttribute("transform", `rotate(${data.start})`);
-            sectors.normal.map(function (sector) {
+                var sectors = calculateSectors(data);
+                var newSVG = document.getElementById("clock-program");
+                newSVG.setAttribute("transform", `rotate(${data.start})`);
+                sectors.normal.map(function (sector) {
 
-                var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                newSector.setAttributeNS(null, 'fill', sector.color);
-                newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
-                newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
+                    var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    newSector.setAttributeNS(null, 'fill', sector.color);
+                    newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
+                    newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
 
-                newSVG.appendChild(newSector);
-            });
-            var newSVG = document.getElementById("clock-program-2");
-            newSVG.setAttribute("transform", `rotate(${data.start})`);
-            sectors.small.map(function (sector) {
+                    newSVG.appendChild(newSector);
+                });
+                var newSVG = document.getElementById("clock-program-2");
+                newSVG.setAttribute("transform", `rotate(${data.start})`);
+                sectors.small.map(function (sector) {
 
-                var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                newSector.setAttributeNS(null, 'fill', sector.color);
-                newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
-                newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
+                    var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    newSector.setAttributeNS(null, 'fill', sector.color);
+                    newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
+                    newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
 
-                newSVG.appendChild(newSector);
-            });
+                    newSVG.appendChild(newSector);
+                });
             }
         }
     } catch (e) {
@@ -6959,18 +6983,32 @@ function finishAttnRemove(ID) {
 
 
 function returnBreak() {
-    hostReq.request({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
-        console.log(JSON.stringify(response));
-        if (response !== 'OK')
-        {
-            iziToast.show({
-                title: 'An error occurred',
-                message: 'Cannot return from break. Please try again in 15-30 seconds.',
-                timeout: 10000
-            });
-            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to return from break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
-        }
-    });
+    var afterFunction = () => {
+        hostReq.request({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
+            console.log(JSON.stringify(response));
+            if (response !== 'OK')
+            {
+                iziToast.show({
+                    title: 'An error occurred',
+                    message: 'Cannot return from break. Please try again in 15-30 seconds.',
+                    timeout: 10000
+                });
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to return from break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            }
+        });
+    }
+
+    if (typeof window.peerDevice !== `undefined`)
+    {
+        startCall(window.peerDevice, (success) => {
+            if (success)
+            {
+                afterFunction();
+            }
+        });
+    } else {
+        afterFunction();
+    }
 }
 
 function queuePSA(duration) {
@@ -7573,6 +7611,7 @@ function endShow() {
             document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.totalListenerMinutes !== 'undefined' ? formatInt(parseInt(response.totalListenerMinutes / 60)) : `-`;
 
             try {
+                window.peerDevice = undefined;
                 outgoingCloseIgnore = true;
                 console.log(`Closing call via endShow`);
                 outgoingCall.close();
@@ -7608,6 +7647,7 @@ function switchShow() {
             document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.totalListenerMinutes !== 'undefined' ? formatInt(parseInt(response.totalListenerMinutes / 60)) : `-`;
 
             try {
+                window.peerDevice = undefined;
                 outgoingCloseIgnore = true;
                 console.log(`Closing call via switchShow`);
                 outgoingCall.close();
