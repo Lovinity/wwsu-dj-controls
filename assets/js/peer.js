@@ -414,8 +414,13 @@ exports.Negotiator._setupListeners = function (connection, pc, pc_id) {
                 connection.close();
                 break;
             case "disconnected":
-                util_1.util.log("iceConnectionState is disconnected, closing connections to " + peerId);
-                connection.close();
+                util_1.util.log(`iceConnectionState is disconnected, but ignoring for now.`);
+                connection.emit("disconnected", {});
+                //connection.close();
+                break;
+            case "connected":
+                util_1.util.log(`iceConnectionState is (re-)connected.`);
+                connection.emit("connected", {});
                 break;
             case "completed":
                 pc.onicecandidate = util_1.util.noop;
