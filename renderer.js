@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = false;
+    var development = true;
 
 // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -728,6 +728,7 @@ try {
     }
 
     sinkAudio();
+    getAudioMain(settings.get(`audio.input.main`) || undefined);
 
     function onReceiveStream(stream) {
         console.log(`received stream`);
