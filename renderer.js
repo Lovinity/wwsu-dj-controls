@@ -4588,7 +4588,7 @@ function doMeta(metan) {
                     id: 'iziToast-breakneeded',
                     class: 'flash-bg',
                     title: `Do not forget Top of the Hour Break!`,
-                    message: `Unless you are about to end your show, please take a break before :05 after the hour.`,
+                    message: `Unless you are ending your show, you need to take a break before 5 minutes (:05) past the hour. Click "Take a Break" to take one now.`,
                     timeout: false,
                     close: true,
                     color: 'yellow',
