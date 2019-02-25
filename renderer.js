@@ -6590,7 +6590,7 @@ function selectRecipient(recipient = null)
                 {
                     var temp2 = document.querySelector(`#messages-unread`);
                     temp2.innerHTML += `<div class="m-1 bs-callout bs-callout-primary shadow-4 message-n animated bounceIn slow" style="cursor: pointer;" id="message-n-m-${message.ID}">
-                                        <span class="close" id="message-n-x-${message.ID}" style="pointer-events: auto;">X</span>
+                                        <span class="close text-white" id="message-n-x-${message.ID}" style="pointer-events: auto;">X</span>
                                         <div id="message-n-a-${message.ID}" style="pointer-events: auto;">
                                             <div id="message-n-t-${message.ID}">${message.message}</div>
                                             <div id="message-n-b-${message.ID}" style="font-size: 0.66em;">${moment(message.createdAt).format("hh:mm A")} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' (Private)' : ``}</span>
