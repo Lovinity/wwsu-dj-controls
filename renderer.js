@@ -21,6 +21,7 @@ try {
     var nrc = require("node-run-cmd");
     var Sanitize = require("sanitize-filename");
     var settings = require('electron-settings');
+    var FileSaver = require('file-saver');
 
     // Define data variables
     var Meta = {time: moment().toISOString(), lastID: moment().toISOString(), state: 'unknown', line1: '', line2: '', queueFinish: null, trackFinish: null};
@@ -59,6 +60,8 @@ try {
     var callTimer;
     var callTimerSlot;
     var callDropTimer;
+    var recorder;
+    var recorderTitle;
 
     var audioContext = new AudioContext();
     var gain = audioContext.createGain();
@@ -614,6 +617,35 @@ try {
                 })
     }
 
+    function setupRecorder(node, restart) {
+        recorder = undefined;
+        recorder = new WebAudioRecorder(node, {
+            workerDir: "assets/js/workers/",
+            encoding: "mp3",
+            options: {
+                timeLimit: (60 * 60 * 3),
+                mp3: {
+                    bitRate: 128
+                }
+            }
+        });
+
+        recorder.onEncoderLoaded = function (recorder, encoding) {
+            if (restart) {
+                recorderTitle = getRecordingPath();
+                recorder.startRecording();
+            }
+        }
+
+        recorder.onComplete = function (recorder, blob) {
+            FileSaver.saveAs(blob, `${settings.get(`recorder.path`) || ``}/${recorderTitle}.mp3`);
+            recorderTitle = getRecordingPath();
+            if (recorderTitle)
+                recorder.startRecording();
+        }
+
+    }
+
     function getAudioMain(device) {
         console.log(`getting audio main`);
         navigator.mediaDevices.getUserMedia({
@@ -628,10 +660,16 @@ try {
         })
                 .then((stream) => {
                     console.log(`getUserMedia initiated`);
-
+                    var restartRecorder = false;
                     // Reset stuff
                     try {
                         analyserStream2.disconnect(analyser2);
+
+                        if (recorder.isRecording())
+                        {
+                            restartRecorder = true;
+                            recorder.finishRecording();
+                        }
                     } catch (eee) {
                         // ignore errors
                     }
@@ -643,6 +681,7 @@ try {
                     analyserStream2 = audioContext2.createMediaStreamSource(stream);
                     analyserStream2.connect(analyser2);
 
+                    setupRecorder(analyserStream2, restartRecorder);
                     settings.set(`audio.input.main`, device);
                 })
                 .catch((err) => {
@@ -1924,6 +1963,31 @@ document.querySelector("#audio-call").onclick = () => {
                         sinkAudio(temp3.value);
                     };
                 }
+                var temp4 = document.querySelector("#recorder-path");
+                if (temp4 !== null)
+                {
+                    temp4.value = settings.get(`recorder.path`);
+                    var dialogButton = document.querySelector("#recorder-path-browse");
+                    if (dialogButton !== null)
+                    {
+                        dialogButton.onclick = () => {
+                            temp4.value = main.directoryBrowse();
+                            settings.set(`recorder.path`, temp4.value);
+                        };
+                    }
+                    temp4.onchange = () => {
+                        settings.set(`recorder.path`, temp4.value);
+                        console.log(temp4.value);
+                    };
+                }
+                var temp5 = document.querySelector("#recorder-delay");
+                if (temp5 !== null)
+                {
+                    temp5.value = settings.get(`recorder.delay`);
+                    temp5.onchange = () => {
+                        settings.set(`recorder.delay`, temp5.value);
+                    };
+                }
                 devices.map((device, index) => {
                     if (device.kind === 'audioinput') {
                         if (temp !== null)
@@ -1946,6 +2010,8 @@ document.querySelector("#audio-call").onclick = () => {
                 if (temp3 !== null)
                     temp3.value = settings.get(`audio.output.call`) || ``;
             });
+
+    document.querySelector("#recorder-path").className = `form-control${client.recordAudio ? `` : ` is-invalid`}`;
 
     $("#audio-call-modal").iziModal('open');
 };
