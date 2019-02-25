@@ -1,6 +1,7 @@
-/* global iziToast, io, moment, Infinity, err, ProgressBar, Taucharts, response, responsiveVoice, jdenticon */
+/* global iziToast, io, moment, Infinity, err, ProgressBar, Taucharts, response, responsiveVoice, jdenticon, SIP */
 
 try {
+    window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
     var development = false;
 
@@ -19,7 +20,7 @@ try {
     var notifier = require('./electron-notifications/index.js');
     var nrc = require("node-run-cmd");
     var Sanitize = require("sanitize-filename");
-    //var Taucharts = require("taucharts");
+    var settings = require('electron-settings');
 
     // Define data variables
     var Meta = {time: moment().toISOString(), lastID: moment().toISOString(), state: 'unknown', line1: '', line2: '', queueFinish: null, trackFinish: null};
@@ -37,6 +38,823 @@ try {
     var DJData = {};
     var Timesheets = [];
 
+    // Define peerJS and stream variables. These will be set after getting information about this host's settings.
+    var peer;
+    window.peerStream = undefined;
+    window.peerDevice = undefined;
+    window.peerHost = undefined;
+    window.mainStream = undefined;
+    window.mainDevice = undefined;
+    window.peerVolume = -100;
+    window.mainVolume = -100;
+    var outgoingPeer;
+    var outgoingCall;
+    var incomingCall;
+    var incomingCloseIgnore = false;
+    var outgoingCloseIgnore = false;
+    var tryingCall;
+    var waitingFor;
+    var analyserStream;
+    var analyserStream2;
+    var callTimer;
+    var callTimerSlot;
+    var callDropTimer;
+
+    var audioContext = new AudioContext();
+    var gain = audioContext.createGain();
+    gain.gain.value = 1;
+    var analyser = audioContext.createAnalyser();
+    analyser.fftSize = 512;
+    analyser.smoothingTimeConstant = 0.1;
+    var fftBins = new Float32Array(analyser.frequencyBinCount);
+
+    var audioContext2 = new AudioContext();
+    var analyser2 = audioContext2.createAnalyser();
+    analyser2.fftSize = 512;
+    analyser2.smoothingTimeConstant = 0.1;
+    var fftBins2 = new Float32Array(analyser2.frequencyBinCount);
+
+    var meterLooper = function () {
+        try {
+            var temp = getMaxVolume(analyser, fftBins);
+            var temp2 = getMaxVolume(analyser2, fftBins2);
+
+            if (temp > window.peerVolume)
+            {
+                window.peerVolume = temp;
+            } else {
+                window.peerVolume -= ((window.peerVolume - temp) / 8);
+            }
+
+            if (temp2 > window.mainVolume)
+            {
+                window.mainVolume = temp2;
+            } else {
+                window.mainVolume -= ((window.mainVolume - temp2) / 8);
+            }
+
+            // Gain control. Immediately decrease gain when above -25dB. Slowly increase gain if volume is less than -35dB.
+            if (window.peerVolume > -25)
+            {
+                var gain1 = -50 - ((-50 - window.peerVolume) / gain.gain.value);
+                var diffVolume = gain1 - window.peerVolume;
+                var diffGain = gain.gain.value - 1;
+
+                var changeVolume = -25 - window.peerVolume;
+
+                var proportion = diffVolume / changeVolume;
+                var adjustGain = diffGain / proportion;
+
+                gain.gain.value = gain.gain.value - adjustGain;
+            } else if (window.peerVolume < -35) {
+                var proportion = window.peerVolume / -25;
+                var adjustGain = (gain.gain.value / proportion) / 128;
+                gain.gain.value += adjustGain;
+                if (gain.gain.value > 3)
+                    gain.gain.value = 3;
+            }
+
+            var temp = document.querySelector(`#remote-vu`);
+            var temp2 = document.querySelector(`#sportsremote-vu`);
+            var temp3 = document.querySelector(`#call-vu`);
+            var temp4 = document.querySelector(`#main-vu`);
+
+            if (temp !== null)
+            {
+                temp.style.width = `${window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0}%`;
+
+                // check if we're currently clipping
+                if (window.peerVolume > -25)
+                    temp.className = "progress-bar bg-danger";
+                else
+                    temp.className = "progress-bar bg-success";
+            }
+
+            if (temp2 !== null)
+            {
+                temp2.style.width = `${window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0}%`;
+
+                // check if we're currently clipping
+                if (window.peerVolume > -25)
+                    temp2.className = "progress-bar bg-danger";
+                else
+                    temp2.className = "progress-bar bg-success";
+            }
+
+            if (temp3 !== null)
+            {
+                temp3.style.width = `${window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0}%`;
+
+                // check if we're currently clipping
+                if (window.peerVolume > -25)
+                    temp3.className = "progress-bar bg-danger";
+                else
+                    temp3.className = "progress-bar bg-success";
+            }
+
+            if (temp4 !== null)
+            {
+                temp4.style.width = `${window.mainVolume > -50 ? ((window.mainVolume + 50) * 4) : 0}%`;
+
+                // check if we're currently clipping
+                if (window.mainVolume > -25)
+                    temp4.className = "progress-bar bg-danger";
+                else
+                    temp4.className = "progress-bar bg-success";
+            }
+
+            if (typeof outgoingCall !== 'undefined')
+            {
+                var temp5 = document.querySelector(`#audio-call-icon`);
+                if (temp5 !== null)
+                {
+                    var percent = window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0;
+                    temp5.style.color = `rgb(0, ${percent < 100 ? parseInt(percent + 155) : 255}, 0)`;
+                }
+            } else if (typeof waitingFor !== 'undefined') {
+                var temp5 = document.querySelector(`#audio-call-icon`);
+                if (temp5 !== null)
+                    temp5.style.color = `rgb(255, 0, 0)`;
+            } else if (typeof tryingCall !== 'undefined') {
+                var temp5 = document.querySelector(`#audio-call-icon`);
+                if (temp5 !== null)
+                    temp5.style.color = `rgb(255, 255, 0)`;
+            } else if (typeof incomingCall !== 'undefined') {
+                var temp5 = document.querySelector(`#audio-call-icon`);
+                if (temp5 !== null)
+                    temp5.style.color = `rgb(0, 0, 255)`;
+            } else {
+                var temp5 = document.querySelector(`#audio-call-icon`);
+                if (temp5 !== null)
+                    temp5.style.color = `rgb(16, 16, 16)`;
+            }
+
+
+        } catch (eee) {
+            // ignore errors
+            console.error(eee);
+        }
+
+        window.requestAnimationFrame(() => {
+            meterLooper();
+        });
+    };
+
+    window.requestAnimationFrame(() => {
+        meterLooper();
+    });
+
+    var processor;
+
+    function setupPeer() {
+        try {
+            peer.destroy();
+            peer = undefined;
+        } catch (ee) {
+            // Ignore errors
+        }
+
+        peer = new Peer({debug: 3, config: {'iceServers': [{
+                        urls: 'turn:numb.viagenie.ca',
+                        credential: 'WineDine1069',
+                        username: 'engineer@wwsu1069.org'}]}});
+
+        peer.on('open', (id) => {
+            console.log(`peer opened with id ${id}`);
+            // Update database with the peer ID
+            hostReq.request({method: 'POST', url: '/recipients/register-peer', data: {peer: id}}, function (body) {
+                if (tryingCall && tryingCall.host && tryingCall.cb)
+                {
+                    startCall(tryingCall.host, tryingCall.cb)
+                }
+                /*
+                 getAudio(
+                 function (MediaStream) {
+                 console.log('now calling');
+                 var call = peer.call(`wwsu-1`, MediaStream);
+                 call.on('stream', onReceiveStream);
+                 }
+                 );
+                 */
+            });
+        });
+
+        peer.on('error', (err) => {
+            console.error(err);
+            if (err.type === `peer-unavailable`)
+            {
+                $("#connecting-modal").iziModal('close');
+
+                if (document.querySelector(`.peerjs-waiting`) !== null)
+                    iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
+
+                iziToast.show({
+                    class: `peerjs-waiting`,
+                    titleColor: '#000000',
+                    messageColor: '#000000',
+                    color: 'red',
+                    close: false,
+                    overlay: true,
+                    overlayColor: 'rgba(0, 0, 0, 0.75)',
+                    zindex: 1000,
+                    layout: 1,
+                    imageWidth: 100,
+                    image: ``,
+                    maxWidth: 480,
+                    progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                    closeOnClick: false,
+                    position: 'center',
+                    timeout: false,
+                    title: 'Error establishing audio call',
+                    message: `${tryingCall.friendlyname} is not available at this time. I will wait for the host to report online and then start the broadcast. If you wish to cancel this, please click "cancel".`,
+                    buttons: [
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                waitingFor = undefined;
+                                tryingCall = undefined;
+                            }]
+                    ]
+                });
+                try {
+                    waitingFor = tryingCall;
+                    clearInterval(callTimer);
+                    outgoingCloseIgnore = true;
+                    console.log(`Closing call via peer-unavailable`);
+                    outgoingCall.close();
+                    outgoingCall = undefined;
+                    outgoingCloseIgnore = false;
+                } catch (ee) {
+                    outgoingCloseIgnore = false;
+                }
+            }
+
+
+        });
+
+        peer.on('close', () => {
+            console.log(`Peer destroyed.`);
+            try {
+                peer = undefined;
+                hostReq.request({method: 'POST', url: '/recipients/register-peer', data: {peer: null}}, function (body) {});
+            } catch (ee) {
+
+            }
+            setTimeout(() => {
+                if (!peer || peer.destroyed)
+                    setupPeer();
+            }, 10000);
+        });
+
+        peer.on('call', (connection) => {
+            console.log(`Incoming call from ${connection.peer}`);
+            if (client.answerCalls)
+            {
+                console.log(`Allowed to answer. Checking hosts.`);
+                try {
+                    var recipient = Recipients({peer: connection.peer}).first();
+                } catch (e) {
+                    console.log(`The peer ${connection.peer} does not appear in the list of recipients. Not answering the call.`);
+                }
+                if (recipient && Hosts({host: recipient.host, authorized: true, makeCalls: true}).get().length >= 0)
+                {
+                    console.log(`Peer ${connection.peer} is authorized. Answering call...`);
+                    try {
+                        // Close any other active incoming calls
+                        incomingCloseIgnore = true;
+                        console.log(`Call ended via peer.on call`);
+                        incomingCall.close();
+                        incomingCall = undefined;
+                        incomingCloseIgnore = false;
+                    } catch (ee) {
+                        incomingCloseIgnore = false;
+                        // Ignore errors
+                    }
+                    incomingCall = connection;
+                    incomingCall.answer();
+                    clearTimeout(callDropTimer);
+                    incomingCall.on('stream', onReceiveStream);
+                    incomingCall.on(`close`, () => {
+                        console.log(`CALL CLOSED.`);
+                        incomingCall = undefined;
+
+                        if (!incomingCloseIgnore)
+                        {
+                            console.log(`Not ignoring!`);
+                            var callDropFn = () => {
+                                if (Meta.state === 'sportsremote_on' || Meta.state === 'remote_on')
+                                {
+                                    goBreak(false);
+                                } else if (Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote' || Meta.state === "sportsremote_returning" || Meta.state === "remote_returning")
+                                {
+                                    callDropTimer = setTimeout(() => {
+                                        callDropFn();
+                                    }, 5000);
+                                }
+                            };
+
+                            callDropTimer = setTimeout(() => {
+                                callDropFn();
+                            }, 15000);
+                        }
+
+                        incomingCloseIgnore = false;
+                    });
+                } else {
+                    console.log(`Peer ${connection.peer} is NOT authorized. Ignoring call.`);
+                }
+            }
+        });
+    }
+
+    function startCall(hostID, cb, reconnect = false) {
+        var callFailed = (me) => {
+            try {
+                outgoingCloseIgnore = true;
+                console.log(`Closing call via startCall call failed`);
+                outgoingCall.close();
+                outgoingCall = undefined;
+                outgoingCloseIgnore = false;
+                cb(false);
+            } catch (eee) {
+                outgoingCloseIgnore = false;
+                // ignore errors
+            }
+
+            clearInterval(callTimer);
+
+            if (!reconnect)
+            {
+                $("#connecting-modal").iziModal('close');
+                iziToast.show({
+                    titleColor: '#000000',
+                    messageColor: '#000000',
+                    color: 'red',
+                    close: true,
+                    overlay: false,
+                    overlayColor: 'rgba(0, 0, 0, 0.75)',
+                    zindex: 100,
+                    layout: 1,
+                    imageWidth: 100,
+                    image: ``,
+                    progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                    closeOnClick: true,
+                    position: 'center',
+                    timeout: 30000,
+                    title: 'Call not answered',
+                    message: `The host you were trying to call did not answer. Please try again later.`
+                });
+            } else {
+                waitingFor = {host: hostID, cb: cb};
+
+                $("#connecting-modal").iziModal('close');
+                var notification = notifier.notify('Lost Audio Call', {
+                    message: `Please check DJ Controls for more information.`,
+                    icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+                    duration: 900000,
+                });
+                main.flashTaskbar();
+
+                if (document.querySelector(`.peerjs-waiting`) !== null)
+                    iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
+
+                iziToast.show({
+                    id: `peerjs-waiting`,
+                    titleColor: '#000000',
+                    messageColor: '#000000',
+                    color: 'red',
+                    close: false,
+                    overlay: true,
+                    overlayColor: 'rgba(0, 0, 0, 0.75)',
+                    zindex: 1000,
+                    layout: 1,
+                    imageWidth: 100,
+                    image: ``,
+                    maxWidth: 480,
+                    progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                    closeOnClick: false,
+                    position: 'center',
+                    timeout: false,
+                    title: 'Lost Audio Call',
+                    message: `The audio call with ${tryingCall.friendlyname} was dropped. I tried sending you to break. I will wait until both you and the other DJ Controls is back online, and then try the call again. Click "cancel" to abort; clicking cancel will end the broadcast.`,
+                    buttons: [
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                waitingFor = undefined;
+                                tryingCall = undefined;
+                                endShow();
+                            }]
+                    ]
+                });
+
+                if (!disconnected)
+                    goBreak(false);
+            }
+        };
+
+        try {
+            var host = Hosts({host: hostID}).first();
+        } catch (e) {
+            console.log(`INVALID HOST`);
+            callFailed(false);
+        }
+
+        console.log(`Trying to call ${host.friendlyname}`);
+
+        tryingCall = {host: hostID, cb: cb, friendlyname: host.friendlyname};
+
+        if (!reconnect)
+            $("#connecting-modal").iziModal('open');
+
+        try {
+            var peerID = Recipients({host: host.host}).first().peer;
+            if (peerID === null)
+                callFailed(false);
+        } catch (e) {
+            callFailed(false);
+        }
+
+        try {
+            // Terminate any existing outgoing calls first
+            waitingFor = undefined;
+            outgoingCloseIgnore = true;
+            console.log(`Closing call via startCall`);
+            outgoingCall.close();
+            outgoingCall = undefined;
+            outgoingCloseIgnore = false;
+            clearInterval(callTimer);
+        } catch (ee) {
+            outgoingCloseIgnore = false;
+            // Ignore errors
+        }
+
+        window.peerHost = hostID;
+        outgoingCall = peer.call(peerID, window.peerStream);
+
+        callTimerSlot = 15;
+
+        callTimer = setInterval(() => {
+            callTimerSlot -= 1;
+            console.dir(outgoingCall);
+
+            if (outgoingCall && outgoingCall.open)
+            {
+                clearInterval(callTimer);
+                $("#connecting-modal").iziModal('close');
+
+                tryingCall = undefined;
+
+                if (document.querySelector(`.peerjs-waiting`) !== null)
+                    iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
+
+                if (reconnect)
+                {
+                    iziToast.show({
+                        titleColor: '#000000',
+                        messageColor: '#000000',
+                        color: 'green',
+                        close: true,
+                        overlay: false,
+                        overlayColor: 'rgba(0, 0, 0, 0.75)',
+                        zindex: 1000,
+                        layout: 1,
+                        imageWidth: 100,
+                        image: ``,
+                        progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                        closeOnClick: true,
+                        position: 'center',
+                        timeout: 10000,
+                        title: 'Audio Call Re-Established',
+                        message: `The audio call was re-established.`
+                    });
+                }
+
+                outgoingCall.on(`close`, () => {
+                    console.log(`CALL CLOSED.`);
+                    // Premature close if we are still in remote or sportsremote state. Try to reconnect.
+                    outgoingCall = undefined;
+
+                    if (!outgoingCloseIgnore)
+                    {
+                        console.log(`Not ignoring!`);
+                        if (Meta.state.startsWith(`remote_`) || Meta.state.startsWith(`sportsremote_`) || Meta.state === `automation_remote` || Meta.state === `automation_sportsremote`)
+                        {
+                            console.log(`Reconnecting...`);
+                            startCall(host.host, (success) => {
+                                if (success)
+                                {
+                                    console.log(`re-connected`);
+                                }
+                            }, true);
+                        }
+                    }
+                    outgoingCloseIgnore = false;
+                });
+
+                cb(true);
+            } else {
+                if (callTimerSlot <= 1)
+                {
+                    callFailed(true);
+                }
+            }
+        }, 1000);
+    }
+
+    function getAudio(device) {
+        console.log(`getting audio`);
+        navigator.mediaDevices.getUserMedia({
+            "audio": {
+                deviceId: device ? {exact: device} : undefined,
+                echoCancellation: false,
+                AutoGainControl: true,
+                noiseSuppression: false,
+                channelCount: 2
+            },
+            video: false
+        })
+                .then((stream) => {
+                    console.log(`getUserMedia initiated`);
+
+                    // Reset stuff
+                    try {
+                        gain.disconnect(analyser);
+                        analyserStream.disconnect(gain);
+                    } catch (eee) {
+                        // ignore errors
+                    }
+
+                    gain.gain.value = 1;
+                    window.peerStream = stream;
+                    window.peerDevice = device;
+                    window.peerVolume = -100;
+
+                    analyserStream = audioContext.createMediaStreamSource(stream);
+                    analyserStream.connect(gain);
+                    gain.connect(analyser);
+                })
+                .catch((err) => {
+                    iziToast.show({
+                        titleColor: '#000000',
+                        messageColor: '#000000',
+                        color: 'red',
+                        close: true,
+                        overlay: false,
+                        overlayColor: 'rgba(0, 0, 0, 0.75)',
+                        zindex: 100,
+                        layout: 1,
+                        imageWidth: 100,
+                        image: ``,
+                        progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                        closeOnClick: true,
+                        position: 'center',
+                        timeout: 10000,
+                        title: 'Audio Error',
+                        message: `Error trying to load that audio device. Please choose another device instead.`
+                    });
+                })
+    }
+
+    function getAudioMain(device) {
+        console.log(`getting audio main`);
+        navigator.mediaDevices.getUserMedia({
+            "audio": {
+                deviceId: device ? {exact: device} : undefined,
+                echoCancellation: false,
+                AutoGainControl: true,
+                noiseSuppression: false,
+                channelCount: 2
+            },
+            video: false
+        })
+                .then((stream) => {
+                    console.log(`getUserMedia initiated`);
+
+                    // Reset stuff
+                    try {
+                        analyserStream2.disconnect(analyser2);
+                    } catch (eee) {
+                        // ignore errors
+                    }
+
+                    window.mainStream = stream;
+                    window.mainDevice = device;
+                    window.mainVolume = -100;
+
+                    analyserStream2 = audioContext2.createMediaStreamSource(stream);
+                    analyserStream2.connect(analyser2);
+
+                    settings.set(`audio.input.main`, device);
+                })
+                .catch((err) => {
+                    iziToast.show({
+                        titleColor: '#000000',
+                        messageColor: '#000000',
+                        color: 'red',
+                        close: true,
+                        overlay: true,
+                        overlayColor: 'rgba(0, 0, 0, 0.75)',
+                        zindex: 100,
+                        layout: 1,
+                        imageWidth: 100,
+                        image: ``,
+                        progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                        closeOnClick: true,
+                        position: 'center',
+                        timeout: false,
+                        maxWidth: 480,
+                        title: 'Audio Error',
+                        message: `There was an error trying to load the main input device for silence detection / recording. Please check your settings. Silence detection and audio recording will not work until this is fixed.`
+                    });
+                })
+    }
+
+    function sinkAudio(device)
+    {
+        var temp = document.querySelector(`#remoteAudio`);
+        if (temp !== null)
+        {
+            if (typeof device !== 'undefined')
+            {
+                temp.setSinkId(device)
+                        .then(() => {
+                            settings.set(`audio.output.call`, device);
+                        })
+                        .catch((err) => {
+                            iziToast.show({
+                                titleColor: '#000000',
+                                messageColor: '#000000',
+                                color: 'red',
+                                close: true,
+                                overlay: true,
+                                overlayColor: 'rgba(0, 0, 0, 0.75)',
+                                zindex: 100,
+                                layout: 1,
+                                imageWidth: 100,
+                                image: ``,
+                                progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                                closeOnClick: true,
+                                position: 'center',
+                                timeout: false,
+                                maxWidth: 480,
+                                title: 'Audio Error',
+                                message: `There was an error trying to load the main output device. Please check your settings. Receiving audio calls will not work until this is fixed.`
+                            });
+                        })
+            } else {
+                temp.setSinkId(settings.get(`audio.output.call`))
+                        .catch((err) => {
+                            iziToast.show({
+                                titleColor: '#000000',
+                                messageColor: '#000000',
+                                color: 'red',
+                                close: true,
+                                overlay: true,
+                                overlayColor: 'rgba(0, 0, 0, 0.75)',
+                                zindex: 100,
+                                layout: 1,
+                                imageWidth: 100,
+                                image: ``,
+                                progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                                closeOnClick: true,
+                                position: 'center',
+                                timeout: false,
+                                maxWidth: 480,
+                                title: 'Audio Error',
+                                message: `There was an error trying to load the main output device. Please check your settings. Receiving audio calls will not work until this is fixed.`
+                            });
+                        })
+            }
+        }
+    }
+
+    sinkAudio();
+
+    function onReceiveStream(stream) {
+        console.log(`received stream`);
+        var audio = document.querySelector('#remoteAudio');
+        audio.srcObject = stream;
+        audio.load();
+        audio.oncanplay = function (e) {
+            console.log('now playing the audio');
+            audio.play();
+        }
+    }
+
+    function getMaxVolume(analyser, fftBins) {
+        var maxVolume = -50;
+        analyser.getFloatFrequencyData(fftBins);
+
+        for (var i = 4, ii = fftBins.length; i < ii; i++) {
+            if (fftBins[i] > maxVolume && fftBins[i] < 0) {
+                maxVolume = fftBins[i];
+            }
+        }
+        ;
+
+        return maxVolume;
+    }
+
+    function createAudioMeter(ac) {
+        var analyser = ac.createAnalyser();
+        analyser.fftSize = 512;
+        analyser.smoothingTimeConstant = 0.1;
+
+        var terminate = false;
+
+        analyser.destroy = () => {
+            terminate = true;
+        };
+
+        var fftBins = new Float32Array(analyser.frequencyBinCount);
+
+        meterLooper = function () {
+            var temp = getMaxVolume(analyser, fftBins);
+
+            if (temp > window.peerVolume)
+            {
+                window.peerVolume = temp;
+            } else {
+                window.peerVolume -= ((window.peerVolume - temp) / 8);
+            }
+
+            console.log(window.peerVolume);
+
+            var temp = document.querySelector(`#remote-vu`);
+            var temp2 = document.querySelector(`#sportsremote-vu`);
+
+            if (temp !== null)
+            {
+                temp.style.width = `${window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0}%`;
+
+                // check if we're currently clipping
+                if (window.peerVolume > -25)
+                    temp.className = "progress-bar bg-danger";
+                else
+                    temp.className = "progress-bar bg-success";
+            }
+
+            if (temp2 !== null)
+            {
+                temp2.style.width = `${window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0}%`;
+
+                // check if we're currently clipping
+                if (window.peerVolume > -25)
+                    temp2.className = "progress-bar bg-danger";
+                else
+                    temp2.className = "progress-bar bg-success";
+            }
+
+            if (!terminate)
+            {
+                window.requestAnimationFrame(() => {
+                    meterLooper();
+                });
+            }
+        };
+
+        window.requestAnimationFrame(() => {
+            meterLooper();
+        });
+
+        return analyser;
+    }
+
+    function drawLoop(meter, gain, terminate = false) {
+        return null;
+        var temp = document.querySelector(`#remote-vu`);
+        var temp2 = document.querySelector(`#sportsremote-vu`);
+        if (!terminate)
+        {
+            if (temp !== null)
+            {
+                temp.style.width = `${meter.volume > -100 ? (meter.volume + 100) : 0}%`;
+
+                // check if we're currently clipping
+                if (meter.volume > -5)
+                    temp.className = "progress-bar bg-danger";
+                else
+                    temp.className = "progress-bar bg-success";
+            }
+
+            if (temp2 !== null)
+            {
+                temp.style.width = `${meter.volume > -100 ? (meter.volume + 100) : 0}%`;
+
+                // check if we're currently clipping
+                if (meter.volume > -5)
+                    temp2.className = "progress-bar bg-danger";
+                else
+                    temp2.className = "progress-bar bg-success";
+            }
+
+            // set up the next visual callback
+            rafID = window.requestAnimationFrame(() => {
+                drawLoop(meter, gain);
+            });
+    }
+    }
+
+
     // Define other variables
     var nodeURL = 'https://server.wwsu1069.org';
     //var nodeURL = 'http://localhost:1337';
@@ -44,6 +862,7 @@ try {
     var recordPath = "S:\\OnAir recordings";
     var delay = 9000; // Subtract 1 second from the amount of on-air delay, as it takes about a second to process the recorder.
     var activeToken = "";
+
 
     var disconnected = true;
     var theStatus = 4;
@@ -55,8 +874,10 @@ try {
     var breakNotified = false;
     var data = {
         size: 140,
+        smallSize: 70,
         start: 0, // angle to rotate pie chart by
-        sectors: [] // start (angle from start), size (amount of angle to cover), label, color
+        sectors: [], // start (angle from start), size (amount of angle to cover), label, color
+        smallSectors: []
     }
     var prevQueueLength = 0;
     var queueLength = 0;
@@ -132,10 +953,13 @@ try {
     io.sails.query = `host=${main.getMachineID()}`;
     var socket = io.sails.connect();
 
+
     // register requests
     var hostReq = new WWSUreq(socket, main.getMachineID(), 'host', '/auth/host', 'Host');
     var directorReq = new WWSUreq(socket, main.getMachineID(), 'name', '/auth/director', 'Director');
     var adminDirectorReq = new WWSUreq(socket, main.getMachineID(), 'name', '/auth/admin-director', 'Administrator Director');
+    var noReq = new WWSUreq(socket, main.getMachineID());
+
 
     socket.on('connect_error', function () {
         var noConnection = document.getElementById('no-connection');
@@ -408,6 +1232,36 @@ try {
     });
 
     $("#go-sports-modal").iziModal({
+        width: 640,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 50
+    });
+
+    $("#go-sportsremote-modal").iziModal({
+        width: 640,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 50
+    });
+
+    $("#audio-call-modal").iziModal({
         width: 640,
         focusInput: true,
         arrowKeys: false,
@@ -732,6 +1586,21 @@ try {
         return tempCont.getElementsByClassName("ql-editor")[0].innerHTML;
     }
 
+    $("#connecting-modal").iziModal({
+        width: 480,
+        appendTo: `#operations`,
+        appendToOverlay: `#operations`,
+        focusInput: false,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)'
+    });
+
     $("#wait-modal").iziModal({
         width: 480,
         appendTo: `#operations`,
@@ -902,6 +1771,10 @@ document.querySelector("#btn-gosports-b").onclick = function () {
     prepareSports();
 };
 
+document.querySelector("#btn-gosportsremote-b").onclick = function () {
+    prepareSportsRemote();
+};
+
 document.querySelector("#btn-endshow-b").onclick = function () {
     promptIfNotHost(`end the show`, function () {
         endShow();
@@ -1007,6 +1880,10 @@ document.querySelector("#sports-go").onclick = function () {
     goSports();
 };
 
+document.querySelector("#sportsremote-go").onclick = function () {
+    goSportsRemote();
+};
+
 document.querySelector("#log-add").onclick = function () {
     saveLog();
 };
@@ -1017,6 +1894,59 @@ document.querySelector("#btn-requests").onclick = function () {
 
 document.querySelector("#options").onclick = function () {
     $("#options-modal").iziModal('open');
+};
+
+document.querySelector("#audio-call").onclick = () => {
+    navigator.mediaDevices.enumerateDevices()
+            .then((devices) => {
+                var temp = document.querySelector("#main-input");
+                if (temp !== null)
+                {
+                    temp.innerHTML = `<option value="">Choose an input device...</option>`;
+                    temp.onchange = () => {
+                        getAudioMain(temp.value);
+                    };
+                }
+                var temp2 = document.querySelector("#call-input");
+                if (temp2 !== null)
+                {
+                    temp2.innerHTML = `<option value="">Choose an input device...</option>`;
+                    temp2.onchange = () => {
+                        getAudio(temp2.value);
+                    };
+                }
+                var temp3 = document.querySelector("#call-output");
+                if (temp3 !== null)
+                {
+                    temp3.innerHTML = `<option value="">Choose an output device...</option>`;
+                    temp3.onchange = () => {
+                        sinkAudio(temp3.value);
+                    };
+                }
+                devices.map((device, index) => {
+                    if (device.kind === 'audioinput') {
+                        if (temp !== null)
+                            temp.innerHTML += `<option value="${device.deviceId}">${device.label || 'Microphone ' + (index + 1)}</option>`;
+                        if (temp2 !== null)
+                            temp2.innerHTML += `<option value="${device.deviceId}">${device.label || 'Microphone ' + (index + 1)}</option>`;
+                    } else if (device.kind === 'audiooutput')
+                    {
+                        if (temp3 !== null)
+                            temp3.innerHTML += `<option value="${device.deviceId}">${device.label || 'Speaker ' + (index + 1)}</option>`;
+                    }
+                });
+
+                if (temp !== null)
+                    temp.value = settings.get(`audio.input.main`) || ``;
+
+                if (temp2 !== null)
+                    temp2.value = window.peerDevice || ``;
+
+                if (temp3 !== null)
+                    temp3.value = settings.get(`audio.output.call`) || ``;
+            });
+
+    $("#audio-call-modal").iziModal('open');
 };
 
 document.querySelector("#btn-options-djs").onclick = function () {
@@ -1055,7 +1985,7 @@ document.querySelector("#options-announcements-add").onclick = function () {
     document.querySelector("#options-announcement-title").value = "";
     document.querySelector("#options-announcement-level").value = "undefined";
     quill2.setText("\n");
-    document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-success btn-lg" id="options-announcement-add">Add</button>`;
+    document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-success btn-lg" id="options-announcement-add" title="Add announcement">Add</button>`;
     $("#options-modal-announcement").iziModal('open');
 };
 
@@ -1117,7 +2047,7 @@ function filterGlobalLogs(date) {
                         <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
                                     <div class="col-1">
-                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                                         </div>
@@ -1148,7 +2078,7 @@ function filterGlobalLogs(date) {
                         <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
                                     <div class="col-1">
-                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                                         </div>
@@ -1163,7 +2093,7 @@ function filterGlobalLogs(date) {
                         <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
                                     <div class="col-1">
-                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                                         </div>
@@ -1180,7 +2110,7 @@ function filterGlobalLogs(date) {
                         <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                                 </div>
                                     <div class="col-1">
-                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                                         </div>
@@ -1321,23 +2251,28 @@ document.querySelector("#btn-options-calendar").onclick = function () {
                 }
                 var cell3 = ``;
                 var theClass = `secondary`;
+                var theTitle = `This event does not have a recognized prefix. Please check the prefix if this event was meant to trigger something.`;
                 if (event.verify === 'Valid')
                 {
                     cell3 = `<span class="badge badge-success">Valid</span>`;
                     theClass = `success`;
+                    theTitle = `This event is good.`;
                 } else if (event.verify === 'Invalid')
                 {
                     cell3 = `<span class="badge badge-danger">Invalid</span>`;
                     theClass = `danger`;
+                    theTitle = `This event will not trigger due to critical issues.`;
                 } else if (event.verify === 'Check')
                 {
                     cell3 = `<span class="badge badge-warning">Check</span>`;
                     theClass = `warning`;
+                    theTitle = `This event is good, but has minor issues.`;
                 } else {
                     cell3 = `<span class="badge badge-dark">Manual</span>`;
                     theClass = `secondary`;
+                    theTitle = `This event does not have a recognized prefix. Please check the prefix if this event was meant to trigger something.`;
                 }
-                formatted[moment(event.start).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+                formatted[moment(event.start).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;" title="${theTitle}">
                                 <div class="col-3 text-primary">
                                     ${moment(event.start).format("h:mm A")} - ${moment(event.end).format("h:mm A")}
                                 </div>
@@ -1479,7 +2414,7 @@ document.querySelector(`#options-modal-djs`).addEventListener("click", function 
                     document.querySelector("#options-xp-amount").value = 0;
                     document.querySelector("#options-xp-djs").style.display = "inline-block";
                     document.querySelector("#options-xp-djs-none").style.display = "none";
-                    document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add">Add</button>`;
+                    document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add" title="Add Note/Remote/XP">Add</button>`;
                     Djs().each(dj => {
                         var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
                         if (temp)
@@ -1586,7 +2521,7 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                     document.querySelector("#options-xp-amount").value = 0;
                     document.querySelector("#options-xp-djs").style.display = "inline-block";
                     document.querySelector("#options-xp-djs-none").style.display = "none";
-                    document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add">Add</button>`;
+                    document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add" title="Add Note/Remote/XP">Add</button>`;
                     Djs().each(dj => {
                         var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
                         if (temp)
@@ -1764,7 +2699,7 @@ document.querySelector(`#options-modal-directors`).addEventListener("click", fun
                     document.querySelector("#options-director-position").value = "";
                     document.querySelector("#options-director-admin").checked = false;
                     document.querySelector("#options-director-assistant").checked = false;
-                    document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-success btn-lg" id="options-director-add">Add</button>`;
+                    document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-success btn-lg" id="options-director-add" title="Add director into the system">Add</button>`;
                     $("#options-modal-director").iziModal('open');
                 } else if (e.target.id === "options-director-timesheets")
                 {
@@ -1798,7 +2733,7 @@ document.querySelector(`#options-directors`).addEventListener("click", function 
                 document.querySelector("#options-director-position").value = director2.position;
                 document.querySelector("#options-director-admin").checked = director2.admin;
                 document.querySelector("#options-director-assistant").checked = director2.assistant;
-                document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-urgent btn-lg" id="options-director-edit-${director}">Edit</button>
+                document.querySelector("#options-director-button").innerHTML = `<button type="button" class="btn btn-urgent btn-lg" id="options-director-edit-${director}" title="Edit this director">Edit</button>
                 <button type="button" class="btn btn-danger btn-lg" id="options-director-remove-${director}">Remove</button>`;
                 $("#options-modal-director").iziModal('open');
             }
@@ -1966,7 +2901,7 @@ document.querySelector(`#dj-xp-add-div`).addEventListener("click", function (e) 
                 document.querySelector("#options-xp-amount").value = 0;
                 document.querySelector("#options-xp-djs").style.display = "inline-block";
                 document.querySelector("#options-xp-djs-none").style.display = "none";
-                document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add">Add</button>`;
+                document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-xp-add" title="Add Note/Remote/XP">Add</button>`;
                 Djs().each(dj => {
                     var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
                     if (temp)
@@ -2259,7 +3194,7 @@ document.querySelector(`#dj-xp-logs`).addEventListener("click", function (e) {
                             document.querySelector("#options-xp-amount").value = parseFloat(record.amount);
                             document.querySelector("#options-xp-djs").style.display = "none";
                             document.querySelector("#options-xp-djs-none").style.display = "inline-block";
-                            document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-xp-edit-${recordID}">Edit</button>`;
+                            document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-xp-edit-${recordID}" title="Edit Note/Remote/XP">Edit</button>`;
                             Djs().each(dj => {
                                 var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
                                 if (temp)
@@ -2451,7 +3386,7 @@ document.querySelector(`#options-announcements`).addEventListener("click", funct
                 document.querySelector("#options-announcement-title").value = response.title;
                 document.querySelector("#options-announcement-level").value = response.level;
                 quill2.clipboard.dangerouslyPasteHTML(response.announcement);
-                document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-urgent btn-lg" id="options-announcement-edit-${response.ID}">Edit</button>`;
+                document.querySelector("#options-announcement-button").innerHTML = `<button type="button" class="btn btn-urgent btn-lg" id="options-announcement-edit-${response.ID}" title="Edit Announcement">Edit</button>`;
                 $("#options-modal-announcement").iziModal('open');
             }
         }
@@ -2510,7 +3445,7 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
                                         console.dir(response);
                                         iziToast.show({
                                             title: `Failed to remove DJ Controls host!`,
-                                            message: `There was an error trying to remove the DJ Controls host. This might happen if you were trying to remove the only authorized admin; if so, make another host an authorized admin first.`,
+                                            message: `There was an error trying to remove the DJ Controls host. ${response}.`,
                                             timeout: 20000,
                                             close: true,
                                             color: 'red',
@@ -2518,7 +3453,8 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
                                             position: 'center',
                                             closeOnClick: true,
                                             overlay: false,
-                                            zindex: 1000
+                                            zindex: 1000,
+                                            maxWidth: 480
                                         });
                                     }
                                 });
@@ -2531,14 +3467,64 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
             }
             if (e.target.id.startsWith("options-djcontrols-edit-"))
             {
+                var checkCaution = () => {
+                    if (document.querySelector("#options-host-makecalls").checked && (document.querySelector("#options-host-record").checked || document.querySelector("#options-host-silence").checked))
+                    {
+                        document.querySelector("#options-host-makecalls").classList.add("is-invalid");
+                    } else {
+                        document.querySelector("#options-host-makecalls").classList.remove("is-invalid");
+                    }
+                };
+                document.querySelector("#options-host-makecalls").onchange = checkCaution;
+                document.querySelector("#options-host-record").onchange = checkCaution;
+                document.querySelector("#options-host-silence").onchange = checkCaution;
+
                 var host = Hosts({ID: parseInt(e.target.id.replace(`options-djcontrols-edit-`, ``))}).first();
                 document.querySelector("#options-host-name").value = host.friendlyname;
                 document.querySelector("#options-host-authorized").checked = host.authorized;
                 document.querySelector("#options-host-admin").checked = host.admin;
+                document.querySelector("#options-host-makecalls").checked = host.makeCalls;
+                document.querySelector("#options-host-answercalls").checked = host.answerCalls;
+                document.querySelector("#options-host-record").checked = host.recordAudio;
+                document.querySelector("#options-host-silence").checked = host.silenceDetection;
                 document.querySelector("#options-host-requests").checked = host.requests;
                 document.querySelector("#options-host-emergencies").checked = host.emergencies;
                 document.querySelector("#options-host-webmessages").checked = host.webmessages;
-                document.querySelector("#options-host-button").innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-host-edit-${host.ID}">Edit</button>`;
+
+                checkCaution();
+
+                if (Hosts({authorized: true, admin: true}).get().length <= 1 && host.authorized && host.admin)
+                {
+                    document.querySelector("#options-host-authorized").disabled = true;
+                    document.querySelector("#options-host-admin").disabled = true;
+                    document.querySelector("#options-host-authorized").classList.add("is-invalid");
+                    document.querySelector("#options-host-admin").classList.add("is-invalid");
+                } else {
+                    document.querySelector("#options-host-authorized").disabled = false;
+                    document.querySelector("#options-host-admin").disabled = false;
+                    document.querySelector("#options-host-authorized").classList.remove("is-invalid");
+                    document.querySelector("#options-host-admin").classList.remove("is-invalid");
+                }
+
+                if (Hosts({silenceDetection: true}).get().length <= 1 && !host.silenceDetection)
+                {
+                    document.querySelector("#options-host-silence").disabled = true;
+                    document.querySelector("#options-host-silence").classList.add("is-invalid");
+                } else {
+                    document.querySelector("#options-host-silence").disabled = false;
+                    document.querySelector("#options-host-silence").classList.remove("is-invalid");
+                }
+
+                if (Hosts({recordAudio: true}).get().length <= 1 && !host.recordAudio)
+                {
+                    document.querySelector("#options-host-record").disabled = true;
+                    document.querySelector("#options-host-record").classList.add("is-invalid");
+                } else {
+                    document.querySelector("#options-host-record").disabled = false;
+                    document.querySelector("#options-host-record").classList.remove("is-invalid");
+                }
+
+                document.querySelector("#options-host-button").innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-host-edit-${host.ID}" title="Edit host">Edit</button>`;
                 $("#options-modal-host").iziModal('open');
             }
         }
@@ -2643,7 +3629,7 @@ document.querySelector(`#options-host-button`).addEventListener("click", functio
             console.log(e.target.id);
             if (e.target.id.startsWith("options-host-edit-"))
             {
-                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/hosts/edit', data: {ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector("#options-host-name").value, authorized: document.querySelector("#options-host-authorized").checked, admin: document.querySelector("#options-host-admin").checked, requests: document.querySelector("#options-host-requests").checked, emergencies: document.querySelector("#options-host-emergencies").checked, webmessages: document.querySelector("#options-host-webmessages").checked}}, function (response) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/hosts/edit', data: {ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector("#options-host-name").value, authorized: document.querySelector("#options-host-authorized").checked, admin: document.querySelector("#options-host-admin").checked, requests: document.querySelector("#options-host-requests").checked, emergencies: document.querySelector("#options-host-emergencies").checked, webmessages: document.querySelector("#options-host-webmessages").checked, makeCalls: document.querySelector("#options-host-makecalls").checked, answerCalls: document.querySelector("#options-host-answercalls").checked, silenceDetection: document.querySelector("#options-host-silence").checked, recordAudio: document.querySelector("#options-host-record").checked}}, function (response) {
                     if (response === 'OK')
                     {
                         $("#options-modal-host").iziModal('close');
@@ -2663,7 +3649,7 @@ document.querySelector(`#options-host-button`).addEventListener("click", functio
                         console.dir(response);
                         iziToast.show({
                             title: `Failed to edit host!`,
-                            message: `There was an error trying to edit the DJ Controls host. This might happen if you're removing admin or authorized permissions from the only authorized admin host in the system. If this is true, ensure there is another authorized admin host first.`,
+                            message: `There was an error trying to edit the DJ Controls host. ${response}`,
                             timeout: 10000,
                             close: true,
                             color: 'red',
@@ -2671,7 +3657,8 @@ document.querySelector(`#options-host-button`).addEventListener("click", functio
                             position: 'center',
                             closeOnClick: true,
                             overlay: false,
-                            zindex: 1000
+                            zindex: 1000,
+                            maxWidth: 480
                         });
                     }
                 });
@@ -2924,7 +3911,6 @@ document.querySelector(`#options-director-button`).addEventListener("click", fun
 document.querySelector(`#messages-unread`).addEventListener("click", function (e) {
     try {
         if (e.target) {
-            console.dir(e.target);
             var target = null;
             if (e.target.offsetParent !== null && e.target.offsetParent.id !== `messages-unread` && !e.target.id.startsWith("message-n-x-"))
             {
@@ -3036,6 +4022,15 @@ document.querySelector("#sports-sport").addEventListener("change", function () {
         document.querySelector("#sports-sport").className = "form-control m-1";
     } else {
         document.querySelector("#sports-sport").className = "form-control m-1 is-invalid";
+    }
+});
+
+document.querySelector("#sportsremote-sport").addEventListener("change", function () {
+    if (calType === 'Sports' && document.querySelector("#sportsremote-sport").value === calShow)
+    {
+        document.querySelector("#sportsremote-sport").className = "form-control m-1";
+    } else {
+        document.querySelector("#sportsremote-sport").className = "form-control m-1 is-invalid";
     }
 });
 
@@ -3176,109 +4171,131 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-        {
-            hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
-                //console.log(body);
-                try {
-                    client = body;
-                    //authtoken = client.token;
-                    if (!client.authorized)
-                    {
-                        var noConnection = document.getElementById('no-connection');
-                        noConnection.style.display = "inline";
-                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+{
+    drawLoop(null, null, true);
+    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+        //console.log(body);
+        try {
+            client = body;
+            //authtoken = client.token;
+            if (!client.authorized)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "inline";
+                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                        cb(false);
-                    } else {
-                        cb(true);
-                    }
-                    if (client.admin)
-                    {
-                        if (client.otherHosts)
-                            processHosts(client.otherHosts, true);
-                        var temp = document.querySelector(`#options`);
-                        var restarter;
-                        if (temp)
-                            temp.style.display = "inline";
+                cb(false);
+            } else {
+                cb(true);
 
-                        // Subscribe to the logs socket
-                        hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                //processLogs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED logs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get djs and subscribe to the dj socket
-                        hostReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                processDjs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED DJs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get directors and subscribe to the dj socket
-                        hostReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                processDirectors(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED directors CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the XP socket
-                        hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED XP CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the timesheet socket
-                        hostReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED TIMESHEET CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-                    } else {
-                        var temp = document.querySelector(`#options`);
-                        if (temp)
-                            temp.style.display = "none";
-                    }
+                // Disconnect current peer if it exists
+                try {
+                    peer.destroy();
                 } catch (e) {
-                    console.error(e);
-                    console.log('FAILED HOST CONNECTION');
-                    restarter = setTimeout(hostSocket, 10000);
+                    // Ignore errors
                 }
-            });
+
+                // Determine if we should start a new peer
+                if (client.makeCalls || client.answerCalls)
+                {
+                    setupPeer();
+                }
+
+                // Determine if it is applicable to initiate the user media for audio calls
+                if (client.makeCalls)
+                {
+                    console.log(`Initiating getUserMedia for makeCalls`);
+                    getAudio();
+                }
+
+            }
+            if (client.admin)
+            {
+                if (client.otherHosts)
+                    processHosts(client.otherHosts, true);
+                var temp = document.querySelector(`#options`);
+                var restarter;
+                if (temp)
+                    temp.style.display = "inline";
+
+                // Subscribe to the logs socket
+                hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        //processLogs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED logs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Get djs and subscribe to the dj socket
+                noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDjs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED DJs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Get directors and subscribe to the dj socket
+                noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDirectors(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED directors CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the XP socket
+                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED XP CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the timesheet socket
+                noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED TIMESHEET CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+            } else {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            console.log('FAILED HOST CONNECTION');
+            restarter = setTimeout(hostSocket, 10000);
         }
+    });
+}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -3298,7 +4315,7 @@ function onlineSocket()
 // Gets wwsu metadata
 function metaSocket() {
     console.log('attempting meta socket');
-    hostReq.request({method: 'POST', url: '/meta/get', data: {}}, function (body) {
+    noReq.request({method: 'POST', url: '/meta/get', data: {}}, function (body) {
         try {
             var startRecording = null;
             for (var key in body)
@@ -3380,7 +4397,7 @@ function metaSocket() {
 function easSocket()
 {
     console.log('attempting eas socket');
-    hostReq.request({method: 'POST', url: '/eas/get', data: {}}, function (body) {
+    noReq.request({method: 'POST', url: '/eas/get', data: {}}, function (body) {
         try {
             processEas(body, true);
         } catch (e) {
@@ -3394,7 +4411,7 @@ function easSocket()
 // Status checks
 function statusSocket() {
     console.log('attempting statuc socket');
-    hostReq.request({method: 'POST', url: '/status/get', data: {}}, function (body) {
+    noReq.request({method: 'POST', url: '/status/get', data: {}}, function (body) {
         //console.log(body);
         try {
             processStatus(body, true);
@@ -3409,7 +4426,7 @@ function statusSocket() {
 // Event calendar from Google
 function calendarSocket() {
     console.log('attempting calendar socket');
-    hostReq.request({method: 'POST', url: '/calendar/get', data: {}}, function (body) {
+    noReq.request({method: 'POST', url: '/calendar/get', data: {}}, function (body) {
         //console.log(body);
         try {
             processCalendar(body, true);
@@ -3448,7 +4465,7 @@ function messagesSocket() {
                 setTimeout(messagesSocket, 10000);
             }
         });
-        hostReq.request({method: 'POST', url: '/announcements/get', data: {type: client.admin ? 'all' : 'djcontrols'}}, function (body) {
+        noReq.request({method: 'POST', url: '/announcements/get', data: {type: client.admin ? 'all' : 'djcontrols'}}, function (body) {
             //console.log(body);
             try {
                 processAnnouncements(body, true);
@@ -3562,7 +4579,7 @@ function doMeta(metan) {
             {
                 breakNotified = true;
                 var notification = notifier.notify(`Don't forget Top of Hour break!`, {
-                    message: 'Please take a break in the next 3 minutes.',
+                    message: `Please take a break before :05 after the hour`,
                     icon: 'http://cdn.onlinewebfonts.com/svg/img_205852.png',
                     duration: 300000,
                 });
@@ -3627,6 +4644,40 @@ function doMeta(metan) {
         // Do stuff if the state changed
         if (typeof metan.state !== 'undefined' || typeof metan.playing !== 'undefined')
         {
+            // Disconnect outgoing calls on breaks
+            if (Meta.state === "remote_break" || Meta.state === "sportsremote_break" || Meta.state === "sportsremote_halftime")
+            {
+                try {
+                    outgoingCloseIgnore = true;
+                    console.log(`Closing call via doMeta break`);
+                    outgoingCall.close();
+                    outgoingCall = undefined;
+                    outgoingCloseIgnore = false;
+                } catch (eee) {
+                    outgoingCloseIgnore = false;
+                }
+            }
+
+            // Mute incoming audio if something is playing
+            if (Meta.state.startsWith("remote_") || Meta.state.startsWith("sportsremote_"))
+            {
+                if (!Meta.playing)
+                {
+                    var temp = document.querySelector(`#remoteAudio`);
+                    if (temp !== null)
+                        temp.muted = false;
+                } else {
+                    var temp = document.querySelector(`#remoteAudio`);
+                    if (temp !== null)
+                        temp.muted = true;
+                }
+
+                // Mute audio if not in any sportremote nor remote state
+            } else {
+                if (temp !== null)
+                    temp.muted = true;
+            }
+
             // Always re-do the calendar / clockwheel when states change.
             checkCalendar();
 
@@ -3647,6 +4698,7 @@ function doMeta(metan) {
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
                 document.querySelector('#btn-gosports').style.display = "inline";
+                document.querySelector('#btn-gosportsremote').style.display = "inline";
             } else if (Meta.state === 'automation_playlist')
             {
                 isHost = false;
@@ -3654,6 +4706,7 @@ function doMeta(metan) {
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
                 document.querySelector('#btn-gosports').style.display = "inline";
+                document.querySelector('#btn-gosportsremote').style.display = "inline";
             } else if (Meta.state === 'automation_genre')
             {
                 isHost = false;
@@ -3661,6 +4714,7 @@ function doMeta(metan) {
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
                 document.querySelector('#btn-gosports').style.display = "inline";
+                document.querySelector('#btn-gosportsremote').style.display = "inline";
             } else if (Meta.state === 'live_prerecord' || Meta.state === 'automation_prerecord')
             {
                 isHost = false;
@@ -3668,6 +4722,7 @@ function doMeta(metan) {
                 document.querySelector('#btn-golive').style.display = "inline";
                 document.querySelector('#btn-goremote').style.display = "inline";
                 document.querySelector('#btn-gosports').style.display = "inline";
+                document.querySelector('#btn-gosportsremote').style.display = "inline";
             } else if (Meta.state.startsWith('automation_') || (Meta.state.includes('_returning') && !Meta.state.startsWith('sports')))
             {
                 badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`;
@@ -3720,6 +4775,8 @@ function doMeta(metan) {
             {
                 badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`;
                 document.querySelector('#btn-return').style.display = "inline";
+                document.querySelector('#btn-endshow').style.display = "inline";
+                document.querySelector('#btn-switchshow').style.display = "inline";
             } else if (Meta.state.includes('live_'))
             {
                 /*
@@ -3753,6 +4810,8 @@ function doMeta(metan) {
                 if (Meta.playing)
                 {
                     document.querySelector('#queue').style.display = "inline";
+                    document.querySelector('#btn-endshow').style.display = "inline";
+                    document.querySelector('#btn-switchshow').style.display = "inline";
                 } else {
                     document.querySelector('#btn-endshow').style.display = "inline";
                     document.querySelector('#btn-switchshow').style.display = "inline";
@@ -3793,6 +4852,8 @@ function doMeta(metan) {
                 if (Meta.playing)
                 {
                     document.querySelector('#queue').style.display = "inline";
+                    document.querySelector('#btn-endshow').style.display = "inline";
+                    document.querySelector('#btn-switchshow').style.display = "inline";
                 } else {
                     document.querySelector('#btn-liner').style.display = "inline";
                     document.querySelector('#btn-endshow').style.display = "inline";
@@ -3832,6 +4893,8 @@ function doMeta(metan) {
                 if (Meta.playing)
                 {
                     document.querySelector('#queue').style.display = "inline";
+                    document.querySelector('#btn-endshow').style.display = "inline";
+                    document.querySelector('#btn-switchshow').style.display = "inline";
                 } else {
                     document.querySelector('#btn-topadd').style.display = "inline";
                     document.querySelector('#btn-endshow').style.display = "inline";
@@ -4240,10 +5303,10 @@ function checkAnnouncements() {
                         ${announcement.title}
                     </div>
                     <div class="col-2 text-dark">
-                <button type="button" id="options-announcements-edit-${announcement.ID}" class="close" aria-label="Edit Announcement">
+                <button type="button" id="options-announcements-edit-${announcement.ID}" class="close" aria-label="Edit Announcement" title="Edit this announcement">
                 <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
                 </button>
-                <button type="button" id="options-announcements-remove-${announcement.ID}" class="close" aria-label="Remove Announcement">
+                <button type="button" id="options-announcements-remove-${announcement.ID}" class="close" aria-label="Remove Announcement" title="Remove this announcement">
                 <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
                 </button>
                     </div>
@@ -4261,6 +5324,7 @@ function checkCalendar() {
         // Erase the clockwheel
         $(".chart").empty();
         data.sectors = [];
+        data.smallSectors = [];
 
         // Define a comparison function that will order calendar events by start time when we run the iteration
         var compare = function (a, b) {
@@ -4801,6 +5865,45 @@ function checkCalendar() {
                                 });
                             }
                         }
+                    } else {
+                        if (moment(event.end).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
+                        {
+                            if (moment(event.start).isAfter(moment(Meta.time)))
+                            {
+                                data.smallSectors.push({
+                                    label: event.title,
+                                    start: ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) + 0.5,
+                                    size: ((moment(event.end).diff(moment(event.start), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
+                                    color: event.color || '#787878'
+                                });
+                            } else {
+                                data.smallSectors.push({
+                                    label: event.title,
+                                    start: 0.5,
+                                    size: ((moment(event.end).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
+                                    color: event.color || '#787878'
+                                });
+                            }
+                        } else if (moment(event.start).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
+                        {
+                            if (moment(event.start).isAfter(moment(Meta.time)))
+                            {
+                                var start = ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360);
+                                data.smallSectors.push({
+                                    label: event.title,
+                                    start: start + 0.5,
+                                    size: 360 - start,
+                                    color: event.color || '#787878'
+                                });
+                            } else {
+                                data.smallSectors.push({
+                                    label: event.title,
+                                    start: 0,
+                                    size: 360,
+                                    color: event.color || '#787878'
+                                });
+                            }
+                        }
                     }
                     // If we are doing a show, do a 1-hour clockwheel
                 } else {
@@ -4949,7 +6052,18 @@ function checkCalendar() {
             var sectors = calculateSectors(data);
             var newSVG = document.getElementById("clock-program");
             newSVG.setAttribute("transform", `rotate(${data.start})`);
-            sectors.map(function (sector) {
+            sectors.normal.map(function (sector) {
+
+                var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                newSector.setAttributeNS(null, 'fill', sector.color);
+                newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
+                newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
+
+                newSVG.appendChild(newSector);
+            });
+            var newSVG = document.getElementById("clock-program-2");
+            newSVG.setAttribute("transform", `rotate(${data.start})`);
+            sectors.small.map(function (sector) {
 
                 var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 newSector.setAttributeNS(null, 'fill', sector.color);
@@ -5087,7 +6201,7 @@ function checkCalendar() {
                 // Then, shade the top of hour ID break on the clock if required
                 if (doTopOfHour)
                 {
-                    if (moment(Meta.lastID).add(10, 'minutes').startOf('hour') !== moment(Meta.time).startOf('hour') && moment(Meta.time).diff(moment(Meta.time).startOf('hour'), 'minutes') < 10)
+                    if (moment(Meta.lastID).add(10, 'minutes').startOf('hour') !== moment(Meta.time).startOf('hour') && moment(Meta.time).diff(moment(Meta.time).startOf('hour'), 'minutes') < 5)
                     {
                         var start = moment(Meta.time).startOf('hour').subtract(5, 'minutes');
                         var diff = moment(Meta.time).diff(moment(start), 'seconds');
@@ -5122,8 +6236,18 @@ function checkCalendar() {
             var sectors = calculateSectors(data);
             var newSVG = document.getElementById("clock-program");
             newSVG.setAttribute("transform", `rotate(${data.start})`);
-            console.dir(sectors);
-            sectors.map(function (sector) {
+            sectors.normal.map(function (sector) {
+
+                var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                newSector.setAttributeNS(null, 'fill', sector.color);
+                newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
+                newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
+
+                newSVG.appendChild(newSector);
+            });
+            var newSVG = document.getElementById("clock-program-2");
+            newSVG.setAttribute("transform", `rotate(${data.start})`);
+            sectors.small.map(function (sector) {
 
                 var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 newSector.setAttributeNS(null, 'fill', sector.color);
@@ -5157,9 +6281,20 @@ function checkCalendar() {
                 }
 
                 var sectors = calculateSectors(data);
-                var newSVG = document.getElementById("queue-time");
+                var newSVG = document.getElementById("clock-program");
                 newSVG.setAttribute("transform", `rotate(${data.start})`);
-                sectors.map(function (sector) {
+                sectors.normal.map(function (sector) {
+
+                    var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    newSector.setAttributeNS(null, 'fill', sector.color);
+                    newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
+                    newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
+
+                    newSVG.appendChild(newSector);
+                });
+                var newSVG = document.getElementById("clock-program-2");
+                newSVG.setAttribute("transform", `rotate(${data.start})`);
+                sectors.small.map(function (sector) {
 
                     var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
                     newSector.setAttributeNS(null, 'fill', sector.color);
@@ -5850,18 +6985,32 @@ function finishAttnRemove(ID) {
 
 
 function returnBreak() {
-    hostReq.request({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
-        console.log(JSON.stringify(response));
-        if (response !== 'OK')
-        {
-            iziToast.show({
-                title: 'An error occurred',
-                message: 'Cannot return from break. Please try again in 15-30 seconds.',
-                timeout: 10000
-            });
-            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to return from break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
-        }
-    });
+    var afterFunction = () => {
+        hostReq.request({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
+            console.log(JSON.stringify(response));
+            if (response !== 'OK')
+            {
+                iziToast.show({
+                    title: 'An error occurred',
+                    message: 'Cannot return from break. Please try again in 15-30 seconds.',
+                    timeout: 10000
+                });
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to return from break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+            }
+        });
+    }
+
+    if (typeof window.peerHost !== `undefined`)
+    {
+        startCall(window.peerHost, (success) => {
+            if (success)
+            {
+                afterFunction();
+            }
+        });
+    } else {
+        afterFunction();
+    }
 }
 
 function queuePSA(duration) {
@@ -5952,6 +7101,16 @@ function _goLive() {
 }
 
 function prepareRemote() {
+    if (!client.makeCalls)
+    {
+        iziToast.show({
+            title: 'Cannot do remote broadcast',
+            message: `This DJ Controls is not allowed to make audio calls. Therefore, a remote broadcast cannot be started on this DJ Controls. If this is an error, on an administrator DJ Controls, go to manage hosts, and assign the make calls permission to ${client.friendlyname}.`,
+            timeout: 60000,
+            maxWidth: 480,
+        });
+        return null;
+    }
     document.querySelector("#remote-handle").value = '';
     document.querySelector("#remote-show").value = '';
     document.querySelector("#remote-topic").value = '';
@@ -5968,6 +7127,44 @@ function prepareRemote() {
         document.querySelector("#remote-handle").className = "form-control m-1";
         document.querySelector("#remote-show").className = "form-control m-1";
     }
+
+    // Populate input devices
+    navigator.mediaDevices.enumerateDevices()
+            .then((devices) => {
+                var temp = document.querySelector("#remote-input");
+                if (temp !== null)
+                {
+                    temp.innerHTML = ``;
+
+                    devices.map((device, index) => {
+                        if (device.kind === 'audioinput') {
+                            temp.innerHTML += `<option value="${device.deviceId}">${device.label || 'Microphone ' + (index + 1)}</option>`;
+                        }
+                    });
+
+                    temp.onchange = () => {
+                        getAudio(temp.value);
+                    };
+                }
+            });
+
+    // Populate hosts that can be audio-called
+    var temp2 = document.querySelector("#remote-host");
+    if (temp2 !== null)
+    {
+        temp2.innerHTML = ``;
+        Hosts({authorized: true, answerCalls: true}).each((host) => {
+            console.dir(host);
+            Recipients({host: host.host}).each((recipient) => {
+                console.dir(recipient);
+                if (host.host !== client.host && recipient.peer !== null)
+                {
+                    temp2.innerHTML += `<option value="${host.host}">${host.friendlyname}</option>`;
+                }
+            });
+        });
+    }
+
     $("#go-remote-modal").iziModal('open');
 }
 
@@ -6005,21 +7202,28 @@ function goRemote() {
 }
 
 function _goRemote() {
-    hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || calType !== `Remote`) ? document.querySelector('#remote-topic').value : calTopic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
-        if (response === 'OK')
+    var remoteOptions = document.getElementById('remote-host');
+    var selectedOption = remoteOptions.options[remoteOptions.selectedIndex].value;
+    startCall(selectedOption, (success) => {
+        if (success)
         {
-            isHost = true;
-            selectRecipient(null);
-            $("#go-remote-modal").iziModal('close');
-        } else {
-            iziToast.show({
-                title: 'An error occurred',
-                message: 'Cannot go remote at this time. Please try again in 15-30 seconds.',
-                timeout: 10000
+            hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || calType !== `Remote`) ? document.querySelector('#remote-topic').value : calTopic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
+                if (response === 'OK')
+                {
+                    isHost = true;
+                    selectRecipient(null);
+                    $("#go-remote-modal").iziModal('close');
+                } else {
+                    iziToast.show({
+                        title: 'An error occurred',
+                        message: 'Cannot go remote at this time. Please try again in 15-30 seconds.',
+                        timeout: 10000
+                    });
+                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+                }
+                console.log(JSON.stringify(response));
             });
-            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
-        console.log(JSON.stringify(response));
     });
 }
 
@@ -6028,7 +7232,6 @@ function prepareSports() {
     document.querySelector("#sports-sport").className = "form-control m-1 is-invalid";
     document.querySelector('#sports-topic').value = "";
     document.querySelector('#sports-topic').placeholder = "";
-    document.querySelector("#sports-remote").checked = false;
     document.querySelector("#sports-webchat").checked = true;
     // Auto fill the sport dropdown if a sport is scheduled
     if (calType === 'Sports')
@@ -6037,7 +7240,6 @@ function prepareSports() {
         document.querySelector('#sports-topic').value = "";
         document.querySelector('#sports-topic').placeholder = calTopic;
         document.querySelector("#sports-sport").className = "form-control m-1";
-        document.querySelector("#sports-remote").checked = false;
         document.querySelector("#sports-webchat").checked = true;
     }
     $("#go-sports-modal").iziModal('open');
@@ -6079,7 +7281,7 @@ function goSports() {
 function _goSports() {
     var sportsOptions = document.getElementById('sports-sport');
     var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
-    hostReq.request({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, topic: (document.querySelector('#sports-topic').value !== `` || calType !== `Sports`) ? document.querySelector('#sports-topic').value : calTopic, remote: document.querySelector('#sports-remote').checked, djcontrols: client.host, webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, topic: (document.querySelector('#sports-topic').value !== `` || calType !== `Sports`) ? document.querySelector('#sports-topic').value : calTopic, webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
             isHost = true;
@@ -6094,6 +7296,133 @@ function _goSports() {
             hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         }
         console.log(JSON.stringify(response));
+    });
+}
+
+function prepareSportsRemote() {
+    if (!client.makeCalls)
+    {
+        iziToast.show({
+            title: 'Cannot do remote sports broadcast',
+            message: `This DJ Controls is not allowed to make audio calls. Therefore, a remote sports broadcast cannot be started on this DJ Controls. If this is an error, on an administrator DJ Controls, go to manage hosts, and assign the make calls permission to ${client.friendlyname}.`,
+            timeout: 60000,
+            maxWidth: 480,
+        });
+        return null;
+    }
+    document.querySelector('#sportsremote-sport').value = "";
+    document.querySelector("#sportsremote-sport").className = "form-control m-1 is-invalid";
+    document.querySelector('#sportsremote-topic').value = "";
+    document.querySelector('#sportsremote-topic').placeholder = "";
+    document.querySelector("#sportsremote-webchat").checked = true;
+    // Auto fill the sport dropdown if a sport is scheduled
+    if (calType === 'Sports')
+    {
+        document.querySelector("#sportsremote-sport").value = calShow;
+        document.querySelector('#sportsremote-topic').value = "";
+        document.querySelector('#sportsremote-topic').placeholder = calTopic;
+        document.querySelector("#sportsremote-sport").className = "form-control m-1";
+        document.querySelector("#sportsremote-webchat").checked = true;
+    }
+
+    // Populate input devices
+    navigator.mediaDevices.enumerateDevices()
+            .then((devices) => {
+                var temp = document.querySelector("#sportsremote-input");
+                if (temp !== null)
+                {
+                    temp.innerHTML = ``;
+
+                    devices.map((device, index) => {
+                        if (device.kind === 'audioinput') {
+                            temp.innerHTML += `<option value="${device.deviceId}">${device.label || 'Microphone ' + (index + 1)}</option>`;
+                        }
+                    });
+
+                    temp.onchange = () => {
+                        getAudio(temp.value);
+                    };
+                }
+            });
+
+    // Populate hosts that can be audio-called
+    var temp2 = document.querySelector("#sportsremote-host");
+    if (temp2 !== null)
+    {
+        temp2.innerHTML = ``;
+        Hosts({authorized: true, answerCalls: true}).each((host) => {
+            console.dir(host);
+            Recipients({host: host.host}).each((recipient) => {
+                console.dir(recipient);
+                if (host.host !== client.host && recipient.peer !== null)
+                {
+                    temp2.innerHTML += `<option value="${host.host}">${host.friendlyname}</option>`;
+                }
+            });
+        });
+    }
+
+    $("#go-sportsremote-modal").iziModal('open');
+}
+
+function goSportsRemote() {
+    if (calType === 'Sports' && document.querySelector("#sportsremote-sport").value === calShow)
+    {
+        _goSportsRemote();
+    } else {
+        iziToast.show({
+            timeout: 60000,
+            overlay: true,
+            displayMode: 'once',
+            color: 'yellow',
+            id: 'inputs',
+            zindex: 999,
+            layout: 2,
+            image: `assets/images/goSports.png`,
+            maxWidth: 480,
+            title: 'You are about to begin an un-scheduled sports broadcast',
+            message: 'Directors will be notified if you begin the broadcast! The clockwheel on DJ Controls may be wrong. And programmed openers/returns/liners/closers might not queue. Continue?',
+            position: 'center',
+            drag: false,
+            closeOnClick: false,
+            buttons: [
+                ['<button><b>Continue</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        _goSportsRemote();
+                    }],
+                ['<button><b>Cancel</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                    }],
+            ]
+        });
+    }
+}
+
+function _goSportsRemote() {
+    var remoteOptions = document.getElementById('sportsremote-host');
+    var selectedOption = remoteOptions.options[remoteOptions.selectedIndex].value;
+    startCall(selectedOption, (success) => {
+        if (success)
+        {
+            var sportsOptions = document.getElementById('sportsremote-sport');
+            var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
+            hostReq.request({method: 'POST', url: nodeURL + '/state/sports-remote', data: {sport: selectedOption, topic: (document.querySelector('#sportsremote-topic').value !== `` || calType !== `Sports`) ? document.querySelector('#sportsremote-topic').value : calTopic, webchat: document.querySelector('#sportsremote-webchat').checked}}, function (response) {
+                if (response === 'OK')
+                {
+                    isHost = true;
+                    selectRecipient(null);
+                    $("#go-sportsremote-modal").iziModal('close');
+                } else {
+                    iziToast.show({
+                        title: 'An error occurred',
+                        message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
+                        timeout: 10000
+                    });
+                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+                }
+                console.log(JSON.stringify(response));
+            });
+        }
     });
 }
 
@@ -6202,7 +7531,6 @@ function prepareEmergency() {
 }
 
 function sendEmergency() {
-    // TODO fix this; can't use announcements anymore
     hostReq.request({method: 'POST', url: nodeURL + '/announcements/add-problem', data: {information: `<strong>${moment().format("MM/DD/YYYY hh:mm A")}</strong>: ${document.querySelector("#emergency-issue").value}`}}, function (response) {
         if (response === 'OK')
         {
@@ -6283,6 +7611,19 @@ function endShow() {
             document.querySelector(`#stat-remoteCredits`).innerHTML = typeof response.remoteCredits !== 'undefined' ? formatInt(response.remoteCredits) : `-`;
             document.querySelector(`#stat-totalShowTime`).innerHTML = typeof response.totalShowTime !== 'undefined' ? formatInt(parseInt(response.totalShowTime / 60)) : `-`;
             document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.totalListenerMinutes !== 'undefined' ? formatInt(parseInt(response.totalListenerMinutes / 60)) : `-`;
+
+            try {
+                window.peerDevice = undefined;
+                window.peerHost = undefined;
+                outgoingCloseIgnore = true;
+                console.log(`Closing call via endShow`);
+                outgoingCall.close();
+                outgoingCall = undefined;
+                outgoingCloseIgnore = false;
+            } catch (eee) {
+                outgoingCloseIgnore = false;
+                // ignore errors
+            }
         }
         console.log(JSON.stringify(response));
     });
@@ -6307,6 +7648,19 @@ function switchShow() {
             document.querySelector(`#stat-remoteCredits`).innerHTML = typeof response.remoteCredits !== 'undefined' ? formatInt(response.remoteCredits) : `-`;
             document.querySelector(`#stat-totalShowTime`).innerHTML = typeof response.totalShowTime !== 'undefined' ? formatInt(parseInt(response.totalShowTime / 60)) : `-`;
             document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.totalListenerMinutes !== 'undefined' ? formatInt(parseInt(response.totalListenerMinutes / 60)) : `-`;
+
+            try {
+                window.peerDevice = undefined;
+                window.peerHost = undefined;
+                outgoingCloseIgnore = true;
+                console.log(`Closing call via switchShow`);
+                outgoingCall.close();
+                outgoingCall = undefined;
+                outgoingCloseIgnore = false;
+            } catch (eee) {
+                outgoingCloseIgnore = false;
+                // ignore errors
+            }
         }
         console.log(JSON.stringify(response));
     });
@@ -6657,7 +8011,6 @@ function processEas(data, replace = false)
 // Update recipients as changes happen
 function processStatus(data, replace = false)
 {
-    console.dir(data);
     // Data processing
     try {
         if (replace)
@@ -6922,13 +8275,18 @@ function processRecipients(data, replace = false)
     try {
         if (replace)
         {
-            Recipients = TAFFY();
-
             if (data.length > 0)
             {
-                data.map((datum, index) => data[index].unread = 0);
+                data.map((datum, index) => {
+                    data[index].unread = 0;
+
+                    var temp = Recipients({ID: datum.ID}).first();
+                    if (waitingFor && waitingFor.host === datum.host && datum.peer !== null && (!temp || temp === null || typeof temp.host === `undefined` || temp.peer !== datum.peer))
+                        startCall(waitingFor.host, waitingFor.cb, true);
+                });
             }
 
+            Recipients = TAFFY();
             Recipients.insert(data);
         } else {
             for (var key in data)
@@ -6940,9 +8298,14 @@ function processRecipients(data, replace = false)
                         case 'insert':
                             data[key].unread = 0;
                             Recipients.insert(data[key]);
+                            if (waitingFor && waitingFor.host === data[key].host && data[key].peer !== null)
+                                startCall(waitingFor.host, waitingFor.cb, true);
                             break;
                         case 'update':
                             data[key].unread = 0;
+                            var temp = Recipients({ID: data[key].ID}).first();
+                            if (temp && waitingFor && waitingFor.host === data[key].host && data[key].peer !== null && temp.peer !== data[key].peer)
+                                startCall(waitingFor.host, waitingFor.cb, true);
                             Recipients({ID: data[key].ID}).update(data[key]);
                             break;
                         case 'remove':
@@ -7394,14 +8757,14 @@ function loadDJ(dj = null, reset = true) {
             var DJName = Djs({ID: parseInt(DJData.DJ)}).first().name;
             document.querySelector('#options-dj-name').innerHTML = `${jdenticon.toSvg(`DJ ${DJName}`, 48)}   ${DJName}`;
             document.querySelector('#options-dj-buttons').innerHTML = `
-            <button type="button" class="btn btn-urgent btn-lg" id="btn-options-dj-edit" data-dj="${DJData.DJ}">Edit</button>
-            <button type="button" class="btn btn-danger btn-lg" id="btn-options-dj-remove" data-dj="${DJData.DJ}">Remove</button>
-            <button type="button" class="btn btn-purple btn-lg" id="btn-options-dj-xp" data-dj="${DJData.DJ}">Notes/Remotes/XP</button>`;
+            <button type="button" class="btn btn-urgent btn-lg" id="btn-options-dj-edit" data-dj="${DJData.DJ}" title="Edit this DJ">Edit</button>
+            <button type="button" class="btn btn-danger btn-lg" id="btn-options-dj-remove" data-dj="${DJData.DJ}" title="Remove this DJ">Remove</button>
+            <button type="button" class="btn btn-purple btn-lg" id="btn-options-dj-xp" data-dj="${DJData.DJ}" title="View/Edit/Add/Remove the notes / remote credits / XP of this DJ">Notes/Remotes/XP</button>`;
             var remote = 0;
             var totalXP = 0;
             if (DJData.XP.length > 0)
             {
-                document.querySelector(`#dj-xp-add-div`).innerHTML = `<button type="button" class="btn btn-success btn-lg" id="dj-xp-add" data-dj="${dj}">Add</button>`;
+                document.querySelector(`#dj-xp-add-div`).innerHTML = `<button type="button" class="btn btn-success btn-lg" id="dj-xp-add" data-dj="${dj}" title="Add a Note / Remote Credit / XP">Add</button>`;
                 var xpLogs = document.querySelector(`#dj-xp-logs`);
                 xpLogs.scrollTop = 0;
 
@@ -7437,21 +8800,24 @@ function loadDJ(dj = null, reset = true) {
                 DJData.XP.sort(compare);
                 DJData.XP.map(record => {
                     var theClass = `secondary`;
+                    var theTitle = `This is a note.`;
 
                     if (record.type === "xp")
                     {
                         totalXP += record.amount;
                         theClass = `info`;
+                        theTitle = `This is an XP entry.`;
                     }
 
                     if (record.type === "remote")
                     {
                         theClass = `warning`;
+                        theTitle = `This is a remote credit entry.`;
                         if (moment(record.createdAt).isSameOrAfter(moment(DJData.startOfSemester)))
                             remote += record.amount;
                     }
 
-                    newXPLogs += `<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+                    newXPLogs += `<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;" title="${theTitle}">
                     <div class="col-3 text-primary">
                         ${moment(record.createdAt).format("YYYY-MM-DD h:mm A")}
                     </div>
@@ -7462,10 +8828,10 @@ function loadDJ(dj = null, reset = true) {
                         ${record.type}-${record.subtype}${record.description !== null && record.description !== '' ? `: ${record.description}` : ``}
                     </div>
                     <div class="col-2 text-dark">
-                        <button type="button" id="dj-xp-edit-${record.ID}" class="close dj-xp-edit" aria-label="Edit XP/Remote">
+                        <button type="button" id="dj-xp-edit-${record.ID}" class="close dj-xp-edit" aria-label="Edit XP/Remote" title="Edit this record">
                 <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
                 </button>
-                        <button type="button" id="dj-xp-remove-${record.ID}" class="close dj-xp-remove" aria-label="Remove XP/Remote">
+                        <button type="button" id="dj-xp-remove-${record.ID}" class="close dj-xp-remove" aria-label="Remove XP/Remote" title="Remove this record">
                 <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
                 </button>
                     </div>
@@ -7518,7 +8884,7 @@ function loadDJ(dj = null, reset = true) {
                     var theDate = record.actualStart !== null ? record.actualStart : record.scheduledStart;
                     if (record.scheduledStart === null)
                     {
-                        newAtt += `<div class="row m-1 bg-light-1 border-left border-urgent shadow-2" style="border-left-width: 5px !important;">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-urgent shadow-2" style="border-left-width: 5px !important;" title="The DJ went on the air when they were not scheduled to be on.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7530,14 +8896,14 @@ function loadDJ(dj = null, reset = true) {
                                 <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
                             <div class="col-1">
-                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
                         </div>`;
                     } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)))
                     {
-                        newAtt += `<div class="row m-1 bg-light-1 border-left border-secondary shadow-2" style="border-left-width: 5px !important;">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-secondary shadow-2" style="border-left-width: 5px !important;" title="This scheduled show has not aired yet.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7549,7 +8915,7 @@ function loadDJ(dj = null, reset = true) {
                                 <span class="text-primary">FUTURE EVENT</span>
                             </div>
                             <div class="col-1">
-                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
@@ -7558,7 +8924,7 @@ function loadDJ(dj = null, reset = true) {
                     {
                         if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10)
                         {
-                            newAtt += `<div class="row m-1 bg-light-1 border-left border-warning shadow-2" style="border-left-width: 5px !important;">
+                            newAtt += `<div class="row m-1 bg-light-1 border-left border-warning shadow-2" style="border-left-width: 5px !important;" title="The DJ signed on or off 10 or more minutes before or after scheduled time.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7570,13 +8936,13 @@ function loadDJ(dj = null, reset = true) {
                                 <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
                             <div class="col-1">
-                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
                         </div>`;
                         } else {
-                            newAtt += `<div class="row m-1 bg-light-1 border-left border-success shadow-2" style="border-left-width: 5px !important;">
+                            newAtt += `<div class="row m-1 bg-light-1 border-left border-success shadow-2" style="border-left-width: 5px !important;" title="This show was scheduled and on time.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7588,7 +8954,7 @@ function loadDJ(dj = null, reset = true) {
                                 <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
                             <div class="col-1">
-                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
@@ -7596,7 +8962,7 @@ function loadDJ(dj = null, reset = true) {
                         }
                     } else if (record.actualStart !== null && record.actualEnd === null)
                     {
-                        newAtt += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;" title="This show is still ongoing.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7608,13 +8974,13 @@ function loadDJ(dj = null, reset = true) {
                                 <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
                             <div class="col-1">
-                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log">
+                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
                         </div>`;
                     } else if (record.actualStart === null && record.actualEnd === null) {
-                        newAtt += `<div class="row m-1 bg-light-1 border-left border-danger shadow-2" style="border-left-width: 5px !important;">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-danger shadow-2" style="border-left-width: 5px !important;" title="This show was scheduled, but the DJ did not go on the air.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7629,7 +8995,7 @@ function loadDJ(dj = null, reset = true) {
                             </div>
                         </div>`;
                     } else {
-                        newAtt += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;" title="This show is scheduled, but has not begun yet.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -7664,7 +9030,6 @@ function loadDJ(dj = null, reset = true) {
                 // Populate attendance records
                 hostReq.request({method: 'POST', url: nodeURL + '/attendance/get', data: {dj: DJData.DJ}}, function (response2) {
                     DJData.attendance = response2;
-                    console.dir(response2);
                     afterFunction();
                 });
             });
@@ -7683,63 +9048,70 @@ function loadDJ(dj = null, reset = true) {
 
 // Update recipients as changes happen
 function processDjs(data = {}, replace = false)
+{
+    // Data processing
+    try {
+        if (replace)
         {
-            // Data processing
-            try {
-                if (replace)
+            Djs = TAFFY();
+            Djs.insert(data);
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
                 {
-                    Djs = TAFFY();
-                    Djs.insert(data);
-                } else {
-                    for (var key in data)
+                    switch (key)
                     {
-                        if (data.hasOwnProperty(key))
-                        {
-                            switch (key)
-                            {
-                                case 'insert':
-                                    Djs.insert(data[key]);
-                                    break;
-                                case 'update':
-                                    Djs({ID: data[key].ID}).update(data[key]);
-                                    break;
-                                case 'remove':
-                                    Djs({ID: data[key]}).remove();
-                                    break;
-                            }
-                        }
+                        case 'insert':
+                            Djs.insert(data[key]);
+                            break;
+                        case 'update':
+                            Djs({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Djs({ID: data[key]}).remove();
+                            break;
                     }
                 }
+            }
+        }
 
-                document.querySelector("#options-xp-djs").innerHTML = ``;
-                document.querySelector('#options-djs').innerHTML = ``;
+        document.querySelector("#options-xp-djs").innerHTML = ``;
+        document.querySelector('#options-djs').innerHTML = ``;
 
-                Djs().each(function (dj, index) {
-                    var djClass = `danger`;
-                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
-                        djClass = `warning`;
-                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
-                        djClass = `success`;
+        Djs().each(function (dj, index) {
+            var djClass = `danger`;
+            var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
+            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
+            {
+                djClass = `warning`;
+                djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
+            }
+            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
+            {
+                djClass = `success`;
+                djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
+            }
 
-                    document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+            document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
                         <button type="button" id="options-dj-${dj.ID}" class="btn btn-${djClass} btn-float" style="position: relative;" data-dj="${dj.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`DJ ${dj.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
-                    document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
+            document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
   <input class="custom-control-input" id="options-xp-djs-i-${dj.ID}" type="checkbox">
   <span class="custom-control-track"></span>
   <label class="custom-control-label" for="options-xp-djs-i-${dj.ID}">${dj.name}</label>
 </div>`;
-                });
+        });
 
-            } catch (e) {
-                console.error(e);
-                iziToast.show({
-                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                    message: 'Error occurred in the processDjs function.'
-                });
-        }
-        }
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred in the processDjs function.'
+        });
+}
+}
 
 // Update recipients as changes happen
 function processDirectors(data, replace = false)
@@ -7775,7 +9147,7 @@ function processDirectors(data, replace = false)
         document.querySelector('#options-directors').innerHTML = ``;
 
         Directors().each(function (director, index) {
-            document.querySelector('#options-directors').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+            document.querySelector('#options-directors').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${director.name} is currently ${director.present ? "clocked IN" : "clocked OUT"} as of ${moment(director.since).format("LLL")}">
                         <button type="button" id="options-director-${director.ID}" class="btn ${director.present ? "btn-success" : "btn-danger"} btn-float" style="position: relative;" data-director="${director.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`Director ${director.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${director.name}</div>
                     </div>`;
@@ -7838,31 +9210,28 @@ function processHosts(data, replace = false)
 
         Hosts().each(function (host, index) {
             document.querySelector('#options-djcontrols').innerHTML += `<div class="row m-1">
-                    <div class="col-5">
-                        ${host.friendlyname}
+                    <div class="col-6">
+                        ${host.friendlyname} <span class="m-2">${host.silenceDetection ? `<i class="fas fa-microphone-slash text-dark" title="${host.friendlyname} is responsible for reporting silence to WWSU."></i>` : ''}${host.recordAudio ? `<i class="fas fa-circle text-dark" title="${host.friendlyname} is responsible for recording and saving radio programming."></i>` : ''}</span>
                     </div>
-                    <div class="col-1">
-                        ${host.authorized ? '<i class="fas fa-check text-success-light"></i>' : ''}
+                    <div class="col-1" title="${host.authorized ? `${host.friendlyname} is authorized to connect to WWSU.` : `${host.friendlyname} is NOT authorized to connect to WWSU.`}">
+                        ${host.authorized ? '<i class="fas fa-check-circle text-dark"></i>' : ''}
                     </div>
-                    <div class="col-1">
-                        ${host.admin ? '<i class="fas fa-check text-danger-light"></i>' : ''}
+                    <div class="col-1" title="${host.admin ? `${host.friendlyname} will display and allow access to the administration menu.` : `${host.friendlyname} will NOT display and allow access to the administration menu.`}">
+                        ${host.admin ? '<i class="fas fa-cog text-dark"></i>' : ''}
                     </div>
-                    <div class="col-1">
-                        ${host.requests ? '<i class="fas fa-check text-warning-light"></i>' : ''}
+                    <div class="col-1" title="${host.makeCalls ? `${host.friendlyname} can make audio calls / start remote broadcasts.` : `${host.friendlyname} can NOT make audio calls / start remote broadcasts.`}">
+                        ${host.makeCalls ? '<i class="fas fa-phone-volume text-dark"></i>' : ''}
                     </div>
-                    <div class="col-1">
-                        ${host.emergencies ? '<i class="fas fa-check text-warning-light"></i>' : ''}
-                    </div>
-                    <div class="col-1">
-                        ${host.webmessages ? '<i class="fas fa-check text-warning-light"></i>' : ''}
+                    <div class="col-1" title="${host.answerCalls ? `${host.friendlyname} can answer / play incoming audio calls.` : `${host.friendlyname} can NOT answer / play incoming audio calls.`}">
+                        ${host.answerCalls ? '<i class="fas fa-headphones text-dark"></i>' : ''}
                     </div>
                                 <div class="col-2">
-            ${client.host !== host.host ? `<button type="button" id="options-djcontrols-edit-${host.ID}" class="close" aria-label="Edit Host">
+            ${client.host !== host.host ? `<button type="button" id="options-djcontrols-edit-${host.ID}" class="close" aria-label="Edit Host" title="Edit ${host.friendlyname} / settings">
                 <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
                 </button>
-                <button type="button" id="options-djcontrols-remove-${host.ID}" class="close" aria-label="Remove Host">
+                <button type="button" id="options-djcontrols-remove-${host.ID}" class="close" aria-label="Remove Host" title="Remove ${host.friendlyname}">
                 <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
-                </button>` : `(YOU)`}
+                </button>` : `<span title="To prevent accidental lock-out, you cannot edit / remove your own host. Please use another DJ Controls to edit your host.">(YOU)</span>`}
             </div>
                 </div>`;
         });
@@ -7921,7 +9290,7 @@ function loadTimesheets(date)
             date = moment(Meta.time);
         var records = document.querySelector('#options-timesheets-records');
         records.innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
-        hostReq.request({method: 'POST', url: nodeURL + '/timesheet/get', data: {date: date.toISOString(true)}}, function (response) {
+        noReq.request({method: 'POST', url: nodeURL + '/timesheet/get', data: {date: date.toISOString(true)}}, function (response) {
             records.innerHTML = ``;
             Timesheets = response;
             var hours = {};
@@ -8075,13 +9444,13 @@ function loadTimesheets(date)
                     switch (status)
                     {
                         case 0:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-danger" id="timesheet-t-${record.ID}">${inT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-danger" id="timesheet-t-${record.ID}" title="This timesheet record is NOT approved. Click to edit.">${inT}</span><br />`;
                             break;
                         case 1:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}">${inT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}" title="This timesheet record is approved. Click to edit.">${inT}</span><br />`;
                             break;
                         case 2:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-info" id="timesheet-t-${record.ID}">${inT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-info" id="timesheet-t-${record.ID}" title="This timesheet record does not contain a clock-out time yet. Click to edit.">${inT}</span><br />`;
                             break;
                     }
                 }
@@ -8093,13 +9462,13 @@ function loadTimesheets(date)
                     switch (status)
                     {
                         case 0:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-danger" id="timesheet-t-${record.ID}">${outT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-danger" id="timesheet-t-${record.ID}" title="This timesheet record is NOT approved. Click to edit.">${outT}</span><br />`;
                             break;
                         case 1:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}">${outT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}" title="This timesheet record is approved. Click to edit.">${outT}</span><br />`;
                             break;
                         case 2:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-info" id="timesheet-t-${record.ID}">${outT}</span><br />`;
+                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-info" id="timesheet-t-${record.ID}" title="This timesheet record does not contain a clock-out time yet. Click to edit.">${outT}</span><br />`;
                             break;
                     }
                 }
@@ -8170,8 +9539,10 @@ function hexRgb(hex, options = {}) {
 
 function calculateSectors(data) {
     var sectors = [];
+    var smallSectors = [];
 
     var l = data.size / 2
+    var l2 = data.smallSize / 2
     var a = 0 // Angle
     var aRad = 0 // Angle in Rad
     var z = 0 // Size z
@@ -8233,8 +9604,60 @@ function calculateSectors(data) {
 
     })
 
+    data.smallSectors.map(function (item2) {
+        var doIt2 = function (item) {
+            a = item.size;
+            if ((item.start + item.size) > 360)
+                a = 360 - item.start;
+            aCalc = (a > 180) ? 180 : a;
+            aRad = aCalc * Math.PI / 180;
+            z = Math.sqrt(2 * l2 * l2 - (2 * l2 * l2 * Math.cos(aRad)));
+            if (aCalc <= 90) {
+                x = l2 * Math.sin(aRad);
+            } else {
+                x = l2 * Math.sin((180 - aCalc) * Math.PI / 180);
+            }
 
-    return sectors
+            y = Math.sqrt(z * z - x * x);
+            Y = y;
+
+            if (a <= 180) {
+                X = l2 + x;
+                arcSweep = 0;
+            } else {
+                X = l2 - x;
+                arcSweep = 1;
+            }
+
+            smallSectors.push({
+                label: item.label,
+                color: item.color,
+                arcSweep: arcSweep,
+                L: l2,
+                X: X,
+                Y: Y,
+                R: item.start
+            });
+
+            if (a > 180)
+            {
+                var temp = {
+                    label: item.label,
+                    size: 180 - (360 - a),
+                    start: 180 + item.start,
+                    color: item.color
+                };
+                doIt2(temp);
+            }
+        };
+
+        doIt2(item2);
+
+
+    })
+
+
+    return {normal: sectors, small: smallSectors};
 }
 
 function formatInt(number) {
