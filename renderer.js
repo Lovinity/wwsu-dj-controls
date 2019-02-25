@@ -42,6 +42,7 @@ try {
     var peer;
     window.peerStream = undefined;
     window.peerDevice = undefined;
+    window.peerHost = undefined;
     window.mainStream = undefined;
     window.mainDevice = undefined;
     window.peerVolume = -100;
@@ -486,6 +487,7 @@ try {
             // Ignore errors
         }
 
+        window.peerHost = hostID;
         outgoingCall = peer.call(peerID, window.peerStream);
 
         callTimerSlot = 15;
@@ -6998,9 +7000,9 @@ function returnBreak() {
         });
     }
 
-    if (typeof window.peerDevice !== `undefined`)
+    if (typeof window.peerHost !== `undefined`)
     {
-        startCall(window.peerDevice, (success) => {
+        startCall(window.peerHost, (success) => {
             if (success)
             {
                 afterFunction();
@@ -7612,6 +7614,7 @@ function endShow() {
 
             try {
                 window.peerDevice = undefined;
+                window.peerHost = undefined;
                 outgoingCloseIgnore = true;
                 console.log(`Closing call via endShow`);
                 outgoingCall.close();
@@ -7648,6 +7651,7 @@ function switchShow() {
 
             try {
                 window.peerDevice = undefined;
+                window.peerHost = undefined;
                 outgoingCloseIgnore = true;
                 console.log(`Closing call via switchShow`);
                 outgoingCall.close();
