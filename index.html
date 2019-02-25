@@ -919,7 +919,15 @@
 
                     <div class="form-group" title="If there is a delay between when a state change happens in the system (such as going to break) and when the Main Input Device receives the audio, specify it here.">
                         <label for="recorder-delay">Audio Delay in milliseconds between state changes and Main Input Device receiving the audio</label>
-                        <input type="number" id="recorder-delay" placeholder="0" min="0">
+                        <input type="number" class="form-control" id="recorder-delay" placeholder="0" min="0">
+                    </div>
+
+                    <div class="form-group" title="Number of seconds of silence that must be detected on Main Input Device before DJ Controls calls /silence/active to indicate silence is detected.">
+                        <label for="silence-seconds">Seconds of silence on Main Input Device before silence detection is triggered</label>
+                        <input type="number" class="form-control" id="silence-seconds" placeholder="10" min="1">
+                        <div class="invalid-feedback">
+                            This DJ Controls is not set in Manage Hosts as the responsible DJ Controls for silence detection. However, this setting will be used in the event someone changes the responsible DJ Controls in options / Manage Hosts.
+                        </div>
                     </div>
 
                     <div class="form-group" title="Choose the input device used for audio calls">
