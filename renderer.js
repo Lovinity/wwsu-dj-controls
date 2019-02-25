@@ -93,7 +93,7 @@ try {
                 window.mainVolume -= ((window.mainVolume - temp2) / 8);
             }
 
-            // Gain control. Immediately decrease gain when above -25dB. Slowly increase gain if volume is less than -35dB.
+            // Gain control. Immediately decrease gain when above -25dB. Slowly increase gain if volume is less than -30dB.
             if (window.peerVolume > -25)
             {
                 var gain1 = -50 - ((-50 - window.peerVolume) / gain.gain.value);
@@ -106,7 +106,7 @@ try {
                 var adjustGain = diffGain / proportion;
 
                 gain.gain.value = gain.gain.value - adjustGain;
-            } else if (window.peerVolume < -35) {
+            } else if (window.peerVolume < -30) {
                 var proportion = window.peerVolume / -25;
                 var adjustGain = (gain.gain.value / proportion) / 128;
                 gain.gain.value += adjustGain;
