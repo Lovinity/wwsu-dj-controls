@@ -214,7 +214,7 @@ try {
             // Ignore errors
         }
 
-        peer = new Peer({debug: 3, config: {'iceServers': [{
+        peer = new Peer({key: `Peer4WWSU`, host: `server.wwsu1069.org`, path: '/webcaster', secure: true, debug: 3, config: {'iceServers': [{
                         urls: 'turn:numb.viagenie.ca',
                         credential: 'WineDine1069',
                         username: 'engineer@wwsu1069.org'}]}});

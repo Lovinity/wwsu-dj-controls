@@ -570,10 +570,10 @@ function Peer(id, options) {
         host: util_1.util.CLOUD_HOST,
         port: util_1.util.CLOUD_PORT,
         path: "/",
+        key: "peerjs",
         token: util_1.util.randomToken(),
         config: util_1.util.defaultConfig
     }, options);
-    options.key = "peerjs";
     this.options = options;
     if (options.host === "/") {
         options.host = window.location.hostname;
