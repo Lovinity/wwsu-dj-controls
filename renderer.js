@@ -61,6 +61,7 @@ try {
     var callDropTimer;
     var recorder;
     var recorderTitle;
+    var recorderTitle2;
     var silenceTimer;
     var silenceState = 0;
 
@@ -239,7 +240,10 @@ try {
     // Define a function that finishes any recordings when DJ Controls is closed
     window.onbeforeunload = function (e) {
         if (recorder && recorder.isRecording())
+        {
+            recorderTitle2 = recorderTitle;
             recorder.finishRecording();
+        }
     }
 
     function setupPeer() {
@@ -686,20 +690,26 @@ try {
             if (restart) {
                 recorderTitle = getRecordingPath();
                 if (recorderTitle)
+                {
                     recorder.startRecording();
+                    console.log(`Started recording`);
+                }
             }
         }
 
         recorder.onComplete = function (recorder, blob) {
             var fileReader = new FileReader();
             fileReader.onload = function () {
-                fs.writeFileSync(`${settings.get(`recorder.path`) || ``}/${recorderTitle}.mp3`, Buffer.from(new Uint8Array(this.result)));
+                fs.writeFileSync(`${settings.get(`recorder.path`) || ``}/${recorderTitle2}.mp3`, Buffer.from(new Uint8Array(this.result)));
             };
             fileReader.readAsArrayBuffer(blob);
 
             recorderTitle = getRecordingPath();
             if (recorderTitle)
+            {
                 recorder.startRecording();
+                console.log(`Started recording`);
+            }
         }
 
     }
@@ -726,6 +736,7 @@ try {
                         if (recorder.isRecording())
                         {
                             restartRecorder = true;
+                            recorderTitle2 = recorderTitle;
                             recorder.finishRecording();
                         }
                     } catch (eee) {
@@ -4780,11 +4791,16 @@ function doMeta(metan) {
                 try {
                     if (recorder.isRecording())
                     {
+                        recorderTitle2 = recorderTitle;
                         recorder.finishRecording();
+                        console.log(`Finished recording`);
                     } else {
                         recorderTitle = getRecordingPath();
                         if (recorderTitle)
+                        {
                             recorder.startRecording();
+                            console.log(`Started recording`);
+                        }
                     }
                 } catch (eee) {
                     // ignore errors
