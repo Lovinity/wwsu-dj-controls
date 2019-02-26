@@ -21,7 +21,6 @@ try {
     var nrc = require("node-run-cmd");
     var Sanitize = require("sanitize-filename");
     var settings = require('electron-settings');
-    var FileSaver = require('file-saver');
 
     // Define data variables
     var Meta = {time: moment().toISOString(), lastID: moment().toISOString(), state: 'unknown', line1: '', line2: '', queueFinish: null, trackFinish: null};
@@ -62,6 +61,8 @@ try {
     var callDropTimer;
     var recorder;
     var recorderTitle;
+    var silenceTimer;
+    var silenceState = 0;
 
     var audioContext = new AudioContext();
     var gain = audioContext.createGain();
@@ -86,14 +87,32 @@ try {
             {
                 window.peerVolume = temp;
             } else {
-                window.peerVolume -= ((window.peerVolume - temp) / 8);
+                window.peerVolume -= ((window.peerVolume - temp) / 16);
             }
 
             if (temp2 > window.mainVolume)
             {
                 window.mainVolume = temp2;
             } else {
-                window.mainVolume -= ((window.mainVolume - temp2) / 8);
+                window.mainVolume -= ((window.mainVolume - temp2) / 16);
+            }
+
+            // Silence detection
+            if (client.silenceDetection && window.mainVolume <= -49)
+            {
+                if (silenceState === 0)
+                {
+                    silenceState = 1;
+                    silenceTimer = setTimeout(function () {
+                        silenceState = 2;
+                        hostReq.request({method: 'POST', url: '/silence/active', data: {}}, function (body) {});
+                    }, settings.get(`silence.time`) || 10000);
+                }
+            } else {
+                if (silenceState === 2)
+                    hostReq.request({method: 'POST', url: '/silence/inactive', data: {}}, function (body) {});
+                silenceState = 0;
+                clearTimeout(silenceTimer);
             }
 
             // Gain control. Immediately decrease gain when above -25dB. Slowly increase gain if volume is less than -30dB.
@@ -189,7 +208,14 @@ try {
             } else {
                 var temp5 = document.querySelector(`#audio-call-icon`);
                 if (temp5 !== null)
-                    temp5.style.color = `rgb(16, 16, 16)`;
+                {
+                    if (silenceState === 2)
+                        temp5.style.color = `rgb(128, 0, 0)`;
+                    if (silenceState === 1)
+                        temp5.style.color = `rgb(128, 128, 0)`;
+                    if (silenceState === 0)
+                        temp5.style.color = `rgb(16, 16, 16)`;
+                }
             }
 
 
@@ -209,6 +235,13 @@ try {
 
     var processor;
 
+
+    // Define a function that finishes any recordings when DJ Controls is closed
+    window.onbeforeunload = function (e) {
+        if (recorder && recorder.isRecording())
+            recorder.finishRecording();
+    }
+
     function setupPeer() {
         try {
             peer.destroy();
@@ -217,7 +250,16 @@ try {
             // Ignore errors
         }
 
-        peer = new Peer({key: `Peer4WWSU`, host: `server.wwsu1069.org`, path: '/webcaster', secure: true, debug: 3, config: {'iceServers': [{
+        /*
+         peer = new Peer({key: `Peer4WWSU`, host: `server.wwsu1069.org`, path: '/webcaster', secure: true, debug: 3, config: {'iceServers': [{
+         urls: 'turn:numb.viagenie.ca',
+         credential: 'WineDine1069',
+         username: 'engineer@wwsu1069.org'}]}});
+         */
+
+        // Currently, the WWSU peer-server does not support socket heart beat, and so disconnects after a minute.
+
+        peer = new Peer({debug: 3, config: {'iceServers': [{
                         urls: 'turn:numb.viagenie.ca',
                         credential: 'WineDine1069',
                         username: 'engineer@wwsu1069.org'}]}});
@@ -290,8 +332,17 @@ try {
                     outgoingCloseIgnore = false;
                 }
             }
+        });
 
-
+        peer.on(`disconnected`, () => {
+            setTimeout(() => {
+                if (peer && !peer.destroyed)
+                {
+                    peer.reconnect();
+                } else {
+                    setupPeer();
+                }
+            }, 2000);
         });
 
         peer.on('close', () => {
@@ -305,7 +356,7 @@ try {
             setTimeout(() => {
                 if (!peer || peer.destroyed)
                     setupPeer();
-            }, 10000);
+            }, 5000);
         });
 
         peer.on('call', (connection) => {
@@ -625,20 +676,27 @@ try {
             options: {
                 timeLimit: (60 * 60 * 3),
                 mp3: {
-                    bitRate: 128
-                }
+                    bitRate: 192
+                },
+                bufferSize: 4096
             }
         });
 
         recorder.onEncoderLoaded = function (recorder, encoding) {
             if (restart) {
                 recorderTitle = getRecordingPath();
-                recorder.startRecording();
+                if (recorderTitle)
+                    recorder.startRecording();
             }
         }
 
         recorder.onComplete = function (recorder, blob) {
-            FileSaver.saveAs(blob, `${settings.get(`recorder.path`) || ``}/${recorderTitle}.mp3`);
+            var fileReader = new FileReader();
+            fileReader.onload = function () {
+                fs.writeFileSync(`${settings.get(`recorder.path`) || ``}/${recorderTitle}.mp3`, Buffer.from(new Uint8Array(this.result)));
+            };
+            fileReader.readAsArrayBuffer(blob);
+
             recorderTitle = getRecordingPath();
             if (recorderTitle)
                 recorder.startRecording();
@@ -1989,13 +2047,13 @@ document.querySelector("#audio-call").onclick = () => {
                         settings.set(`recorder.delay`, temp5.value);
                     };
                 }
-                var temp6 = document.querySelector("#silence-seconds");
+                var temp6 = document.querySelector("#silence-time");
                 if (temp6 !== null)
                 {
                     temp6.className = `form-control${client.silenceDetection ? `` : ` is-invalid`}`;
-                    temp6.value = settings.get(`silence.seconds`) || 10;
+                    temp6.value = settings.get(`silence.time`) || 10000;
                     temp6.onchange = () => {
-                        settings.set(`silence.seconds`, temp6.value);
+                        settings.set(`silence.time`, temp6.value);
                     };
                 }
                 devices.map((device, index) => {
@@ -4246,131 +4304,131 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-        {
-            drawLoop(null, null, true);
-            hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
-                //console.log(body);
-                try {
-                    client = body;
-                    //authtoken = client.token;
-                    if (!client.authorized)
-                    {
-                        var noConnection = document.getElementById('no-connection');
-                        noConnection.style.display = "inline";
-                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+{
+    drawLoop(null, null, true);
+    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+        //console.log(body);
+        try {
+            client = body;
+            //authtoken = client.token;
+            if (!client.authorized)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "inline";
+                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                        cb(false);
-                    } else {
-                        cb(true);
+                cb(false);
+            } else {
+                cb(true);
 
-                        // Disconnect current peer if it exists
-                        try {
-                            peer.destroy();
-                        } catch (e) {
-                            // Ignore errors
-                        }
-
-                        // Determine if we should start a new peer
-                        if (client.makeCalls || client.answerCalls)
-                        {
-                            setupPeer();
-                        }
-
-                        // Determine if it is applicable to initiate the user media for audio calls
-                        if (client.makeCalls)
-                        {
-                            console.log(`Initiating getUserMedia for makeCalls`);
-                            getAudio();
-                        }
-
-                    }
-                    if (client.admin)
-                    {
-                        if (client.otherHosts)
-                            processHosts(client.otherHosts, true);
-                        var temp = document.querySelector(`#options`);
-                        var restarter;
-                        if (temp)
-                            temp.style.display = "inline";
-
-                        // Subscribe to the logs socket
-                        hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                //processLogs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED logs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get djs and subscribe to the dj socket
-                        noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                processDjs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED DJs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get directors and subscribe to the dj socket
-                        noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                processDirectors(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED directors CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the XP socket
-                        hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED XP CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the timesheet socket
-                        noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED TIMESHEET CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-                    } else {
-                        var temp = document.querySelector(`#options`);
-                        if (temp)
-                            temp.style.display = "none";
-                    }
+                // Disconnect current peer if it exists
+                try {
+                    peer.destroy();
                 } catch (e) {
-                    console.error(e);
-                    console.log('FAILED HOST CONNECTION');
-                    restarter = setTimeout(hostSocket, 10000);
+                    // Ignore errors
                 }
-            });
+
+                // Determine if we should start a new peer
+                if (client.makeCalls || client.answerCalls)
+                {
+                    setupPeer();
+                }
+
+                // Determine if it is applicable to initiate the user media for audio calls
+                if (client.makeCalls)
+                {
+                    console.log(`Initiating getUserMedia for makeCalls`);
+                    getAudio();
+                }
+
+            }
+            if (client.admin)
+            {
+                if (client.otherHosts)
+                    processHosts(client.otherHosts, true);
+                var temp = document.querySelector(`#options`);
+                var restarter;
+                if (temp)
+                    temp.style.display = "inline";
+
+                // Subscribe to the logs socket
+                hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        //processLogs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED logs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Get djs and subscribe to the dj socket
+                noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDjs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED DJs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Get directors and subscribe to the dj socket
+                noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDirectors(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED directors CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the XP socket
+                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED XP CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the timesheet socket
+                noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED TIMESHEET CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+            } else {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            console.log('FAILED HOST CONNECTION');
+            restarter = setTimeout(hostSocket, 10000);
         }
+    });
+}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -4714,6 +4772,25 @@ function doMeta(metan) {
             document.querySelector('#queue-music').style.display = "inline";
         } else {
             document.querySelector('#queue-music').style.display = "none";
+        }
+
+        if (typeof metan.state !== 'undefined')
+        {
+            // On state changes, reset the recorder.
+            setTimeout(function () {
+                try {
+                    if (recorder.isRecording())
+                    {
+                        recorder.finishRecording();
+                    } else {
+                        recorderTitle = getRecordingPath();
+                        if (recorderTitle)
+                            recorder.startRecording();
+                    }
+                } catch (eee) {
+                    // ignore errors
+                }
+            }, settings.get(`recorder.delay`) || 0);
         }
 
         // Do stuff if the state changed
@@ -9123,70 +9200,70 @@ function loadDJ(dj = null, reset = true) {
 
 // Update recipients as changes happen
 function processDjs(data = {}, replace = false)
+{
+    // Data processing
+    try {
+        if (replace)
         {
-            // Data processing
-            try {
-                if (replace)
+            Djs = TAFFY();
+            Djs.insert(data);
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
                 {
-                    Djs = TAFFY();
-                    Djs.insert(data);
-                } else {
-                    for (var key in data)
+                    switch (key)
                     {
-                        if (data.hasOwnProperty(key))
-                        {
-                            switch (key)
-                            {
-                                case 'insert':
-                                    Djs.insert(data[key]);
-                                    break;
-                                case 'update':
-                                    Djs({ID: data[key].ID}).update(data[key]);
-                                    break;
-                                case 'remove':
-                                    Djs({ID: data[key]}).remove();
-                                    break;
-                            }
-                        }
+                        case 'insert':
+                            Djs.insert(data[key]);
+                            break;
+                        case 'update':
+                            Djs({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Djs({ID: data[key]}).remove();
+                            break;
                     }
                 }
+            }
+        }
 
-                document.querySelector("#options-xp-djs").innerHTML = ``;
-                document.querySelector('#options-djs').innerHTML = ``;
+        document.querySelector("#options-xp-djs").innerHTML = ``;
+        document.querySelector('#options-djs').innerHTML = ``;
 
-                Djs().each(function (dj, index) {
-                    var djClass = `danger`;
-                    var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
-                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
-                    {
-                        djClass = `warning`;
-                        djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
-                    }
-                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
-                    {
-                        djClass = `success`;
-                        djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
-                    }
+        Djs().each(function (dj, index) {
+            var djClass = `danger`;
+            var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
+            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
+            {
+                djClass = `warning`;
+                djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
+            }
+            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
+            {
+                djClass = `success`;
+                djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
+            }
 
-                    document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
+            document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
                         <button type="button" id="options-dj-${dj.ID}" class="btn btn-${djClass} btn-float" style="position: relative;" data-dj="${dj.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`DJ ${dj.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
-                    document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
+            document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
   <input class="custom-control-input" id="options-xp-djs-i-${dj.ID}" type="checkbox">
   <span class="custom-control-track"></span>
   <label class="custom-control-label" for="options-xp-djs-i-${dj.ID}">${dj.name}</label>
 </div>`;
-                });
+        });
 
-            } catch (e) {
-                console.error(e);
-                iziToast.show({
-                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                    message: 'Error occurred in the processDjs function.'
-                });
-        }
-        }
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred in the processDjs function.'
+        });
+}
+}
 
 // Update recipients as changes happen
 function processDirectors(data, replace = false)
@@ -9763,8 +9840,26 @@ function truncateText(str, strLength = 140, ending = `...`) {
 
 function sanitize(str) {
     str = Sanitize(str);
+    str = str.split(" - ", 1).join(`_SPLITTERDJSHOW_`); // Prevent the - separation between DJ and show from getting sanitized
     str = str.replace('-', '_');
     str = str.replace('/', '_');
     str = str.replace(`\\`, '_');
+    str = str.replace(`_SPLITTERDJSHOW_`, ` - `);
     return str;
+}
+
+function getRecordingPath() {
+    if (!client.recordAudio)
+        return undefined;
+    if (Meta.state.startsWith("automation_"))
+        return `automation/${sanitize(Meta.genre)} (${moment().format("YYYY_MM_DD hh_mm_ss")})`;
+    if (Meta.state === "live_on")
+        return `live/${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD hh_mm_ss")})`;
+    if (Meta.state === "live_prerecord")
+        return `live/${sanitize(Meta.show)} (prerecorded) (${moment().format("YYYY_MM_DD hh_mm_ss")})`;
+    if (Meta.state === "remote_on")
+        return `remote/${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD hh_mm_ss")})`;
+    if (Meta.state === "sportsremote_on" || Meta.state === "sports_on")
+        return `sports/${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD hh_mm_ss")})`;
+    return undefined;
 }

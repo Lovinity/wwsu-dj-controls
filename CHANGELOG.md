@@ -8,10 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
  - A bunch of tooltips to help DJ Controls users make more sense of what they are doing or seeing.
  - Hosts edit screen has all available options, and will prevent editing of options with a warning if changing it would cause a conflict.
+ - Peer.js audio calling between different DJ Controls via remote and sports remote states. This can be used for remote audio broadcasting.
+ - Audio options menu and telephone status indicator.
+ - Silence detection and audio recording.
+
 
 ### Changed
  - The manage hosts overview screen shows authorized, can make calls, can answer calls, records audio, and detects silence... instead of the other settings.
  - Top of hour break is now shaded between :55 and :05 after, and reminders are triggered at :02 after instead of :03 after, to comply with the new break settings in WWSU server.
+ - Non-show events are shaded halfway up the clockwheel.
 
 ## [5.0.2] - 2019-02-02
 ### Added

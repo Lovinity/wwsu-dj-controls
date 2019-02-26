@@ -923,8 +923,8 @@
                     </div>
 
                     <div class="form-group" title="Number of seconds of silence that must be detected on Main Input Device before DJ Controls calls /silence/active to indicate silence is detected.">
-                        <label for="silence-seconds">Seconds of silence on Main Input Device before silence detection is triggered</label>
-                        <input type="number" class="form-control" id="silence-seconds" placeholder="10" min="1">
+                        <label for="silence-time">Milliseconds of silence on Main Input Device before silence detection is triggered</label>
+                        <input type="number" class="form-control" id="silence-time" placeholder="10000" min="1000">
                         <div class="invalid-feedback">
                             This DJ Controls is not set in Manage Hosts as the responsible DJ Controls for silence detection. However, this setting will be used in the event someone changes the responsible DJ Controls in options / Manage Hosts.
                         </div>
