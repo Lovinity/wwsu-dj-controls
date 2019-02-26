@@ -3638,8 +3638,7 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
                     document.querySelector("#options-host-authorized").classList.remove("is-invalid");
                     document.querySelector("#options-host-admin").classList.remove("is-invalid");
                 }
-
-                if (Hosts({silenceDetection: true}).get().length <= 1 && !host.silenceDetection)
+                if (Hosts({silenceDetection: true}).get().length >= 1 && !host.silenceDetection)
                 {
                     document.querySelector("#options-host-silence").disabled = true;
                     document.querySelector("#options-host-silence").classList.add("is-invalid");
@@ -3648,7 +3647,7 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
                     document.querySelector("#options-host-silence").classList.remove("is-invalid");
                 }
 
-                if (Hosts({recordAudio: true}).get().length <= 1 && !host.recordAudio)
+                if (Hosts({recordAudio: true}).get().length >= 1 && !host.recordAudio)
                 {
                     document.querySelector("#options-host-record").disabled = true;
                     document.querySelector("#options-host-record").classList.add("is-invalid");
