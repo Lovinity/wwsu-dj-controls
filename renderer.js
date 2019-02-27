@@ -9843,6 +9843,8 @@ function truncateText(str, strLength = 140, ending = `...`) {
 }
 
 function sanitize(str) {
+    if (!str)
+        return ``;
     str = Sanitize(str);
     str = str.split(" - ", 1)
     str = str.join(`_SPLITTERDJSHOW_`); // Prevent the - separation between DJ and show from getting sanitized
