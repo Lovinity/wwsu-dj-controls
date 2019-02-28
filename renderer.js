@@ -9846,8 +9846,7 @@ function sanitize(str) {
     if (!str)
         return ``;
     str = Sanitize(str);
-    str = str.split(" - ", 1)
-    str = str.join(`_SPLITTERDJSHOW_`); // Prevent the - separation between DJ and show from getting sanitized
+    str = str.replace(` - `, `_SPLITTERDJSHOW_`);
     str = str.replace('-', '_');
     str = str.replace('/', '_');
     str = str.replace(`\\`, '_');
