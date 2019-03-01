@@ -11,12 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Peer.js audio calling between different DJ Controls via remote and sports remote states. This can be used for remote audio broadcasting.
  - Audio options menu and telephone status indicator.
  - Silence detection and audio recording.
+ - Discipline management in admin options. [Issue 11](https://github.com/Lovinity/wwsu-dj-controls/issues/11)
+ - DJ Controls will notify clients with emergencies notifications enabled of absent shows, unauthorized shows, and failed top of the hour ID breaks. [Issue 10](https://github.com/Lovinity/wwsu-dj-controls/issues/10)
 
 
 ### Changed
  - The manage hosts overview screen shows authorized, can make calls, can answer calls, records audio, and detects silence... instead of the other settings.
  - Top of hour break is now shaded between :55 and :05 after, and reminders are triggered at :02 after instead of :03 after, to comply with the new break settings in WWSU server.
  - Non-show events are shaded halfway up the clockwheel.
+ - Recipients button in messenger is no longer an icon in the top left corner, but a "recipients" button in the bottom right.
+ - Mute button next to the close button in the top right corner in messenger is now a "mute" button in the bottom right. Also re-added the ban button.
+ - Mutes and bans prompt with a text field for a short reason why the user is banning/muting said device.
 
 ## [5.0.2] - 2019-02-02
 ### Added

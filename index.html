@@ -996,11 +996,8 @@
             <div class="modal-content text-dark bg-light-3">
                 <div class="modal-body">
                     <header class="navbar navbar-dark navbar-full bg-success doc-navbar-default">
-                        <button aria-controls="navdrawerUsers" aria-expanded="false" aria-label="Toggle Navdrawer" class="navbar-toggler" data-target="#navdrawerUsers" data-toggle="navdrawer" data-type="temporary" title="Open the list of chat recipients to choose a recipient to view / send messages to.">
-                            <span class="fas fa-users"></span>
-                        </button>
                         <span class="navbar-brand mr-auto" id="messenger-title">Messenger</span>
-                        <div class="iziModal-header-buttons"><span id="messenger-buttons"></span><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close this window"></a></div>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close this window"></a></div>
                     </header>
                     <div aria-hidden="true" class="navdrawer navdrawer-temporary" id="navdrawerUsers" style="width: 25rem;" tabindex="-1">
                         <div class="navdrawer-content">
@@ -1012,10 +1009,12 @@
                     </div>
                     <div class="p-3 m-1 text-white" id="messages-info">
                     </div>
-                    <div class="p-1 m-1 text-dark" style="height: 400px; overflow-y: auto;" id="messages"></div>
+                    <div class="container p-1 m-1 text-dark" style="height: 400px; overflow-y: auto;" id="messages"></div>
                 </div>
                 <div id="themessage"></div>
                 <div class="modal-footer bg-light-1">
+                    <button type="button" aria-controls="navdrawerUsers" aria-expanded="false" aria-label="Toggle Navdrawer" class="btn btn-purple btn-lg" data-target="#navdrawerUsers" data-toggle="navdrawer" data-type="temporary" title="Log this track" title="Open the list of chat recipients to choose a recipient to view / send messages to.">Recipients</button>
+                    <div id="messenger-buttons"></div>
                 </div>
             </div>
         </div>
@@ -1153,12 +1152,16 @@
                             <div style="text-align: center; font-size: 1em;">Manage Directors</div>
                         </div>
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-announcements" class="btn btn-purple btn-float" title="View/Add/Remove/Edit announcements (DJ Controls, website, timesheet computer, etc) and slides on the display signs."><i class="fas fa-bullhorn"></i></button>
+                            <div style="text-align: center; font-size: 0.75em;">Manage Announcements</div>
+                        </div>
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                             <button type="button" id="btn-options-djcontrols" class="btn btn-purple btn-float" title="Manage which computers / DJ Controls are allowed to connect to the WWSU system and what roles they serve."><i class="fas fa-users-cog"></i></button>
                             <div style="text-align: center; font-size: 1em;">Manage Hosts</div>
                         </div>
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                            <button type="button" id="btn-options-announcements" class="btn btn-purple btn-float" title="View/Add/Remove/Edit announcements (DJ Controls, website, timesheet computer, etc) and slides on the display signs."><i class="fas fa-bullhorn"></i></button>
-                            <div style="text-align: center; font-size: 0.75em;">Manage Announcements</div>
+                            <button type="button" id="btn-options-discipline" class="btn btn-purple btn-float" title="Manage disciplinary action against devices using the WWSU API / Node server."><i class="fas fa-ban"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Manage Discipline</div>
                         </div>
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                             <button type="button" id="btn-options-logs" class="btn btn-secondary btn-float" title="View logs of all the shows and programming aired, filtered by date and grouped by program/show."><i class="fas fa-file"></i></button>
@@ -1460,6 +1463,82 @@
                     <div class="container m-1" id="options-djcontrols" style="height: 480px; overflow: scroll;">
                     </div>
                     <div class="modal-footer bg-light-1">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="options-modal-discipline" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-3">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-purple doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Discipline Management</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
+                    </header>
+                    <div class="container m-1">
+                        <div class="row bg-light-1 m-1 shadow-4">
+                            <div class="col-1 text-danger">
+                                ID
+                            </div>
+                            <div class="col-3 text-primary">
+                                Date/time
+                            </div>
+                            <div class="col-4">
+                                Host ID / IP Address
+                            </div>
+                            <div class="col-2 text-info">
+                                Type
+                            </div>
+                            <div class="col-2">
+                                Action
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container m-1" id="options-discipline" style="height: 480px; overflow: scroll;">
+                    </div>
+                    <div class="modal-footer bg-light-1">
+                        <button type="button" class="btn btn-success btn-lg" id="options-discipline-add" title="Add a new discipline entry">Add Discipline</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="options-modal-discipline-record" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-3">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-trivial doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Add / Edit Discipline</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close this window"></a></div>
+                    </header>
+
+                    <div class="form-group p-1" title="Specify the IP address or the unique host ID (typically found in messages) of the device to apply discipline to.">
+                        <label for="discipline-IP">IP Address or unique host ID</label>
+                        <input type="text" id="discipline-IP" class="form-control">
+                    </div>
+
+                    <div class="form-group" title="What discipline should be issued?">
+                        <label for="discipline-action">Discipline type</label>
+                        <select class="form-control" id="discipline-action">
+                            <option value="showban">Showban (discipline marked inactive after the current/next DJ signs off the air)</option>
+                            <option value="dayban">Dayban (Banned for 24 hours from the time the discipline was issued)</option>
+                            <option value="permaban">Permaban (banned indefinitely until marked inactive or removed)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" title="Describe why this device is banned from the WWSU API.">
+                        <label for="discipline-message">Reason for the discipline (limited to 256 characters)</label>
+                        <textarea class="form-control mb-2" id="discipline-message" rows="3" maxlength="256"></textarea>
+                    </div>
+
+                    <div class="custom-control custom-switch" title="Is this discipline active?">
+                        <input class="custom-control-input" id="discipline-active" type="checkbox">
+                        <span class="custom-control-track"></span>
+                        <label class="custom-control-label" for="discipline-active">Discipline is active?</label><br />
+                    </div>
+
+                </div>
+                <div class="modal-footer bg-light-1">
+                    <div class="modal-footer bg-light-1" id="options-discipline-button">
                     </div>
                 </div>
             </div>

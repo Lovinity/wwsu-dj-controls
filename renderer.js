@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = false;
+    var development = true;
 
 // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -24,6 +24,7 @@ try {
     // Define data variables
     var Meta = {time: moment().toISOString(), lastID: moment().toISOString(), state: 'unknown', line1: '', line2: '', queueFinish: null, trackFinish: null};
     var Calendar = TAFFY();
+    var Discipline = TAFFY();
     var Status = TAFFY();
     var Messages = TAFFY();
     var Announcements = TAFFY();
@@ -248,7 +249,7 @@ try {
                 close: false,
                 overlay: true,
                 overlayColor: 'rgba(0, 0, 0, 0.75)',
-                zindex: 1000,
+                zindex: 99999,
                 layout: 1,
                 imageWidth: 100,
                 image: ``,
@@ -1298,6 +1299,10 @@ try {
         processDirectors(data);
     });
 
+    socket.on('discipline', function (data) {
+        processDiscipline(data);
+    });
+
     socket.on('xp', function (data) {
         processXp(data);
     });
@@ -1588,7 +1593,35 @@ try {
         zindex: 61
     });
 
+    $("#options-modal-discipline").iziModal({
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 61
+    });
+
     $("#options-modal-dj-logs").iziModal({
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 63
+    });
+
+    $("#options-modal-discipline-record").iziModal({
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -2521,6 +2554,18 @@ document.querySelector("#btn-options-djcontrols").onclick = function () {
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred during the click event of #btn-options-djcontrols.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-discipline").onclick = function () {
+    try {
+        $("#options-modal-discipline").iziModal('open');
+    } catch (e) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-discipline.'
         });
     }
 };
@@ -3728,6 +3773,197 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
     }
 });
 
+document.querySelector(`#options-discipline`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith("options-discipline-remove-"))
+            {
+                var inputData = "";
+                var discipline = Discipline({ID: parseInt(e.target.id.replace(`options-discipline-remove-`, ``))}).first();
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/trash.png`,
+                    maxWidth: 480,
+                    title: 'Remove discipline',
+                    message: 'THIS CANNOT BE UNDONE! Are you sure you want to permanently remove discipline record ' + discipline.ID + '? Removing active discipline will cause it to no longer be in effect.',
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Remove</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/discipline/remove', data: {ID: parseInt(e.target.id.replace(`options-discipline-remove-`, ``))}}, function (response) {
+                                    if (response === 'OK')
+                                    {
+                                        iziToast.show({
+                                            title: `Discipline removed!`,
+                                            message: `Discipline record was removed!`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to remove discipline record!`,
+                                            message: `There was an error trying to remove the discipline record. ${response}.`,
+                                            timeout: 20000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000,
+                                            maxWidth: 480
+                                        });
+                                    }
+                                });
+                            }],
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
+                    ]
+                });
+            }
+            if (e.target.id.startsWith("options-discipline-edit-"))
+            {
+                var discipline = Discipline({ID: parseInt(e.target.id.replace(`options-discipline-edit-`, ``))}).first();
+
+                document.querySelector("#discipline-IP").value = discipline.IP;
+                document.querySelector("#discipline-action").value = discipline.action;
+                document.querySelector("#discipline-message").value = discipline.message;
+                document.querySelector("#discipline-active").checked = discipline.active;
+
+                document.querySelector("#options-discipline-button").innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-discipline-button-edit-${discipline.ID}" title="Edit Discipline">Edit</button>`;
+
+                $("#options-modal-discipline-record").iziModal('open');
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-discipline.'
+        });
+    }
+});
+document.querySelector(`#options-discipline-add`).addEventListener("click", function (e) {
+    try {
+        document.querySelector("#discipline-IP").value = "";
+        document.querySelector("#discipline-action").value = "showban";
+        document.querySelector("#discipline-message").value = "";
+        document.querySelector("#discipline-active").checked = true;
+
+        document.querySelector("#options-discipline-button").innerHTML = `<button type="button" class="btn btn-success btn-large" id="options-discipline-button-add" title="Edit Discipline">Add</button>`;
+
+        $("#options-modal-discipline-record").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-discipline-add.'
+        });
+    }
+});
+
+document.querySelector(`#options-discipline-button`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith("options-discipline-button-edit-"))
+            {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/discipline/edit', data: {ID: parseInt(e.target.id.replace(`options-discipline-button-edit-`, ``)), active: document.querySelector("#discipline-active").checked, IP: document.querySelector("#discipline-IP").value, action: document.querySelector("#discipline-action").value, message: document.querySelector("#discipline-message").value}}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-discipline-record").iziModal('close');
+                        iziToast.show({
+                            title: `Discipline edited!`,
+                            message: `Discipline record was edited!`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to edit discipline!`,
+                            message: `There was an error trying to edit the discipline record.`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+            if (e.target.id === "options-discipline-button-add")
+            {
+                hostReq.request({db: Directors(), method: 'POST', url: nodeURL + '/discipline/add', data: {active: document.querySelector("#discipline-active").checked, IP: document.querySelector("#discipline-IP").value, action: document.querySelector("#discipline-action").value, message: document.querySelector("#discipline-message").value}}, function (response) {
+                    if (response === 'OK')
+                    {
+                        checkAnnouncements();
+                        $("#options-modal-discipline-record").iziModal('close');
+                        iziToast.show({
+                            title: `Discipline added!`,
+                            message: `Discipline was added!`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to add discipline!`,
+                            message: `There was an error trying to add the discipline.`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-discipline-button.'
+        });
+    }
+});
+
 document.querySelector(`#options-announcement-button`).addEventListener("click", function (e) {
     try {
         if (e.target) {
@@ -4413,11 +4649,11 @@ function hostSocket(cb = function(token) {})
                     temp.style.display = "inline";
 
                 // Subscribe to the logs socket
-                hostReq.request({method: 'POST', url: '/logs/get', data: {}}, function (body) {
+                hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
                     //console.log(body);
                     try {
                         // TODO
-                        //processLogs(body, true);
+                        processLogs(body, true);
                     } catch (e) {
                         console.error(e);
                         console.log('FAILED logs CONNECTION');
@@ -4439,7 +4675,7 @@ function hostSocket(cb = function(token) {})
                     }
                 });
 
-                // Get directors and subscribe to the dj socket
+                // Get directors and subscribe to the directors socket
                 noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
                     //console.log(body);
                     try {
@@ -4475,6 +4711,20 @@ function hostSocket(cb = function(token) {})
                         restarter = setTimeout(hostSocket, 10000);
                     }
                 });
+
+                // Subscribe to the discipline socket
+                hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
+                    //console.log(body);
+                    try {
+                        processDiscipline(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED discipline CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
             } else {
                 var temp = document.querySelector(`#options`);
                 if (temp)
@@ -6605,7 +6855,7 @@ function selectRecipient(recipient = null)
         if (ID && host && host.startsWith('website-'))
         {
             if (temp)
-                temp.innerHTML = `<button class="navbar-toggler" id="users-o-mute-${ID}"><i class="fas fa-ban"></i></button>`;
+                temp.innerHTML = `<button type="button" class="btn btn-urgent btn-lg" id="users-o-mute-${ID}" title="Mute this user for 24 hours">Mute</button><button type="button" class="btn btn-danger btn-lg" id="users-o-ban-${ID}" title="Ban this user indefinitely">Ban</button>`;
         } else {
             if (temp)
                 temp.innerHTML = ``;
@@ -6792,10 +7042,9 @@ function selectRecipient(recipient = null)
                 if (temp2 === null)
                 {
                     messages.innerHTML += `
-<div class="message m-2 container shadow-1 border-left ${message.needsread ? `border-primary` : `border-light`} bg-light-1" style="width: 96%; border-left-width: 5px !important;" id="message-m-${message.ID}">
-  <div class="row text-dark">
+<div class="row text-dark message m-1 shadow-1 border-left ${message.needsread ? `border-primary` : `border-light`} bg-light-1" style="width: 96%; border-left-width: 5px !important;" id="message-m-${message.ID}">
     <div class="col-2">
-      ${jdenticon.toSvg(message.from, 64)}
+      ${jdenticon.toSvg(message.from, 64)}<br />
     </div>
     <div class="col-8">
       <small>${message.from_friendly} -> ${(message.to === 'DJ-private') ? 'DJ (Private)' : `${message.to_friendly}`}</small>
@@ -6804,10 +7053,9 @@ function selectRecipient(recipient = null)
     <div class="col-2">
       <small>${moment(message.createdAt).format("hh:mm A")}</small>
     </div>
-  </div>
 </div>`;
                 } else {
-                    temp2.className = `message m-2 container shadow-1 border-left ${message.needsread ? `border-primary` : `border-light`} bg-light-1`;
+                    temp2.className = `row text-dark message m-1 shadow-1 border-left ${message.needsread ? `border-primary` : `border-light`} bg-light-1`;
                     var temp3 = document.querySelector(`#message-t-${message.ID}`);
                     temp3.innerHTML = message.message;
                 }
@@ -6899,9 +7147,10 @@ function deleteMessage(message) {
 function prepareMute(recipient) {
     try {
         var label = Recipients({ID: recipient}).first().label;
+        var inputData = "";
         iziToast.show({
             title: `Confirm mute of ${label}`,
-            message: `A mute causes this person to lose access to the chat for 24 hours and deletes all messages they sent. Only mute someone who is causing a legitimate disruption or threat of safety / integrity.`,
+            message: `A mute causes this person to lose access to the chat for 24 hours and deletes all messages they sent. Only mute someone who is causing a legitimate disruption or threat of safety / integrity. <strong>To proceed, specify a brief reason why you are muting this user and then click "mute".</strong>`,
             timeout: 60000,
             close: true,
             color: 'yellow',
@@ -6913,9 +7162,14 @@ function prepareMute(recipient) {
             layout: 2,
             image: `assets/images/mute.png`,
             maxWidth: 480,
+            inputs: [
+                ['<input type="text">', 'keyup', function (instance, toast, input, e) {
+                        inputData = input.value;
+                    }, true],
+            ],
             buttons: [
                 ['<button>Mute</button>', function (instance, toast, button, e, inputs) {
-                        finishMute(recipient);
+                        finishMute(recipient, inputData);
                         instance.hide({}, toast, 'button');
                     }],
                 ['<button>Cancel</button>', function (instance, toast, button, e, inputs) {
@@ -6936,10 +7190,10 @@ function prepareMute(recipient) {
 function prepareBan(recipient) {
     try {
         var label = Recipients({ID: recipient}).first().label;
-
+        var inputData = "";
         iziToast.show({
             title: `Confirm ban of ${label}`,
-            message: `Muting this person will cause them to lose access to WWSU indefinitely. Only ban people who are seriously threatening your or WWSU's safety or integrity.`,
+            message: `Banning this person will cause them to lose access to WWSU indefinitely and will delete all their messages. Only ban people who are seriously threatening your or WWSU's safety or integrity. <strong>To proceed, specify a brief reason why you are banning this user and then click "ban".</strong>`,
             timeout: 60000,
             close: true,
             color: 'yellow',
@@ -6951,9 +7205,14 @@ function prepareBan(recipient) {
             layout: 2,
             image: `assets/images/ban.png`,
             maxWidth: 480,
+            inputs: [
+                ['<input type="text">', 'keyup', function (instance, toast, input, e) {
+                        inputData = input.value;
+                    }, true],
+            ],
             buttons: [
                 ['<button>Ban</button>', function (instance, toast, button, e, inputs) {
-                        finishBan(recipient);
+                        finishBan(recipient, inputData);
                         instance.hide({}, toast, 'button');
                     }],
                 ['<button>Cancel</button>', function (instance, toast, button, e, inputs) {
@@ -6971,10 +7230,10 @@ function prepareBan(recipient) {
 }
 
 // Finalizes and issues a mute
-function finishMute(recipient) {
+function finishMute(recipient, reason) {
     try {
         var host = Recipients({ID: recipient}).first().host;
-        hostReq.request({method: 'POST', url: nodeURL + '/discipline/ban-day', data: {host: host}}, function (response) {
+        hostReq.request({method: 'POST', url: nodeURL + '/discipline/add', data: {active: true, IP: host, action: 'dayban', message: reason}}, function (response) {
             if (response === 'OK')
             {
                 iziToast.show({
@@ -7016,10 +7275,10 @@ function finishMute(recipient) {
 }
 
 // Finalizes and issues a ban
-function finishBan(recipient) {
+function finishBan(recipient, reason) {
     try {
         var host = Recipients({ID: recipient}).first().host;
-        hostReq.request({method: 'POST', url: nodeURL + '/discipline/ban-indefinite', data: {host: host}}, function (response) {
+        hostReq.request({method: 'POST', url: nodeURL + '/discipline/add', data: {active: true, IP: host, action: 'permaban', message: reason}}, function (response) {
             if (response === 'OK')
             {
                 iziToast.show({
@@ -9437,6 +9696,279 @@ function processXp(data)
             }
         }
     }
+}
+
+function processDiscipline(data, replace = false)
+{
+    // Data processing
+    try {
+        if (replace)
+        {
+            Discipline = TAFFY();
+            Discipline.insert(data);
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
+                {
+                    switch (key)
+                    {
+                        case 'insert':
+                            Discipline.insert(data[key]);
+                            break;
+                        case 'update':
+                            Discipline({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Discipline({ID: data[key]}).remove();
+                            break;
+                    }
+                }
+            }
+        }
+
+        var temp = document.querySelector('#options-discipline');
+        var temp2 = ``;
+
+        if (temp !== null)
+        {
+            temp.innerHTML = ``;
+            Discipline().each((discipline, index) => {
+                temp2 += `<div class="row m-1 bg-light-1 border-left border-${discipline.active ? `success` : `secondary`} shadow-2" style="border-left-width: 5px !important;" title="This discipline is ${discipline.active ? `` : `NOT `}active.">
+                <div class="container m-1">
+                        <div class="row bg-light-1">
+                            <div class="col-1 text-danger">
+                                ${discipline.ID}
+                            </div>
+                            <div class="col-3 text-primary">
+                                ${moment(discipline.createdAt).format("LLL")}
+                            </div>
+                            <div class="col-4">
+                                ${discipline.IP}
+                            </div>
+                            <div class="col-2 text-info">
+                                ${discipline.action}
+                            </div>
+                            <div class="col-2">
+                                <button type="button" id="options-discipline-edit-${discipline.ID}" class="close" aria-label="Edit Discipline" title="Edit discipline ${discipline.ID}">
+                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+                </button>
+                <button type="button" id="options-discipline-remove-${discipline.ID}" class="close" aria-label="Remove Discipline" title="Remove discipline ${discipline.ID}">
+                <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
+                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            temp.innerHTML = temp2;
+        }
+
+
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred in the processDiscipline function.'
+        });
+}
+}
+
+function processLogs(data, replace = false)
+{
+    // Data processing
+    try {
+        var prev = [];
+        if (replace)
+        {
+            // Get all the EAS IDs currently in memory before replacing the data
+            prev = Logs().select("ID");
+
+            // Replace with the new data
+            Logs = TAFFY();
+            Logs.insert(data);
+
+            // Go through the new data. If any IDs exists that did not exist before, consider it a new alert and make a notification.
+            Logs().each(function (record)
+            {
+                if (prev.indexOf(record.ID) === -1 && client.emergencies)
+                {
+                    if (record.logtype === "absent")
+                    {
+                        var notification = notifier.notify('Absent Broadcast Detected', {
+                            message: `A scheduled broadcast did not air. See DJ Controls.`,
+                            icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
+                            duration: 900000,
+                        });
+                        main.flashTaskbar();
+                        iziToast.show({
+                            title: 'Absent Broadcast',
+                            message: record.event,
+                            timeout: false,
+                            close: true,
+                            color: 'yellow',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: false,
+                            overlay: true,
+                            zindex: 500,
+                            layout: 2,
+                            image: `assets/images/absent.png`,
+                            maxWidth: 640,
+                        });
+                    }
+                    if (record.logtype === "unauthorized")
+                    {
+                        var notification = notifier.notify('Unscheduled Broadcast Detected', {
+                            message: `An unscheduled broadcast is/was on the air. See DJ Controls.`,
+                            icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
+                            duration: 900000,
+                        });
+                        main.flashTaskbar();
+                        iziToast.show({
+                            title: 'Unauthorized / Unscheduled Broadcast',
+                            message: record.event,
+                            timeout: false,
+                            close: true,
+                            color: 'yellow',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: false,
+                            overlay: true,
+                            zindex: 500,
+                            layout: 2,
+                            image: `assets/images/unauthorized.png`,
+                            maxWidth: 640,
+                        });
+                    }
+                    if (record.logtype === "id")
+                    {
+                        var notification = notifier.notify('Failed Top-Of-Hour Break', {
+                            message: `A show did not do the top-of-hour break. See DJ Controls.`,
+                            icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
+                            duration: 900000,
+                        });
+                        main.flashTaskbar();
+                        iziToast.show({
+                            title: 'Failed Top-Of-Hour Break',
+                            message: record.event,
+                            timeout: false,
+                            close: true,
+                            color: 'yellow',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: false,
+                            overlay: true,
+                            zindex: 500,
+                            layout: 2,
+                            image: `assets/images/failTopOfHour.png`,
+                            maxWidth: 640,
+                        });
+                    }
+                }
+            });
+
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
+                {
+                    switch (key)
+                    {
+                        case 'insert':
+                            Logs.insert(data[key]);
+                            if (data[key].logtype === "absent")
+                            {
+                                var notification = notifier.notify('Absent Broadcast Detected', {
+                                    message: `A scheduled broadcast did not air. See DJ Controls.`,
+                                    icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
+                                    duration: 900000,
+                                });
+                                main.flashTaskbar();
+                                iziToast.show({
+                                    title: 'Absent Broadcast',
+                                    message: data[key].event,
+                                    timeout: false,
+                                    close: true,
+                                    color: 'yellow',
+                                    drag: false,
+                                    position: 'center',
+                                    closeOnClick: false,
+                                    overlay: true,
+                                    zindex: 500,
+                                    layout: 2,
+                                    image: `assets/images/absent.png`,
+                                    maxWidth: 640,
+                                });
+                            }
+                            if (data[key].logtype === "unauthorized")
+                            {
+                                var notification = notifier.notify('Unscheduled Broadcast Detected', {
+                                    message: `An unscheduled broadcast is/was on the air. See DJ Controls.`,
+                                    icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
+                                    duration: 900000,
+                                });
+                                main.flashTaskbar();
+                                iziToast.show({
+                                    title: 'Unauthorized / Unscheduled Broadcast',
+                                    message: data[key].event,
+                                    timeout: false,
+                                    close: true,
+                                    color: 'yellow',
+                                    drag: false,
+                                    position: 'center',
+                                    closeOnClick: false,
+                                    overlay: true,
+                                    zindex: 500,
+                                    layout: 2,
+                                    image: `assets/images/unauthorized.png`,
+                                    maxWidth: 640,
+                                });
+                            }
+                            if (data[key].logtype === "id")
+                            {
+                                var notification = notifier.notify('Failed Top-Of-Hour Break', {
+                                    message: `A show did not do the top-of-hour break. See DJ Controls.`,
+                                    icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
+                                    duration: 900000,
+                                });
+                                main.flashTaskbar();
+                                iziToast.show({
+                                    title: 'Failed Top-Of-Hour Break',
+                                    message: data[key].event,
+                                    timeout: false,
+                                    close: true,
+                                    color: 'yellow',
+                                    drag: false,
+                                    position: 'center',
+                                    closeOnClick: false,
+                                    overlay: true,
+                                    zindex: 500,
+                                    layout: 2,
+                                    image: `assets/images/failTopOfHour.png`,
+                                    maxWidth: 640,
+                                });
+                            }
+                            break;
+                        case 'update':
+                            Logs({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Logs({ID: data[key]}).remove();
+                            break;
+                    }
+                }
+            }
+        }
+
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: 'Error occurred during the processLogs function.'
+        });
+}
 }
 
 function loadTimesheets(date)
