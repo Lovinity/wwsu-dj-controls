@@ -1310,6 +1310,10 @@ try {
     socket.on('hosts', function (data) {
         processHosts(data);
     });
+    
+    socket.on('logs', function(data) {
+        processLogs(data);
+    });
 
     socket.on('timesheet', function (data) {
         loadTimesheets(moment(document.querySelector("#options-timesheets-date").value));
