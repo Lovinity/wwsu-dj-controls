@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = true;
+    var development = false;
 
 // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -102,7 +102,7 @@ try {
             // Silence detection
             if (client.silenceDetection && window.mainVolume <= -49)
             {
-                if (silenceState === 0)
+                if (silenceState === 0 || silenceState === -1)
                 {
                     silenceState = 1;
                     silenceTimer = setTimeout(function () {
@@ -111,7 +111,7 @@ try {
                     }, settings.get(`silence.time`) || 10000);
                 }
             } else {
-                if (silenceState === 2)
+                if (silenceState === 2 || silenceState === -1)
                     hostReq.request({method: 'POST', url: '/silence/inactive', data: {}}, function (body) {});
                 silenceState = 0;
                 clearTimeout(silenceTimer);
@@ -666,6 +666,8 @@ try {
                     try {
                         gain.disconnect(analyser);
                         analyserStream.disconnect(gain);
+                        
+                        window.peerStream.getTracks().forEach(track => track.stop());
                     } catch (eee) {
                         // ignore errors
                     }
@@ -813,6 +815,8 @@ try {
                             recorderTitle2 = recorderTitle;
                             recorder.finishRecording();
                         }
+                        
+                        window.mainStream.getTracks().forEach(track => track.stop());
                     } catch (eee) {
                         // ignore errors
                     }
@@ -4634,6 +4638,10 @@ function hostSocket(cb = function(token) {})
                         {
                             setupPeer();
                         }
+                        
+                        // Reset silenceState
+                        if (client.silenceDetection)
+                            silenceState = -1;
 
                         // Determine if it is applicable to initiate the user media for audio calls
                         if (client.makeCalls)
