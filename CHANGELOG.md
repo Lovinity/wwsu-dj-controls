@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Recipients button in messenger is no longer an icon in the top left corner, but a "recipients" button in the bottom right.
  - Mute button next to the close button in the top right corner in messenger is now a "mute" button in the bottom right. Also re-added the ban button.
  - Mutes and bans prompt with a text field for a short reason why the user is banning/muting said device.
+ - Announcements no longer use accordions but instead modal boxes when clicked.
 
 ## [5.0.2] - 2019-02-02
 ### Added

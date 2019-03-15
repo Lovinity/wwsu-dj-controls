@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = false;
+    var development = true;
 
 // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -666,7 +666,7 @@ try {
                     try {
                         gain.disconnect(analyser);
                         analyserStream.disconnect(gain);
-                        
+
                         window.peerStream.getTracks().forEach(track => track.stop());
                     } catch (eee) {
                         // ignore errors
@@ -815,7 +815,7 @@ try {
                             recorderTitle2 = recorderTitle;
                             recorder.finishRecording();
                         }
-                        
+
                         window.mainStream.getTracks().forEach(track => track.stop());
                     } catch (eee) {
                         // ignore errors
@@ -1314,8 +1314,8 @@ try {
     socket.on('hosts', function (data) {
         processHosts(data);
     });
-    
-    socket.on('logs', function(data) {
+
+    socket.on('logs', function (data) {
         processLogs(data);
     });
 
@@ -1686,6 +1686,20 @@ try {
     });
 
     $("#options-modal-calendar").iziModal({
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 61
+    });
+
+    $("#announcement-view-modal").iziModal({
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -4390,17 +4404,24 @@ document.querySelector(`#announcements-body`).addEventListener("click", function
             if (e.target.id.startsWith(`attn-title-`))
             {
                 theId = e.target.id.replace(`attn-title-`, ``);
-            } else if (e.target.id.startsWith(`attn-heading-`))
+            } else
             {
-                theId = e.target.id.replace(`attn-heading-`, ``);
+                theId = e.target.id.replace(`attn-`, ``);
             }
 
-            var temp = document.querySelector(`#attn-${theId}`);
-            if (temp)
-                temp.classList.toggle("show");
-            var temp = document.querySelector(`#attn-collapse-${theId}`);
-            if (temp)
-                temp.classList.toggle("show");
+            var temp = document.querySelector(`#attn-title-${theId}`);
+            var temp2 = document.querySelector(`#attn-body-${theId}`);
+            if (temp !== null && temp2 !== null)
+            {
+                var temp3 = document.querySelector(`#announcement-view-modal-title`);
+                var temp4 = document.querySelector(`#announcement-view-body`);
+                if (temp3 !== null && temp4 !== null)
+                {
+                    temp3.innerHTML = temp.innerHTML;
+                    temp4.innerHTML = temp2.innerHTML;
+                    $("#announcement-view-modal").iziModal('open');
+                }
+            }
         }
     } catch (err) {
         console.error(err);
@@ -4606,149 +4627,149 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-        {
-            drawLoop(null, null, true);
-            hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
-                //console.log(body);
-                try {
-                    client = body;
-                    //authtoken = client.token;
-                    if (!client.authorized)
-                    {
-                        var noConnection = document.getElementById('no-connection');
-                        noConnection.style.display = "inline";
-                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+{
+    drawLoop(null, null, true);
+    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+        //console.log(body);
+        try {
+            client = body;
+            //authtoken = client.token;
+            if (!client.authorized)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "inline";
+                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                        cb(false);
-                    } else {
-                        cb(true);
+                cb(false);
+            } else {
+                cb(true);
 
-                        // Disconnect current peer if it exists
-                        try {
-                            peer.destroy();
-                        } catch (e) {
-                            // Ignore errors
-                        }
-
-                        // Determine if we should start a new peer
-                        if (client.makeCalls || client.answerCalls)
-                        {
-                            setupPeer();
-                        }
-                        
-                        // Reset silenceState
-                        if (client.silenceDetection)
-                            silenceState = -1;
-
-                        // Determine if it is applicable to initiate the user media for audio calls
-                        if (client.makeCalls)
-                        {
-                            console.log(`Initiating getUserMedia for makeCalls`);
-                            getAudio();
-                        }
-
-                    }
-                    if (client.admin)
-                    {
-                        if (client.otherHosts)
-                            processHosts(client.otherHosts, true);
-                        var temp = document.querySelector(`#options`);
-                        var restarter;
-                        if (temp)
-                            temp.style.display = "inline";
-
-                        // Subscribe to the logs socket
-                        hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                processLogs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED logs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get djs and subscribe to the dj socket
-                        noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                processDjs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED DJs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get directors and subscribe to the directors socket
-                        noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                processDirectors(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED directors CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the XP socket
-                        hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED XP CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the timesheet socket
-                        noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED TIMESHEET CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the discipline socket
-                        hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
-                            //console.log(body);
-                            try {
-                                processDiscipline(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED discipline CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                    } else {
-                        var temp = document.querySelector(`#options`);
-                        if (temp)
-                            temp.style.display = "none";
-                    }
+                // Disconnect current peer if it exists
+                try {
+                    peer.destroy();
                 } catch (e) {
-                    console.error(e);
-                    console.log('FAILED HOST CONNECTION');
-                    restarter = setTimeout(hostSocket, 10000);
+                    // Ignore errors
                 }
-            });
+
+                // Determine if we should start a new peer
+                if (client.makeCalls || client.answerCalls)
+                {
+                    setupPeer();
+                }
+
+                // Reset silenceState
+                if (client.silenceDetection)
+                    silenceState = -1;
+
+                // Determine if it is applicable to initiate the user media for audio calls
+                if (client.makeCalls)
+                {
+                    console.log(`Initiating getUserMedia for makeCalls`);
+                    getAudio();
+                }
+
+            }
+            if (client.admin)
+            {
+                if (client.otherHosts)
+                    processHosts(client.otherHosts, true);
+                var temp = document.querySelector(`#options`);
+                var restarter;
+                if (temp)
+                    temp.style.display = "inline";
+
+                // Subscribe to the logs socket
+                hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        processLogs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED logs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Get djs and subscribe to the dj socket
+                noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDjs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED DJs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Get directors and subscribe to the directors socket
+                noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDirectors(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED directors CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the XP socket
+                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED XP CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the timesheet socket
+                noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED TIMESHEET CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the discipline socket
+                hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
+                    //console.log(body);
+                    try {
+                        processDiscipline(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED discipline CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+            } else {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            console.log('FAILED HOST CONNECTION');
+            restarter = setTimeout(hostSocket, 10000);
         }
+    });
+}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -5437,26 +5458,18 @@ function checkAnnouncements() {
                         if (!temp)
                         {
                             var attn = document.querySelector("#announcements-body");
-                            attn.innerHTML += `<div class="expansion-panel list-group-item bs-callout bs-callout-danger" id="attn-status">
-                            <a aria-controls="attn-collapse-status" aria-expanded="false" class="expansion-panel-toggler collapsed" data-toggle="collapse" id="attn-heading-status">
-                                <h4 id="attn-title-status">System Problems Detected</h4>
-                                <div class="expansion-panel-icon ml-3 text-white">
-                                    <i class="collapsed-show">v</i>
-                                    <i class="collapsed-hide">^</i>
-                                </div>
-                            </a>
-                            <div aria-labelledby="attn-heading-status" class="collapse" data-parent="#announcements-body" id="attn-collapse-status">
-                                <div class="expansion-panel-body text-white">
-                            <div id="attn-body-status">
+
+                            attn.innerHTML += `<div class="bg-dark-2 border-left border-danger shadow-2 p-1" style="border-left-width: 5px !important;" id="attn-status">
+                            <h4 id="attn-title-status" class="text-white p-1 m-1">System Problems Detected</h4>
+                                <div id="attn-body-status" style="display: none;">
                                     <p class="attn-status shadow-2 bg-secondary" id="attn-status-report-${datum.ID}"><span class="badge badge-purple m-1">Reported by DJ</span> ${datum.announcement}</p>
+                                    <small class="p-1">Major and critical issues could affect your ability to run a show.</small>
                                 </div>
-                            <small class="p-1">Major and critical issues could affect your ability to run a show.</small>
-                            </div>
-                            </div>
-                        </div>`;
+                            </div>`;
+
                         } else {
                             var temp = document.querySelector(`#attn-status`);
-                            temp.className = `expansion-panel list-group-item bs-callout bs-callout-danger`;
+                            temp.className = `bg-dark-2 border-left border-danger shadow-2 p-1`;
                             var temp = document.querySelector(`#attn-body-status`);
                             temp.innerHTML += `<p class="attn-status shadow-2 bg-secondary" id="attn-status-report-${datum.ID}"><span class="badge badge-purple m-1">Reported by DJ</span> ${datum.announcement}</p>`;
                         }
@@ -5493,23 +5506,16 @@ function checkAnnouncements() {
                     if (document.querySelector(`#attn-${datum.ID}`) === null)
                     {
                         var attn = document.querySelector("#announcements-body");
-                        attn.innerHTML += `<div class="expansion-panel list-group-item attn bs-callout bs-callout-${datum.level}" id="attn-${datum.ID}">
-                            <a aria-controls="attn-collapse-${datum.ID}" aria-expanded="false" class="expansion-panel-toggler collapsed" data-toggle="collapse" id="attn-heading-${datum.ID}">
-                                <h4 id="attn-title-${datum.ID}">${datum.title}</h4>
-                                <div class="expansion-panel-icon ml-3 text-white">
-                                    <i class="collapsed-show">v</i>
-                                    <i class="collapsed-hide">^</i>
-                                </div>
-                            </a>
-                            <div aria-labelledby="attn-heading-${datum.ID}" class="collapse" data-parent="#announcements-body" id="attn-collapse-${datum.ID}">
-                                <div class="expansion-panel-body text-white" id="attn-body-${datum.ID}">
+                        attn.innerHTML += `<div class="attn bg-dark-2 border-left border-${datum.level} shadow-2 p-1" style="border-left-width: 5px !important;" id="attn-${datum.ID}">
+                            <h4 id="attn-title-${datum.ID}" class="text-white p-1 m-1">${datum.title}</h4>
+                                <div id="attn-body-${datum.ID}" style="display: none;">
                                     ${datum.announcement}
                                 </div>
-                            </div>
-                        </div>`;
+                            </div>`;
+
                     } else {
                         var temp = document.querySelector(`#attn-${datum.ID}`);
-                        temp.className = `expansion-panel list-group-item attn bs-callout bs-callout-${datum.level}`;
+                        temp.className = `attn bg-dark-2 border-left border-${datum.level} shadow-2 p-1`;
                         var temp = document.querySelector(`#attn-title-${datum.ID}`);
                         temp.innerHTML = datum.title;
                         var temp = document.querySelector(`#attn-body-${datum.ID}`);
@@ -5551,23 +5557,14 @@ function checkAnnouncements() {
                 if (!temp)
                 {
                     var attn = document.querySelector("#announcements-body");
-                    attn.innerHTML += `<div class="expansion-panel list-group-item bs-callout bs-callout-danger" id="attn-status">
-                            <a aria-controls="attn-collapse-status" aria-expanded="false" class="expansion-panel-toggler collapsed" data-toggle="collapse" id="attn-heading-status">
-                                <h4 id="attn-title-status">System Problems Detected</h4>
-                                <div class="expansion-panel-icon ml-3 text-white">
-                                    <i class="collapsed-show">v</i>
-                                    <i class="collapsed-hide">^</i>
-                                </div>
-                            </a>
-                            <div aria-labelledby="attn-heading-status" class="collapse" data-parent="#announcements-body" id="attn-collapse-status">
-                                <div class="expansion-panel-body text-white">
-                            <div id="attn-body-status">
+                    attn.innerHTML += `<div class="bg-dark-2 border-left border-danger shadow-2 p-1" style="border-left-width: 5px !important;" id="attn-status">
+                            <h4 id="attn-title-status" class="text-white p-1 m-1">System Problems Detected</h4>
+                                <div id="attn-body-status" style="display: none;">
                                     <p class="attn-status shadow-2 bg-secondary" id="attn-status-${datum.name}">${badge}<strong>${datum.label}</strong>: ${datum.data}</p>
+                                    <small class="p-1">Major and critical issues could affect your ability to run a show.</small>
                                 </div>
-                            <small class="p-1">Major and critical issues could affect your ability to run a show.</small>
-                            </div>
-                            </div>
-                        </div>`;
+                            </div>`;
+
                 } else {
                     var temp = document.querySelector(`#attn-body-status`);
                     temp.innerHTML += `<p class="attn-status shadow-2 bg-secondary" id="attn-status-${datum.name}">${badge}<strong>${datum.label}</strong>: ${datum.data}</p>`;
@@ -5586,10 +5583,10 @@ function checkAnnouncements() {
     {
         if (highestLevel === 1 || highestLevel === 2)
         {
-            temp.className = `expansion-panel list-group-item bs-callout bs-callout-danger`;
+            temp.className = `bg-dark-2 border-left border-danger shadow-2 p-1`;
         } else if (highestLevel <= 3)
         {
-            temp.className = `expansion-panel list-group-item bs-callout bs-callout-default`;
+            temp.className = `bg-dark-2 border-left border-trivial shadow-2 p-1`;
         }
         if (prevStatus.length <= 0)
             temp.parentNode.removeChild(temp);
@@ -5627,26 +5624,18 @@ function checkAnnouncements() {
             if (!temp)
             {
                 var attn = document.querySelector("#announcements-body");
-                attn.innerHTML += `<div class="expansion-panel list-group-item bs-callout bs-callout-${highestEas <= 2 ? `danger` : `trivial`}" id="attn-eas">
-                            <a aria-controls="attn-collapse-eas" aria-expanded="false" class="expansion-panel-toggler collapsed" data-toggle="collapse" id="attn-heading-eas">
-                                <h4 id="attn-title-eas">Emergency / Weather Alerts</h4>
-                                <div class="expansion-panel-icon ml-3 text-white">
-                                    <i class="collapsed-show">v</i>
-                                    <i class="collapsed-hide">^</i>
-                                </div>
-                            </a>
-                            <div aria-labelledby="attn-heading-eas" class="collapse" data-parent="#announcements-body" id="attn-collapse-eas">
-                                <div class="expansion-panel-body text-white">
-                            <div id="attn-body-eas">
+
+                attn.innerHTML += `<div class="bg-dark-2 border-left border-${highestEas <= 2 ? `danger` : `trivial`} shadow-2 p-1" style="border-left-width: 5px !important;" id="attn-eas">
+                            <h4 id="attn-title-status" class="text-white p-1 m-1">Emergency / Weather Alerts</h4>
+                                <div id="attn-body-eas" style="display: none;">
                                     <p class="attn-eas shadow-2 bg-secondary" id="attn-eas-${datum.ID}">${badge}<strong>${datum.alert}</strong> in effect for the counties ${datum.counties}</p>
+                                    <small class="p-1">You may want to consider ending your show and seeking shelter if there is an extreme alert in effect.</small>
                                 </div>
-                            </div>
-                            </div>
-                        </div>`;
+                            </div>`;
             } else {
                 var temp = document.querySelector(`#attn-eas`);
                 if (temp)
-                    temp.className = `expansion-panel list-group-item bs-callout bs-callout-${highestEas <= 2 ? `danger` : `trivial`}`;
+                    temp.className = `bg-dark-2 border-left border-${highestEas <= 2 ? `danger` : `trivial`} shadow-2 p-1`;
                 var temp = document.querySelector(`#attn-body-eas`);
                 if (temp)
                     temp.innerHTML += `<p class="attn-eas shadow-2 bg-secondary" id="attn-eas-${datum.ID}">${badge}<strong>${datum.alert}</strong> in effect for the counties ${datum.counties}</p>`;
@@ -5654,7 +5643,7 @@ function checkAnnouncements() {
         } else {
             var temp = document.querySelector(`#attn-eas`);
             if (temp)
-                temp.className = `expansion-panel list-group-item bs-callout bs-callout-${highestEas <= 2 ? `danger` : `trivial`}`;
+                temp.className = `bg-dark-2 border-left border-${highestEas <= 2 ? `danger` : `trivial`} shadow-2 p-1`;
             var temp = document.querySelector(`#attn-eas-${datum.ID}`);
             if (temp)
                 temp.innerHTML = `${badge}<strong>${datum.alert}</strong> in effect for the counties ${datum.counties}`;
@@ -9485,70 +9474,70 @@ function loadDJ(dj = null, reset = true) {
 
 // Update recipients as changes happen
 function processDjs(data = {}, replace = false)
+{
+    // Data processing
+    try {
+        if (replace)
         {
-            // Data processing
-            try {
-                if (replace)
+            Djs = TAFFY();
+            Djs.insert(data);
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
                 {
-                    Djs = TAFFY();
-                    Djs.insert(data);
-                } else {
-                    for (var key in data)
+                    switch (key)
                     {
-                        if (data.hasOwnProperty(key))
-                        {
-                            switch (key)
-                            {
-                                case 'insert':
-                                    Djs.insert(data[key]);
-                                    break;
-                                case 'update':
-                                    Djs({ID: data[key].ID}).update(data[key]);
-                                    break;
-                                case 'remove':
-                                    Djs({ID: data[key]}).remove();
-                                    break;
-                            }
-                        }
+                        case 'insert':
+                            Djs.insert(data[key]);
+                            break;
+                        case 'update':
+                            Djs({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Djs({ID: data[key]}).remove();
+                            break;
                     }
                 }
+            }
+        }
 
-                document.querySelector("#options-xp-djs").innerHTML = ``;
-                document.querySelector('#options-djs').innerHTML = ``;
+        document.querySelector("#options-xp-djs").innerHTML = ``;
+        document.querySelector('#options-djs').innerHTML = ``;
 
-                Djs().each(function (dj, index) {
-                    var djClass = `danger`;
-                    var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
-                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
-                    {
-                        djClass = `warning`;
-                        djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
-                    }
-                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
-                    {
-                        djClass = `success`;
-                        djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
-                    }
+        Djs().each(function (dj, index) {
+            var djClass = `danger`;
+            var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
+            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
+            {
+                djClass = `warning`;
+                djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
+            }
+            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
+            {
+                djClass = `success`;
+                djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
+            }
 
-                    document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
+            document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
                         <button type="button" id="options-dj-${dj.ID}" class="btn btn-${djClass} btn-float" style="position: relative;" data-dj="${dj.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`DJ ${dj.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
-                    document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
+            document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
   <input class="custom-control-input" id="options-xp-djs-i-${dj.ID}" type="checkbox">
   <span class="custom-control-track"></span>
   <label class="custom-control-label" for="options-xp-djs-i-${dj.ID}">${dj.name}</label>
 </div>`;
-                });
+        });
 
-            } catch (e) {
-                console.error(e);
-                iziToast.show({
-                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                    message: 'Error occurred in the processDjs function.'
-                });
-        }
-        }
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred in the processDjs function.'
+        });
+}
+}
 
 // Update recipients as changes happen
 function processDirectors(data, replace = false)
