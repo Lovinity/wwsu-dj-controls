@@ -4,16 +4,15 @@ All notable changes to this project will be documented in this file as of versio
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) as of version 4.5.0.
 
-## [Unreleased]
+## [5.1.0] - 2019-03-15
 ### Added
  - A bunch of tooltips to help DJ Controls users make more sense of what they are doing or seeing.
  - Hosts edit screen has all available options, and will prevent editing of options with a warning if changing it would cause a conflict.
- - Peer.js audio calling between different DJ Controls via remote and sports remote states. This can be used for remote audio broadcasting.
+ - **UNSTABLE; to be improved in 6.0.0** Peer.js audio calling between different DJ Controls via remote and sports remote states. This can be used for remote audio broadcasting.
  - Audio options menu and telephone status indicator.
  - Silence detection and audio recording.
  - Discipline management in admin options. [Issue 11](https://github.com/Lovinity/wwsu-dj-controls/issues/11)
  - DJ Controls will notify clients with emergencies notifications enabled of absent shows, unauthorized shows, and failed top of the hour ID breaks. [Issue 10](https://github.com/Lovinity/wwsu-dj-controls/issues/10)
-
 
 ### Changed
  - The manage hosts overview screen shows authorized, can make calls, can answer calls, records audio, and detects silence... instead of the other settings.
