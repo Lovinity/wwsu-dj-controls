@@ -2492,34 +2492,41 @@ document.querySelector("#btn-options-calendar").onclick = function () {
             var formatted = {};
             records.map(event =>
             {
-                if (typeof formatted[moment(event.start).format("MM/DD/YYYY")] === 'undefined')
+                if (moment(event.start).isBefore(moment(Meta.time).startOf('day').add(8, 'days')))
                 {
-                    formatted[moment(event.start).format("MM/DD/YYYY")] = [];
-                }
-                var cell3 = ``;
-                var theClass = `secondary`;
-                var theTitle = `This event does not have a recognized prefix. Please check the prefix if this event was meant to trigger something.`;
-                if (event.verify === 'Valid')
-                {
-                    cell3 = `<span class="badge badge-success">Valid</span>`;
-                    theClass = `success`;
-                    theTitle = `This event is good.`;
-                } else if (event.verify === 'Invalid')
-                {
-                    cell3 = `<span class="badge badge-danger">Invalid</span>`;
-                    theClass = `danger`;
-                    theTitle = `This event will not trigger due to critical issues.`;
-                } else if (event.verify === 'Check')
-                {
-                    cell3 = `<span class="badge badge-warning">Check</span>`;
-                    theClass = `warning`;
-                    theTitle = `This event is good, but has minor issues.`;
-                } else {
-                    cell3 = `<span class="badge badge-dark">Manual</span>`;
-                    theClass = `secondary`;
-                    theTitle = `This event does not have a recognized prefix. Please check the prefix if this event was meant to trigger something.`;
-                }
-                formatted[moment(event.start).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;" title="${theTitle}">
+                    if (typeof formatted[moment(event.start).format("MM/DD/YYYY")] === 'undefined')
+                    {
+                        formatted[moment(event.start).format("MM/DD/YYYY")] = [];
+                    }
+                    var cell3 = ``;
+                    var theClass = `secondary`;
+                    var theTitle = `This event does not have a recognized prefix. Please check the prefix if this event was meant to trigger something.`;
+                    if (event.active === -1)
+                    {
+                        cell3 = `<span class="badge badge-secondary">Cancelled</span>`;
+                        theClass = `secondary`;
+                        theTitle = `This event is cancelled.`;
+                    } else if (event.verify === 'Valid')
+                    {
+                        cell3 = `<span class="badge badge-success">Valid</span>`;
+                        theClass = `success`;
+                        theTitle = `This event is good.`;
+                    } else if (event.verify === 'Invalid')
+                    {
+                        cell3 = `<span class="badge badge-danger">Invalid</span>`;
+                        theClass = `danger`;
+                        theTitle = `This event will not trigger due to critical issues.`;
+                    } else if (event.verify === 'Check')
+                    {
+                        cell3 = `<span class="badge badge-warning">Check</span>`;
+                        theClass = `warning`;
+                        theTitle = `This event is good, but has minor issues.`;
+                    } else {
+                        cell3 = `<span class="badge badge-dark">Manual</span>`;
+                        theClass = `secondary`;
+                        theTitle = `This event does not have a recognized prefix. Please check the prefix if this event was meant to trigger something.`;
+                    }
+                    formatted[moment(event.start).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;" title="${theTitle}">
                                 <div class="col-3 text-primary">
                                     ${moment(event.start).format("h:mm A")} - ${moment(event.end).format("h:mm A")}
                                 </div>
@@ -2530,6 +2537,7 @@ document.querySelector("#btn-options-calendar").onclick = function () {
                                         ${event.verify_message}
                                         </div>
                             </div>`);
+                }
             });
 
             for (var k in formatted) {
@@ -8694,8 +8702,6 @@ function processCalendar(data, replace = false)
                 }
             }
         }
-
-        checkCalendar();
 
     } catch (e) {
         console.error(e);
