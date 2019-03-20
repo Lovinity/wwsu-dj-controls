@@ -5803,7 +5803,7 @@ function checkCalendar() {
                             }
 
                             // Sports broadcasts. Check for broadcasts scheduled to start within the next 15 minutes. Skip any scheduled to end in 15 minutes.
-                            if (event.title.startsWith("Sports: ") && moment(Meta.time).add(15, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 10)
+                            if (event.active === 1 && event.title.startsWith("Sports: ") && moment(Meta.time).add(15, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 10)
                             {
                                 calPriorityN = 10;
                                 calTypeN = 'Sports';
@@ -5814,7 +5814,7 @@ function checkCalendar() {
                             }
 
                             // Remote broadcasts. Check for broadcasts scheduled to start within the next 15 minutes. Skip any scheduled to end in 15 minutes.
-                            if (event.title.startsWith("Remote: ") && moment(Meta.time).add(15, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 7)
+                            if (event.active === 1 && event.title.startsWith("Remote: ") && moment(Meta.time).add(15, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 7)
                             {
                                 var summary = event.title.replace('Remote: ', '');
                                 var temp = summary.split(" - ");
@@ -5828,7 +5828,7 @@ function checkCalendar() {
                             }
 
                             // Radio shows. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
-                            if (event.title.startsWith("Show: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 5)
+                            if (event.active === 1 && event.title.startsWith("Show: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 5)
                             {
                                 var summary = event.title.replace('Show: ', '');
                                 var temp = summary.split(" - ");
@@ -5842,7 +5842,7 @@ function checkCalendar() {
                             }
 
                             // Prerecords. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
-                            if (event.title.startsWith("Prerecord: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 3)
+                            if (event.active === 1 && event.title.startsWith("Prerecord: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 3)
                             {
                                 calPriorityN = 3;
                                 calTypeN = 'Prerecord';
@@ -5853,7 +5853,7 @@ function checkCalendar() {
                             }
 
                             // OnAir Studio Prerecord Bookings.
-                            if (event.title.startsWith("OnAir Studio Prerecord Bookings ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).isAfter(moment(Meta.time)) && calPriorityN < 1)
+                            if (event.active === 1 && event.title.startsWith("OnAir Studio Prerecord Bookings ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).isAfter(moment(Meta.time)) && calPriorityN < 1)
                             {
                                 calPriorityN = 1;
                                 calTypeN = 'Booking';
@@ -6227,6 +6227,8 @@ function checkCalendar() {
                 if (Meta.state.startsWith("automation_") || Meta.state === "live_prerecord")
                 {
                     var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878');
+                    if (event.active < 1)
+                        finalColor = hexRgb('#161616');
                     finalColor.red = Math.round(finalColor.red);
                     finalColor.green = Math.round(finalColor.green);
                     finalColor.blue = Math.round(finalColor.blue);
@@ -6238,87 +6240,91 @@ function checkCalendar() {
                                             </div>
                                             <div class="col-8">
                                                 ${event.title}
+                                                ${event.active < 1 ? `<br /><strong>CANCELLED</strong>` : ``}
                                             </div>
                                         </div>
                                     </div></div>`;
                     // Add upcoming shows to the clockwheel shading
-                    if (event.title.startsWith("Show: ") || event.title.startsWith("Remote: ") || event.title.startsWith("Sports: ") || event.title.startsWith("Prerecord: "))
+                    if (event.active === 1)
                     {
-                        if (moment(event.end).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
+                        if (event.title.startsWith("Show: ") || event.title.startsWith("Remote: ") || event.title.startsWith("Sports: ") || event.title.startsWith("Prerecord: "))
                         {
-                            if (moment(event.start).isAfter(moment(Meta.time)))
+                            if (moment(event.end).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
                             {
-                                data.sectors.push({
-                                    label: event.title,
-                                    start: ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) + 0.5,
-                                    size: ((moment(event.end).diff(moment(event.start), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
-                                    color: event.color || '#787878'
-                                });
-                            } else {
-                                data.sectors.push({
-                                    label: event.title,
-                                    start: 0.5,
-                                    size: ((moment(event.end).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
-                                    color: event.color || '#787878'
-                                });
+                                if (moment(event.start).isAfter(moment(Meta.time)))
+                                {
+                                    data.sectors.push({
+                                        label: event.title,
+                                        start: ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) + 0.5,
+                                        size: ((moment(event.end).diff(moment(event.start), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
+                                        color: event.color || '#787878'
+                                    });
+                                } else {
+                                    data.sectors.push({
+                                        label: event.title,
+                                        start: 0.5,
+                                        size: ((moment(event.end).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
+                                        color: event.color || '#787878'
+                                    });
+                                }
+                            } else if (moment(event.start).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
+                            {
+                                if (moment(event.start).isAfter(moment(Meta.time)))
+                                {
+                                    var start = ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360);
+                                    data.sectors.push({
+                                        label: event.title,
+                                        start: start + 0.5,
+                                        size: 360 - start,
+                                        color: event.color || '#787878'
+                                    });
+                                } else {
+                                    data.sectors.push({
+                                        label: event.title,
+                                        start: 0,
+                                        size: 360,
+                                        color: event.color || '#787878'
+                                    });
+                                }
                             }
-                        } else if (moment(event.start).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
-                        {
-                            if (moment(event.start).isAfter(moment(Meta.time)))
+                        } else {
+                            if (moment(event.end).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
                             {
-                                var start = ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360);
-                                data.sectors.push({
-                                    label: event.title,
-                                    start: start + 0.5,
-                                    size: 360 - start,
-                                    color: event.color || '#787878'
-                                });
-                            } else {
-                                data.sectors.push({
-                                    label: event.title,
-                                    start: 0,
-                                    size: 360,
-                                    color: event.color || '#787878'
-                                });
-                            }
-                        }
-                    } else {
-                        if (moment(event.end).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
-                        {
-                            if (moment(event.start).isAfter(moment(Meta.time)))
+                                if (moment(event.start).isAfter(moment(Meta.time)))
+                                {
+                                    data.smallSectors.push({
+                                        label: event.title,
+                                        start: ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) + 0.5,
+                                        size: ((moment(event.end).diff(moment(event.start), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
+                                        color: event.color || '#787878'
+                                    });
+                                } else {
+                                    data.smallSectors.push({
+                                        label: event.title,
+                                        start: 0.5,
+                                        size: ((moment(event.end).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
+                                        color: event.color || '#787878'
+                                    });
+                                }
+                            } else if (moment(event.start).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
                             {
-                                data.smallSectors.push({
-                                    label: event.title,
-                                    start: ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) + 0.5,
-                                    size: ((moment(event.end).diff(moment(event.start), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
-                                    color: event.color || '#787878'
-                                });
-                            } else {
-                                data.smallSectors.push({
-                                    label: event.title,
-                                    start: 0.5,
-                                    size: ((moment(event.end).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
-                                    color: event.color || '#787878'
-                                });
-                            }
-                        } else if (moment(event.start).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
-                        {
-                            if (moment(event.start).isAfter(moment(Meta.time)))
-                            {
-                                var start = ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360);
-                                data.smallSectors.push({
-                                    label: event.title,
-                                    start: start + 0.5,
-                                    size: 360 - start,
-                                    color: event.color || '#787878'
-                                });
-                            } else {
-                                data.smallSectors.push({
-                                    label: event.title,
-                                    start: 0,
-                                    size: 360,
-                                    color: event.color || '#787878'
-                                });
+                                if (moment(event.start).isAfter(moment(Meta.time)))
+                                {
+                                    var start = ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360);
+                                    data.smallSectors.push({
+                                        label: event.title,
+                                        start: start + 0.5,
+                                        size: 360 - start,
+                                        color: event.color || '#787878'
+                                    });
+                                } else {
+                                    data.smallSectors.push({
+                                        label: event.title,
+                                        start: 0,
+                                        size: 360,
+                                        color: event.color || '#787878'
+                                    });
+                                }
                             }
                         }
                     }
@@ -6392,27 +6398,30 @@ function checkCalendar() {
                             if (timeLeft < 0)
                                 timeLeft = 0;
                             // If the event being processed starts in less than 1 hour, add it to the hour clockwheel as a black shaded event
-                            if (moment(event.start).diff(moment(Meta.time), 'minutes') < 60)
+                            if (event.active === 1)
                             {
-                                if (moment(event.start).isAfter(moment(Meta.time)))
+                                if (moment(event.start).diff(moment(Meta.time), 'minutes') < 60)
                                 {
-                                    var theStart = ((moment(event.start).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360);
-                                    var theSize = ((moment(event.end).diff(moment(event.start), 'seconds') / (60 * 60)) * 360);
-                                    if ((theSize + theStart) > 360)
-                                        theSize = 360 - theStart;
-                                    data.sectors.push({
-                                        label: event.title,
-                                        start: theStart,
-                                        size: theSize,
-                                        color: "#000000"
-                                    });
-                                } else {
-                                    data.sectors.push({
-                                        label: event.title,
-                                        start: 0,
-                                        size: ((moment(event.end).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360),
-                                        color: "#000000"
-                                    });
+                                    if (moment(event.start).isAfter(moment(Meta.time)))
+                                    {
+                                        var theStart = ((moment(event.start).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360);
+                                        var theSize = ((moment(event.end).diff(moment(event.start), 'seconds') / (60 * 60)) * 360);
+                                        if ((theSize + theStart) > 360)
+                                            theSize = 360 - theStart;
+                                        data.sectors.push({
+                                            label: event.title,
+                                            start: theStart,
+                                            size: theSize,
+                                            color: "#000000"
+                                        });
+                                    } else {
+                                        data.sectors.push({
+                                            label: event.title,
+                                            start: 0,
+                                            size: ((moment(event.end).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360),
+                                            color: "#000000"
+                                        });
+                                    }
                                 }
                             }
                         }
@@ -6421,6 +6430,8 @@ function checkCalendar() {
                     if (moment(Meta.time).add(1, 'hours').isAfter(moment(event.start)) && moment(Meta.time).isBefore(moment(event.end)))
                     {
                         var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878');
+                        if (event.active < 1)
+                            finalColor = hexRgb('#161616');
                         finalColor.red = Math.round(finalColor.red);
                         finalColor.green = Math.round(finalColor.green);
                         finalColor.blue = Math.round(finalColor.blue);
@@ -6437,6 +6448,7 @@ function checkCalendar() {
                                             </div>
                                             <div class="col-8">
                                                 ${event.title}
+                                                ${event.active < 1 ? `<strong>CANCELLED</strong>` : ``}
                                             </div>
                                         </div>
                                     </div></div>`;
@@ -9853,6 +9865,30 @@ function processLogs(data, replace = false)
                             maxWidth: 640,
                         });
                     }
+                    if (record.logtype === "cancellation")
+                    {
+                        var notification = notifier.notify('Broadcast Cancelled', {
+                            message: `A scheduled broadcast was cancelled. See DJ Controls.`,
+                            icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
+                            duration: 900000,
+                        });
+                        main.flashTaskbar();
+                        iziToast.show({
+                            title: 'Cancelled Broadcast',
+                            message: record.event,
+                            timeout: false,
+                            close: true,
+                            color: 'yellow',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: false,
+                            overlay: true,
+                            zindex: 500,
+                            layout: 2,
+                            image: `assets/images/absent.png`,
+                            maxWidth: 640,
+                        });
+                    }
                     if (record.logtype === "id")
                     {
                         var notification = notifier.notify('Failed Top-Of-Hour Break', {
@@ -9899,6 +9935,30 @@ function processLogs(data, replace = false)
                                 main.flashTaskbar();
                                 iziToast.show({
                                     title: 'Absent Broadcast',
+                                    message: data[key].event,
+                                    timeout: false,
+                                    close: true,
+                                    color: 'yellow',
+                                    drag: false,
+                                    position: 'center',
+                                    closeOnClick: false,
+                                    overlay: true,
+                                    zindex: 500,
+                                    layout: 2,
+                                    image: `assets/images/absent.png`,
+                                    maxWidth: 640,
+                                });
+                            }
+                            if (data[key].logtype === "cancellation")
+                            {
+                                var notification = notifier.notify('Broadcast Cancelled', {
+                                    message: `A scheduled broadcast was cancelled. See DJ Controls.`,
+                                    icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
+                                    duration: 900000,
+                                });
+                                main.flashTaskbar();
+                                iziToast.show({
+                                    title: 'Cancelled Broadcast',
                                     message: data[key].event,
                                     timeout: false,
                                     close: true,

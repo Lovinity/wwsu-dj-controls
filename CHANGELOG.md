@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file as of versio
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) as of version 4.5.0.
 
+## [5.1.1] - 2019-03-20
+### Added
+ - Notifications when a scheduled broadcast was cancelled.
+
+### Changed
+ - Since deleted Google Calendar events are marked cancelled in the system instead of immediately removed, updated clockwheel to accommodate.
+
 ## [5.1.0] - 2019-03-15
 ### Added
  - A bunch of tooltips to help DJ Controls users make more sense of what they are doing or seeing.
