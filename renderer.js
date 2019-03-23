@@ -866,6 +866,7 @@ try {
                 })
                 .catch((err) => {
                     if (client.silenceDetection || client.recordAudio)
+                    {
                         iziToast.show({
                             titleColor: '#000000',
                             messageColor: '#000000',
@@ -885,6 +886,7 @@ try {
                             title: 'Audio Error',
                             message: `There was an error trying to load the main input device for silence detection / recording. Please check your settings. Silence detection and audio recording will not work until this is fixed.`
                         });
+                    }
                 })
     }
 
@@ -900,54 +902,58 @@ try {
                             settings.set(`audio.output.call`, device);
                         })
                         .catch((err) => {
-                            iziToast.show({
-                                titleColor: '#000000',
-                                messageColor: '#000000',
-                                color: 'red',
-                                close: true,
-                                overlay: true,
-                                overlayColor: 'rgba(0, 0, 0, 0.75)',
-                                zindex: 100,
-                                layout: 1,
-                                imageWidth: 100,
-                                image: ``,
-                                progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                                closeOnClick: true,
-                                position: 'center',
-                                timeout: false,
-                                maxWidth: 480,
-                                title: 'Audio Error',
-                                message: `There was an error trying to load the main output device. Please check your settings. Receiving audio calls will not work until this is fixed.`
-                            });
+                            if (client.receiveCalls)
+                            {
+                                iziToast.show({
+                                    titleColor: '#000000',
+                                    messageColor: '#000000',
+                                    color: 'red',
+                                    close: true,
+                                    overlay: true,
+                                    overlayColor: 'rgba(0, 0, 0, 0.75)',
+                                    zindex: 100,
+                                    layout: 1,
+                                    imageWidth: 100,
+                                    image: ``,
+                                    progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                                    closeOnClick: true,
+                                    position: 'center',
+                                    timeout: false,
+                                    maxWidth: 480,
+                                    title: 'Audio Error',
+                                    message: `There was an error trying to load the main output device. Please check your settings. Receiving audio calls will not work until this is fixed.`
+                                });
+                            }
                         })
             } else {
                 temp.setSinkId(settings.get(`audio.output.call`))
                         .catch((err) => {
-                            iziToast.show({
-                                titleColor: '#000000',
-                                messageColor: '#000000',
-                                color: 'red',
-                                close: true,
-                                overlay: true,
-                                overlayColor: 'rgba(0, 0, 0, 0.75)',
-                                zindex: 100,
-                                layout: 1,
-                                imageWidth: 100,
-                                image: ``,
-                                progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                                closeOnClick: true,
-                                position: 'center',
-                                timeout: false,
-                                maxWidth: 480,
-                                title: 'Audio Error',
-                                message: `There was an error trying to load the main output device. Please check your settings. Receiving audio calls will not work until this is fixed.`
-                            });
+                            if (client.receiveCalls)
+                            {
+                                iziToast.show({
+                                    titleColor: '#000000',
+                                    messageColor: '#000000',
+                                    color: 'red',
+                                    close: true,
+                                    overlay: true,
+                                    overlayColor: 'rgba(0, 0, 0, 0.75)',
+                                    zindex: 100,
+                                    layout: 1,
+                                    imageWidth: 100,
+                                    image: ``,
+                                    progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                                    closeOnClick: true,
+                                    position: 'center',
+                                    timeout: false,
+                                    maxWidth: 480,
+                                    title: 'Audio Error',
+                                    message: `There was an error trying to load the main output device. Please check your settings. Receiving audio calls will not work until this is fixed.`
+                                });
+                            }
                         })
             }
         }
     }
-
-    sinkAudio();
 
     function onReceiveStream(stream) {
         console.log(`received stream`);
@@ -4688,8 +4694,9 @@ function hostSocket(cb = function(token) {})
             } else {
                 cb(true);
 
-                // Sink main audio device
+                // Sink main audio devices
                 getAudioMain(settings.get(`audio.input.main`) || undefined);
+                sinkAudio();
 
                 // Disconnect current peer if it exists
                 try {
