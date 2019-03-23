@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file as of versio
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) as of version 4.5.0.
 
+## [5.1.2 UNRELEASED]
+### Added
+ - Notifications when directors cancel office hours or fail to clock in for scheduled office hours.
+
+### Changed
+ - Timesheet screen under manage directors now color codes records based on whether or not they were scheduled, and also if the director failed to show up for scheduled hours or cancelled their hours.
+
 ## [5.1.1] - 2019-03-20
 ### Added
  - Notifications when a scheduled broadcast was cancelled.

@@ -2888,17 +2888,17 @@ document.querySelector(`#options-timesheets-records`).addEventListener("click", 
                                 zindex: 999,
                                 layout: 2,
                                 image: `assets/images/log.png`,
-                                maxWidth: 480,
+                                maxWidth: 640,
                                 title: 'Edit Timesheet',
-                                message: `Record created: ${moment(record.createdAt).format("LLLL")}<br />Record last updated: ${moment(record.updatedAt).format("LLLL")}`,
+                                message: `Record created: ${moment(record.createdAt).format("LLLL")}<br />Record last updated: ${moment(record.updatedAt).format("LLLL")}<br />Scheduled time in: ${record.scheduled_in !== null ? moment(record.scheduled_in).format("LLLL") : `not scheduled`}<br />Scheduled time out: ${record.scheduled_out !== null ? moment(record.scheduled_out).format("LLLL") : `not scheduled`}`,
                                 position: 'center',
                                 drag: false,
                                 closeOnClick: false,
                                 inputs: [
-                                    [`<input type="datetime-local" value="${moment(record.time_in).format("YYYY-MM-DD\THH:mm")}">`, 'change', function (instance, toast, input, e) {
+                                    [`<input type="datetime-local" value="${record.time_in !== null ? moment(record.time_in).format("YYYY-MM-DD\THH:mm") : ``}">`, 'change', function (instance, toast, input, e) {
                                             inputData.time_in = input.value;
                                         }, true],
-                                    [`<input type="datetime-local" value="${moment(record.time_out).format("YYYY-MM-DD\THH:mm")}">`, 'change', function (instance, toast, input, e) {
+                                    [`<input type="datetime-local" value="${record.time_out !== null ? moment(record.time_out).format("YYYY-MM-DD\THH:mm") : ``}">`, 'change', function (instance, toast, input, e) {
                                             inputData.time_out = input.value;
                                         }, true],
                                     [`<input type="checkbox"${record.approved ? ` checked` : ``}>`, 'change', function (instance, toast, input, e) {
@@ -4998,6 +4998,27 @@ function doMeta(metan) {
             } else {
                 $("#wait-modal").iziModal('close');
             }
+        }
+
+        // April Fool's
+        if (typeof metan.trackID !== `undefined` && parseInt(metan.trackID) >= 74255 && parseInt(metan.trackID) <= 74259)
+        {
+            iziToast.show({
+                title: '',
+                message: `<img src="assets/images/giphy.gif">`,
+                timeout: 20000,
+                close: true,
+                color: 'blue',
+                drag: false,
+                position: 'center',
+                closeOnClick: true,
+                pauseOnHover: false,
+                overlay: true,
+                zindex: 250,
+                layout: 2,
+                image: ``,
+                maxWidth: 480
+            });
         }
 
         // Manage queueLength
@@ -9921,6 +9942,54 @@ function processLogs(data, replace = false)
                             maxWidth: 640,
                         });
                     }
+                    if (record.logtype === "director-absent")
+                    {
+                        var notification = notifier.notify('Absent Director Detected', {
+                            message: `A director failed to do scheduled office hours. See DJ Controls.`,
+                            icon: 'http://35727ec9c4540fa3fee5-978f006dd90b95268a106ef80642bdd6.r30.cf5.rackcdn.com/wp-content/uploads/2012/12/Out_of_date_clock_icon.svg_.png',
+                            duration: 900000,
+                        });
+                        main.flashTaskbar();
+                        iziToast.show({
+                            title: 'Absent Director',
+                            message: record.event,
+                            timeout: false,
+                            close: true,
+                            color: 'yellow',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: false,
+                            overlay: true,
+                            zindex: 500,
+                            layout: 2,
+                            image: `assets/images/noClock.png`,
+                            maxWidth: 640,
+                        });
+                    }
+                    if (record.logtype === "director-cancellation")
+                    {
+                        var notification = notifier.notify('Director Cancelled Hours', {
+                            message: `A director cancelled office hours. See DJ Controls.`,
+                            icon: 'http://35727ec9c4540fa3fee5-978f006dd90b95268a106ef80642bdd6.r30.cf5.rackcdn.com/wp-content/uploads/2012/12/Out_of_date_clock_icon.svg_.png',
+                            duration: 900000,
+                        });
+                        main.flashTaskbar();
+                        iziToast.show({
+                            title: 'Director cancelled office hours',
+                            message: record.event,
+                            timeout: false,
+                            close: true,
+                            color: 'yellow',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: false,
+                            overlay: true,
+                            zindex: 500,
+                            layout: 2,
+                            image: `assets/images/noClock.png`,
+                            maxWidth: 640,
+                        });
+                    }
                 }
             });
 
@@ -10026,6 +10095,54 @@ function processLogs(data, replace = false)
                                     zindex: 500,
                                     layout: 2,
                                     image: `assets/images/failTopOfHour.png`,
+                                    maxWidth: 640,
+                                });
+                            }
+                            if (data[key].logtype === "director-absent")
+                            {
+                                var notification = notifier.notify('Absent Director Detected', {
+                                    message: `A director failed to do scheduled office hours. See DJ Controls.`,
+                                    icon: 'http://35727ec9c4540fa3fee5-978f006dd90b95268a106ef80642bdd6.r30.cf5.rackcdn.com/wp-content/uploads/2012/12/Out_of_date_clock_icon.svg_.png',
+                                    duration: 900000,
+                                });
+                                main.flashTaskbar();
+                                iziToast.show({
+                                    title: 'Absent Director',
+                                    message: data[key].event,
+                                    timeout: false,
+                                    close: true,
+                                    color: 'yellow',
+                                    drag: false,
+                                    position: 'center',
+                                    closeOnClick: false,
+                                    overlay: true,
+                                    zindex: 500,
+                                    layout: 2,
+                                    image: `assets/images/noClock.png`,
+                                    maxWidth: 640,
+                                });
+                            }
+                            if (data[key].logtype === "director-cancellation")
+                            {
+                                var notification = notifier.notify('Director Cancelled Hours', {
+                                    message: `A director cancelled office hours. See DJ Controls.`,
+                                    icon: 'http://35727ec9c4540fa3fee5-978f006dd90b95268a106ef80642bdd6.r30.cf5.rackcdn.com/wp-content/uploads/2012/12/Out_of_date_clock_icon.svg_.png',
+                                    duration: 900000,
+                                });
+                                main.flashTaskbar();
+                                iziToast.show({
+                                    title: 'Director cancelled office hours',
+                                    message: data[key].event,
+                                    timeout: false,
+                                    close: true,
+                                    color: 'yellow',
+                                    drag: false,
+                                    position: 'center',
+                                    closeOnClick: false,
+                                    overlay: true,
+                                    zindex: 500,
+                                    layout: 2,
+                                    image: `assets/images/noClock.png`,
                                     maxWidth: 640,
                                 });
                             }
@@ -10163,82 +10280,152 @@ function loadTimesheets(date)
                 }
 
                 // Prepare clock moments
-                var clockin = moment(record.time_in);
-                var clockout = moment(record.time_out);
+                var clockin = record.time_in !== null ? moment(record.time_in) : null;
+                var clockout = record.time_out !== null ? moment(record.time_out) : null;
+                var scheduledin = record.scheduled_in !== null ? moment(record.scheduled_in) : null;
+                var scheduledout = record.scheduled_out !== null ? moment(record.scheduled_out) : null;
                 var clocknow = moment(Meta.time);
                 var clocknext = moment(date).add(1, 'weeks');
-                var clockday = moment(clockin).format('e');
+                var clockday = moment(clockin !== null ? clockin : scheduledin).format('e');
 
-                // Determine status. 1 = approved, 2 = no time_out (clocked in), 0 = not approved.
-                var status = 1;
-                if (!record.approved)
-                    status = 0;
-                if (record.time_out === null)
-                    status = 2;
+                /* Determine status.
+                 * success = Approved and scheduled.
+                 * purple = Approved, but not scheduled
+                 * warning = Scheduled, but not approved
+                 * urgent = Not scheduled and not approved
+                 * info = Clocked in, but not clocked out
+                 * danger = Absent / did not clock in for scheduled hours
+                 * secondary = Canceled scheduled hours
+                 */
+                var status = `urgent`;
+                var status2 = `This record is NOT approved, and did not fall within a scheduled office hours time block.`;
+                var inT = ``;
+                var outT = ``;
 
-                // If approved record, add its hours for the director. If clocked in record, add hours from time_in to current time.
-                if (status === 1)
-                    hours[record.name].add(clockout.diff(clockin));
-                if (status === 2)
+                if (clockin !== null && clockout === null)
+                {
+                    status = `info`;
+                    status2 = `This record / director is still clocked in.`;
                     hours[record.name].add(clocknow.diff(clockin));
-
-
-                var inT = moment(clockin).format(`h:mm A`);
-                var outT = moment(clockout).format(`h:mm A`) || 'IN';
-
-                // For certain clock-ins and clock-outs, we may need to display the date as well, not just the time.
-                // If clock-in happened last week, show its date
-                if (moment(clockin).isBefore(moment(clockout).startOf('week')))
-                {
-                    inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
-                    clockday = moment(clockout).format('e');
-                }
-                // If clock-out happened next week, show its date
-                if (clockout !== null && moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')))
-                {
-                    outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
-                }
-                // If clock-out was not on the same day as clock-in, show date for clock-out.
-                if (clockout !== null && !moment(clockout).isSame(moment(clockin), 'day'))
-                {
-                    outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                    if (moment(clockin).isBefore(moment().startOf('week')))
+                    {
+                        inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                    } else {
+                        inT = moment(clockin).format(`h:mm A`);
+                    }
+                    outT = 'IN NOW';
+                } else {
+                    if (record.approved)
+                    {
+                        if (clockin !== null && clockout !== null && scheduledin !== null && scheduledout !== null)
+                        {
+                            status = `success`;
+                            status2 = `This record is approved and fell within a scheduled office hours block.`;
+                            hours[record.name].add(clockout.diff(clockin));
+                            if (moment(clockin).isBefore(moment(clockout).startOf('week')))
+                            {
+                                inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                            } else {
+                                inT = moment(clockin).format(`h:mm A`);
+                            }
+                            if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
+                            {
+                                outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                            } else {
+                                outT = moment(clockout).format(`h:mm A`);
+                            }
+                        } else if (clockin !== null && clockout !== null && (scheduledin === null || scheduledout === null)) {
+                            status = `purple`;
+                            status2 = `This record is approved, but did not fall within a scheduled office hours block.`;
+                            hours[record.name].add(clockout.diff(clockin));
+                            if (moment(clockin).isBefore(moment(clockout).startOf('week')))
+                            {
+                                inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                            } else {
+                                inT = moment(clockin).format(`h:mm A`);
+                            }
+                            if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
+                            {
+                                outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                            } else {
+                                outT = moment(clockout).format(`h:mm A`);
+                            }
+                        } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null) {
+                            status = `secondary`;
+                            status2 = `This is NOT an actual timesheet; the director canceled scheduled office hours.`;
+                            if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
+                            {
+                                inT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                            } else {
+                                inT = moment(scheduledin).format(`h:mm A`);
+                            }
+                            if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
+                            {
+                                outT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                            } else {
+                                outT = moment(scheduledout).format(`h:mm A`);
+                            }
+                        }
+                    } else {
+                        if (clockin !== null && clockout !== null && scheduledin !== null && scheduledout !== null)
+                        {
+                            status = `warning`;
+                            status2 = `This record is NOT approved, but fell within a scheduled office hours block.`;
+                            if (moment(clockin).isBefore(moment(clockout).startOf('week')))
+                            {
+                                inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                            } else {
+                                inT = moment(clockin).format(`h:mm A`);
+                            }
+                            if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
+                            {
+                                outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                            } else {
+                                outT = moment(clockout).format(`h:mm A`);
+                            }
+                        } else if (clockin !== null && clockout !== null && (scheduledin === null || scheduledout === null)) {
+                            status = `urgent`;
+                            status2 = `This record is NOT approved and did not fall within a scheduled office hours block.`;
+                            if (moment(clockin).isBefore(moment(clockout).startOf('week')))
+                            {
+                                inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                            } else {
+                                inT = moment(clockin).format(`h:mm A`);
+                            }
+                            if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
+                            {
+                                outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                            } else {
+                                outT = moment(clockout).format(`h:mm A`);
+                            }
+                        } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null) {
+                            status = `danger`;
+                            status2 = `This is NOT an actual timesheet; the director failed to clock in during scheduled office hours.`;
+                            if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
+                            {
+                                inT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                            } else {
+                                inT = moment(scheduledin).format(`h:mm A`);
+                            }
+                            if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
+                            {
+                                outT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                            } else {
+                                outT = moment(scheduledout).format(`h:mm A`);
+                            }
+                        }
+                    }
                 }
 
                 // Fill in the timesheet records clock in
                 var cell = document.getElementById(`options-timesheets-director-cell-${clockday}-in-${record.name.replace(/\W/g, '')}`);
                 if (cell !== null)
-                {
-                    switch (status)
-                    {
-                        case 0:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-danger" id="timesheet-t-${record.ID}" title="This timesheet record is NOT approved. Click to edit.">${inT}</span><br />`;
-                            break;
-                        case 1:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}" title="This timesheet record is approved. Click to edit.">${inT}</span><br />`;
-                            break;
-                        case 2:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-info" id="timesheet-t-${record.ID}" title="This timesheet record does not contain a clock-out time yet. Click to edit.">${inT}</span><br />`;
-                            break;
-                    }
-                }
+                    cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-${status}" id="timesheet-t-${record.ID}" title="${status2} Click to edit.">${inT}</span><br />`;
 
                 // Fill in the timesheet records clock out
                 var cell = document.getElementById(`options-timesheets-director-cell-${clockday}-out-${record.name.replace(/\W/g, '')}`);
                 if (cell !== null)
-                {
-                    switch (status)
-                    {
-                        case 0:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-danger" id="timesheet-t-${record.ID}" title="This timesheet record is NOT approved. Click to edit.">${outT}</span><br />`;
-                            break;
-                        case 1:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-success" id="timesheet-t-${record.ID}" title="This timesheet record is approved. Click to edit.">${outT}</span><br />`;
-                            break;
-                        case 2:
-                            cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-info" id="timesheet-t-${record.ID}" title="This timesheet record does not contain a clock-out time yet. Click to edit.">${outT}</span><br />`;
-                            break;
-                    }
-                }
+                    cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-${status}" id="timesheet-t-${record.ID}" title="${status2} Click to edit.">${outT}</span><br />`;
 
                 // Iterate through each director and list their hours worked.
                 for (var key in hours)
