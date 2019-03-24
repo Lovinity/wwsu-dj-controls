@@ -5,14 +5,6 @@ try {
 
     var development = false;
 
-// Define hexrgb constants
-    var hexChars = 'a-f\\d';
-    var match3or4Hex = `#?[${hexChars}]{3}[${hexChars}]?`;
-    var match6or8Hex = `#?[${hexChars}]{6}([${hexChars}]{2})?`;
-
-    var nonHexChars = new RegExp(`[^#${hexChars}]`, 'gi');
-    var validHexSize = new RegExp(`^${match3or4Hex}$|^${match6or8Hex}$`, 'i');
-
     // Define constants
     var fs = require("fs"); // file system
     var main = require('electron').remote.require('./main');
