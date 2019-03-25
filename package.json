@@ -12,8 +12,8 @@
   "repository": "https://github.com/Lovinity/wwsu-dj-controls",
   "author": "Patrick Schmalstig",
   "devDependencies": {
-    "electron": "^4.0.4",
-    "electron-builder": "^20.38.5",
+    "electron": "^4.1.1",
+    "electron-builder": "^20.39.0",
     "electron-devtools-installer": "^2.2.4",
     "electron-installer-dmg": "^2.0.0",
     "electron-squirrel-startup": "^1.0.0"
