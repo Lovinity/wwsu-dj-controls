@@ -1850,8 +1850,55 @@
                         <span class="navbar-brand mr-auto text-white">Server Configuration Management</span>
                         <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
                     </header>
+                    <div class="d-flex justify-content-start flex-wrap">
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-config-basic" class="btn btn-secondary btn-float" title="Manage basic server configuration"><i class="fas fa-cog"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Basic Configuration</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer bg-light-1">
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="options-modal-config-basic" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-1">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-secondary doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white">Server Configuration - Basic</span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close this window"></a></div>
+                    </header>
+
+                    <div class="form-group p-1" title="URL to WWSU's website; used by Status to check if the website goes offline.">
+                        <label for="config-website">Station Website URL</label>
+                        <input type="text" id="config-website" class="form-control">
+                    </div>
+
+                    <div class="form-group p-1" title="URL to the Shoutcast v2.6 radio stream server. Used to monitor status and record listener counts.">
+                        <label for="config-stream">Station Radio Stream Server URL</label>
+                        <input type="text" id="config-stream" class="form-control">
+                    </div>
+
+                    <div class="form-group p-1" title="Secret string used to encode the IP addresses of web and mobile visitors. Changing this will invalidate active discipline!">
+                        <label for="config-hostSecret">Change hostSecret</label>
+                        <input type="password" id="config-hostSecret" class="form-control">
+                    </div>
+
+                    <div class="form-group p-1" title="Specify the date and time when the current semester started; used to calculate remote credits earned.">
+                        <label for="config-startOfSemester">Start of Semester</label>
+                        <input type="datetime-local" id="config-startOfSemester" class="form-control">
+                    </div>
+
+                    <div class="custom-control custom-switch" title="Disable a lot of the backend cron checking for development reasons.">
+                        <input class="custom-control-input" id="config-lofi" type="checkbox">
+                        <span class="custom-control-track"></span>
+                        <label class="custom-control-label" for="config-lofi">Disable main CRON checks</label><br />
+                    </div>
+
+                </div>
+                <div class="modal-footer bg-light-1">
+                    <button type="button" class="btn btn-success btn-lg" id="options-modal-config-basic-save" title="Save the configuration">Save</button>
                 </div>
             </div>
         </div>

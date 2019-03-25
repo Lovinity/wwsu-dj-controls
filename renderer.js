@@ -4,7 +4,7 @@ try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
     var development = true;
-    
+
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
     var match3or4Hex = `#?[${hexChars}]{3}[${hexChars}]?`;
@@ -1785,6 +1785,20 @@ try {
         zindex: 61
     });
 
+    $("#options-modal-config-basic").iziModal({
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 62
+    });
+
     var quill = new Quill('#themessage', {
         modules: {
             toolbar: [
@@ -2158,6 +2172,10 @@ document.querySelector("#log-add").onclick = function () {
     saveLog();
 };
 
+document.querySelector("#options-modal-config-basic-save").onclick = function () {
+    saveConfigBasic();
+};
+
 document.querySelector("#btn-requests").onclick = function () {
     $("#requests-modal").iziModal('open');
 };
@@ -2274,6 +2292,18 @@ document.querySelector("#btn-options-config").onclick = function () {
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred during the click event of #btn-options-config.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-basic").onclick = function () {
+    try {
+        $("#options-modal-config-basic").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-basic.'
         });
     }
 };
@@ -10819,7 +10849,70 @@ function processConfig(data) {
         {
             Config[key] = data[key];
 
-            // TODO: Work on this!
+            switch (key)
+            {
+                case "website":
+                    var temp = document.querySelector(`#config-website`);
+                    if (temp !== null)
+                        temp.value = data[key];
+                    break;
+                case "stream":
+                    var temp = document.querySelector(`#config-stream`);
+                    if (temp !== null)
+                        temp.value = data[key];
+                    break;
+                case "startOfSemester":
+                    var temp = document.querySelector(`#config-startOfSemester`);
+                    if (temp !== null)
+                        temp.value = moment(data[key]).format("YYYY-MM-DD\THH:mm");
+                    break;
+                case "lofi":
+                    var temp = document.querySelector(`#config-lofi`);
+                    if (temp !== null)
+                        temp.checked = data[key];
+                    break;
+            }
         }
     }
+}
+
+function saveConfigBasic() {
+    directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/basic/set', data: {
+            website: document.querySelector(`#config-website`).value,
+            stream: document.querySelector(`#config-stream`).value,
+            hostSecret: document.querySelector(`#config-hostSecret`).value !== `` ? document.querySelector(`#config-hostSecret`) : undefined,
+            startOfSemester: moment(document.querySelector(`#config-startOfSemester`).value).toISOString(true),
+            lofi: document.querySelector(`#config-lofi`).checked
+        }}, function (response) {
+        if (response === 'OK')
+        {
+            $("#options-modal-config-basic").iziModal('close');
+            iziToast.show({
+                title: `Basic server configuration updated!`,
+                message: ``,
+                timeout: 10000,
+                close: true,
+                color: 'green',
+                drag: false,
+                position: 'center',
+                closeOnClick: true,
+                overlay: false,
+                zindex: 1000
+            });
+        } else {
+            console.dir(response);
+            iziToast.show({
+                title: `Failed to save basic server configuration`,
+                message: ``,
+                timeout: 10000,
+                close: true,
+                color: 'red',
+                drag: false,
+                position: 'center',
+                closeOnClick: true,
+                overlay: false,
+                zindex: 1000
+            });
+        }
+    });
 }
