@@ -1,9 +1,9 @@
-/* global iziToast, io, moment, Infinity, err, ProgressBar, Taucharts, response, responsiveVoice, jdenticon, SIP */
+/* global iziToast, io, moment, Infinity, err, ProgressBar, Taucharts, response, responsiveVoice, jdenticon, SIP, brutusin */
 
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = true;
+    var development = false;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -20,6 +20,7 @@ try {
     var notifier = require('./electron-notifications/index.js');
     var Sanitize = require("sanitize-filename");
     var settings = require('electron-settings');
+    var {webFrame} = require('electron');
 
     // Define data variables
     var Meta = {time: moment().toISOString(), lastID: moment().toISOString(), state: 'unknown', line1: '', line2: '', queueFinish: null, trackFinish: null};
@@ -66,6 +67,8 @@ try {
     var recorderDialog = false;
     var silenceTimer;
     var silenceState = 0;
+    var newRecorder = false;
+    var recorderPending = false;
 
     var audioContext = new AudioContext();
     var gain = audioContext.createGain();
@@ -265,7 +268,7 @@ try {
                     ['<button><b>Finish Recording</b></button>', function (instance, toast) {
                             instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
                             recorderDialog = true;
-                            stopRecording();
+                            stopRecording(true);
                         }, true],
                     ['<button><b>Cancel</b></button>', function (instance, toast) {
                             instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
@@ -704,7 +707,23 @@ try {
                 })
     }
 
-    function setupRecorder(node, restart) {
+    function setupRecorder(node) {
+        // Stop any active recordings
+        try {
+            if (recorder.isRecording())
+            {
+                recorderTitle2 = recorderTitle;
+                recorder.finishRecording();
+                console.log(`Finished recording`);
+                newRecorder = true;
+            } else {
+                recorder.destroyWorker();
+            }
+        } catch (eee) {
+            // ignore errors
+        }
+
+        // Reset the recorder
         recorder = undefined;
         recorder = new WebAudioRecorder(node, {
             workerDir: "assets/js/workers/",
@@ -721,36 +740,28 @@ try {
         recorder.onEncoderLoaded = function (recorder, encoding) {
             var startRecording = null;
             var preText = ``;
-            if (((Meta.state.startsWith("automation_") || Meta.state === 'unknown') && Meta.state !== 'automation_break') || (Meta.state.includes("_returning")))
+            console.log(`Encoder Loaded.`);
+            if (Meta.state === 'live_on' || Meta.state === `live_prerecord`)
             {
-                if (Meta.state === 'live_on' || Meta.state === `live_prerecord`)
-                {
-                    startRecording = 'live';
-                    preText = `${sanitize(Meta.show)}${Meta.state === `live_prerecord` ? ` PRERECORDED` : ``}`;
-                } else if (Meta.state === 'remote_on')
-                {
-                    startRecording = 'remote';
-                    preText = sanitize(Meta.show);
-                } else if (Meta.state === 'sports_on' || Meta.state === 'sportsremote_on')
-                {
-                    startRecording = 'sports';
-                    preText = sanitize(Meta.show);
-                }
-            } else if (Meta.state.startsWith("automation_"))
+                startRecording = 'live';
+                preText = `${sanitize(Meta.show)}${Meta.state === `live_prerecord` ? ` PRERECORDED` : ``}`;
+            } else if (Meta.state === 'remote_on')
+            {
+                startRecording = 'remote';
+                preText = sanitize(Meta.show);
+            } else if (Meta.state === 'sports_on' || Meta.state === 'sportsremote_on')
+            {
+                startRecording = 'sports';
+                preText = sanitize(Meta.show);
+            } else if (Meta.state.startsWith("automation_") && (!Meta.state.includes("_break") && !Meta.state.includes("_returning") && !Meta.state.includes("_halftime")))
             {
                 startRecording = 'automation';
                 preText = sanitize(Meta.genre);
-            } else if (Meta.state.includes("_break") || Meta.state.includes("_returning") || Meta.state.includes("_halftime"))
-            {
-                if (!development && client.recordAudio)
-                {
-                    stopRecording();
-                }
             }
             if (startRecording !== null) {
                 if (!development && client.recordAudio)
                 {
-                    newRecording(`${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`);
+                    newRecording(`${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`, true);
                     hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started.<br />Path: ${settings.get(`recorder.path`)}/${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
                     });
                 }
@@ -787,6 +798,12 @@ try {
                 });
                 recorderDialog = false;
             }
+
+            if (newRecorder)
+            {
+                newRecorder = false;
+                recorder.destroyWorker();
+            }
         }
 
     }
@@ -809,47 +826,6 @@ try {
                     // Reset stuff
                     try {
                         analyserStream2.disconnect(analyser2);
-
-                        if (recorder.isRecording())
-                        {
-                            var startRecording = null;
-                            var preText = ``;
-                            if (((Meta.state.startsWith("automation_") || Meta.state === 'unknown') && Meta.state !== 'automation_break') || (Meta.state.includes("_returning")))
-                            {
-                                if (Meta.state === 'live_on' || Meta.state === `live_prerecord`)
-                                {
-                                    startRecording = 'live';
-                                    preText = `${sanitize(Meta.show)}${Meta.state === `live_prerecord` ? ` PRERECORDED` : ``}`;
-                                } else if (Meta.state === 'remote_on')
-                                {
-                                    startRecording = 'remote';
-                                    preText = sanitize(Meta.show);
-                                } else if (Meta.state === 'sports_on' || Meta.state === 'sportsremote_on')
-                                {
-                                    startRecording = 'sports';
-                                    preText = sanitize(Meta.show);
-                                }
-                            } else if (Meta.state.startsWith("automation_"))
-                            {
-                                startRecording = 'automation';
-                                preText = sanitize(Meta.genre);
-                            } else if (Meta.state.includes("_break") || Meta.state.includes("_returning") || Meta.state.includes("_halftime"))
-                            {
-                                if (!development && client.recordAudio)
-                                {
-                                    stopRecording();
-                                }
-                            }
-                            if (startRecording !== null) {
-                                if (!development && client.recordAudio)
-                                {
-                                    newRecording(`${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`);
-                                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started.<br />Path: ${settings.get(`recorder.path`)}/${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                                    });
-                                }
-                            }
-                        }
-
                         window.mainStream.getTracks().forEach(track => track.stop());
                     } catch (eee) {
                         // ignore errors
@@ -862,7 +838,8 @@ try {
                     analyserStream2 = audioContext2.createMediaStreamSource(stream);
                     analyserStream2.connect(analyser2);
 
-                    setupRecorder(analyserStream2, restartRecorder);
+                    setupRecorder(analyserStream2);
+
                     settings.set(`audio.input.main`, device);
                 })
                 .catch((err) => {
@@ -1785,7 +1762,7 @@ try {
         zindex: 61
     });
 
-    $("#options-modal-config-basic").iziModal({
+    $("#options-modal-config-form").iziModal({
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -2172,10 +2149,6 @@ document.querySelector("#log-add").onclick = function () {
     saveLog();
 };
 
-document.querySelector("#options-modal-config-basic-save").onclick = function () {
-    saveConfigBasic();
-};
-
 document.querySelector("#btn-requests").onclick = function () {
     $("#requests-modal").iziModal('open');
 };
@@ -2298,12 +2271,260 @@ document.querySelector("#btn-options-config").onclick = function () {
 
 document.querySelector("#btn-options-config-basic").onclick = function () {
     try {
-        $("#options-modal-config-basic").iziModal('open');
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "cWebsite": {
+                    "title": "Station Website URL",
+                    "description": "URL to WWSU's website; used by Status to check if the website goes offline.",
+                    "type": "url"
+                },
+                "cStream": {
+                    "title": "Station Radio Stream Server URL",
+                    "description": "URL to the Shoutcast v2.6 radio stream server. Used to monitor status and record listener counts.",
+                    "type": "url"
+                },
+                "cHostSecret": {
+                    "title": "Change hostSecret",
+                    "description": "Secret string used to encode the IP addresses of web and mobile visitors. Changing this will invalidate active discipline!",
+                    "type": "password"
+                },
+                "cStartOfSemester": {
+                    "title": "Start of Semester",
+                    "description": "Specify the date and time when the current semester started; used to calculate remote credits earned.",
+                    "type": "datetime-local"
+                },
+                "cLofi": {
+                    "title": "Disable main CRON checks",
+                    "description": "Disable a lot of the backend cron checking for development reasons.",
+                    "type": "boolean",
+                },
+            },
+            "value": {
+                "cWebsite": Config.website || ``,
+                "cStream": Config.stream || ``,
+                "cHostSecret": ``,
+                "cStartOfSemester": moment(Config.startOfSemester).format("YYYY-MM-DD\THH:mm"),
+                "cLofi": Config.lofi
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/basic/set', data: {
+                        website: values.cWebsite,
+                        stream: values.cStream,
+                        hostSecret: values.cHostSecret !== `` ? values.cHostSecret : undefined,
+                        startOfSemester: moment(values.cStartOfSemester).toISOString(true),
+                        lofi: values.cLofi
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Basic server configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save basic server configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Basic`);
+        $("#options-modal-config-form").iziModal('open');
     } catch (e) {
         console.error(e);
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred during the click event of #btn-options-config-basic.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-display").onclick = function () {
+    try {
+        var iConfig;
+        var pConfig;
+        Config.displaysigns
+                .filter((sign) => sign.name === `public`)
+                .map((sign, index) => {
+                    pConfig = sign;
+                });
+        Config.displaysigns
+                .filter((sign) => sign.name === `internal`)
+                .map((sign, index) => {
+                    iConfig = sign;
+                });
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "cIInstances": {
+                    "title": "Number of Internal Display Instances",
+                    "description": "How many display signs should be connected to display/internal for it to be considered operational?",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "cILevel": {
+                    "title": "Internal Display Status Level",
+                    "description": "When there are less than the above number of internal display signs connected, what level of error should be triggered? 5 = good, 4 = offline/OK, 3 = minor, 2 = significant, 1 = critical.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                },
+                "cPInstances": {
+                    "title": "Number of Public Display Instances",
+                    "description": "How many display signs should be connected to display/public for it to be considered operational?",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "cPLevel": {
+                    "title": "Public Display Status Level",
+                    "description": "When there are less than the above number of public display signs connected, what level of error should be triggered? 5 = good, 4 = offline/OK, 3 = minor, 2 = significant, 1 = critical.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                },
+            },
+            "value": {
+                "cIInstances": iConfig.instances || 0,
+                "cILevel": iConfig.level || 4,
+                "cPInstances": pConfig.instances || 0,
+                "cPLevel": pConfig.level || 4,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/displaysigns/set', data: {
+                        iLevel: values.cILevel,
+                        iInstances: values.cIInstances,
+                        pLevel: values.cPLevel,
+                        pInstances: values.cPInstances
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Display sign configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save display sign configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Display Signs`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-display.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-google").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "cCalendarId": {
+                    "title": "ID of the WWSU Events Google Calendar",
+                    "description": "Provide the Google Calendar ID of the calendar used for radio programming.",
+                    "type": "string"
+                },
+                "cDirectorHoursId": {
+                    "title": "ID of the Office Hours Google Calendar",
+                    "description": "Provide the Google Calendar ID of the calendar used for director office hours.",
+                    "type": "string"
+                },
+            },
+            "value": {
+                "cCalendarId": Config.GoogleAPI.calendarId || ``,
+                "cDirectorHoursId": Config.GoogleAPI.directorHoursId || ``
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/google/set', data: {
+                        calendarId: values.cCalendarId,
+                        directorHoursId: values.cDirectorHoursId
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Google Calendar configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save google calendar configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Google Calendar`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-google.'
         });
     }
 };
@@ -5555,6 +5776,7 @@ function metaTick()
 
     if (checkMinutes !== moment(Meta.time).minutes())
     {
+        console.log(webFrame.getResourceUsage());
         checkMinutes = moment(Meta.time).minutes();
         checkAnnouncements();
         selectRecipient(activeRecipient);
@@ -5918,6 +6140,7 @@ function checkCalendar() {
         var calShowN = '';
         var calTopicN = ``;
         var calStartsN = null;
+        // TODO: Make this more efficient; filter takes quite a bit of CPU.
         var records = Calendar().get();
         if (records.length > 0)
             records = records.filter(event => !event.title.startsWith("Genre:") && !event.title.startsWith("Playlist:") && moment(event.start).isBefore(moment(Meta.time).add(1, 'days')));
@@ -10922,11 +11145,9 @@ function getRecordingPath() {
     return undefined;
 }
 
-function newRecording(filename)
+function newRecording(filename, forced = false)
 {
-    recorderTitle2 = recorderTitle;
-    console.log(`Making new recording after delay`);
-    setTimeout(function () {
+    var _newRecording = () => {
         try {
             if (recorder.isRecording())
             {
@@ -10942,14 +11163,25 @@ function newRecording(filename)
         } catch (eee) {
             // ignore errors
         }
-    }, settings.get(`recorder.delay`) || 1);
+    };
+
+    recorderTitle2 = recorderTitle;
+    if (forced)
+    {
+        _newRecording();
+    } else if (!recorderPending) {
+        console.log(`Making new recording after delay`);
+        recorderPending = true;
+        setTimeout(function () {
+            _newRecording();
+            recorderPending = false;
+        }, settings.get(`recorder.delay`) || 1);
+}
 }
 
-function stopRecording()
+function stopRecording(forced = false)
 {
-    console.log(`Finishing recording after delay`);
-    recorderTitle2 = recorderTitle;
-    setTimeout(function () {
+    var _stopRecording = () => {
         try {
             if (recorder.isRecording())
             {
@@ -10959,7 +11191,17 @@ function stopRecording()
         } catch (eee) {
             // ignore errors
         }
-    }, settings.get(`recorder.delay`) || 1);
+    };
+    if (forced)
+    {
+        _stopRecording();
+    } else {
+        console.log(`Finishing recording after delay`);
+        recorderTitle2 = recorderTitle;
+        setTimeout(function () {
+            _stopRecording();
+        }, settings.get(`recorder.delay`) || 1);
+}
 }
 
 function startRecording(filename)
@@ -10985,71 +11227,6 @@ function processConfig(data) {
         if (data.hasOwnProperty(key))
         {
             Config[key] = data[key];
-
-            switch (key)
-            {
-                case "website":
-                    var temp = document.querySelector(`#config-website`);
-                    if (temp !== null)
-                        temp.value = data[key];
-                    break;
-                case "stream":
-                    var temp = document.querySelector(`#config-stream`);
-                    if (temp !== null)
-                        temp.value = data[key];
-                    break;
-                case "startOfSemester":
-                    var temp = document.querySelector(`#config-startOfSemester`);
-                    if (temp !== null)
-                        temp.value = moment(data[key]).format("YYYY-MM-DD\THH:mm");
-                    break;
-                case "lofi":
-                    var temp = document.querySelector(`#config-lofi`);
-                    if (temp !== null)
-                        temp.checked = data[key];
-                    break;
-            }
         }
     }
-}
-
-function saveConfigBasic() {
-    directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/basic/set', data: {
-            website: document.querySelector(`#config-website`).value,
-            stream: document.querySelector(`#config-stream`).value,
-            hostSecret: document.querySelector(`#config-hostSecret`).value !== `` ? document.querySelector(`#config-hostSecret`) : undefined,
-            startOfSemester: moment(document.querySelector(`#config-startOfSemester`).value).toISOString(true),
-            lofi: document.querySelector(`#config-lofi`).checked
-        }}, function (response) {
-        if (response === 'OK')
-        {
-            $("#options-modal-config-basic").iziModal('close');
-            iziToast.show({
-                title: `Basic server configuration updated!`,
-                message: ``,
-                timeout: 10000,
-                close: true,
-                color: 'green',
-                drag: false,
-                position: 'center',
-                closeOnClick: true,
-                overlay: false,
-                zindex: 1000
-            });
-        } else {
-            console.dir(response);
-            iziToast.show({
-                title: `Failed to save basic server configuration`,
-                message: ``,
-                timeout: 10000,
-                close: true,
-                color: 'red',
-                drag: false,
-                position: 'center',
-                closeOnClick: true,
-                overlay: false,
-                zindex: 1000
-            });
-        }
-    });
 }
