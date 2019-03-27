@@ -1,4 +1,4 @@
-/* global iziToast, io, moment, Infinity, err, ProgressBar, Taucharts, response, responsiveVoice, jdenticon, SIP */
+/* global iziToast, io, moment, Infinity, err, ProgressBar, Taucharts, response, responsiveVoice, jdenticon, SIP, brutusin */
 
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -2148,10 +2148,6 @@ document.querySelector("#log-add").onclick = function () {
     saveLog();
 };
 
-document.querySelector("#options-modal-config-basic-save").onclick = function () {
-    saveConfigBasic();
-};
-
 document.querySelector("#btn-requests").onclick = function () {
     $("#requests-modal").iziModal('open');
 };
@@ -2274,6 +2270,82 @@ document.querySelector("#btn-options-config").onclick = function () {
 
 document.querySelector("#btn-options-config-basic").onclick = function () {
     try {
+        $('#options-modal-config-basic-form').jsonForm({
+            "schema": {
+                "cWebsite": {
+                    "title": "Station Website URL",
+                    "description": "URL to WWSU's website; used by Status to check if the website goes offline.",
+                    "type": "url"
+                },
+                "cStream": {
+                    "title": "Station Radio Stream Server URL",
+                    "description": "URL to the Shoutcast v2.6 radio stream server. Used to monitor status and record listener counts.",
+                    "type": "url"
+                },
+                "cHostSecret": {
+                    "title": "Change hostSecret",
+                    "description": "Secret string used to encode the IP addresses of web and mobile visitors. Changing this will invalidate active discipline!",
+                    "type": "password"
+                },
+                "cStartOfSemester": {
+                    "title": "Start of Semester",
+                    "description": "Specify the date and time when the current semester started; used to calculate remote credits earned.",
+                    "type": "datetime-local"
+                },
+                "cLofi": {
+                    "title": "Disable main CRON checks",
+                    "description": "Disable a lot of the backend cron checking for development reasons.",
+                    "type": "boolean",
+                },
+            },
+            "value": {
+                "cWebsite": Config.website || ``,
+                "cStream": Config.stream || ``,
+                "cHostSecret": ``,
+                "cStartOfSemester": moment(Config.startOfSemester).format("YYYY-MM-DD\THH:mm"),
+                "cLofi": Config.lofi
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/basic/set', data: {
+                        website: values.cWebsite,
+                        stream: values.cStream,
+                        hostSecret: values.cHostSecret !== `` ? values.cHostSecret : undefined,
+                        startOfSemester: moment(values.cStartOfSemester).toISOString(true),
+                        lofi: values.cLofi
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-basic").iziModal('close');
+                        iziToast.show({
+                            title: `Basic server configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save basic server configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
         $("#options-modal-config-basic").iziModal('open');
     } catch (e) {
         console.error(e);
@@ -10845,71 +10917,6 @@ function processConfig(data) {
         if (data.hasOwnProperty(key))
         {
             Config[key] = data[key];
-
-            switch (key)
-            {
-                case "website":
-                    var temp = document.querySelector(`#config-website`);
-                    if (temp !== null)
-                        temp.value = data[key];
-                    break;
-                case "stream":
-                    var temp = document.querySelector(`#config-stream`);
-                    if (temp !== null)
-                        temp.value = data[key];
-                    break;
-                case "startOfSemester":
-                    var temp = document.querySelector(`#config-startOfSemester`);
-                    if (temp !== null)
-                        temp.value = moment(data[key]).format("YYYY-MM-DD\THH:mm");
-                    break;
-                case "lofi":
-                    var temp = document.querySelector(`#config-lofi`);
-                    if (temp !== null)
-                        temp.checked = data[key];
-                    break;
-            }
         }
     }
-}
-
-function saveConfigBasic() {
-    directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/basic/set', data: {
-            website: document.querySelector(`#config-website`).value,
-            stream: document.querySelector(`#config-stream`).value,
-            hostSecret: document.querySelector(`#config-hostSecret`).value !== `` ? document.querySelector(`#config-hostSecret`) : undefined,
-            startOfSemester: moment(document.querySelector(`#config-startOfSemester`).value).toISOString(true),
-            lofi: document.querySelector(`#config-lofi`).checked
-        }}, function (response) {
-        if (response === 'OK')
-        {
-            $("#options-modal-config-basic").iziModal('close');
-            iziToast.show({
-                title: `Basic server configuration updated!`,
-                message: ``,
-                timeout: 10000,
-                close: true,
-                color: 'green',
-                drag: false,
-                position: 'center',
-                closeOnClick: true,
-                overlay: false,
-                zindex: 1000
-            });
-        } else {
-            console.dir(response);
-            iziToast.show({
-                title: `Failed to save basic server configuration`,
-                message: ``,
-                timeout: 10000,
-                close: true,
-                color: 'red',
-                drag: false,
-                position: 'center',
-                closeOnClick: true,
-                overlay: false,
-                zindex: 1000
-            });
-        }
-    });
 }
