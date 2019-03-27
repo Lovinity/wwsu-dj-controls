@@ -10725,9 +10725,13 @@ function loadTimesheets(date)
                     if (moment(clockin).isBefore(moment().startOf('week')))
                     {
                         inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                        left = 0;
+                        width = (((moment(Meta.time).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
                         timeline += `<div title="Director still clocked in since ${inT}" id="timesheet-t-${record.ID}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: 0%; width: ${width}%;"></div>`;
                     } else {
                         inT = moment(clockin).format(`h:mm A`);
+                        width = (((moment(Meta.time).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
+                        left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
                         timeline += `<div title="Director still clocked in since ${inT}" id="timesheet-t-${record.ID}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
                     }
                     outT = 'IN NOW';
