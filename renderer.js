@@ -2272,6 +2272,7 @@ document.querySelector("#btn-options-config").onclick = function () {
 document.querySelector("#btn-options-config-basic").onclick = function () {
     try {
         $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
         $('#options-modal-config-form-form').jsonForm({
             "schema": {
                 "cWebsite": {
@@ -2374,6 +2375,7 @@ document.querySelector("#btn-options-config-display").onclick = function () {
                     iConfig = sign;
                 });
         $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
         $('#options-modal-config-form-form').jsonForm({
             "schema": {
                 "cIInstances": {
@@ -2463,6 +2465,7 @@ document.querySelector("#btn-options-config-display").onclick = function () {
 document.querySelector("#btn-options-config-google").onclick = function () {
     try {
         $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
         $('#options-modal-config-form-form').jsonForm({
             "schema": {
                 "cCalendarId": {
@@ -3200,73 +3203,69 @@ document.querySelector(`#options-timesheets-records`).addEventListener("click", 
                 Timesheets
                         .filter(record => record.ID === timesheetID)
                         .map(record => {
-                            var inputData = {ID: record.ID, time_in: moment(record.time_in).format("YYYY-MM-DD\THH:mm"), time_out: moment(record.time_out).format("YYYY-MM-DD\THH:mm"), approved: record.approved};
-                            iziToast.show({
-                                timeout: 180000,
-                                overlay: true,
-                                displayMode: 'once',
-                                color: 'yellow',
-                                id: 'inputs',
-                                zindex: 999,
-                                layout: 2,
-                                image: `assets/images/log.png`,
-                                maxWidth: 640,
-                                title: 'Edit Timesheet',
-                                message: `Record created: ${moment(record.createdAt).format("LLLL")}<br />Record last updated: ${moment(record.updatedAt).format("LLLL")}<br />Scheduled time in: ${record.scheduled_in !== null ? moment(record.scheduled_in).format("LLLL") : `not scheduled`}<br />Scheduled time out: ${record.scheduled_out !== null ? moment(record.scheduled_out).format("LLLL") : `not scheduled`}`,
-                                position: 'center',
-                                drag: false,
-                                closeOnClick: false,
-                                inputs: [
-                                    [`<input type="datetime-local" value="${record.time_in !== null ? moment(record.time_in).format("YYYY-MM-DD\THH:mm") : ``}">`, 'change', function (instance, toast, input, e) {
-                                            inputData.time_in = input.value;
-                                        }, true],
-                                    [`<input type="datetime-local" value="${record.time_out !== null ? moment(record.time_out).format("YYYY-MM-DD\THH:mm") : ``}">`, 'change', function (instance, toast, input, e) {
-                                            inputData.time_out = input.value;
-                                        }, true],
-                                    [`<input type="checkbox"${record.approved ? ` checked` : ``}>`, 'change', function (instance, toast, input, e) {
-                                            inputData.approved = input.checked;
-                                        }, true],
-                                ],
-                                buttons: [
-                                    ['<button><b>Edit</b></button>', function (instance, toast) {
-                                            instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                            adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + '/timesheet/edit', data: inputData}, function (response) {
-                                                if (response === 'OK')
-                                                {
-                                                    iziToast.show({
-                                                        title: `Timesheet Edited!`,
-                                                        message: `Timesheet record was edited!`,
-                                                        timeout: 10000,
-                                                        close: true,
-                                                        color: 'green',
-                                                        drag: false,
-                                                        position: 'center',
-                                                        closeOnClick: true,
-                                                        overlay: false,
-                                                        zindex: 1000
-                                                    });
-                                                } else {
-                                                    console.dir(response);
-                                                    iziToast.show({
-                                                        title: `Failed to edit timesheet!`,
-                                                        message: `There was an error trying to edit the timesheet.`,
-                                                        timeout: 10000,
-                                                        close: true,
-                                                        color: 'red',
-                                                        drag: false,
-                                                        position: 'center',
-                                                        closeOnClick: true,
-                                                        overlay: false,
-                                                        zindex: 1000
-                                                    });
-                                                }
+                            document.querySelector(`#options-modal-config-form-form`).innerHTML = ``;
+                            $('#options-modal-config-form-extra').html(``);
+                            $('#options-modal-config-form-form').jsonForm({
+                                "schema": {
+                                    "tClockIn": {
+                                        "title": "Clocked In",
+                                        "description": "Date and time the director clocked in.",
+                                        "type": "datetime-local"
+                                    },
+                                    "tClockOut": {
+                                        "title": "Clocked Out",
+                                        "description": "Date and time the director clocked out",
+                                        "type": "datetime-local"
+                                    },
+                                    "tApproved": {
+                                        "title": "Approved",
+                                        "description": "Is this record approved / counting towards weekly hours?",
+                                        "type": "boolean",
+                                    },
+                                },
+                                "value": {
+                                    "tClockIn": record.time_in !== null ? moment(record.time_in).format("YYYY-MM-DD\THH:mm") : ``,
+                                    "tClockOut": record.time_out !== null ? moment(record.time_out).format("YYYY-MM-DD\THH:mm") : ``,
+                                    "tApproved": record.approved,
+                                },
+                                "onSubmitValid": function (values) {
+                                    adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + '/timesheet/edit', data: {ID: record.ID, time_in: moment(values.tClockIn).toISOString(true), time_out: moment(values.tClockOut).toISOString(true), approved: values.tApproved}}, function (response) {
+                                        if (response === 'OK')
+                                        {
+                                            $("#options-modal-config-form").iziModal('close');
+                                            iziToast.show({
+                                                title: `Timesheet Edited!`,
+                                                message: `Timesheet record was edited!`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
                                             });
-                                        }],
-                                    ['<button><b>Cancel</b></button>', function (instance, toast) {
-                                            instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                        }],
-                                ]
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to edit timesheet!`,
+                                                message: `There was an error trying to edit the timesheet.`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }
                             });
+                            $(`#options-modal-config-form-extra`).html(`Record created: <strong>${moment(record.createdAt).format("LLLL")}</strong><br />Record last updated: <strong>${moment(record.updatedAt).format("LLLL")}</strong><br /><br />Scheduled time in: <strong>${record.scheduled_in !== null ? moment(record.scheduled_in).format("LLLL") : `not scheduled`}</strong><br />Scheduled time out: <strong>${record.scheduled_out !== null ? moment(record.scheduled_out).format("LLLL") : `not scheduled`}</strong>`);
+                            $("#options-modal-config-form-label").html(`Edit Timesheet`);
+                            $("#options-modal-config-form").iziModal('open');
                         });
             }
         }
