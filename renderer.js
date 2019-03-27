@@ -2972,6 +2972,7 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
 document.querySelector(`#options-timesheets-records`).addEventListener("click", function (e) {
     try {
         if (e.target) {
+            console.log(e.target.id);
             if (e.target.id.startsWith(`timesheet-t-`))
             {
                 var timesheetID = parseInt(e.target.id.replace(`timesheet-t-`, ``));
@@ -4735,166 +4736,166 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-{
-    drawLoop(null, null, true);
-    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
-        //console.log(body);
-        try {
-            client = body;
-            //authtoken = client.token;
-            if (!client.authorized)
-            {
-                var noConnection = document.getElementById('no-connection');
-                noConnection.style.display = "inline";
-                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+        {
+            drawLoop(null, null, true);
+            hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+                //console.log(body);
+                try {
+                    client = body;
+                    //authtoken = client.token;
+                    if (!client.authorized)
+                    {
+                        var noConnection = document.getElementById('no-connection');
+                        noConnection.style.display = "inline";
+                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                cb(false);
-            } else {
-                cb(true);
+                        cb(false);
+                    } else {
+                        cb(true);
 
-                // Sink main audio devices
-                getAudioMain(settings.get(`audio.input.main`) || undefined);
-                sinkAudio();
+                        // Sink main audio devices
+                        getAudioMain(settings.get(`audio.input.main`) || undefined);
+                        sinkAudio();
 
-                // Disconnect current peer if it exists
-                try {
-                    peer.destroy();
+                        // Disconnect current peer if it exists
+                        try {
+                            peer.destroy();
+                        } catch (e) {
+                            // Ignore errors
+                        }
+
+                        // Determine if we should start a new peer
+                        if (client.makeCalls || client.answerCalls)
+                        {
+                            setupPeer();
+                        }
+
+                        // Reset silenceState
+                        if (client.silenceDetection)
+                            silenceState = -1;
+
+                        // Determine if it is applicable to initiate the user media for audio calls
+                        if (client.makeCalls)
+                        {
+                            console.log(`Initiating getUserMedia for makeCalls`);
+                            getAudio();
+                        }
+
+                    }
+                    if (client.admin)
+                    {
+                        if (client.otherHosts)
+                            processHosts(client.otherHosts, true);
+                        var temp = document.querySelector(`#options`);
+                        var restarter;
+                        if (temp)
+                            temp.style.display = "inline";
+
+                        // Subscribe to the logs socket
+                        hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                processLogs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED logs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Get djs and subscribe to the dj socket
+                        noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDjs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED DJs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Get directors and subscribe to the directors socket
+                        noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDirectors(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED directors CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the XP socket
+                        hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED XP CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the timesheet socket
+                        noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED TIMESHEET CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the discipline socket
+                        hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
+                            //console.log(body);
+                            try {
+                                processDiscipline(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED discipline CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the config socket
+                        hostReq.request({method: 'POST', url: '/config/get', data: {}}, function (body) {
+                            //console.log(body);
+                            try {
+                                processConfig(body);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED config CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                    } else {
+                        var temp = document.querySelector(`#options`);
+                        if (temp)
+                            temp.style.display = "none";
+                    }
                 } catch (e) {
-                    // Ignore errors
+                    console.error(e);
+                    console.log('FAILED HOST CONNECTION');
+                    restarter = setTimeout(hostSocket, 10000);
                 }
-
-                // Determine if we should start a new peer
-                if (client.makeCalls || client.answerCalls)
-                {
-                    setupPeer();
-                }
-
-                // Reset silenceState
-                if (client.silenceDetection)
-                    silenceState = -1;
-
-                // Determine if it is applicable to initiate the user media for audio calls
-                if (client.makeCalls)
-                {
-                    console.log(`Initiating getUserMedia for makeCalls`);
-                    getAudio();
-                }
-
-            }
-            if (client.admin)
-            {
-                if (client.otherHosts)
-                    processHosts(client.otherHosts, true);
-                var temp = document.querySelector(`#options`);
-                var restarter;
-                if (temp)
-                    temp.style.display = "inline";
-
-                // Subscribe to the logs socket
-                hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        processLogs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED logs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Get djs and subscribe to the dj socket
-                noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDjs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED DJs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Get directors and subscribe to the directors socket
-                noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDirectors(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED directors CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the XP socket
-                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED XP CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the timesheet socket
-                noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED TIMESHEET CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the discipline socket
-                hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
-                    //console.log(body);
-                    try {
-                        processDiscipline(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED discipline CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the config socket
-                hostReq.request({method: 'POST', url: '/config/get', data: {}}, function (body) {
-                    //console.log(body);
-                    try {
-                        processConfig(body);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED config CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-            } else {
-                var temp = document.querySelector(`#options`);
-                if (temp)
-                    temp.style.display = "none";
-            }
-        } catch (e) {
-            console.error(e);
-            console.log('FAILED HOST CONNECTION');
-            restarter = setTimeout(hostSocket, 10000);
+            });
         }
-    });
-}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -9632,70 +9633,70 @@ function loadDJ(dj = null, reset = true) {
 
 // Update recipients as changes happen
 function processDjs(data = {}, replace = false)
-{
-    // Data processing
-    try {
-        if (replace)
         {
-            Djs = TAFFY();
-            Djs.insert(data);
-        } else {
-            for (var key in data)
-            {
-                if (data.hasOwnProperty(key))
+            // Data processing
+            try {
+                if (replace)
                 {
-                    switch (key)
+                    Djs = TAFFY();
+                    Djs.insert(data);
+                } else {
+                    for (var key in data)
                     {
-                        case 'insert':
-                            Djs.insert(data[key]);
-                            break;
-                        case 'update':
-                            Djs({ID: data[key].ID}).update(data[key]);
-                            break;
-                        case 'remove':
-                            Djs({ID: data[key]}).remove();
-                            break;
+                        if (data.hasOwnProperty(key))
+                        {
+                            switch (key)
+                            {
+                                case 'insert':
+                                    Djs.insert(data[key]);
+                                    break;
+                                case 'update':
+                                    Djs({ID: data[key].ID}).update(data[key]);
+                                    break;
+                                case 'remove':
+                                    Djs({ID: data[key]}).remove();
+                                    break;
+                            }
+                        }
                     }
                 }
-            }
-        }
 
-        document.querySelector("#options-xp-djs").innerHTML = ``;
-        document.querySelector('#options-djs').innerHTML = ``;
+                document.querySelector("#options-xp-djs").innerHTML = ``;
+                document.querySelector('#options-djs').innerHTML = ``;
 
-        Djs().each(function (dj, index) {
-            var djClass = `danger`;
-            var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
-            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
-            {
-                djClass = `warning`;
-                djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
-            }
-            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
-            {
-                djClass = `success`;
-                djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
-            }
+                Djs().each(function (dj, index) {
+                    var djClass = `danger`;
+                    var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
+                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
+                    {
+                        djClass = `warning`;
+                        djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
+                    }
+                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
+                    {
+                        djClass = `success`;
+                        djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
+                    }
 
-            document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
+                    document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
                         <button type="button" id="options-dj-${dj.ID}" class="btn btn-${djClass} btn-float" style="position: relative;" data-dj="${dj.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`DJ ${dj.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
-            document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
+                    document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
   <input class="custom-control-input" id="options-xp-djs-i-${dj.ID}" type="checkbox">
   <span class="custom-control-track"></span>
   <label class="custom-control-label" for="options-xp-djs-i-${dj.ID}">${dj.name}</label>
 </div>`;
-        });
+                });
 
-    } catch (e) {
-        console.error(e);
-        iziToast.show({
-            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-            message: 'Error occurred in the processDjs function.'
-        });
-}
-}
+            } catch (e) {
+                console.error(e);
+                iziToast.show({
+                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                    message: 'Error occurred in the processDjs function.'
+                });
+        }
+        }
 
 // Update recipients as changes happen
 function processDirectors(data, replace = false)
@@ -10302,90 +10303,136 @@ function loadTimesheets(date)
                 // If there is not a row for this director yet, create one
                 if (!newRow || newRow === null)
                 {
-                    records.innerHTML += `<div id="options-timesheets-director-${record.name.replace(/\W/g, '')}" class="card p-1 m-1 bg-light-1" style="width: 48%; position: relative;">
+                    records.innerHTML += `<div id="options-timesheets-director-${record.name.replace(/\W/g, '')}" class="card p-1 m-1 bg-light-1" style="width: 98%; position: relative;">
                     <div class="card-body">
                     <h5 class="card-title">${record.name}</h5>
                     <p class="card-text">
                     <div class="container">    
                         <div class="row shadow-2">
-                            <div class="col text-dark">
+                            <div class="col-2 text-dark">
                                 Day
                             </div>
-                            <div class="col text-dark">
-                                Clock In
-                            </div>
-                            <div class="col text-dark">
-                                Clock Out
+                            <div class="col-10 text-dark" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">12a</div>
+                                <div style="position: absolute; left: 12.5%;">3a</div>
+                                <div style="position: absolute; left: 25%;">6a</div>
+                                <div style="position: absolute; left: 37.5%;">9a</div>
+                                <div style="position: absolute; left: 50%;">12p</div>
+                                <div style="position: absolute; left: 62.5%;">3p</div>
+                                <div style="position: absolute; left: 75%;">6p</div>
+                                <div style="position: absolute; left: 87.5%;">9p</div>
                             </div>
                         </div>
                         <div class="row border border-dark">
-                            <div class="col text-dark">
+                            <div class="col-2 text-dark">
                             Sun
                             </div>
-                            <div class="col" id="options-timesheets-director-cell-0-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-0-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col-10" id="options-timesheets-director-cell-0-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">|</div>
+                                <div style="position: absolute; left: 12.5%;">|</div>
+                                <div style="position: absolute; left: 25%;">|</div>
+                                <div style="position: absolute; left: 37.5%;">|</div>
+                                <div style="position: absolute; left: 50%;">|</div>
+                                <div style="position: absolute; left: 62.5%;">|</div>
+                                <div style="position: absolute; left: 75%;">|</div>
+                                <div style="position: absolute; left: 87.5%;">|</div>
                             </div>
                         </div>
-                    <div class="row border border-dark">
-                            <div class="col text-dark">
+                        <div class="row border border-dark">
+                            <div class="col-2 text-dark">
                             Mon
                             </div>
-                            <div class="col" id="options-timesheets-director-cell-1-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-1-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col-10" id="options-timesheets-director-cell-1-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">|</div>
+                                <div style="position: absolute; left: 12.5%;">|</div>
+                                <div style="position: absolute; left: 25%;">|</div>
+                                <div style="position: absolute; left: 37.5%;">|</div>
+                                <div style="position: absolute; left: 50%;">|</div>
+                                <div style="position: absolute; left: 62.5%;">|</div>
+                                <div style="position: absolute; left: 75%;">|</div>
+                                <div style="position: absolute; left: 87.5%;">|</div>
                             </div>
                         </div>
-                    <div class="row border border-dark">
-                            <div class="col text-dark">
+                        <div class="row border border-dark">
+                            <div class="col-2 text-dark">
                             Tues
                             </div>
-                            <div class="col" id="options-timesheets-director-cell-2-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-2-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col-10" id="options-timesheets-director-cell-2-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">|</div>
+                                <div style="position: absolute; left: 12.5%;">|</div>
+                                <div style="position: absolute; left: 25%;">|</div>
+                                <div style="position: absolute; left: 37.5%;">|</div>
+                                <div style="position: absolute; left: 50%;">|</div>
+                                <div style="position: absolute; left: 62.5%;">|</div>
+                                <div style="position: absolute; left: 75%;">|</div>
+                                <div style="position: absolute; left: 87.5%;">|</div>
                             </div>
                         </div>
-                    <div class="row border border-dark">
-                            <div class="col text-dark">
+                        <div class="row border border-dark">
+                            <div class="col-2 text-dark">
                             Wed
                             </div>
-                            <div class="col" id="options-timesheets-director-cell-3-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-3-out-${record.name.replace(/\W/g, '')}">
-                            </div>
-                        </div>
-                    <div class="row border border-dark">
-                            <div class="col text-dark">
-                            Thur
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-4-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-4-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col-10" id="options-timesheets-director-cell-3-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">|</div>
+                                <div style="position: absolute; left: 12.5%;">|</div>
+                                <div style="position: absolute; left: 25%;">|</div>
+                                <div style="position: absolute; left: 37.5%;">|</div>
+                                <div style="position: absolute; left: 50%;">|</div>
+                                <div style="position: absolute; left: 62.5%;">|</div>
+                                <div style="position: absolute; left: 75%;">|</div>
+                                <div style="position: absolute; left: 87.5%;">|</div>
                             </div>
                         </div>
-                    <div class="row border border-dark">
-                            <div class="col text-dark">
+                        <div class="row border border-dark">
+                            <div class="col-2 text-dark">
+                            Thurs
+                            </div>
+                            <div class="col-10" id="options-timesheets-director-cell-4-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">|</div>
+                                <div style="position: absolute; left: 12.5%;">|</div>
+                                <div style="position: absolute; left: 25%;">|</div>
+                                <div style="position: absolute; left: 37.5%;">|</div>
+                                <div style="position: absolute; left: 50%;">|</div>
+                                <div style="position: absolute; left: 62.5%;">|</div>
+                                <div style="position: absolute; left: 75%;">|</div>
+                                <div style="position: absolute; left: 87.5%;">|</div>
+                            </div>
+                        </div>
+                        <div class="row border border-dark">
+                            <div class="col-2 text-dark">
                             Fri
                             </div>
-                            <div class="col" id="options-timesheets-director-cell-5-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-5-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col-10" id="options-timesheets-director-cell-5-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">|</div>
+                                <div style="position: absolute; left: 12.5%;">|</div>
+                                <div style="position: absolute; left: 25%;">|</div>
+                                <div style="position: absolute; left: 37.5%;">|</div>
+                                <div style="position: absolute; left: 50%;">|</div>
+                                <div style="position: absolute; left: 62.5%;">|</div>
+                                <div style="position: absolute; left: 75%;">|</div>
+                                <div style="position: absolute; left: 87.5%;">|</div>
                             </div>
                         </div>
-                    <div class="row border border-dark">
-                            <div class="col text-dark">
+                        <div class="row border border-dark">
+                            <div class="col-2 text-dark">
                             Sat
                             </div>
-                            <div class="col" id="options-timesheets-director-cell-6-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-6-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col-10" id="options-timesheets-director-cell-6-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">|</div>
+                                <div style="position: absolute; left: 12.5%;">|</div>
+                                <div style="position: absolute; left: 25%;">|</div>
+                                <div style="position: absolute; left: 37.5%;">|</div>
+                                <div style="position: absolute; left: 50%;">|</div>
+                                <div style="position: absolute; left: 62.5%;">|</div>
+                                <div style="position: absolute; left: 75%;">|</div>
+                                <div style="position: absolute; left: 87.5%;">|</div>
                             </div>
                         </div>
                     <div class="row">
-                            <div class="col text-primary">
-                            Hours
+                            <div class="col-4 text-primary">
+                            Weekly Hours
                             </div>
-                            <div class="col text-primary" id="options-timesheets-director-cell-h-${record.name.replace(/\W/g, '')}">
+                            <div class="col-6 text-primary" id="options-timesheets-director-cell-h-${record.name.replace(/\W/g, '')}">
                             </div>
                         </div>
                     </div>
@@ -10418,17 +10465,48 @@ function loadTimesheets(date)
                 var status2 = `This record is NOT approved, and did not fall within a scheduled office hours time block.`;
                 var inT = ``;
                 var outT = ``;
+                var sInT = ``;
+                var sOutT = ``;
+                var timeline = ``;
+                var divWidth = $(`#options-timesheets-director-${record.name.replace(/\W/g, '')}`).width();
+                var dayValue = (1000 * 60 * 60 * 24);
+                var width = 0;
+                var left = 0;
+                var sWidth = 0;
+                var sLeft = 0;
 
                 if (clockin !== null && clockout === null)
                 {
-                    status = `info`;
+                    status = `purple`;
                     status2 = `This record / director is still clocked in.`;
                     hours[record.name].add(clocknow.diff(clockin));
+                    if (scheduledin !== null && scheduledout !== null)
+                    {
+                        if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
+                        {
+                            sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                            sLeft = 0;
+                        } else {
+                            sInT = moment(scheduledin).format(`h:mm A`);
+                            sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
+                        }
+                        if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
+                        {
+                            sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                            sWidth = 100 - sLeft;
+                        } else {
+                            sOutT = moment(scheduledout).format(`h:mm A`);
+                            sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
+                        }
+                        timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; top: 0px; height: 5px; left: ${sLeft}%; width: ${sWidth}%;"></div>`;
+                    }
                     if (moment(clockin).isBefore(moment().startOf('week')))
                     {
                         inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                        timeline += `<div title="Director still clocked in since ${inT}" id="timesheet-t-${record.ID}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: 0%; width: ${width}%;"></div>`;
                     } else {
                         inT = moment(clockin).format(`h:mm A`);
+                        timeline += `<div title="Director still clocked in since ${inT}" id="timesheet-t-${record.ID}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
                     }
                     outT = 'IN NOW';
                 } else {
@@ -10442,46 +10520,78 @@ function loadTimesheets(date)
                             if (moment(clockin).isBefore(moment(clockout).startOf('week')))
                             {
                                 inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                                left = 0;
                             } else {
                                 inT = moment(clockin).format(`h:mm A`);
+                                left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
                             }
                             if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
                             {
                                 outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                                width = 100 - left;
                             } else {
                                 outT = moment(clockout).format(`h:mm A`);
+                                width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
                             }
+                            if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
+                            {
+                                sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                                sLeft = 0;
+                            } else {
+                                sInT = moment(scheduledin).format(`h:mm A`);
+                                sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
+                            }
+                            if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
+                            {
+                                sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                                sWidth = 100 - sLeft;
+                            } else {
+                                sOutT = moment(scheduledout).format(`h:mm A`);
+                                sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
+                            }
+                            timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; top: 0px; height: 5px; left: ${sLeft}%; width: ${sWidth}%;"></div>`;
+                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Hours (approved): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
                         } else if (clockin !== null && clockout !== null && (scheduledin === null || scheduledout === null)) {
-                            status = `purple`;
+                            status = `success`;
                             status2 = `This record is approved, but did not fall within a scheduled office hours block.`;
                             hours[record.name].add(clockout.diff(clockin));
                             if (moment(clockin).isBefore(moment(clockout).startOf('week')))
                             {
                                 inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                                left = 0;
                             } else {
                                 inT = moment(clockin).format(`h:mm A`);
+                                left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
                             }
                             if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
                             {
                                 outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                                width = 100 - left;
                             } else {
                                 outT = moment(clockout).format(`h:mm A`);
+                                width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
                             }
+                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Unscheduled Hours (approved): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
                         } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null) {
                             status = `secondary`;
                             status2 = `This is NOT an actual timesheet; the director canceled scheduled office hours.`;
                             if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
                             {
-                                inT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                                sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                                sLeft = 0;
                             } else {
-                                inT = moment(scheduledin).format(`h:mm A`);
+                                sInT = moment(scheduledin).format(`h:mm A`);
+                                sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
                             }
                             if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
                             {
-                                outT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                                sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                                sWidth = 100 - sLeft;
                             } else {
-                                outT = moment(scheduledout).format(`h:mm A`);
+                                sOutT = moment(scheduledout).format(`h:mm A`);
+                                sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
                             }
+                            timeline += `<div title="Scheduled Hours (CANCELLED): ${sInT} - ${sOutT}" class="" style="background-color: #787878; position: absolute; top: 0px; height: 20px; left: ${sLeft}%; width: ${sWidth}%;"></div>`;
                         }
                     } else {
                         if (clockin !== null && clockout !== null && scheduledin !== null && scheduledout !== null)
@@ -10491,58 +10601,85 @@ function loadTimesheets(date)
                             if (moment(clockin).isBefore(moment(clockout).startOf('week')))
                             {
                                 inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                                left = 0;
                             } else {
                                 inT = moment(clockin).format(`h:mm A`);
+                                left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
                             }
                             if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
                             {
                                 outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                                width = 100 - left;
                             } else {
                                 outT = moment(clockout).format(`h:mm A`);
+                                width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
                             }
+                            if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
+                            {
+                                sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                                sLeft = 0;
+                            } else {
+                                sInT = moment(scheduledin).format(`h:mm A`);
+                                sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
+                            }
+                            if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
+                            {
+                                sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                                sWidth = 100 - sLeft;
+                            } else {
+                                sOutT = moment(scheduledout).format(`h:mm A`);
+                                sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
+                            }
+                            timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; top: 0px; height: 5px; left: ${sLeft}%; width: ${sWidth}%;"></div>`;
+                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Hours (NEEDS REVIEW): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
                         } else if (clockin !== null && clockout !== null && (scheduledin === null || scheduledout === null)) {
-                            status = `urgent`;
+                            status = `warning`;
                             status2 = `This record is NOT approved and did not fall within a scheduled office hours block.`;
                             if (moment(clockin).isBefore(moment(clockout).startOf('week')))
                             {
                                 inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                                left = 0;
                             } else {
                                 inT = moment(clockin).format(`h:mm A`);
+                                left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
                             }
                             if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
                             {
                                 outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                                width = 100 - left;
                             } else {
                                 outT = moment(clockout).format(`h:mm A`);
+                                width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
                             }
+                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Unscheduled Hours (NEEDS REVIEW): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
                         } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null) {
                             status = `danger`;
                             status2 = `This is NOT an actual timesheet; the director failed to clock in during scheduled office hours.`;
                             if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
                             {
-                                inT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                                sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                                sLeft = 0;
                             } else {
-                                inT = moment(scheduledin).format(`h:mm A`);
+                                sInT = moment(scheduledin).format(`h:mm A`);
+                                sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
                             }
                             if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
                             {
-                                outT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                                sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                                sWidth = 100 - sLeft;
                             } else {
-                                outT = moment(scheduledout).format(`h:mm A`);
+                                sOutT = moment(scheduledout).format(`h:mm A`);
+                                sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
                             }
+                            timeline += `<div title="Scheduled Hours (NO SHOW): ${sInT} - ${sOutT}" class="bg-danger" style="position: absolute; top: 0px; height: 20px; left: ${sLeft}%; width: ${sWidth}%;"></div>`;
                         }
                     }
                 }
 
-                // Fill in the timesheet records clock in
-                var cell = document.getElementById(`options-timesheets-director-cell-${clockday}-in-${record.name.replace(/\W/g, '')}`);
+                // Fill in the timesheet record
+                var cell = document.getElementById(`options-timesheets-director-cell-${clockday}-${record.name.replace(/\W/g, '')}`);
                 if (cell !== null)
-                    cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-${status}" id="timesheet-t-${record.ID}" title="${status2} Click to edit.">${inT}</span><br />`;
-
-                // Fill in the timesheet records clock out
-                var cell = document.getElementById(`options-timesheets-director-cell-${clockday}-out-${record.name.replace(/\W/g, '')}`);
-                if (cell !== null)
-                    cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-${status}" id="timesheet-t-${record.ID}" title="${status2} Click to edit.">${outT}</span><br />`;
+                    cell.innerHTML += timeline;
 
                 // Iterate through each director and list their hours worked.
                 for (var key in hours)
