@@ -717,6 +717,7 @@ try {
                 console.log(`Finished recording`);
                 newRecorder = true;
             } else {
+                recorder.destroyWorker();
             }
         } catch (eee) {
             // ignore errors
