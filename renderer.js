@@ -2273,6 +2273,7 @@ document.querySelector("#btn-options-config").onclick = function () {
 document.querySelector("#btn-options-config-basic").onclick = function () {
     try {
         $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
         $('#options-modal-config-form-form').jsonForm({
             "schema": {
                 "cWebsite": {
@@ -2375,6 +2376,7 @@ document.querySelector("#btn-options-config-display").onclick = function () {
                     iConfig = sign;
                 });
         $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
         $('#options-modal-config-form-form').jsonForm({
             "schema": {
                 "cIInstances": {
@@ -2464,6 +2466,7 @@ document.querySelector("#btn-options-config-display").onclick = function () {
 document.querySelector("#btn-options-config-google").onclick = function () {
     try {
         $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
         $('#options-modal-config-form-form').jsonForm({
             "schema": {
                 "cCalendarId": {
@@ -3194,79 +3197,76 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
 document.querySelector(`#options-timesheets-records`).addEventListener("click", function (e) {
     try {
         if (e.target) {
+            console.log(e.target.id);
             if (e.target.id.startsWith(`timesheet-t-`))
             {
                 var timesheetID = parseInt(e.target.id.replace(`timesheet-t-`, ``));
                 Timesheets
                         .filter(record => record.ID === timesheetID)
                         .map(record => {
-                            var inputData = {ID: record.ID, time_in: moment(record.time_in).format("YYYY-MM-DD\THH:mm"), time_out: moment(record.time_out).format("YYYY-MM-DD\THH:mm"), approved: record.approved};
-                            iziToast.show({
-                                timeout: 180000,
-                                overlay: true,
-                                displayMode: 'once',
-                                color: 'yellow',
-                                id: 'inputs',
-                                zindex: 999,
-                                layout: 2,
-                                image: `assets/images/log.png`,
-                                maxWidth: 640,
-                                title: 'Edit Timesheet',
-                                message: `Record created: ${moment(record.createdAt).format("LLLL")}<br />Record last updated: ${moment(record.updatedAt).format("LLLL")}<br />Scheduled time in: ${record.scheduled_in !== null ? moment(record.scheduled_in).format("LLLL") : `not scheduled`}<br />Scheduled time out: ${record.scheduled_out !== null ? moment(record.scheduled_out).format("LLLL") : `not scheduled`}`,
-                                position: 'center',
-                                drag: false,
-                                closeOnClick: false,
-                                inputs: [
-                                    [`<input type="datetime-local" value="${record.time_in !== null ? moment(record.time_in).format("YYYY-MM-DD\THH:mm") : ``}">`, 'change', function (instance, toast, input, e) {
-                                            inputData.time_in = input.value;
-                                        }, true],
-                                    [`<input type="datetime-local" value="${record.time_out !== null ? moment(record.time_out).format("YYYY-MM-DD\THH:mm") : ``}">`, 'change', function (instance, toast, input, e) {
-                                            inputData.time_out = input.value;
-                                        }, true],
-                                    [`<input type="checkbox"${record.approved ? ` checked` : ``}>`, 'change', function (instance, toast, input, e) {
-                                            inputData.approved = input.checked;
-                                        }, true],
-                                ],
-                                buttons: [
-                                    ['<button><b>Edit</b></button>', function (instance, toast) {
-                                            instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                            adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + '/timesheet/edit', data: inputData}, function (response) {
-                                                if (response === 'OK')
-                                                {
-                                                    iziToast.show({
-                                                        title: `Timesheet Edited!`,
-                                                        message: `Timesheet record was edited!`,
-                                                        timeout: 10000,
-                                                        close: true,
-                                                        color: 'green',
-                                                        drag: false,
-                                                        position: 'center',
-                                                        closeOnClick: true,
-                                                        overlay: false,
-                                                        zindex: 1000
-                                                    });
-                                                } else {
-                                                    console.dir(response);
-                                                    iziToast.show({
-                                                        title: `Failed to edit timesheet!`,
-                                                        message: `There was an error trying to edit the timesheet.`,
-                                                        timeout: 10000,
-                                                        close: true,
-                                                        color: 'red',
-                                                        drag: false,
-                                                        position: 'center',
-                                                        closeOnClick: true,
-                                                        overlay: false,
-                                                        zindex: 1000
-                                                    });
-                                                }
+                            document.querySelector(`#options-modal-config-form-form`).innerHTML = ``;
+                            $('#options-modal-config-form-extra').html(``);
+                            $('#options-modal-config-form-form').jsonForm({
+                                "schema": {
+                                    "tClockIn": {
+                                        "title": "Clocked In",
+                                        "description": "Date and time the director clocked in.",
+                                        "type": "datetime-local"
+                                    },
+                                    "tClockOut": {
+                                        "title": "Clocked Out",
+                                        "description": "Date and time the director clocked out",
+                                        "type": "datetime-local"
+                                    },
+                                    "tApproved": {
+                                        "title": "Approved",
+                                        "description": "Is this record approved / counting towards weekly hours?",
+                                        "type": "boolean",
+                                    },
+                                },
+                                "value": {
+                                    "tClockIn": record.time_in !== null ? moment(record.time_in).format("YYYY-MM-DD\THH:mm") : ``,
+                                    "tClockOut": record.time_out !== null ? moment(record.time_out).format("YYYY-MM-DD\THH:mm") : ``,
+                                    "tApproved": record.approved,
+                                },
+                                "onSubmitValid": function (values) {
+                                    adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + '/timesheet/edit', data: {ID: record.ID, time_in: moment(values.tClockIn).toISOString(true), time_out: moment(values.tClockOut).toISOString(true), approved: values.tApproved}}, function (response) {
+                                        if (response === 'OK')
+                                        {
+                                            $("#options-modal-config-form").iziModal('close');
+                                            iziToast.show({
+                                                title: `Timesheet Edited!`,
+                                                message: `Timesheet record was edited!`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
                                             });
-                                        }],
-                                    ['<button><b>Cancel</b></button>', function (instance, toast) {
-                                            instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                        }],
-                                ]
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to edit timesheet!`,
+                                                message: `There was an error trying to edit the timesheet.`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }
                             });
+                            $(`#options-modal-config-form-extra`).html(`Record created: <strong>${moment(record.createdAt).format("LLLL")}</strong><br />Record last updated: <strong>${moment(record.updatedAt).format("LLLL")}</strong><br /><br />Scheduled time in: <strong>${record.scheduled_in !== null ? moment(record.scheduled_in).format("LLLL") : `not scheduled`}</strong><br />Scheduled time out: <strong>${record.scheduled_out !== null ? moment(record.scheduled_out).format("LLLL") : `not scheduled`}</strong>`);
+                            $("#options-modal-config-form-label").html(`Edit Timesheet`);
+                            $("#options-modal-config-form").iziModal('open');
                         });
             }
         }
@@ -10526,90 +10526,136 @@ function loadTimesheets(date)
                 // If there is not a row for this director yet, create one
                 if (!newRow || newRow === null)
                 {
-                    records.innerHTML += `<div id="options-timesheets-director-${record.name.replace(/\W/g, '')}" class="card p-1 m-1 bg-light-1" style="width: 48%; position: relative;">
+                    records.innerHTML += `<div id="options-timesheets-director-${record.name.replace(/\W/g, '')}" class="card p-1 m-1 bg-light-1" style="width: 98%; position: relative;">
                     <div class="card-body">
                     <h5 class="card-title">${record.name}</h5>
                     <p class="card-text">
                     <div class="container">    
                         <div class="row shadow-2">
-                            <div class="col text-dark">
+                            <div class="col-2 text-dark">
                                 Day
                             </div>
-                            <div class="col text-dark">
-                                Clock In
-                            </div>
-                            <div class="col text-dark">
-                                Clock Out
+                            <div class="col-10 text-dark" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">12a</div>
+                                <div style="position: absolute; left: 12.5%;">3a</div>
+                                <div style="position: absolute; left: 25%;">6a</div>
+                                <div style="position: absolute; left: 37.5%;">9a</div>
+                                <div style="position: absolute; left: 50%;">12p</div>
+                                <div style="position: absolute; left: 62.5%;">3p</div>
+                                <div style="position: absolute; left: 75%;">6p</div>
+                                <div style="position: absolute; left: 87.5%;">9p</div>
                             </div>
                         </div>
                         <div class="row border border-dark">
-                            <div class="col text-dark">
+                            <div class="col-2 text-dark">
                             Sun
                             </div>
-                            <div class="col" id="options-timesheets-director-cell-0-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-0-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col-10" id="options-timesheets-director-cell-0-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">|</div>
+                                <div style="position: absolute; left: 12.5%;">|</div>
+                                <div style="position: absolute; left: 25%;">|</div>
+                                <div style="position: absolute; left: 37.5%;">|</div>
+                                <div style="position: absolute; left: 50%;">|</div>
+                                <div style="position: absolute; left: 62.5%;">|</div>
+                                <div style="position: absolute; left: 75%;">|</div>
+                                <div style="position: absolute; left: 87.5%;">|</div>
                             </div>
                         </div>
-                    <div class="row border border-dark">
-                            <div class="col text-dark">
+                        <div class="row border border-dark">
+                            <div class="col-2 text-dark">
                             Mon
                             </div>
-                            <div class="col" id="options-timesheets-director-cell-1-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-1-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col-10" id="options-timesheets-director-cell-1-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">|</div>
+                                <div style="position: absolute; left: 12.5%;">|</div>
+                                <div style="position: absolute; left: 25%;">|</div>
+                                <div style="position: absolute; left: 37.5%;">|</div>
+                                <div style="position: absolute; left: 50%;">|</div>
+                                <div style="position: absolute; left: 62.5%;">|</div>
+                                <div style="position: absolute; left: 75%;">|</div>
+                                <div style="position: absolute; left: 87.5%;">|</div>
                             </div>
                         </div>
-                    <div class="row border border-dark">
-                            <div class="col text-dark">
+                        <div class="row border border-dark">
+                            <div class="col-2 text-dark">
                             Tues
                             </div>
-                            <div class="col" id="options-timesheets-director-cell-2-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-2-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col-10" id="options-timesheets-director-cell-2-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">|</div>
+                                <div style="position: absolute; left: 12.5%;">|</div>
+                                <div style="position: absolute; left: 25%;">|</div>
+                                <div style="position: absolute; left: 37.5%;">|</div>
+                                <div style="position: absolute; left: 50%;">|</div>
+                                <div style="position: absolute; left: 62.5%;">|</div>
+                                <div style="position: absolute; left: 75%;">|</div>
+                                <div style="position: absolute; left: 87.5%;">|</div>
                             </div>
                         </div>
-                    <div class="row border border-dark">
-                            <div class="col text-dark">
+                        <div class="row border border-dark">
+                            <div class="col-2 text-dark">
                             Wed
                             </div>
-                            <div class="col" id="options-timesheets-director-cell-3-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-3-out-${record.name.replace(/\W/g, '')}">
-                            </div>
-                        </div>
-                    <div class="row border border-dark">
-                            <div class="col text-dark">
-                            Thur
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-4-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-4-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col-10" id="options-timesheets-director-cell-3-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">|</div>
+                                <div style="position: absolute; left: 12.5%;">|</div>
+                                <div style="position: absolute; left: 25%;">|</div>
+                                <div style="position: absolute; left: 37.5%;">|</div>
+                                <div style="position: absolute; left: 50%;">|</div>
+                                <div style="position: absolute; left: 62.5%;">|</div>
+                                <div style="position: absolute; left: 75%;">|</div>
+                                <div style="position: absolute; left: 87.5%;">|</div>
                             </div>
                         </div>
-                    <div class="row border border-dark">
-                            <div class="col text-dark">
+                        <div class="row border border-dark">
+                            <div class="col-2 text-dark">
+                            Thurs
+                            </div>
+                            <div class="col-10" id="options-timesheets-director-cell-4-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">|</div>
+                                <div style="position: absolute; left: 12.5%;">|</div>
+                                <div style="position: absolute; left: 25%;">|</div>
+                                <div style="position: absolute; left: 37.5%;">|</div>
+                                <div style="position: absolute; left: 50%;">|</div>
+                                <div style="position: absolute; left: 62.5%;">|</div>
+                                <div style="position: absolute; left: 75%;">|</div>
+                                <div style="position: absolute; left: 87.5%;">|</div>
+                            </div>
+                        </div>
+                        <div class="row border border-dark">
+                            <div class="col-2 text-dark">
                             Fri
                             </div>
-                            <div class="col" id="options-timesheets-director-cell-5-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-5-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col-10" id="options-timesheets-director-cell-5-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">|</div>
+                                <div style="position: absolute; left: 12.5%;">|</div>
+                                <div style="position: absolute; left: 25%;">|</div>
+                                <div style="position: absolute; left: 37.5%;">|</div>
+                                <div style="position: absolute; left: 50%;">|</div>
+                                <div style="position: absolute; left: 62.5%;">|</div>
+                                <div style="position: absolute; left: 75%;">|</div>
+                                <div style="position: absolute; left: 87.5%;">|</div>
                             </div>
                         </div>
-                    <div class="row border border-dark">
-                            <div class="col text-dark">
+                        <div class="row border border-dark">
+                            <div class="col-2 text-dark">
                             Sat
                             </div>
-                            <div class="col" id="options-timesheets-director-cell-6-in-${record.name.replace(/\W/g, '')}">
-                            </div>
-                            <div class="col" id="options-timesheets-director-cell-6-out-${record.name.replace(/\W/g, '')}">
+                            <div class="col-10" id="options-timesheets-director-cell-6-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div style="position: absolute; left: 0%;">|</div>
+                                <div style="position: absolute; left: 12.5%;">|</div>
+                                <div style="position: absolute; left: 25%;">|</div>
+                                <div style="position: absolute; left: 37.5%;">|</div>
+                                <div style="position: absolute; left: 50%;">|</div>
+                                <div style="position: absolute; left: 62.5%;">|</div>
+                                <div style="position: absolute; left: 75%;">|</div>
+                                <div style="position: absolute; left: 87.5%;">|</div>
                             </div>
                         </div>
                     <div class="row">
-                            <div class="col text-primary">
-                            Hours
+                            <div class="col-4 text-primary">
+                            Weekly Hours
                             </div>
-                            <div class="col text-primary" id="options-timesheets-director-cell-h-${record.name.replace(/\W/g, '')}">
+                            <div class="col-6 text-primary" id="options-timesheets-director-cell-h-${record.name.replace(/\W/g, '')}">
                             </div>
                         </div>
                     </div>
@@ -10642,17 +10688,52 @@ function loadTimesheets(date)
                 var status2 = `This record is NOT approved, and did not fall within a scheduled office hours time block.`;
                 var inT = ``;
                 var outT = ``;
+                var sInT = ``;
+                var sOutT = ``;
+                var timeline = ``;
+                var divWidth = $(`#options-timesheets-director-${record.name.replace(/\W/g, '')}`).width();
+                var dayValue = (1000 * 60 * 60 * 24);
+                var width = 0;
+                var left = 0;
+                var sWidth = 0;
+                var sLeft = 0;
 
                 if (clockin !== null && clockout === null)
                 {
-                    status = `info`;
+                    status = `purple`;
                     status2 = `This record / director is still clocked in.`;
                     hours[record.name].add(clocknow.diff(clockin));
+                    if (scheduledin !== null && scheduledout !== null)
+                    {
+                        if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
+                        {
+                            sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                            sLeft = 0;
+                        } else {
+                            sInT = moment(scheduledin).format(`h:mm A`);
+                            sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
+                        }
+                        if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
+                        {
+                            sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                            sWidth = 100 - sLeft;
+                        } else {
+                            sOutT = moment(scheduledout).format(`h:mm A`);
+                            sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
+                        }
+                        timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; top: 0px; height: 5px; left: ${sLeft}%; width: ${sWidth}%;"></div>`;
+                    }
                     if (moment(clockin).isBefore(moment().startOf('week')))
                     {
                         inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                        left = 0;
+                        width = (((moment(Meta.time).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
+                        timeline += `<div title="Director still clocked in since ${inT}" id="timesheet-t-${record.ID}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: 0%; width: ${width}%;"></div>`;
                     } else {
                         inT = moment(clockin).format(`h:mm A`);
+                        width = (((moment(Meta.time).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
+                        left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
+                        timeline += `<div title="Director still clocked in since ${inT}" id="timesheet-t-${record.ID}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
                     }
                     outT = 'IN NOW';
                 } else {
@@ -10666,46 +10747,78 @@ function loadTimesheets(date)
                             if (moment(clockin).isBefore(moment(clockout).startOf('week')))
                             {
                                 inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                                left = 0;
                             } else {
                                 inT = moment(clockin).format(`h:mm A`);
+                                left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
                             }
                             if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
                             {
                                 outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                                width = 100 - left;
                             } else {
                                 outT = moment(clockout).format(`h:mm A`);
+                                width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
                             }
+                            if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
+                            {
+                                sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                                sLeft = 0;
+                            } else {
+                                sInT = moment(scheduledin).format(`h:mm A`);
+                                sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
+                            }
+                            if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
+                            {
+                                sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                                sWidth = 100 - sLeft;
+                            } else {
+                                sOutT = moment(scheduledout).format(`h:mm A`);
+                                sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
+                            }
+                            timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; top: 0px; height: 5px; left: ${sLeft}%; width: ${sWidth}%;"></div>`;
+                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Hours (approved): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
                         } else if (clockin !== null && clockout !== null && (scheduledin === null || scheduledout === null)) {
-                            status = `purple`;
+                            status = `success`;
                             status2 = `This record is approved, but did not fall within a scheduled office hours block.`;
                             hours[record.name].add(clockout.diff(clockin));
                             if (moment(clockin).isBefore(moment(clockout).startOf('week')))
                             {
                                 inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                                left = 0;
                             } else {
                                 inT = moment(clockin).format(`h:mm A`);
+                                left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
                             }
                             if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
                             {
                                 outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                                width = 100 - left;
                             } else {
                                 outT = moment(clockout).format(`h:mm A`);
+                                width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
                             }
+                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Unscheduled Hours (approved): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
                         } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null) {
                             status = `secondary`;
                             status2 = `This is NOT an actual timesheet; the director canceled scheduled office hours.`;
                             if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
                             {
-                                inT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                                sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                                sLeft = 0;
                             } else {
-                                inT = moment(scheduledin).format(`h:mm A`);
+                                sInT = moment(scheduledin).format(`h:mm A`);
+                                sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
                             }
                             if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
                             {
-                                outT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                                sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                                sWidth = 100 - sLeft;
                             } else {
-                                outT = moment(scheduledout).format(`h:mm A`);
+                                sOutT = moment(scheduledout).format(`h:mm A`);
+                                sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
                             }
+                            timeline += `<div title="Scheduled Hours (CANCELLED): ${sInT} - ${sOutT}" class="" style="background-color: #787878; position: absolute; top: 0px; height: 20px; left: ${sLeft}%; width: ${sWidth}%;"></div>`;
                         }
                     } else {
                         if (clockin !== null && clockout !== null && scheduledin !== null && scheduledout !== null)
@@ -10715,58 +10828,85 @@ function loadTimesheets(date)
                             if (moment(clockin).isBefore(moment(clockout).startOf('week')))
                             {
                                 inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                                left = 0;
                             } else {
                                 inT = moment(clockin).format(`h:mm A`);
+                                left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
                             }
                             if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
                             {
                                 outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                                width = 100 - left;
                             } else {
                                 outT = moment(clockout).format(`h:mm A`);
+                                width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
                             }
+                            if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
+                            {
+                                sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                                sLeft = 0;
+                            } else {
+                                sInT = moment(scheduledin).format(`h:mm A`);
+                                sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
+                            }
+                            if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
+                            {
+                                sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                                sWidth = 100 - sLeft;
+                            } else {
+                                sOutT = moment(scheduledout).format(`h:mm A`);
+                                sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
+                            }
+                            timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; top: 0px; height: 5px; left: ${sLeft}%; width: ${sWidth}%;"></div>`;
+                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Hours (NEEDS REVIEW): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
                         } else if (clockin !== null && clockout !== null && (scheduledin === null || scheduledout === null)) {
-                            status = `urgent`;
+                            status = `warning`;
                             status2 = `This record is NOT approved and did not fall within a scheduled office hours block.`;
                             if (moment(clockin).isBefore(moment(clockout).startOf('week')))
                             {
                                 inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                                left = 0;
                             } else {
                                 inT = moment(clockin).format(`h:mm A`);
+                                left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
                             }
                             if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
                             {
                                 outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                                width = 100 - left;
                             } else {
                                 outT = moment(clockout).format(`h:mm A`);
+                                width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
                             }
+                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Unscheduled Hours (NEEDS REVIEW): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
                         } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null) {
                             status = `danger`;
                             status2 = `This is NOT an actual timesheet; the director failed to clock in during scheduled office hours.`;
                             if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
                             {
-                                inT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                                sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                                sLeft = 0;
                             } else {
-                                inT = moment(scheduledin).format(`h:mm A`);
+                                sInT = moment(scheduledin).format(`h:mm A`);
+                                sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
                             }
                             if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
                             {
-                                outT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                                sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                                sWidth = 100 - sLeft;
                             } else {
-                                outT = moment(scheduledout).format(`h:mm A`);
+                                sOutT = moment(scheduledout).format(`h:mm A`);
+                                sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
                             }
+                            timeline += `<div title="Scheduled Hours (NO SHOW): ${sInT} - ${sOutT}" class="bg-danger" style="position: absolute; top: 0px; height: 20px; left: ${sLeft}%; width: ${sWidth}%;"></div>`;
                         }
                     }
                 }
 
-                // Fill in the timesheet records clock in
-                var cell = document.getElementById(`options-timesheets-director-cell-${clockday}-in-${record.name.replace(/\W/g, '')}`);
+                // Fill in the timesheet record
+                var cell = document.getElementById(`options-timesheets-director-cell-${clockday}-${record.name.replace(/\W/g, '')}`);
                 if (cell !== null)
-                    cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-${status}" id="timesheet-t-${record.ID}" title="${status2} Click to edit.">${inT}</span><br />`;
-
-                // Fill in the timesheet records clock out
-                var cell = document.getElementById(`options-timesheets-director-cell-${clockday}-out-${record.name.replace(/\W/g, '')}`);
-                if (cell !== null)
-                    cell.innerHTML += `<span style="cursor: pointer;" class="badge badge-${status}" id="timesheet-t-${record.ID}" title="${status2} Click to edit.">${outT}</span><br />`;
+                    cell.innerHTML += timeline;
 
                 // Iterate through each director and list their hours worked.
                 for (var key in hours)
