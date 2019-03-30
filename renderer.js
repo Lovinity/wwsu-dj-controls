@@ -236,7 +236,7 @@ try {
         if (!meterLoop)
         {
             meterLoop = true;
-            window.requestAnimationFrame(() => meterLooper());
+            meterLooper();
         }
     }, 1000 / 50);
 
@@ -1022,41 +1022,6 @@ try {
         });
 
         return analyser;
-    }
-
-    function drawLoop(meter, gain, terminate = false) {
-        return null;
-        var temp = document.querySelector(`#remote-vu`);
-        var temp2 = document.querySelector(`#sportsremote-vu`);
-        if (!terminate)
-        {
-            if (temp !== null)
-            {
-                temp.style.width = `${meter.volume > -100 ? (meter.volume + 100) : 0}%`;
-
-                // check if we're currently clipping
-                if (meter.volume > -5)
-                    temp.className = "progress-bar bg-danger";
-                else
-                    temp.className = "progress-bar bg-success";
-            }
-
-            if (temp2 !== null)
-            {
-                temp.style.width = `${meter.volume > -100 ? (meter.volume + 100) : 0}%`;
-
-                // check if we're currently clipping
-                if (meter.volume > -5)
-                    temp2.className = "progress-bar bg-danger";
-                else
-                    temp2.className = "progress-bar bg-success";
-            }
-
-            // set up the next visual callback
-            rafID = window.requestAnimationFrame(() => {
-                drawLoop(meter, gain);
-            });
-    }
     }
 
 
@@ -4958,7 +4923,6 @@ function doSockets() {
 
 function hostSocket(cb = function(token) {})
 {
-    drawLoop(null, null, true);
     hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
         //console.log(body);
         try {
