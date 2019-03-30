@@ -2498,6 +2498,384 @@ document.querySelector("#btn-options-config-google").onclick = function () {
     }
 };
 
+document.querySelector("#btn-options-config-meta").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "mClearTime": {
+                    "title": "Clear Time (minutes)",
+                    "description": "When manual metadata is set (eg. live shows via add a log), the metadata will be cleared automatically after this many minutes.",
+                    "type": "number"
+                },
+            },
+            "value": {
+                "mClearTime": Config.meta.clearTime || 0,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/meta/set', data: {
+                        clearTime: values.mClearTime
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Basic metadata configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save basic metadata configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Basic Metadata`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-meta.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-meta-alt").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "mAutomation": {
+                    "title": "Automation",
+                    "description": "This text is displayed on metadata when playing noMeta / commercials during standard automation.",
+                    "type": "string"
+                },
+                "mPlaylist": {
+                    "title": "Playlist",
+                    "description": "This text is displayed on metadata when playing noMeta / commercials during a playlist.",
+                    "type": "string"
+                },
+                "mGenre": {
+                    "title": "Genre",
+                    "description": "This text is displayed on metadata when playing noMeta / commercials during a genre rotation.",
+                    "type": "string"
+                },
+                "mLive": {
+                    "title": "Live",
+                    "description": "This text is displayed on metadata when playing noMeta / commercials during a live show.",
+                    "type": "string"
+                },
+                "mPrerecord": {
+                    "title": "Prerecord",
+                    "description": "This text is displayed on metadata when playing noMeta / commercials during a prerecorded show.",
+                    "type": "string"
+                },
+                "mRemote": {
+                    "title": "Remote",
+                    "description": "This text is displayed on metadata when playing noMeta / commercials during a remote broadcast.",
+                    "type": "string"
+                },
+                "mSports": {
+                    "title": "Sports",
+                    "description": "This text is displayed on metadata when playing noMeta / commercials during sports broadcast.",
+                    "type": "string"
+                },
+            },
+            "value": {
+                "mAutomation": Config.meta.alt.automation || ``,
+                "mPlaylist": Config.meta.alt.playlist || ``,
+                "mGenre": Config.meta.alt.genre || ``,
+                "mLive": Config.meta.alt.live || ``,
+                "mPrerecord": Config.meta.alt.prerecord || ``,
+                "mRemote": Config.meta.alt.remote || ``,
+                "mSports": Config.meta.alt.sports || ``,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/meta/alt/set', data: {
+                        automation: values.mAutomation,
+                        playlist: values.mPlaylist,
+                        genre: values.mGenre,
+                        live: values.mLive,
+                        prerecord: values.mPrerecord,
+                        remote: values.mRemote,
+                        sports: values.mSports
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Alternate metadata configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save alternate metadata configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Alternate Metadata`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-meta-alt.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-meta-prefix").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "mAutomation": {
+                    "title": "Automation Tracks",
+                    "description": "During automation, genre, and playlists, this prefix will appear before the currently playing track on line 1 of metadata.",
+                    "type": "string"
+                },
+                "mGenre": {
+                    "title": "Genre",
+                    "description": "During genre rotations, this will appear before the genre currently airing on line 2 of metadata.",
+                    "type": "string"
+                },
+                "mPlaylist": {
+                    "title": "Playlist",
+                    "description": "During a playlist, this will appear before the name of the playlist currently airing on line 2 of metadata.",
+                    "type": "string"
+                },
+                "mRequest": {
+                    "title": "Requested Tracks",
+                    "description": "When playing a track request... this will appear before the name of the person who requestedd the track on line 2 of metadata.",
+                    "type": "string"
+                },
+                "mPendLive": {
+                    "title": "Going Live",
+                    "description": "When a live show is about to begin, this will appear before the host - show on line 2 of metadata.",
+                    "type": "string"
+                },
+                "mPendPrerecord": {
+                    "title": "Prerecord Starting",
+                    "description": "When a prerecorded show is about to begin, this will appear before the prerecord name on line 2 of metadata.",
+                    "type": "string"
+                },
+                "mPendRemote": {
+                    "title": "Starting a Remote Broadcast",
+                    "description": "When a remote broadcast is about to begin, this will appear before the host - show on line 2 of metadata.",
+                    "type": "string"
+                },
+                "mPendSports": {
+                    "title": "Starting a Sports Broadcast",
+                    "description": "When a sports broadcast is about to begin, this will appear before the sport on line 2 of metadata.",
+                    "type": "string"
+                },
+                "mPrerecord": {
+                    "title": "Prerecorded Show",
+                    "description": "During a prerecorded show, this will appear before the name of the prerecord on line 1 of metadata.",
+                    "type": "string"
+                },
+                "mLive": {
+                    "title": "Live Show",
+                    "description": "During a live show, this will appear before the host - show on line 1 of metadata.",
+                    "type": "string"
+                },
+                "mRemote": {
+                    "title": "Remote Broadcast",
+                    "description": "During a remote broadcast, this will appear before the host - show on line 1 of metadata.",
+                    "type": "string"
+                },
+                "mSports": {
+                    "title": "Sports Broadcast",
+                    "description": "During a sports broadcast, this will appear before the sport being aired on line 1 of metadata",
+                    "type": "string"
+                },
+                "mPlaying": {
+                    "title": "Track during a broadcast",
+                    "description": "In a live, remote, sports, or prerecorded show... this will appear before the track name on line 2 of metadata when something is being played",
+                    "type": "string"
+                },
+            },
+            "value": {
+                "mAutomation": Config.meta.prefix.automation || ``,
+                "mGenre": Config.meta.prefix.genre || ``,
+                "mPlaylist": Config.meta.prefix.playlist || ``,
+                "mRequest": Config.meta.prefix.request || ``,
+                "mPendLive": Config.meta.prefix.pendLive || ``,
+                "mPendPrerecord": Config.meta.prefix.pendPrerecord || ``,
+                "mPendRemote": Config.meta.prefix.pendRemote || ``,
+                "mPendSports": Config.meta.prefix.pendSports || ``,
+                "mPrerecord": Config.meta.prefix.prerecord || ``,
+                "mLive": Config.meta.prefix.live || ``,
+                "mRemote": Config.meta.prefix.remote || ``,
+                "mSports": Config.meta.prefix.sports || ``,
+                "mPlaying": Config.meta.prefix.playing || ``,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/meta/prefix/set', data: {
+                        automation: values.mAutomation,
+                        genre: values.mGenre,
+                        playlist: values.mPlaylist,
+                        request: values.mRequest,
+                        pendLive: values.mPendLive,
+                        pendPrerecordd: values.mPendPrerecord,
+                        pendRemote: values.mPendRemote,
+                        pendSports: values.mPendSports,
+                        prerecord: values.mPrerecord,
+                        live: values.mLive,
+                        remote: values.mRemote,
+                        sports: values.mSports,
+                        playing: values.mPlaying
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Prefix metadata configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save prefix metadata configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Metadata Prefixes`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-meta-prefix.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-onesignal").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "oRest": {
+                    "title": "REST API Key",
+                    "description": "Change the REST API key for the OneSignal app used to send push notifications to people who subscribe to WWSU / any of the shows.",
+                    "type": "password"
+                },
+            },
+            "value": {
+                "oRest": ``,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/onesignal/set', data: {
+                        rest: values.oRest
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `OneSignal configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save OneSignal configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - OneSignal`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-onesignal.'
+        });
+    }
+};
+
 document.querySelector("#btn-options-directors").onclick = function () {
     try {
         $("#options-modal-directors").iziModal('open');
@@ -4922,165 +5300,165 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-{
-    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
-        //console.log(body);
-        try {
-            client = body;
-            //authtoken = client.token;
-            if (!client.authorized)
-            {
-                var noConnection = document.getElementById('no-connection');
-                noConnection.style.display = "inline";
-                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+        {
+            hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+                //console.log(body);
+                try {
+                    client = body;
+                    //authtoken = client.token;
+                    if (!client.authorized)
+                    {
+                        var noConnection = document.getElementById('no-connection');
+                        noConnection.style.display = "inline";
+                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                cb(false);
-            } else {
-                cb(true);
+                        cb(false);
+                    } else {
+                        cb(true);
 
-                // Sink main audio devices
-                getAudioMain(settings.get(`audio.input.main`) || undefined);
-                sinkAudio();
+                        // Sink main audio devices
+                        getAudioMain(settings.get(`audio.input.main`) || undefined);
+                        sinkAudio();
 
-                // Disconnect current peer if it exists
-                try {
-                    peer.destroy();
+                        // Disconnect current peer if it exists
+                        try {
+                            peer.destroy();
+                        } catch (e) {
+                            // Ignore errors
+                        }
+
+                        // Determine if we should start a new peer
+                        if (client.makeCalls || client.answerCalls)
+                        {
+                            setupPeer();
+                        }
+
+                        // Reset silenceState
+                        if (client.silenceDetection)
+                            silenceState = -1;
+
+                        // Determine if it is applicable to initiate the user media for audio calls
+                        if (client.makeCalls)
+                        {
+                            console.log(`Initiating getUserMedia for makeCalls`);
+                            getAudio();
+                        }
+
+                    }
+                    if (client.admin)
+                    {
+                        if (client.otherHosts)
+                            processHosts(client.otherHosts, true);
+                        var temp = document.querySelector(`#options`);
+                        var restarter;
+                        if (temp)
+                            temp.style.display = "inline";
+
+                        // Subscribe to the logs socket
+                        hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                processLogs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED logs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Get djs and subscribe to the dj socket
+                        noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDjs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED DJs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Get directors and subscribe to the directors socket
+                        noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDirectors(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED directors CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the XP socket
+                        hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED XP CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the timesheet socket
+                        noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED TIMESHEET CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the discipline socket
+                        hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
+                            //console.log(body);
+                            try {
+                                processDiscipline(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED discipline CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the config socket
+                        hostReq.request({method: 'POST', url: '/config/get', data: {}}, function (body) {
+                            //console.log(body);
+                            try {
+                                processConfig(body);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED config CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                    } else {
+                        var temp = document.querySelector(`#options`);
+                        if (temp)
+                            temp.style.display = "none";
+                    }
                 } catch (e) {
-                    // Ignore errors
+                    console.error(e);
+                    console.log('FAILED HOST CONNECTION');
+                    restarter = setTimeout(hostSocket, 10000);
                 }
-
-                // Determine if we should start a new peer
-                if (client.makeCalls || client.answerCalls)
-                {
-                    setupPeer();
-                }
-
-                // Reset silenceState
-                if (client.silenceDetection)
-                    silenceState = -1;
-
-                // Determine if it is applicable to initiate the user media for audio calls
-                if (client.makeCalls)
-                {
-                    console.log(`Initiating getUserMedia for makeCalls`);
-                    getAudio();
-                }
-
-            }
-            if (client.admin)
-            {
-                if (client.otherHosts)
-                    processHosts(client.otherHosts, true);
-                var temp = document.querySelector(`#options`);
-                var restarter;
-                if (temp)
-                    temp.style.display = "inline";
-
-                // Subscribe to the logs socket
-                hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        processLogs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED logs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Get djs and subscribe to the dj socket
-                noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDjs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED DJs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Get directors and subscribe to the directors socket
-                noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDirectors(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED directors CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the XP socket
-                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED XP CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the timesheet socket
-                noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED TIMESHEET CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the discipline socket
-                hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
-                    //console.log(body);
-                    try {
-                        processDiscipline(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED discipline CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the config socket
-                hostReq.request({method: 'POST', url: '/config/get', data: {}}, function (body) {
-                    //console.log(body);
-                    try {
-                        processConfig(body);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED config CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-            } else {
-                var temp = document.querySelector(`#options`);
-                if (temp)
-                    temp.style.display = "none";
-            }
-        } catch (e) {
-            console.error(e);
-            console.log('FAILED HOST CONNECTION');
-            restarter = setTimeout(hostSocket, 10000);
+            });
         }
-    });
-}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -9820,70 +10198,70 @@ function loadDJ(dj = null, reset = true) {
 
 // Update recipients as changes happen
 function processDjs(data = {}, replace = false)
-{
-    // Data processing
-    try {
-        if (replace)
         {
-            Djs = TAFFY();
-            Djs.insert(data);
-        } else {
-            for (var key in data)
-            {
-                if (data.hasOwnProperty(key))
+            // Data processing
+            try {
+                if (replace)
                 {
-                    switch (key)
+                    Djs = TAFFY();
+                    Djs.insert(data);
+                } else {
+                    for (var key in data)
                     {
-                        case 'insert':
-                            Djs.insert(data[key]);
-                            break;
-                        case 'update':
-                            Djs({ID: data[key].ID}).update(data[key]);
-                            break;
-                        case 'remove':
-                            Djs({ID: data[key]}).remove();
-                            break;
+                        if (data.hasOwnProperty(key))
+                        {
+                            switch (key)
+                            {
+                                case 'insert':
+                                    Djs.insert(data[key]);
+                                    break;
+                                case 'update':
+                                    Djs({ID: data[key].ID}).update(data[key]);
+                                    break;
+                                case 'remove':
+                                    Djs({ID: data[key]}).remove();
+                                    break;
+                            }
+                        }
                     }
                 }
-            }
-        }
 
-        document.querySelector("#options-xp-djs").innerHTML = ``;
-        document.querySelector('#options-djs').innerHTML = ``;
+                document.querySelector("#options-xp-djs").innerHTML = ``;
+                document.querySelector('#options-djs').innerHTML = ``;
 
-        Djs().each(function (dj, index) {
-            var djClass = `danger`;
-            var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
-            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
-            {
-                djClass = `warning`;
-                djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
-            }
-            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
-            {
-                djClass = `success`;
-                djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
-            }
+                Djs().each(function (dj, index) {
+                    var djClass = `danger`;
+                    var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
+                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
+                    {
+                        djClass = `warning`;
+                        djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
+                    }
+                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
+                    {
+                        djClass = `success`;
+                        djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
+                    }
 
-            document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
+                    document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
                         <button type="button" id="options-dj-${dj.ID}" class="btn btn-${djClass} btn-float" style="position: relative;" data-dj="${dj.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`DJ ${dj.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
-            document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
+                    document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
   <input class="custom-control-input" id="options-xp-djs-i-${dj.ID}" type="checkbox">
   <span class="custom-control-track"></span>
   <label class="custom-control-label" for="options-xp-djs-i-${dj.ID}">${dj.name}</label>
 </div>`;
-        });
+                });
 
-    } catch (e) {
-        console.error(e);
-        iziToast.show({
-            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-            message: 'Error occurred in the processDjs function.'
-        });
-}
-}
+            } catch (e) {
+                console.error(e);
+                iziToast.show({
+                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                    message: 'Error occurred in the processDjs function.'
+                });
+        }
+        }
 
 // Update recipients as changes happen
 function processDirectors(data, replace = false)
