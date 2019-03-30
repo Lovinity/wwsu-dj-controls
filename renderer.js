@@ -2876,6 +2876,97 @@ document.querySelector("#btn-options-config-onesignal").onclick = function () {
     }
 };
 
+document.querySelector("#btn-options-config-queue").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "qLive": {
+                    "title": "Live Show Queue Limit (seconds)",
+                    "description": "If trying to begin a live show, and the total queue time is greater than this in seconds, skip currently playing track and try clearing necessary tracks from the queue again.",
+                    "type": "number"
+                },
+                "qPrerecord": {
+                    "title": "Prerecord Queue Limit (seconds)",
+                    "description": "If the amount of time between now and the first prerecord playlist track is greater than this many seconds, try clearing/skipping some tracks to get the prerecord on the air sooner.",
+                    "type": "number"
+                },
+                "qSports": {
+                    "title": "Sports Queue Limit (seconds)",
+                    "description": "If trying to begin a sports broadcast, if the total queue is greater than this many seconds, skip current track, clear necessary tracks to try and get sports on sooner.",
+                    "type": "number"
+                },
+                "qSportsReturn": {
+                    "title": "Sports Breaks Queue Limit (seconds)",
+                    "description": "When first returning from a break in a sports broadcast, if the queue is greater than this in seconds, clear out some tracks.",
+                    "type": "number"
+                },
+                "qRemote": {
+                    "title": "Sports Breaks Queue Limit (seconds)",
+                    "description": "If trying to begin a remote broadcast, if the total queue is greater than this many seconds, skip current track, clear necessary tracks to try and get remote on sooner.",
+                    "type": "number"
+                },
+            },
+            "value": {
+                "qLive": Config.queueCorrection.live,
+                "qPrerecord": Config.queueCorrection.prerecord,
+                "qSports": Config.queueCorrection.sports,
+                "qSportsReturn": Config.queueCorrection.sportsReturn,
+                "qRemote": Config.queueCorrection.remote,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/queue/set', data: {
+                        live: values.qLive,
+                        prerecord: values.qPrerecord,
+                        sports: values.qSports,
+                        sportsReturn: values.qSportsReturn,
+                        remote: values.qRemote
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Queue correction configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save queue correction configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Queue Correction`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-queue.'
+        });
+    }
+};
+
 document.querySelector("#btn-options-directors").onclick = function () {
     try {
         $("#options-modal-directors").iziModal('open');
