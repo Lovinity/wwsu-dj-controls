@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
  - Support for new configuration system in the server.
+ - Make direct API queries to the WWSU system from the admin menu.
+
+### Changed
+ - Timesheet window in admin options -> manage directors -> timesheets now displays timesheets as Gantt Charts.
 
 ## [5.1.2] - 2019-03-23
 ### Added
