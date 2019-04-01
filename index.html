@@ -522,84 +522,83 @@
                     </button>
                 </div>
                 <div class="card-body" id="operations-body" style="overflow: auto;">
-                    <div class="d-flex justify-content-start flex-wrap">
-                        <div class="p-1 m-1" id="queue" style="width: 216px; text-align: center; display: none;">
-                            <div style="text-align: center; font-size: 2em;">Queue:</div>
-                            <div class="text-warning" id="queue-seconds" style="text-align: center; font-size: 4em;" title="Amount of time until you are on the air.">???</div>
-                            <div class="text-info" id="queue-music" style="text-align: center; font-size: 2em; display: none;" title="This queue time does not include additional music/openers queued in automation.">+ Music</div>
-                        </div>
-                        <div class="p-1 m-1" id="no-remote" style="width: 216px; text-align: center; display: none;">
-                            <div class="text-danger" style="text-align: center; font-size: 1.5em;">Lost connection to remote stream!</div>
-                            <div class="text-warning" style="text-align: center; font-size: 1em;">Ensure you are streaming to the remote stream, then click Resume Show.</div>
-                        </div>
-                        <div id="please-wait" style="z-index: auto;">
-                            <div class="text container-fluid" style="text-align: center;">
-                                <h2 style="text-align: center; font-size: 2em; color: #FFC107">Please wait...</h2>
+                    <div class="container m-1">
+                        <div class="row m-1">
+                            <div class="col-4">
+                                <div class="p-1 m-1" id="queue" style="text-align: center;">
+                                    <div style="text-align: center; font-size: 2em;">Queue:</div>
+                                    <div class="text-warning" id="queue-seconds" style="text-align: center; font-size: 3em;" title="Amount of time until you are on the air.">???</div>
+                                    <div class="text-info" id="queue-music" style="text-align: center; font-size: 2em; display: none;" title="This queue time does not include additional music/openers queued in automation.">+ Music</div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-return" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-return-b" class="btn btn-float btn-success" title="Come out of break and resume the broadcast."><i class="fas fa-check"></i></button>
-                            <div style="text-align: center; font-size: 1em;">Resume Show</div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-psa15" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-psa15-b" class="btn btn-purple btn-float" title="Give yourself 15 more seconds via queuing a PSA."><i class="fas fa-plus"></i></button>
-                            <div style="text-align: center; font-size: 1em;">+15-second PSA</div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-psa30" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-psa30-b" class="btn btn-purple btn-float" title="Give yourself 30 more seconds via queuing a PSA."><i class="fas fa-plus"></i></button>
-                            <div style="text-align: center; font-size: 1em;">+30-second PSA</div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-golive" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-golive-b" class="btn btn-primary btn-float" title="Begin a live broadcast from the OnAir studio"><i class="fas fa-microphone-alt"></i></button>
-                            <div style="text-align: center; font-size: 1em;">Live</div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-goremote" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-goremote-b" class="btn btn-purple btn-float" title="Begin a broadcast streamed from a remote location."><i class="fas fa-broadcast-tower"></i></button>
-                            <div style="text-align: center; font-size: 1em;">Remote</div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-gosports" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-gosports-b" class="btn btn-success btn-float" title="Begin a sports broadcast produced in the OnAir studio."><i class="fas fa-trophy"></i></button>
-                            <div style="text-align: center; font-size: 1em;">Sports</div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-gosportsremote" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-gosportsremote-b" class="btn btn-purple btn-float" title="Begin a sports broadcast produced remotely."><i class="fas fa-trophy"></i></button>
-                            <div style="text-align: center; font-size: 1em;">Sports Remote</div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-endshow" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-endshow-b" class="btn btn-info btn-float" title="End your show and go to automation."><i class="fas fa-microphone-alt-slash"></i></button>
-                            <div style="text-align: center; font-size: 1em;">End Show</div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-switchshow" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-switchshow-b" class="btn btn-primary btn-float" title="If another DJ is going on the air after you, click to end your show and go to break."><i class="fas fa-microphone-alt"></i></button>
-                            <div style="text-align: center; font-size: 1em;">Switch Show</div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-resume" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-resume-b" class="btn btn-success btn-float" title="Come out of break and resume the broadcast."><i class="fas fa-check"></i></button>
-                            <div style="text-align: center; font-size: 1em;">Resume Show</div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-break" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-break-b" class="btn btn-warning btn-float" title="Go into break. Automation will play PSAs until you click the proceeding resume show button."><i class="fas fa-coffee"></i></button>
-                            <div style="text-align: center; font-size: 1em;">Take a Break</div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-halftime" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-halftime-b" class="btn btn-urgent btn-float" title="Go into extended break. Automation will play sports music until you click the proceeding resume show button."><i class="fas fa-hourglass"></i></button>
-                            <div style="text-align: center; font-size: 1em;">Extended Break</div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-topadd" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-topadd-b" class="btn btn-purple btn-float" title="Promote new artist music by playing a Top Add."><i class="fas fa-headphones"></i></button>
-                            <div style="text-align: center; font-size: 1em;">Play Top Add</div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-liner" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-liner-b" class="btn btn-purple btn-float" title="Play a quick liner to identify the station/sports."><i class="fas fa-angle-double-right"></i></button>
-                            <div style="text-align: center; font-size: 1em;">Play Liner</div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-log" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-log-b" class="btn btn-trivial btn-float" title="Log a track you played outside of the automation system."><i class="fas fa-file"></i></button>
-                            <div style="text-align: center; font-size: 1em;">Add a Log</div>
-                        </div>
-                        <div class="p-1 m-1 btn-operation" id="btn-view-log" style="width: 96px; text-align: center; display: none;">
-                            <button type="button" id="btn-view-log-b" class="btn btn-success btn-float" title="View your current show log."><i class="fas fa-file"></i></button>
-                            <div style="text-align: center; font-size: 1em;">View Log</div>
+                            <div class="col-8">
+                                <div class="d-flex flex-wrap">
+                                    <div class="p-1 m-1 btn-operation" id="btn-return" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-return-b" class="btn btn-float btn-success" title="Come out of break and resume the broadcast."><i class="fas fa-check"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Resume Show</div>
+                                    </div>
+                                    <div class="p-1 m-1 btn-operation" id="btn-psa15" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-psa15-b" class="btn btn-purple btn-float" title="Give yourself 15 more seconds via queuing a PSA."><i class="fas fa-plus"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">+15-second PSA</div>
+                                    </div>
+                                    <div class="p-1 m-1 btn-operation" id="btn-psa30" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-psa30-b" class="btn btn-purple btn-float" title="Give yourself 30 more seconds via queuing a PSA."><i class="fas fa-plus"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">+30-second PSA</div>
+                                    </div>
+                                    <div class="p-1 m-1 btn-operation" id="btn-golive" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-golive-b" class="btn btn-primary btn-float" title="Begin a live broadcast from the OnAir studio"><i class="fas fa-microphone-alt"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Live</div>
+                                    </div>
+                                    <div class="p-1 m-1 btn-operation" id="btn-goremote" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-goremote-b" class="btn btn-purple btn-float" title="Begin a broadcast streamed from a remote location."><i class="fas fa-broadcast-tower"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Remote</div>
+                                    </div>
+                                    <div class="p-1 m-1 btn-operation" id="btn-gosports" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-gosports-b" class="btn btn-success btn-float" title="Begin a sports broadcast produced in the OnAir studio."><i class="fas fa-trophy"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Sports</div>
+                                    </div>
+                                    <div class="p-1 m-1 btn-operation" id="btn-gosportsremote" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-gosportsremote-b" class="btn btn-purple btn-float" title="Begin a sports broadcast produced remotely."><i class="fas fa-trophy"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Sports Remote</div>
+                                    </div>
+                                    <div class="p-1 m-1 btn-operation" id="btn-endshow" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-endshow-b" class="btn btn-info btn-float" title="End your show and go to automation."><i class="fas fa-microphone-alt-slash"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">End Show</div>
+                                    </div>
+                                    <div class="p-1 m-1 btn-operation" id="btn-switchshow" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-switchshow-b" class="btn btn-primary btn-float" title="If another DJ is going on the air after you, click to end your show and go to break."><i class="fas fa-microphone-alt"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Switch Show</div>
+                                    </div>
+                                    <div class="p-1 m-1 btn-operation" id="btn-resume" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-resume-b" class="btn btn-success btn-float" title="Come out of break and resume the broadcast."><i class="fas fa-check"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Resume Show</div>
+                                    </div>
+                                    <div class="p-1 m-1 btn-operation" id="btn-break" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-break-b" class="btn btn-warning btn-float" title="Go into break. Automation will play PSAs until you click the proceeding resume show button."><i class="fas fa-coffee"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Take a Break</div>
+                                    </div>
+                                    <div class="p-1 m-1 btn-operation" id="btn-halftime" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-halftime-b" class="btn btn-urgent btn-float" title="Go into extended break. Automation will play sports music until you click the proceeding resume show button."><i class="fas fa-hourglass"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Extended Break</div>
+                                    </div>
+                                    <div class="p-1 m-1 btn-operation" id="btn-topadd" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-topadd-b" class="btn btn-purple btn-float" title="Promote new artist music by playing a Top Add."><i class="fas fa-headphones"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Play Top Add</div>
+                                    </div>
+                                    <div class="p-1 m-1 btn-operation" id="btn-liner" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-liner-b" class="btn btn-purple btn-float" title="Play a quick liner to identify the station/sports."><i class="fas fa-angle-double-right"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Play Liner</div>
+                                    </div>
+                                    <div class="p-1 m-1 btn-operation" id="btn-log" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-log-b" class="btn btn-trivial btn-float" title="Log a track you played outside of the automation system."><i class="fas fa-file"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">Add a Log</div>
+                                    </div>
+                                    <div class="p-1 m-1 btn-operation" id="btn-view-log" style="width: 96px; text-align: center; display: none;">
+                                        <button type="button" id="btn-view-log-b" class="btn btn-success btn-float" title="View your current show log."><i class="fas fa-file"></i></button>
+                                        <div style="text-align: center; font-size: 1em;">View Log</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = false;
+    var development = true;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -5965,10 +5965,10 @@ function doMeta(metan) {
 
         // Make queue timer show current queue length (when visible)
         var queueTime = document.querySelector("#queue-seconds");
-        queueTime.innerHTML = moment.duration(queueLength, "seconds").format();
+        queueTime.innerHTML = moment.duration(queueLength, "seconds").format("mm:ss");
 
         // Flash the WWSU Operations box when queue time goes below 15 seconds.
-        if (queueLength < 15 && document.querySelector('#queue').style.display !== "none")
+        if (queueLength < 15 && queueLength > 0 && document.querySelector('#queue').style.display !== "none")
         {
             var operations = document.querySelector("#operations");
             operations.className = "card p-1 m-3 text-white";
@@ -6031,9 +6031,7 @@ function doMeta(metan) {
             for (var i = 0; i < actionButtons.length; i++) {
                 actionButtons[i].style.display = "none";
             }
-            document.querySelector('#queue').style.display = "none";
-            document.querySelector('#no-remote').style.display = "none";
-            document.querySelector('#please-wait').style.display = "none";
+            //document.querySelector('#queue').style.display = "none";
             if (Meta.state === 'automation_on' || Meta.state === 'automation_break')
             {
                 isHost = false;
@@ -6069,13 +6067,13 @@ function doMeta(metan) {
             } else if (Meta.state.startsWith('automation_') || (Meta.state.includes('_returning') && !Meta.state.startsWith('sports')))
             {
                 badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`;
-                document.querySelector('#queue').style.display = "inline";
+                //document.querySelector('#queue').style.display = "inline";
                 document.querySelector('#btn-psa15').style.display = "inline";
                 document.querySelector('#btn-psa30').style.display = "inline";
             } else if (Meta.state.startsWith('sports') && Meta.state.includes('_returning'))
             {
                 badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`;
-                document.querySelector('#queue').style.display = "inline";
+                //document.querySelector('#queue').style.display = "inline";
                 document.querySelector('#btn-psa15').style.display = "inline";
                 document.querySelector('#btn-psa30').style.display = "inline";
                 // If the system goes into disconnected mode, the host client should be notified of that!
@@ -6112,7 +6110,6 @@ function doMeta(metan) {
                     duration: 180000,
                 });
                 main.flashTaskbar();
-                document.querySelector('#no-remote').style.display = "inline";
                 document.querySelector('#btn-resume').style.display = "inline";
             } else if (Meta.state.includes('_break') || Meta.state.includes('_halftime'))
             {
@@ -6150,17 +6147,10 @@ function doMeta(metan) {
                  }
                  */
                 badge.innerHTML = `<i class="chip-icon fas fa-microphone-alt bg-primary"></i>${Meta.state}`;
-                if (Meta.playing)
-                {
-                    document.querySelector('#queue').style.display = "inline";
-                    document.querySelector('#btn-endshow').style.display = "inline";
-                    document.querySelector('#btn-switchshow').style.display = "inline";
-                } else {
-                    document.querySelector('#btn-endshow').style.display = "inline";
-                    document.querySelector('#btn-switchshow').style.display = "inline";
-                    document.querySelector('#btn-break').style.display = "inline";
-                    document.querySelector('#btn-topadd').style.display = "inline";
-                }
+                document.querySelector('#btn-endshow').style.display = "inline";
+                document.querySelector('#btn-switchshow').style.display = "inline";
+                document.querySelector('#btn-break').style.display = "inline";
+                document.querySelector('#btn-topadd').style.display = "inline";
                 document.querySelector('#btn-log').style.display = "inline";
                 document.querySelector('#btn-view-log').style.display = "inline";
             } else if (Meta.state.includes('sports_') || Meta.state.includes('sportsremote_'))
@@ -6192,17 +6182,10 @@ function doMeta(metan) {
                  }
                  */
                 badge.innerHTML = `<i class="chip-icon fas fa-trophy bg-success"></i>${Meta.state}`;
-                if (Meta.playing)
-                {
-                    document.querySelector('#queue').style.display = "inline";
-                    document.querySelector('#btn-endshow').style.display = "inline";
-                    document.querySelector('#btn-switchshow').style.display = "inline";
-                } else {
-                    document.querySelector('#btn-liner').style.display = "inline";
-                    document.querySelector('#btn-endshow').style.display = "inline";
-                    document.querySelector('#btn-break').style.display = "inline";
-                    document.querySelector('#btn-halftime').style.display = "inline";
-                }
+                document.querySelector('#btn-liner').style.display = "inline";
+                document.querySelector('#btn-endshow').style.display = "inline";
+                document.querySelector('#btn-break').style.display = "inline";
+                document.querySelector('#btn-halftime').style.display = "inline";
                 document.querySelector('#btn-view-log').style.display = "inline";
             } else if (Meta.state.includes('remote_'))
             {
@@ -6233,22 +6216,14 @@ function doMeta(metan) {
                  }
                  */
                 badge.innerHTML = `<i class="chip-icon fas fa-broadcast-tower bg-purple"></i>${Meta.state}`;
-                if (Meta.playing)
-                {
-                    document.querySelector('#queue').style.display = "inline";
-                    document.querySelector('#btn-endshow').style.display = "inline";
-                    document.querySelector('#btn-switchshow').style.display = "inline";
-                } else {
-                    document.querySelector('#btn-topadd').style.display = "inline";
-                    document.querySelector('#btn-endshow').style.display = "inline";
-                    document.querySelector('#btn-break').style.display = "inline";
-                }
+                document.querySelector('#btn-topadd').style.display = "inline";
+                document.querySelector('#btn-endshow').style.display = "inline";
+                document.querySelector('#btn-break').style.display = "inline";
                 document.querySelector('#btn-log').style.display = "inline";
                 document.querySelector('#btn-view-log').style.display = "inline";
 
             } else {
             }
-            $('#operations-body').animateCss('flipInX faster', function () {});
         }
     } catch (e) {
         console.error(e);
@@ -6308,7 +6283,6 @@ function pleaseWait() {
         for (var i = 0; i < actionButtons.length; i++) {
             actionButtons[i].style.display = "none";
         }
-        document.querySelector('#please-wait').style.display = "inline";
     } catch (e) {
         console.error(e);
         iziToast.show({
