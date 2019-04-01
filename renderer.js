@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = true;
+    var development = false;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -39,6 +39,7 @@ try {
     var Config = {};
     var DJData = {};
     var Timesheets = [];
+    var Notifications = [];
 
     // Define peerJS and stream variables. These will be set after getting information about this host's settings.
     var peer;
@@ -1741,6 +1742,20 @@ try {
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
         zindex: 62
+    });
+
+    $("#modal-notifications").iziModal({
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 50
     });
 
     var quill = new Quill('#themessage', {
@@ -3794,6 +3809,34 @@ document.querySelector(`#options-timesheets-records`).addEventListener("click", 
     }
 });
 
+document.querySelector(`#modal-notifications`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id === `modal-notifications-close`)
+            {
+                Notifications = [];
+                var tempi2 = document.querySelector(`#notification-groups`);
+                if (tempi2 !== null)
+                {
+                    tempi2.innerHTML = ``;
+                }
+                $('#modal-notifications').iziModal('close');
+            } else if (e.target.id.startsWith(`notification-group-`))
+            {
+                var group = e.target.id.replace(`notification-group-`, ``);
+                var notifications = Notifications.filter((note) => note.group === group);
+                // TODO: finish this
+                iziToast.show({
+                    title: 'Working on it!',
+                    message: `I do not have this done yet. See admin menu -> issues in the mean time.`
+                });
+            }
+        }
+    } catch (err) {
+    }
+});
+
 document.querySelector(`#options-modal-directors`).addEventListener("click", function (e) {
     try {
         console.log(e.target.id);
@@ -5477,165 +5520,165 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-        {
-            hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
-                //console.log(body);
-                try {
-                    client = body;
-                    //authtoken = client.token;
-                    if (!client.authorized)
-                    {
-                        var noConnection = document.getElementById('no-connection');
-                        noConnection.style.display = "inline";
-                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+{
+    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+        //console.log(body);
+        try {
+            client = body;
+            //authtoken = client.token;
+            if (!client.authorized)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "inline";
+                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                        cb(false);
-                    } else {
-                        cb(true);
+                cb(false);
+            } else {
+                cb(true);
 
-                        // Sink main audio devices
-                        getAudioMain(settings.get(`audio.input.main`) || undefined);
-                        sinkAudio();
+                // Sink main audio devices
+                getAudioMain(settings.get(`audio.input.main`) || undefined);
+                sinkAudio();
 
-                        // Disconnect current peer if it exists
-                        try {
-                            peer.destroy();
-                        } catch (e) {
-                            // Ignore errors
-                        }
-
-                        // Determine if we should start a new peer
-                        if (client.makeCalls || client.answerCalls)
-                        {
-                            setupPeer();
-                        }
-
-                        // Reset silenceState
-                        if (client.silenceDetection)
-                            silenceState = -1;
-
-                        // Determine if it is applicable to initiate the user media for audio calls
-                        if (client.makeCalls)
-                        {
-                            console.log(`Initiating getUserMedia for makeCalls`);
-                            getAudio();
-                        }
-
-                    }
-                    if (client.admin)
-                    {
-                        if (client.otherHosts)
-                            processHosts(client.otherHosts, true);
-                        var temp = document.querySelector(`#options`);
-                        var restarter;
-                        if (temp)
-                            temp.style.display = "inline";
-
-                        // Subscribe to the logs socket
-                        hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                processLogs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED logs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get djs and subscribe to the dj socket
-                        noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                processDjs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED DJs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get directors and subscribe to the directors socket
-                        noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                processDirectors(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED directors CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the XP socket
-                        hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED XP CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the timesheet socket
-                        noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED TIMESHEET CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the discipline socket
-                        hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
-                            //console.log(body);
-                            try {
-                                processDiscipline(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED discipline CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the config socket
-                        hostReq.request({method: 'POST', url: '/config/get', data: {}}, function (body) {
-                            //console.log(body);
-                            try {
-                                processConfig(body);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED config CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                    } else {
-                        var temp = document.querySelector(`#options`);
-                        if (temp)
-                            temp.style.display = "none";
-                    }
+                // Disconnect current peer if it exists
+                try {
+                    peer.destroy();
                 } catch (e) {
-                    console.error(e);
-                    console.log('FAILED HOST CONNECTION');
-                    restarter = setTimeout(hostSocket, 10000);
+                    // Ignore errors
                 }
-            });
+
+                // Determine if we should start a new peer
+                if (client.makeCalls || client.answerCalls)
+                {
+                    setupPeer();
+                }
+
+                // Reset silenceState
+                if (client.silenceDetection)
+                    silenceState = -1;
+
+                // Determine if it is applicable to initiate the user media for audio calls
+                if (client.makeCalls)
+                {
+                    console.log(`Initiating getUserMedia for makeCalls`);
+                    getAudio();
+                }
+
+            }
+            if (client.admin)
+            {
+                if (client.otherHosts)
+                    processHosts(client.otherHosts, true);
+                var temp = document.querySelector(`#options`);
+                var restarter;
+                if (temp)
+                    temp.style.display = "inline";
+
+                // Subscribe to the logs socket
+                hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        processLogs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED logs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Get djs and subscribe to the dj socket
+                noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDjs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED DJs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Get directors and subscribe to the directors socket
+                noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDirectors(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED directors CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the XP socket
+                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED XP CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the timesheet socket
+                noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED TIMESHEET CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the discipline socket
+                hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
+                    //console.log(body);
+                    try {
+                        processDiscipline(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED discipline CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the config socket
+                hostReq.request({method: 'POST', url: '/config/get', data: {}}, function (body) {
+                    //console.log(body);
+                    try {
+                        processConfig(body);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED config CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+            } else {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            console.log('FAILED HOST CONNECTION');
+            restarter = setTimeout(hostSocket, 10000);
         }
+    });
+}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -6336,27 +6379,7 @@ function checkAnnouncements() {
                         // If this DJ Controls is configured by WWSU to notify on technical problems, notify so.
                         if (client.emergencies)
                         {
-                            iziToast.show({
-                                title: 'Technical issue reported!',
-                                message: `${datum.announcement}`,
-                                timeout: false,
-                                close: true,
-                                color: 'red',
-                                drag: false,
-                                position: 'center',
-                                closeOnClick: false,
-                                overlay: true,
-                                zindex: 250,
-                                layout: 2,
-                                image: `assets/images/error.png`,
-                                maxWidth: 480,
-                            });
-                            var notification = notifier.notify('Problem Reported', {
-                                message: `A problem was reported. Please see DJ Controls.`,
-                                icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                                duration: (1000 * 60 * 60 * 24),
-                            });
-                            main.flashTaskbar();
+                            addNotification(`reported-problem`, `danger`, datum.createdAt, datum.announcement);
                         }
                     } else {
                         var temp = document.querySelector(`#attn-status-report-${datum.ID}`);
@@ -9329,7 +9352,7 @@ function processStatus(data, replace = false)
                         if (client.emergencies && datum.status < 3)
                         {
                             var notification = notifier.notify('System Problem', {
-                                message: `${datum.label} reports a significant issue. Please see DJ Controls.`,
+                                message: `${datum.label} reports a significant issue. Please see DJ Controls announcements.`,
                                 icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
                                 duration: (1000 * 60 * 15),
                             });
@@ -9379,7 +9402,7 @@ function processStatus(data, replace = false)
                                 if (client.emergencies && data[key].status < 3)
                                 {
                                     var notification = notifier.notify('System Problem', {
-                                        message: `${data[key].label} reports a significant issue. Please see DJ Controls.`,
+                                        message: `${data[key].label} reports a significant issue. Please see DJ Controls announcements.`,
                                         icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
                                         duration: (1000 * 60 * 15),
                                     });
@@ -9431,7 +9454,7 @@ function processStatus(data, replace = false)
                                 if (client.emergencies && data[key].status < 3)
                                 {
                                     var notification = notifier.notify('System Problem', {
-                                        message: `${data[key].label} reports a significant issue. Please see DJ Controls.`,
+                                        message: `${data[key].label} reports a significant issue. Please see DJ Controls announcements.`,
                                         icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
                                         duration: (1000 * 60 * 15),
                                     });
@@ -9655,27 +9678,7 @@ function processMessages(data, replace = false)
                                 if (client.emergencies)
                                 {
                                     data[index].needsread = true;
-                                    iziToast.show({
-                                        title: 'Technical issue reported!',
-                                        message: `${datum.message}`,
-                                        timeout: false,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: false,
-                                        overlay: true,
-                                        zindex: 250,
-                                        layout: 2,
-                                        image: `assets/images/error.png`,
-                                        maxWidth: 480
-                                    });
-                                    var notification = notifier.notify('Problem Reported', {
-                                        message: `A problem was reported. Please see DJ Controls.`,
-                                        icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                                        duration: (1000 * 60 * 60 * 24),
-                                    });
-                                    main.flashTaskbar();
+                                    addNotification(`reported-problem`, `danger`, datum.createdAt, datum.message);
                                 }
                                 break;
                             case client.host:
@@ -9770,27 +9773,7 @@ function processMessages(data, replace = false)
                                     if (client.emergencies)
                                     {
                                         data[key].needsread = true;
-                                        iziToast.show({
-                                            title: 'Technical issue reported!',
-                                            message: `${data[key].message}`,
-                                            timeout: false,
-                                            close: true,
-                                            color: 'red',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: false,
-                                            overlay: true,
-                                            zindex: 250,
-                                            layout: 2,
-                                            image: `assets/images/error.png`,
-                                            maxWidth: 480,
-                                        });
-                                        var notification = notifier.notify('Problem Reported', {
-                                            message: `A problem was reported. Please see DJ Controls.`,
-                                            icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                                            duration: (1000 * 60 * 60 * 24),
-                                        });
-                                        main.flashTaskbar();
+                                        addNotification(`reported-problem`, `danger`, datum.createdAt, datum.announcement);
                                     }
                                     break;
                                 case client.host:
@@ -10347,70 +10330,70 @@ function loadDJ(dj = null, reset = true) {
 
 // Update recipients as changes happen
 function processDjs(data = {}, replace = false)
+{
+    // Data processing
+    try {
+        if (replace)
         {
-            // Data processing
-            try {
-                if (replace)
+            Djs = TAFFY();
+            Djs.insert(data);
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
                 {
-                    Djs = TAFFY();
-                    Djs.insert(data);
-                } else {
-                    for (var key in data)
+                    switch (key)
                     {
-                        if (data.hasOwnProperty(key))
-                        {
-                            switch (key)
-                            {
-                                case 'insert':
-                                    Djs.insert(data[key]);
-                                    break;
-                                case 'update':
-                                    Djs({ID: data[key].ID}).update(data[key]);
-                                    break;
-                                case 'remove':
-                                    Djs({ID: data[key]}).remove();
-                                    break;
-                            }
-                        }
+                        case 'insert':
+                            Djs.insert(data[key]);
+                            break;
+                        case 'update':
+                            Djs({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Djs({ID: data[key]}).remove();
+                            break;
                     }
                 }
+            }
+        }
 
-                document.querySelector("#options-xp-djs").innerHTML = ``;
-                document.querySelector('#options-djs').innerHTML = ``;
+        document.querySelector("#options-xp-djs").innerHTML = ``;
+        document.querySelector('#options-djs').innerHTML = ``;
 
-                Djs().each(function (dj, index) {
-                    var djClass = `danger`;
-                    var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
-                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
-                    {
-                        djClass = `warning`;
-                        djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
-                    }
-                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
-                    {
-                        djClass = `success`;
-                        djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
-                    }
+        Djs().each(function (dj, index) {
+            var djClass = `danger`;
+            var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
+            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
+            {
+                djClass = `warning`;
+                djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
+            }
+            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
+            {
+                djClass = `success`;
+                djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
+            }
 
-                    document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
+            document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
                         <button type="button" id="options-dj-${dj.ID}" class="btn btn-${djClass} btn-float" style="position: relative;" data-dj="${dj.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`DJ ${dj.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
-                    document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
+            document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
   <input class="custom-control-input" id="options-xp-djs-i-${dj.ID}" type="checkbox">
   <span class="custom-control-track"></span>
   <label class="custom-control-label" for="options-xp-djs-i-${dj.ID}">${dj.name}</label>
 </div>`;
-                });
+        });
 
-            } catch (e) {
-                console.error(e);
-                iziToast.show({
-                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                    message: 'Error occurred in the processDjs function.'
-                });
-        }
-        }
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred in the processDjs function.'
+        });
+}
+}
 
 // Update recipients as changes happen
 function processDirectors(data, replace = false)
@@ -10680,147 +10663,27 @@ function processLogs(data, replace = false)
                 {
                     if (record.logtype === "absent")
                     {
-                        var notification = notifier.notify('Absent Broadcast Detected', {
-                            message: `A scheduled broadcast did not air. See DJ Controls.`,
-                            icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
-                            duration: 900000,
-                        });
-                        main.flashTaskbar();
-                        iziToast.show({
-                            title: 'Absent Broadcast',
-                            message: record.event,
-                            timeout: false,
-                            close: true,
-                            color: 'yellow',
-                            drag: false,
-                            position: 'center',
-                            closeOnClick: false,
-                            overlay: true,
-                            zindex: 500,
-                            layout: 2,
-                            image: `assets/images/absent.png`,
-                            maxWidth: 640,
-                        });
+                        addNotification(`absent-broadcast`, `warning`, record.createdAt, record.event);
                     }
                     if (record.logtype === "unauthorized")
                     {
-                        var notification = notifier.notify('Unscheduled Broadcast Detected', {
-                            message: `An unscheduled broadcast is/was on the air. See DJ Controls.`,
-                            icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
-                            duration: 900000,
-                        });
-                        main.flashTaskbar();
-                        iziToast.show({
-                            title: 'Unauthorized / Unscheduled Broadcast',
-                            message: record.event,
-                            timeout: false,
-                            close: true,
-                            color: 'yellow',
-                            drag: false,
-                            position: 'center',
-                            closeOnClick: false,
-                            overlay: true,
-                            zindex: 500,
-                            layout: 2,
-                            image: `assets/images/unauthorized.png`,
-                            maxWidth: 640,
-                        });
+                        addNotification(`unauthorized-broadcast`, `urgent`, record.createdAt, record.event);
                     }
                     if (record.logtype === "cancellation")
                     {
-                        var notification = notifier.notify('Broadcast Cancelled', {
-                            message: `A scheduled broadcast was cancelled. See DJ Controls.`,
-                            icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
-                            duration: 900000,
-                        });
-                        main.flashTaskbar();
-                        iziToast.show({
-                            title: 'Cancelled Broadcast',
-                            message: record.event,
-                            timeout: false,
-                            close: true,
-                            color: 'yellow',
-                            drag: false,
-                            position: 'center',
-                            closeOnClick: false,
-                            overlay: true,
-                            zindex: 500,
-                            layout: 2,
-                            image: `assets/images/absent.png`,
-                            maxWidth: 640,
-                        });
+                        addNotification(`canceled-broadcast`, `info`, record.createdAt, record.event);
                     }
                     if (record.logtype === "id")
                     {
-                        var notification = notifier.notify('Failed Top-Of-Hour Break', {
-                            message: `A show did not do the top-of-hour break. See DJ Controls.`,
-                            icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
-                            duration: 900000,
-                        });
-                        main.flashTaskbar();
-                        iziToast.show({
-                            title: 'Failed Top-Of-Hour Break',
-                            message: record.event,
-                            timeout: false,
-                            close: true,
-                            color: 'yellow',
-                            drag: false,
-                            position: 'center',
-                            closeOnClick: false,
-                            overlay: true,
-                            zindex: 500,
-                            layout: 2,
-                            image: `assets/images/failTopOfHour.png`,
-                            maxWidth: 640,
-                        });
+                        addNotification(`failed-legal-id`, `urgent`, record.createdAt, record.event);
                     }
                     if (record.logtype === "director-absent")
                     {
-                        var notification = notifier.notify('Absent Director Detected', {
-                            message: `A director failed to do scheduled office hours. See DJ Controls.`,
-                            icon: 'http://35727ec9c4540fa3fee5-978f006dd90b95268a106ef80642bdd6.r30.cf5.rackcdn.com/wp-content/uploads/2012/12/Out_of_date_clock_icon.svg_.png',
-                            duration: 900000,
-                        });
-                        main.flashTaskbar();
-                        iziToast.show({
-                            title: 'Absent Director',
-                            message: record.event,
-                            timeout: false,
-                            close: true,
-                            color: 'yellow',
-                            drag: false,
-                            position: 'center',
-                            closeOnClick: false,
-                            overlay: true,
-                            zindex: 500,
-                            layout: 2,
-                            image: `assets/images/noClock.png`,
-                            maxWidth: 640,
-                        });
+                        addNotification(`absent-director`, `urgent`, record.createdAt, record.event);
                     }
                     if (record.logtype === "director-cancellation")
                     {
-                        var notification = notifier.notify('Director Cancelled Hours', {
-                            message: `A director cancelled office hours. See DJ Controls.`,
-                            icon: 'http://35727ec9c4540fa3fee5-978f006dd90b95268a106ef80642bdd6.r30.cf5.rackcdn.com/wp-content/uploads/2012/12/Out_of_date_clock_icon.svg_.png',
-                            duration: 900000,
-                        });
-                        main.flashTaskbar();
-                        iziToast.show({
-                            title: 'Director cancelled office hours',
-                            message: record.event,
-                            timeout: false,
-                            close: true,
-                            color: 'yellow',
-                            drag: false,
-                            position: 'center',
-                            closeOnClick: false,
-                            overlay: true,
-                            zindex: 500,
-                            layout: 2,
-                            image: `assets/images/noClock.png`,
-                            maxWidth: 640,
-                        });
+                        addNotification(`director-canceled-hours`, `info`, record.createdAt, record.event);
                     }
                 }
             });
@@ -10836,147 +10699,27 @@ function processLogs(data, replace = false)
                             Logs.insert(data[key]);
                             if (data[key].logtype === "absent")
                             {
-                                var notification = notifier.notify('Absent Broadcast Detected', {
-                                    message: `A scheduled broadcast did not air. See DJ Controls.`,
-                                    icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
-                                    duration: 900000,
-                                });
-                                main.flashTaskbar();
-                                iziToast.show({
-                                    title: 'Absent Broadcast',
-                                    message: data[key].event,
-                                    timeout: false,
-                                    close: true,
-                                    color: 'yellow',
-                                    drag: false,
-                                    position: 'center',
-                                    closeOnClick: false,
-                                    overlay: true,
-                                    zindex: 500,
-                                    layout: 2,
-                                    image: `assets/images/absent.png`,
-                                    maxWidth: 640,
-                                });
+                                addNotification(`absent-broadcast`, `warning`, data[key].createdAt, data[key].event);
                             }
                             if (data[key].logtype === "cancellation")
                             {
-                                var notification = notifier.notify('Broadcast Cancelled', {
-                                    message: `A scheduled broadcast was cancelled. See DJ Controls.`,
-                                    icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
-                                    duration: 900000,
-                                });
-                                main.flashTaskbar();
-                                iziToast.show({
-                                    title: 'Cancelled Broadcast',
-                                    message: data[key].event,
-                                    timeout: false,
-                                    close: true,
-                                    color: 'yellow',
-                                    drag: false,
-                                    position: 'center',
-                                    closeOnClick: false,
-                                    overlay: true,
-                                    zindex: 500,
-                                    layout: 2,
-                                    image: `assets/images/absent.png`,
-                                    maxWidth: 640,
-                                });
+                                addNotification(`canceled-broadcast`, `info`, data[key].createdAt, data[key].event);
                             }
                             if (data[key].logtype === "unauthorized")
                             {
-                                var notification = notifier.notify('Unscheduled Broadcast Detected', {
-                                    message: `An unscheduled broadcast is/was on the air. See DJ Controls.`,
-                                    icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
-                                    duration: 900000,
-                                });
-                                main.flashTaskbar();
-                                iziToast.show({
-                                    title: 'Unauthorized / Unscheduled Broadcast',
-                                    message: data[key].event,
-                                    timeout: false,
-                                    close: true,
-                                    color: 'yellow',
-                                    drag: false,
-                                    position: 'center',
-                                    closeOnClick: false,
-                                    overlay: true,
-                                    zindex: 500,
-                                    layout: 2,
-                                    image: `assets/images/unauthorized.png`,
-                                    maxWidth: 640,
-                                });
+                                addNotification(`unauthorized-broadcast`, `urgent`, data[key].createdAt, data[key].event);
                             }
                             if (data[key].logtype === "id")
                             {
-                                var notification = notifier.notify('Failed Top-Of-Hour Break', {
-                                    message: `A show did not do the top-of-hour break. See DJ Controls.`,
-                                    icon: 'http://cdn.onlinewebfonts.com/svg/img_259220.png',
-                                    duration: 900000,
-                                });
-                                main.flashTaskbar();
-                                iziToast.show({
-                                    title: 'Failed Top-Of-Hour Break',
-                                    message: data[key].event,
-                                    timeout: false,
-                                    close: true,
-                                    color: 'yellow',
-                                    drag: false,
-                                    position: 'center',
-                                    closeOnClick: false,
-                                    overlay: true,
-                                    zindex: 500,
-                                    layout: 2,
-                                    image: `assets/images/failTopOfHour.png`,
-                                    maxWidth: 640,
-                                });
+                                addNotification(`failed-legal-id`, `urgent`, data[key].createdAt, data[key].event);
                             }
                             if (data[key].logtype === "director-absent")
                             {
-                                var notification = notifier.notify('Absent Director Detected', {
-                                    message: `A director failed to do scheduled office hours. See DJ Controls.`,
-                                    icon: 'http://35727ec9c4540fa3fee5-978f006dd90b95268a106ef80642bdd6.r30.cf5.rackcdn.com/wp-content/uploads/2012/12/Out_of_date_clock_icon.svg_.png',
-                                    duration: 900000,
-                                });
-                                main.flashTaskbar();
-                                iziToast.show({
-                                    title: 'Absent Director',
-                                    message: data[key].event,
-                                    timeout: false,
-                                    close: true,
-                                    color: 'yellow',
-                                    drag: false,
-                                    position: 'center',
-                                    closeOnClick: false,
-                                    overlay: true,
-                                    zindex: 500,
-                                    layout: 2,
-                                    image: `assets/images/noClock.png`,
-                                    maxWidth: 640,
-                                });
+                                addNotification(`absent-director`, `urgent`, data[key].createdAt, data[key].event);
                             }
                             if (data[key].logtype === "director-cancellation")
                             {
-                                var notification = notifier.notify('Director Cancelled Hours', {
-                                    message: `A director cancelled office hours. See DJ Controls.`,
-                                    icon: 'http://35727ec9c4540fa3fee5-978f006dd90b95268a106ef80642bdd6.r30.cf5.rackcdn.com/wp-content/uploads/2012/12/Out_of_date_clock_icon.svg_.png',
-                                    duration: 900000,
-                                });
-                                main.flashTaskbar();
-                                iziToast.show({
-                                    title: 'Director cancelled office hours',
-                                    message: data[key].event,
-                                    timeout: false,
-                                    close: true,
-                                    color: 'yellow',
-                                    drag: false,
-                                    position: 'center',
-                                    closeOnClick: false,
-                                    overlay: true,
-                                    zindex: 500,
-                                    layout: 2,
-                                    image: `assets/images/noClock.png`,
-                                    maxWidth: 640,
-                                });
+                                addNotification(`director-canceled-hours`, `info`, data[key].createdAt, data[key].event);
                             }
                             break;
                         case 'update':
@@ -11023,126 +10766,242 @@ function loadTimesheets(date)
                     <p class="card-text">
                     <div class="container">    
                         <div class="row shadow-2">
-                            <div class="col-2 text-dark">
-                                Day
+                            <div class="col text-dark">
+                                > Day <br>
+                                v Time
                             </div>
-                            <div class="col-10 text-dark" style="position: relative;">
-                                <div style="position: absolute; left: 0%;">12a</div>
-                                <div style="position: absolute; left: 12.5%;">3a</div>
-                                <div style="position: absolute; left: 25%;">6a</div>
-                                <div style="position: absolute; left: 37.5%;">9a</div>
-                                <div style="position: absolute; left: 50%;">12p</div>
-                                <div style="position: absolute; left: 62.5%;">3p</div>
-                                <div style="position: absolute; left: 75%;">6p</div>
-                                <div style="position: absolute; left: 87.5%;">9p</div>
+                            <div class="col text-dark border-left">
+                                Sun
                             </div>
-                        </div>
-                        <div class="row border border-dark">
-                            <div class="col-2 text-dark">
-                            Sun
+                            <div class="col text-dark border-left">
+                                Mon
                             </div>
-                            <div class="col-10" id="options-timesheets-director-cell-0-${record.name.replace(/\W/g, '')}" style="position: relative;">
-                                <div style="position: absolute; left: 0%;">|</div>
-                                <div style="position: absolute; left: 12.5%;">|</div>
-                                <div style="position: absolute; left: 25%;">|</div>
-                                <div style="position: absolute; left: 37.5%;">|</div>
-                                <div style="position: absolute; left: 50%;">|</div>
-                                <div style="position: absolute; left: 62.5%;">|</div>
-                                <div style="position: absolute; left: 75%;">|</div>
-                                <div style="position: absolute; left: 87.5%;">|</div>
+                            <div class="col text-dark border-left">
+                                Tue
+                            </div>
+                            <div class="col text-dark border-left">
+                                Wed
+                            </div>
+                            <div class="col text-dark border-left">
+                                Thu
+                            </div>
+                            <div class="col text-dark border-left">
+                                Fri
+                            </div>
+                            <div class="col text-dark border-left">
+                                Sat
                             </div>
                         </div>
-                        <div class="row border border-dark">
-                            <div class="col-2 text-dark">
-                            Mon
+                        <div class="row border border-dark" style="height: 240px;">
+                            <div class="col text-dark" style="position: relative;">
+                                <div style="position: absolute; top: 8.5%;">3a</div>
+                                <div style="position: absolute; top: 21%;">6a</div>
+                                <div style="position: absolute; top: 33.5%;">9a</div>
+                                <div style="position: absolute; top: 46%;">12p</div>
+                                <div style="position: absolute; top: 58.5%;">3p</div>
+                                <div style="position: absolute; top: 71%;">6p</div>
+                                <div style="position: absolute; top: 83.5%;">9p</div>
+                                <div class="border-top" style="position: absolute; top: 4.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 8.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 12.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 16.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 20.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 25%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 29.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 33.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 37.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 41.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 45.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 50%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 54.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 58.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 62.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 66.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 70.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 75%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 79.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 83.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 87.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 91.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 95.83%; width: 100%;"></div>
                             </div>
-                            <div class="col-10" id="options-timesheets-director-cell-1-${record.name.replace(/\W/g, '')}" style="position: relative;">
-                                <div style="position: absolute; left: 0%;">|</div>
-                                <div style="position: absolute; left: 12.5%;">|</div>
-                                <div style="position: absolute; left: 25%;">|</div>
-                                <div style="position: absolute; left: 37.5%;">|</div>
-                                <div style="position: absolute; left: 50%;">|</div>
-                                <div style="position: absolute; left: 62.5%;">|</div>
-                                <div style="position: absolute; left: 75%;">|</div>
-                                <div style="position: absolute; left: 87.5%;">|</div>
+                            <div class="col text-dark border-left" id="options-timesheets-director-cell-0-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div class="border-top" style="position: absolute; top: 4.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 8.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 12.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 16.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 20.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 25%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 29.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 33.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 37.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 41.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 45.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 50%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 54.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 58.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 62.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 66.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 70.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 75%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 79.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 83.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 87.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 91.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 95.83%; width: 100%;"></div>
+                            </div>
+                            <div class="col text-dark border-left" id="options-timesheets-director-cell-1-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div class="border-top" style="position: absolute; top: 4.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 8.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 12.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 16.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 20.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 25%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 29.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 33.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 37.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 41.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 45.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 50%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 54.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 58.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 62.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 66.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 70.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 75%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 79.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 83.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 87.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 91.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 95.83%; width: 100%;"></div>
+                            </div>
+                            <div class="col text-dark border-left" id="options-timesheets-director-cell-2-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div class="border-top" style="position: absolute; top: 4.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 8.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 12.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 16.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 20.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 25%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 29.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 33.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 37.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 41.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 45.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 50%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 54.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 58.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 62.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 66.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 70.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 75%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 79.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 83.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 87.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 91.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 95.83%; width: 100%;"></div>
+                            </div>
+                            <div class="col text-dark border-left" id="options-timesheets-director-cell-3-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div class="border-top" style="position: absolute; top: 4.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 8.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 12.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 16.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 20.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 25%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 29.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 33.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 37.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 41.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 45.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 50%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 54.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 58.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 62.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 66.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 70.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 75%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 79.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 83.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 87.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 91.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 95.83%; width: 100%;"></div>
+                            </div>
+                            <div class="col text-dark border-left" id="options-timesheets-director-cell-4-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div class="border-top" style="position: absolute; top: 4.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 8.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 12.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 16.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 20.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 25%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 29.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 33.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 37.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 41.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 45.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 50%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 54.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 58.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 62.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 66.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 70.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 75%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 79.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 83.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 87.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 91.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 95.83%; width: 100%;"></div>
+                            </div>
+                            <div class="col text-dark border-left" id="options-timesheets-director-cell-5-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div class="border-top" style="position: absolute; top: 4.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 8.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 12.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 16.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 20.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 25%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 29.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 33.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 37.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 41.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 45.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 50%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 54.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 58.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 62.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 66.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 70.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 75%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 79.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 83.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 87.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 91.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 95.83%; width: 100%;"></div>
+                            </div>
+                            <div class="col text-dark border-left" id="options-timesheets-director-cell-6-${record.name.replace(/\W/g, '')}" style="position: relative;">
+                                <div class="border-top" style="position: absolute; top: 4.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 8.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 12.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 16.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 20.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 25%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 29.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 33.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 37.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 41.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 45.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 50%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 54.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 58.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 62.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 66.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 70.83%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 75%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 79.16%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 83.33%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 87.5%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 91.66%; width: 100%;"></div>
+                                <div class="border-top" style="position: absolute; top: 95.83%; width: 100%;"></div>
                             </div>
                         </div>
-                        <div class="row border border-dark">
-                            <div class="col-2 text-dark">
-                            Tues
-                            </div>
-                            <div class="col-10" id="options-timesheets-director-cell-2-${record.name.replace(/\W/g, '')}" style="position: relative;">
-                                <div style="position: absolute; left: 0%;">|</div>
-                                <div style="position: absolute; left: 12.5%;">|</div>
-                                <div style="position: absolute; left: 25%;">|</div>
-                                <div style="position: absolute; left: 37.5%;">|</div>
-                                <div style="position: absolute; left: 50%;">|</div>
-                                <div style="position: absolute; left: 62.5%;">|</div>
-                                <div style="position: absolute; left: 75%;">|</div>
-                                <div style="position: absolute; left: 87.5%;">|</div>
-                            </div>
-                        </div>
-                        <div class="row border border-dark">
-                            <div class="col-2 text-dark">
-                            Wed
-                            </div>
-                            <div class="col-10" id="options-timesheets-director-cell-3-${record.name.replace(/\W/g, '')}" style="position: relative;">
-                                <div style="position: absolute; left: 0%;">|</div>
-                                <div style="position: absolute; left: 12.5%;">|</div>
-                                <div style="position: absolute; left: 25%;">|</div>
-                                <div style="position: absolute; left: 37.5%;">|</div>
-                                <div style="position: absolute; left: 50%;">|</div>
-                                <div style="position: absolute; left: 62.5%;">|</div>
-                                <div style="position: absolute; left: 75%;">|</div>
-                                <div style="position: absolute; left: 87.5%;">|</div>
-                            </div>
-                        </div>
-                        <div class="row border border-dark">
-                            <div class="col-2 text-dark">
-                            Thurs
-                            </div>
-                            <div class="col-10" id="options-timesheets-director-cell-4-${record.name.replace(/\W/g, '')}" style="position: relative;">
-                                <div style="position: absolute; left: 0%;">|</div>
-                                <div style="position: absolute; left: 12.5%;">|</div>
-                                <div style="position: absolute; left: 25%;">|</div>
-                                <div style="position: absolute; left: 37.5%;">|</div>
-                                <div style="position: absolute; left: 50%;">|</div>
-                                <div style="position: absolute; left: 62.5%;">|</div>
-                                <div style="position: absolute; left: 75%;">|</div>
-                                <div style="position: absolute; left: 87.5%;">|</div>
-                            </div>
-                        </div>
-                        <div class="row border border-dark">
-                            <div class="col-2 text-dark">
-                            Fri
-                            </div>
-                            <div class="col-10" id="options-timesheets-director-cell-5-${record.name.replace(/\W/g, '')}" style="position: relative;">
-                                <div style="position: absolute; left: 0%;">|</div>
-                                <div style="position: absolute; left: 12.5%;">|</div>
-                                <div style="position: absolute; left: 25%;">|</div>
-                                <div style="position: absolute; left: 37.5%;">|</div>
-                                <div style="position: absolute; left: 50%;">|</div>
-                                <div style="position: absolute; left: 62.5%;">|</div>
-                                <div style="position: absolute; left: 75%;">|</div>
-                                <div style="position: absolute; left: 87.5%;">|</div>
-                            </div>
-                        </div>
-                        <div class="row border border-dark">
-                            <div class="col-2 text-dark">
-                            Sat
-                            </div>
-                            <div class="col-10" id="options-timesheets-director-cell-6-${record.name.replace(/\W/g, '')}" style="position: relative;">
-                                <div style="position: absolute; left: 0%;">|</div>
-                                <div style="position: absolute; left: 12.5%;">|</div>
-                                <div style="position: absolute; left: 25%;">|</div>
-                                <div style="position: absolute; left: 37.5%;">|</div>
-                                <div style="position: absolute; left: 50%;">|</div>
-                                <div style="position: absolute; left: 62.5%;">|</div>
-                                <div style="position: absolute; left: 75%;">|</div>
-                                <div style="position: absolute; left: 87.5%;">|</div>
-                            </div>
-                        </div>
-                    <div class="row">
+                        <div class="row">
                             <div class="col-4 text-primary">
                             Weekly Hours
                             </div>
@@ -11182,7 +11041,7 @@ function loadTimesheets(date)
                 var sInT = ``;
                 var sOutT = ``;
                 var timeline = ``;
-                var divWidth = $(`#options-timesheets-director-${record.name.replace(/\W/g, '')}`).width();
+                var divWidth = $(`#options-timesheets-director-${record.name.replace(/\W/g, '')}`).height();
                 var dayValue = (1000 * 60 * 60 * 24);
                 var width = 0;
                 var left = 0;
@@ -11212,19 +11071,19 @@ function loadTimesheets(date)
                             sOutT = moment(scheduledout).format(`h:mm A`);
                             sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
                         }
-                        timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; top: 0px; height: 5px; left: ${sLeft}%; width: ${sWidth}%;"></div>`;
+                        timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
                     }
                     if (moment(clockin).isBefore(moment().startOf('week')))
                     {
                         inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
                         left = 0;
                         width = (((moment(Meta.time).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
-                        timeline += `<div title="Director still clocked in since ${inT}" id="timesheet-t-${record.ID}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: 0%; width: ${width}%;"></div>`;
+                        timeline += `<div title="Director still clocked in since ${inT}" id="timesheet-t-${record.ID}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: 0%; height: ${width}%;"></div>`;
                     } else {
                         inT = moment(clockin).format(`h:mm A`);
                         width = (((moment(Meta.time).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
                         left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
-                        timeline += `<div title="Director still clocked in since ${inT}" id="timesheet-t-${record.ID}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
+                        timeline += `<div title="Director still clocked in since ${inT}" id="timesheet-t-${record.ID}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: ${left}%; height: ${width}%;"></div>`;
                     }
                     outT = 'IN NOW';
                 } else {
@@ -11267,8 +11126,8 @@ function loadTimesheets(date)
                                 sOutT = moment(scheduledout).format(`h:mm A`);
                                 sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
                             }
-                            timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; top: 0px; height: 5px; left: ${sLeft}%; width: ${sWidth}%;"></div>`;
-                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Hours (approved): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
+                            timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
+                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Hours (approved): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: ${left}%; height: ${width}%;"></div>`;
                         } else if (clockin !== null && clockout !== null && (scheduledin === null || scheduledout === null)) {
                             status = `success`;
                             status2 = `This record is approved, but did not fall within a scheduled office hours block.`;
@@ -11289,7 +11148,7 @@ function loadTimesheets(date)
                                 outT = moment(clockout).format(`h:mm A`);
                                 width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
                             }
-                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Unscheduled Hours (approved): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
+                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Unscheduled Hours (approved): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: ${left}%; height: ${width}%;"></div>`;
                         } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null) {
                             status = `secondary`;
                             status2 = `This is NOT an actual timesheet; the director canceled scheduled office hours.`;
@@ -11309,7 +11168,7 @@ function loadTimesheets(date)
                                 sOutT = moment(scheduledout).format(`h:mm A`);
                                 sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
                             }
-                            timeline += `<div title="Scheduled Hours (CANCELLED): ${sInT} - ${sOutT}" class="" style="background-color: #787878; position: absolute; top: 0px; height: 20px; left: ${sLeft}%; width: ${sWidth}%;"></div>`;
+                            timeline += `<div title="Scheduled Hours (CANCELLED): ${sInT} - ${sOutT}" class="" style="background-color: #787878; position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
                         }
                     } else {
                         if (clockin !== null && clockout !== null && scheduledin !== null && scheduledout !== null)
@@ -11348,8 +11207,8 @@ function loadTimesheets(date)
                                 sOutT = moment(scheduledout).format(`h:mm A`);
                                 sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
                             }
-                            timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; top: 0px; height: 5px; left: ${sLeft}%; width: ${sWidth}%;"></div>`;
-                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Hours (NEEDS REVIEW): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
+                            timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
+                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Hours (NEEDS REVIEW): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: ${left}%; height: ${width}%;"></div>`;
                         } else if (clockin !== null && clockout !== null && (scheduledin === null || scheduledout === null)) {
                             status = `warning`;
                             status2 = `This record is NOT approved and did not fall within a scheduled office hours block.`;
@@ -11369,7 +11228,7 @@ function loadTimesheets(date)
                                 outT = moment(clockout).format(`h:mm A`);
                                 width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
                             }
-                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Unscheduled Hours (NEEDS REVIEW): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; top: 5px; height: 15px; left: ${left}%; width: ${width}%;"></div>`;
+                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Unscheduled Hours (NEEDS REVIEW): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: ${left}%; height: ${width}%;"></div>`;
                         } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null) {
                             status = `danger`;
                             status2 = `This is NOT an actual timesheet; the director failed to clock in during scheduled office hours.`;
@@ -11389,7 +11248,7 @@ function loadTimesheets(date)
                                 sOutT = moment(scheduledout).format(`h:mm A`);
                                 sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
                             }
-                            timeline += `<div title="Scheduled Hours (NO SHOW): ${sInT} - ${sOutT}" class="bg-danger" style="position: absolute; top: 0px; height: 20px; left: ${sLeft}%; width: ${sWidth}%;"></div>`;
+                            timeline += `<div title="Scheduled Hours (NO SHOW): ${sInT} - ${sOutT}" class="bg-danger" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
                         }
                     }
                 }
@@ -11724,4 +11583,38 @@ function processConfig(data) {
             Config[key] = data[key];
         }
     }
+}
+
+function addNotification(group, level, time, notification)
+{
+    Notifications.push({group: group, level: level, time: time, notification: notification});
+    var temp = document.querySelector(`#notification-group-${group}`);
+    if (temp === null)
+    {
+        var tempi2 = document.querySelector(`#notification-groups`);
+        if (tempi2 !== null)
+        {
+            tempi2.innerHTML += `<div class="row text-dark m-1 shadow-1 border-left border-primary bg-light-1" style="width: 96%; border-left-width: 5px !important;" id="notification-group-${group}">
+    <div class="col-9 text-primary" style="font-size: 2em;">
+      ${group}
+    </div>
+    <div class="col-3 text-secondary" style="font-size: 2em;" id="notification-group-n-${group}">
+      1
+    </div>
+</div>`;
+            var notification = notifier.notify(`New ${group} notifications`, {
+                message: `There are new ${group} notifications in DJ Controls`,
+                icon: '',
+                duration: 900000,
+            });
+        }
+    } else {
+        var tempi2 = document.querySelector(`#notification-group-n-${group}`);
+        if (tempi2 !== null)
+        {
+            tempi2.innerHTML = Notifications.filter((note) => note.group === group).length;
+        }
+    }
+    main.flashTaskbar();
+    $('#modal-notifications').iziModal('open');
 }
