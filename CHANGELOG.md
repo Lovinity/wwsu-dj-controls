@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
  - Timesheet window in admin options -> manage directors -> timesheets now displays timesheets as Gantt Charts.
 
+### Fixed
+ - "Cannot read property muted of undefined" error that sometimes appeared and prevented operation buttons from appearing.
+
 ## [5.1.2] - 2019-03-23
 ### Added
  - Notifications when directors cancel office hours or fail to clock in for scheduled office hours.
