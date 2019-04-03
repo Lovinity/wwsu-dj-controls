@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = false;
+    var development = true;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -1034,7 +1034,7 @@ try {
     var delay = 9000; // Subtract 1 second from the amount of on-air delay, as it takes about a second to process the recorder.
     var activeToken = "";
 
-
+    var listNew = function () {};
     var disconnected = true;
     var theStatus = 4;
     var calendar = []; // Contains calendar events for the next 24 hours
@@ -1305,6 +1305,7 @@ try {
     });
 
     socket.on('config', function (data) {
+        console.dir(data);
         processConfig(data.update);
     });
 
@@ -1730,7 +1731,7 @@ try {
         zindex: 61
     });
 
-    $("#options-modal-config-form").iziModal({
+    $("#options-modal-config-list").iziModal({
         width: 800,
         focusInput: true,
         arrowKeys: false,
@@ -1742,6 +1743,20 @@ try {
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
         zindex: 62
+    });
+
+    $("#options-modal-config-form").iziModal({
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 63
     });
 
     $("#modal-notifications").iziModal({
@@ -2129,6 +2144,10 @@ document.querySelector("#sportsremote-go").onclick = function () {
 
 document.querySelector("#log-add").onclick = function () {
     saveLog();
+};
+
+document.querySelector("#options-modal-config-list-add").onclick = function () {
+    listNew();
 };
 
 document.querySelector("#btn-requests").onclick = function () {
@@ -2979,6 +2998,978 @@ document.querySelector("#btn-options-config-queue").onclick = function () {
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred during the click event of #btn-options-config-queue.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-requests").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "rDailyLimit": {
+                    "title": "Daily Request Limit",
+                    "description": "Each IP address is limited to making no more than the specified number of requests per day, reset at midnight. 0 disables the ability for anyone to request tracks.",
+                    "type": "number"
+                },
+                "rPriorityBump": {
+                    "title": "Priority Bump",
+                    "description": "When a track is requested, by how much should the track's priority be bumped (or lowered, if a negative number) in RadioDJ? Decimals permitted.",
+                    "type": "number"
+                },
+            },
+            "value": {
+                "rDailyLimit": Config.requests.dailyLimit,
+                "rPriorityBump": Config.requests.priorityBump,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/requests/set', data: {
+                        dailyLimit: values.rDailyLimit,
+                        priorityBump: values.rPriorityBump
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Request configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save request configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Requests`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-requests.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-songsliked").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "lLimit": {
+                    "title": "Track Like Frequency",
+                    "description": "When a listener likes a track, the same track cannot be liked by the same listener again for at least the specified number of days. If 0, listeners cannot ever like the track again.",
+                    "type": "number"
+                },
+                "lPriorityBump": {
+                    "title": "Priority Bump",
+                    "description": "When a track is liked, by how much should the track's priority be bumped (or lowered, if a negative number) in RadioDJ?",
+                    "type": "number"
+                },
+            },
+            "value": {
+                "lLimit": Config.songsliked.limit,
+                "lPriorityBump": Config.songsliked.priorityBump,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/songsliked/set', data: {
+                        limit: values.lLimit,
+                        priorityBump: values.lPriorityBump
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Track liking configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save track liking configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Track Liking`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-songsliked.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-status-music").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "sWarn": {
+                    "title": "Warn / Minor Issue Threshold",
+                    "description": "When the number of bad music tracks in RadioDJ exceeds the specified number, status 3 (minor) will be triggered for the music library.",
+                    "type": "number"
+                },
+                "sError": {
+                    "title": "Error / significant issue threshold",
+                    "description": "When the number of bad music tracks in RadioDJ exceeds the specified number, status 2 (significant) will be triggered for the music library.",
+                    "type": "number"
+                },
+                "sCritical": {
+                    "title": "Critical / severe issue threshold",
+                    "description": "When the number of bad music tracks in RadioDJ exceeds the specified number, status 1 (critical) will be triggered for the music library.",
+                    "type": "number"
+                },
+            },
+            "value": {
+                "sWarn": Config.status.musicLibrary.verify.warn,
+                "sError": Config.status.musicLibrary.verify.error,
+                "sCritical": Config.status.musicLibrary.verify.critical,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/status/music/set-verify', data: {
+                        warn: values.sWarn,
+                        error: values.sError,
+                        critical: values.sCritical
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Music library status configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save music library status configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Status: Music Library`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-status-music.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-status-load1").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "sWarn": {
+                    "title": "Warn / Minor Issue Threshold",
+                    "description": "When the 1-minute CPU load exceeds this value, status 3 (minor) will be triggered for the server. Generally, this number should be the number of CPU cores * 4.",
+                    "type": "number"
+                },
+                "sError": {
+                    "title": "Error / significant issue threshold",
+                    "description": "When the 1-minute CPU load exceeds this value, status 2 (significant) will be triggered for the server. Generally, this number should be the number of CPU cores * 8.",
+                    "type": "number"
+                },
+                "sCritical": {
+                    "title": "Critical / severe issue threshold",
+                    "description": "When the 1-minute CPU load exceeds this value, status 1 (critical) will be triggered for the server. Generally, this number should be the number of CPU cores * 16.",
+                    "type": "number"
+                },
+            },
+            "value": {
+                "sWarn": Config.status.server.load1.warn,
+                "sError": Config.status.server.load1.error,
+                "sCritical": Config.status.server.load1.critical,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/status/server/set-load1', data: {
+                        warn: values.sWarn,
+                        error: values.sError,
+                        critical: values.sCritical
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Server 1-minute CPU load status configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save Server 1-minute CPU load status configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Status: 1-minute CPU Load`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-status-load1.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-status-load5").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "sWarn": {
+                    "title": "Warn / Minor Issue Threshold",
+                    "description": "When the 5-minute CPU load exceeds this value, status 3 (minor) will be triggered for the server. Generally, this number should be the number of CPU cores * 3.",
+                    "type": "number"
+                },
+                "sError": {
+                    "title": "Error / significant issue threshold",
+                    "description": "When the 5-minute CPU load exceeds this value, status 2 (significant) will be triggered for the server. Generally, this number should be the number of CPU cores * 6.",
+                    "type": "number"
+                },
+                "sCritical": {
+                    "title": "Critical / severe issue threshold",
+                    "description": "When the 5-minute CPU load exceeds this value, status 1 (critical) will be triggered for the server. Generally, this number should be the number of CPU cores * 12.",
+                    "type": "number"
+                },
+            },
+            "value": {
+                "sWarn": Config.status.server.load5.warn,
+                "sError": Config.status.server.load5.error,
+                "sCritical": Config.status.server.load5.critical,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/status/server/set-load5', data: {
+                        warn: values.sWarn,
+                        error: values.sError,
+                        critical: values.sCritical
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Server 5-minute CPU load status configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save Server 5-minute CPU load status configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Status: 5-minute CPU Load`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-status-load5.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-status-load15").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "sWarn": {
+                    "title": "Warn / Minor Issue Threshold",
+                    "description": "When the 15-minute CPU load exceeds this value, status 3 (minor) will be triggered for the server. Generally, this number should be the number of CPU cores * 2.",
+                    "type": "number"
+                },
+                "sError": {
+                    "title": "Error / significant issue threshold",
+                    "description": "When the 15-minute CPU load exceeds this value, status 2 (significant) will be triggered for the server. Generally, this number should be the number of CPU cores * 4.",
+                    "type": "number"
+                },
+                "sCritical": {
+                    "title": "Critical / severe issue threshold",
+                    "description": "When the 15-minute CPU load exceeds this value, status 1 (critical) will be triggered for the server. Generally, this number should be the number of CPU cores * 8.",
+                    "type": "number"
+                },
+            },
+            "value": {
+                "sWarn": Config.status.server.load15.warn,
+                "sError": Config.status.server.load15.error,
+                "sCritical": Config.status.server.load15.critical,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/status/server/set-load15', data: {
+                        warn: values.sWarn,
+                        error: values.sError,
+                        critical: values.sCritical
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Server 15-minute CPU load status configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save Server 15-minute CPU load status configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Status: 15-minute CPU Load`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-status-load15.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-status-memory").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "sWarn": {
+                    "title": "Warn / Minor Issue Threshold",
+                    "description": "When free memory drops below this value in bytes, status 3 (minor) will be triggered for the server. Recommendation is 20% of memory capacity.",
+                    "type": "number"
+                },
+                "sError": {
+                    "title": "Error / significant issue threshold",
+                    "description": "When free memory drops below this value in bytes, status 2 (significant) will be triggered for the server. Recommendation is 10% of memory capacity.",
+                    "type": "number"
+                },
+                "sCritical": {
+                    "title": "Critical / severe issue threshold",
+                    "description": "When free memory drops below this value in bytes, status 1 (critical) will be triggered for the server. Recommendation is 5% of installed memory.",
+                    "type": "number"
+                },
+            },
+            "value": {
+                "sWarn": Config.status.server.memory.warn,
+                "sError": Config.status.server.memory.error,
+                "sCritical": Config.status.server.memory.critical,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/status/server/set-memory', data: {
+                        warn: values.sWarn,
+                        error: values.sError,
+                        critical: values.sCritical
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Memory status configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to update Memory status configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Status: Memory`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-status-memory.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-xp").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "xListenerMinutes": {
+                    "title": "Live Listener Minutes = 1 XP",
+                    "description": "For live and remove shows, DJs earn 1 XP for every specified listener minute during their show. Decimals are permitted. Minimum allowed value is 0.01. Changing this will NOT change previous XP earned.",
+                    "type": "number"
+                },
+                "xPrerecordListenerMinutes": {
+                    "title": "Prerecord Listener Minutes = 1 XP",
+                    "description": "For prerecorded shows, DJs earn 1 XP for every specified listener minute during the airing of the prerecord. Decimals are permitted. Minimum allowed value is 0.01. Changing this will NOT change previous XP earned.",
+                    "type": "number"
+                },
+                "xShowMinutes": {
+                    "title": "On-Air Minutes = 1 XP",
+                    "description": "For live shows and remotes, Earn 1 XP for every specified minutes a DJ was on the air. Can be a decimal. Minimum allowed value is 0.01. Changing this will NOT change previous XP earned.",
+                    "type": "number"
+                },
+                "xPrerecordShowMinutes": {
+                    "title": "Prerecord Minutes = 1 XP",
+                    "description": "For prerecorded shows, Earn 1 XP for every specified minutes a prerecord was on the air. Can be a decimal. Minimum allowed value is 0.01. Changing this will NOT change previous XP earned.",
+                    "type": "number"
+                },
+                "xID": {
+                    "title": "XP for On-Time Top-Of-The-Hour ID Breaks",
+                    "description": "For live shows and remotes, earn the specified number in XP for every on-time top of the hour break taken. Changing this will NOT change previous XP earned.",
+                    "type": "number"
+                },
+                "xPrerecordBreak": {
+                    "title": "XP for Prerecord Breaks",
+                    "description": "For prerecords, earn the specified number in XP for every time the prerecord was divided into a separate track, thereby allowing the system to air a break. Changing this will NOT change previous XP earned.",
+                    "type": "number"
+                },
+                "xTopAdd": {
+                    "title": "XP for Top Adds",
+                    "description": "For live shows and remotes, earn the specified number in XP for every time the DJ played a Top Add via the Play Top Add button. Changing this will NOT change previous XP earned.",
+                    "type": "number"
+                },
+                "xWeb": {
+                    "title": "XP for Messages Sent to Website / Mobile Listeners",
+                    "description": "For live shows and remotes, earn the specified number in XP every time the DJ sent a message out to a website/mobile visitor (or publicly to all visitors). Changing this will NOT change previous XP earned.",
+                    "type": "number"
+                },
+                "xRemoteCredit": {
+                    "title": "XP for every Remote Credit Earned",
+                    "description": "A DJ should have the specified number of XP added to their profile for every remote credit they earned. Changing this WILL change previous XP earned for remote credits.",
+                    "type": "number"
+                },
+            },
+            "value": {
+                "xListenerMinutes": Config.XP.listenerMinutes,
+                "xPrerecordListenerMinutes": Config.XP.prerecordListenerMinutes,
+                "xShowMinutes": Config.XP.showMinutes,
+                "xPrerecordShowMinutes": Config.XP.prerecordShowMinutes,
+                "xID": Config.XP.ID,
+                "xPrerecordBreak": Config.XP.prerecordBreak,
+                "xTopAdd": Config.XP.topAdd,
+                "xWeb": Config.XP.web,
+                "xRemoteCredit": Config.XP.remoteCredit,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/xp/set', data: {
+                        listenerMinutes: values.xListenerMinutes,
+                        prerecordListenerMinutes: values.xPrerecordListenerMinutes,
+                        showMinutes: values.xShowMinutes,
+                        prerecordShowMinutes: values.xPrerecordShowMinutes,
+                        ID: values.xID,
+                        prerecordBreak: values.xPrerecordBreak,
+                        topAdd: values.xTopAdd,
+                        web: values.xWeb,
+                        remoteCredit: values.xRemoteCredit
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `XP configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to update XP configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - XP`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-xp.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-breaks-clock").onclick = function () {
+    try {
+        var temp = document.querySelector(`#options-modal-config-list-label`);
+        if (temp !== null)
+            temp.innerHTML = `Clockwheel Breaks (items are minutes of each hour)`;
+        var temp2 = document.querySelector(`#options-modal-config-list-items`);
+        if (temp2 !== null)
+        {
+            temp2.innerHTML = ``;
+            for (var item in Config.breaks)
+            {
+                if (Config.breaks.hasOwnProperty(item))
+                {
+                    temp2.innerHTML += `<div class="row m-1 bg-light-1 shadow-2" title="This break executes at the ${item} minute every hour.">
+                            <div class="col-10 text-primary">
+                                ${item}
+                            </div>
+                            <div class="col-2 text-secondary">
+                <button type="button" id="config-breaks-edit-${item}" class="close" aria-label="Edit :${item} break." title="Edit this break">
+                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+                </button>
+                ${item !== 0 ? `<button type="button" id="config-breaks-remove-${item}" class="close" aria-label="Remove :${item} break" title="Remove this break">
+                <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
+                </button>` : ``}
+                            </div>
+                        </div>`;
+                }
+            }
+
+            listNew = function () {
+                var categories = [""];
+                for (var key in Config.categories)
+                {
+                    if (key !== `_doNotRemove` && Config.categories.hasOwnProperty(key))
+                        categories.push(key);
+                }
+                $('#options-modal-config-form-form').html(``);
+                $('#options-modal-config-form-extra').html(``);
+                $('#options-modal-config-form-form').jsonForm({
+                    "schema": {
+                        "minute": {
+                            "type": "integer",
+                            "title": "Minute of the Hour",
+                            "required": true,
+                            "minimum": 1,
+                            "maximum": 59,
+                            "description": `Specify the minute of every hour that this break should execute during automation. CAUTION! If you specify an existing minute, it will be overwritten!`
+                        },
+                        "tasks": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "title": "task",
+                                "properties": {
+                                    "task": {
+                                        "type": "string",
+                                        "title": "Break Task",
+                                        "required": true,
+                                        "enum": ["", "log", "queueRequests", "queue", "queueDuplicates"],
+                                        "description": `Choose the task. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                    },
+                                    "event": {
+                                        "type": "string",
+                                        "title": "Event (log tasks only)",
+                                        "description": `For log tasks, type what should be logged here.`
+                                    },
+                                    "category": {
+                                        "type": "string",
+                                        "title": "Category (queue tasks only)",
+                                        "enum": categories,
+                                        "description": "For queue tasks, choose the category which tracks should be queued from. These are categories that were configured from the categories server configuration."
+                                    },
+                                    "quantity": {
+                                        "type": "integer",
+                                        "title": "Number of Tracks to Queue (queueRequests and queue tasks only)",
+                                        "description": "Number of tracks that should be queued, if queuing tracks."
+                                    },
+                                    "rules": {
+                                        "type": "boolean",
+                                        "title": "Rotation Rules (queue tasks only)",
+                                        "description": "For queue tasks, should the system consider configured RadioDJ playlist rotation rules when deciding which tracks to queue?"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "onSubmitValid": function (values) {
+                        console.dir(values);
+                        directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-clock', data: {
+                                minute: values.minute,
+                                tasks: values.tasks
+                            }}, function (response) {
+                            console.dir(response);
+                            if (response === 'OK')
+                            {
+                                $("#options-modal-config-form").iziModal('close');
+                                iziToast.show({
+                                    title: `${item} break configuration added!`,
+                                    message: ``,
+                                    timeout: 10000,
+                                    close: true,
+                                    color: 'green',
+                                    drag: false,
+                                    position: 'center',
+                                    closeOnClick: true,
+                                    overlay: false,
+                                    zindex: 1000
+                                });
+                            } else {
+                                console.dir(response);
+                                iziToast.show({
+                                    title: `Failed to add ${item} break configuration`,
+                                    message: response,
+                                    timeout: 10000,
+                                    close: true,
+                                    color: 'red',
+                                    drag: false,
+                                    position: 'center',
+                                    closeOnClick: true,
+                                    overlay: false,
+                                    zindex: 1000
+                                });
+                            }
+                        });
+                    }
+                });
+                $("#options-modal-config-form-label").html(`Server Configuration - ${item} break`);
+                $("#options-modal-config-form").iziModal('open');
+            };
+
+            $(`#options-modal-config-list`).iziModal(`open`);
+        }
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-breaks-clock.'
+        });
+    }
+};
+
+document.querySelector("#options-modal-config-list-items").onclick = function (e) {
+    try {
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith(`config-breaks-edit-`))
+            {
+                var item = e.target.id.replace(`config-breaks-edit-`, ``);
+                if (typeof Config.breaks[item] !== `undefined`)
+                {
+                    var categories = [""];
+                    var values = [];
+                    for (var key in Config.categories)
+                    {
+                        if (key !== `_doNotRemove` && Config.categories.hasOwnProperty(key))
+                            categories.push(key);
+                    }
+                    Config.breaks[item].map((task) => {
+                        values.push({
+                            task: task.task || ``,
+                            event: task.event || ``,
+                            category: task.category || ``,
+                            quantity: task.quantity || 0,
+                            rules: task.rules
+                        });
+                    });
+                    $('#options-modal-config-form-form').html(``);
+                    $('#options-modal-config-form-extra').html(``);
+                    $('#options-modal-config-form-form').jsonForm({
+                        "schema": {
+                            "tasks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "title": "task",
+                                    "properties": {
+                                        "task": {
+                                            "type": "string",
+                                            "title": "Break Task",
+                                            "required": true,
+                                            "enum": ["", "log", "queueRequests", "queue", "queueDuplicates"],
+                                            "description": `Choose the task. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                        },
+                                        "event": {
+                                            "type": "string",
+                                            "title": "Event (log tasks only)",
+                                            "description": `For log tasks, type what should be logged here.`
+                                        },
+                                        "category": {
+                                            "type": "string",
+                                            "title": "Category (queue tasks only)",
+                                            "enum": categories,
+                                            "description": "For queue tasks, choose the category which tracks should be queued from. These are categories that were configured from the categories server configuration."
+                                        },
+                                        "quantity": {
+                                            "type": "integer",
+                                            "title": "Number of Tracks to Queue (queueRequests and queue tasks only)",
+                                            "description": "Number of tracks that should be queued, if queuing tracks."
+                                        },
+                                        "rules": {
+                                            "type": "boolean",
+                                            "title": "Rotation Rules (queue tasks only)",
+                                            "description": "For queue tasks, should the system consider configured RadioDJ playlist rotation rules when deciding which tracks to queue?"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "value": {
+                            "tasks": values,
+                        },
+                        "onSubmitValid": function (values) {
+                            console.dir(values);
+                            directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-clock', data: {
+                                    minute: parseInt(item),
+                                    tasks: values.tasks
+                                }}, function (response) {
+                                console.dir(response);
+                                if (response === 'OK')
+                                {
+                                    $("#options-modal-config-form").iziModal('close');
+                                    iziToast.show({
+                                        title: `${item} break configuration updated!`,
+                                        message: ``,
+                                        timeout: 10000,
+                                        close: true,
+                                        color: 'green',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                } else {
+                                    console.dir(response);
+                                    iziToast.show({
+                                        title: `Failed to update ${item} break configuration`,
+                                        message: response,
+                                        timeout: 10000,
+                                        close: true,
+                                        color: 'red',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                }
+                            });
+                        }
+                    });
+                    $("#options-modal-config-form-label").html(`Server Configuration - ${item} break`);
+                    $("#options-modal-config-form").iziModal('open');
+                }
+            }
+            if (e.target.id.startsWith(`config-breaks-remove-`))
+            {
+                var item = e.target.id.replace(`config-breaks-remove-`, ``);
+                if (typeof Config.breaks[item] !== `undefined`)
+                {
+                    iziToast.show({
+                        timeout: 60000,
+                        overlay: true,
+                        displayMode: 'once',
+                        color: 'yellow',
+                        id: 'inputs',
+                        zindex: 999,
+                        layout: 2,
+                        image: `assets/images/trash.png`,
+                        maxWidth: 480,
+                        title: 'Remove Break',
+                        message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove break :' + item + '?',
+                        position: 'center',
+                        drag: false,
+                        closeOnClick: false,
+                        buttons: [
+                            ['<button><b>Remove</b></button>', function (instance, toast) {
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                    directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-clock', data: {minute: parseInt(item), tasks: []}}, function (response) {
+                                        if (response === 'OK')
+                                        {
+                                            $(`#options-modal-config-list`).iziModal(`close`);
+                                            iziToast.show({
+                                                title: `Break Removed!`,
+                                                message: `Break was removed!`,
+                                                timeout: 15000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to remove break!`,
+                                                message: `There was an error trying to remove the break.`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }],
+                            ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                }],
+                        ]
+                    });
+                }
+            }
+        }
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-modal-config-list-items.'
         });
     }
 };
@@ -7126,7 +8117,7 @@ function checkCalendar() {
                                             </div>
                                             <div class="col-8">
                                                 ${event.title}
-                                                ${event.active < 1 ? `<br /><strong>CANCELLED</strong>` : ``}
+                                                ${event.active < 1 ? `<br /><strong>CANCELED</strong>` : ``}
                                             </div>
                                         </div>
                                     </div></div>`;
@@ -7334,7 +8325,7 @@ function checkCalendar() {
                                             </div>
                                             <div class="col-8">
                                                 ${event.title}
-                                                ${event.active < 1 ? `<strong>CANCELLED</strong>` : ``}
+                                                ${event.active < 1 ? `<strong>CANCELED</strong>` : ``}
                                             </div>
                                         </div>
                                     </div></div>`;
@@ -11168,7 +12159,7 @@ function loadTimesheets(date)
                                 sOutT = moment(scheduledout).format(`h:mm A`);
                                 sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
                             }
-                            timeline += `<div title="Scheduled Hours (CANCELLED): ${sInT} - ${sOutT}" class="" style="background-color: #787878; position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
+                            timeline += `<div title="Scheduled Hours (CANCELED): ${sInT} - ${sOutT}" class="" style="background-color: #787878; position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
                         }
                     } else {
                         if (clockin !== null && clockout !== null && scheduledin !== null && scheduledout !== null)

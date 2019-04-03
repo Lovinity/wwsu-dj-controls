@@ -1866,7 +1866,14 @@
                             <button type="button" id="btn-options-config-basic" class="btn btn-secondary btn-float" title="Manage basic server configuration"><i class="fas fa-cog"></i></button>
                             <div style="text-align: center; font-size: 1em;">Basic Configuration</div>
                         </div>
-
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-config-breaks-clock" class="btn btn-warning btn-float" title="Manage configuration of breaks that queue hourly at specific minutes during automation."><i class="fas fa-coffee"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Breaks - Hourly</div>
+                        </div>
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-config-breaks-automation" class="btn btn-warning btn-float" title="Manage configuration of breaks during automation-break (when a DJ clicks Switch Show)."><i class="fas fa-coffee"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Breaks - Automation-break</div>
+                        </div>
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                             <button type="button" id="btn-options-config-display" class="btn btn-secondary btn-float" title="Manage configuration of display signs"><i class="fas fa-tv"></i></button>
                             <div style="text-align: center; font-size: 1em;">Display Signs</div>
@@ -1876,15 +1883,15 @@
                             <div style="text-align: center; font-size: 1em;">Google Calendar</div>
                         </div>
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                            <button type="button" id="btn-options-config-meta" class="btn btn-secondary btn-float" title="Manage basic configuration of what is displayed for now playing info."><i class="fas fa-list"></i></button>
+                            <button type="button" id="btn-options-config-meta" class="btn btn-info btn-float" title="Manage basic configuration of what is displayed for now playing info."><i class="fas fa-list"></i></button>
                             <div style="text-align: center; font-size: 1em;">Metadata - Basic</div>
                         </div>
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                            <button type="button" id="btn-options-config-meta-alt" class="btn btn-secondary btn-float" title="Manage configuration of what is displayed for now playing info when commercials are playing."><i class="fas fa-list"></i></button>
+                            <button type="button" id="btn-options-config-meta-alt" class="btn btn-info btn-float" title="Manage configuration of what is displayed for now playing info when commercials are playing."><i class="fas fa-list"></i></button>
                             <div style="text-align: center; font-size: 1em;">Metadata - Alternate</div>
                         </div>
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
-                            <button type="button" id="btn-options-config-meta-prefix" class="btn btn-secondary btn-float" title="Manage configuration of what is prefixed in now playing metadata information."><i class="fas fa-list"></i></button>
+                            <button type="button" id="btn-options-config-meta-prefix" class="btn btn-info btn-float" title="Manage configuration of what is prefixed in now playing metadata information."><i class="fas fa-list"></i></button>
                             <div style="text-align: center; font-size: 1em;">Metadata - Prefixes</div>
                         </div>
 
@@ -1896,6 +1903,46 @@
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                             <button type="button" id="btn-options-config-queue" class="btn btn-secondary btn-float" title="Manage configuration for when tracks are skipped when starting broadcasts."><i class="fas fa-forward"></i></button>
                             <div style="text-align: center; font-size: 1em;">Queue Correction</div>
+                        </div>
+
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-config-requests" class="btn btn-secondary btn-float" title="Manage configuration of the request system."><i class="fas fa-list-ol"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Requests</div>
+                        </div>
+
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-config-songsliked" class="btn btn-secondary btn-float" title="Manage configuration of the track liking system."><i class="fas fa-check"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Song Liking</div>
+                        </div>
+
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-config-status-music" class="btn btn-danger btn-float" title="Manage configuration of status system for the music library."><i class="fas fa-music"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Status - Music Library</div>
+                        </div>
+
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-config-status-load1" class="btn btn-danger btn-float" title="Manage configuration of status system for 1-minute CPU load."><i class="fas fa-server"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Status - 1-minute CPU load</div>
+                        </div>
+
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-config-status-load5" class="btn btn-danger btn-float" title="Manage configuration of status system for 5-minute CPU load."><i class="fas fa-server"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Status - 5-minute CPU load</div>
+                        </div>
+
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-config-status-load15" class="btn btn-danger btn-float" title="Manage configuration of status system for 15-minute CPU load."><i class="fas fa-server"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Status - 15-minute CPU load</div>
+                        </div>
+
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-config-status-memory" class="btn btn-danger btn-float" title="Manage configuration of status system for memory use."><i class="fas fa-server"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Status - Memory</div>
+                        </div>
+
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-config-xp" class="btn btn-secondary btn-float" title="Manage configuration of XP (experience) earned by DJs."><i class="fas fa-star"></i></button>
+                            <div style="text-align: center; font-size: 1em;">XP</div>
                         </div>
                     </div>
                 </div>
@@ -1915,6 +1962,32 @@
                     <form id="options-modal-config-form-form"></form>
                 </div>
                 <div class="modal-footer bg-light-1">
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="options-modal-config-list" tabindex="-1" role="dialog">
+            <div class="modal-content text-dark bg-light-1">
+                <div class="modal-body">
+                    <header class="navbar navbar-full bg-secondary doc-navbar-default">
+                        <span class="navbar-brand mr-auto text-white" id="options-modal-config-list-label"></span>
+                        <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close this window"></a></div>
+                    </header>
+                    <div class="container m-1">
+                        <div class="row m-1 bg-light-1 shadow-2">
+                            <div class="col-10 text-primary">
+                                Item
+                            </div>
+                            <div class="col-2 text-secondary">
+                                Actions
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container m-1" id="options-modal-config-list-items" style="height: 360px; overflow: scroll;">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light-1">
+                    <button type="button" class="btn btn-success btn-lg" id="options-modal-config-list-add" title="Add new item.">New</button>
                 </div>
             </div>
         </div>
