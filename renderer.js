@@ -3667,7 +3667,7 @@ document.querySelector("#btn-options-config-breaks-clock").onclick = function ()
                 <button type="button" id="config-breaks-edit-${item}" class="close" aria-label="Edit :${item} break." title="Edit this break">
                 <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
                 </button>
-                ${item !== 0 ? `<button type="button" id="config-breaks-remove-${item}" class="close" aria-label="Remove :${item} break" title="Remove this break">
+                ${item !== `0` ? `<button type="button" id="config-breaks-remove-${item}" class="close" aria-label="Remove :${item} break" title="Remove this break">
                 <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
                 </button>` : ``}
                             </div>
@@ -3787,6 +3787,364 @@ document.querySelector("#btn-options-config-breaks-clock").onclick = function ()
     }
 };
 
+document.querySelector("#btn-options-config-breaks-live").onclick = function () {
+    try {
+        var temp = document.querySelector(`#options-modal-config-list-label`);
+        if (temp !== null)
+            temp.innerHTML = `Live Show Breaks`;
+        var temp2 = document.querySelector(`#options-modal-config-list-items`);
+        if (temp2 !== null)
+        {
+            temp2.innerHTML = ``;
+            for (var item in Config.specialBreaks.live)
+            {
+                if (Config.specialBreaks.live.hasOwnProperty(item))
+                {
+                    var description = `Unknown`;
+                    switch (item)
+                    {
+                        case "start":
+                            description = `Start (Queued when a show starts)`;
+                            break;
+                        case "before":
+                            description = `Before (Queued at the start of every break)`;
+                            break;
+                        case "during":
+                            description = `During (Queued whenever the queue empties during a break)`;
+                            break;
+                        case "after":
+                            description = `After (Queued when the DJ/producer ends the break)`;
+                            break;
+                        case "end":
+                            description = `End (Queued when the show ends)`;
+                            break;
+                    }
+                    temp2.innerHTML += `<div class="row m-1 bg-light-1 shadow-2">
+                            <div class="col-10 text-primary">
+                                ${description}
+                            </div>
+                            <div class="col-2 text-secondary">
+                <button type="button" id="config-breaks-live-edit-${item}" class="close" aria-label="Edit ${item}." title="Edit this break">
+                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+                </button>
+                            </div>
+                        </div>`;
+                }
+            }
+            
+            listNew = function() {};
+
+            $(`#options-modal-config-list`).iziModal(`open`);
+        }
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-breaks-live.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-breaks-remote").onclick = function () {
+    try {
+        var temp = document.querySelector(`#options-modal-config-list-label`);
+        if (temp !== null)
+            temp.innerHTML = `Remote Broadcast Breaks`;
+        var temp2 = document.querySelector(`#options-modal-config-list-items`);
+        if (temp2 !== null)
+        {
+            temp2.innerHTML = ``;
+            for (var item in Config.specialBreaks.remote)
+            {
+                if (Config.specialBreaks.remote.hasOwnProperty(item))
+                {
+                    var description = `Unknown`;
+                    switch (item)
+                    {
+                        case "start":
+                            description = `Start (Queued when a broadcast starts)`;
+                            break;
+                        case "before":
+                            description = `Before (Queued at the start of every break)`;
+                            break;
+                        case "during":
+                            description = `During (Queued whenever the queue empties during a break)`;
+                            break;
+                        case "after":
+                            description = `After (Queued when the DJ/producer ends the break)`;
+                            break;
+                        case "end":
+                            description = `End (Queued when the broadcast ends)`;
+                            break;
+                    }
+                    temp2.innerHTML += `<div class="row m-1 bg-light-1 shadow-2">
+                            <div class="col-10 text-primary">
+                                ${description}
+                            </div>
+                            <div class="col-2 text-secondary">
+                <button type="button" id="config-breaks-remote-edit-${item}" class="close" aria-label="Edit ${item}." title="Edit this break">
+                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+                </button>
+                            </div>
+                        </div>`;
+                }
+            }
+            
+            listNew = function() {};
+
+            $(`#options-modal-config-list`).iziModal(`open`);
+        }
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-breaks-remote.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-breaks-sports").onclick = function () {
+    try {
+        var temp = document.querySelector(`#options-modal-config-list-label`);
+        if (temp !== null)
+            temp.innerHTML = `Sports Breaks`;
+        var temp2 = document.querySelector(`#options-modal-config-list-items`);
+        if (temp2 !== null)
+        {
+            temp2.innerHTML = ``;
+            for (var item in Config.specialBreaks.sports)
+            {
+                if (Config.specialBreaks.sports.hasOwnProperty(item))
+                {
+                    var description = `Unknown`;
+                    switch (item)
+                    {
+                        case "start":
+                            description = `Start (Queued when a broadcast starts)`;
+                            break;
+                        case "before":
+                            description = `Before (Queued at the start of every break)`;
+                            break;
+                        case "during":
+                            description = `During (Queued whenever the queue empties during a regular break)`;
+                            break;
+                        case "duringHalftime":
+                            description = `Halftime (Queued whenever the queue empties during an extended break)`;
+                            break;
+                        case "after":
+                            description = `After (Queued when the DJ/producer ends the break)`;
+                            break;
+                        case "end":
+                            description = `End (Queued when the broadcast ends)`;
+                            break;
+                    }
+                    temp2.innerHTML += `<div class="row m-1 bg-light-1 shadow-2">
+                            <div class="col-10 text-primary">
+                                ${description}
+                            </div>
+                            <div class="col-2 text-secondary">
+                <button type="button" id="config-breaks-sports-edit-${item}" class="close" aria-label="Edit ${item}." title="Edit this break">
+                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+                </button>
+                            </div>
+                        </div>`;
+                }
+            }
+            
+            listNew = function() {};
+
+            $(`#options-modal-config-list`).iziModal(`open`);
+        }
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-breaks-sports.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-breaks-automation").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        var categories = [""];
+        for (var key in Config.categories)
+        {
+            if (key !== `_doNotRemove` && Config.categories.hasOwnProperty(key))
+                categories.push(key);
+        }
+        var tasks = [];
+        Config.specialBreaks.automation.during.map((task) => {
+            tasks.push({
+                task: task.task || "",
+                event: task.event || "",
+                category: task.category || "",
+                quantity: task.quantity || 0,
+                rules: task.rules
+            });
+        });
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "title": "task",
+                        "properties": {
+                            "task": {
+                                "type": "string",
+                                "title": "Break Task",
+                                "required": true,
+                                "enum": ["", "log", "queueRequests", "queue", "queueDuplicates"],
+                                "description": `Choose the task. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                            },
+                            "event": {
+                                "type": "string",
+                                "title": "Event (log tasks only)",
+                                "description": `For log tasks, type what should be logged here.`
+                            },
+                            "category": {
+                                "type": "string",
+                                "title": "Category (queue tasks only)",
+                                "enum": categories,
+                                "description": "For queue tasks, choose the category which tracks should be queued from. These are categories that were configured from the categories server configuration."
+                            },
+                            "quantity": {
+                                "type": "integer",
+                                "title": "Number of Tracks to Queue (queueRequests and queue tasks only)",
+                                "description": "Number of tracks that should be queued, if queuing tracks."
+                            },
+                            "rules": {
+                                "type": "boolean",
+                                "title": "Rotation Rules (queue tasks only)",
+                                "description": "For queue tasks, should the system consider configured RadioDJ playlist rotation rules when deciding which tracks to queue?"
+                            }
+                        }
+                    }
+                }
+            },
+            "value": {
+                "tasks": tasks
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-automation', data: {
+                        during: values.tasks
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Switch show break configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to update switch show break configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Breaks: Switch Show`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-breaks-automation.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-breaks").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "bBreakCheck": {
+                    "title": "Minimum Hourly Break Interval (Minutes)",
+                    "description": `For hourly/clockwheel breaks, when considering when to queue breaks, if a break was queued less than this many minutes ago, hold off on queuing any other breaks until this many minutes have passed since. You MUST NOT have any intervals between breaks that are less than this. For example, if this is 10, and you have a break at 25 and another at 30 (5 minute difference), this will cause problems. The "0" break ignores this setting since it is required by the FCC. It has its own hard-coded check of 10 minutes that cannot be configured.`,
+                    "type": "number"
+                },
+                "bLinerTime": {
+                    "title": "Liner Interval (Minutes)",
+                    "description": `A track from the defined "liners" categories will be queued during automation between music tracks during non-breaks. Do not play a liner more often than once every defined number of minutes. NOTE: This clock is reset when a break is played so as to avoid playing a liner too close to a break.`,
+                    "type": "number"
+                },
+            },
+            "value": {
+                "bBreakCheck": Config.breakCheck,
+                "bLinerTime": Config.linerTime,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/status/breaks/set', data: {
+                        breakCheck: values.bBreakCheck,
+                        linerTime: values.bLinerTime
+                    }}, function (response) {
+                    if (response === 'OK')
+                    {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Basic break configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to update basic break configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Breaks: Basic`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-breaks.'
+        });
+    }
+};
+
 document.querySelector("#options-modal-config-list-items").onclick = function (e) {
     try {
         if (e.target) {
@@ -3898,6 +4256,333 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                         }
                     });
                     $("#options-modal-config-form-label").html(`Server Configuration - ${item} break`);
+                    $("#options-modal-config-form").iziModal('open');
+                }
+            }
+            if (e.target.id.startsWith(`config-breaks-live-edit-`))
+            {
+                var item = e.target.id.replace(`config-breaks-live-edit-`, ``);
+                if (typeof Config.specialBreaks.live[item] !== `undefined`)
+                {
+                    var categories = [""];
+                    var values = [];
+                    for (var key in Config.categories)
+                    {
+                        if (key !== `_doNotRemove` && Config.categories.hasOwnProperty(key))
+                            categories.push(key);
+                    }
+                    Config.specialBreaks.live[item].map((task) => {
+                        values.push({
+                            task: task.task || ``,
+                            event: task.event || ``,
+                            category: task.category || ``,
+                            quantity: task.quantity || 0,
+                            rules: task.rules
+                        });
+                    });
+                    $('#options-modal-config-form-form').html(``);
+                    $('#options-modal-config-form-extra').html(`<strong>DO NOT include legal IDs, nor show openers/returns/closers; these are queued automatically.</strong>`);
+                    $('#options-modal-config-form-form').jsonForm({
+                        "schema": {
+                            "tasks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "title": "task",
+                                    "properties": {
+                                        "task": {
+                                            "type": "string",
+                                            "title": "Break Task",
+                                            "required": true,
+                                            "enum": ["", "log", "queueRequests", "queue", "queueDuplicates"],
+                                            "description": `Choose the task. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                        },
+                                        "event": {
+                                            "type": "string",
+                                            "title": "Event (log tasks only)",
+                                            "description": `For log tasks, type what should be logged here.`
+                                        },
+                                        "category": {
+                                            "type": "string",
+                                            "title": "Category (queue tasks only)",
+                                            "enum": categories,
+                                            "description": "For queue tasks, choose the category which tracks should be queued from. These are categories that were configured from the categories server configuration."
+                                        },
+                                        "quantity": {
+                                            "type": "integer",
+                                            "title": "Number of Tracks to Queue (queueRequests and queue tasks only)",
+                                            "description": "Number of tracks that should be queued, if queuing tracks."
+                                        },
+                                        "rules": {
+                                            "type": "boolean",
+                                            "title": "Rotation Rules (queue tasks only)",
+                                            "description": "For queue tasks, should the system consider configured RadioDJ playlist rotation rules when deciding which tracks to queue?"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "value": {
+                            "tasks": values,
+                        },
+                        "onSubmitValid": function (values) {
+                            console.dir(values);
+                            var data = {};
+                            data[item] = values.tasks || [];
+                            directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-live', data: data}, function (response) {
+                                console.dir(response);
+                                if (response === 'OK')
+                                {
+                                    $("#options-modal-config-form").iziModal('close');
+                                    iziToast.show({
+                                        title: `Live Show ${item} break configuration updated!`,
+                                        message: ``,
+                                        timeout: 10000,
+                                        close: true,
+                                        color: 'green',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                } else {
+                                    console.dir(response);
+                                    iziToast.show({
+                                        title: `Failed to update Live Show ${item} break configuration`,
+                                        message: response,
+                                        timeout: 10000,
+                                        close: true,
+                                        color: 'red',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                }
+                            });
+                        }
+                    });
+                    $("#options-modal-config-form-label").html(`Server Configuration - Live Show ${item} break`);
+                    $("#options-modal-config-form").iziModal('open');
+                }
+            }
+            if (e.target.id.startsWith(`config-breaks-remote-edit-`))
+            {
+                var item = e.target.id.replace(`config-breaks-remote-edit-`, ``);
+                if (typeof Config.specialBreaks.remote[item] !== `undefined`)
+                {
+                    var categories = [""];
+                    var values = [];
+                    for (var key in Config.categories)
+                    {
+                        if (key !== `_doNotRemove` && Config.categories.hasOwnProperty(key))
+                            categories.push(key);
+                    }
+                    Config.specialBreaks.remote[item].map((task) => {
+                        values.push({
+                            task: task.task || ``,
+                            event: task.event || ``,
+                            category: task.category || ``,
+                            quantity: task.quantity || 0,
+                            rules: task.rules
+                        });
+                    });
+                    $('#options-modal-config-form-form').html(``);
+                    $('#options-modal-config-form-extra').html(`<strong>DO NOT include legal IDs, nor show openers/returns/closers; these are queued automatically.</strong>`);
+                    $('#options-modal-config-form-form').jsonForm({
+                        "schema": {
+                            "tasks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "title": "task",
+                                    "properties": {
+                                        "task": {
+                                            "type": "string",
+                                            "title": "Break Task",
+                                            "required": true,
+                                            "enum": ["", "log", "queueRequests", "queue", "queueDuplicates"],
+                                            "description": `Choose the task. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                        },
+                                        "event": {
+                                            "type": "string",
+                                            "title": "Event (log tasks only)",
+                                            "description": `For log tasks, type what should be logged here.`
+                                        },
+                                        "category": {
+                                            "type": "string",
+                                            "title": "Category (queue tasks only)",
+                                            "enum": categories,
+                                            "description": "For queue tasks, choose the category which tracks should be queued from. These are categories that were configured from the categories server configuration."
+                                        },
+                                        "quantity": {
+                                            "type": "integer",
+                                            "title": "Number of Tracks to Queue (queueRequests and queue tasks only)",
+                                            "description": "Number of tracks that should be queued, if queuing tracks."
+                                        },
+                                        "rules": {
+                                            "type": "boolean",
+                                            "title": "Rotation Rules (queue tasks only)",
+                                            "description": "For queue tasks, should the system consider configured RadioDJ playlist rotation rules when deciding which tracks to queue?"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "value": {
+                            "tasks": values,
+                        },
+                        "onSubmitValid": function (values) {
+                            console.dir(values);
+                            var data = {};
+                            data[item] = values.tasks || [];
+                            directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-remote', data: data}, function (response) {
+                                console.dir(response);
+                                if (response === 'OK')
+                                {
+                                    $("#options-modal-config-form").iziModal('close');
+                                    iziToast.show({
+                                        title: `Remote broadcast ${item} break configuration updated!`,
+                                        message: ``,
+                                        timeout: 10000,
+                                        close: true,
+                                        color: 'green',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                } else {
+                                    console.dir(response);
+                                    iziToast.show({
+                                        title: `Failed to update remote broadcast ${item} break configuration`,
+                                        message: response,
+                                        timeout: 10000,
+                                        close: true,
+                                        color: 'red',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                }
+                            });
+                        }
+                    });
+                    $("#options-modal-config-form-label").html(`Server Configuration - Remote Broadcast ${item} break`);
+                    $("#options-modal-config-form").iziModal('open');
+                }
+            }
+            if (e.target.id.startsWith(`config-breaks-sports-edit-`))
+            {
+                var item = e.target.id.replace(`config-breaks-sports-edit-`, ``);
+                if (typeof Config.specialBreaks.sports[item] !== `undefined`)
+                {
+                    var categories = [""];
+                    var values = [];
+                    for (var key in Config.categories)
+                    {
+                        if (key !== `_doNotRemove` && Config.categories.hasOwnProperty(key))
+                            categories.push(key);
+                    }
+                    Config.specialBreaks.sports[item].map((task) => {
+                        values.push({
+                            task: task.task || ``,
+                            event: task.event || ``,
+                            category: task.category || ``,
+                            quantity: task.quantity || 0,
+                            rules: task.rules
+                        });
+                    });
+                    $('#options-modal-config-form-form').html(``);
+                    $('#options-modal-config-form-extra').html(`<strong>DO NOT include legal IDs, nor sports openers/returns/closers; these are queued automatically.</strong>`);
+                    $('#options-modal-config-form-form').jsonForm({
+                        "schema": {
+                            "tasks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "title": "task",
+                                    "properties": {
+                                        "task": {
+                                            "type": "string",
+                                            "title": "Break Task",
+                                            "required": true,
+                                            "enum": ["", "log", "queueRequests", "queue", "queueDuplicates"],
+                                            "description": `Choose the task. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                        },
+                                        "event": {
+                                            "type": "string",
+                                            "title": "Event (log tasks only)",
+                                            "description": `For log tasks, type what should be logged here.`
+                                        },
+                                        "category": {
+                                            "type": "string",
+                                            "title": "Category (queue tasks only)",
+                                            "enum": categories,
+                                            "description": "For queue tasks, choose the category which tracks should be queued from. These are categories that were configured from the categories server configuration."
+                                        },
+                                        "quantity": {
+                                            "type": "integer",
+                                            "title": "Number of Tracks to Queue (queueRequests and queue tasks only)",
+                                            "description": "Number of tracks that should be queued, if queuing tracks."
+                                        },
+                                        "rules": {
+                                            "type": "boolean",
+                                            "title": "Rotation Rules (queue tasks only)",
+                                            "description": "For queue tasks, should the system consider configured RadioDJ playlist rotation rules when deciding which tracks to queue?"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "value": {
+                            "tasks": values,
+                        },
+                        "onSubmitValid": function (values) {
+                            console.dir(values);
+                            var data = {};
+                            data[item] = values.tasks || [];
+                            directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-sports', data: data}, function (response) {
+                                console.dir(response);
+                                if (response === 'OK')
+                                {
+                                    $("#options-modal-config-form").iziModal('close');
+                                    iziToast.show({
+                                        title: `Sports ${item} break configuration updated!`,
+                                        message: ``,
+                                        timeout: 10000,
+                                        close: true,
+                                        color: 'green',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                } else {
+                                    console.dir(response);
+                                    iziToast.show({
+                                        title: `Failed to update sports ${item} break configuration`,
+                                        message: response,
+                                        timeout: 10000,
+                                        close: true,
+                                        color: 'red',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                }
+                            });
+                        }
+                    });
+                    $("#options-modal-config-form-label").html(`Server Configuration - Sports ${item} break`);
                     $("#options-modal-config-form").iziModal('open');
                 }
             }
