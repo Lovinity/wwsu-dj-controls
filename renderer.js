@@ -3742,8 +3742,9 @@ document.querySelector("#btn-options-config-breaks-clock").onclick = function ()
                             if (response === 'OK')
                             {
                                 $("#options-modal-config-form").iziModal('close');
+                                $("#options-modal-config-list-items").iziModal('close');
                                 iziToast.show({
-                                    title: `${item} break configuration added!`,
+                                    title: `${item} break configuration added! Please re-open the break configuration window.`,
                                     message: ``,
                                     timeout: 10000,
                                     close: true,
@@ -3831,8 +3832,8 @@ document.querySelector("#btn-options-config-breaks-live").onclick = function () 
                         </div>`;
                 }
             }
-            
-            listNew = function() {};
+
+            listNew = function () {};
 
             $(`#options-modal-config-list`).iziModal(`open`);
         }
@@ -3889,8 +3890,8 @@ document.querySelector("#btn-options-config-breaks-remote").onclick = function (
                         </div>`;
                 }
             }
-            
-            listNew = function() {};
+
+            listNew = function () {};
 
             $(`#options-modal-config-list`).iziModal(`open`);
         }
@@ -3950,8 +3951,8 @@ document.querySelector("#btn-options-config-breaks-sports").onclick = function (
                         </div>`;
                 }
             }
-            
-            listNew = function() {};
+
+            listNew = function () {};
 
             $(`#options-modal-config-list`).iziModal(`open`);
         }
@@ -4141,6 +4142,151 @@ document.querySelector("#btn-options-config-breaks").onclick = function () {
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred during the click event of #btn-options-config-breaks.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-categories").onclick = function () {
+    try {
+        var temp = document.querySelector(`#options-modal-config-list-label`);
+        if (temp !== null)
+            temp.innerHTML = `Track Categories`;
+        var temp2 = document.querySelector(`#options-modal-config-list-items`);
+        if (temp2 !== null)
+        {
+            temp2.innerHTML = ``;
+            for (var item in Config.categories)
+            {
+                if (Config.categories.hasOwnProperty(item) && item !== `_doNotRemove`)
+                {
+                    temp2.innerHTML += `<div class="row m-1 bg-light-1 shadow-2" title="Category ${item}">
+                            <div class="col-10 text-primary">
+                                ${item}
+                            </div>
+                            <div class="col-2 text-secondary">
+                <button type="button" id="config-categories-edit-${item}" class="close" aria-label="Edit category ${item}." title="Edit this category">
+                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+                </button>
+                ${Config.categories['_doNotRemove'].indexOf(item) === -1 ? `<button type="button" id="config-categories-remove-${item}" class="close" aria-label="Remove category ${item}" title="Remove this category">
+                <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
+                </button>` : ``}
+                            </div>
+                        </div>`;
+                }
+            }
+
+            listNew = function () {
+                hostReq.request({method: 'post', url: nodeURL + '/config/categories/get-available', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        var categories = [];
+                        for (var key in body)
+                        {
+                            if (body.hasOwnProperty(key))
+                            {
+                                categories.push(`${key} >>> [All Subcategories]`);
+                                body[key].map((item) => {
+                                    categories.push(`${key} >>> ${item}`);
+                                });
+                            }
+                        }
+                        $('#options-modal-config-form-form').html(``);
+                        $('#options-modal-config-form-extra').html(``);
+                        $('#options-modal-config-form-form').jsonForm({
+                            "schema": {
+                                "name": {
+                                    "type": "string",
+                                    "title": "Name of category",
+                                    "required": true,
+                                    "description": `Specify an alphanumeric name to use for this category in the system (no spaces / symbols are allowed!). WARNING! If you specify a name that already exists, it will be overwritten!`
+                                },
+                                "categories": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "title": "category",
+                                        "properties": {
+                                            "category": {
+                                                "type": "string",
+                                                "title": "RadioDJ Category >>> Subcategory",
+                                                "required": true,
+                                                "enum": categories,
+                                                "description": `Choose a RadioDJ category >>> subcategory that should apply to this category. You can add multiple.`
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "onSubmitValid": function (values) {
+                                var config = {};
+                                if (values.categories.length > 0)
+                                {
+                                    values.categories.map((cat) => {
+                                        var temp = cat.category.split(` >>> `);
+                                        if (typeof config[temp[0]] === `undefined`)
+                                            config[temp[0]] = [];
+                                        if (temp[1] !== `[All Subcategories]`)
+                                            config[temp[0]].push(temp[1]);
+                                    });
+                                }
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/categories/set', data: {
+                                        name: values.name,
+                                        config: config
+                                    }}, function (response) {
+                                    console.dir(response);
+                                    if (response === 'OK')
+                                    {
+                                        $("#options-modal-config-form").iziModal('close');
+                                        $("#options-modal-config-list-items").iziModal('close');
+                                        iziToast.show({
+                                            title: `${values.name} category added! Please re-open the category configuration window.`,
+                                            message: ``,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to add ${values.name} category.`,
+                                            message: response,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                        $("#options-modal-config-form-label").html(`Server Configuration - New Category`);
+                        $("#options-modal-config-form").iziModal('open');
+                    } catch (e) {
+                        console.error(e);
+                        iziToast.show({
+                            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                            message: 'Error occurred during the click event of #btn-options-config-breaks-categories listNew.'
+                        });
+                    }
+                });
+            };
+
+            $(`#options-modal-config-list`).iziModal(`open`);
+        }
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-breaks-clock.'
         });
     }
 };
@@ -4630,6 +4776,189 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                             iziToast.show({
                                                 title: `Failed to remove break!`,
                                                 message: `There was an error trying to remove the break.`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }],
+                            ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                }],
+                        ]
+                    });
+                }
+            }
+            if (e.target.id.startsWith(`config-categories-edit-`))
+            {
+                var item = e.target.id.replace(`config-categories-edit-`, ``);
+                if (typeof Config.categories[item] !== `undefined`)
+                {
+                    hostReq.request({method: 'post', url: nodeURL + '/config/categories/get-available', data: {}}, function serverResponded(body, JWR) {
+                        try {
+                            var categories = [];
+                            for (var key in body)
+                            {
+                                if (body.hasOwnProperty(key))
+                                {
+                                    categories.push(`${key} >>> [All Subcategories]`);
+                                    body[key].map((item) => {
+                                        categories.push(`${key} >>> ${item}`);
+                                    });
+                                }
+                            }
+
+                            var values = [];
+                            for (var key in Config.categories[item])
+                            {
+                                if (Config.categories[item].hasOwnProperty(key))
+                                {
+                                    if (Config.categories[item][key].length === 0)
+                                    {
+                                        values.push({category: `${key} >>> [All Subcategories]`});
+                                    } else {
+                                        Config.categories[item][key].map((item2) => {
+                                            values.push({category: `${key} >>> ${item2}`});
+                                        });
+                                    }
+                                }
+                            }
+                            $('#options-modal-config-form-form').html(``);
+                            $('#options-modal-config-form-extra').html(``);
+                            $('#options-modal-config-form-form').jsonForm({
+                                "schema": {
+                                    "categories": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "title": "category",
+                                            "properties": {
+                                                "category": {
+                                                    "type": "string",
+                                                    "title": "RadioDJ Category >>> Subcategory",
+                                                    "required": true,
+                                                    "enum": categories,
+                                                    "description": `Choose a RadioDJ category >>> subcategory that should apply to this category. You can add multiple.`
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "value": {
+                                    "categories": values,
+                                },
+                                "onSubmitValid": function (values) {
+                                    var config = {};
+                                    if (values.categories.length > 0)
+                                    {
+                                        values.categories.map((cat) => {
+                                            var temp = cat.category.split(` >>> `);
+                                            if (typeof config[temp[0]] === `undefined`)
+                                                config[temp[0]] = [];
+                                            if (temp[1] !== `[All Subcategories]`)
+                                                config[temp[0]].push(temp[1]);
+                                        });
+                                    }
+                                    directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/categories/set', data: {
+                                            name: item,
+                                            config: config
+                                        }}, function (response) {
+                                        console.dir(response);
+                                        if (response === 'OK')
+                                        {
+                                            $("#options-modal-config-form").iziModal('close');
+                                            iziToast.show({
+                                                title: `${values.name} category edited!`,
+                                                message: ``,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to edit ${values.name} category.`,
+                                                message: response,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                            $("#options-modal-config-form-label").html(`Server Configuration - Category ${item}`);
+                            $("#options-modal-config-form").iziModal('open');
+                        } catch (e) {
+                            console.error(e);
+                            iziToast.show({
+                                title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                                message: 'Error occurred during the click event of #options-modal-config-list-items categories/get-available.'
+                            });
+                        }
+                    });
+                }
+            }
+            if (e.target.id.startsWith(`config-categories-remove-`))
+            {
+                var item = e.target.id.replace(`config-categories-remove-`, ``);
+                if (typeof Config.categories[item] !== `undefined` && item !== `_doNotRemove`)
+                {
+                    iziToast.show({
+                        timeout: 60000,
+                        overlay: true,
+                        displayMode: 'once',
+                        color: 'yellow',
+                        id: 'inputs',
+                        zindex: 999,
+                        layout: 2,
+                        image: `assets/images/trash.png`,
+                        maxWidth: 480,
+                        title: 'Remove Category',
+                        message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove category' + item + '?',
+                        position: 'center',
+                        drag: false,
+                        closeOnClick: false,
+                        buttons: [
+                            ['<button><b>Remove</b></button>', function (instance, toast) {
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                    directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/categories/remove', data: {name: item}}, function (response) {
+                                        if (response === 'OK')
+                                        {
+                                            $(`#options-modal-config-list`).iziModal(`close`);
+                                            iziToast.show({
+                                                title: `Category Removed!`,
+                                                message: `Category was removed! NOTE: If this category exists in any configuration (such a breaks), you may want to change/remove it!`,
+                                                timeout: 20000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to remove category!`,
+                                                message: `There was an error trying to remove the category.`,
                                                 timeout: 10000,
                                                 close: true,
                                                 color: 'red',
@@ -7196,165 +7525,165 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-{
-    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
-        //console.log(body);
-        try {
-            client = body;
-            //authtoken = client.token;
-            if (!client.authorized)
-            {
-                var noConnection = document.getElementById('no-connection');
-                noConnection.style.display = "inline";
-                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+        {
+            hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+                //console.log(body);
+                try {
+                    client = body;
+                    //authtoken = client.token;
+                    if (!client.authorized)
+                    {
+                        var noConnection = document.getElementById('no-connection');
+                        noConnection.style.display = "inline";
+                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                cb(false);
-            } else {
-                cb(true);
+                        cb(false);
+                    } else {
+                        cb(true);
 
-                // Sink main audio devices
-                getAudioMain(settings.get(`audio.input.main`) || undefined);
-                sinkAudio();
+                        // Sink main audio devices
+                        getAudioMain(settings.get(`audio.input.main`) || undefined);
+                        sinkAudio();
 
-                // Disconnect current peer if it exists
-                try {
-                    peer.destroy();
+                        // Determine if it is applicable to initiate the user media for audio calls
+                        if (client.makeCalls)
+                        {
+                            console.log(`Initiating getUserMedia for makeCalls`);
+                            getAudio();
+                        }
+
+                        // Disconnect current peer if it exists
+                        try {
+                            peer.destroy();
+                        } catch (e) {
+                            // Ignore errors
+                        }
+
+                        // Determine if we should start a new peer
+                        if (client.makeCalls || client.answerCalls)
+                        {
+                            setupPeer();
+                        }
+
+                        // Reset silenceState
+                        if (client.silenceDetection)
+                            silenceState = -1;
+
+                    }
+                    if (client.admin)
+                    {
+                        if (client.otherHosts)
+                            processHosts(client.otherHosts, true);
+                        var temp = document.querySelector(`#options`);
+                        var restarter;
+                        if (temp)
+                            temp.style.display = "inline";
+
+                        // Subscribe to the logs socket
+                        hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                processLogs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED logs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Get djs and subscribe to the dj socket
+                        noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDjs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED DJs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Get directors and subscribe to the directors socket
+                        noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDirectors(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED directors CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the XP socket
+                        hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED XP CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the timesheet socket
+                        noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED TIMESHEET CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the discipline socket
+                        hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
+                            //console.log(body);
+                            try {
+                                processDiscipline(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED discipline CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the config socket
+                        hostReq.request({method: 'POST', url: '/config/get', data: {}}, function (body) {
+                            //console.log(body);
+                            try {
+                                processConfig(body);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED config CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                    } else {
+                        var temp = document.querySelector(`#options`);
+                        if (temp)
+                            temp.style.display = "none";
+                    }
                 } catch (e) {
-                    // Ignore errors
+                    console.error(e);
+                    console.log('FAILED HOST CONNECTION');
+                    restarter = setTimeout(hostSocket, 10000);
                 }
-
-                // Determine if we should start a new peer
-                if (client.makeCalls || client.answerCalls)
-                {
-                    setupPeer();
-                }
-
-                // Reset silenceState
-                if (client.silenceDetection)
-                    silenceState = -1;
-
-                // Determine if it is applicable to initiate the user media for audio calls
-                if (client.makeCalls)
-                {
-                    console.log(`Initiating getUserMedia for makeCalls`);
-                    getAudio();
-                }
-
-            }
-            if (client.admin)
-            {
-                if (client.otherHosts)
-                    processHosts(client.otherHosts, true);
-                var temp = document.querySelector(`#options`);
-                var restarter;
-                if (temp)
-                    temp.style.display = "inline";
-
-                // Subscribe to the logs socket
-                hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        processLogs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED logs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Get djs and subscribe to the dj socket
-                noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDjs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED DJs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Get directors and subscribe to the directors socket
-                noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDirectors(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED directors CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the XP socket
-                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED XP CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the timesheet socket
-                noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED TIMESHEET CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the discipline socket
-                hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
-                    //console.log(body);
-                    try {
-                        processDiscipline(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED discipline CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the config socket
-                hostReq.request({method: 'POST', url: '/config/get', data: {}}, function (body) {
-                    //console.log(body);
-                    try {
-                        processConfig(body);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED config CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-            } else {
-                var temp = document.querySelector(`#options`);
-                if (temp)
-                    temp.style.display = "none";
-            }
-        } catch (e) {
-            console.error(e);
-            console.log('FAILED HOST CONNECTION');
-            restarter = setTimeout(hostSocket, 10000);
+            });
         }
-    });
-}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -12006,70 +12335,70 @@ function loadDJ(dj = null, reset = true) {
 
 // Update recipients as changes happen
 function processDjs(data = {}, replace = false)
-{
-    // Data processing
-    try {
-        if (replace)
         {
-            Djs = TAFFY();
-            Djs.insert(data);
-        } else {
-            for (var key in data)
-            {
-                if (data.hasOwnProperty(key))
+            // Data processing
+            try {
+                if (replace)
                 {
-                    switch (key)
+                    Djs = TAFFY();
+                    Djs.insert(data);
+                } else {
+                    for (var key in data)
                     {
-                        case 'insert':
-                            Djs.insert(data[key]);
-                            break;
-                        case 'update':
-                            Djs({ID: data[key].ID}).update(data[key]);
-                            break;
-                        case 'remove':
-                            Djs({ID: data[key]}).remove();
-                            break;
+                        if (data.hasOwnProperty(key))
+                        {
+                            switch (key)
+                            {
+                                case 'insert':
+                                    Djs.insert(data[key]);
+                                    break;
+                                case 'update':
+                                    Djs({ID: data[key].ID}).update(data[key]);
+                                    break;
+                                case 'remove':
+                                    Djs({ID: data[key]}).remove();
+                                    break;
+                            }
+                        }
                     }
                 }
-            }
-        }
 
-        document.querySelector("#options-xp-djs").innerHTML = ``;
-        document.querySelector('#options-djs').innerHTML = ``;
+                document.querySelector("#options-xp-djs").innerHTML = ``;
+                document.querySelector('#options-djs').innerHTML = ``;
 
-        Djs().each(function (dj, index) {
-            var djClass = `danger`;
-            var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
-            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
-            {
-                djClass = `warning`;
-                djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
-            }
-            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
-            {
-                djClass = `success`;
-                djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
-            }
+                Djs().each(function (dj, index) {
+                    var djClass = `danger`;
+                    var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
+                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
+                    {
+                        djClass = `warning`;
+                        djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
+                    }
+                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
+                    {
+                        djClass = `success`;
+                        djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
+                    }
 
-            document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
+                    document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
                         <button type="button" id="options-dj-${dj.ID}" class="btn btn-${djClass} btn-float" style="position: relative;" data-dj="${dj.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`DJ ${dj.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
-            document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
+                    document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
   <input class="custom-control-input" id="options-xp-djs-i-${dj.ID}" type="checkbox">
   <span class="custom-control-track"></span>
   <label class="custom-control-label" for="options-xp-djs-i-${dj.ID}">${dj.name}</label>
 </div>`;
-        });
+                });
 
-    } catch (e) {
-        console.error(e);
-        iziToast.show({
-            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-            message: 'Error occurred in the processDjs function.'
-        });
-}
-}
+            } catch (e) {
+                console.error(e);
+                iziToast.show({
+                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                    message: 'Error occurred in the processDjs function.'
+                });
+        }
+        }
 
 // Update recipients as changes happen
 function processDirectors(data, replace = false)
