@@ -764,7 +764,7 @@ try {
                 if (!development && client.recordAudio)
                 {
                     newRecording(`${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`, true);
-                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started.<br />Path: ${settings.get(`recorder.path`)}/${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `<strong>A recording was started.</strong><br />Path: ${settings.get(`recorder.path`)}/${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
                     });
                 }
             }
@@ -1238,7 +1238,7 @@ try {
                 if (!development && client.recordAudio)
                 {
                     newRecording(`${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`);
-                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started.<br />Path: ${settings.get(`recorder.path`)}/${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `<strong>A recording was started.</strong><br />Path: ${settings.get(`recorder.path`)}/${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
                     });
                 }
             }
@@ -3704,8 +3704,8 @@ document.querySelector("#btn-options-config-breaks-clock").onclick = function ()
                                         "type": "string",
                                         "title": "Break Task",
                                         "required": true,
-                                        "enum": ["", "log", "queueRequests", "queue", "queueDuplicates"],
-                                        "description": `Choose the task. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                        "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates"],
+                                        "description": `Choose the task. Delete this entry = choose this to ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
                                     },
                                     "event": {
                                         "type": "string",
@@ -3734,6 +3734,10 @@ document.querySelector("#btn-options-config-breaks-clock").onclick = function ()
                     },
                     "onSubmitValid": function (values) {
                         console.dir(values);
+                        values.tasks.map((task, index) => {
+                            if (task.task === `[DELETE THIS ENTRY]`)
+                                delete values.tasks[index];
+                        });
                         directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-clock', data: {
                                 minute: values.minute,
                                 tasks: values.tasks
@@ -3997,8 +4001,8 @@ document.querySelector("#btn-options-config-breaks-automation").onclick = functi
                                 "type": "string",
                                 "title": "Break Task",
                                 "required": true,
-                                "enum": ["", "log", "queueRequests", "queue", "queueDuplicates"],
-                                "description": `Choose the task. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates"],
+                                "description": `Choose the task. Delete this entry = ignore this entry completely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
                             },
                             "event": {
                                 "type": "string",
@@ -4029,6 +4033,10 @@ document.querySelector("#btn-options-config-breaks-automation").onclick = functi
                 "tasks": tasks
             },
             "onSubmitValid": function (values) {
+                values.tasks.map((task, index) => {
+                    if (task.task === `[DELETE THIS ENTRY]`)
+                        delete values.tasks[index];
+                });
                 directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-automation', data: {
                         during: values.tasks
                     }}, function (response) {
@@ -4179,7 +4187,7 @@ document.querySelector("#btn-options-config-categories").onclick = function () {
                 hostReq.request({method: 'post', url: nodeURL + '/config/categories/get-available', data: {}}, function serverResponded(body, JWR) {
                     //console.log(body);
                     try {
-                        var categories = [];
+                        var categories = [`[DELETE THIS ENTRY]`];
                         for (var key in body)
                         {
                             if (body.hasOwnProperty(key))
@@ -4222,11 +4230,14 @@ document.querySelector("#btn-options-config-categories").onclick = function () {
                                 if (values.categories.length > 0)
                                 {
                                     values.categories.map((cat) => {
-                                        var temp = cat.category.split(` >>> `);
-                                        if (typeof config[temp[0]] === `undefined`)
-                                            config[temp[0]] = [];
-                                        if (temp[1] !== `[All Subcategories]`)
-                                            config[temp[0]].push(temp[1]);
+                                        if (cat.category !== `[DELETE THIS ENTRY]`)
+                                        {
+                                            var temp = cat.category.split(` >>> `);
+                                            if (typeof config[temp[0]] === `undefined`)
+                                                config[temp[0]] = [];
+                                            if (temp[1] !== `[All Subcategories]`)
+                                                config[temp[0]].push(temp[1]);
+                                        }
                                     });
                                 }
                                 directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/categories/set', data: {
@@ -4330,8 +4341,8 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                             "type": "string",
                                             "title": "Break Task",
                                             "required": true,
-                                            "enum": ["", "log", "queueRequests", "queue", "queueDuplicates"],
-                                            "description": `Choose the task. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                            "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates"],
+                                            "description": `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
                                         },
                                         "event": {
                                             "type": "string",
@@ -4363,6 +4374,10 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                         },
                         "onSubmitValid": function (values) {
                             console.dir(values);
+                            values.tasks.map((task, index) => {
+                                if (task.task === `[DELETE THIS ENTRY]`)
+                                    delete values.tasks[index];
+                            });
                             directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-clock', data: {
                                     minute: parseInt(item),
                                     tasks: values.tasks
@@ -4440,8 +4455,8 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                             "type": "string",
                                             "title": "Break Task",
                                             "required": true,
-                                            "enum": ["", "log", "queueRequests", "queue", "queueDuplicates"],
-                                            "description": `Choose the task. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                            "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates"],
+                                            "description": `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
                                         },
                                         "event": {
                                             "type": "string",
@@ -4473,6 +4488,10 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                         },
                         "onSubmitValid": function (values) {
                             console.dir(values);
+                            values.tasks.map((task, index) => {
+                                if (task.task === `[DELETE THIS ENTRY]`)
+                                    delete values.tasks[index];
+                            });
                             var data = {};
                             data[item] = values.tasks || [];
                             directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-live', data: data}, function (response) {
@@ -4549,8 +4568,8 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                             "type": "string",
                                             "title": "Break Task",
                                             "required": true,
-                                            "enum": ["", "log", "queueRequests", "queue", "queueDuplicates"],
-                                            "description": `Choose the task. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                            "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates"],
+                                            "description": `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
                                         },
                                         "event": {
                                             "type": "string",
@@ -4582,6 +4601,10 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                         },
                         "onSubmitValid": function (values) {
                             console.dir(values);
+                            values.tasks.map((task, index) => {
+                                if (task.task === `[DELETE THIS ENTRY]`)
+                                    delete values.tasks[index];
+                            });
                             var data = {};
                             data[item] = values.tasks || [];
                             directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-remote', data: data}, function (response) {
@@ -4658,8 +4681,8 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                             "type": "string",
                                             "title": "Break Task",
                                             "required": true,
-                                            "enum": ["", "log", "queueRequests", "queue", "queueDuplicates"],
-                                            "description": `Choose the task. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                            "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates"],
+                                            "description": `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
                                         },
                                         "event": {
                                             "type": "string",
@@ -4691,6 +4714,10 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                         },
                         "onSubmitValid": function (values) {
                             console.dir(values);
+                            values.tasks.map((task, index) => {
+                                if (task.task === `[DELETE THIS ENTRY]`)
+                                    delete values.tasks[index];
+                            });
                             var data = {};
                             data[item] = values.tasks || [];
                             directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-sports', data: data}, function (response) {
@@ -4802,7 +4829,7 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                 {
                     hostReq.request({method: 'post', url: nodeURL + '/config/categories/get-available', data: {}}, function serverResponded(body, JWR) {
                         try {
-                            var categories = [];
+                            var categories = ["[DELETE THIS ENTRY]"];
                             for (var key in body)
                             {
                                 if (body.hasOwnProperty(key))
@@ -4858,11 +4885,14 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                     if (values.categories.length > 0)
                                     {
                                         values.categories.map((cat) => {
-                                            var temp = cat.category.split(` >>> `);
-                                            if (typeof config[temp[0]] === `undefined`)
-                                                config[temp[0]] = [];
-                                            if (temp[1] !== `[All Subcategories]`)
-                                                config[temp[0]].push(temp[1]);
+                                            if (cat.category !== `[DELETE THIS ENTRY]`)
+                                            {
+                                                var temp = cat.category.split(` >>> `);
+                                                if (typeof config[temp[0]] === `undefined`)
+                                                    config[temp[0]] = [];
+                                                if (temp[1] !== `[All Subcategories]`)
+                                                    config[temp[0]].push(temp[1]);
+                                            }
                                         });
                                     }
                                     directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/categories/set', data: {
@@ -7753,7 +7783,7 @@ function metaSocket() {
                 if (!development && client.recordAudio)
                 {
                     newRecording(`${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`);
-                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started.<br />Path: ${settings.get(`recorder.path`)}/${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `<strong>A recording was started.</strong><br />Path: ${settings.get(`recorder.path`)}/${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
                     });
                 }
             }
@@ -7932,6 +7962,18 @@ function doMeta(metan) {
         queueLength = Meta.queueFinish !== null ? Math.round(moment(Meta.queueFinish).diff(moment(Meta.time), 'seconds')) : 0;
         if (queueLength < 0)
             queueLength = 0;
+
+        if (queueLength > 0 && (Meta.state.includes("_returning") || (Meta.state.startsWith("automation_") && Meta.state !== `automation_on` && Meta.state !== `automation_playlist` && Meta.state !== `automation_genre` && Meta.state !== `automation_break`)))
+        {
+            if (queueLength > 100)
+            {
+                main.setProgressBar(1);
+            } else {
+                main.setProgressBar(queueLength / 100);
+            }
+        } else {
+            main.setProgressBar(-1);
+        }
 
         if (isHost)
         {
@@ -8298,7 +8340,7 @@ function metaTick()
             if (!development && client.recordAudio)
             {
                 newRecording(`automation/${sanitize(Meta.genre)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`);
-                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started.<br />Path: ${settings.get(`recorder.path`)}/automation/${sanitize(Meta.genre)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `<strong>A recording was started.</strong><br />Path: ${settings.get(`recorder.path`)}/automation/${sanitize(Meta.genre)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
                 });
             }
         }
@@ -8308,7 +8350,7 @@ function metaTick()
             if (!development && client.recordAudio)
             {
                 newRecording(`live/${sanitize(Meta.show)} PRERECORDED (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`);
-                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `A recording was started.<br />Path: ${settings.get(`recorder.path`)}/live/${sanitize(Meta.show)} PRERECORDED (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `<strong>A recording was started.</strong><br />Path: ${settings.get(`recorder.path`)}/live/${sanitize(Meta.show)} PRERECORDED (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
                 });
             }
         }

@@ -6,11 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Support for new configuration system in the server.
+- Support for new configuration system in the server via admin menu -> server configuration.
 - Make direct API queries to the WWSU system from the admin menu.
+- Taskbar icon displays a progress bar counting down queue time from 100 seconds when starting a broadcast or returning from break.
 
 ### Changed
-- Timesheet window in admin options -> manage directors -> timesheets now displays timesheets as Gantt Charts.
+- Timesheet window in admin options -> manage directors -> timesheets now displays timesheets as vertical Gantt Charts.
+- All applicable operation buttons and queue timer is now always visible in WWSU Operations.
 
 ### Fixed
 - "Cannot read property muted of undefined" error that sometimes appeared and prevented operation buttons from appearing.

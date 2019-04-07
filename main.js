@@ -66,6 +66,10 @@ exports.flashTaskbar = () => {
     mainWindow.flashFrame(true);
 };
 
+exports.setProgressBar = (value) => {
+  mainWindow.setProgressBar(value);  
+};
+
 exports.getMachineID = () => {
     return machineIdSync();
 };
