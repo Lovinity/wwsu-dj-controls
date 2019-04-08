@@ -21,6 +21,7 @@ try {
     var Sanitize = require("sanitize-filename");
     var settings = require('electron-settings');
     var {webFrame} = require('electron');
+    var transform = require('sdp-transform');
 
     // Define data variables
     var Meta = {time: moment().toISOString(), lastID: moment().toISOString(), state: 'unknown', line1: '', line2: '', queueFinish: null, trackFinish: null};
@@ -581,7 +582,18 @@ try {
         }
 
         window.peerHost = hostID;
-        outgoingCall = peer.call(peerID, window.peerStream);
+        outgoingCall = peer.call(peerID, window.peerStream, {sdpTransform: (sdp) => {
+                var res = transform.parse(sdp);
+                console.dir(res);
+                res.media.map((media, index) => {
+                    //res.media[index].bandwidth = [{type: 'AS', limit: 64}, {type: 'RS', limit: 128}, {type: 'RR', limit: 256}];
+                    media.fmtp.map((fmtp, index2) => {
+                        res.media[index].fmtp[index2].config += `;maxaveragebitrate=${128*1024}`;
+                    });
+                });
+                res = transform.write(res);
+                return res;
+            }});
 
         callTimerSlot = 15;
 
@@ -7602,6 +7614,8 @@ function hostSocket(cb = function(token) {})
                 if (client.silenceDetection)
                     silenceState = -1;
 
+                prepareRemote();
+
             }
             if (client.admin)
             {
@@ -8711,7 +8725,7 @@ function checkCalendar(newData = false) {
         } else {
             records = calendar;
         }
-        
+
         calendar = [];
 
         // Run through every event in memory, sorted by the comparison function, and add appropriate ones into our formatted calendar variable.
