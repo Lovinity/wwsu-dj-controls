@@ -227,7 +227,7 @@ try {
                     var percent = temp0 > -50 ? ((temp0 + 50) * 4) : 0;
                     temp8.style.color = `rgb(0, 0, ${percent < 100 ? parseInt(percent + 155) : 255})`;
                 }
-                
+
                 // Check for glitches in audio; we want to send a bad-call event to restart the call if there are too many of them.
                 if (temp0 <= -75)
                 {
@@ -238,20 +238,20 @@ try {
                         if (window.peerError >= 0)
                             window.peerError += 3000;
                         console.log(window.peerError);
-                    // For continuing silence, add 1000/50 milliseconds of error.
+                        // For continuing silence, add 1000/50 milliseconds of error.
                     } else {
                         if (window.peerError >= 0)
                             window.peerError += 1000 / 50;
                         console.log(window.peerError);
                     }
-                    
+
                     // When error exceeds 15 seconds, trigger bad-call event
                     if (window.peerError >= 15000)
                     {
                         hostReq.request({method: 'POST', url: '/call/bad', data: {}}, function (body) {});
                         window.peerError = -1;
                     }
-                    
+
                     // When call is good, subtract 1000/50 milliseconds of error
                 } else {
                     silence = false;
@@ -510,7 +510,7 @@ try {
     }
 
     function startCall(hostID, cb, reconnect = false) {
-        var callFailed = (me) => {
+        var callFailed = (keepTrying) => {
             try {
                 outgoingCloseIgnore = true;
                 console.log(`Closing call via startCall call failed`);
@@ -527,25 +527,70 @@ try {
 
             if (!reconnect)
             {
-                $("#connecting-modal").iziModal('close');
-                iziToast.show({
-                    titleColor: '#000000',
-                    messageColor: '#000000',
-                    color: 'red',
-                    close: true,
-                    overlay: false,
-                    overlayColor: 'rgba(0, 0, 0, 0.75)',
-                    zindex: 100,
-                    layout: 1,
-                    imageWidth: 100,
-                    image: ``,
-                    progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                    closeOnClick: true,
-                    position: 'center',
-                    timeout: 30000,
-                    title: 'Call not answered',
-                    message: `The host you were trying to call did not answer. Please try again later.`
-                });
+                if (!keepTrying)
+                {
+                    $("#connecting-modal").iziModal('close');
+                    iziToast.show({
+                        titleColor: '#000000',
+                        messageColor: '#000000',
+                        color: 'red',
+                        close: true,
+                        overlay: false,
+                        overlayColor: 'rgba(0, 0, 0, 0.75)',
+                        zindex: 100,
+                        layout: 1,
+                        imageWidth: 100,
+                        image: ``,
+                        progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                        closeOnClick: true,
+                        position: 'center',
+                        timeout: 30000,
+                        title: 'Call not answered',
+                        message: `The host you were trying to call did not answer. Please try again later.`
+                    });
+                } else {
+                    if (document.querySelector(`.peerjs-waiting`) !== null)
+                        iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
+
+                    iziToast.show({
+                        class: `peerjs-waiting`,
+                        titleColor: '#000000',
+                        messageColor: '#000000',
+                        color: 'red',
+                        close: false,
+                        overlay: true,
+                        overlayColor: 'rgba(0, 0, 0, 0.75)',
+                        zindex: 1000,
+                        layout: 1,
+                        imageWidth: 100,
+                        image: ``,
+                        maxWidth: 480,
+                        progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                        closeOnClick: false,
+                        position: 'center',
+                        timeout: false,
+                        title: 'Error establishing audio call',
+                        message: `${tryingCall.friendlyname} is not available at this time. I will wait for the host to report online and then start/resume the broadcast. If you wish to cancel this, please click "cancel".`,
+                        buttons: [
+                            ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                    waitingFor = undefined;
+                                    tryingCall = undefined;
+                                }]
+                        ]
+                    });
+                    try {
+                        waitingFor = tryingCall;
+                        clearInterval(callTimer);
+                        outgoingCloseIgnore = true;
+                        console.log(`Closing call via callFailed keepTrying`);
+                        outgoingCall.close();
+                        outgoingCall = undefined;
+                        outgoingCloseIgnore = false;
+                    } catch (ee) {
+                        outgoingCloseIgnore = false;
+                    }
+                }
             } else {
                 waitingFor = {host: hostID, cb: cb};
 
@@ -611,9 +656,9 @@ try {
         try {
             var peerID = Recipients({host: host.host}).first().peer;
             if (peerID === null)
-                callFailed(false);
+                callFailed(true);
         } catch (e) {
-            callFailed(false);
+            callFailed(true);
         }
 
         try {
@@ -745,7 +790,7 @@ try {
             } else {
                 if (callTimerSlot <= 1)
                 {
-                    callFailed(true);
+                    callFailed(false);
                 }
             }
         }, 1000);
@@ -1426,7 +1471,7 @@ try {
             if (typeof window.peerHost !== `undefined`)
             {
                 startCall(window.peerHost, (success) => {
-                });
+                }, true);
             }
         }
     });
@@ -7716,165 +7761,165 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-{
-    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
-        //console.log(body);
-        try {
-            client = body;
-            //authtoken = client.token;
-            if (!client.authorized)
-            {
-                var noConnection = document.getElementById('no-connection');
-                noConnection.style.display = "inline";
-                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+        {
+            hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+                //console.log(body);
+                try {
+                    client = body;
+                    //authtoken = client.token;
+                    if (!client.authorized)
+                    {
+                        var noConnection = document.getElementById('no-connection');
+                        noConnection.style.display = "inline";
+                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                cb(false);
-            } else {
-                cb(true);
+                        cb(false);
+                    } else {
+                        cb(true);
 
-                // Sink main audio devices
-                getAudioMain(settings.get(`audio.input.main`) || undefined);
-                sinkAudio();
+                        // Sink main audio devices
+                        getAudioMain(settings.get(`audio.input.main`) || undefined);
+                        sinkAudio();
 
-                // Determine if it is applicable to initiate the user media for audio calls
-                if (client.makeCalls)
-                {
-                    console.log(`Initiating getUserMedia for makeCalls`);
-                    getAudio();
-                }
+                        // Determine if it is applicable to initiate the user media for audio calls
+                        if (client.makeCalls)
+                        {
+                            console.log(`Initiating getUserMedia for makeCalls`);
+                            getAudio();
+                        }
 
-                // Disconnect current peer if it exists
-                try {
-                    peer.destroy();
+                        // Disconnect current peer if it exists
+                        try {
+                            peer.destroy();
+                        } catch (e) {
+                            // Ignore errors
+                        }
+
+                        // Determine if we should start a new peer
+                        if (client.makeCalls || client.answerCalls)
+                        {
+                            setupPeer();
+                        }
+
+                        // Reset silenceState
+                        if (client.silenceDetection)
+                            silenceState = -1;
+
+                    }
+                    if (client.admin)
+                    {
+                        if (client.otherHosts)
+                            processHosts(client.otherHosts, true);
+                        var temp = document.querySelector(`#options`);
+                        var restarter;
+                        if (temp)
+                            temp.style.display = "inline";
+
+                        // Subscribe to the logs socket
+                        hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                processLogs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED logs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Get djs and subscribe to the dj socket
+                        noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDjs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED DJs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Get directors and subscribe to the directors socket
+                        noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDirectors(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED directors CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the XP socket
+                        hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED XP CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the timesheet socket
+                        noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED TIMESHEET CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the discipline socket
+                        hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
+                            //console.log(body);
+                            try {
+                                processDiscipline(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED discipline CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the config socket
+                        hostReq.request({method: 'POST', url: '/config/get', data: {}}, function (body) {
+                            //console.log(body);
+                            try {
+                                processConfig(body);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED config CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                    } else {
+                        var temp = document.querySelector(`#options`);
+                        if (temp)
+                            temp.style.display = "none";
+                    }
                 } catch (e) {
-                    // Ignore errors
+                    console.error(e);
+                    console.log('FAILED HOST CONNECTION');
+                    restarter = setTimeout(hostSocket, 10000);
                 }
-
-                // Determine if we should start a new peer
-                if (client.makeCalls || client.answerCalls)
-                {
-                    setupPeer();
-                }
-
-                // Reset silenceState
-                if (client.silenceDetection)
-                    silenceState = -1;
-
-            }
-            if (client.admin)
-            {
-                if (client.otherHosts)
-                    processHosts(client.otherHosts, true);
-                var temp = document.querySelector(`#options`);
-                var restarter;
-                if (temp)
-                    temp.style.display = "inline";
-
-                // Subscribe to the logs socket
-                hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        processLogs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED logs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Get djs and subscribe to the dj socket
-                noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDjs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED DJs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Get directors and subscribe to the directors socket
-                noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDirectors(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED directors CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the XP socket
-                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED XP CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the timesheet socket
-                noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED TIMESHEET CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the discipline socket
-                hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
-                    //console.log(body);
-                    try {
-                        processDiscipline(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED discipline CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the config socket
-                hostReq.request({method: 'POST', url: '/config/get', data: {}}, function (body) {
-                    //console.log(body);
-                    try {
-                        processConfig(body);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED config CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-            } else {
-                var temp = document.querySelector(`#options`);
-                if (temp)
-                    temp.style.display = "none";
-            }
-        } catch (e) {
-            console.error(e);
-            console.log('FAILED HOST CONNECTION');
-            restarter = setTimeout(hostSocket, 10000);
+            });
         }
-    });
-}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -12557,70 +12602,70 @@ function loadDJ(dj = null, reset = true) {
 
 // Update recipients as changes happen
 function processDjs(data = {}, replace = false)
-{
-    // Data processing
-    try {
-        if (replace)
         {
-            Djs = TAFFY();
-            Djs.insert(data);
-        } else {
-            for (var key in data)
-            {
-                if (data.hasOwnProperty(key))
+            // Data processing
+            try {
+                if (replace)
                 {
-                    switch (key)
+                    Djs = TAFFY();
+                    Djs.insert(data);
+                } else {
+                    for (var key in data)
                     {
-                        case 'insert':
-                            Djs.insert(data[key]);
-                            break;
-                        case 'update':
-                            Djs({ID: data[key].ID}).update(data[key]);
-                            break;
-                        case 'remove':
-                            Djs({ID: data[key]}).remove();
-                            break;
+                        if (data.hasOwnProperty(key))
+                        {
+                            switch (key)
+                            {
+                                case 'insert':
+                                    Djs.insert(data[key]);
+                                    break;
+                                case 'update':
+                                    Djs({ID: data[key].ID}).update(data[key]);
+                                    break;
+                                case 'remove':
+                                    Djs({ID: data[key]}).remove();
+                                    break;
+                            }
+                        }
                     }
                 }
-            }
-        }
 
-        document.querySelector("#options-xp-djs").innerHTML = ``;
-        document.querySelector('#options-djs').innerHTML = ``;
+                document.querySelector("#options-xp-djs").innerHTML = ``;
+                document.querySelector('#options-djs').innerHTML = ``;
 
-        Djs().each(function (dj, index) {
-            var djClass = `danger`;
-            var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
-            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
-            {
-                djClass = `warning`;
-                djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
-            }
-            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
-            {
-                djClass = `success`;
-                djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
-            }
+                Djs().each(function (dj, index) {
+                    var djClass = `danger`;
+                    var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
+                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
+                    {
+                        djClass = `warning`;
+                        djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
+                    }
+                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
+                    {
+                        djClass = `success`;
+                        djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
+                    }
 
-            document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
+                    document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
                         <button type="button" id="options-dj-${dj.ID}" class="btn btn-${djClass} btn-float" style="position: relative;" data-dj="${dj.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`DJ ${dj.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
-            document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
+                    document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
   <input class="custom-control-input" id="options-xp-djs-i-${dj.ID}" type="checkbox">
   <span class="custom-control-track"></span>
   <label class="custom-control-label" for="options-xp-djs-i-${dj.ID}">${dj.name}</label>
 </div>`;
-        });
+                });
 
-    } catch (e) {
-        console.error(e);
-        iziToast.show({
-            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-            message: 'Error occurred in the processDjs function.'
-        });
-}
-}
+            } catch (e) {
+                console.error(e);
+                iziToast.show({
+                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                    message: 'Error occurred in the processDjs function.'
+                });
+        }
+        }
 
 // Update recipients as changes happen
 function processDirectors(data, replace = false)
