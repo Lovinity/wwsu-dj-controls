@@ -584,7 +584,7 @@ try {
         window.peerHost = hostID;
         outgoingCall = peer.call(peerID, window.peerStream, {sdpTransform: (sdp) => {
                 var setMediaBitrates = (sdp) => {
-                    return setMediaBitrate(sdp, "audio", 64);
+                    return setMediaBitrate(sdp, "audio", 128);
                 };
 
                 var setMediaBitrate = (sdp, media, bitrate) => {
@@ -597,10 +597,10 @@ try {
                         }
                     }
                     if (line === -1) {
-                        console.debug("Could not find the m line for", media);
+                        console.log("Could not find the m line for", media);
                         return sdp;
                     }
-                    console.debug("Found the m line for", media, "at line", line);
+                    console.log("Found the m line for", media, "at line", line);
 
                     // Pass the m line
                     line++;
@@ -612,13 +612,13 @@ try {
 
                     // If we're on a b line, replace it
                     if (lines[line].indexOf("b") === 0) {
-                        console.debug("Replaced b line at line", line);
+                        console.log("Replaced b line at line", line);
                         lines[line] = "b=AS:" + bitrate;
                         return lines.join("\n");
                     }
 
                     // Add a new b line
-                    console.debug("Adding new b line before line", line);
+                    console.log("Adding new b line before line", line);
                     var newLines = lines.slice(0, line);
                     newLines.push("b=AS:" + bitrate);
                     newLines = newLines.concat(lines.slice(line, lines.length));
