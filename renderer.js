@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = false;
+    var development = true;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -8265,7 +8265,7 @@ function doMeta(metan) {
                 } else {
                     if (temp !== null)
                     {
-                        temp.muted = true;
+                        temp.muted = false;
                         console.log(`MUTED remote audio`);
                     }
                 }
@@ -8274,7 +8274,7 @@ function doMeta(metan) {
             } else {
                 if (temp !== null)
                 {
-                    temp.muted = true;
+                    temp.muted = false;
                     console.log(`MUTED remote audio`);
                 }
             }
