@@ -47,6 +47,7 @@ try {
     window.peerStream = undefined;
     window.peerDevice = undefined;
     window.peerHost = undefined;
+    window.peerError = 0;
     window.mainStream = undefined;
     window.mainDevice = undefined;
     window.peerVolume = -100;
@@ -91,6 +92,7 @@ try {
         try {
             var temp = getMaxVolume(analyser, fftBins);
             var temp2 = getMaxVolume(analyser2, fftBins2);
+            var silence = false;
 
             if (temp > window.peerVolume)
             {
@@ -145,31 +147,31 @@ try {
                     gain.gain.value = 3;
             }
 
-            var temp = document.querySelector(`#remote-vu`);
-            var temp2 = document.querySelector(`#sportsremote-vu`);
+            var temp5 = document.querySelector(`#remote-vu`);
+            var temp6 = document.querySelector(`#sportsremote-vu`);
             var temp3 = document.querySelector(`#call-vu`);
             var temp4 = document.querySelector(`#main-vu`);
 
-            if (temp !== null)
+            if (temp5 !== null)
             {
-                temp.style.width = `${window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0}%`;
+                temp5.style.width = `${window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0}%`;
 
                 // check if we're currently clipping
                 if (window.peerVolume > -25)
-                    temp.className = "progress-bar bg-danger";
+                    temp5.className = "progress-bar bg-danger";
                 else
-                    temp.className = "progress-bar bg-success";
+                    temp5.className = "progress-bar bg-success";
             }
 
-            if (temp2 !== null)
+            if (temp6 !== null)
             {
-                temp2.style.width = `${window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0}%`;
+                temp6.style.width = `${window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0}%`;
 
                 // check if we're currently clipping
                 if (window.peerVolume > -25)
-                    temp2.className = "progress-bar bg-danger";
+                    temp6.className = "progress-bar bg-danger";
                 else
-                    temp2.className = "progress-bar bg-success";
+                    temp6.className = "progress-bar bg-success";
             }
 
             if (temp3 !== null)
@@ -196,34 +198,59 @@ try {
 
             if (typeof outgoingCall !== 'undefined')
             {
-                var temp5 = document.querySelector(`#audio-call-icon`);
-                if (temp5 !== null)
+                var temp8 = document.querySelector(`#audio-call-icon`);
+                if (temp8 !== null)
                 {
                     var percent = window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0;
-                    temp5.style.color = `rgb(0, ${percent < 100 ? parseInt(percent + 155) : 255}, 0)`;
+                    temp8.style.color = `rgb(0, ${percent < 100 ? parseInt(percent + 155) : 255}, 0)`;
                 }
             } else if (typeof waitingFor !== 'undefined') {
-                var temp5 = document.querySelector(`#audio-call-icon`);
-                if (temp5 !== null)
-                    temp5.style.color = `rgb(255, 0, 0)`;
+                var temp8 = document.querySelector(`#audio-call-icon`);
+                if (temp8 !== null)
+                    temp8.style.color = `rgb(255, 0, 0)`;
             } else if (typeof tryingCall !== 'undefined') {
-                var temp5 = document.querySelector(`#audio-call-icon`);
-                if (temp5 !== null)
-                    temp5.style.color = `rgb(255, 255, 0)`;
+                var temp8 = document.querySelector(`#audio-call-icon`);
+                if (temp8 !== null)
+                    temp8.style.color = `rgb(255, 255, 0)`;
             } else if (typeof incomingCall !== 'undefined') {
-                var temp5 = document.querySelector(`#audio-call-icon`);
-                if (temp5 !== null)
-                    temp5.style.color = `rgb(0, 0, 255)`;
+                var temp8 = document.querySelector(`#audio-call-icon`);
+                if (temp8 !== null)
+                    temp8.style.color = `rgb(0, 0, 255)`;
+                if (temp < -50)
+                {
+                    if (!silence)
+                    {
+                        silence = true;
+                        if (window.peerError >= 0)
+                            window.peerError += 3000;
+                        console.log(window.peerError);
+                    } else {
+                        if (window.peerError >= 0)
+                            window.peerError += 1000 / 50;
+                        console.log(window.peerError);
+                    }
+
+                    if (window.peerError >= 15000)
+                    {
+                        hostReq.request({method: 'POST', url: '/call/bad', data: {}}, function (body) {});
+                        window.peerError = -1;
+                    }
+                } else {
+                    silence = false;
+                    window.peerError -= 1000 / 50;
+                    if (window.peerError < 0)
+                        window.peerError = 0;
+                }
             } else {
-                var temp5 = document.querySelector(`#audio-call-icon`);
-                if (temp5 !== null)
+                var temp8 = document.querySelector(`#audio-call-icon`);
+                if (temp8 !== null)
                 {
                     if (silenceState === 2)
-                        temp5.style.color = `rgb(128, 0, 0)`;
+                        temp8.style.color = `rgb(128, 0, 0)`;
                     if (silenceState === 1)
-                        temp5.style.color = `rgb(128, 128, 0)`;
+                        temp8.style.color = `rgb(128, 128, 0)`;
                     if (silenceState === 0)
-                        temp5.style.color = `rgb(16, 16, 16)`;
+                        temp8.style.color = `rgb(16, 16, 16)`;
                 }
             }
             meterLoop = false;
@@ -584,9 +611,9 @@ try {
         window.peerHost = hostID;
         outgoingCall = peer.call(peerID, window.peerStream, {sdpTransform: (sdp) => {
                 // Transform the sdp offer to request a higher bitrate for audio.
-                
+
                 var setMediaBitrates = (sdp) => {
-                    return setMediaBitrate(sdp, "audio", 128);
+                    return setMediaBitrate(sdp, "audio", 256);
                 };
 
                 var setMediaBitrate = (sdp, media, bitrate) => {
@@ -626,7 +653,7 @@ try {
                     newLines = newLines.concat(lines.slice(line, lines.length));
                     return newLines.join("\n");
                 };
-                
+
                 return setMediaBitrates(sdp);
             }});
 
@@ -991,10 +1018,11 @@ try {
             console.log('now playing the audio');
             audio.play();
         }
+        window.peerError = 0;
     }
 
     function getMaxVolume(analyser, fftBins) {
-        var maxVolume = -50;
+        var maxVolume = -75;
         analyser.getFloatFrequencyData(fftBins);
 
         for (var i = 4, ii = fftBins.length; i < ii; i++) {
@@ -1358,6 +1386,23 @@ try {
 
     socket.on('timesheet', function (data) {
         loadTimesheets(moment(document.querySelector("#options-timesheets-date").value));
+    });
+
+    socket.on('bad-call', function () {
+        if (typeof outgoingCall !== `undefined`)
+        {
+            outgoingCloseIgnore = true;
+            console.log(`Closing call via bad-call event`);
+            outgoingCall.close();
+            outgoingCall = undefined;
+            outgoingCloseIgnore = false;
+
+            if (typeof window.peerHost !== `undefined`)
+            {
+                startCall(window.peerHost, (success) => {
+                });
+            }
+        }
     });
 
     var messageFlash2;
