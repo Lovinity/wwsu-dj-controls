@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = true;
+    var development = false;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -583,6 +583,8 @@ try {
 
         window.peerHost = hostID;
         outgoingCall = peer.call(peerID, window.peerStream, {sdpTransform: (sdp) => {
+                // Transform the sdp offer to request a higher bitrate for audio.
+                
                 var setMediaBitrates = (sdp) => {
                     return setMediaBitrate(sdp, "audio", 128);
                 };
@@ -7979,7 +7981,6 @@ function recipientsSocket() {
         //console.log(body);
         try {
             processRecipients(body, true);
-            prepareRemote();
         } catch (e) {
             console.error(e);
             console.log('FAILED recipients CONNECTION');
@@ -8188,16 +8189,25 @@ function doMeta(metan) {
                 if (!Meta.playing)
                 {
                     if (temp !== null)
+                    {
                         temp.muted = false;
+                        console.log(`UNMUTED remote audio`);
+                    }
                 } else {
                     if (temp !== null)
+                    {
                         temp.muted = true;
+                        console.log(`MUTED remote audio`);
+                    }
                 }
 
                 // Mute audio if not in any sportremote nor remote state
             } else {
                 if (temp !== null)
+                {
                     temp.muted = true;
+                    console.log(`MUTED remote audio`);
+                }
             }
 
             // Always re-do the calendar / clockwheel when states change.
@@ -10675,7 +10685,6 @@ function _goRemote() {
     startCall(selectedOption, (success) => {
         if (success)
         {
-            return null;
             hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || calType !== `Remote`) ? document.querySelector('#remote-topic').value : calTopic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
                 if (response === 'OK')
                 {
