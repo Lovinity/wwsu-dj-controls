@@ -60,6 +60,7 @@ try {
     var tryingCall;
     var waitingFor;
     var analyserStream;
+    var analyserStream0;
     var analyserStream2;
     var callTimer;
     var callTimerSlot;
@@ -88,8 +89,15 @@ try {
     analyser2.smoothingTimeConstant = 0.1;
     var fftBins2 = new Float32Array(analyser2.frequencyBinCount);
 
+    var audioContext0 = new AudioContext();
+    var analyser0 = audioContext0.createAnalyser();
+    analyser0.fftSize = 512;
+    analyser0.smoothingTimeConstant = 0.1;
+    var fftBins0 = new Float32Array(analyser0.frequencyBinCount);
+
     var meterLooper = function () {
         try {
+            var temp0 = incomingCall !== `undefined` ? getMaxVolume(analyser0, fftBins0) : -50;
             var temp = getMaxVolume(analyser, fftBins);
             var temp2 = getMaxVolume(analyser2, fftBins2);
             var silence = false;
@@ -216,25 +224,32 @@ try {
                 var temp8 = document.querySelector(`#audio-call-icon`);
                 if (temp8 !== null)
                     temp8.style.color = `rgb(0, 0, 255)`;
-                if (temp < -50)
+                
+                // Check for glitches in audio; we want to send a bad-call event to restart the call if there are too many of them.
+                if (temp0 < -50)
                 {
+                    // Whenever new silence detected, add 3 seconds of error.
                     if (!silence)
                     {
                         silence = true;
                         if (window.peerError >= 0)
                             window.peerError += 3000;
                         console.log(window.peerError);
+                    // For continuing silence, add 1000/50 milliseconds of error.
                     } else {
                         if (window.peerError >= 0)
                             window.peerError += 1000 / 50;
                         console.log(window.peerError);
                     }
-
+                    
+                    // When error exceeds 15 seconds, trigger bad-call event
                     if (window.peerError >= 15000)
                     {
                         hostReq.request({method: 'POST', url: '/call/bad', data: {}}, function (body) {});
                         window.peerError = -1;
                     }
+                    
+                    // When call is good, subtract 1000/50 milliseconds of error
                 } else {
                     silence = false;
                     window.peerError -= 1000 / 50;
@@ -445,6 +460,7 @@ try {
                         console.log(`Call ended via peer.on call`);
                         incomingCall.close();
                         incomingCall = undefined;
+                        analyserStream0.disconnect(analyser0);
                         incomingCloseIgnore = false;
                     } catch (ee) {
                         incomingCloseIgnore = false;
@@ -457,16 +473,19 @@ try {
                     incomingCall.on(`close`, () => {
                         console.log(`CALL CLOSED.`);
                         incomingCall = undefined;
+                        analyserStream0.disconnect(analyser0);
 
                         if (!incomingCloseIgnore)
                         {
-                            console.log(`Not ignoring!`);
+                            console.log(`Not ignoring! Setting 15 second reconnect timeout.`);
                             var callDropFn = () => {
                                 if (Meta.state === 'sportsremote_on' || Meta.state === 'remote_on')
                                 {
+                                    console.log(`Reconnect timed out! Going to break.`)
                                     goBreak(false);
                                 } else if (Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote' || Meta.state === "sportsremote_returning" || Meta.state === "remote_returning")
                                 {
+                                    console.log(`reconnect timed out! Restarting with a 5 second timer.`);
                                     callDropTimer = setTimeout(() => {
                                         callDropFn();
                                     }, 5000);
@@ -712,6 +731,8 @@ try {
                                     console.log(`re-connected`);
                                 }
                             }, true);
+                        } else {
+                            console.log(`NOT reconnecting; we are not in any remote nor sportsremote states.`)
                         }
                     }
                     outgoingCloseIgnore = false;
@@ -1019,6 +1040,8 @@ try {
             audio.play();
         }
         window.peerError = 0;
+        analyserStream0 = audioContext0.createMediaStreamSource(stream);
+        analyserStream0.connect(analyser0);
     }
 
     function getMaxVolume(analyser, fftBins) {
@@ -8026,6 +8049,7 @@ function recipientsSocket() {
         //console.log(body);
         try {
             processRecipients(body, true);
+            prepareRemote();
         } catch (e) {
             console.error(e);
             console.log('FAILED recipients CONNECTION');
@@ -10730,6 +10754,7 @@ function _goRemote() {
     startCall(selectedOption, (success) => {
         if (success)
         {
+            return null;
             hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || calType !== `Remote`) ? document.querySelector('#remote-topic').value : calTopic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
                 if (response === 'OK')
                 {
