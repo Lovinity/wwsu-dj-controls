@@ -681,7 +681,7 @@ try {
                 // Transform the sdp offer to request a higher bitrate for audio.
 
                 var setMediaBitrates = (sdp) => {
-                    return setMediaBitrate(sdp, "audio", 256);
+                    return setMediaBitrate(sdp, "audio", 128);
                 };
 
                 var setMediaBitrate = (sdp, media, bitrate) => {
@@ -722,7 +722,15 @@ try {
                     return newLines.join("\n");
                 };
 
-                return setMediaBitrates(sdp);
+                var res = transform.parse(setMediaBitrates(sdp));
+                
+                res.media.map((media, index) => {
+                    media.fmtp.map((fmtp, index2) => {
+                        res.media[index].fmtp[index2].config += `;stereo=1;sprop-stereo=1;x-google-start-bitrate=128;x-google-max-bitrate=128;cbr=1;maxaveragebitrate=${128*1024}`;
+                    });
+                });
+                res = transform.write(res);
+                return res;
             }});
 
         callTimerSlot = 10;
