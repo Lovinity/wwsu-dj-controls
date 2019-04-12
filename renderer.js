@@ -223,10 +223,13 @@ try {
             } else if (typeof incomingCall !== 'undefined') {
                 var temp8 = document.querySelector(`#audio-call-icon`);
                 if (temp8 !== null)
-                    temp8.style.color = `rgb(0, 0, 255)`;
+                {
+                    var percent = temp0 > -50 ? ((temp0 + 50) * 4) : 0;
+                    temp8.style.color = `rgb(0, 0, ${percent < 100 ? parseInt(percent + 155) : 255})`;
+                }
                 
                 // Check for glitches in audio; we want to send a bad-call event to restart the call if there are too many of them.
-                if (temp0 < -50)
+                if (temp0 <= -75)
                 {
                     // Whenever new silence detected, add 3 seconds of error.
                     if (!silence)
