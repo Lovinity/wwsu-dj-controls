@@ -7981,6 +7981,7 @@ function recipientsSocket() {
         //console.log(body);
         try {
             processRecipients(body, true);
+            prepareRemote();
         } catch (e) {
             console.error(e);
             console.log('FAILED recipients CONNECTION');
@@ -8196,7 +8197,7 @@ function doMeta(metan) {
                 } else {
                     if (temp !== null)
                     {
-                        temp.muted = true;
+                        temp.muted = false;
                         console.log(`MUTED remote audio`);
                     }
                 }
@@ -8205,7 +8206,7 @@ function doMeta(metan) {
             } else {
                 if (temp !== null)
                 {
-                    temp.muted = true;
+                    temp.muted = false;
                     console.log(`MUTED remote audio`);
                 }
             }
@@ -10685,6 +10686,7 @@ function _goRemote() {
     startCall(selectedOption, (success) => {
         if (success)
         {
+            return null;
             hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || calType !== `Remote`) ? document.querySelector('#remote-topic').value : calTopic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
                 if (response === 'OK')
                 {
