@@ -33,8 +33,8 @@ function createWindow() {
     //Open the DevTools.
     mainWindow.webContents.openDevTools();
 
-    //webRTC = new BrowserWindow({width: 1600, height: 900, backgroundColor: '#263238', resizable: true, webPreferences: {backgroundThrottling: false}});
-    //webRTC.loadURL(`chrome://webrtc-internals`);
+    webRTC = new BrowserWindow({width: 1600, height: 900, backgroundColor: '#263238', resizable: true, webPreferences: {backgroundThrottling: false}});
+    webRTC.loadURL(`chrome://webrtc-internals`);
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
