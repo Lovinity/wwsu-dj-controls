@@ -97,7 +97,7 @@ try {
     var fftBins0 = new Float32Array(analyser0.frequencyBinCount);
 
     var incomingSilence = false;
-
+    var rtcStats = 1000;
     var meterLooper = function () {
         try {
             var temp0 = incomingCall !== `undefined` ? getMaxVolume(analyser0, fftBins0) : -50;
@@ -290,6 +290,27 @@ try {
             }
             meterLoop = false;
 
+            rtcStats -= 1000 / 50;
+            if (rtcStats <= 0)
+            {
+                rtcStats = 1000;
+                var connections = peer.connections;
+                for (var connection in connections)
+                {
+                    if (connections.hasOwnProperty(connection))
+                    {
+                        if (connections[connection].length > 0)
+                        {
+                            connections[connection].map((connectionObject) => {
+                                connectionObject.pc.getStats(function callback(connStats) {
+                                    var rtcStatsReports = connStats.result();
+                                    console.dir(rtcStatsReports);
+                                })
+                            });
+                        }
+                    }
+                }
+            }
         } catch (eee) {
             // ignore errors
             console.error(eee);

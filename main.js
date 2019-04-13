@@ -20,6 +20,7 @@ const {machineId, machineIdSync} = require('node-machine-id');
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
+let webRTC;
 
 function createWindow() {
     // Create the browser window.
@@ -29,8 +30,11 @@ function createWindow() {
     // and load the index.html of the app.
     mainWindow.loadFile('index.html');
 
-     //Open the DevTools.
-     mainWindow.webContents.openDevTools();
+    //Open the DevTools.
+    mainWindow.webContents.openDevTools();
+
+    webRTC = new BrowserWindow({width: 1600, height: 900, backgroundColor: '#263238', resizable: true, webPreferences: {backgroundThrottling: false}});
+    //webRTC.loadURL(`chrome://webrtc-internals`);
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
@@ -39,6 +43,15 @@ function createWindow() {
         // when you should delete the corresponding element.
         mainWindow = null;
     });
+
+    /*
+     webRTC.on('closed', function () {
+     // Dereference the window object, usually you would store windows
+     // in an array if your app supports multi windows, this is the time
+     // when you should delete the corresponding element.
+     webRTC = null;
+     });
+     */
 }
 
 // This method will be called when Electron has finished
@@ -67,7 +80,7 @@ exports.flashTaskbar = () => {
 };
 
 exports.setProgressBar = (value) => {
-  mainWindow.setProgressBar(value);  
+    mainWindow.setProgressBar(value);
 };
 
 exports.getMachineID = () => {
