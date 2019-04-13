@@ -217,7 +217,7 @@ try {
                 var temp8 = document.querySelector(`#audio-call-icon`);
                 if (temp8 !== null)
                     temp8.style.color = `rgb(255, 0, 0)`;
-            } else if (typeof tryingCall !== 'undefined') {
+            } else if (typeof tryingCall !== 'undefined' || window.peerError === -1) {
                 var temp8 = document.querySelector(`#audio-call-icon`);
                 if (temp8 !== null)
                     temp8.style.color = `rgb(255, 255, 0)`;
@@ -230,18 +230,18 @@ try {
                 }
 
                 // Check for glitches in audio; we want to send a bad-call event to restart the call if there are too many of them.
-                if (temp0 <= -75)
+                if (temp0 <= -100)
                 {
                     // Whenever new silence detected, add 3 seconds of error.
                     if (!incomingSilence)
                     {
                         incomingSilence = true;
-                        if (window.peerError >= 0)
+                        if (window.peerError >= 0 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on"))
                             window.peerError += 3000;
                         //console.log(window.peerError);
                         // For continuing silence, add 1000/50 milliseconds of error.
                     } else {
-                        if (window.peerError >= 0)
+                        if (window.peerError >= 0 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on"))
                             window.peerError += 1000 / 50;
                         //console.log(window.peerError);
                     }
@@ -1102,7 +1102,7 @@ try {
     }
 
     function getMaxVolume(analyser, fftBins) {
-        var maxVolume = -75;
+        var maxVolume = -100;
         analyser.getFloatFrequencyData(fftBins);
 
         for (var i = 4, ii = fftBins.length; i < ii; i++) {
