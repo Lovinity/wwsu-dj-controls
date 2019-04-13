@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = false;
+    var development = true;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
