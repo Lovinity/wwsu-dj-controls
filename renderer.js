@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = false;
+    var development = true;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -206,7 +206,7 @@ try {
                     temp4.className = "progress-bar bg-success";
             }
 
-            if (typeof outgoingCall !== 'undefined')
+            if (typeof outgoingCall !== 'undefined' && window.peerError >= 0)
             {
                 var temp8 = document.querySelector(`#audio-call-icon`);
                 if (temp8 !== null)
@@ -256,9 +256,11 @@ try {
                             window.peerErrorMajor += 8000;
                             hostReq.request({method: 'POST', url: '/call/bad', data: {}}, function (body) {});
                             window.peerError = -1;
-                            // Choppiness consistent? Call call/give-up to trigger very-bad-call event and switch to a break in error.
+                            // Choppiness consistent? Call goBreak and call/give-up to trigger very-bad-call event and switch to a break in error.
                         } else {
                             window.peerErrorMajor = 0;
+                            if (!disconnected)
+                                goBreak(false);
                             hostReq.request({method: 'POST', url: '/call/give-up', data: {}}, function (body) {});
                             window.peerError = -2;
                         }
@@ -496,11 +498,13 @@ try {
                         if (!incomingCloseIgnore)
                         {
                             console.log(`Not ignoring! Setting 5 second reconnect timeout.`);
+                            window.peerError = -1;
                             var callDropFn = () => {
                                 if (Meta.state === 'sportsremote_on' || Meta.state === 'remote_on')
                                 {
                                     console.log(`Reconnect timed out! Going to break.`)
                                     goBreak(false);
+                                    window.peerError = -2;
                                 } else if (Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote' || Meta.state === "sportsremote_returning" || Meta.state === "remote_returning")
                                 {
                                     console.log(`reconnect timed out! Restarting with a 5 second timer.`);
@@ -743,7 +747,7 @@ try {
 
                 res.media.map((media, index) => {
                     media.fmtp.map((fmtp, index2) => {
-                        res.media[index].fmtp[index2].config += `;stereo=1;sprop-stereo=1;x-google-start-bitrate=128;x-google-max-bitrate=128;cbr=1;maxaveragebitrate=${192 * 1024}`;
+                        res.media[index].fmtp[index2].config += `;stereo=1;sprop-stereo=1;x-google-start-bitrate=128;x-google-max-bitrate=128;cbr=1;maxaveragebitrate=192000;`;
                     });
                 });
                 res = transform.write(res);
@@ -762,6 +766,7 @@ try {
                 $("#connecting-modal").iziModal('close');
 
                 tryingCall = undefined;
+                window.peerError === 0;
 
                 if (document.querySelector(`.peerjs-waiting`) !== null)
                     iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
@@ -798,6 +803,7 @@ try {
                         console.log(`Not ignoring!`);
                         if (Meta.state.startsWith(`remote_`) || Meta.state.startsWith(`sportsremote_`) || Meta.state === `automation_remote` || Meta.state === `automation_sportsremote`)
                         {
+                            window.peerError = -1;
                             console.log(`Reconnecting...`);
                             startCall(host.host, (success) => {
                                 if (success)
@@ -1488,6 +1494,7 @@ try {
     socket.on('bad-call', function () {
         if (typeof outgoingCall !== `undefined`)
         {
+            window.peerError = -1;
             outgoingCloseIgnore = true;
             console.log(`Closing call via bad-call event`);
             outgoingCall.close();
@@ -1505,7 +1512,7 @@ try {
     socket.on('very-bad-call', function () {
         if (typeof outgoingCall !== `undefined`)
         {
-            
+            window.peerError = -2;
             outgoingCloseIgnore = true;
             console.log(`Closing call via very-bad-call event`);
             outgoingCall.close();
@@ -8168,6 +8175,7 @@ function recipientsSocket() {
         //console.log(body);
         try {
             processRecipients(body, true);
+            prepareRemote();
         } catch (e) {
             console.error(e);
             console.log('FAILED recipients CONNECTION');
@@ -8383,7 +8391,7 @@ function doMeta(metan) {
                 } else {
                     if (temp !== null)
                     {
-                        temp.muted = true;
+                        temp.muted = false;
                         console.log(`MUTED remote audio`);
                     }
                 }
@@ -8392,8 +8400,10 @@ function doMeta(metan) {
             } else {
                 if (temp !== null)
                 {
-                    temp.muted = true;
+                    temp.muted = false;
                     console.log(`MUTED remote audio`);
+                    window.peerError = 0;
+                    window.peerErrorMajor = 0;
                 }
             }
 
@@ -10872,6 +10882,7 @@ function _goRemote() {
     startCall(selectedOption, (success) => {
         if (success)
         {
+            return null;
             hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || calType !== `Remote`) ? document.querySelector('#remote-topic').value : calTopic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
                 if (response === 'OK')
                 {
