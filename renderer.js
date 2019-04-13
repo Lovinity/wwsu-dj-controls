@@ -258,18 +258,18 @@ try {
                                                             {
                                                                 window.peerError += (value - prevPLC);
                                                                 // When error exceeds a certain threshold, that is a problem!
-                                                                if (window.peerError >= 35)
+                                                                if (window.peerError >= 50)
                                                                 {
                                                                     // Choppiness is not considered consistent yet? call call/bad to trigger bad-call event to restart the call.
                                                                     // Choppiness consistent? Call goBreak and call/give-up to trigger very-bad-call event and switch to a break in error.
-                                                                    if (window.peerErrorMajor >= 140 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on")) {
+                                                                    if (window.peerErrorMajor >= 150 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on")) {
                                                                         window.peerErrorMajor = 0;
                                                                         if (!disconnected)
                                                                             goBreak(false);
                                                                         hostReq.request({method: 'POST', url: '/call/give-up', data: {}}, function (body) {});
                                                                         window.peerError = -2;
                                                                     } else {
-                                                                        window.peerErrorMajor += 35;
+                                                                        window.peerErrorMajor += 50;
                                                                         hostReq.request({method: 'POST', url: '/call/bad', data: {}}, function (body) {});
                                                                         window.peerError = -1;
                                                                     }
@@ -376,10 +376,13 @@ try {
 
         // Currently, the WWSU peer-server does not support socket heart beat, and so disconnects after a minute.
 
-        peer = new Peer({debug: 3, config: {'iceServers': [{
-                        urls: 'turn:numb.viagenie.ca',
-                        credential: 'WineDine1069',
-                        username: 'engineer@wwsu1069.org'}]}});
+        peer = new Peer({debug: 3, config: {'iceServers': [
+                    {
+                        urls: `turn:130.108.128.116:443/turn`,
+                        credential: `RaiderRadioRulez`,
+                        username: `wwsudjcontrols`
+                    }
+                ]}});
 
         peer.on('open', (id) => {
             console.log(`peer opened with id ${id}`);
