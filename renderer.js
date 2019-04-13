@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = false;
+    var development = true;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -781,7 +781,7 @@ try {
                 $("#connecting-modal").iziModal('close');
 
                 tryingCall = undefined;
-                window.peerError === 0;
+                window.peerError = 0;
 
                 if (document.querySelector(`.peerjs-waiting`) !== null)
                     iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
@@ -1509,7 +1509,7 @@ try {
     socket.on('bad-call', function () {
         if (typeof outgoingCall !== `undefined`)
         {
-            window.peerError = -1;
+            window.peerError = 0;
             outgoingCloseIgnore = true;
             console.log(`Closing call via bad-call event`);
             outgoingCall.close();
@@ -1518,6 +1518,7 @@ try {
 
             if (typeof window.peerHost !== `undefined`)
             {
+                window.peerError = -1;
                 startCall(window.peerHost, (success) => {
                 }, true);
             }
@@ -8190,6 +8191,8 @@ function recipientsSocket() {
         //console.log(body);
         try {
             processRecipients(body, true);
+            if (development)
+                prepareRemote();
         } catch (e) {
             console.error(e);
             console.log('FAILED recipients CONNECTION');
@@ -8405,7 +8408,7 @@ function doMeta(metan) {
                 } else {
                     if (temp !== null)
                     {
-                        temp.muted = true;
+                        temp.muted = !development;
                         console.log(`MUTED remote audio`);
                     }
                 }
@@ -8414,7 +8417,7 @@ function doMeta(metan) {
             } else {
                 if (temp !== null)
                 {
-                    temp.muted = true;
+                    temp.muted = !development;
                     console.log(`MUTED remote audio`);
                     window.peerError = 0;
                     window.peerErrorMajor = 0;
@@ -10896,6 +10899,8 @@ function _goRemote() {
     startCall(selectedOption, (success) => {
         if (success)
         {
+            if (development)
+                return null;
             hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || calType !== `Remote`) ? document.querySelector('#remote-topic').value : calTopic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
                 if (response === 'OK')
                 {
