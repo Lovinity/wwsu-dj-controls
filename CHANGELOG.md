@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Timesheet window in admin options -> manage directors -> timesheets now displays timesheets as vertical Gantt Charts.
 - All applicable operation buttons and queue timer is now always visible in WWSU Operations.
-- Peer.js uses constant bit rate and sets bitrate parameters to try for a higher quality connection.
+- Custom peer.js build optimized for 96kbps constant bitrate stereo for remote broadcasts.
 
 ### Fixed
 - "Cannot read property muted of undefined" error that sometimes appeared and prevented operation buttons from appearing.
