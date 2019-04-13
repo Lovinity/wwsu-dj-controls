@@ -258,18 +258,18 @@ try {
                                                             {
                                                                 window.peerError += (value - prevPLC);
                                                                 // When error exceeds a certain threshold, that is a problem!
-                                                                if (window.peerError >= 35)
+                                                                if (window.peerError >= 50)
                                                                 {
                                                                     // Choppiness is not considered consistent yet? call call/bad to trigger bad-call event to restart the call.
                                                                     // Choppiness consistent? Call goBreak and call/give-up to trigger very-bad-call event and switch to a break in error.
-                                                                    if (window.peerErrorMajor >= 140 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on")) {
-                                                                        window.peerErrorMajor = 0;
+                                                                    if (window.peerErrorMajor >= 150 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on")) {
+                                                                        window.peerErrorMajor = 0;5
                                                                         if (!disconnected)
                                                                             goBreak(false);
                                                                         hostReq.request({method: 'POST', url: '/call/give-up', data: {}}, function (body) {});
                                                                         window.peerError = -2;
                                                                     } else {
-                                                                        window.peerErrorMajor += 35;
+                                                                        window.peerErrorMajor += 50;
                                                                         hostReq.request({method: 'POST', url: '/call/bad', data: {}}, function (body) {});
                                                                         window.peerError = -1;
                                                                     }
@@ -8350,6 +8350,7 @@ function doMeta(metan) {
                     {
                         temp.muted = false;
                         console.log(`UNMUTED remote audio`);
+                        window.peerErrorMajor = 0;
                     }
                 } else {
                     if (temp !== null)
