@@ -376,10 +376,13 @@ try {
 
         // Currently, the WWSU peer-server does not support socket heart beat, and so disconnects after a minute.
 
-        peer = new Peer({debug: 3, config: {'iceServers': [{
-                        urls: 'turn:numb.viagenie.ca',
-                        credential: 'WineDine1069',
-                        username: 'engineer@wwsu1069.org'}]}});
+        peer = new Peer({debug: 3, config: {'iceServers': [
+                    {
+                        urls: 'turn:130.108.128.116:443/turn',
+                        credential: 'RaiderRadioRulez',
+                        username: 'wwsudjcontrols'
+                    },
+                ]}});
 
         peer.on('open', (id) => {
             console.log(`peer opened with id ${id}`);
