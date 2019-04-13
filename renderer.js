@@ -283,7 +283,7 @@ try {
                                                                 if (window.peerErrorMajor < 0)
                                                                     window.peerErrorMajor = 0;
                                                             }
-                                                            //console.log(window.peerError);
+                                                            console.log(window.peerError);
                                                             prevPLC = value;
                                                         });
                                             });
@@ -377,7 +377,8 @@ try {
 
         // Currently, the WWSU peer-server does not support socket heart beat, and so disconnects after a minute.
 
-        peer = new Peer({debug: 3, config: {'iceServers': [
+        peer = new Peer({key: `Peer4WWSU`, host: `server.wwsu1069.org`, path: '/webcaster', secure: true, debug: 3, config: {'iceServers': [
+                    { urls: 'stun:stun1.l.google.com:19302' },
                     {
                         urls: 'turn:numb.viagenie.ca',
                         credential: 'WineDine1069',
