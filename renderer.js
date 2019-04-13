@@ -657,7 +657,10 @@ try {
         try {
             var peerID = Recipients({host: host.host}).first().peer;
             if (peerID === null)
+            {
                 callFailed(true);
+                return null;
+            }
         } catch (e) {
             callFailed(true);
         }
