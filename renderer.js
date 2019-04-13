@@ -48,6 +48,7 @@ try {
     window.peerDevice = undefined;
     window.peerHost = undefined;
     window.peerError = 0;
+    window.peerErrorMajor = 0;
     window.mainStream = undefined;
     window.mainDevice = undefined;
     window.peerVolume = -100;
@@ -213,7 +214,7 @@ try {
                     var percent = window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0;
                     temp8.style.color = `rgb(0, ${percent < 100 ? parseInt(percent + 155) : 255}, 0)`;
                 }
-            } else if (typeof waitingFor !== 'undefined') {
+            } else if (typeof waitingFor !== 'undefined' || window.peerError === -2) {
                 var temp8 = document.querySelector(`#audio-call-icon`);
                 if (temp8 !== null)
                     temp8.style.color = `rgb(255, 0, 0)`;
@@ -232,25 +233,35 @@ try {
                 // Check for glitches in audio; we want to send a bad-call event to restart the call if there are too many of them.
                 if (temp0 <= -100)
                 {
-                    // Whenever new silence detected, add 3 seconds of error.
+                    // Whenever new silence detected, add 2 seconds of error.
                     if (!incomingSilence)
                     {
                         incomingSilence = true;
                         if (window.peerError >= 0 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on"))
-                            window.peerError += 3000;
+                            window.peerError += 2000;
                         //console.log(window.peerError);
-                        // For continuing silence, add 1000/50 milliseconds of error.
+                        // For continuing silence, add 1000/25 milliseconds of error.
                     } else {
                         if (window.peerError >= 0 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on"))
-                            window.peerError += 1000 / 50;
+                            window.peerError += 1000 / 25;
                         //console.log(window.peerError);
                     }
 
-                    // When error exceeds 9 seconds, trigger bad-call event
-                    if (window.peerError >= 9000)
+                    // When error exceeds 8 seconds, that is a problem
+                    if (window.peerError >= 8000)
                     {
-                        hostReq.request({method: 'POST', url: '/call/bad', data: {}}, function (body) {});
-                        window.peerError = -1;
+                        // Choppiness is not considered consistent yet? call call/bad to trigger bad-call event to restart the call.
+                        if (window.peerErrorMajor < 24000)
+                        {
+                            window.peerErrorMajor += 8000;
+                            hostReq.request({method: 'POST', url: '/call/bad', data: {}}, function (body) {});
+                            window.peerError = -1;
+                            // Choppiness consistent? Call call/give-up to trigger very-bad-call event and switch to a break in error.
+                        } else {
+                            window.peerErrorMajor = 0;
+                            hostReq.request({method: 'POST', url: '/call/give-up', data: {}}, function (body) {});
+                            window.peerError = -2;
+                        }
                     }
 
                     // When call is good, subtract 1000/50 milliseconds of error
@@ -259,6 +270,9 @@ try {
                     window.peerError -= 1000 / 50;
                     if (window.peerError < 0)
                         window.peerError = 0;
+                    window.peerErrorMajor -= 1000 / 50;
+                    if (window.peerErrorMajor < 0)
+                        window.peerErrorMajor = 0;
                 }
             } else {
                 var temp8 = document.querySelector(`#audio-call-icon`);
@@ -1487,6 +1501,51 @@ try {
             }
         }
     });
+
+    socket.on('very-bad-call', function () {
+        if (typeof outgoingCall !== `undefined`)
+        {
+            
+            outgoingCloseIgnore = true;
+            console.log(`Closing call via very-bad-call event`);
+            outgoingCall.close();
+            outgoingCall = undefined;
+            outgoingCloseIgnore = false;
+
+            var notification = notifier.notify('Poor Audio Connection', {
+                message: `Please check DJ Controls for more information.`,
+                icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+                duration: 900000,
+            });
+            main.flashTaskbar();
+
+            iziToast.show({
+                titleColor: '#000000',
+                messageColor: '#000000',
+                color: 'red',
+                close: true,
+                overlay: true,
+                overlayColor: 'rgba(0, 0, 0, 0.75)',
+                zindex: 1000,
+                layout: 1,
+                imageWidth: 100,
+                image: ``,
+                maxWidth: 480,
+                progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                closeOnClick: false,
+                position: 'center',
+                timeout: false,
+                title: 'Poor Audio Quality',
+                message: `The host receiving audio repeatedly reported choppy audio despite multiple tries to restart the audio call. I sent you to a break. Please ensure you have a reliable network and your audio device is receiving input. Then, click "Resume Broadcast". Or, you can close this window and change settings or end the broadcast.`,
+                buttons: [
+                    ['<button><b>Resume Broadcast</b></button>', function (instance, toast) {
+                            instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            returnBreak();
+                        }]
+                ]
+            });
+        }
+    })
 
     var messageFlash2;
     var messageFlash = setInterval(function () {

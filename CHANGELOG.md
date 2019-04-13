@@ -9,10 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for new configuration system in the server via admin menu -> server configuration.
 - Make direct API queries to the WWSU system from the admin menu.
 - Taskbar icon displays a progress bar counting down queue time from 100 seconds when starting a broadcast or returning from break.
+- During a remote broadcast, the receiving DJ Controls will monitor for audio choppiness. If choppy, it will call call/bad, which triggers the other DJ Controls to restart the audio call. If really bad, will trigger call/give-up, which sends the system into break.
 
 ### Changed
 - Timesheet window in admin options -> manage directors -> timesheets now displays timesheets as vertical Gantt Charts.
 - All applicable operation buttons and queue timer is now always visible in WWSU Operations.
+- Peer.js uses constant bit rate and sets bitrate parameters to try for a higher quality connection.
 
 ### Fixed
 - "Cannot read property muted of undefined" error that sometimes appeared and prevented operation buttons from appearing.
