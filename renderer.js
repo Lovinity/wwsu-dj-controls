@@ -726,7 +726,7 @@ try {
                 
                 res.media.map((media, index) => {
                     media.fmtp.map((fmtp, index2) => {
-                        res.media[index].fmtp[index2].config += `;stereo=1;sprop-stereo=1;x-google-start-bitrate=128;x-google-max-bitrate=128;cbr=1;maxaveragebitrate=${128*1024}`;
+                        res.media[index].fmtp[index2].config += `;stereo=1;sprop-stereo=1;x-google-min-bitrate=128;x-google-start-bitrate=128;x-google-max-bitrate=128;cbr=1;maxaveragebitrate=${128*1024}`;
                     });
                 });
                 res = transform.write(res);
