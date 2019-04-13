@@ -723,10 +723,10 @@ try {
                 };
 
                 var res = transform.parse(setMediaBitrates(sdp));
-                
+
                 res.media.map((media, index) => {
                     media.fmtp.map((fmtp, index2) => {
-                        res.media[index].fmtp[index2].config += `;stereo=1;sprop-stereo=1;x-google-start-bitrate=128;x-google-max-bitrate=128;cbr=1;maxaveragebitrate=${128*1024}`;
+                        res.media[index].fmtp[index2].config += `;stereo=1;sprop-stereo=1;x-google-start-bitrate=128;x-google-max-bitrate=128;cbr=1;maxaveragebitrate=${192 * 1024}`;
                     });
                 });
                 res = transform.write(res);
@@ -11196,9 +11196,11 @@ function sendDisplay() {
 }
 
 function endShow() {
+    outgoingCloseIgnore = true;
     hostReq.request({method: 'POST', url: nodeURL + '/state/automation'}, function (response) {
         if (typeof response.showTime === 'undefined')
         {
+            outgoingCloseIgnore = false;
             iziToast.show({
                 title: 'An error occurred',
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
@@ -11218,7 +11220,6 @@ function endShow() {
             try {
                 window.peerDevice = undefined;
                 window.peerHost = undefined;
-                outgoingCloseIgnore = true;
                 console.log(`Closing call via endShow`);
                 outgoingCall.close();
                 outgoingCall = undefined;
@@ -11233,9 +11234,11 @@ function endShow() {
 }
 
 function switchShow() {
+    outgoingCloseIgnore = true;
     hostReq.request({method: 'POST', url: nodeURL + '/state/automation', data: {transition: true}}, function (response) {
         if (typeof response.showTime === 'undefined')
         {
+            outgoingCloseIgnore = false;
             iziToast.show({
                 title: 'An error occurred',
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
