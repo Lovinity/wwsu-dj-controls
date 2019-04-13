@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = true;
+    var development = false;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -726,7 +726,7 @@ try {
                 
                 res.media.map((media, index) => {
                     media.fmtp.map((fmtp, index2) => {
-                        res.media[index].fmtp[index2].config += `;stereo=1;sprop-stereo=1;x-google-min-bitrate=128;x-google-start-bitrate=128;x-google-max-bitrate=128;cbr=1;maxaveragebitrate=${128*1024}`;
+                        res.media[index].fmtp[index2].config += `;stereo=1;sprop-stereo=1;x-google-start-bitrate=128;x-google-max-bitrate=128;cbr=1;maxaveragebitrate=${128*1024}`;
                     });
                 });
                 res = transform.write(res);
@@ -8106,7 +8106,6 @@ function recipientsSocket() {
         //console.log(body);
         try {
             processRecipients(body, true);
-            prepareRemote();
         } catch (e) {
             console.error(e);
             console.log('FAILED recipients CONNECTION');
@@ -8322,7 +8321,7 @@ function doMeta(metan) {
                 } else {
                     if (temp !== null)
                     {
-                        temp.muted = false;
+                        temp.muted = true;
                         console.log(`MUTED remote audio`);
                     }
                 }
@@ -8331,7 +8330,7 @@ function doMeta(metan) {
             } else {
                 if (temp !== null)
                 {
-                    temp.muted = false;
+                    temp.muted = true;
                     console.log(`MUTED remote audio`);
                 }
             }
@@ -10811,7 +10810,6 @@ function _goRemote() {
     startCall(selectedOption, (success) => {
         if (success)
         {
-            return null;
             hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || calType !== `Remote`) ? document.querySelector('#remote-topic').value : calTopic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
                 if (response === 'OK')
                 {
