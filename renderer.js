@@ -713,61 +713,7 @@ try {
         }
 
         window.peerHost = hostID;
-        outgoingCall = peer.call(peerID, window.peerStream, {sdpTransform: (sdp) => {
-                // Transform the sdp offer to request a higher bitrate for audio.
-
-                var setMediaBitrates = (sdp) => {
-                    return setMediaBitrate(sdp, "audio", 128);
-                };
-
-                var setMediaBitrate = (sdp, media, bitrate) => {
-                    var lines = sdp.split("\n");
-                    var line = -1;
-                    for (var i = 0; i < lines.length; i++) {
-                        if (lines[i].indexOf("m=" + media) === 0) {
-                            line = i;
-                            break;
-                        }
-                    }
-                    if (line === -1) {
-                        console.log("Could not find the m line for", media);
-                        return sdp;
-                    }
-                    console.log("Found the m line for", media, "at line", line);
-
-                    // Pass the m line
-                    line++;
-
-                    // Skip i and c lines
-                    while (lines[line].indexOf("i=") === 0 || lines[line].indexOf("c=") === 0) {
-                        line++;
-                    }
-
-                    // If we're on a b line, replace it
-                    if (lines[line].indexOf("b") === 0) {
-                        console.log("Replaced b line at line", line);
-                        lines[line] = "b=AS:" + bitrate;
-                        return lines.join("\n");
-                    }
-
-                    // Add a new b line
-                    console.log("Adding new b line before line", line);
-                    var newLines = lines.slice(0, line);
-                    newLines.push("b=AS:" + bitrate);
-                    newLines = newLines.concat(lines.slice(line, lines.length));
-                    return newLines.join("\n");
-                };
-
-                var res = transform.parse(setMediaBitrates(sdp));
-
-                res.media.map((media, index) => {
-                    media.fmtp.map((fmtp, index2) => {
-                        res.media[index].fmtp[index2].config += `;stereo=1;sprop-stereo=1;x-google-start-bitrate=128;x-google-max-bitrate=128;cbr=1;maxaveragebitrate=192000;`;
-                    });
-                });
-                res = transform.write(res);
-                return res;
-            }});
+        outgoingCall = peer.call(peerID, window.peerStream);
 
         callTimerSlot = 10;
 
