@@ -799,8 +799,9 @@ try {
             "audio": {
                 deviceId: device ? {exact: device} : undefined,
                 echoCancellation: false,
-                AutoGainControl: false,
+                AutoGainControl: true,
                 noiseSuppression: false,
+                channelCount: 2
             },
             video: false
         })
@@ -957,6 +958,7 @@ try {
                 echoCancellation: false,
                 AutoGainControl: true,
                 noiseSuppression: false,
+                channelCount: 2
             },
             video: false
         })
