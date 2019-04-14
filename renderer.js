@@ -799,9 +799,6 @@ try {
             "audio": {
                 deviceId: device ? {exact: device} : undefined,
                 echoCancellation: false,
-                AutoGainControl: true,
-                noiseSuppression: false,
-                channelCount: 2
             },
             video: false
         })
@@ -956,9 +953,6 @@ try {
             "audio": {
                 deviceId: device ? {exact: device} : undefined,
                 echoCancellation: false,
-                AutoGainControl: true,
-                noiseSuppression: false,
-                channelCount: 2
             },
             video: false
         })
