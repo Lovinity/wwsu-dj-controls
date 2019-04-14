@@ -801,7 +801,6 @@ try {
                 echoCancellation: false,
                 AutoGainControl: false,
                 noiseSuppression: false,
-                channelCount: {exact: 2}
             },
             video: false
         })
@@ -958,7 +957,6 @@ try {
                 echoCancellation: false,
                 AutoGainControl: true,
                 noiseSuppression: false,
-                channelCount: {exact: 2}
             },
             video: false
         })
