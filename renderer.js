@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = false;
+    var development = true;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -505,7 +505,7 @@ try {
                     }
                     incomingCall = connection;
                     incomingCall.answer(new MediaStream(), {
-                        audioBandwidth: 64,
+                        audioBandwidth: 96,
                         audioReceiveEnabled: true
                     });
                     clearTimeout(callDropTimer);
@@ -719,7 +719,7 @@ try {
 
         window.peerHost = hostID;
         outgoingCall = peer.call(peerID, window.peerStream, {
-            audioBandwidth: 64
+            audioBandwidth: 96
         });
 
         callTimerSlot = 10;
