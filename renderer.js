@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = true;
+    var development = false;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -245,6 +245,7 @@ try {
                         {
                             connections[connection].map((connectionObject) => {
                                 //console.dir(connectionObject);
+                                try {
                                 connectionObject._negotiator._pc.getStats(function callback(connStats) {
                                     var rtcStatsReports = connStats.result();
                                     rtcStatsReports
@@ -290,7 +291,10 @@ try {
                                                             prevPLC = value;
                                                         });
                                             });
-                                })
+                                });
+                            } catch (e) {
+                                
+                            }
                             });
                         }
                         //}
@@ -507,7 +511,7 @@ try {
                     }
                     incomingCall = connection;
                     incomingCall.answer(new MediaStream(), {
-                        audioBandwidth: 128,
+                        audioBandwidth: 96,
                         audioReceiveEnabled: true
                     });
                     clearTimeout(callDropTimer);
@@ -721,7 +725,7 @@ try {
 
         window.peerHost = hostID;
         outgoingCall = peer.call(peerID, window.peerStream, {
-            audioBandwidth: 128
+            audioBandwidth: 96
         });
 
         callTimerSlot = 10;
