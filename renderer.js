@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = true;
+    var development = false;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -244,7 +244,8 @@ try {
                         if (connections[connection].length > 0)
                         {
                             connections[connection].map((connectionObject) => {
-                                connectionObject.peerConnection.getStats(function callback(connStats) {
+                                console.dir(connectionObject);
+                                connectionObject._negotiator._pc.getStats(function callback(connStats) {
                                     var rtcStatsReports = connStats.result();
                                     rtcStatsReports
                                             .filter((stat) => stat.type === `ssrc`)
@@ -5351,6 +5352,10 @@ document.querySelector("#btn-options-api").onclick = function () {
     }
 };
 
+document.querySelector("#btn-options-devtools").onclick = function () {
+    main.openDevTools();
+};
+
 document.querySelector("#btn-options-directors").onclick = function () {
     try {
         $("#options-modal-directors").iziModal('open');
@@ -5685,7 +5690,7 @@ document.querySelector("#btn-options-calendar").onclick = function () {
 
             for (var k in formatted) {
 
-                calendar.innerHTML += `<div class="row m-1 bg-info">
+                calendardom.innerHTML += `<div class="row m-1 bg-info">
                                 <div class="col-12 text-light" style="text-align: center;">
                                     ${k}
                                 </div>
@@ -5693,7 +5698,7 @@ document.querySelector("#btn-options-calendar").onclick = function () {
 
 
                 if (formatted[k].length > 0)
-                    formatted[k].map(record => calendar.innerHTML += record);
+                    formatted[k].map(record => calendardom.innerHTML += record);
             }
         }
     } catch (err) {

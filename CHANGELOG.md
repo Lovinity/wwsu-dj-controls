@@ -14,12 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Timesheet window in admin options -> manage directors -> timesheets now displays timesheets as vertical Gantt Charts.
 - All applicable operation buttons and queue timer is now always visible in WWSU Operations.
+- Using skywayJS instead of peerJS. In a future version, we may make use of media rooms opposed to p2p calls.
 
 ### Fixed
 - "Cannot read property muted of undefined" error that sometimes appeared and prevented operation buttons from appearing.
-
-### Removed
-- Peer.js and remote / sports remote broadcasts have been temporarily disabled due to instability and a deadline for the version 6 app. Hopefully, it will be fixed in a later version.
 
 ## [5.1.2] - 2019-03-23
 ### Added
