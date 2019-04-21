@@ -283,8 +283,9 @@ try {
                                                                                 bitRate -= 32;
                                                                                 console.log(`Also requesting a new bitrate: ${bitRate} kbps.`);
                                                                                 window.peerErrorBitrate = 0;
+                                                                            } else {
+                                                                                window.peerErrorBitrate = 30;
                                                                             }
-                                                                            window.peerErrorBitrate = 30;
                                                                             hostReq.request({method: 'POST', url: '/call/bad', data: {bitRate: bitRate}}, function (body) {});
                                                                             window.peerError = -1;
                                                                         }
