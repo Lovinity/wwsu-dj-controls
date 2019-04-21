@@ -259,42 +259,56 @@ try {
                                                             .filter((property) => property === `googDecodingPLC`)
                                                             .map((property) => {
                                                                 var value = stat.stat(property);
+
+                                                                // Choppiness was detected in the last second
                                                                 if (value > prevPLC)
                                                                 {
-                                                                    window.peerError += (value - prevPLC);
-                                                                    window.peerGoodBitrate -= 10;
-                                                                    console.log(`Choppiness detected! Current threshold: ${window.peerError}/${(bitRate / 2)}`);
+                                                                    // Increase error counters and decrease good bitrate counter. Generally, we want the system to trigger call restarts when packet loss averages 4%+.
+                                                                    window.peerError += (value - prevPLC) / 2;
+                                                                    window.peerGoodBitrate -= (value - prevPLC) / 2;
+
+                                                                    console.log(`Choppiness detected! Current threshold: ${window.peerError}/30`);
 
                                                                     // When error exceeds a certain threshold, that is a problem!
-                                                                    if (window.peerError >= (bitRate / 2))
+                                                                    if (window.peerError >= 30)
                                                                     {
-                                                                        // Choppiness is not considered consistent yet? call call/bad to trigger bad-call event to restart the call. Maybe reduce bitRate if necessary.
-                                                                        // Choppiness consistent? Call goBreak and call/give-up to trigger very-bad-call event and switch to a break in error.
-                                                                        if (window.peerErrorMajor >= 45 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on")) {
+                                                                        // Send the system into break if we are in 64kbps and still having audio issues.
+                                                                        if (window.peerErrorMajor >= 30 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on")) {
                                                                             window.peerErrorMajor = 0;
-                                                                            console.log(`Audio call choppiness consistently is a problem! Requesting to give up and sending system to break.`);
+                                                                            console.log(`Audio call remains choppy even on the lowest allowed bitrate of 64kbps. Giving up by sending the system into break.`);
                                                                             if (!disconnected)
                                                                                 goBreak(false);
                                                                             hostReq.request({method: 'POST', url: '/call/give-up', data: {}}, function (body) {});
                                                                             window.peerError = -2;
                                                                         } else {
-                                                                            window.peerErrorMajor += 15;
-                                                                            console.log(`Audio call choppiness is bad! Requesting a re-call.`);
-                                                                            if (window.peerErrorBitrate > 0 && bitRate >= 64)
+
+                                                                            // Do not contribute to the possibility of giving up the audio call unless we are on the minimum allowed bitrate of 64kbps.
+                                                                            if (bitRate <= 64)
+                                                                                window.peerErrorMajor += 15;
+
+                                                                            console.log(`Audio choppiness threshold exceeded! Requesting call restart.`);
+
+                                                                            // Reduce the bitrate by 32kbps (with a minimum allowed of 64kbps) if we reach the choppy threshold multiple times in 15-30 seconds.
+                                                                            if (window.peerErrorBitrate > 0 && bitRate >= 96)
                                                                             {
                                                                                 bitRate -= 32;
                                                                                 console.log(`Also requesting a lower bitrate: ${bitRate} kbps.`);
-                                                                                window.peerErrorBitrate = 0;
+                                                                                window.peerErrorBitrate = 10;
                                                                             } else {
                                                                                 window.peerErrorBitrate = 30;
                                                                             }
+
+                                                                            // Reset the good bitrate counter; we are not having a good connection.
                                                                             window.peerGoodBitrate = 0;
+
                                                                             hostReq.request({method: 'POST', url: '/call/bad', data: {bitRate: bitRate}}, function (body) {});
+
                                                                             window.peerError = -1;
                                                                         }
                                                                     }
+                                                                    // Connection was good in the last second. Lower any error counters and also increase the good bitrate counter
                                                                 } else {
-                                                                    window.peerError -= (bitRate / 32);
+                                                                    window.peerError -= 1;
                                                                     if (window.peerError < 0)
                                                                         window.peerError = 0;
                                                                     window.peerErrorMajor -= 1;
@@ -8322,7 +8336,7 @@ function doMeta(metan) {
         } else {
             document.querySelector('#queue-music').style.display = "none";
         }
-        
+
         if (typeof metan.state !== `undefined` && (Meta.state === "remote_break" || Meta.state === "sportsremote_break") && window.peerGoodBitrate >= 180 && bitRate < 128 && typeof incomingCall !== `undefined`)
         {
             window.peerGoodBitrate = 0;
@@ -8337,7 +8351,7 @@ function doMeta(metan) {
             // Disconnect outgoing calls on automation and halftime break
             if (Meta.state === "sportsremote_halftime" || Meta.state === "automation_on" || Meta.state === "automation_break" || Meta.state === "automation_genre" || Meta.state === "automation_playlist" || Meta.state === "automation_prerecord" || Meta.state.startsWith("live_") || Meta.state.startsWith("sports_"))
             {
-                
+
                 try {
                     outgoingCloseIgnore = true;
                     console.log(`Closing outgoing call via doMeta`);
@@ -8379,7 +8393,7 @@ function doMeta(metan) {
                     }
                 }
 
-            // Mute audio and reset bitrate if not in any sportremote nor remote state
+                // Mute audio and reset bitrate if not in any sportremote nor remote state
             } else {
                 if (temp !== null)
                 {
