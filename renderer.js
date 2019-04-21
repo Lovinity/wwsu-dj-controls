@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = true;
+    var development = false;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -48,6 +48,7 @@ try {
     window.peerDevice = undefined;
     window.peerHost = undefined;
     window.peerError = 0;
+    window.peerGoodBitrate = 0;
     window.peerErrorBitrate = 0;
     window.peerErrorMajor = 0;
     window.mainStream = undefined;
@@ -261,14 +262,15 @@ try {
                                                                 if (value > prevPLC)
                                                                 {
                                                                     window.peerError += (value - prevPLC);
-                                                                    console.log(`Choppiness detected! Current threshold: ${window.peerError}/50`);
+                                                                    window.peerGoodBitrate -= 10;
+                                                                    console.log(`Choppiness detected! Current threshold: ${window.peerError}/${(bitRate / 2)}`);
 
                                                                     // When error exceeds a certain threshold, that is a problem!
-                                                                    if (window.peerError >= 50)
+                                                                    if (window.peerError >= (bitRate / 2))
                                                                     {
                                                                         // Choppiness is not considered consistent yet? call call/bad to trigger bad-call event to restart the call. Maybe reduce bitRate if necessary.
                                                                         // Choppiness consistent? Call goBreak and call/give-up to trigger very-bad-call event and switch to a break in error.
-                                                                        if (window.peerErrorMajor >= 150 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on")) {
+                                                                        if (window.peerErrorMajor >= 45 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on")) {
                                                                             window.peerErrorMajor = 0;
                                                                             console.log(`Audio call choppiness consistently is a problem! Requesting to give up and sending system to break.`);
                                                                             if (!disconnected)
@@ -276,30 +278,32 @@ try {
                                                                             hostReq.request({method: 'POST', url: '/call/give-up', data: {}}, function (body) {});
                                                                             window.peerError = -2;
                                                                         } else {
-                                                                            window.peerErrorMajor += 50;
+                                                                            window.peerErrorMajor += 15;
                                                                             console.log(`Audio call choppiness is bad! Requesting a re-call.`);
                                                                             if (window.peerErrorBitrate > 0 && bitRate >= 64)
                                                                             {
                                                                                 bitRate -= 32;
-                                                                                console.log(`Also requesting a new bitrate: ${bitRate} kbps.`);
+                                                                                console.log(`Also requesting a lower bitrate: ${bitRate} kbps.`);
                                                                                 window.peerErrorBitrate = 0;
                                                                             } else {
                                                                                 window.peerErrorBitrate = 30;
                                                                             }
+                                                                            window.peerGoodBitrate = 0;
                                                                             hostReq.request({method: 'POST', url: '/call/bad', data: {bitRate: bitRate}}, function (body) {});
                                                                             window.peerError = -1;
                                                                         }
                                                                     }
                                                                 } else {
-                                                                    window.peerError -= 3;
+                                                                    window.peerError -= (bitRate / 32);
                                                                     if (window.peerError < 0)
                                                                         window.peerError = 0;
-                                                                    window.peerErrorMajor -= 3;
+                                                                    window.peerErrorMajor -= 1;
                                                                     if (window.peerErrorMajor < 0)
                                                                         window.peerErrorMajor = 0;
                                                                     window.peerErrorBitrate -= 1;
                                                                     if (window.peerErrorBitrate < 0)
                                                                         window.peerErrorBitrate = 0;
+                                                                    window.peerGoodBitrate += 1;
                                                                 }
                                                                 prevPLC = value;
                                                             });
@@ -762,28 +766,6 @@ try {
 
                 if (document.querySelector(`.peerjs-waiting`) !== null)
                     iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
-
-                if (reconnect)
-                {
-                    iziToast.show({
-                        titleColor: '#000000',
-                        messageColor: '#000000',
-                        color: 'green',
-                        close: true,
-                        overlay: false,
-                        overlayColor: 'rgba(0, 0, 0, 0.75)',
-                        zindex: 1000,
-                        layout: 1,
-                        imageWidth: 100,
-                        image: ``,
-                        progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                        closeOnClick: true,
-                        position: 'center',
-                        timeout: 10000,
-                        title: 'Audio Call Re-Established',
-                        message: `The audio call was re-established.`
-                    });
-                }
 
                 outgoingCall.on(`close`, () => {
                     console.log(`CALL CLOSED.`);
@@ -8339,6 +8321,14 @@ function doMeta(metan) {
             document.querySelector('#queue-music').style.display = "inline";
         } else {
             document.querySelector('#queue-music').style.display = "none";
+        }
+        
+        if (typeof metan.state !== `undefined` && (Meta.state === "remote_break" || Meta.state === "sportsremote_break") && window.peerGoodBitrate >= 180 && bitRate < 128 && typeof incomingCall !== `undefined`)
+        {
+            window.peerGoodBitrate = 0;
+            bitRate += 32;
+            console.log(`Connection has been consistently good; requesting a bitrate bump to ${bitRate} kbps.`);
+            hostReq.request({method: 'POST', url: '/call/bad', data: {bitRate: bitRate}}, function (body) {});
         }
 
         // Do stuff if the state changed
