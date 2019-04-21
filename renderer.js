@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = false;
+    var development = true;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -48,6 +48,7 @@ try {
     window.peerDevice = undefined;
     window.peerHost = undefined;
     window.peerError = 0;
+    window.peerErrorBitrate = 0;
     window.peerErrorMajor = 0;
     window.mainStream = undefined;
     window.mainDevice = undefined;
@@ -55,6 +56,7 @@ try {
     window.mainVolume = -100;
     var outgoingPeer;
     var outgoingCall;
+    var bitRate = 128;
     var incomingCall;
     var incomingCloseIgnore = false;
     var outgoingCloseIgnore = false;
@@ -213,7 +215,7 @@ try {
                 if (temp8 !== null)
                 {
                     var percent = window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0;
-                    temp8.style.color = `rgb(0, ${percent < 100 ? parseInt(percent + 155) : 255}, 0)`;
+                    temp8.style.color = `rgb(0, ${percent < 100 ? parseInt((percent * 2) + 55) : 255}, 0)`;
                 }
             } else if (typeof waitingFor !== 'undefined' || window.peerError === -2) {
                 var temp8 = document.querySelector(`#audio-call-icon`);
@@ -228,7 +230,7 @@ try {
                 if (temp8 !== null)
                 {
                     var percent = temp0 > -50 ? ((temp0 + 50) * 4) : 0;
-                    temp8.style.color = `rgb(0, ${percent < 100 ? parseInt(percent + 155) : 255}, ${percent < 100 ? parseInt(percent + 155) : 255})`;
+                    temp8.style.color = `rgb(0, ${percent < 100 ? parseInt((percent * 2) + 55) : 255}, ${percent < 100 ? parseInt((percent * 2) + 55) : 255})`;
                 }
 
                 // Check for glitches in audio every second; we want to send a bad-call event to restart the call if there are too many of them.
@@ -246,55 +248,64 @@ try {
                             connections[connection].map((connectionObject) => {
                                 //console.dir(connectionObject);
                                 try {
-                                connectionObject._negotiator._pc.getStats(function callback(connStats) {
-                                    var rtcStatsReports = connStats.result();
-                                    rtcStatsReports
-                                            .filter((stat) => stat.type === `ssrc`)
-                                            .map((stat, index) => {
-                                                var properties = stat.names();
-                                                properties
-                                                        .filter((property) => property === `googDecodingPLC`)
-                                                        .map((property) => {
-                                                            var value = stat.stat(property);
-                                                            if (value > prevPLC)
-                                                            {
-                                                                window.peerError += (value - prevPLC);
-                                                                console.log(`Choppiness detected! Current threshold: ${window.peerError}/50`);
-
-                                                                // When error exceeds a certain threshold, that is a problem!
-                                                                if (window.peerError >= 50)
+                                    connectionObject._negotiator._pc.getStats(function callback(connStats) {
+                                        var rtcStatsReports = connStats.result();
+                                        rtcStatsReports
+                                                .filter((stat) => stat.type === `ssrc`)
+                                                .map((stat, index) => {
+                                                    var properties = stat.names();
+                                                    properties
+                                                            .filter((property) => property === `googDecodingPLC`)
+                                                            .map((property) => {
+                                                                var value = stat.stat(property);
+                                                                if (value > prevPLC)
                                                                 {
-                                                                    // Choppiness is not considered consistent yet? call call/bad to trigger bad-call event to restart the call.
-                                                                    // Choppiness consistent? Call goBreak and call/give-up to trigger very-bad-call event and switch to a break in error.
-                                                                    if (window.peerErrorMajor >= 150 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on")) {
-                                                                        window.peerErrorMajor = 0;
-                                                                        console.log(`Audio call choppiness consistently is a problem! Requesting to give up and sending system to break.`);
-                                                                        if (!disconnected)
-                                                                            goBreak(false);
-                                                                        hostReq.request({method: 'POST', url: '/call/give-up', data: {}}, function (body) {});
-                                                                        window.peerError = -2;
-                                                                    } else {
-                                                                        window.peerErrorMajor += 50;
-                                                                        console.log(`Audio call choppiness is bad! Requesting a re-call.`);
-                                                                        hostReq.request({method: 'POST', url: '/call/bad', data: {}}, function (body) {});
-                                                                        window.peerError = -1;
+                                                                    window.peerError += (value - prevPLC);
+                                                                    console.log(`Choppiness detected! Current threshold: ${window.peerError}/50`);
+
+                                                                    // When error exceeds a certain threshold, that is a problem!
+                                                                    if (window.peerError >= 50)
+                                                                    {
+                                                                        // Choppiness is not considered consistent yet? call call/bad to trigger bad-call event to restart the call. Maybe reduce bitRate if necessary.
+                                                                        // Choppiness consistent? Call goBreak and call/give-up to trigger very-bad-call event and switch to a break in error.
+                                                                        if (window.peerErrorMajor >= 150 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on")) {
+                                                                            window.peerErrorMajor = 0;
+                                                                            console.log(`Audio call choppiness consistently is a problem! Requesting to give up and sending system to break.`);
+                                                                            if (!disconnected)
+                                                                                goBreak(false);
+                                                                            hostReq.request({method: 'POST', url: '/call/give-up', data: {}}, function (body) {});
+                                                                            window.peerError = -2;
+                                                                        } else {
+                                                                            window.peerErrorMajor += 50;
+                                                                            console.log(`Audio call choppiness is bad! Requesting a re-call.`);
+                                                                            if (window.peerErrorBitrate > 0 && bitRate >= 64)
+                                                                            {
+                                                                                bitRate -= 32;
+                                                                                console.log(`Also requesting a new bitrate: ${bitRate} kbps.`)
+                                                                            }
+                                                                            window.peerErrorBitrate = 30;
+                                                                            hostReq.request({method: 'POST', url: '/call/bad', data: {bitRate: bitRate}}, function (body) {});
+                                                                            window.peerError = -1;
+                                                                        }
                                                                     }
+                                                                } else {
+                                                                    window.peerError -= 3;
+                                                                    if (window.peerError < 0)
+                                                                        window.peerError = 0;
+                                                                    window.peerErrorMajor -= 3;
+                                                                    if (window.peerErrorMajor < 0)
+                                                                        window.peerErrorMajor = 0;
+                                                                    window.peerErrorBitrate -= 1;
+                                                                    if (window.peerErrorBitrate < 0)
+                                                                        window.peerErrorBitrate = 0;
                                                                 }
-                                                            } else {
-                                                                window.peerError -= 3;
-                                                                if (window.peerError < 0)
-                                                                    window.peerError = 0;
-                                                                window.peerErrorMajor -= 3;
-                                                                if (window.peerErrorMajor < 0)
-                                                                    window.peerErrorMajor = 0;
-                                                            }
-                                                            prevPLC = value;
-                                                        });
-                                            });
-                                });
-                            } catch (e) {
-                                
-                            }
+                                                                prevPLC = value;
+                                                            });
+                                                });
+                                    });
+                                } catch (e) {
+
+                                }
                             });
                         }
                         //}
@@ -511,7 +522,7 @@ try {
                     }
                     incomingCall = connection;
                     incomingCall.answer(new MediaStream(), {
-                        audioBandwidth: 96,
+                        audioBandwidth: bitRate,
                         audioReceiveEnabled: true
                     });
                     clearTimeout(callDropTimer);
@@ -523,22 +534,26 @@ try {
 
                         if (!incomingCloseIgnore)
                         {
-                            console.log(`Not ignoring!`);
+                            console.log(`This was premature!`);
                             window.peerError = -1;
                             var callDropFn = () => {
-                                if (Meta.state === 'sportsremote_on' || Meta.state === 'remote_on')
+                                if (typeof incomingCall !== `undefined`)
                                 {
-                                    console.log(`Going to break.`)
+                                    console.log(`Incoming call was re-established. Stopping the checks.`);
+                                } else if (!Meta.playing && (Meta.state === 'sportsremote_on' || Meta.state === 'remote_on'))
+                                {
+                                    console.log(`Since nothing else is playing, sending system into break!`)
                                     goBreak(false);
                                     window.peerError = -2;
-                                } else if (Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote' || Meta.state === "sportsremote_returning" || Meta.state === "remote_returning")
+                                } else if (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote' || Meta.state === "sportsremote_returning" || Meta.state === "remote_returning" || Meta.state === "remote_break" || Meta.state === "sportsremote_break")
                                 {
-                                    console.log(`Restarting with a 5 second timer.`);
+                                    console.log(`Something else is playing in RadioDJ, so ignore for now and check again in 10 seconds.`);
+                                    window.peerError = -2;
                                     callDropTimer = setTimeout(() => {
                                         callDropFn();
-                                    }, 5000);
+                                    }, 10000);
                                 } else {
-                                    console.log(`We are actually not doing a remote broadcast. Ignoring disconnection.`);
+                                    console.log(`Stopping checks; we are not actually supposed to be in a call right now.`);
                                     window.peerError = 0;
                                 }
                             };
@@ -554,7 +569,7 @@ try {
         });
     }
 
-    function startCall(hostID, cb, reconnect = false) {
+    function startCall(hostID, cb, reconnect = false, bitrate = bitRate) {
         var callFailed = (keepTrying) => {
             try {
                 outgoingCloseIgnore = true;
@@ -724,8 +739,9 @@ try {
         }
 
         window.peerHost = hostID;
+        bitRate = bitrate;
         outgoingCall = peer.call(peerID, window.peerStream, {
-            audioBandwidth: 96
+            audioBandwidth: bitRate
         });
 
         callTimerSlot = 10;
@@ -774,20 +790,20 @@ try {
 
                     if (!outgoingCloseIgnore)
                     {
-                        console.log(`Not ignoring!`);
-                        if (Meta.state.startsWith(`remote_`) || Meta.state.startsWith(`sportsremote_`) || Meta.state === `automation_remote` || Meta.state === `automation_sportsremote`)
+                        console.log(`This was premature!`);
+                        if (!Meta.state.includes("_halftime") && (Meta.state.startsWith(`remote_`) || Meta.state.startsWith(`sportsremote_`) || Meta.state === `automation_remote` || Meta.state === `automation_sportsremote`))
                         {
                             window.peerError = -1;
-                            console.log(`Reconnecting...`);
+                            console.log(`Trying to re-connect...`);
                             startCall(host.host, (success) => {
                                 if (success)
                                 {
-                                    console.log(`re-connected`);
+                                    console.log(`re-connected!`);
                                 }
                             }, true);
                         } else {
                             window.peerError = 0;
-                            console.log(`NOT reconnecting; we are not in any remote nor sportsremote states.`)
+                            console.log(`NOT reconnecting; we are not supposed to be connected to the call at this time.`)
                         }
                     }
                     outgoingCloseIgnore = false;
@@ -1461,7 +1477,7 @@ try {
         loadTimesheets(moment(document.querySelector("#options-timesheets-date").value));
     });
 
-    socket.on('bad-call', function () {
+    socket.on('bad-call', function (bitRate) {
         if (typeof outgoingCall !== `undefined`)
         {
             window.peerError = 0;
@@ -1475,7 +1491,7 @@ try {
             {
                 window.peerError = -1;
                 startCall(window.peerHost, (success) => {
-                }, true);
+                }, true, bitRate);
             }
         }
     });
@@ -8326,9 +8342,10 @@ function doMeta(metan) {
         // Do stuff if the state changed
         if (typeof metan.state !== 'undefined' || typeof metan.playing !== 'undefined')
         {
-            // Disconnect outgoing calls on breaks and automation
-            if (Meta.state === "remote_break" || Meta.state === "sportsremote_break" || Meta.state === "sportsremote_halftime" || Meta.state === "automation_on" || Meta.state === "automation_break" || Meta.state === "automation_genre" || Meta.state === "automation_playlist" || Meta.state === "automation_prerecord" || Meta.state.startsWith("live_") || Meta.state.startsWith("sports_"))
+            // Disconnect outgoing calls on automation and halftime break
+            if (Meta.state === "sportsremote_halftime" || Meta.state === "automation_on" || Meta.state === "automation_break" || Meta.state === "automation_genre" || Meta.state === "automation_playlist" || Meta.state === "automation_prerecord" || Meta.state.startsWith("live_") || Meta.state.startsWith("sports_"))
             {
+                
                 try {
                     outgoingCloseIgnore = true;
                     console.log(`Closing outgoing call via doMeta`);
@@ -8370,14 +8387,16 @@ function doMeta(metan) {
                     }
                 }
 
-                // Mute audio if not in any sportremote nor remote state
+            // Mute audio and reset bitrate if not in any sportremote nor remote state
             } else {
                 if (temp !== null)
                 {
+                    bitRate = 128;
                     temp.muted = !development;
                     console.log(`MUTED remote audio`);
                     window.peerError = 0;
                     window.peerErrorMajor = 0;
+                    window.peerErrorBitrate = 0;
                 }
             }
 
@@ -10649,7 +10668,8 @@ function returnBreak() {
         });
     }
 
-    if (typeof window.peerHost !== `undefined`)
+    // re-establish the call if it does not exist
+    if (typeof window.peerHost !== `undefined` && typeof outgoingCall === `undefined`)
     {
         startCall(window.peerHost, (success) => {
             if (success)
@@ -10853,6 +10873,7 @@ function goRemote() {
 function _goRemote() {
     var remoteOptions = document.getElementById('remote-host');
     var selectedOption = remoteOptions.options[remoteOptions.selectedIndex].value;
+    bitRate = 128;
     startCall(selectedOption, (success) => {
         if (success)
         {
@@ -11052,6 +11073,7 @@ function goSportsRemote() {
 function _goSportsRemote() {
     var remoteOptions = document.getElementById('sportsremote-host');
     var selectedOption = remoteOptions.options[remoteOptions.selectedIndex].value;
+    bitRate = 128;
     startCall(selectedOption, (success) => {
         if (success)
         {
