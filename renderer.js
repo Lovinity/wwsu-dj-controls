@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = false;
+    var development = true;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -66,6 +66,7 @@ try {
     var analyserStream;
     var analyserStream0;
     var analyserStream2;
+    var analyserDest;
     var callTimer;
     var callTimerSlot;
     var callDropTimer;
@@ -833,21 +834,24 @@ try {
                     // Reset stuff
                     try {
                         gain.disconnect(analyser);
+                        gain.disconnect(analyserDest);
                         analyserStream.disconnect(gain);
-
                         window.peerStream.getTracks().forEach(track => track.stop());
                     } catch (eee) {
                         // ignore errors
                     }
 
                     gain.gain.value = 1;
-                    window.peerStream = stream;
-                    window.peerDevice = device;
-                    window.peerVolume = -100;
+                    analyserDest = audioContext.createMediaStreamDestination();
 
                     analyserStream = audioContext.createMediaStreamSource(stream);
                     analyserStream.connect(gain);
                     gain.connect(analyser);
+                    gain.connect(analyserDest);
+
+                    window.peerStream = analyserDest.stream;
+                    window.peerDevice = device;
+                    window.peerVolume = -100;
                 })
                 .catch((err) => {
                     iziToast.show({
