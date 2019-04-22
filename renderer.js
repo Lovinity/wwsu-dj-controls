@@ -48,6 +48,8 @@ try {
     window.peerDevice = undefined;
     window.peerHost = undefined;
     window.peerError = 0;
+    window.peerGoodBitrate = 0;
+    window.peerErrorBitrate = 0;
     window.peerErrorMajor = 0;
     window.mainStream = undefined;
     window.mainDevice = undefined;
@@ -55,6 +57,7 @@ try {
     window.mainVolume = -100;
     var outgoingPeer;
     var outgoingCall;
+    var bitRate = 128;
     var incomingCall;
     var incomingCloseIgnore = false;
     var outgoingCloseIgnore = false;
@@ -63,6 +66,7 @@ try {
     var analyserStream;
     var analyserStream0;
     var analyserStream2;
+    var analyserDest;
     var callTimer;
     var callTimerSlot;
     var callDropTimer;
@@ -213,7 +217,7 @@ try {
                 if (temp8 !== null)
                 {
                     var percent = window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0;
-                    temp8.style.color = `rgb(0, ${percent < 100 ? parseInt(percent + 155) : 255}, 0)`;
+                    temp8.style.color = `rgb(0, ${percent < 100 ? parseInt((percent * 2) + 55) : 255}, 0)`;
                 }
             } else if (typeof waitingFor !== 'undefined' || window.peerError === -2) {
                 var temp8 = document.querySelector(`#audio-call-icon`);
@@ -228,7 +232,7 @@ try {
                 if (temp8 !== null)
                 {
                     var percent = temp0 > -50 ? ((temp0 + 50) * 4) : 0;
-                    temp8.style.color = `rgb(0, ${percent < 100 ? parseInt(percent + 155) : 255}, ${percent < 100 ? parseInt(percent + 155) : 255})`;
+                    temp8.style.color = `rgb(0, ${percent < 100 ? parseInt((percent * 2) + 55) : 255}, ${percent < 100 ? parseInt((percent * 2) + 55) : 255})`;
                 }
 
                 // Check for glitches in audio every second; we want to send a bad-call event to restart the call if there are too many of them.
@@ -246,55 +250,85 @@ try {
                             connections[connection].map((connectionObject) => {
                                 //console.dir(connectionObject);
                                 try {
-                                connectionObject._negotiator._pc.getStats(function callback(connStats) {
-                                    var rtcStatsReports = connStats.result();
-                                    rtcStatsReports
-                                            .filter((stat) => stat.type === `ssrc`)
-                                            .map((stat, index) => {
-                                                var properties = stat.names();
-                                                properties
-                                                        .filter((property) => property === `googDecodingPLC`)
-                                                        .map((property) => {
-                                                            var value = stat.stat(property);
-                                                            if (value > prevPLC)
-                                                            {
-                                                                window.peerError += (value - prevPLC);
-                                                                console.log(`Choppiness detected! Current threshold: ${window.peerError}/50`);
+                                    connectionObject._negotiator._pc.getStats(function callback(connStats) {
+                                        var rtcStatsReports = connStats.result();
+                                        rtcStatsReports
+                                                .filter((stat) => stat.type === `ssrc`)
+                                                .map((stat, index) => {
+                                                    var properties = stat.names();
+                                                    properties
+                                                            .filter((property) => property === `googDecodingPLC`)
+                                                            .map((property) => {
+                                                                var value = stat.stat(property);
 
-                                                                // When error exceeds a certain threshold, that is a problem!
-                                                                if (window.peerError >= 50)
+                                                                // Choppiness was detected in the last second
+                                                                if (value > prevPLC)
                                                                 {
-                                                                    // Choppiness is not considered consistent yet? call call/bad to trigger bad-call event to restart the call.
-                                                                    // Choppiness consistent? Call goBreak and call/give-up to trigger very-bad-call event and switch to a break in error.
-                                                                    if (window.peerErrorMajor >= 150 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on")) {
-                                                                        window.peerErrorMajor = 0;
-                                                                        console.log(`Audio call choppiness consistently is a problem! Requesting to give up and sending system to break.`);
-                                                                        if (!disconnected)
-                                                                            goBreak(false);
-                                                                        hostReq.request({method: 'POST', url: '/call/give-up', data: {}}, function (body) {});
-                                                                        window.peerError = -2;
-                                                                    } else {
-                                                                        window.peerErrorMajor += 50;
-                                                                        console.log(`Audio call choppiness is bad! Requesting a re-call.`);
-                                                                        hostReq.request({method: 'POST', url: '/call/bad', data: {}}, function (body) {});
-                                                                        window.peerError = -1;
+                                                                    // Increase error counters and decrease good bitrate counter. Generally, we want the system to trigger call restarts when packet loss averages 4%+.
+                                                                    window.peerError += (value - prevPLC) / 2;
+                                                                    window.peerGoodBitrate -= (value - prevPLC) / 2;
+
+                                                                    console.log(`Choppiness detected! Current threshold: ${window.peerError}/30`);
+
+                                                                    // When error exceeds a certain threshold, that is a problem!
+                                                                    if (window.peerError >= 30)
+                                                                    {
+                                                                        // Send the system into break if we are in 64kbps and still having audio issues.
+                                                                        if (window.peerErrorMajor >= 30 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on")) {
+                                                                            window.peerErrorMajor = 0;
+                                                                            console.log(`Audio call remains choppy even on the lowest allowed bitrate of 64kbps. Giving up by sending the system into break.`);
+                                                                            if (!disconnected)
+                                                                                goBreak(false);
+                                                                            hostReq.request({method: 'POST', url: '/call/give-up', data: {}}, function (body) {});
+                                                                            window.peerError = -2;
+                                                                            // Reset bitRate to 96kbps as a mid-point starter for when the broadcast resumes.
+                                                                            bitRate = 96;
+                                                                        } else {
+
+                                                                            // Do not contribute to the possibility of giving up the audio call unless we are on the minimum allowed bitrate of 64kbps.
+                                                                            if (bitRate <= 64)
+                                                                                window.peerErrorMajor += 15;
+
+                                                                            console.log(`Audio choppiness threshold exceeded! Requesting call restart.`);
+
+                                                                            // Reduce the bitrate by 32kbps (with a minimum allowed of 64kbps) if we reach the choppy threshold multiple times in 15-30 seconds.
+                                                                            if (window.peerErrorBitrate > 0 && bitRate >= 96)
+                                                                            {
+                                                                                bitRate -= 32;
+                                                                                console.log(`Also requesting a lower bitrate: ${bitRate} kbps.`);
+                                                                                window.peerErrorBitrate = 10;
+                                                                            } else {
+                                                                                window.peerErrorBitrate = 30;
+                                                                            }
+
+                                                                            // Reset the good bitrate counter; we are not having a good connection.
+                                                                            window.peerGoodBitrate = 0;
+
+                                                                            hostReq.request({method: 'POST', url: '/call/bad', data: {bitRate: bitRate}}, function (body) {});
+
+                                                                            window.peerError = -1;
+                                                                        }
                                                                     }
+                                                                    // Connection was good in the last second. Lower any error counters and also increase the good bitrate counter
+                                                                } else {
+                                                                    window.peerError -= 1;
+                                                                    if (window.peerError < 0)
+                                                                        window.peerError = 0;
+                                                                    window.peerErrorMajor -= 1;
+                                                                    if (window.peerErrorMajor < 0)
+                                                                        window.peerErrorMajor = 0;
+                                                                    window.peerErrorBitrate -= 1;
+                                                                    if (window.peerErrorBitrate < 0)
+                                                                        window.peerErrorBitrate = 0;
+                                                                    window.peerGoodBitrate += 1;
                                                                 }
-                                                            } else {
-                                                                window.peerError -= 3;
-                                                                if (window.peerError < 0)
-                                                                    window.peerError = 0;
-                                                                window.peerErrorMajor -= 3;
-                                                                if (window.peerErrorMajor < 0)
-                                                                    window.peerErrorMajor = 0;
-                                                            }
-                                                            prevPLC = value;
-                                                        });
-                                            });
-                                });
-                            } catch (e) {
-                                
-                            }
+                                                                prevPLC = value;
+                                                            });
+                                                });
+                                    });
+                                } catch (e) {
+
+                                }
                             });
                         }
                         //}
@@ -511,7 +545,7 @@ try {
                     }
                     incomingCall = connection;
                     incomingCall.answer(new MediaStream(), {
-                        audioBandwidth: 96,
+                        audioBandwidth: bitRate,
                         audioReceiveEnabled: true
                     });
                     clearTimeout(callDropTimer);
@@ -523,22 +557,26 @@ try {
 
                         if (!incomingCloseIgnore)
                         {
-                            console.log(`Not ignoring!`);
+                            console.log(`This was premature!`);
                             window.peerError = -1;
                             var callDropFn = () => {
-                                if (Meta.state === 'sportsremote_on' || Meta.state === 'remote_on')
+                                if (typeof incomingCall !== `undefined`)
                                 {
-                                    console.log(`Going to break.`)
+                                    console.log(`Incoming call was re-established. Stopping the checks.`);
+                                } else if (!Meta.playing && (Meta.state === 'sportsremote_on' || Meta.state === 'remote_on'))
+                                {
+                                    console.log(`Since nothing else is playing, sending system into break!`)
                                     goBreak(false);
                                     window.peerError = -2;
-                                } else if (Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote' || Meta.state === "sportsremote_returning" || Meta.state === "remote_returning")
+                                } else if (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote' || Meta.state === "sportsremote_returning" || Meta.state === "remote_returning" || Meta.state === "remote_break" || Meta.state === "sportsremote_break")
                                 {
-                                    console.log(`Restarting with a 5 second timer.`);
+                                    console.log(`Something else is playing in RadioDJ, so ignore for now and check again in 10 seconds.`);
+                                    window.peerError = -2;
                                     callDropTimer = setTimeout(() => {
                                         callDropFn();
-                                    }, 5000);
+                                    }, 10000);
                                 } else {
-                                    console.log(`We are actually not doing a remote broadcast. Ignoring disconnection.`);
+                                    console.log(`Stopping checks; we are not actually supposed to be in a call right now.`);
                                     window.peerError = 0;
                                 }
                             };
@@ -554,7 +592,7 @@ try {
         });
     }
 
-    function startCall(hostID, cb, reconnect = false) {
+    function startCall(hostID, cb, reconnect = false, bitrate = bitRate) {
         var callFailed = (keepTrying) => {
             try {
                 outgoingCloseIgnore = true;
@@ -724,8 +762,9 @@ try {
         }
 
         window.peerHost = hostID;
+        bitRate = bitrate;
         outgoingCall = peer.call(peerID, window.peerStream, {
-            audioBandwidth: 96
+            audioBandwidth: bitRate
         });
 
         callTimerSlot = 10;
@@ -745,28 +784,6 @@ try {
                 if (document.querySelector(`.peerjs-waiting`) !== null)
                     iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
 
-                if (reconnect)
-                {
-                    iziToast.show({
-                        titleColor: '#000000',
-                        messageColor: '#000000',
-                        color: 'green',
-                        close: true,
-                        overlay: false,
-                        overlayColor: 'rgba(0, 0, 0, 0.75)',
-                        zindex: 1000,
-                        layout: 1,
-                        imageWidth: 100,
-                        image: ``,
-                        progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                        closeOnClick: true,
-                        position: 'center',
-                        timeout: 10000,
-                        title: 'Audio Call Re-Established',
-                        message: `The audio call was re-established.`
-                    });
-                }
-
                 outgoingCall.on(`close`, () => {
                     console.log(`CALL CLOSED.`);
                     // Premature close if we are still in remote or sportsremote state. Try to reconnect.
@@ -774,20 +791,20 @@ try {
 
                     if (!outgoingCloseIgnore)
                     {
-                        console.log(`Not ignoring!`);
-                        if (Meta.state.startsWith(`remote_`) || Meta.state.startsWith(`sportsremote_`) || Meta.state === `automation_remote` || Meta.state === `automation_sportsremote`)
+                        console.log(`This was premature!`);
+                        if (!Meta.state.includes("_halftime") && (Meta.state.startsWith(`remote_`) || Meta.state.startsWith(`sportsremote_`) || Meta.state === `automation_remote` || Meta.state === `automation_sportsremote`))
                         {
                             window.peerError = -1;
-                            console.log(`Reconnecting...`);
+                            console.log(`Trying to re-connect...`);
                             startCall(host.host, (success) => {
                                 if (success)
                                 {
-                                    console.log(`re-connected`);
+                                    console.log(`re-connected!`);
                                 }
                             }, true);
                         } else {
                             window.peerError = 0;
-                            console.log(`NOT reconnecting; we are not in any remote nor sportsremote states.`)
+                            console.log(`NOT reconnecting; we are not supposed to be connected to the call at this time.`)
                         }
                     }
                     outgoingCloseIgnore = false;
@@ -819,21 +836,24 @@ try {
                     // Reset stuff
                     try {
                         gain.disconnect(analyser);
+                        gain.disconnect(analyserDest);
                         analyserStream.disconnect(gain);
-
                         window.peerStream.getTracks().forEach(track => track.stop());
                     } catch (eee) {
                         // ignore errors
                     }
 
                     gain.gain.value = 1;
-                    window.peerStream = stream;
-                    window.peerDevice = device;
-                    window.peerVolume = -100;
+                    analyserDest = audioContext.createMediaStreamDestination();
 
                     analyserStream = audioContext.createMediaStreamSource(stream);
                     analyserStream.connect(gain);
                     gain.connect(analyser);
+                    gain.connect(analyserDest);
+
+                    window.peerStream = analyserDest.stream;
+                    window.peerDevice = device;
+                    window.peerVolume = -100;
                 })
                 .catch((err) => {
                     iziToast.show({
@@ -1461,7 +1481,7 @@ try {
         loadTimesheets(moment(document.querySelector("#options-timesheets-date").value));
     });
 
-    socket.on('bad-call', function () {
+    socket.on('bad-call', function (bitRate) {
         if (typeof outgoingCall !== `undefined`)
         {
             window.peerError = 0;
@@ -1475,7 +1495,7 @@ try {
             {
                 window.peerError = -1;
                 startCall(window.peerHost, (success) => {
-                }, true);
+                }, true, bitRate);
             }
         }
     });
@@ -1522,6 +1542,9 @@ try {
                         }]
                 ]
             });
+
+            // Reset bitRate to 96kbps as a mid-point starter for when the broadcast resumes.
+            bitRate = 96;
         }
     })
 
@@ -7817,169 +7840,169 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-        {
-            hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
-                //console.log(body);
-                try {
-                    client = body;
-                    //authtoken = client.token;
-                    if (!client.authorized)
-                    {
-                        var noConnection = document.getElementById('no-connection');
-                        noConnection.style.display = "inline";
-                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+{
+    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+        //console.log(body);
+        try {
+            client = body;
+            //authtoken = client.token;
+            if (!client.authorized)
+            {
+                var noConnection = document.getElementById('no-connection');
+                noConnection.style.display = "inline";
+                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                        cb(false);
-                    } else {
-                        cb(true);
+                cb(false);
+            } else {
+                cb(true);
 
-                        // Sink main audio devices
-                        getAudioMain(settings.get(`audio.input.main`) || undefined);
-                        sinkAudio();
+                // Sink main audio devices
+                getAudioMain(settings.get(`audio.input.main`) || undefined);
+                sinkAudio();
 
-                        // Determine if it is applicable to initiate the user media for audio calls
-                        if (client.makeCalls)
-                        {
-                            console.log(`Initiating getUserMedia for makeCalls`);
-                            getAudio();
-                        }
-
-                        // Disconnect current peer if it exists
-                        try {
-                            peer.destroy();
-                        } catch (e) {
-                            // Ignore errors
-                        }
-
-                        // Determine if we should start a new peer
-                        if (client.makeCalls || client.answerCalls)
-                        {
-                            setupPeer();
-                        }
-
-                        // Reset silenceState
-                        if (client.silenceDetection)
-                            silenceState = -1;
-
-                    }
-
-                    if (client.admin || client.accountability)
-                    {
-                        // Subscribe to the logs socket
-                        hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
-                            //console.log(body);
-                            try {
-                                // TODO
-                                processLogs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED logs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-                    }
-
-                    if (client.admin)
-                    {
-                        if (client.otherHosts)
-                            processHosts(client.otherHosts, true);
-                        var temp = document.querySelector(`#options`);
-                        var restarter;
-                        if (temp)
-                            temp.style.display = "inline";
-
-                        // Get djs and subscribe to the dj socket
-                        noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                processDjs(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED DJs CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Get directors and subscribe to the directors socket
-                        noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                                processDirectors(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED directors CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the XP socket
-                        hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED XP CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the timesheet socket
-                        noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                            //console.log(body);
-                            try {
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED TIMESHEET CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the discipline socket
-                        hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
-                            //console.log(body);
-                            try {
-                                processDiscipline(body, true);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED discipline CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                        // Subscribe to the config socket
-                        hostReq.request({method: 'POST', url: '/config/get', data: {}}, function (body) {
-                            //console.log(body);
-                            try {
-                                processConfig(body);
-                            } catch (e) {
-                                console.error(e);
-                                console.log('FAILED config CONNECTION');
-                                clearTimeout(restarter);
-                                restarter = setTimeout(hostSocket, 10000);
-                            }
-                        });
-
-                    } else {
-                        var temp = document.querySelector(`#options`);
-                        if (temp)
-                            temp.style.display = "none";
-                    }
-                } catch (e) {
-                    console.error(e);
-                    console.log('FAILED HOST CONNECTION');
-                    restarter = setTimeout(hostSocket, 10000);
+                // Determine if it is applicable to initiate the user media for audio calls
+                if (client.makeCalls)
+                {
+                    console.log(`Initiating getUserMedia for makeCalls`);
+                    getAudio();
                 }
-            });
+
+                // Disconnect current peer if it exists
+                try {
+                    peer.destroy();
+                } catch (e) {
+                    // Ignore errors
+                }
+
+                // Determine if we should start a new peer
+                if (client.makeCalls || client.answerCalls)
+                {
+                    setupPeer();
+                }
+
+                // Reset silenceState
+                if (client.silenceDetection)
+                    silenceState = -1;
+
+            }
+
+            if (client.admin || client.accountability)
+            {
+                // Subscribe to the logs socket
+                hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
+                    //console.log(body);
+                    try {
+                        // TODO
+                        processLogs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED logs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+            }
+
+            if (client.admin)
+            {
+                if (client.otherHosts)
+                    processHosts(client.otherHosts, true);
+                var temp = document.querySelector(`#options`);
+                var restarter;
+                if (temp)
+                    temp.style.display = "inline";
+
+                // Get djs and subscribe to the dj socket
+                noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDjs(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED DJs CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Get directors and subscribe to the directors socket
+                noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processDirectors(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED directors CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the XP socket
+                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED XP CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the timesheet socket
+                noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED TIMESHEET CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the discipline socket
+                hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
+                    //console.log(body);
+                    try {
+                        processDiscipline(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED discipline CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the config socket
+                hostReq.request({method: 'POST', url: '/config/get', data: {}}, function (body) {
+                    //console.log(body);
+                    try {
+                        processConfig(body);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED config CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+            } else {
+                var temp = document.querySelector(`#options`);
+                if (temp)
+                    temp.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            console.log('FAILED HOST CONNECTION');
+            restarter = setTimeout(hostSocket, 10000);
         }
+    });
+}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -8323,12 +8346,21 @@ function doMeta(metan) {
             document.querySelector('#queue-music').style.display = "none";
         }
 
+        if (typeof metan.state !== `undefined` && (Meta.state === "remote_break" || Meta.state === "sportsremote_break") && window.peerGoodBitrate >= 180 && bitRate < 128 && typeof incomingCall !== `undefined`)
+        {
+            window.peerGoodBitrate = 0;
+            bitRate += 32;
+            console.log(`Connection has been consistently good; requesting a bitrate bump to ${bitRate} kbps.`);
+            hostReq.request({method: 'POST', url: '/call/bad', data: {bitRate: bitRate}}, function (body) {});
+        }
+
         // Do stuff if the state changed
         if (typeof metan.state !== 'undefined' || typeof metan.playing !== 'undefined')
         {
-            // Disconnect outgoing calls on breaks and automation
-            if (Meta.state === "remote_break" || Meta.state === "sportsremote_break" || Meta.state === "sportsremote_halftime" || Meta.state === "automation_on" || Meta.state === "automation_break" || Meta.state === "automation_genre" || Meta.state === "automation_playlist" || Meta.state === "automation_prerecord" || Meta.state.startsWith("live_") || Meta.state.startsWith("sports_"))
+            // Disconnect outgoing calls on automation and halftime break
+            if (Meta.state === "sportsremote_halftime" || Meta.state === "automation_on" || Meta.state === "automation_break" || Meta.state === "automation_genre" || Meta.state === "automation_playlist" || Meta.state === "automation_prerecord" || Meta.state.startsWith("live_") || Meta.state.startsWith("sports_"))
             {
+
                 try {
                     outgoingCloseIgnore = true;
                     console.log(`Closing outgoing call via doMeta`);
@@ -8370,14 +8402,16 @@ function doMeta(metan) {
                     }
                 }
 
-                // Mute audio if not in any sportremote nor remote state
+                // Mute audio and reset bitrate if not in any sportremote nor remote state
             } else {
                 if (temp !== null)
                 {
+                    bitRate = 128;
                     temp.muted = !development;
                     console.log(`MUTED remote audio`);
                     window.peerError = 0;
                     window.peerErrorMajor = 0;
+                    window.peerErrorBitrate = 0;
                 }
             }
 
@@ -10649,7 +10683,8 @@ function returnBreak() {
         });
     }
 
-    if (typeof window.peerHost !== `undefined`)
+    // re-establish the call if it does not exist
+    if (typeof window.peerHost !== `undefined` && typeof outgoingCall === `undefined`)
     {
         startCall(window.peerHost, (success) => {
             if (success)
@@ -10853,6 +10888,7 @@ function goRemote() {
 function _goRemote() {
     var remoteOptions = document.getElementById('remote-host');
     var selectedOption = remoteOptions.options[remoteOptions.selectedIndex].value;
+    bitRate = 128;
     startCall(selectedOption, (success) => {
         if (success)
         {
@@ -11052,6 +11088,7 @@ function goSportsRemote() {
 function _goSportsRemote() {
     var remoteOptions = document.getElementById('sportsremote-host');
     var selectedOption = remoteOptions.options[remoteOptions.selectedIndex].value;
+    bitRate = 128;
     startCall(selectedOption, (success) => {
         if (success)
         {
@@ -12660,70 +12697,70 @@ function loadDJ(dj = null, reset = true) {
 
 // Update recipients as changes happen
 function processDjs(data = {}, replace = false)
+{
+    // Data processing
+    try {
+        if (replace)
         {
-            // Data processing
-            try {
-                if (replace)
+            Djs = TAFFY();
+            Djs.insert(data);
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
                 {
-                    Djs = TAFFY();
-                    Djs.insert(data);
-                } else {
-                    for (var key in data)
+                    switch (key)
                     {
-                        if (data.hasOwnProperty(key))
-                        {
-                            switch (key)
-                            {
-                                case 'insert':
-                                    Djs.insert(data[key]);
-                                    break;
-                                case 'update':
-                                    Djs({ID: data[key].ID}).update(data[key]);
-                                    break;
-                                case 'remove':
-                                    Djs({ID: data[key]}).remove();
-                                    break;
-                            }
-                        }
+                        case 'insert':
+                            Djs.insert(data[key]);
+                            break;
+                        case 'update':
+                            Djs({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Djs({ID: data[key]}).remove();
+                            break;
                     }
                 }
+            }
+        }
 
-                document.querySelector("#options-xp-djs").innerHTML = ``;
-                document.querySelector('#options-djs').innerHTML = ``;
+        document.querySelector("#options-xp-djs").innerHTML = ``;
+        document.querySelector('#options-djs').innerHTML = ``;
 
-                Djs().each(function (dj, index) {
-                    var djClass = `danger`;
-                    var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
-                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
-                    {
-                        djClass = `warning`;
-                        djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
-                    }
-                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
-                    {
-                        djClass = `success`;
-                        djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
-                    }
+        Djs().each(function (dj, index) {
+            var djClass = `danger`;
+            var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
+            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
+            {
+                djClass = `warning`;
+                djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
+            }
+            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
+            {
+                djClass = `success`;
+                djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
+            }
 
-                    document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
+            document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
                         <button type="button" id="options-dj-${dj.ID}" class="btn btn-${djClass} btn-float" style="position: relative;" data-dj="${dj.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`DJ ${dj.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
-                    document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
+            document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
   <input class="custom-control-input" id="options-xp-djs-i-${dj.ID}" type="checkbox">
   <span class="custom-control-track"></span>
   <label class="custom-control-label" for="options-xp-djs-i-${dj.ID}">${dj.name}</label>
 </div>`;
-                });
+        });
 
-            } catch (e) {
-                console.error(e);
-                iziToast.show({
-                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-                    message: 'Error occurred in the processDjs function.'
-                });
-        }
-        }
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred in the processDjs function.'
+        });
+}
+}
 
 // Update recipients as changes happen
 function processDirectors(data, replace = false)
