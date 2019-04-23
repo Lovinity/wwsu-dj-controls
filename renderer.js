@@ -836,7 +836,7 @@ try {
                     // Reset stuff
                     try {
                         gain.disconnect(analyser);
-                        gain.disconnect(analyserDest);
+                        //gain.disconnect(analyserDest);
                         analyserStream.disconnect(gain);
                         window.peerStream.getTracks().forEach(track => track.stop());
                     } catch (eee) {
@@ -849,9 +849,10 @@ try {
                     analyserStream = audioContext.createMediaStreamSource(stream);
                     analyserStream.connect(gain);
                     gain.connect(analyser);
-                    gain.connect(analyserDest);
+                    //gain.connect(analyserDest);
 
-                    window.peerStream = analyserDest.stream;
+                    //window.peerStream = analyserDest.stream;
+                    window.peerStream = stream;
                     window.peerDevice = device;
                     window.peerVolume = -100;
                 })
