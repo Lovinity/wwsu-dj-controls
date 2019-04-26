@@ -850,6 +850,9 @@ try {
                     analyserStream.connect(gain);
                     gain.connect(analyser);
                     //gain.connect(analyserDest);
+                    
+                    if (outgoingCall)
+                        outgoingCall.replaceStream(stream);
 
                     //window.peerStream = analyserDest.stream;
                     window.peerStream = stream;
@@ -7868,7 +7871,7 @@ function hostSocket(cb = function(token) {})
                 if (client.makeCalls)
                 {
                     console.log(`Initiating getUserMedia for makeCalls`);
-                    getAudio();
+                    getAudio(window.peerDevice);
                 }
 
                 // Disconnect current peer if it exists
