@@ -850,7 +850,7 @@ try {
                     analyserStream.connect(gain);
                     gain.connect(analyser);
                     //gain.connect(analyserDest);
-                    
+
                     if (outgoingCall)
                         outgoingCall.replaceStream(stream);
 
@@ -2532,7 +2532,7 @@ document.querySelector("#btn-options-config-basic").onclick = function () {
                 },
                 "cStartOfSemester": {
                     "title": "Start of Semester",
-                    "description": "Specify the date and time when the current semester started; used to calculate remote credits earned.",
+                    "description": "Specify the date and time when the current semester started; used to calculate semesterly stats such as remote credits.",
                     "type": "datetime-local"
                 },
                 "cLofi": {
@@ -11298,13 +11298,16 @@ function endShow() {
             hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to end their show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         } else {
             $("#xp-modal").iziModal('open');
-            document.querySelector(`#stat-showTime`).innerHTML = `${parseInt((response.showTime || 0) / 6) / 10} this show`;
-            document.querySelector(`#stat-listenerMinutes`).innerHTML = `${parseInt((response.listenerMinutes || 0) / 6) / 10} this show`;
-            document.querySelector(`#stat-subtotalXP`).innerHTML = typeof response.subtotalXP !== 'undefined' ? `${formatInt(response.subtotalXP)} this show` : ``;
-            document.querySelector(`#stat-totalXP`).innerHTML = typeof response.totalXP !== 'undefined' ? formatInt(response.totalXP) : `-`;
-            document.querySelector(`#stat-remoteCredits`).innerHTML = typeof response.remoteCredits !== 'undefined' ? formatInt(response.remoteCredits) : `-`;
-            document.querySelector(`#stat-totalShowTime`).innerHTML = typeof response.totalShowTime !== 'undefined' ? formatInt(parseInt(response.totalShowTime / 60)) : `-`;
-            document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.totalListenerMinutes !== 'undefined' ? formatInt(parseInt(response.totalListenerMinutes / 60)) : `-`;
+            document.querySelector(`#stat-showTime`).innerHTML = parseInt((response.showTime || 0) / 6) / 10;
+            document.querySelector(`#stat-listenerMinutes`).innerHTML = parseInt((response.listenerMinutes || 0) / 6) / 10;
+            document.querySelector(`#stat-subtotalXP`).innerHTML = typeof response.subtotalXP !== 'undefined' ? formatInt(response.subtotalXP) : `-`;
+            document.querySelector(`#stat-semesterXP`).innerHTML = typeof response.semester.xp !== 'undefined' ? formatInt(response.semester.xp) : `-`;
+            document.querySelector(`#stat-totalXP`).innerHTML = typeof response.overall.xp !== 'undefined' ? formatInt(response.overall.xp) : `-`;
+            document.querySelector(`#stat-remoteCredits`).innerHTML = typeof response.semester.remoteCredits !== 'undefined' ? formatInt(response.semester.remoteCredits) : `-`;
+            document.querySelector(`#stat-totalShowTime`).innerHTML = typeof response.overall.showtime !== 'undefined' ? formatInt(parseInt(response.overall.showtime / 6) / 10) : `-`;
+            document.querySelector(`#stat-semesterShowTime`).innerHTML = typeof response.semester.showtime !== 'undefined' ? formatInt(parseInt(response.semester.showtime / 6) / 10) : `-`;
+            document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.overall.listeners !== 'undefined' ? formatInt(parseInt(response.overall.listeners / 6) / 10) : `-`;
+            document.querySelector(`#stat-semesterListeners`).innerHTML = typeof response.semester.listeners !== 'undefined' ? formatInt(parseInt(response.semester.listeners / 6) / 10) : `-`;
 
             try {
                 window.peerDevice = undefined;
@@ -11336,13 +11339,16 @@ function switchShow() {
             hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to switch show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
         } else {
             $("#xp-modal").iziModal('open');
-            document.querySelector(`#stat-showTime`).innerHTML = `${parseInt((response.showTime || 0) / 6) / 10} this show`;
-            document.querySelector(`#stat-listenerMinutes`).innerHTML = `${parseInt((response.listenerMinutes || 0) / 6) / 10} this show`;
-            document.querySelector(`#stat-subtotalXP`).innerHTML = typeof response.subtotalXP !== 'undefined' ? `${formatInt(response.subtotalXP)} this show` : ``;
-            document.querySelector(`#stat-totalXP`).innerHTML = typeof response.totalXP !== 'undefined' ? formatInt(response.totalXP) : `-`;
-            document.querySelector(`#stat-remoteCredits`).innerHTML = typeof response.remoteCredits !== 'undefined' ? formatInt(response.remoteCredits) : `-`;
-            document.querySelector(`#stat-totalShowTime`).innerHTML = typeof response.totalShowTime !== 'undefined' ? formatInt(parseInt(response.totalShowTime / 60)) : `-`;
-            document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.totalListenerMinutes !== 'undefined' ? formatInt(parseInt(response.totalListenerMinutes / 60)) : `-`;
+            document.querySelector(`#stat-showTime`).innerHTML = parseInt((response.showTime || 0) / 6) / 10;
+            document.querySelector(`#stat-listenerMinutes`).innerHTML = parseInt((response.listenerMinutes || 0) / 6) / 10;
+            document.querySelector(`#stat-subtotalXP`).innerHTML = typeof response.subtotalXP !== 'undefined' ? formatInt(response.subtotalXP) : `-`;
+            document.querySelector(`#stat-semesterXP`).innerHTML = typeof response.semester.xp !== 'undefined' ? formatInt(response.semester.xp) : `-`;
+            document.querySelector(`#stat-totalXP`).innerHTML = typeof response.overall.xp !== 'undefined' ? formatInt(response.overall.xp) : `-`;
+            document.querySelector(`#stat-remoteCredits`).innerHTML = typeof response.semester.remoteCredits !== 'undefined' ? formatInt(response.semester.remoteCredits) : `-`;
+            document.querySelector(`#stat-totalShowTime`).innerHTML = typeof response.overall.showtime !== 'undefined' ? formatInt(parseInt(response.overall.showtime / 6) / 10) : `-`;
+            document.querySelector(`#stat-semesterShowTime`).innerHTML = typeof response.semester.showtime !== 'undefined' ? formatInt(parseInt(response.semester.showtime / 6) / 10) : `-`;
+            document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.overall.listeners !== 'undefined' ? formatInt(parseInt(response.overall.listeners / 6) / 10) : `-`;
+            document.querySelector(`#stat-semesterListeners`).innerHTML = typeof response.semester.listeners !== 'undefined' ? formatInt(parseInt(response.semester.listeners / 6) / 10) : `-`;
 
             try {
                 window.peerDevice = undefined;
@@ -12409,15 +12415,13 @@ function loadDJ(dj = null, reset = true) {
         var afterFunction = function () {
             var DJName = Djs({ID: parseInt(DJData.DJ)}).first().name;
             document.querySelector('#options-dj-name').innerHTML = `${jdenticon.toSvg(`DJ ${DJName}`, 48)}   ${DJName}`;
+            document.querySelector(`#dj-xp-add-div`).innerHTML = `<button type="button" class="btn btn-success btn-lg" id="dj-xp-add" data-dj="${dj}" title="Add a Note / Remote Credit / XP">Add</button>`;
             document.querySelector('#options-dj-buttons').innerHTML = `
             <button type="button" class="btn btn-urgent btn-lg" id="btn-options-dj-edit" data-dj="${DJData.DJ}" title="Edit this DJ">Edit</button>
             <button type="button" class="btn btn-danger btn-lg" id="btn-options-dj-remove" data-dj="${DJData.DJ}" title="Remove this DJ">Remove</button>
             <button type="button" class="btn btn-purple btn-lg" id="btn-options-dj-xp" data-dj="${DJData.DJ}" title="View/Edit/Add/Remove the notes / remote credits / XP of this DJ">Notes/Remotes/XP</button>`;
-            var remote = 0;
-            var totalXP = 0;
             if (DJData.XP.length > 0)
             {
-                document.querySelector(`#dj-xp-add-div`).innerHTML = `<button type="button" class="btn btn-success btn-lg" id="dj-xp-add" data-dj="${dj}" title="Add a Note / Remote Credit / XP">Add</button>`;
                 var xpLogs = document.querySelector(`#dj-xp-logs`);
                 xpLogs.scrollTop = 0;
 
@@ -12457,7 +12461,6 @@ function loadDJ(dj = null, reset = true) {
 
                     if (record.type === "xp")
                     {
-                        totalXP += record.amount;
                         theClass = `info`;
                         theTitle = `This is an XP entry.`;
                     }
@@ -12466,8 +12469,6 @@ function loadDJ(dj = null, reset = true) {
                     {
                         theClass = `warning`;
                         theTitle = `This is a remote credit entry.`;
-                        if (moment(record.createdAt).isSameOrAfter(moment(DJData.startOfSemester)))
-                            remote += record.amount;
                     }
 
                     newXPLogs += `<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;" title="${theTitle}">
@@ -12494,13 +12495,12 @@ function loadDJ(dj = null, reset = true) {
 
                 xpLogs.innerHTML = newXPLogs;
             }
-            document.querySelector('#dj-remotes').innerHTML = formatInt(remote || 0);
-            document.querySelector('#dj-xp').innerHTML = formatInt(totalXP || 0);
+            document.querySelector('#dj-remotes').innerHTML = formatInt(DJData.stats.semester.remoteCredits || 0);
+            document.querySelector('#dj-xp').innerHTML = formatInt(DJData.stats.semester.xp || 0);
+            document.querySelector('#dj-xpL').innerHTML = formatInt(DJData.stats.overall.xp || 0);
 
             var att = document.querySelector('#dj-attendance');
             att.scrollTop = 0;
-            var showTime = 0;
-            var listenerMinutes = 0;
 
             var newAtt = ``;
             if (DJData.attendance.length > 0)
@@ -12528,11 +12528,6 @@ function loadDJ(dj = null, reset = true) {
                 };
                 DJData.attendance.sort(compare);
                 DJData.attendance.map(record => {
-
-                    if (record.showTime !== null)
-                        showTime += record.showTime;
-                    if (record.listenerMinutes !== null)
-                        listenerMinutes += record.listenerMinutes;
 
                     var theDate = record.actualStart !== null ? record.actualStart : record.scheduledStart;
                     if (record.scheduledStart === null)
@@ -12667,8 +12662,10 @@ function loadDJ(dj = null, reset = true) {
 
                 att.innerHTML = newAtt;
 
-                document.querySelector('#dj-showtime').innerHTML = formatInt(Math.floor(showTime / 60));
-                document.querySelector('#dj-listenertime').innerHTML = formatInt(Math.floor(listenerMinutes / 60));
+                document.querySelector('#dj-showtime').innerHTML = formatInt(Math.floor(DJData.stats.semester.showtime / 6) / 10);
+                document.querySelector('#dj-showtimeL').innerHTML = formatInt(Math.floor(DJData.stats.overall.showtime / 6) / 10);
+                document.querySelector('#dj-listenertime').innerHTML = formatInt(Math.floor(DJData.stats.semester.listeners / 6) / 10);
+                document.querySelector('#dj-listenertimeL').innerHTML = formatInt(Math.floor(DJData.stats.overall.listeners / 6) / 10);
             }
         };
 
@@ -12677,14 +12674,13 @@ function loadDJ(dj = null, reset = true) {
             DJData.XP = [];
             DJData.attendance = [];
             DJData.DJ = dj === null ? DJData.DJ || '' : dj;
-            hostReq.request({method: 'POST', url: nodeURL + '/xp/get', data: {dj: DJData.DJ}}, function (response) {
-                DJData.XP = response.data;
+            DJData.stats = {};
+            hostReq.request({method: 'POST', url: nodeURL + '/djs/get', data: {dj: DJData.DJ}}, function (response) {
+                DJData.XP = response.XP;
                 DJData.startOfSemester = response.startOfSemester;
-                // Populate attendance records
-                hostReq.request({method: 'POST', url: nodeURL + '/attendance/get', data: {dj: DJData.DJ}}, function (response2) {
-                    DJData.attendance = response2;
-                    afterFunction();
-                });
+                DJData.attendance = response.attendance;
+                DJData.stats = response.stats;
+                afterFunction();
             });
         } else {
             afterFunction();
