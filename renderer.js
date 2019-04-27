@@ -5961,10 +5961,20 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                 if (e.target.id !== 'options-dj-add' && e.target.id !== 'options-dj-mass-xp')
                 {
                     document.querySelector('#options-dj-name').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
-                    document.querySelector('#dj-remotes').innerHTML = `???`;
+                    document.querySelector('#dj-remotecredits').innerHTML = `???`;
+                    document.querySelector('#dj-remotecreditsL').innerHTML = `???`;
                     document.querySelector('#dj-xp').innerHTML = `???`;
+                    document.querySelector('#dj-xpL').innerHTML = `???`;
                     document.querySelector('#dj-showtime').innerHTML = `???`;
+                    document.querySelector('#dj-showtimeL').innerHTML = `???`;
                     document.querySelector('#dj-listenertime').innerHTML = `???`;
+                    document.querySelector('#dj-listenertimeL').innerHTML = `???`;
+                    document.querySelector('#dj-shows').innerHTML = `???`;
+                    document.querySelector('#dj-showsL').innerHTML = `???`;
+                    document.querySelector('#dj-prerecords').innerHTML = `???`;
+                    document.querySelector('#dj-prerecordsL').innerHTML = `???`;
+                    document.querySelector('#dj-remotes').innerHTML = `???`;
+                    document.querySelector('#dj-remotesL').innerHTML = `???`;
                     document.querySelector('#options-dj-buttons').innerHTML = ``;
                     document.querySelector('#dj-attendance').innerHTML = ``;
                     $("#options-modal-dj").iziModal('open');
@@ -12547,9 +12557,10 @@ function loadDJ(dj = null, reset = true) {
 
                 xpLogs.innerHTML = newXPLogs;
             }
-            document.querySelector('#dj-remotes').innerHTML = formatInt(DJData.stats.semester.remoteCredits || 0);
             document.querySelector('#dj-xp').innerHTML = formatInt(DJData.stats.semester.xp || 0);
             document.querySelector('#dj-xpL').innerHTML = formatInt(DJData.stats.overall.xp || 0);
+            document.querySelector('#dj-remotecredits').innerHTML = formatInt(DJData.stats.semester.remoteCredits || 0);
+            document.querySelector('#dj-remotecreditsL').innerHTML = formatInt(DJData.stats.overall.remoteCredits || 0);
 
             var att = document.querySelector('#dj-attendance');
             att.scrollTop = 0;
@@ -12718,6 +12729,12 @@ function loadDJ(dj = null, reset = true) {
                 document.querySelector('#dj-showtimeL').innerHTML = formatInt(Math.floor(DJData.stats.overall.showtime / 6) / 10);
                 document.querySelector('#dj-listenertime').innerHTML = formatInt(Math.floor(DJData.stats.semester.listeners / 6) / 10);
                 document.querySelector('#dj-listenertimeL').innerHTML = formatInt(Math.floor(DJData.stats.overall.listeners / 6) / 10);
+                document.querySelector('#dj-shows').innerHTML = DJData.stats.semester.shows;
+                document.querySelector('#dj-showsL').innerHTML = DJData.stats.overall.shows;
+                document.querySelector('#dj-prerecords').innerHTML = DJData.stats.semester.prerecords;
+                document.querySelector('#dj-prerecordsL').innerHTML = DJData.stats.overall.prerecords;
+                document.querySelector('#dj-remotes').innerHTML = DJData.stats.semester.remotes;
+                document.querySelector('#dj-remotesL').innerHTML = DJData.stats.overall.remotes;
             }
         };
 
