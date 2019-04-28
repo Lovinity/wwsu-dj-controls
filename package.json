@@ -5,17 +5,17 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder",
-    "postinstall": "electron-builder install-app-deps"
+    "dist": "electron-packager .",
+    "postinstall": "electron-rebuild"
   },
   "repository": "https://github.com/Lovinity/wwsu-dj-controls",
   "author": "Patrick Schmalstig",
   "devDependencies": {
-    "electron": "^5.0.0-beta.9",
-    "electron-builder": "^20.40.2",
+    "electron": "^5.0.0",
     "electron-devtools-installer": "^2.2.4",
     "electron-installer-dmg": "^2.0.0",
+    "electron-packager": "^13.1.1",
+    "electron-rebuild": "^1.8.4",
     "electron-squirrel-startup": "^1.0.0"
   },
   "dependencies": {
