@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = false;
+    var development = true;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -679,12 +679,12 @@ try {
 
                 $("#connecting-modal").iziModal('close');
                 /*
-                var notification = notifier.notify('Lost Audio Call', {
-                    message: `Please check DJ Controls for more information.`,
-                    icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
-                    duration: 900000,
-                });
-                */
+                 var notification = notifier.notify('Lost Audio Call', {
+                 message: `Please check DJ Controls for more information.`,
+                 icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+                 duration: 900000,
+                 });
+                 */
                 main.flashTaskbar();
 
                 if (document.querySelector(`.peerjs-waiting`) !== null)
@@ -1331,12 +1331,12 @@ try {
             </div>`;
                 disconnected = true;
                 /*
-                var notification = notifier.notify('DJ Controls Lost Connection', {
-                    message: `DJ Controls lost connection to WWSU.`,
-                    icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                    duration: 60000
-                });
-                */
+                 var notification = notifier.notify('DJ Controls Lost Connection', {
+                 message: `DJ Controls lost connection to WWSU.`,
+                 icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
+                 duration: 60000
+                 });
+                 */
                 if (Meta.state.startsWith("sports_") || Meta.state.startsWith("sportsremote_") || Meta.state.startsWith("remote_"))
                     responsiveVoice.speak(`DJ Controls connection has been lost`);
             }
@@ -1519,12 +1519,12 @@ try {
             outgoingCloseIgnore = false;
 
             /*
-            var notification = notifier.notify('Poor Audio Connection', {
-                message: `Please check DJ Controls for more information.`,
-                icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
-                duration: 900000,
-            });
-            */
+             var notification = notifier.notify('Poor Audio Connection', {
+             message: `Please check DJ Controls for more information.`,
+             icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+             duration: 900000,
+             });
+             */
             main.flashTaskbar();
 
             iziToast.show({
@@ -5975,6 +5975,18 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                     document.querySelector('#dj-prerecordsL').innerHTML = `???`;
                     document.querySelector('#dj-remotes').innerHTML = `???`;
                     document.querySelector('#dj-remotesL').innerHTML = `???`;
+                    document.querySelector('#dj-reputation').innerHTML = `???`;
+                    document.querySelector('#dj-reputationL').innerHTML = `???`;
+                document.querySelector('#dj-absences').innerHTML = `???`;
+                document.querySelector('#dj-absencesL').innerHTML = `???`;
+                document.querySelector('#dj-cancellations').innerHTML = `???`;
+                document.querySelector('#dj-cancellationsL').innerHTML = `???`;
+                document.querySelector('#dj-missedids').innerHTML = `???`;
+                document.querySelector('#dj-missedidsL').innerHTML = `???`;
+                document.querySelector('#dj-offstarts').innerHTML = `???`;
+                document.querySelector('#dj-offstartsL').innerHTML = `???`;
+                document.querySelector('#dj-offends').innerHTML = `???`;
+                document.querySelector('#dj-offendsL').innerHTML = `???`;
                     document.querySelector('#options-dj-buttons').innerHTML = ``;
                     document.querySelector('#dj-attendance').innerHTML = ``;
                     $("#options-modal-dj").iziModal('open');
@@ -8304,12 +8316,12 @@ function doMeta(metan) {
             {
                 breakNotified = true;
                 /*
-                var notification = notifier.notify(`Don't forget Top of Hour break!`, {
-                    message: `Please take a break before :05 after the hour`,
-                    icon: 'http://cdn.onlinewebfonts.com/svg/img_205852.png',
-                    duration: 300000,
-                });
-                */
+                 var notification = notifier.notify(`Don't forget Top of Hour break!`, {
+                 message: `Please take a break before :05 after the hour`,
+                 icon: 'http://cdn.onlinewebfonts.com/svg/img_205852.png',
+                 duration: 300000,
+                 });
+                 */
                 main.flashTaskbar();
                 iziToast.show({
                     id: 'iziToast-breakneeded',
@@ -8521,12 +8533,12 @@ function doMeta(metan) {
                         ]
                     });
                 /*
-                var notification = notifier.notify('Lost Remote Connection', {
-                    message: 'Check your connection to the remote stream, then resume broadcast in DJ Controls.',
-                    icon: 'https://d30y9cdsu7xlg0.cloudfront.net/png/244853-200.png',
-                    duration: 180000,
-                });
-                */
+                 var notification = notifier.notify('Lost Remote Connection', {
+                 message: 'Check your connection to the remote stream, then resume broadcast in DJ Controls.',
+                 icon: 'https://d30y9cdsu7xlg0.cloudfront.net/png/244853-200.png',
+                 duration: 180000,
+                 });
+                 */
                 main.flashTaskbar();
                 document.querySelector('#btn-resume').style.display = "inline";
             } else if (Meta.state.includes('_break') || Meta.state.includes('_halftime'))
@@ -9304,12 +9316,12 @@ function checkCalendar(newData = false) {
             {
                 calNotified = true;
                 /*
-                var notification = notifier.notify('Upcoming Sports Broadcast', {
-                    message: 'Please wrap-up / end your show in the next few minutes.',
-                    icon: 'https://icon2.kisspng.com/20171221/lje/gold-cup-trophy-png-clip-art-image-5a3c1fa99cbcb0.608850721513889705642.jpg',
-                    duration: 900000,
-                });
-                */
+                 var notification = notifier.notify('Upcoming Sports Broadcast', {
+                 message: 'Please wrap-up / end your show in the next few minutes.',
+                 icon: 'https://icon2.kisspng.com/20171221/lje/gold-cup-trophy-png-clip-art-image-5a3c1fa99cbcb0.608850721513889705642.jpg',
+                 duration: 900000,
+                 });
+                 */
                 main.flashTaskbar();
                 iziToast.show({
                     class: 'flash-bg',
@@ -9340,12 +9352,12 @@ function checkCalendar(newData = false) {
             {
                 calNotified = true;
                 /*
-                var notification = notifier.notify('Upcoming Remote Broadcast', {
-                    message: 'Please wrap-up / end your show in the next few minutes.',
-                    icon: 'http://cdn.onlinewebfonts.com/svg/img_550701.png',
-                    duration: 900000,
-                });
-                */
+                 var notification = notifier.notify('Upcoming Remote Broadcast', {
+                 message: 'Please wrap-up / end your show in the next few minutes.',
+                 icon: 'http://cdn.onlinewebfonts.com/svg/img_550701.png',
+                 duration: 900000,
+                 });
+                 */
                 main.flashTaskbar();
                 iziToast.show({
                     class: 'flash-bg',
@@ -9376,12 +9388,12 @@ function checkCalendar(newData = false) {
             {
                 calNotified = true;
                 /*
-                var notification = notifier.notify('Interfering with Another Show', {
-                    message: 'Please wrap-up / end your show as soon as possible.',
-                    icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
-                    duration: 900000,
-                });
-                */
+                 var notification = notifier.notify('Interfering with Another Show', {
+                 message: 'Please wrap-up / end your show as soon as possible.',
+                 icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+                 duration: 900000,
+                 });
+                 */
                 main.flashTaskbar();
                 iziToast.show({
                     class: 'flash-bg',
@@ -9416,12 +9428,12 @@ function checkCalendar(newData = false) {
             {
                 calNotified = true;
                 /*
-                var notification = notifier.notify('Interfering with a Prerecord', {
-                    message: 'Please wrap-up / end your show as soon as possible.',
-                    icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
-                    duration: 900000,
-                });
-                */
+                 var notification = notifier.notify('Interfering with a Prerecord', {
+                 message: 'Please wrap-up / end your show as soon as possible.',
+                 icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+                 duration: 900000,
+                 });
+                 */
                 main.flashTaskbar();
                 iziToast.show({
                     class: 'flash-bg',
@@ -9452,12 +9464,12 @@ function checkCalendar(newData = false) {
             {
                 calNotified = true;
                 /*
-                var notification = notifier.notify('OnAir Studio is Reserved', {
-                    message: 'Please wrap-up / end your show as soon as possible.',
-                    icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
-                    duration: 900000,
-                });
-                */
+                 var notification = notifier.notify('OnAir Studio is Reserved', {
+                 message: 'Please wrap-up / end your show as soon as possible.',
+                 icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+                 duration: 900000,
+                 });
+                 */
                 main.flashTaskbar();
                 iziToast.show({
                     class: 'flash-bg',
@@ -11516,12 +11528,12 @@ function processEas(data, replace = false)
                         if (!Meta.state.startsWith("automation_"))
                         {
                             /*
-                            var notification = notifier.notify('Extreme Weather Alert in effect', {
-                                message: `Please consider ending your show and taking shelter. See DJ Controls.`,
-                                icon: 'https://png2.kisspng.com/20180419/rue/kisspng-weather-forecasting-storm-computer-icons-clip-art-severe-5ad93bcb9e9da1.5355263615241860596497.png',
-                                duration: 900000,
-                            });
-                            */
+                             var notification = notifier.notify('Extreme Weather Alert in effect', {
+                             message: `Please consider ending your show and taking shelter. See DJ Controls.`,
+                             icon: 'https://png2.kisspng.com/20180419/rue/kisspng-weather-forecasting-storm-computer-icons-clip-art-severe-5ad93bcb9e9da1.5355263615241860596497.png',
+                             duration: 900000,
+                             });
+                             */
                             main.flashTaskbar();
                             iziToast.show({
                                 class: 'flash-bg',
@@ -11567,12 +11579,12 @@ function processEas(data, replace = false)
                     } else if (record.severity === 'Severe')
                     {
                         /*
-                        var notification = notifier.notify('Severe Weather Alert in effect', {
-                            message: `Please keep an eye on the weather. See DJ Controls for more info.`,
-                            icon: 'https://static1.squarespace.com/static/59a614fef7e0ab8b4a7b489a/5aa95c6a652dea6215e225f9/5aa95d258165f5044f919008/1521460510101/feature+icon+-+severe+weather.png?format=300w',
-                            duration: 900000,
-                        });
-                        */
+                         var notification = notifier.notify('Severe Weather Alert in effect', {
+                         message: `Please keep an eye on the weather. See DJ Controls for more info.`,
+                         icon: 'https://static1.squarespace.com/static/59a614fef7e0ab8b4a7b489a/5aa95c6a652dea6215e225f9/5aa95d258165f5044f919008/1521460510101/feature+icon+-+severe+weather.png?format=300w',
+                         duration: 900000,
+                         });
+                         */
                         main.flashTaskbar();
                         iziToast.show({
                             class: 'iziToast-eas-severe',
@@ -11626,12 +11638,12 @@ function processEas(data, replace = false)
                                 if (!Meta.state.startsWith("automation_"))
                                 {
                                     /*
-                                    var notification = notifier.notify('Extreme Weather Alert in effect', {
-                                        message: `Please consider ending your show and taking shelter. See DJ Controls.`,
-                                        icon: 'https://png2.kisspng.com/20180419/rue/kisspng-weather-forecasting-storm-computer-icons-clip-art-severe-5ad93bcb9e9da1.5355263615241860596497.png',
-                                        duration: 900000,
-                                    });
-                                    */
+                                     var notification = notifier.notify('Extreme Weather Alert in effect', {
+                                     message: `Please consider ending your show and taking shelter. See DJ Controls.`,
+                                     icon: 'https://png2.kisspng.com/20180419/rue/kisspng-weather-forecasting-storm-computer-icons-clip-art-severe-5ad93bcb9e9da1.5355263615241860596497.png',
+                                     duration: 900000,
+                                     });
+                                     */
                                     main.flashTaskbar();
                                     iziToast.show({
                                         class: 'flash-bg',
@@ -11678,12 +11690,12 @@ function processEas(data, replace = false)
                             } else if (data[key].severity === 'Severe')
                             {
                                 /*
-                                var notification = notifier.notify('Severe Weather Alert in effect', {
-                                    message: `Please keep an eye on the weather. See DJ Controls for more info.`,
-                                    icon: 'https://static1.squarespace.com/static/59a614fef7e0ab8b4a7b489a/5aa95c6a652dea6215e225f9/5aa95d258165f5044f919008/1521460510101/feature+icon+-+severe+weather.png?format=300w',
-                                    duration: 900000,
-                                });
-                                */
+                                 var notification = notifier.notify('Severe Weather Alert in effect', {
+                                 message: `Please keep an eye on the weather. See DJ Controls for more info.`,
+                                 icon: 'https://static1.squarespace.com/static/59a614fef7e0ab8b4a7b489a/5aa95c6a652dea6215e225f9/5aa95d258165f5044f919008/1521460510101/feature+icon+-+severe+weather.png?format=300w',
+                                 duration: 900000,
+                                 });
+                                 */
                                 main.flashTaskbar();
                                 iziToast.show({
                                     class: 'iziToast-eas-severe',
@@ -11767,12 +11779,12 @@ function processStatus(data, replace = false)
                         if (client.emergencies && datum.status < 3)
                         {
                             /*
-                            var notification = notifier.notify('System Problem', {
-                                message: `${datum.label} reports a significant issue. Please see DJ Controls announcements.`,
-                                icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                                duration: (1000 * 60 * 15),
-                            });
-                            */
+                             var notification = notifier.notify('System Problem', {
+                             message: `${datum.label} reports a significant issue. Please see DJ Controls announcements.`,
+                             icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
+                             duration: (1000 * 60 * 15),
+                             });
+                             */
                             main.flashTaskbar();
                         }
                     }
@@ -11794,12 +11806,12 @@ function processStatus(data, replace = false)
                             maxWidth: 480
                         });
                         /*
-                        var notification = notifier.notify('Low / No Audio Detected', {
-                            message: `Please check your audio levels to see if they are okay.`,
-                            icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
-                            duration: 60000,
-                        });
-                        */
+                         var notification = notifier.notify('Low / No Audio Detected', {
+                         message: `Please check your audio levels to see if they are okay.`,
+                         icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
+                         duration: 60000,
+                         });
+                         */
                         main.flashTaskbar();
                         if (Meta.state.startsWith("sports_") || Meta.state.startsWith("sportsremote_") || Meta.state.startsWith("remote_"))
                             responsiveVoice.speak(`Silence detected. Please check your audio connection.`);
@@ -11821,12 +11833,12 @@ function processStatus(data, replace = false)
                                 if (client.emergencies && data[key].status < 3)
                                 {
                                     /*
-                                    var notification = notifier.notify('System Problem', {
-                                        message: `${data[key].label} reports a significant issue. Please see DJ Controls announcements.`,
-                                        icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                                        duration: (1000 * 60 * 15),
-                                    });
-                                    */
+                                     var notification = notifier.notify('System Problem', {
+                                     message: `${data[key].label} reports a significant issue. Please see DJ Controls announcements.`,
+                                     icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
+                                     duration: (1000 * 60 * 15),
+                                     });
+                                     */
                                     main.flashTaskbar();
                                 }
                             }
@@ -11848,12 +11860,12 @@ function processStatus(data, replace = false)
                                     maxWidth: 480
                                 });
                                 /*
-                                var notification = notifier.notify('Low / No Audio Detected', {
-                                    message: `Please check your audio levels to see if they are okay.`,
-                                    icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
-                                    duration: 60000,
-                                });
-                                */
+                                 var notification = notifier.notify('Low / No Audio Detected', {
+                                 message: `Please check your audio levels to see if they are okay.`,
+                                 icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
+                                 duration: 60000,
+                                 });
+                                 */
                                 main.flashTaskbar();
                                 if (Meta.state.startsWith("sports_") || Meta.state.startsWith("sportsremote_") || Meta.state.startsWith("remote_"))
                                     responsiveVoice.speak(`Silence detected. Please check your audio connection.`);
@@ -11877,12 +11889,12 @@ function processStatus(data, replace = false)
                                 if (client.emergencies && data[key].status < 3)
                                 {
                                     /*
-                                    var notification = notifier.notify('System Problem', {
-                                        message: `${data[key].label} reports a significant issue. Please see DJ Controls announcements.`,
-                                        icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
-                                        duration: (1000 * 60 * 15),
-                                    });
-                                        */
+                                     var notification = notifier.notify('System Problem', {
+                                     message: `${data[key].label} reports a significant issue. Please see DJ Controls announcements.`,
+                                     icon: 'https://freeiconshop.com/wp-content/uploads/edd/error-flat.png',
+                                     duration: (1000 * 60 * 15),
+                                     });
+                                     */
                                     main.flashTaskbar();
                                 }
                             }
@@ -11904,12 +11916,12 @@ function processStatus(data, replace = false)
                                     maxWidth: 480
                                 });
                                 /*
-                                var notification = notifier.notify('Low / No Audio Detected', {
-                                    message: `Please check your audio levels to see if they are okay.`,
-                                    icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
-                                    duration: 60000,
-                                });
-                                    */
+                                 var notification = notifier.notify('Low / No Audio Detected', {
+                                 message: `Please check your audio levels to see if they are okay.`,
+                                 icon: 'http://pluspng.com/img-png/mute-png-noun-project-200.png',
+                                 duration: 60000,
+                                 });
+                                 */
                                 main.flashTaskbar();
                                 if (Meta.state.startsWith("sports_") || Meta.state.startsWith("sportsremote_") || Meta.state.startsWith("remote_"))
                                     responsiveVoice.speak(`Silence detected. Please check your audio connection.`);
@@ -12111,12 +12123,12 @@ function processMessages(data, replace = false)
                             case client.host:
                             case 'all':
                                 /*
-                                var notification = notifier.notify('New Message', {
-                                    message: `You have a new message from ${datum.from_friendly} (see DJ Controls).`,
-                                    icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
-                                    duration: 30000,
-                                });
-                                    */
+                                 var notification = notifier.notify('New Message', {
+                                 message: `You have a new message from ${datum.from_friendly} (see DJ Controls).`,
+                                 icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
+                                 duration: 30000,
+                                 });
+                                 */
                                 main.flashTaskbar();
                                 iziToast.show({
                                     title: `Message from ${datum.from_friendly}`,
@@ -12146,12 +12158,12 @@ function processMessages(data, replace = false)
                                 if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.webmessages) || (!Meta.state.includes("automation_") && isHost)))
                                 {
                                     /*
-                                    var notification = notifier.notify('New Web Message', {
-                                        message: `You have a new web message from ${datum.from_friendly} (see DJ Controls).`,
-                                        icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
-                                        duration: 30000,
-                                    });
-                                            */
+                                     var notification = notifier.notify('New Web Message', {
+                                     message: `You have a new web message from ${datum.from_friendly} (see DJ Controls).`,
+                                     icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
+                                     duration: 30000,
+                                     });
+                                     */
                                     main.flashTaskbar();
                                     iziToast.show({
                                         title: `Web message from ${datum.from_friendly}`,
@@ -12210,12 +12222,12 @@ function processMessages(data, replace = false)
                                 case client.host:
                                 case 'all':
                                     /*
-                                    var notification = notifier.notify('New Message', {
-                                        message: `You have a new message from ${data[key].from_friendly} (see DJ Controls).`,
-                                        icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
-                                        duration: 30000,
-                                    });
-                                                        */
+                                     var notification = notifier.notify('New Message', {
+                                     message: `You have a new message from ${data[key].from_friendly} (see DJ Controls).`,
+                                     icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
+                                     duration: 30000,
+                                     });
+                                     */
                                     main.flashTaskbar();
                                     iziToast.show({
                                         title: `Message from ${data[key].from_friendly}`,
@@ -12245,12 +12257,12 @@ function processMessages(data, replace = false)
                                     if (typeof Meta.state !== 'undefined' && ((Meta.state.includes("automation_") && client.webmessages) || (!Meta.state.includes("automation_") && isHost)))
                                     {
                                         /*
-                                        var notification = notifier.notify('New Web Message', {
-                                            message: `You have a new web message from ${data[key].from_friendly} (see DJ Controls).`,
-                                            icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
-                                            duration: 30000,
-                                        });
-                                                                */
+                                         var notification = notifier.notify('New Web Message', {
+                                         message: `You have a new web message from ${data[key].from_friendly} (see DJ Controls).`,
+                                         icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
+                                         duration: 30000,
+                                         });
+                                         */
                                         main.flashTaskbar();
                                         iziToast.show({
                                             title: `Web message from ${data[key].from_friendly}`,
@@ -12330,12 +12342,12 @@ function processRequests(data, replace = false)
                     {
                         data[index].needsread = true;
                         /*
-                        var notification = notifier.notify('Track Requested', {
-                            message: `A track was requested (see DJ Controls). Playing requests are optional.`,
-                            icon: 'https://static.thenounproject.com/png/7236-200.png',
-                            duration: 30000,
-                        });
-                        */
+                         var notification = notifier.notify('Track Requested', {
+                         message: `A track was requested (see DJ Controls). Playing requests are optional.`,
+                         icon: 'https://static.thenounproject.com/png/7236-200.png',
+                         duration: 30000,
+                         });
+                         */
                         main.flashTaskbar();
                         iziToast.show({
                             title: `Track Requested`,
@@ -12378,12 +12390,12 @@ function processRequests(data, replace = false)
                             {
                                 data[key].needsread = true;
                                 /*
-                                var notification = notifier.notify('Track Requested', {
-                                    message: `A track was requested (see DJ Controls). Playing requests are optional.`,
-                                    icon: 'https://static.thenounproject.com/png/7236-200.png',
-                                    duration: 30000,
-                                });
-                                */
+                                 var notification = notifier.notify('Track Requested', {
+                                 message: `A track was requested (see DJ Controls). Playing requests are optional.`,
+                                 icon: 'https://static.thenounproject.com/png/7236-200.png',
+                                 duration: 30000,
+                                 });
+                                 */
                                 main.flashTaskbar();
                                 iziToast.show({
                                     title: `Track Requested`,
@@ -12735,6 +12747,18 @@ function loadDJ(dj = null, reset = true) {
                 document.querySelector('#dj-prerecordsL').innerHTML = DJData.stats.overall.prerecords;
                 document.querySelector('#dj-remotes').innerHTML = DJData.stats.semester.remotes;
                 document.querySelector('#dj-remotesL').innerHTML = DJData.stats.overall.remotes;
+                document.querySelector('#dj-reputation').innerHTML = DJData.stats.semester.reputationPercent;
+                document.querySelector('#dj-reputationL').innerHTML = DJData.stats.overall.reputationPercent;
+                document.querySelector('#dj-absences').innerHTML = DJData.stats.semester.absences;
+                document.querySelector('#dj-absencesL').innerHTML = DJData.stats.overall.absences;
+                document.querySelector('#dj-cancellations').innerHTML = DJData.stats.semester.cancellations;
+                document.querySelector('#dj-cancellationsL').innerHTML = DJData.stats.overall.cancellations;
+                document.querySelector('#dj-missedids').innerHTML = DJData.stats.semester.missedIDs;
+                document.querySelector('#dj-missedidsL').innerHTML = DJData.stats.overall.missedIDs;
+                document.querySelector('#dj-offstarts').innerHTML = DJData.stats.semester.offStart;
+                document.querySelector('#dj-offstartsL').innerHTML = DJData.stats.overall.offStart;
+                document.querySelector('#dj-offends').innerHTML = DJData.stats.semester.offEnd;
+                document.querySelector('#dj-offendsL').innerHTML = DJData.stats.overall.offEnd;
             }
         };
 
@@ -14050,12 +14074,12 @@ function addNotification(group, level, time, notification)
     </div>
 </div>`;
             /*
-            var notification = notifier.notify(`New ${group} notifications`, {
-                message: `There are new ${group} notifications in DJ Controls`,
-                icon: '',
-                duration: 900000,
-            });
-            */
+             var notification = notifier.notify(`New ${group} notifications`, {
+             message: `There are new ${group} notifications in DJ Controls`,
+             icon: '',
+             duration: 900000,
+             });
+             */
         }
     } else {
         var tempi2 = document.querySelector(`#notification-group-n-${group}`);

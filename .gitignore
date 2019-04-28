@@ -4,3 +4,4 @@ node_modules
 /wwsu-dj-controls-win32-x64
 /wwsu-dj-controls-darwin-x64/wwsu-dj-controls.app/Contents/Resources/app/nbproject/private/
 /nbproject
+dist
