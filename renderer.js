@@ -3,7 +3,7 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var development = false;
+    var development = true;
 
     // Define hexrgb constants
     var hexChars = 'a-f\\d';
@@ -5472,7 +5472,7 @@ function filterGlobalLogs(date) {
                     {
                         theClass = "info";
                     }
-                    if (record.scheduledStart === null)
+                    if (record.scheduledStart === null && record.happened)
                     {
                         formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-7 text-info">
@@ -5488,7 +5488,7 @@ function filterGlobalLogs(date) {
                 </button>
                                         </div>
                             </div>`);
-                    } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)))
+                    } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)) && record.happened === 1)
                     {
                         formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-7 text-info">
@@ -5501,7 +5501,20 @@ function filterGlobalLogs(date) {
                                     <div class="col-1">
                                         </div>
                             </div>`);
-                    } else if (record.actualStart !== null && record.actualEnd !== null)
+                    } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)))
+                    {
+                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+                                <div class="col-7 text-info">
+                                    ${record.event}
+                                </div>
+                                <div class="col-4">
+                        <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                        <span class="text-primary">${record.happened === 0 ? `DID NOT AIR` : `CANCELED`}</span>
+                                </div>
+                                    <div class="col-1">
+                                        </div>
+                            </div>`);
+                    } else if (record.actualStart !== null && record.actualEnd !== null && record.happened === 1)
                     {
                         if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10)
                         {
@@ -5558,7 +5571,7 @@ function filterGlobalLogs(date) {
                                 </div>
                                 <div class="col-4">
                         <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                        <span class="text-primary">ABSENT / DID NOT AIR</span>
+                        <span class="text-primary">${record.happened === 0 ? `DID NOT AIR` : `CANCELED`}</span>
                                 </div>
                                     <div class="col-1">
                                         </div>
@@ -5977,16 +5990,16 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                     document.querySelector('#dj-remotesL').innerHTML = `???`;
                     document.querySelector('#dj-reputation').innerHTML = `???`;
                     document.querySelector('#dj-reputationL').innerHTML = `???`;
-                document.querySelector('#dj-absences').innerHTML = `???`;
-                document.querySelector('#dj-absencesL').innerHTML = `???`;
-                document.querySelector('#dj-cancellations').innerHTML = `???`;
-                document.querySelector('#dj-cancellationsL').innerHTML = `???`;
-                document.querySelector('#dj-missedids').innerHTML = `???`;
-                document.querySelector('#dj-missedidsL').innerHTML = `???`;
-                document.querySelector('#dj-offstarts').innerHTML = `???`;
-                document.querySelector('#dj-offstartsL').innerHTML = `???`;
-                document.querySelector('#dj-offends').innerHTML = `???`;
-                document.querySelector('#dj-offendsL').innerHTML = `???`;
+                    document.querySelector('#dj-absences').innerHTML = `???`;
+                    document.querySelector('#dj-absencesL').innerHTML = `???`;
+                    document.querySelector('#dj-cancellations').innerHTML = `???`;
+                    document.querySelector('#dj-cancellationsL').innerHTML = `???`;
+                    document.querySelector('#dj-missedids').innerHTML = `???`;
+                    document.querySelector('#dj-missedidsL').innerHTML = `???`;
+                    document.querySelector('#dj-offstarts').innerHTML = `???`;
+                    document.querySelector('#dj-offstartsL').innerHTML = `???`;
+                    document.querySelector('#dj-offends').innerHTML = `???`;
+                    document.querySelector('#dj-offendsL').innerHTML = `???`;
                     document.querySelector('#options-dj-buttons').innerHTML = ``;
                     document.querySelector('#dj-attendance').innerHTML = ``;
                     $("#options-modal-dj").iziModal('open');
@@ -6429,7 +6442,219 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
     try {
         console.log(e.target.id);
         if (e.target) {
-            if (e.target.id.startsWith(`dj-show-logs-`))
+            if (e.target.id.startsWith(`dj-show-logs-ignore-`))
+            {
+                var record = parseInt(e.target.id.replace(`dj-show-logs-ignore-`, ``));
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/userslash.png`,
+                    maxWidth: 480,
+                    title: 'Ignore reputation',
+                    message: `<strong>Choose what you want to do:</strong><br />Ignore %: This record will not count against the DJ's reputation %, but it will still be counted in other reputation statistics.<br />Ignore All: This record will be ignored in all reputation statistics, including the %.`,
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Ignore %</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: record, ignore: 1}}, function (response) {
+                                    if (response === 'OK')
+                                    {
+                                        loadDJ(DJData.DJ, true);
+                                        iziToast.show({
+                                            title: `Reputation % Ignored!`,
+                                            message: `This record will no longer affect the DJ's reputation %.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to ignore!`,
+                                            message: `There was an error trying to ignore the reputation of this record.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
+                        ['<button><b>Ignore All</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: record, ignore: 2}}, function (response) {
+                                    if (response === 'OK')
+                                    {
+                                        loadDJ(DJData.DJ, true);
+                                        iziToast.show({
+                                            title: `Reputation Ignored!`,
+                                            message: `This record will no longer register on the DJ's reputation statistics.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to ignore!`,
+                                            message: `There was an error trying to ignore the reputation of this record.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
+                    ]
+                });
+            } else if (e.target.id.startsWith(`dj-show-logs-absent-`))
+            {
+                var record = parseInt(e.target.id.replace(`dj-show-logs-absent-`, ``));
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/calendartimes.png`,
+                    maxWidth: 480,
+                    title: 'Mark as unexcused absence',
+                    message: `Are you sure you want to change this record to an unexcused absence?`,
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Yes</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: record, happened: 0}}, function (response) {
+                                    if (response === 'OK')
+                                    {
+                                        loadDJ(DJData.DJ, true);
+                                        iziToast.show({
+                                            title: `Absence marked unexcused!`,
+                                            message: `This record was now marked as an unexcused absence.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to marked unexcused!`,
+                                            message: `There was an error trying to mark that record as an unexcused absence.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
+                        ['<button><b>No</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
+                    ]
+                });
+            } else if (e.target.id.startsWith(`dj-show-logs-excused-`))
+            {
+                var record = parseInt(e.target.id.replace(`dj-show-logs-excused-`, ``));
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/calendarcheck.png`,
+                    maxWidth: 480,
+                    title: 'Mark as cancellation',
+                    message: `Are you sure you want to change this record to a cancellation?`,
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Yes</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: record, happened: -1}}, function (response) {
+                                    if (response === 'OK')
+                                    {
+                                        loadDJ(DJData.DJ, true);
+                                        iziToast.show({
+                                            title: `Record marked cancelled!`,
+                                            message: `This record was now marked as a cancellation.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to mark cancelled!`,
+                                            message: `There was an error trying to mark that record as cancelled.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
+                        ['<button><b>No</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
+                    ]
+                });
+            } else if (e.target.id.startsWith(`dj-show-logs-`))
             {
                 document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
                 document.querySelector('#dj-logs-listeners').innerHTML = '';
@@ -12611,39 +12836,39 @@ function loadDJ(dj = null, reset = true) {
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
-                            <div class="col-5 text-info">
+                            <div class="col-4 text-info">
                                 ${record.event}
                             </div>
                             <div class="col-4">
                                 <span class="text-secondary">UN-SCHEDULED</span><br />
                                 <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
-                            <div class="col-1">
+                            <div class="col-2">
                                 <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
                         </div>`;
-                    } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)))
+                    } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)) && record.happened === 1)
                     {
                         newAtt += `<div class="row m-1 bg-light-1 border-left border-secondary shadow-2" style="border-left-width: 5px !important;" title="This scheduled show has not aired yet.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
-                            <div class="col-5 text-info">
+                            <div class="col-4 text-info">
                                 ${record.event}
                             </div>
                             <div class="col-4">
                                 <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
                                 <span class="text-primary">FUTURE EVENT</span>
                             </div>
-                            <div class="col-1">
+                            <div class="col-2">
                                 <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
                         </div>`;
-                    } else if (record.actualStart !== null && record.actualEnd !== null)
+                    } else if (record.actualStart !== null && record.actualEnd !== null && record.happened === 1)
                     {
                         if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10)
                         {
@@ -12651,17 +12876,18 @@ function loadDJ(dj = null, reset = true) {
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
-                            <div class="col-5 text-info">
+                            <div class="col-4 text-info">
                                 ${record.event}
                             </div>
                             <div class="col-4">
                                 <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
                                 <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
-                            <div class="col-1">
+                            <div class="col-2">
                                 <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
+                            ${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse this early/late start/end: Click here if you do not want this to be held against this DJ for this show."><span aria-hidden="true"><i class="fas fa-user-slash text-dark"></i></span>` : ``}
                             </div>
                         </div>`;
                         } else {
@@ -12669,14 +12895,14 @@ function loadDJ(dj = null, reset = true) {
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
-                            <div class="col-5 text-info">
+                            <div class="col-4 text-info">
                                 ${record.event}
                             </div>
                             <div class="col-4">
                                 <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
                                 <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
-                            <div class="col-1">
+                            <div class="col-2">
                                 <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
@@ -12689,32 +12915,51 @@ function loadDJ(dj = null, reset = true) {
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
-                            <div class="col-5 text-info">
+                            <div class="col-4 text-info">
                                 ${record.event}
                             </div>
                             <div class="col-4">
                                 <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
                                 <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
                             </div>
-                            <div class="col-1">
+                            <div class="col-2">
                                 <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
                             </div>
                         </div>`;
-                    } else if (record.actualStart === null && record.actualEnd === null) {
+                    } else if (record.happened === 0) {
                         newAtt += `<div class="row m-1 bg-light-1 border-left border-danger shadow-2" style="border-left-width: 5px !important;" title="This show was scheduled, but the DJ did not go on the air.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
-                            <div class="col-5 text-info">
+                            <div class="col-4 text-info">
                                 ${record.event}
                             </div>
                             <div class="col-4">
                                 <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                                <span class="text-primary">ABSENT / DID NOT AIR</span>
+                                <span class="text-primary">ABSENT</span>
                             </div>
-                            <div class="col-1">
+                            <div class="col-2">
+                        <button type="button" id="dj-show-logs-excused-${record.ID}" class="close" aria-label="Marked Excused" title="Mark this show as having been cancelled ahead of time."><span aria-hidden="true"><i class="fas fa-calendar-check text-dark"></i></span></button>
+                        ${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse this absence: Click here if you do not want this to be held against this DJ's reputation."><span aria-hidden="true"><i class="fas fa-user-slash text-dark"></i></span></button>` : ``}
+                            </div>
+                        </div>`;
+                    } else if (record.happened === -1) {
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-secondary shadow-2" style="border-left-width: 5px !important;" title="This show was cancelled / an excused absence.">
+                            <div class="col-2 text-danger">
+                                ${moment(theDate).format("MM/DD/YYYY")}
+                            </div>
+                            <div class="col-4 text-info">
+                                ${record.event}
+                            </div>
+                            <div class="col-4">
+                                <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                                <span class="text-primary">CANCELLED</span>
+                            </div>
+                            <div class="col-2">
+                        <button type="button" id="dj-show-logs-absent-${record.ID}" class="close" aria-label="Marked Absent" title="Mark this show as a non-cancelled / unexcused absence."><span aria-hidden="true"><i class="fas fa-calendar-times text-dark"></i></span></button>
+                        ${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse this cancellation: Click here if you do not want this to be held against this DJ's reputation."><span aria-hidden="true"><i class="fas fa-user-slash text-dark"></i></span></button>` : ``}
                             </div>
                         </div>`;
                     } else {
@@ -12722,14 +12967,14 @@ function loadDJ(dj = null, reset = true) {
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
-                            <div class="col-5 text-info">
+                            <div class="col-4 text-info">
                                 ${record.event}
                             </div>
                             <div class="col-4">
                                 <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
                                 <span class="text-primary">NOT YET STARTED</span>
                             </div>
-                            <div class="col-1">
+                            <div class="col-2">
                             </div>
                         </div>`;
                     }
