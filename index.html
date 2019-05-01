@@ -2378,19 +2378,13 @@
                 <span class="navbar-brand mr-auto text-black">Notifications</span>
                 <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
             </header>
-            <div class="modal-body">
+            <div class="modal-body" style="max-height: 640px; overflow: scroll;">
                 <div class="row m-1 bg-light-1 shadow-2">
-                    <div class="col-9 text-primary">
-                        Notification Type
-                    </div>
-                    <div class="col-3 text-secondary">
-                        Unread
+                    <div class="col text-primary">
+                        Notification
                     </div>
                 </div>
-                <div class="container" id="notification-groups" style="height: 240px; overflow: scroll;">
-                </div>
-                <div class="bs-callout bs-callout-warning shadow-4 text-white">
-                    This interface is not complete yet. Go to admin menu -> issues to actually see the notifications for now.
+                <div class="container" id="notification-groups">
                 </div>
             </div>
             <div class="modal-footer bg-light-1">

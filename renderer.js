@@ -5708,7 +5708,7 @@ document.querySelector("#btn-options-calendar").onclick = function () {
                 {
                     cell3 = `<span class="badge badge-secondary">Cancelled</span>`;
                     theClass = `secondary`;
-                    theTitle = `This event is cancelled.`;
+                    theTitle = `This event is canceled.`;
                 } else if (event.verify === 'Valid')
                 {
                     cell3 = `<span class="badge badge-success">Valid</span>`;
@@ -6621,7 +6621,7 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                                     {
                                         loadDJ(DJData.DJ, true);
                                         iziToast.show({
-                                            title: `Record marked cancelled!`,
+                                            title: `Record marked canceled!`,
                                             message: `This record was now marked as a cancellation.`,
                                             timeout: 15000,
                                             close: true,
@@ -6635,8 +6635,8 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                                     } else {
                                         console.dir(response);
                                         iziToast.show({
-                                            title: `Failed to mark cancelled!`,
-                                            message: `There was an error trying to mark that record as cancelled.`,
+                                            title: `Failed to mark canceled!`,
+                                            message: `There was an error trying to mark that record as canceled.`,
                                             timeout: 10000,
                                             close: true,
                                             color: 'red',
@@ -8097,169 +8097,169 @@ function doSockets() {
 }
 
 function hostSocket(cb = function(token) {})
-{
-    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
-        //console.log(body);
-        try {
-            client = body;
-            //authtoken = client.token;
-            if (!client.authorized)
-            {
-                var noConnection = document.getElementById('no-connection');
-                noConnection.style.display = "inline";
-                noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+        {
+            hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
+                //console.log(body);
+                try {
+                    client = body;
+                    //authtoken = client.token;
+                    if (!client.authorized)
+                    {
+                        var noConnection = document.getElementById('no-connection');
+                        noConnection.style.display = "inline";
+                        noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
                 <h2 style="text-align: center; font-size: 4em; color: #F44336">Failed to Connect!</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Failed to connect to WWSU. Check your network connection, and ensure this DJ Controls is authorized to connect to WWSU.</h2>
                 <h2 style="text-align: center; font-size: 2em; color: #F44336">Host: ${main.getMachineID()}</h2>
             </div>`;
-                cb(false);
-            } else {
-                cb(true);
+                        cb(false);
+                    } else {
+                        cb(true);
 
-                // Sink main audio devices
-                getAudioMain(settings.get(`audio.input.main`) || undefined);
-                sinkAudio();
+                        // Sink main audio devices
+                        getAudioMain(settings.get(`audio.input.main`) || undefined);
+                        sinkAudio();
 
-                // Determine if it is applicable to initiate the user media for audio calls
-                if (client.makeCalls)
-                {
-                    console.log(`Initiating getUserMedia for makeCalls`);
-                    getAudio(window.peerDevice);
-                }
+                        // Determine if it is applicable to initiate the user media for audio calls
+                        if (client.makeCalls)
+                        {
+                            console.log(`Initiating getUserMedia for makeCalls`);
+                            getAudio(window.peerDevice);
+                        }
 
-                // Disconnect current peer if it exists
-                try {
-                    peer.destroy();
+                        // Disconnect current peer if it exists
+                        try {
+                            peer.destroy();
+                        } catch (e) {
+                            // Ignore errors
+                        }
+
+                        // Determine if we should start a new peer
+                        if (client.makeCalls || client.answerCalls)
+                        {
+                            setupPeer();
+                        }
+
+                        // Reset silenceState
+                        if (client.silenceDetection)
+                            silenceState = -1;
+
+                    }
+
+                    if (client.admin || client.accountability)
+                    {
+                        // Subscribe to the logs socket
+                        hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
+                            //console.log(body);
+                            try {
+                                // TODO
+                                processLogs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED logs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+                    }
+
+                    if (client.admin)
+                    {
+                        if (client.otherHosts)
+                            processHosts(client.otherHosts, true);
+                        var temp = document.querySelector(`#options`);
+                        var restarter;
+                        if (temp)
+                            temp.style.display = "inline";
+
+                        // Get djs and subscribe to the dj socket
+                        noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDjs(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED DJs CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Get directors and subscribe to the directors socket
+                        noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processDirectors(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED directors CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the XP socket
+                        hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED XP CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the timesheet socket
+                        noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED TIMESHEET CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the discipline socket
+                        hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
+                            //console.log(body);
+                            try {
+                                processDiscipline(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED discipline CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the config socket
+                        hostReq.request({method: 'POST', url: '/config/get', data: {}}, function (body) {
+                            //console.log(body);
+                            try {
+                                processConfig(body);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED config CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                    } else {
+                        var temp = document.querySelector(`#options`);
+                        if (temp)
+                            temp.style.display = "none";
+                    }
                 } catch (e) {
-                    // Ignore errors
+                    console.error(e);
+                    console.log('FAILED HOST CONNECTION');
+                    restarter = setTimeout(hostSocket, 10000);
                 }
-
-                // Determine if we should start a new peer
-                if (client.makeCalls || client.answerCalls)
-                {
-                    setupPeer();
-                }
-
-                // Reset silenceState
-                if (client.silenceDetection)
-                    silenceState = -1;
-
-            }
-
-            if (client.admin || client.accountability)
-            {
-                // Subscribe to the logs socket
-                hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
-                    //console.log(body);
-                    try {
-                        // TODO
-                        processLogs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED logs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-            }
-
-            if (client.admin)
-            {
-                if (client.otherHosts)
-                    processHosts(client.otherHosts, true);
-                var temp = document.querySelector(`#options`);
-                var restarter;
-                if (temp)
-                    temp.style.display = "inline";
-
-                // Get djs and subscribe to the dj socket
-                noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDjs(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED DJs CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Get directors and subscribe to the directors socket
-                noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                        processDirectors(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED directors CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the XP socket
-                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED XP CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the timesheet socket
-                noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
-                    //console.log(body);
-                    try {
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED TIMESHEET CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the discipline socket
-                hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
-                    //console.log(body);
-                    try {
-                        processDiscipline(body, true);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED discipline CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-                // Subscribe to the config socket
-                hostReq.request({method: 'POST', url: '/config/get', data: {}}, function (body) {
-                    //console.log(body);
-                    try {
-                        processConfig(body);
-                    } catch (e) {
-                        console.error(e);
-                        console.log('FAILED config CONNECTION');
-                        clearTimeout(restarter);
-                        restarter = setTimeout(hostSocket, 10000);
-                    }
-                });
-
-            } else {
-                var temp = document.querySelector(`#options`);
-                if (temp)
-                    temp.style.display = "none";
-            }
-        } catch (e) {
-            console.error(e);
-            console.log('FAILED HOST CONNECTION');
-            restarter = setTimeout(hostSocket, 10000);
+            });
         }
-    });
-}
 
 // Registers this DJ Controls as a recipient
 function onlineSocket()
@@ -8993,7 +8993,7 @@ function checkAnnouncements() {
                         // If this DJ Controls is configured by WWSU to notify on technical problems, notify so.
                         if (client.emergencies)
                         {
-                            addNotification(`reported-problem`, `danger`, datum.createdAt, datum.announcement);
+                            addNotification(`reported-problem`, `danger`, datum.createdAt, datum.announcement, `Reported Problems`, `Reported problems are saved as announcements. Please update/remove the announcement as you remedy this problem in admin menu -> Manage Announcements.`);
                         }
                     } else {
                         var temp = document.querySelector(`#attn-status-report-${datum.ID}`);
@@ -12342,7 +12342,7 @@ function processMessages(data, replace = false)
                                 if (client.emergencies)
                                 {
                                     data[index].needsread = true;
-                                    addNotification(`reported-problem`, `danger`, datum.createdAt, datum.message);
+                                    addNotification(`reported-problem`, `danger`, datum.createdAt, datum.message, `Reported Problems`, `Reported problems are saved as announcements. Please update/remove the announcement as you remedy this problem in admin menu -> Manage Announcements.`);
                                 }
                                 break;
                             case client.host:
@@ -12441,7 +12441,7 @@ function processMessages(data, replace = false)
                                     if (client.emergencies)
                                     {
                                         data[key].needsread = true;
-                                        addNotification(`reported-problem`, `danger`, datum.createdAt, datum.announcement);
+                                        addNotification(`reported-problem`, `danger`, data[key].createdAt, data[key].announcement, `Reported Problems`, `Reported problems are saved as announcements. Please update/remove the announcement as you remedy this problem in admin menu -> Manage Announcements.`);
                                     }
                                     break;
                                 case client.host:
@@ -12941,12 +12941,12 @@ function loadDJ(dj = null, reset = true) {
                                 <span class="text-primary">ABSENT</span>
                             </div>
                             <div class="col-2">
-                        <button type="button" id="dj-show-logs-excused-${record.ID}" class="close" aria-label="Marked Excused" title="Mark this show as having been cancelled ahead of time."><span aria-hidden="true"><i class="fas fa-calendar-check text-dark"></i></span></button>
+                        <button type="button" id="dj-show-logs-excused-${record.ID}" class="close" aria-label="Marked Excused" title="Mark this show as having been canceled ahead of time."><span aria-hidden="true"><i class="fas fa-calendar-check text-dark"></i></span></button>
                         ${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse this absence: Click here if you do not want this to be held against this DJ's reputation."><span aria-hidden="true"><i class="fas fa-user-slash text-dark"></i></span></button>` : ``}
                             </div>
                         </div>`;
                     } else if (record.happened === -1) {
-                        newAtt += `<div class="row m-1 bg-light-1 border-left border-secondary shadow-2" style="border-left-width: 5px !important;" title="This show was cancelled / an excused absence.">
+                        newAtt += `<div class="row m-1 bg-light-1 border-left border-secondary shadow-2" style="border-left-width: 5px !important;" title="This show was canceled / an excused absence.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
                             </div>
@@ -12955,10 +12955,10 @@ function loadDJ(dj = null, reset = true) {
                             </div>
                             <div class="col-4">
                                 <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                                <span class="text-primary">CANCELLED</span>
+                                <span class="text-primary">CANCELED</span>
                             </div>
                             <div class="col-2">
-                        <button type="button" id="dj-show-logs-absent-${record.ID}" class="close" aria-label="Marked Absent" title="Mark this show as a non-cancelled / unexcused absence."><span aria-hidden="true"><i class="fas fa-calendar-times text-dark"></i></span></button>
+                        <button type="button" id="dj-show-logs-absent-${record.ID}" class="close" aria-label="Marked Absent" title="Mark this show as a non-canceled / unexcused absence."><span aria-hidden="true"><i class="fas fa-calendar-times text-dark"></i></span></button>
                         ${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse this cancellation: Click here if you do not want this to be held against this DJ's reputation."><span aria-hidden="true"><i class="fas fa-user-slash text-dark"></i></span></button>` : ``}
                             </div>
                         </div>`;
@@ -13035,70 +13035,70 @@ function loadDJ(dj = null, reset = true) {
 
 // Update recipients as changes happen
 function processDjs(data = {}, replace = false)
-{
-    // Data processing
-    try {
-        if (replace)
         {
-            Djs = TAFFY();
-            Djs.insert(data);
-        } else {
-            for (var key in data)
-            {
-                if (data.hasOwnProperty(key))
+            // Data processing
+            try {
+                if (replace)
                 {
-                    switch (key)
+                    Djs = TAFFY();
+                    Djs.insert(data);
+                } else {
+                    for (var key in data)
                     {
-                        case 'insert':
-                            Djs.insert(data[key]);
-                            break;
-                        case 'update':
-                            Djs({ID: data[key].ID}).update(data[key]);
-                            break;
-                        case 'remove':
-                            Djs({ID: data[key]}).remove();
-                            break;
+                        if (data.hasOwnProperty(key))
+                        {
+                            switch (key)
+                            {
+                                case 'insert':
+                                    Djs.insert(data[key]);
+                                    break;
+                                case 'update':
+                                    Djs({ID: data[key].ID}).update(data[key]);
+                                    break;
+                                case 'remove':
+                                    Djs({ID: data[key]}).remove();
+                                    break;
+                            }
+                        }
                     }
                 }
-            }
-        }
 
-        document.querySelector("#options-xp-djs").innerHTML = ``;
-        document.querySelector('#options-djs').innerHTML = ``;
+                document.querySelector("#options-xp-djs").innerHTML = ``;
+                document.querySelector('#options-djs').innerHTML = ``;
 
-        Djs().each(function (dj, index) {
-            var djClass = `danger`;
-            var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
-            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
-            {
-                djClass = `warning`;
-                djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
-            }
-            if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
-            {
-                djClass = `success`;
-                djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
-            }
+                Djs().each(function (dj, index) {
+                    var djClass = `danger`;
+                    var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format("LL")}).`;
+                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30))
+                    {
+                        djClass = `warning`;
+                        djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format("LL")}).`;
+                    }
+                    if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7))
+                    {
+                        djClass = `success`;
+                        djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format("LL")}).`;
+                    }
 
-            document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
+                    document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
                         <button type="button" id="options-dj-${dj.ID}" class="btn btn-${djClass} btn-float" style="position: relative;" data-dj="${dj.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`DJ ${dj.name}`, 48)}</div></button>
                         <div style="text-align: center; font-size: 1em;">${dj.name}</div>
                     </div>`;
-            document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
+                    document.querySelector("#options-xp-djs").innerHTML += `<div class="custom-control custom-switch">
   <input class="custom-control-input" id="options-xp-djs-i-${dj.ID}" type="checkbox">
   <span class="custom-control-track"></span>
   <label class="custom-control-label" for="options-xp-djs-i-${dj.ID}">${dj.name}</label>
 </div>`;
-        });
+                });
 
-    } catch (e) {
-        console.error(e);
-        iziToast.show({
-            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-            message: 'Error occurred in the processDjs function.'
-        });
-}
-}
+            } catch (e) {
+                console.error(e);
+                iziToast.show({
+                    title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+                    message: 'Error occurred in the processDjs function.'
+                });
+        }
+        }
 
 // Update recipients as changes happen
 function processDirectors(data, replace = false)
@@ -13366,33 +13366,41 @@ function processLogs(data, replace = false)
             {
                 if (prev.indexOf(record.ID) === -1 && client.accountability)
                 {
+                    var newString = record.event.split(`<br />`);
+                    if (newString.length > 1)
+                    {
+                        newString.shift();
+                        newString = newString.join(`<br />`);
+                    } else {
+                        newString = record.event;
+                    }
                     if (record.logtype === "absent")
                     {
-                        addNotification(`absent-broadcast`, `warning`, record.createdAt, record.event);
+                        addNotification(`absent-broadcast`, `urgent`, record.createdAt, newString, `Unexcused Broadcast Absences`, `*<strong>Optional/excused shows:</strong> Go to Admin Menu -> Manage DJs -> Choose the DJ -> Find the relevant show in attendance history -> Click the user with a slash icon on the right to mark it as excused in reputation.<br /><br />*<strong>Canceled shows:</strong> Go to the admin menu -> Manage DJs -> Choose the DJ -> Find the relevant show in the attendance history, and click the calendar with a check mark icon on the right.`);
                     }
                     if (record.logtype === "unauthorized")
                     {
-                        addNotification(`unauthorized-broadcast`, `urgent`, record.createdAt, record.event);
+                        addNotification(`unauthorized-broadcast`, `warning`, record.createdAt, newString, `Unauthorized / Unscheduled Broadcasts`);
                     }
                     if (record.logtype === "cancellation")
                     {
-                        addNotification(`canceled-broadcast`, `info`, record.createdAt, record.event);
+                        addNotification(`canceled-broadcast`, `info`, record.createdAt, newString, `Canceled Broadcasts`, `*<strong>Optional/excused shows:</strong> Go to Admin Menu -> Manage DJs -> Choose the DJ -> Find the relevant show in attendance history -> Click the user with a slash icon on the right to mark it as excused in reputation.<br /><br />*<strong>Unexcused absences:</strong> Go to the admin menu -> Manage DJs -> Choose the Dj -> Find the relevant show in the attendance history, and click the calendar with an X icon on the right.`);
                     }
                     if (record.logtype === "id")
                     {
-                        addNotification(`failed-legal-id`, `urgent`, record.createdAt, record.event);
+                        addNotification(`failed-legal-id`, `urgent`, record.createdAt, newString, `Failed Top-of-Hour ID Breaks`);
                     }
                     if (record.logtype === "director-absent")
                     {
-                        addNotification(`absent-director`, `urgent`, record.createdAt, record.event);
+                        addNotification(`absent-director`, `urgent`, record.createdAt, newString, `Absent Directors`);
                     }
                     if (record.logtype === "director-cancellation")
                     {
-                        addNotification(`director-canceled-hours`, `info`, record.createdAt, record.event);
+                        addNotification(`director-canceled-hours`, `info`, record.createdAt, newString, `Director Cancelled Office Hours`);
                     }
                     if (record.logtype === "director-change")
                     {
-                        addNotification(`director-change`, `info`, record.createdAt, record.event);
+                        addNotification(`director-change`, `info`, record.createdAt, newString, `Director Changed Office Hours`);
                     }
                 }
             });
@@ -13408,33 +13416,41 @@ function processLogs(data, replace = false)
                             Logs.insert(data[key]);
                             if (client.accountability)
                             {
+                                var newString = data[key].event.split(`<br />`);
+                                if (newString.length > 1)
+                                {
+                                    newString.shift();
+                                    newString = newString.join(`<br />`);
+                                } else {
+                                    newString = data[key].event;
+                                }
                                 if (data[key].logtype === "absent")
                                 {
-                                    addNotification(`absent-broadcast`, `warning`, data[key].createdAt, data[key].event);
+                                    addNotification(`absent-broadcast`, `urgent`, data[key].createdAt, newString, `Unexcused Broadcast Absences`, `*<strong>Optional/excused shows:</strong> Go to Admin Menu -> Manage DJs -> Choose the DJ -> Find the relevant show in attendance history -> Click the user with a slash icon on the right to mark it as excused in reputation.<br /><br />*<strong>Cancelled shows:</strong> Go to the admin menu -> Manage DJs -> Choose the DJ -> Find the relevant show in the attendance history, and click the calendar with a check mark icon on the right.`);
                                 }
                                 if (data[key].logtype === "cancellation")
                                 {
-                                    addNotification(`canceled-broadcast`, `info`, data[key].createdAt, data[key].event);
+                                    addNotification(`canceled-broadcast`, `warning`, data[key].createdAt, newString, `Unauthorized / Unscheduled Broadcasts`);
                                 }
                                 if (data[key].logtype === "unauthorized")
                                 {
-                                    addNotification(`unauthorized-broadcast`, `urgent`, data[key].createdAt, data[key].event);
+                                    addNotification(`unauthorized-broadcast`, `info`, data[key].createdAt, newString, `Cancelled Broadcasts`, `*<strong>Optional/excused shows:</strong> Go to Admin Menu -> Manage DJs -> Choose the DJ -> Find the relevant show in attendance history -> Click the user with a slash icon on the right to mark it as excused in reputation.<br /><br />*<strong>Unexcused absences:</strong> Go to the admin menu -> Manage DJs -> Choose the Dj -> Find the relevant show in the attendance history, and click the calendar with an X icon on the right.`);
                                 }
                                 if (data[key].logtype === "id")
                                 {
-                                    addNotification(`failed-legal-id`, `urgent`, data[key].createdAt, data[key].event);
+                                    addNotification(`failed-legal-id`, `urgent`, data[key].createdAt, newString, `Failed Top-of-Hour ID Breaks`);
                                 }
                                 if (data[key].logtype === "director-absent")
                                 {
-                                    addNotification(`absent-director`, `urgent`, data[key].createdAt, data[key].event);
+                                    addNotification(`absent-director`, `urgent`, data[key].createdAt, newString, `Absent Directors`);
                                 }
                                 if (data[key].logtype === "director-cancellation")
                                 {
-                                    addNotification(`director-canceled-hours`, `info`, data[key].createdAt, data[key].event);
+                                    addNotification(`director-canceled-hours`, `info`, data[key].createdAt, newString, `Director Cancelled Office Hours`);
                                 }
                                 if (data[key].logtype === "director-change")
                                 {
-                                    addNotification(`director-change`, `info`, data[key].createdAt, data[key].event);
+                                    addNotification(`director-change`, `info`, data[key].createdAt, newString, `Director Changed Office Hours`);
                                 }
                             }
                             break;
@@ -14301,7 +14317,7 @@ function processConfig(data) {
     }
 }
 
-function addNotification(group, level, time, notification)
+function addNotification(group, level, time, notification, name, smallText)
 {
     Notifications.push({group: group, level: level, time: time, notification: notification});
     var temp = document.querySelector(`#notification-group-${group}`);
@@ -14310,12 +14326,11 @@ function addNotification(group, level, time, notification)
         var tempi2 = document.querySelector(`#notification-groups`);
         if (tempi2 !== null)
         {
-            tempi2.innerHTML += `<div class="row text-dark m-1 shadow-1 border-left border-primary bg-light-1" style="width: 96%; border-left-width: 5px !important;" id="notification-group-${group}">
-    <div class="col-9 text-primary" style="font-size: 2em;">
-      ${group}
-    </div>
-    <div class="col-3 text-secondary" style="font-size: 2em;" id="notification-group-n-${group}">
-      1
+            tempi2.innerHTML += `<div class="row text-dark m-1 shadow-1 border-left border-${level}" style="width: 96%; border-left-width: 5px !important;" id="notification-group-${group}">
+    <div class="col text-primary" style="font-size: 2em;">
+      ${name || group}
+      <div id="notification-group-l-${group}" class="d-flex justify-content-center flex-wrap" style="font-size: 0.5em;"></div>
+      ${smallText ? `<br /><div class="text-dark" style="font-size: 0.35em;">${smallText}</div>` : ``}
     </div>
 </div>`;
             /*
@@ -14327,12 +14342,24 @@ function addNotification(group, level, time, notification)
              */
         }
     } else {
-        var tempi2 = document.querySelector(`#notification-group-n-${group}`);
+        //var tempi2 = document.querySelector(`#notification-group-n-${group}`);
         if (tempi2 !== null)
         {
-            tempi2.innerHTML = Notifications.filter((note) => note.group === group).length;
+            //tempi2.innerHTML = Notifications.filter((note) => note.group === group).length;
         }
     }
     main.flashTaskbar();
     $('#modal-notifications').iziModal('open');
+    window.requestAnimationFrame(() => {
+        var temp = document.querySelector(`#notification-group-l-${group}`);
+        if (temp !== null)
+            temp.innerHTML += `<div class="row text-dark m-1 shadow-1 bg-light-1" style="width: 96%;">
+    <div class="col-9 text-dark" style="font-size: 1em;">
+        ${notification}
+    </div>
+    <div class="col-3 text-primary" style="font-size: 0.75em;">
+        ${moment(time).format("MM/DD/YYYY hh:mm A")}
+    </div>
+</div>`
+    });
 }

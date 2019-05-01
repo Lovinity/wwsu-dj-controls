@@ -10,14 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Make direct API queries to the WWSU system from the admin menu.
 - Taskbar icon displays a progress bar counting down queue time from 100 seconds when starting a broadcast or returning from break.
 - During a remote broadcast (once re-enabled), the receiving DJ Controls will monitor for audio choppiness. If choppy, it will call call/bad, which triggers the other DJ Controls to restart the audio call. If really bad, will trigger call/give-up, which sends the system into break.
+- Notifications modal that displays notifications grouped by type (example, absent broadcasts / directors).
+- Additional DJ analytics on the Dj screens of Manage DJs.
+- Attendance history buttons to mark certain records as excused in terms of the new DJ reputation analytics. Also, buttons to toggle between unexcused show absence and canceled show.
 
 ### Changed
 - Timesheet window in admin options -> manage directors -> timesheets now displays timesheets as vertical Gantt Charts.
 - All applicable operation buttons and queue timer is now always visible in WWSU Operations.
-- Using skywayJS instead of peerJS. In a future version, we may make use of media rooms opposed to p2p calls.
+- Using skywayJS instead of peerJS.
 
 ### Fixed
 - "Cannot read property muted of undefined" error that sometimes appeared and prevented operation buttons from appearing.
+
+### Removed
+- Pop-up notification boxes outside of the main application; no longer functional in Electron.js 5.
 
 ## [5.1.2] - 2019-03-23
 ### Added
