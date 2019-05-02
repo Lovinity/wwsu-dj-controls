@@ -80,6 +80,7 @@ try {
     var newRecorder = false;
     var recorderPending = false;
     var meterLoop = false;
+    var closeDialog = false;
 
     var audioContext = new AudioContext();
     var gain = audioContext.createGain();
@@ -367,12 +368,16 @@ try {
 
     // Define a function that finishes any recordings when DJ Controls is closed
     window.onbeforeunload = function (e) {
-        if (recorder && recorder.isRecording())
+        e = e || window.event;
+
+        if ((client.emergencies || client.accountability) && !closeDialog)
         {
+            closeDialog = true;
+            main.flashTaskbar();
             iziToast.show({
                 titleColor: '#000000',
                 messageColor: '#000000',
-                color: 'red',
+                color: 'yellow',
                 close: false,
                 overlay: true,
                 overlayColor: 'rgba(0, 0, 0, 0.75)',
@@ -385,19 +390,28 @@ try {
                 closeOnClick: false,
                 position: 'center',
                 timeout: false,
-                title: 'Recording in progress!',
-                message: `An audio recording is currently in progress. DJ Controls cannot be exited until the audio recording ends. Do you want to end it now?`,
+                title: 'Are you sure you want to close DJ Controls?',
+                message: `If you close DJ Controls, you will no longer receive notifications. When you re-open DJ Controls, notifications from the last 24 hours will appear. You can also view issues from the last 7 days in the administration menu -> issues.`,
                 buttons: [
-                    ['<button><b>Finish Recording</b></button>', function (instance, toast) {
+                    ['<button><b>Close DJ Controls</b></button>', function (instance, toast) {
                             instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                            recorderDialog = true;
-                            stopRecording(true);
+                            window.close();
                         }, true],
                     ['<button><b>Cancel</b></button>', function (instance, toast) {
                             instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            closeDialog = false;
                         }]
                 ]
             });
+            e.returnValue = `Are you sure you want to close DJ Controls? You will no longer receive notifications when DJ Controls is closed.`;
+            return false;
+        }
+
+        if (recorder && recorder.isRecording())
+        {
+            recorderDialog = true;
+            stopRecording(true);
+            e.returnValue = `Saving audio recording`;
             return false;
         }
     }
@@ -954,26 +968,8 @@ try {
 
             if (recorderDialog)
             {
-                iziToast.show({
-                    titleColor: '#000000',
-                    messageColor: '#000000',
-                    color: 'green',
-                    close: true,
-                    overlay: true,
-                    overlayColor: 'rgba(0, 0, 0, 0.75)',
-                    zindex: 100,
-                    layout: 1,
-                    imageWidth: 100,
-                    image: ``,
-                    progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                    closeOnClick: true,
-                    position: 'center',
-                    timeout: 30000,
-                    maxWidth: 480,
-                    title: 'Recording finished',
-                    message: `Recording was finished and saved. You may now quit DJ Controls.`
-                });
                 recorderDialog = false;
+                window.close();
             }
 
             if (newRecorder)
@@ -6864,14 +6860,194 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
                     tempi2.innerHTML = ``;
                 }
                 $('#modal-notifications').iziModal('close');
-            } else if (e.target.id.startsWith(`notification-group-`))
+            } else if (e.target.id.startsWith(`notification-dismiss-`))
             {
-                var group = e.target.id.replace(`notification-group-`, ``);
-                var notifications = Notifications.filter((note) => note.group === group);
-                // TODO: finish this
+                var recordID = parseInt(e.target.id.replace(`notification-dismiss-`, ``));
+                delete Notifications[recordID];
+                var temp = document.querySelector(`#notification-id-${recordID}`);
+                if (temp !== null)
+                {
+                    temp.parentNode.removeChild(temp);
+                }
+            } else if (e.target.id.startsWith(`notification-attn-edit-`))
+            {
+                var recordID = parseInt(e.target.id.replace(`notification-attn-edit-`, ``));
+                document.querySelector('#options-announcements').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
+                checkAnnouncements();
+                $("#options-modal-announcements").iziModal('open');
+            } else if (e.target.id.startsWith(`notification-excuse-`))
+            {
+                var recordID = parseInt(e.target.id.replace(`notification-excuse-`, ``));
                 iziToast.show({
-                    title: 'Working on it!',
-                    message: `I do not have this done yet. See admin menu -> issues in the mean time.`
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/userslash.png`,
+                    maxWidth: 480,
+                    title: 'Excuse / Ignore Reputation',
+                    message: `Are you sure you want to excuse this from the DJ's reputation statistics? Do this if the absence / cancellation was during an optional shows period, or if it was WWSU's fault (eg. maintenance or sports broadcasts).`,
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Yes</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: recordID, ignore: 2}}, function (response) {
+                                    if (response === 'OK')
+                                    {
+                                        iziToast.show({
+                                            title: `Reputation Ignored!`,
+                                            message: `This record will no longer register on the DJ's reputation statistics.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to ignore!`,
+                                            message: `There was an error trying to ignore the reputation of this record.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
+                        ['<button><b>No</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
+                    ]
+                });
+            } else if (e.target.id.startsWith(`notification-cancel-`))
+            {
+                var recordID = parseInt(e.target.id.replace(`notification-cancel-`, ``));
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/calendarcheck.png`,
+                    maxWidth: 480,
+                    title: 'Mark as cancellation',
+                    message: `Are you sure you want to change this record to a cancellation?`,
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Yes</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: recordID, happened: -1}}, function (response) {
+                                    if (response === 'OK')
+                                    {
+                                        iziToast.show({
+                                            title: `Record marked canceled!`,
+                                            message: `This record was now marked as a cancellation.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to mark canceled!`,
+                                            message: `There was an error trying to mark that record as canceled.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
+                        ['<button><b>No</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
+                    ]
+                });
+            } else if (e.target.id.startsWith(`notification-absent-`))
+            {
+                var recordID = parseInt(e.target.id.replace(`notification-absent-`, ``));
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/calendartimes.png`,
+                    maxWidth: 480,
+                    title: 'Mark as unexcused absence',
+                    message: `Are you sure you want to change this record to an unexcused absence?`,
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Yes</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: recordID, happened: 0}}, function (response) {
+                                    if (response === 'OK')
+                                    {
+                                        iziToast.show({
+                                            title: `Absence marked unexcused!`,
+                                            message: `This record was now marked as an unexcused absence.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to marked unexcused!`,
+                                            message: `There was an error trying to mark that record as an unexcused absence.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
+                        ['<button><b>No</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
+                    ]
                 });
             }
         }
@@ -7133,48 +7309,13 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                     layout: 2,
                     image: `assets/images/userslash.png`,
                     maxWidth: 480,
-                    title: 'Ignore reputation',
-                    message: `<strong>Choose what you want to do:</strong><br />Ignore %: This record will not count against the DJ's reputation %, but it will still be counted in other reputation statistics.<br />Ignore All: This record will be ignored in all reputation statistics, including the %.`,
+                    title: 'Excuse / Ignore Reputation',
+                    message: `Are you sure you want to excuse this from the DJ's reputation statistics? Do this if the absence / cancellation was during an optional shows period, or if it was WWSU's fault (eg. maintenance or sports broadcasts).`,
                     position: 'center',
                     drag: false,
                     closeOnClick: false,
                     buttons: [
-                        ['<button><b>Ignore %</b></button>', function (instance, toast) {
-                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: record, ignore: 1}}, function (response) {
-                                    if (response === 'OK')
-                                    {
-                                        loadDJ(DJData.DJ, true);
-                                        iziToast.show({
-                                            title: `Reputation % Ignored!`,
-                                            message: `This record will no longer affect the DJ's reputation %.`,
-                                            timeout: 15000,
-                                            close: true,
-                                            color: 'green',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    } else {
-                                        console.dir(response);
-                                        iziToast.show({
-                                            title: `Failed to ignore!`,
-                                            message: `There was an error trying to ignore the reputation of this record.`,
-                                            timeout: 10000,
-                                            close: true,
-                                            color: 'red',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    }
-                                });
-                            }],
-                        ['<button><b>Ignore All</b></button>', function (instance, toast) {
+                        ['<button><b>Yes</b></button>', function (instance, toast) {
                                 instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
                                 directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: record, ignore: 2}}, function (response) {
                                     if (response === 'OK')
@@ -7209,7 +7350,7 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                                     }
                                 });
                             }],
-                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                        ['<button><b>No</b></button>', function (instance, toast) {
                                 instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
                             }],
                     ]
@@ -9684,7 +9825,7 @@ function checkAnnouncements() {
                         // If this DJ Controls is configured by WWSU to notify on technical problems, notify so.
                         if (client.emergencies)
                         {
-                            addNotification(`reported-problem`, `danger`, datum.createdAt, datum.announcement, `Reported Problems`, `Reported problems are saved as announcements. Please update/remove the announcement as you remedy this problem in admin menu -> Manage Announcements.`);
+                            addNotification(`reported-problem`, `danger`, datum.createdAt, datum.announcement, `Reported Problems`, ``, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-attn-edit-${datum.ID}">Edit Announcements</button>`);
                         }
                     } else {
                         var temp = document.querySelector(`#attn-status-report-${datum.ID}`);
@@ -13098,7 +13239,7 @@ function processMessages(data, replace = false)
                                 if (client.emergencies)
                                 {
                                     data[index].needsread = true;
-                                    addNotification(`reported-problem`, `danger`, datum.createdAt, datum.message, `Reported Problems`, `Reported problems are saved as announcements. Please update/remove the announcement as you remedy this problem in admin menu -> Manage Announcements.`);
+                                    addNotification(`reported-problem`, `danger`, datum.createdAt, datum.message, `Reported Problems`, ``, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-attn-edit-${datum.ID}">Edit Announcements</button>`);
                                 }
                                 break;
                             case client.host:
@@ -13197,7 +13338,7 @@ function processMessages(data, replace = false)
                                     if (client.emergencies)
                                     {
                                         data[key].needsread = true;
-                                        addNotification(`reported-problem`, `danger`, data[key].createdAt, data[key].announcement, `Reported Problems`, `Reported problems are saved as announcements. Please update/remove the announcement as you remedy this problem in admin menu -> Manage Announcements.`);
+                                        addNotification(`reported-problem`, `danger`, data[key].createdAt, data[key].announcement, `Reported Problems`, ``, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-attn-edit-${data[key].ID}">Edit Announcements</button>`);
                                     }
                                     break;
                                 case client.host:
@@ -14132,7 +14273,7 @@ function processLogs(data, replace = false)
                     }
                     if (record.logtype === "absent")
                     {
-                        addNotification(`absent-broadcast`, `urgent`, record.createdAt, newString, `Unexcused Broadcast Absences`, `*<strong>Optional/excused shows:</strong> Go to Admin Menu -> Manage DJs -> Choose the DJ -> Find the relevant show in attendance history -> Click the user with a slash icon on the right to mark it as excused in reputation.<br /><br />*<strong>Canceled shows:</strong> Go to the admin menu -> Manage DJs -> Choose the DJ -> Find the relevant show in the attendance history, and click the calendar with a check mark icon on the right.`);
+                        addNotification(`absent-broadcast`, `urgent`, record.createdAt, newString, `Unexcused Broadcast Absences`, ``, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${record.attendanceID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button><button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${record.attendanceID}" title="Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>`);
                     }
                     if (record.logtype === "unauthorized")
                     {
@@ -14140,7 +14281,7 @@ function processLogs(data, replace = false)
                     }
                     if (record.logtype === "cancellation")
                     {
-                        addNotification(`canceled-broadcast`, `info`, record.createdAt, newString, `Canceled Broadcasts`, `*<strong>Optional/excused shows:</strong> Go to Admin Menu -> Manage DJs -> Choose the DJ -> Find the relevant show in attendance history -> Click the user with a slash icon on the right to mark it as excused in reputation.<br /><br />*<strong>Unexcused absences:</strong> Go to the admin menu -> Manage DJs -> Choose the Dj -> Find the relevant show in the attendance history, and click the calendar with an X icon on the right.`);
+                        addNotification(`canceled-broadcast`, `info`, record.createdAt, newString, `Canceled Broadcasts`, ``, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${record.attendanceID}" title="Click if this cancellation should be considered an unexcused absence.">Unexcused Absence</button><button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${record.attendanceID}" title="Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>`);
                     }
                     if (record.logtype === "id")
                     {
@@ -14182,7 +14323,7 @@ function processLogs(data, replace = false)
                                 }
                                 if (data[key].logtype === "absent")
                                 {
-                                    addNotification(`absent-broadcast`, `urgent`, data[key].createdAt, newString, `Unexcused Broadcast Absences`, `*<strong>Optional/excused shows:</strong> Go to Admin Menu -> Manage DJs -> Choose the DJ -> Find the relevant show in attendance history -> Click the user with a slash icon on the right to mark it as excused in reputation.<br /><br />*<strong>Cancelled shows:</strong> Go to the admin menu -> Manage DJs -> Choose the DJ -> Find the relevant show in the attendance history, and click the calendar with a check mark icon on the right.`);
+                                    addNotification(`absent-broadcast`, `urgent`, data[key].createdAt, newString, `Unexcused Broadcast Absences`, ``, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[key].attendanceID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button><button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].attendanceID}" title="Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>`);
                                 }
                                 if (data[key].logtype === "unauthorizedd")
                                 {
@@ -14190,7 +14331,7 @@ function processLogs(data, replace = false)
                                 }
                                 if (data[key].logtype === "cancellation")
                                 {
-                                    addNotification(`cancelled-broadcast`, `info`, data[key].createdAt, newString, `Cancelled Broadcasts`, `*<strong>Optional/excused shows:</strong> Go to Admin Menu -> Manage DJs -> Choose the DJ -> Find the relevant show in attendance history -> Click the user with a slash icon on the right to mark it as excused in reputation.<br /><br />*<strong>Unexcused absences:</strong> Go to the admin menu -> Manage DJs -> Choose the Dj -> Find the relevant show in the attendance history, and click the calendar with an X icon on the right.`);
+                                    addNotification(`cancelled-broadcast`, `info`, data[key].createdAt, newString, `Cancelled Broadcasts`, ``, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[key].attendanceID}" title="Click if this cancellation should be considered an unexcused absence.">Unexcused Absence</button><button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].attendanceID}" title="Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>`);
                                 }
                                 if (data[key].logtype === "id")
                                 {
@@ -15073,9 +15214,9 @@ function processConfig(data) {
     }
 }
 
-function addNotification(group, level, time, notification, name, smallText)
+function addNotification(group, level, time, notification, name, smallText, buttons)
 {
-    Notifications.push({group: group, level: level, time: time, notification: notification});
+    var notificationID = Notifications.push({group: group, level: level, time: time, notification: notification}) - 1;
     var temp = document.querySelector(`#notification-group-${group}`);
     if (temp === null)
     {
@@ -15109,9 +15250,11 @@ function addNotification(group, level, time, notification, name, smallText)
     window.requestAnimationFrame(() => {
         var temp = document.querySelector(`#notification-group-l-${group}`);
         if (temp !== null)
-            temp.innerHTML += `<div class="row text-dark m-1 shadow-1 bg-light-1" style="width: 96%;">
+            temp.innerHTML += `<div class="row text-dark m-1 shadow-1 bg-light-1" style="width: 96%;" id="notification-id-${notificationID}">
     <div class="col-9 text-dark" style="font-size: 1em;">
-        ${notification}
+        ${notification}<br />
+        <button type="button" class="btn btn-primary btn-sm" style="font-size: 0.66em;" id="notification-dismiss-${notificationID}">Dismiss</button>
+        ${buttons ? `${buttons}` : ``}
     </div>
     <div class="col-3 text-primary" style="font-size: 0.75em;">
         ${moment(time).format("MM/DD/YYYY hh:mm A")}

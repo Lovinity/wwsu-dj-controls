@@ -10,9 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Make direct API queries to the WWSU system from the admin menu.
 - Taskbar icon displays a progress bar counting down queue time from 100 seconds when starting a broadcast or returning from break.
 - During a remote broadcast (once re-enabled), the receiving DJ Controls will monitor for audio choppiness. If choppy, it will call call/bad, which triggers the other DJ Controls to restart the audio call. If really bad, will trigger call/give-up, which sends the system into break.
-- Notifications modal that displays notifications grouped by type (example, absent broadcasts / directors).
+- Notifications modal that displays notifications grouped by type (example, absent broadcasts / directors). Also provides action buttons for each notification.
 - Additional DJ analytics on the Dj screens of Manage DJs.
 - Attendance history buttons to mark certain records as excused in terms of the new DJ reputation analytics. Also, buttons to toggle between unexcused show absence and canceled show.
+- Prompt for DJ Controls set to receive emergencies or accountability notifications when closing.
 
 ### Changed
 - Timesheet window in admin options -> manage directors -> timesheets now displays timesheets as vertical Gantt Charts.
