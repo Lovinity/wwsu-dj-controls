@@ -14184,13 +14184,13 @@ function processLogs(data, replace = false)
                                 {
                                     addNotification(`absent-broadcast`, `urgent`, data[key].createdAt, newString, `Unexcused Broadcast Absences`, `*<strong>Optional/excused shows:</strong> Go to Admin Menu -> Manage DJs -> Choose the DJ -> Find the relevant show in attendance history -> Click the user with a slash icon on the right to mark it as excused in reputation.<br /><br />*<strong>Cancelled shows:</strong> Go to the admin menu -> Manage DJs -> Choose the DJ -> Find the relevant show in the attendance history, and click the calendar with a check mark icon on the right.`);
                                 }
+                                if (data[key].logtype === "unauthorizedd")
+                                {
+                                    addNotification(`unauthorized-broadcast`, `warning`, data[key].createdAt, newString, `Unauthorized / Unscheduled Broadcasts`);
+                                }
                                 if (data[key].logtype === "cancellation")
                                 {
-                                    addNotification(`canceled-broadcast`, `warning`, data[key].createdAt, newString, `Unauthorized / Unscheduled Broadcasts`);
-                                }
-                                if (data[key].logtype === "unauthorized")
-                                {
-                                    addNotification(`unauthorized-broadcast`, `info`, data[key].createdAt, newString, `Cancelled Broadcasts`, `*<strong>Optional/excused shows:</strong> Go to Admin Menu -> Manage DJs -> Choose the DJ -> Find the relevant show in attendance history -> Click the user with a slash icon on the right to mark it as excused in reputation.<br /><br />*<strong>Unexcused absences:</strong> Go to the admin menu -> Manage DJs -> Choose the Dj -> Find the relevant show in the attendance history, and click the calendar with an X icon on the right.`);
+                                    addNotification(`cancelled-broadcast`, `info`, data[key].createdAt, newString, `Cancelled Broadcasts`, `*<strong>Optional/excused shows:</strong> Go to Admin Menu -> Manage DJs -> Choose the DJ -> Find the relevant show in attendance history -> Click the user with a slash icon on the right to mark it as excused in reputation.<br /><br />*<strong>Unexcused absences:</strong> Go to the admin menu -> Manage DJs -> Choose the Dj -> Find the relevant show in the attendance history, and click the calendar with an X icon on the right.`);
                                 }
                                 if (data[key].logtype === "id")
                                 {
