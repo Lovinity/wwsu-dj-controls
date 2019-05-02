@@ -31,6 +31,7 @@ try {
     var Messages = TAFFY();
     var Announcements = TAFFY();
     var Eas = TAFFY();
+    var Planner = TAFFY();
     var Recipients = TAFFY();
     var Directors = TAFFY();
     var Requests = TAFFY();
@@ -1456,6 +1457,10 @@ try {
         processRecipients(data);
     });
 
+    socket.on('planner', function (data) {
+        processPlanner(data);
+    });
+
     socket.on('djs', function (data) {
         processDjs(data);
     });
@@ -2016,6 +2021,34 @@ try {
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
         zindex: 50
+    });
+
+    $("#modal-scheduler").iziModal({
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 61
+    });
+
+    $("#modal-scheduler-generated").iziModal({
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 62
     });
 
     var quill = new Quill('#themessage', {
@@ -5432,6 +5465,651 @@ document.querySelector("#btn-options-logs").onclick = function () {
     $('#options-modal-global-logs').animateCss('flash slower', function () {});
 };
 
+document.querySelector("#btn-options-schedule").onclick = function () {
+    $("#modal-scheduler").iziModal('open');
+};
+
+document.querySelector("#modal-scheduler-calendar").onclick = function () {
+    hostReq.request({method: 'POST', url: nodeURL + '/planner/add-calendar', data: {}}, function (response) {
+        iziToast.show({
+            title: `Calendar Events Added!`,
+            message: `Shows and Prerecords for the next 7 days were added and finalized! NOTE: these items have been set with a priority of 2. Edit them if necessary.`,
+            timeout: 20000,
+            close: true,
+            color: 'green',
+            drag: false,
+            position: 'center',
+            closeOnClick: true,
+            overlay: false,
+            zindex: 1000
+        });
+    });
+};
+
+document.querySelector("#modal-scheduler-unfinalize").onclick = function () {
+    iziToast.show({
+        timeout: 60000,
+        overlay: true,
+        displayMode: 'once',
+        color: 'yellow',
+        id: 'inputs',
+        zindex: 999,
+        layout: 2,
+        image: `assets/images/trash.png`,
+        maxWidth: 480,
+        title: 'Remove Break',
+        message: 'THIS CANNOT BE UNDONE! Are you sure you want to un-finalize all records?',
+        position: 'center',
+        drag: false,
+        closeOnClick: false,
+        buttons: [
+            ['<button><b>Un-finalize</b></button>', function (instance, toast) {
+                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                    hostReq.request({method: 'POST', url: nodeURL + '/planner/clear-all', data: {}}, function (response) {
+                        if (response === 'OK')
+                        {
+                            iziToast.show({
+                                title: `Un-finalized!`,
+                                message: `All records are no longer final and subject to scheduling!`,
+                                timeout: 15000,
+                                close: true,
+                                color: 'green',
+                                drag: false,
+                                position: 'center',
+                                closeOnClick: true,
+                                overlay: false,
+                                zindex: 1000
+                            });
+                        } else {
+                            console.dir(response);
+                            iziToast.show({
+                                title: `Failed to un-finalize!`,
+                                message: `There was an error trying to un-finalize all records.`,
+                                timeout: 10000,
+                                close: true,
+                                color: 'red',
+                                drag: false,
+                                position: 'center',
+                                closeOnClick: true,
+                                overlay: false,
+                                zindex: 1000
+                            });
+                        }
+                    });
+                }],
+            ['<button><b>Cancel</b></button>', function (instance, toast) {
+                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                }],
+        ]
+    });
+}
+
+document.querySelector("#modal-scheduler-clear").onclick = function () {
+    iziToast.show({
+        timeout: 60000,
+        overlay: true,
+        displayMode: 'once',
+        color: 'yellow',
+        id: 'inputs',
+        zindex: 999,
+        layout: 2,
+        image: `assets/images/trash.png`,
+        maxWidth: 480,
+        title: 'Remove Break',
+        message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove all records? <strong>Do not do this unless you are making a completely new schedule from scratch!</strong>',
+        position: 'center',
+        drag: false,
+        closeOnClick: false,
+        buttons: [
+            ['<button><b>Remove</b></button>', function (instance, toast) {
+                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                    hostReq.request({method: 'POST', url: nodeURL + '/planner/remove-all', data: {}}, function (response) {
+                        if (response === 'OK')
+                        {
+                            iziToast.show({
+                                title: `Removed!`,
+                                message: `All records have been removed!`,
+                                timeout: 15000,
+                                close: true,
+                                color: 'green',
+                                drag: false,
+                                position: 'center',
+                                closeOnClick: true,
+                                overlay: false,
+                                zindex: 1000
+                            });
+                        } else {
+                            console.dir(response);
+                            iziToast.show({
+                                title: `Failed to remove!`,
+                                message: `There was an error trying to remove all records.`,
+                                timeout: 10000,
+                                close: true,
+                                color: 'red',
+                                drag: false,
+                                position: 'center',
+                                closeOnClick: true,
+                                overlay: false,
+                                zindex: 1000
+                            });
+                        }
+                    });
+                }],
+            ['<button><b>Cancel</b></button>', function (instance, toast) {
+                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                }],
+        ]
+    });
+}
+
+document.querySelector("#modal-scheduler-new").onclick = function () {
+    $('#options-modal-config-form-form').html(``);
+    $('#options-modal-config-form-extra').html(``);
+    $('#options-modal-config-form-form').jsonForm({
+        "schema": {
+            "sDj": {
+                "type": "string",
+                "title": "DJ / Handle",
+                "required": true,
+                "description": `Specify the name / handle of the DJ for this show.`
+            },
+            "sShow": {
+                "type": "string",
+                "title": "Show Name",
+                "required": true,
+                "description": `Specify the name of the show.`
+            },
+            "sPriority": {
+                "type": "integer",
+                "title": "Scheduling Priority",
+                "required": true,
+                "minimum": 0,
+                "maximum": 1000,
+                "description": `0 - 1000. Higher priorities mean higher likelihood this DJ will get one of their most preferred show times. Typically, use the number of remote credits the DJ earned from last semester, or a default number if this is a new DJ.`
+            },
+            "sProposal": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "title": "Show Time Proposal",
+                    "description": "Specify this DJ's preferred show times in order from most preferred first to least preferred.",
+                    "properties": {
+                        "sStartDay": {
+                            "type": "string",
+                            "title": "Show Start Day",
+                            "required": true,
+                            "enum": ["[DELETE THIS ENTRY]", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+                            "description": `What day of the week does the DJ want the show to start on? Choose [DELETE THIS ENTRY] to remove/ignore this show proposal.`
+                        },
+                        "sStartTime": {
+                            "type": "time",
+                            "title": "Show Start Time",
+                            "required": true,
+                            "description": `What time does the DJ want the show to start in this proposal?`
+                        },
+                        "sEndDay": {
+                            "type": "string",
+                            "title": "Show Start Day",
+                            "required": true,
+                            "enum": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+                            "description": `What day of the week does the DJ want the show to end on? <strong>NOTE:</strong> If the show ends midnight or later, you must choose the next day. For example, a show Saturdays 9PM-12AM should have an end day of Sunday and end time of 12am.`
+                        },
+                        "sEndTime": {
+                            "type": "time",
+                            "title": "Show End Time",
+                            "required": true,
+                            "description": `What time does the DJ want the show to end in this proposal?`
+                        },
+                    }
+                }
+            }
+        },
+        "onSubmitValid": function (values) {
+            console.dir(values);
+            var proposals = [];
+            if (typeof values.sProposal !== `undefined` && typeof values.sProposal[0] !== `undefined` && values.sProposal.length > 0)
+            {
+                values.sProposal.map((proposal, index) => {
+                    if (proposal.sStartDay === `[DELETE THIS ENTRY]`)
+                    {
+                        delete values.sProposal[index];
+                        return null;
+                    }
+                    var temp = proposal.sStartTime.split(`:`);
+                    var startHour = parseInt(temp[0]);
+                    var startMinute = parseInt(temp[1]);
+
+                    var temp = proposal.sEndTime.split(`:`);
+                    var endHour = parseInt(temp[0]);
+                    var endMinute = parseInt(temp[1]);
+                    proposals.push({start: weekToInt(proposal.sStartDay, startHour, startMinute), end: weekToInt(proposal.sEndDay, endHour, endMinute)});
+                });
+            }
+
+            hostReq.request({method: 'POST', url: nodeURL + '/planner/add', data: {
+                    dj: values.sDj,
+                    show: values.sShow,
+                    priority: values.sPriority,
+                    proposal: proposals
+                }}, function (response) {
+                console.dir(response);
+                if (response === 'OK')
+                {
+                    $("#options-modal-config-form").iziModal('close');
+                    $("#options-modal-config-list-items").iziModal('close');
+                    iziToast.show({
+                        title: `Schedule planner item added!`,
+                        message: ``,
+                        timeout: 10000,
+                        close: true,
+                        color: 'green',
+                        drag: false,
+                        position: 'center',
+                        closeOnClick: true,
+                        overlay: false,
+                        zindex: 1000
+                    });
+                } else {
+                    console.dir(response);
+                    iziToast.show({
+                        title: `Failed to add schedule planner item.`,
+                        message: response,
+                        timeout: 10000,
+                        close: true,
+                        color: 'red',
+                        drag: false,
+                        position: 'center',
+                        closeOnClick: true,
+                        overlay: false,
+                        zindex: 1000
+                    });
+                }
+            });
+        }
+    });
+    $("#options-modal-config-form-label").html(`Add Schedule Planner Item`);
+    $("#options-modal-config-form").iziModal('open');
+}
+
+
+document.querySelector("#modal-scheduler-generate").onclick = function () {
+    hostReq.request({method: 'POST', url: nodeURL + '/planner/schedule', data: {}}, function (response) {
+        if (typeof response.schedule !== `undefined`)
+        {
+            var temp = document.querySelector(`#scheduler-generated-list`);
+            if (temp !== null)
+            {
+                var newHTML = ``;
+                var formatted = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []};
+            }
+
+            var compare = function (a, b) {
+                if (a.actual === null || typeof a.actual.start === `undefined`)
+                    return 1;
+                if (b.actual === null || typeof b.actual.start === `undefined`)
+                    return -1;
+                if (a.actual.start < b.actual.start)
+                    return -1;
+                if (a.actual.start > b.actual.start)
+                    return 1;
+                return 0;
+            };
+
+            var records = response.schedule.sort(compare);
+            records.map((record) => {
+                if (record.actual === null || typeof record.actual.start === `undefined`)
+                {
+                    return null;
+                }
+                record.actual.start = intToWeek(record.actual.start);
+                record.actual.end = intToWeek(record.actual.end);
+
+                formatted[record.actual.start.dayOfWeek].push(record);
+            });
+
+            for (var k in formatted)
+            {
+                console.log(k);
+                var day = `Unknown`;
+                switch (k)
+                {
+                    case "0":
+                        day = `Sunday`;
+                        break;
+                    case "1":
+                        day = `Monday`;
+                        break;
+                    case "2":
+                        day = `Tuesday`;
+                        break;
+                    case "3":
+                        day = `Wednesday`;
+                        break;
+                    case "4":
+                        day = `Thursday`;
+                        break;
+                    case "5":
+                        day = `Friday`;
+                        break;
+                    case "6":
+                        day = `Saturday`;
+                        break;
+                }
+
+                newHTML += `<div class="row m-1 bg-info">
+                                <div class="col-12 text-light" style="text-align: center;">
+                                    ${day}
+                                </div>
+                            </div>`;
+
+
+                if (formatted[k].length > 0)
+                    formatted[k].map(record => {
+                        var start2 = record.actual.start;
+                        var end2 = record.actual.end;
+
+                        start2 = (start2.hour === 0 || start2.hour > 12) ? `${start2.hour - 12}:${start2.minute < 10 ? `0${start2.minute}` : start2.minute} ${start2.hour < 12 ? ` AM` : ` PM`}` : `${start2.hour}:${start2.minute < 10 ? `0${start2.minute}` : start2.minute} ${start2.hour < 12 ? ` AM` : ` PM`}`;
+                        end2 = (end2.hour === 0 || end2.hour > 12) ? `${end2.hour - 12}:${end2.minute < 10 ? `0${end2.minute}` : end2.minute} ${end2.hour < 12 ? ` AM` : ` PM`}` : `${end2.hour}:${end2.minute < 10 ? `0${end2.minute}` : end2.minute} ${end2.hour < 12 ? ` AM` : ` PM`}`;
+                        newHTML += `<div class="row m-1 bg-light-1 shadow-2">
+                    <div class="col-8 text-primary">
+                        ${record.dj} - ${record.show}
+                    </div>
+                    <div class="col-4 text-success">
+                        ${start2} - ${end2}
+                    </div>
+                </div>`;
+                    });
+            }
+
+            newHTML += `<div class="row m-1 bg-danger">
+                                <div class="col-12 text-light" style="text-align: center;">
+                                    Failed Schedules
+                                </div>
+                            </div>`;
+
+            response.failed.map((record) => {
+                newHTML += `<div class="row m-1 bg-light-1 shadow-2">
+                    <div class="col-6 text-primary">
+                        ${record.dj} - ${record.show}
+                    </div>
+                    <div class="col-6 text-info">
+                        ${record.badReason || ``}
+                    </div>
+                </div>`;
+            });
+
+            temp.innerHTML = newHTML;
+
+            $("#modal-scheduler-generated").iziModal('open');
+            iziToast.show({
+                title: `Calendar Events Added!`,
+                message: `Shows and Prerecords for the next 7 days were added and finalized! NOTE: these items have been set with a priority of 2. Edit them if necessary.`,
+                timeout: 20000,
+                close: true,
+                color: 'green',
+                drag: false,
+                position: 'center',
+                closeOnClick: true,
+                overlay: false,
+                zindex: 1000
+            });
+        } else {
+            iziToast.show({
+                title: `Failed to generate schedule!`,
+                message: `There was an error trying to generate the schedule.`,
+                timeout: 10000,
+                close: true,
+                color: 'red',
+                drag: false,
+                position: 'center',
+                closeOnClick: true,
+                overlay: false,
+                zindex: 1000
+            });
+        }
+    });
+};
+
+document.querySelector(`#scheduler-list`).addEventListener("click", function (e) {
+    try {
+        console.log(e.target.id);
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith(`scheduler-edit-`))
+            {
+                var recordID = parseInt(e.target.id.replace(`scheduler-edit-`, ``));
+                var record = Planner({ID: recordID}).first();
+
+                if (record)
+                {
+                    var proposals = [];
+                    if (record.proposal !== null && record.proposal.length > 0 && typeof record.proposal[0].start !== `undefined`)
+                    {
+                        record.proposal.map((proposal) => {
+                            var start = intToWeek(proposal.start);
+                            var end = intToWeek(proposal.end);
+
+                            proposals.push({
+                                sStartDay: start.dayOfWeekS,
+                                sStartTime: `${start.hour}:${start.minute < 10 ? `0${start.minute}` : start.minute}`,
+                                sEndDay: end.dayOfWeekS,
+                                sEndTime: `${end.hour}:${end.minute < 10 ? `0${end.minute}` : end.minute}`
+                            });
+                        });
+                    }
+
+                    $('#options-modal-config-form-form').html(``);
+                    $('#options-modal-config-form-extra').html(record.actual !== null && typeof record.actual.start !== `undefined` ? `<strong>This record already has a finalized timeslot.</strong> If you edit it, it will become un-finalized, which means it will be re-scheduled on the next generation.` : ``);
+                    $('#options-modal-config-form-form').jsonForm({
+                        "schema": {
+                            "sDj": {
+                                "type": "string",
+                                "title": "DJ / Handle",
+                                "required": true,
+                                "description": `Specify the name / handle of the DJ for this show.`
+                            },
+                            "sShow": {
+                                "type": "string",
+                                "title": "Show Name",
+                                "required": true,
+                                "description": `Specify the name of the show.`
+                            },
+                            "sPriority": {
+                                "type": "integer",
+                                "title": "Scheduling Priority",
+                                "required": true,
+                                "minimum": 0,
+                                "maximum": 1000,
+                                "description": `0 - 1000. Higher priorities mean higher likelihood this DJ will get one of their most preferred show times. Typically, use the number of remote credits the DJ earned from last semester, or a default number if this is a new DJ.`
+                            },
+                            "sProposal": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "title": "Show Time Proposal",
+                                    "description": "Specify this DJ's preferred show times in order from most preferred first to least preferred.",
+                                    "properties": {
+                                        "sStartDay": {
+                                            "type": "string",
+                                            "title": "Show Start Day",
+                                            "required": true,
+                                            "enum": ["[DELETE THIS ENTRY]", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+                                            "description": `What day of the week does the DJ want the show to start on? Choose [DELETE THIS ENTRY] to remove/ignore this show proposal.`
+                                        },
+                                        "sStartTime": {
+                                            "type": "time",
+                                            "title": "Show Start Time",
+                                            "required": true,
+                                            "description": `What time does the DJ want the show to start in this proposal?`
+                                        },
+                                        "sEndDay": {
+                                            "type": "string",
+                                            "title": "Show Start Day",
+                                            "required": true,
+                                            "enum": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+                                            "description": `What day of the week does the DJ want the show to end on? <strong>NOTE:</strong> If the show ends midnight or later, you must choose the next day. For example, a show Saturdays 9PM-12AM should have an end day of Sunday and end time of 12am.`
+                                        },
+                                        "sEndTime": {
+                                            "type": "time",
+                                            "title": "Show End Time",
+                                            "required": true,
+                                            "description": `What time does the DJ want the show to end in this proposal?`
+                                        },
+                                    }
+                                }
+                            }
+                        },
+                        "value": {
+                            "sDj": record.dj,
+                            "sShow": record.show,
+                            "sPriority": record.priority,
+                            "sProposal": proposals,
+                        },
+                        "onSubmitValid": function (values) {
+                            console.dir(values);
+                            var proposals = [];
+                            if (typeof values.sProposal !== `undefined` && typeof values.sProposal[0] !== `undefined` && values.sProposal.length > 0)
+                            {
+                                values.sProposal.map((proposal, index) => {
+                                    if (proposal.sStartDay === `[DELETE THIS ENTRY]`)
+                                    {
+                                        delete values.sProposal[index];
+                                        return null;
+                                    }
+                                    var temp = proposal.sStartTime.split(`:`);
+                                    var startHour = parseInt(temp[0]);
+                                    var startMinute = parseInt(temp[1]);
+
+                                    var temp = proposal.sEndTime.split(`:`);
+                                    var endHour = parseInt(temp[0]);
+                                    var endMinute = parseInt(temp[1]);
+                                    proposals.push({start: weekToInt(proposal.sStartDay, startHour, startMinute), end: weekToInt(proposal.sEndDay, endHour, endMinute)});
+                                });
+                            }
+
+                            hostReq.request({method: 'POST', url: nodeURL + '/planner/edit', data: {
+                                    ID: recordID,
+                                    dj: values.sDj,
+                                    show: values.sShow,
+                                    priority: values.sPriority,
+                                    proposal: proposals,
+                                    clearActual: true
+                                }}, function (response) {
+                                console.dir(response);
+                                if (response === 'OK')
+                                {
+                                    $("#options-modal-config-form").iziModal('close');
+                                    $("#options-modal-config-list-items").iziModal('close');
+                                    iziToast.show({
+                                        title: `Schedule planner item edited!`,
+                                        message: ``,
+                                        timeout: 10000,
+                                        close: true,
+                                        color: 'green',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                } else {
+                                    console.dir(response);
+                                    iziToast.show({
+                                        title: `Failed to eddit schedule planner item.`,
+                                        message: response,
+                                        timeout: 10000,
+                                        close: true,
+                                        color: 'red',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                }
+                            });
+                        }
+                    });
+                    $("#options-modal-config-form-label").html(`Edit Schedule Planner Item`);
+                    $("#options-modal-config-form").iziModal('open');
+                }
+            }
+
+            if (e.target.id.startsWith(`scheduler-remove-`))
+            {
+                var recordID = parseInt(e.target.id.replace(`scheduler-remove-`, ``));
+                var record = Planner({ID: recordID}).first();
+
+                if (record)
+                {
+                    iziToast.show({
+                        timeout: 60000,
+                        overlay: true,
+                        displayMode: 'once',
+                        color: 'yellow',
+                        id: 'inputs',
+                        zindex: 999,
+                        layout: 2,
+                        image: `assets/images/trash.png`,
+                        maxWidth: 480,
+                        title: 'Remove DJ',
+                        message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove that scheduler record?',
+                        position: 'center',
+                        drag: false,
+                        closeOnClick: false,
+                        buttons: [
+                            ['<button><b>Remove</b></button>', function (instance, toast) {
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                    hostReq.request({method: 'POST', url: nodeURL + '/planner/remove', data: {ID: recordID}}, function (response) {
+                                        if (response === 'OK')
+                                        {
+                                            $("#options-modal-dj").iziModal('close');
+                                            iziToast.show({
+                                                title: `Record Removed!`,
+                                                message: `Scheduler record was removed!`,
+                                                timeout: 15000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to remove scheduler record!`,
+                                                message: `There was an error trying to remove that scheduler record.`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }],
+                            ['<button><b>Cancel</b></button>', function (instance, toast) {
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                }],
+                        ]
+                    });
+                }
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #scheduler-list.'
+        });
+    }
+});
+
 document.querySelector("#filter-global-logs").onclick = function () {
     filterGlobalLogs(document.querySelector("#global-log-filter").value);
 };
@@ -8243,6 +8921,19 @@ function hostSocket(cb = function(token) {})
                             } catch (e) {
                                 console.error(e);
                                 console.log('FAILED config CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to the planner socket
+                        hostReq.request({method: 'post', url: nodeURL + '/planner/get', data: {}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processPlanner(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED PLANNER CONNECTION');
                                 clearTimeout(restarter);
                                 restarter = setTimeout(hostSocket, 10000);
                             }
@@ -12254,6 +12945,71 @@ function processCalendar(data, replace = false)
 }
 }
 
+function processPlanner(data, replace = false)
+{
+    // Data processing
+    console.dir(data);
+    try {
+        if (replace)
+        {
+            // Replace with the new data
+            Planner = TAFFY();
+            Planner.insert(data);
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
+                {
+                    switch (key)
+                    {
+                        case 'insert':
+                            Planner.insert(data[key]);
+                            break;
+                        case 'update':
+                            Planner({ID: data[key].ID}).update(data[key]);
+                            break;
+                        case 'remove':
+                            Planner({ID: data[key]}).remove();
+                            break;
+                    }
+                }
+            }
+        }
+        var temp = document.querySelector(`#scheduler-list`);
+        if (temp !== null)
+        {
+            var newHTML = ``;
+            Planner().each((item) => {
+                newHTML += `<div class="row m-1 bg-light-1 border-left border-${item.actual !== null && typeof item.actual.start !== 'undefined' ? `success` : `secondary`} shadow-2" style="border-left-width: 5px !important;" title="${item.actual !== null && typeof item.actual.start !== 'undefined' ? `This record is finalized and has a scheduled timeslot that will not change upon generation.` : `This record is not finalized; generating a new schedule will assign a timeslot.`}">
+                            <div class="col-6 text-primary">
+                                ${item.dj} - ${item.show}
+                            </div>
+                            <div class="col-3 text-success">
+                                ${item.actual !== null && typeof item.actual.start !== 'undefined' ? `<i class="fas fa-check-circle text-success"></i>` : ``}
+                            </div>
+                            <div class="col-3">
+                                <button type="button" id="scheduler-edit-${item.ID}" class="close" title="Edit this entry">
+                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+                </button>
+                <button type="button" id="scheduler-remove-${item.ID}" class="close" title="Remove this entry">
+                <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
+                </button>
+                            </div>
+                        </div>`;
+            });
+
+            temp.innerHTML = newHTML;
+        }
+
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: 'Error occurred during the processPlanner function.'
+        });
+}
+}
+
 // Update recipients as changes happen
 function processRecipients(data, replace = false)
 {
@@ -14362,4 +15118,81 @@ function addNotification(group, level, time, notification, name, smallText)
     </div>
 </div>`
     });
+}
+
+function weekToInt(dayOfWeek, hour, minute)
+{
+    switch (dayOfWeek)
+    {
+        case "Sunday":
+            dayOfWeek = 0;
+            break;
+        case "Monday":
+            dayOfWeek = 1;
+            break;
+        case "Tuesday":
+            dayOfWeek = 2;
+            break;
+        case "Wednesday":
+            dayOfWeek = 3;
+            break;
+        case "Thursday":
+            dayOfWeek = 4;
+            break;
+        case "Friday":
+            dayOfWeek = 5;
+            break;
+        case "Saturday":
+            dayOfWeek = 6;
+            break;
+    }
+
+    console.log(dayOfWeek);
+    console.log(hour);
+    hour = parseInt(hour);
+    console.log(minute);
+    minute = parseInt(minute);
+    var returnData = (dayOfWeek * 24 * 60) + (hour * 60) + minute;
+    console.log(returnData);
+    return returnData;
+}
+
+function intToWeek(integer)
+{
+    var currentValue = parseInt(integer);
+
+    var dayOfWeek = Math.floor(currentValue / 60 / 24);
+    currentValue -= dayOfWeek * 60 * 24;
+
+    var dayOfWeekS = `Unknown`;
+    switch (dayOfWeek)
+    {
+        case 0:
+            dayOfWeekS = "Sunday";
+            break;
+        case 1:
+            dayOfWeekS = "Monday";
+            break;
+        case 2:
+            dayOfWeekS = "Tuesday";
+            break;
+        case 3:
+            dayOfWeekS = "Wednesday";
+            break;
+        case 4:
+            dayOfWeekS = "Thursday";
+            break;
+        case 5:
+            dayOfWeekS = "Friday";
+            break;
+        case 6:
+            dayOfWeekS = "Saturday";
+            break;
+    }
+
+    var hour = Math.floor(currentValue / 60);
+    currentValue -= hour * 60;
+
+    var minute = currentValue;
+    return {dayOfWeekS: dayOfWeekS, dayOfWeek: dayOfWeek, hour: hour, minute: minute};
 }

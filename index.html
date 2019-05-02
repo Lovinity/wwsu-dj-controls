@@ -1204,6 +1204,10 @@
                             <div style="text-align: center; font-size: 1em;">Calendar Verification</div>
                         </div>
                         <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
+                            <button type="button" id="btn-options-schedule" class="btn btn-info btn-float" title="Open the schedule generator tool to help create weekly show schedules."><i class="fas fa-calendar-week"></i></button>
+                            <div style="text-align: center; font-size: 1em;">Schedule Generator</div>
+                        </div>
+                        <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                             <button type="button" id="btn-options-radiodj" class="btn btn-danger btn-float" title="Change which RadioDJ is currently operating automation."><i class="fas fa-sync"></i></button>
                             <div style="text-align: center; font-size: 1em;">Switch RadioDJ</div>
                         </div>
@@ -2389,6 +2393,60 @@
             </div>
             <div class="modal-footer bg-light-1">
                 <button type="button" class="btn btn-success btn-lg" id="modal-notifications-close" title="Dismiss all notifications and close">Dismiss all and close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-scheduler" tabindex="-1" role="dialog">
+        <div class="modal-content text-dark bg-light-3">
+            <header class="navbar navbar-full bg-info doc-navbar-default">
+                <span class="navbar-brand mr-auto text-white">Schedule Generator</span>
+                <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
+            </header>
+            <div class="modal-body" style="max-height: 640px; overflow: scroll;">
+                <div class="row m-1 bg-light-1 shadow-2">
+                    <div class="col-6 text-primary">
+                        DJ/handle - Show
+                    </div>
+                    <div class="col-3 text-success">
+                        Finalized
+                    </div>
+                    <div class="col-3 text-dark">
+                        Actions
+                    </div>
+                </div>
+                <div class="container" id="scheduler-list">
+                </div>
+            </div>
+            <div class="modal-footer bg-light-1">
+                <button type="button" class="btn btn-success btn-lg" id="modal-scheduler-new" title="Add a new show sign-up.">New Entry</button>
+                <button type="button" class="btn btn-danger btn-lg" id="modal-scheduler-clear" title="Remove all entries.">Remove All</button>
+                <button type="button" class="btn btn-urgent btn-lg" id="modal-scheduler-unfinalize" title="Un-finalize all entries, but keep the entries.">Clear Final</button>
+                <button type="button" class="btn btn-info btn-lg" id="modal-scheduler-calendar" title="Add the Shows and Prerecords listed on the calendar for the next 7 days, and mark them finalized.">Add From Calendar</button>
+                <button type="button" class="btn btn-secondary btn-lg" id="modal-scheduler-generate" title="Generate a new schedule and view it.">Generate Schedule</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-scheduler-generated" tabindex="-1" role="dialog">
+        <div class="modal-content text-dark bg-light-3">
+            <header class="navbar navbar-full bg-info doc-navbar-default">
+                <span class="navbar-brand mr-auto text-white">Generated Show Schedule</span>
+                <div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a></div>
+            </header>
+            <div class="modal-body" style="max-height: 640px; overflow: scroll;">
+                <div class="row m-1 bg-light-1 shadow-2">
+                    <div class="col-8 text-primary">
+                        DJ/handle - Show
+                    </div>
+                    <div class="col-4 text-success">
+                        Show Time
+                    </div>
+                </div>
+                <div class="container" id="scheduler-generated-list">
+                </div>
+            </div>
+            <div class="modal-footer bg-light-1">
             </div>
         </div>
     </div>
