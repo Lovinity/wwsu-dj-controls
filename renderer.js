@@ -3,6 +3,18 @@
 try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
+    var hidden, visibilityChange;
+    if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support 
+        hidden = "hidden";
+        visibilityChange = "visibilitychange";
+    } else if (typeof document.msHidden !== "undefined") {
+        hidden = "msHidden";
+        visibilityChange = "msvisibilitychange";
+    } else if (typeof document.webkitHidden !== "undefined") {
+        hidden = "webkitHidden";
+        visibilityChange = "webkitvisibilitychange";
+    }
+
     var development = false;
 
     // Define hexrgb constants
@@ -25,6 +37,7 @@ try {
 
     // Define data variables
     var Meta = {time: moment().toISOString(), lastID: moment().toISOString(), state: 'unknown', line1: '', line2: '', queueFinish: null, trackFinish: null};
+    var Attendance = TAFFY();
     var Calendar = TAFFY();
     var Discipline = TAFFY();
     var Status = TAFFY();
@@ -35,13 +48,262 @@ try {
     var Recipients = TAFFY();
     var Directors = TAFFY();
     var Requests = TAFFY();
-    var Logs = TAFFY();
     var Djs = TAFFY();
     var Hosts = TAFFY();
     var Config = {};
     var DJData = {};
+    var Timesheet = TAFFY();
     var Timesheets = [];
     var Notifications = [];
+    var cal = {
+        priority: 0,
+        type: ``,
+        host: ``,
+        show: ``,
+        topic: ``,
+        notified: false,
+        starts: null,
+        hint: false
+    };
+
+    var calendarWorker = new Worker('calendarWorker.js');
+    calendarWorker.onmessage = function (e) {
+        e = e.data[0];
+        cal = e.cal;
+
+        // Determine priority of what is currently on the air
+        var curPriority = 0;
+        if (Meta.state.startsWith("sports_"))
+            curPriority = 10;
+        if (Meta.state.startsWith("remote_"))
+            curPriority = 7;
+        if (Meta.state.startsWith("live_") && Meta.state !== 'live_prerecord')
+            curPriority = 5;
+        if (Meta.state === 'live_prerecord')
+            curPriority = 3;
+        if (Meta.state.startsWith("automation_"))
+            curPriority = 2;
+
+        // Determine if the DJ should be notified of the upcoming program
+        if ((curPriority <= cal.priority || cal.now === null) && !cal.notified && isHost && Meta.show !== `${cal.host} - ${cal.show}` && Meta.changingState === null)
+        {
+            // Sports events should notify right away; allows for 15 minutes to transition
+            if (cal.type === 'Sports')
+            {
+                cal.notified = true;
+                /*
+                 var notification = notifier.notify('Upcoming Sports Broadcast', {
+                 message: 'Please wrap-up / end your show in the next few minutes.',
+                 icon: 'https://icon2.kisspng.com/20171221/lje/gold-cup-trophy-png-clip-art-image-5a3c1fa99cbcb0.608850721513889705642.jpg',
+                 duration: 900000,
+                 });
+                 */
+                main.flashTaskbar();
+                iziToast.show({
+                    class: 'flash-bg',
+                    title: 'Sports broadcast in less than 15 minutes.',
+                    message: `If the sports broadcast is still planned, please wrap up your show now and click "End Show". That way, the sports team has time to set up.`,
+                    timeout: 900000,
+                    close: true,
+                    color: 'yellow',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: false,
+                    overlay: true,
+                    zindex: 501,
+                    layout: 2,
+                    image: `assets/images/sportsOff.png`,
+                    maxWidth: 480,
+                    buttons: [
+                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+                                endShow();
+                                instance.hide({}, toast, 'button');
+                            }]
+                    ]
+                });
+            }
+
+            // Remote events should also notify right away; allows for 15 minutes to transition
+            if (cal.type === 'Remote')
+            {
+                cal.notified = true;
+                /*
+                 var notification = notifier.notify('Upcoming Remote Broadcast', {
+                 message: 'Please wrap-up / end your show in the next few minutes.',
+                 icon: 'http://cdn.onlinewebfonts.com/svg/img_550701.png',
+                 duration: 900000,
+                 });
+                 */
+                main.flashTaskbar();
+                iziToast.show({
+                    class: 'flash-bg',
+                    title: 'Remote broadcast in less than 15 minutes.',
+                    message: `If the remote broadcast is still planned, please wrap up your show now and click "End Show". That way, the producers have time to set up for the broadcast.`,
+                    timeout: 900000,
+                    close: true,
+                    color: 'yellow',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: false,
+                    overlay: true,
+                    zindex: 501,
+                    layout: 2,
+                    image: `assets/images/remoteOff.png`,
+                    maxWidth: 480,
+                    buttons: [
+                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+                                endShow();
+                                instance.hide({}, toast, 'button');
+                            }]
+                    ]
+                });
+            }
+
+            // Live shows should not notify until the scheduled start time is past the current time.
+            if (cal.type === 'Show' && moment(Meta.time).isAfter(moment(cal.starts)))
+            {
+                cal.notified = true;
+                /*
+                 var notification = notifier.notify('Interfering with Another Show', {
+                 message: 'Please wrap-up / end your show as soon as possible.',
+                 icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+                 duration: 900000,
+                 });
+                 */
+                main.flashTaskbar();
+                iziToast.show({
+                    class: 'flash-bg',
+                    title: 'You are interfering with a scheduled show!',
+                    message: `Please wrap up your show now. Then, if the next producer will be ready within 5 minutes, click "Switch Show"; otherwise, click "End Show".`,
+                    timeout: 900000,
+                    close: true,
+                    color: 'red',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: false,
+                    overlay: true,
+                    zindex: 501,
+                    layout: 2,
+                    image: `assets/images/showOff.png`,
+                    maxWidth: 480,
+                    buttons: [
+                        ['<button>Switch Show</button>', function (instance, toast, button, e, inputs) {
+                                switchShow();
+                                instance.hide({}, toast, 'button');
+                            }],
+                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+                                endShow();
+                                instance.hide({}, toast, 'button');
+                            }]
+                    ]
+                });
+            }
+
+            // Prerecords also should not notify until the scheduled start time is past the current time.
+            if (cal.type === 'Prerecord' && moment(Meta.time).isAfter(moment(cal.starts)))
+            {
+                cal.notified = true;
+                /*
+                 var notification = notifier.notify('Interfering with a Prerecord', {
+                 message: 'Please wrap-up / end your show as soon as possible.',
+                 icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+                 duration: 900000,
+                 });
+                 */
+                main.flashTaskbar();
+                iziToast.show({
+                    class: 'flash-bg',
+                    title: 'You are interfering with a scheduled prerecord!',
+                    message: `Please wrap up your show and then click "End Show".`,
+                    timeout: 900000,
+                    close: true,
+                    color: 'red',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: false,
+                    overlay: true,
+                    zindex: 501,
+                    layout: 2,
+                    image: `assets/images/prerecordOff.png`,
+                    maxWidth: 480,
+                    buttons: [
+                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+                                endShow();
+                                instance.hide({}, toast, 'button');
+                            }]
+                    ]
+                });
+            }
+
+            // OnAir Studio Reserve
+            if (cal.type === 'Booking' && cal.priority < 7 && moment(Meta.time).isAfter(moment(cal.starts)))
+            {
+                cal.notified = true;
+                /*
+                 var notification = notifier.notify('OnAir Studio is Reserved', {
+                 message: 'Please wrap-up / end your show as soon as possible.',
+                 icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+                 duration: 900000,
+                 });
+                 */
+                main.flashTaskbar();
+                iziToast.show({
+                    class: 'flash-bg',
+                    title: 'Someone has reserved the OnAir Studio for prerecording!',
+                    message: `If you are doing your show in the OnAir Studio, please wrap up your show now and click "End Show".`,
+                    timeout: 900000,
+                    close: true,
+                    color: 'red',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: false,
+                    overlay: true,
+                    zindex: 501,
+                    layout: 2,
+                    image: `assets/images/prerecordOff.png`,
+                    maxWidth: 480,
+                    buttons: [
+                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+                                endShow();
+                                instance.hide({}, toast, 'button');
+                            }]
+                    ]
+                });
+            }
+        }
+
+        // Only update calendar and events when DJ Controls is not hidden. Saves on resources.
+        if (!document[hidden])
+        {
+            $(".chart").empty();
+
+            var newSVG = document.getElementById("clock-program");
+            newSVG.setAttribute("transform", `rotate(${e.clockwheel.start})`);
+            e.clockwheel.processed.normal.map(function (sector) {
+
+                var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                newSector.setAttributeNS(null, 'fill', sector.color);
+                newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
+                newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
+
+                newSVG.appendChild(newSector);
+            });
+            var newSVG = document.getElementById("clock-program-2");
+            newSVG.setAttribute("transform", `rotate(${e.clockwheel.start})`);
+            e.clockwheel.processed.small.map(function (sector) {
+
+                var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                newSector.setAttributeNS(null, 'fill', sector.color);
+                newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
+                newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
+
+                newSVG.appendChild(newSector);
+            });
+
+            document.querySelector('#calendar-events').innerHTML = e.events;
+            document.querySelector('#calendar-title').innerHTML = e.title;
+        }
+    };
 
     // Define peerJS and stream variables. These will be set after getting information about this host's settings.
     var peer;
@@ -169,7 +431,7 @@ try {
             var temp3 = document.querySelector(`#call-vu`);
             var temp4 = document.querySelector(`#main-vu`);
 
-            if (temp5 !== null)
+            if (temp5 !== null && !document[hidden])
             {
                 temp5.style.width = `${window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0}%`;
 
@@ -180,7 +442,7 @@ try {
                     temp5.className = "progress-bar bg-success";
             }
 
-            if (temp6 !== null)
+            if (temp6 !== null && !document[hidden])
             {
                 temp6.style.width = `${window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0}%`;
 
@@ -191,7 +453,7 @@ try {
                     temp6.className = "progress-bar bg-success";
             }
 
-            if (temp3 !== null)
+            if (temp3 !== null && !document[hidden])
             {
                 temp3.style.width = `${window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0}%`;
 
@@ -202,7 +464,7 @@ try {
                     temp3.className = "progress-bar bg-success";
             }
 
-            if (temp4 !== null)
+            if (temp4 !== null && !document[hidden])
             {
                 temp4.style.width = `${window.mainVolume > -50 ? ((window.mainVolume + 50) * 4) : 0}%`;
 
@@ -216,7 +478,7 @@ try {
             if (typeof outgoingCall !== 'undefined' && window.peerError >= 0)
             {
                 var temp8 = document.querySelector(`#audio-call-icon`);
-                if (temp8 !== null)
+                if (temp8 !== null && !document[hidden])
                 {
                     var percent = window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0;
                     temp8.style.color = `rgb(0, ${percent < 100 ? parseInt((percent * 2) + 55) : 255}, 0)`;
@@ -231,7 +493,7 @@ try {
                     temp8.style.color = `rgb(255, 255, 0)`;
             } else if (typeof incomingCall !== 'undefined') {
                 var temp8 = document.querySelector(`#audio-call-icon`);
-                if (temp8 !== null)
+                if (temp8 !== null && !document[hidden])
                 {
                     var percent = temp0 > -50 ? ((temp0 + 50) * 4) : 0;
                     temp8.style.color = `rgb(0, ${percent < 100 ? parseInt((percent * 2) + 55) : 255}, ${percent < 100 ? parseInt((percent * 2) + 55) : 255})`;
@@ -1208,34 +1470,16 @@ try {
     var listNew = function () {};
     var disconnected = true;
     var theStatus = 4;
-    var calendar = []; // Contains calendar events for the next 24 hours
     var activeRecipient = null;
     var client = {};
     var totalUnread = 0;
     var totalRequests = 0;
     var breakNotified = false;
-    var data = {
-        size: 140,
-        smallSize: 70,
-        start: 0, // angle to rotate pie chart by
-        sectors: [], // start (angle from start), size (amount of angle to cover), label, color
-        smallSectors: []
-    }
     var prevQueueLength = 0;
     var queueLength = 0;
     var trip;
     var metaTimer;
     var isHost = false;
-
-    // These are used for keeping track of upcoming shows and notifying DJs to prevent people cutting into each other's shows.
-    var calPriority = 0;
-    var calType = '';
-    var calHost = '';
-    var calShow = '';
-    var calTopic = '';
-    var calNotified = false;
-    var calStarts = null;
-    var calHint = false;
 
     // Clock stuff
     var date = moment(Meta.time);
@@ -1465,6 +1709,10 @@ try {
         processDirectors(data);
     });
 
+    socket.on('timesheet', function (data) {
+        processTimesheet(data);
+    });
+
     socket.on('discipline', function (data) {
         processDiscipline(data);
     });
@@ -1477,8 +1725,8 @@ try {
         processHosts(data);
     });
 
-    socket.on('logs', function (data) {
-        processLogs(data);
+    socket.on('attendance', function (data) {
+        processAttendance(data);
     });
 
     socket.on('config', function (data) {
@@ -2820,7 +3068,7 @@ document.querySelector("#btn-options-config-meta").onclick = function () {
                 },
             },
             "value": {
-                "mClearTime": Config.meta.clearTime || 0,
+                "mClearTime": Config.Meta.clearTime || 0,
             },
             "onSubmitValid": function (values) {
                 directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/meta/set', data: {
@@ -2865,7 +3113,7 @@ document.querySelector("#btn-options-config-meta").onclick = function () {
         console.error(e);
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-            message: 'Error occurred during the click event of #btn-options-config-meta.'
+            message: 'Error occurred during the click event of #btn-options-config-Meta.'
         });
     }
 };
@@ -2913,13 +3161,13 @@ document.querySelector("#btn-options-config-meta-alt").onclick = function () {
                 },
             },
             "value": {
-                "mAutomation": Config.meta.alt.automation || ``,
-                "mPlaylist": Config.meta.alt.playlist || ``,
-                "mGenre": Config.meta.alt.genre || ``,
-                "mLive": Config.meta.alt.live || ``,
-                "mPrerecord": Config.meta.alt.prerecord || ``,
-                "mRemote": Config.meta.alt.remote || ``,
-                "mSports": Config.meta.alt.sports || ``,
+                "mAutomation": Config.Meta.alt.automation || ``,
+                "mPlaylist": Config.Meta.alt.playlist || ``,
+                "mGenre": Config.Meta.alt.genre || ``,
+                "mLive": Config.Meta.alt.live || ``,
+                "mPrerecord": Config.Meta.alt.prerecord || ``,
+                "mRemote": Config.Meta.alt.remote || ``,
+                "mSports": Config.Meta.alt.sports || ``,
             },
             "onSubmitValid": function (values) {
                 directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/meta/alt/set', data: {
@@ -3048,19 +3296,19 @@ document.querySelector("#btn-options-config-meta-prefix").onclick = function () 
                 },
             },
             "value": {
-                "mAutomation": Config.meta.prefix.automation || ``,
-                "mGenre": Config.meta.prefix.genre || ``,
-                "mPlaylist": Config.meta.prefix.playlist || ``,
-                "mRequest": Config.meta.prefix.request || ``,
-                "mPendLive": Config.meta.prefix.pendLive || ``,
-                "mPendPrerecord": Config.meta.prefix.pendPrerecord || ``,
-                "mPendRemote": Config.meta.prefix.pendRemote || ``,
-                "mPendSports": Config.meta.prefix.pendSports || ``,
-                "mPrerecord": Config.meta.prefix.prerecord || ``,
-                "mLive": Config.meta.prefix.live || ``,
-                "mRemote": Config.meta.prefix.remote || ``,
-                "mSports": Config.meta.prefix.sports || ``,
-                "mPlaying": Config.meta.prefix.playing || ``,
+                "mAutomation": Config.Meta.prefix.automation || ``,
+                "mGenre": Config.Meta.prefix.genre || ``,
+                "mPlaylist": Config.Meta.prefix.playlist || ``,
+                "mRequest": Config.Meta.prefix.request || ``,
+                "mPendLive": Config.Meta.prefix.pendLive || ``,
+                "mPendPrerecord": Config.Meta.prefix.pendPrerecord || ``,
+                "mPendRemote": Config.Meta.prefix.pendRemote || ``,
+                "mPendSports": Config.Meta.prefix.pendSports || ``,
+                "mPrerecord": Config.Meta.prefix.prerecord || ``,
+                "mLive": Config.Meta.prefix.live || ``,
+                "mRemote": Config.Meta.prefix.remote || ``,
+                "mSports": Config.Meta.prefix.sports || ``,
+                "mPlaying": Config.Meta.prefix.playing || ``,
             },
             "onSubmitValid": function (values) {
                 directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/meta/prefix/set', data: {
@@ -4809,9 +5057,9 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                 if (task.task === `[DELETE THIS ENTRY]`)
                                     delete values.tasks[index];
                             });
-                            var data = {};
-                            data[item] = values.tasks || [];
-                            directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-live', data: data}, function (response) {
+                            var theData = {};
+                            theData[item] = values.tasks || [];
+                            directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-live', data: theData}, function (response) {
                                 console.dir(response);
                                 if (response === 'OK')
                                 {
@@ -4922,9 +5170,9 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                 if (task.task === `[DELETE THIS ENTRY]`)
                                     delete values.tasks[index];
                             });
-                            var data = {};
-                            data[item] = values.tasks || [];
-                            directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-remote', data: data}, function (response) {
+                            var theData = {};
+                            theData[item] = values.tasks || [];
+                            directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-remote', data: theData}, function (response) {
                                 console.dir(response);
                                 if (response === 'OK')
                                 {
@@ -5035,9 +5283,9 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                 if (task.task === `[DELETE THIS ENTRY]`)
                                     delete values.tasks[index];
                             });
-                            var data = {};
-                            data[item] = values.tasks || [];
-                            directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-sports', data: data}, function (response) {
+                            var theData = {};
+                            theData[item] = values.tasks || [];
+                            directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-sports', data: theData}, function (response) {
                                 console.dir(response);
                                 if (response === 'OK')
                                 {
@@ -6779,6 +7027,22 @@ document.querySelector(`#options-timesheets-records`).addEventListener("click", 
                         .map(record => {
                             document.querySelector(`#options-modal-config-form-form`).innerHTML = ``;
                             $('#options-modal-config-form-extra').html(``);
+                            var enumValue = ``;
+                            switch (record.approved)
+                            {
+                                case - 1:
+                                    enumValue = `Canceled Hours`;
+                                    break;
+                                case 0:
+                                    enumValue = `Not Approved / Absent`;
+                                    break;
+                                case 1:
+                                    enumValue = `Approved / Scheduled Hours`;
+                                    break;
+                                case 2:
+                                    enumValue = `Changed Scheduled Hours`;
+                                    break;
+                            }
                             $('#options-modal-config-form-form').jsonForm({
                                 "schema": {
                                     "tClockIn": {
@@ -6794,16 +7058,37 @@ document.querySelector(`#options-timesheets-records`).addEventListener("click", 
                                     "tApproved": {
                                         "title": "Approved",
                                         "description": "Is this record approved / counting towards weekly hours?",
-                                        "type": "boolean",
+                                        "type": "string",
+                                        enum: ["DELETE THIS ENTRY", "Canceled Hours", "Not Approved / Absent", "Approved / Scheduled Hours", "Changed Scheduled Hours"]
                                     },
                                 },
                                 "value": {
                                     "tClockIn": record.time_in !== null ? moment(record.time_in).format("YYYY-MM-DD\THH:mm") : ``,
                                     "tClockOut": record.time_out !== null ? moment(record.time_out).format("YYYY-MM-DD\THH:mm") : ``,
-                                    "tApproved": record.approved,
+                                    "tApproved": enumValue,
                                 },
                                 "onSubmitValid": function (values) {
-                                    adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + '/timesheet/edit', data: {ID: record.ID, time_in: moment(values.tClockIn).toISOString(true), time_out: moment(values.tClockOut).toISOString(true), approved: values.tApproved}}, function (response) {
+                                    var enumValue = 1;
+                                    var path = `edit`;
+                                    switch (values.tApproved)
+                                    {
+                                        case `DELETE THIS ENTRY`:
+                                            path = `remove`;
+                                            break;
+                                        case `Canceled Hours`:
+                                            enumValue = -1;
+                                            break;
+                                        case `Not Approved / Absent`:
+                                            enumValue = 0;
+                                            break;
+                                        case `Approved / Scheduled Hours`:
+                                            enumValue = 1;
+                                            break;
+                                        case `Changed Scheduled Hours`:
+                                            enumValue = 2;
+                                            break;
+                                    }
+                                    adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + `/timesheet/${path}`, data: {ID: record.ID, time_in: moment(values.tClockIn).toISOString(true), time_out: moment(values.tClockOut).toISOString(true), approved: enumValue}}, function (response) {
                                         if (response === 'OK')
                                         {
                                             $("#options-modal-config-form").iziModal('close');
@@ -6862,13 +7147,16 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
                 $('#modal-notifications').iziModal('close');
             } else if (e.target.id.startsWith(`notification-dismiss-`))
             {
-                var recordID = parseInt(e.target.id.replace(`notification-dismiss-`, ``));
-                delete Notifications[recordID];
-                var temp = document.querySelector(`#notification-id-${recordID}`);
-                if (temp !== null)
-                {
-                    temp.parentNode.removeChild(temp);
-                }
+                Notifications
+                        .filter((notif) => notif.ID === e.target.id.replace(`notification-dismiss-`, ``))
+                        .map((notif, index) => {
+                            var temp = document.querySelector(`#notification-${notif.ID}`);
+                            if (temp !== null)
+                            {
+                                temp.parentNode.removeChild(temp);
+                            }
+                            delete Notifications[index];
+                        });
             } else if (e.target.id.startsWith(`notification-attn-edit-`))
             {
                 var recordID = parseInt(e.target.id.replace(`notification-attn-edit-`, ``));
@@ -7049,6 +7337,120 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
                             }],
                     ]
                 });
+            } else if (e.target.id.startsWith(`notification-timesheet-`))
+            {
+                var timesheetID = parseInt(e.target.id.replace(`notification-timesheet-`, ``));
+                console.log(timesheetID);
+                Timesheet().get()
+                        .filter(record => record.ID === timesheetID)
+                        .map(record => {
+                            document.querySelector(`#options-modal-config-form-form`).innerHTML = ``;
+                            $('#options-modal-config-form-extra').html(``);
+                            var enumValue = ``;
+                            switch (record.approved)
+                            {
+                                case - 1:
+                                    enumValue = `Canceled Hours`;
+                                    break;
+                                case 0:
+                                    enumValue = `Not Approved / Absent`;
+                                    break;
+                                case 1:
+                                    enumValue = `Approved / Scheduled Hours`;
+                                    break;
+                                case 2:
+                                    enumValue = `Changed Scheduled Hours`;
+                                    break;
+                            }
+                            $('#options-modal-config-form-form').jsonForm({
+                                "schema": {
+                                    "tClockIn": {
+                                        "title": "Clocked In",
+                                        "description": "Date and time the director clocked in.",
+                                        "type": "datetime-local"
+                                    },
+                                    "tClockOut": {
+                                        "title": "Clocked Out",
+                                        "description": "Date and time the director clocked out",
+                                        "type": "datetime-local"
+                                    },
+                                    "tApproved": {
+                                        "title": "Approved",
+                                        "description": "Is this record approved / counting towards weekly hours?",
+                                        "type": "string",
+                                        enum: ["DELETE THIS ENTRY", "Canceled Hours", "Not Approved / Absent", "Approved / Scheduled Hours", "Changed Scheduled Hours"]
+                                    },
+                                },
+                                "value": {
+                                    "tClockIn": record.time_in !== null ? moment(record.time_in).format("YYYY-MM-DD\THH:mm") : ``,
+                                    "tClockOut": record.time_out !== null ? moment(record.time_out).format("YYYY-MM-DD\THH:mm") : ``,
+                                    "tApproved": enumValue,
+                                },
+                                "onSubmitValid": function (values) {
+                                    var enumValue = 1;
+                                    var path = `edit`;
+                                    switch (values.tApproved)
+                                    {
+                                        case `DELETE THIS ENTRY`:
+                                            path = `remove`;
+                                            break;
+                                        case `Canceled Hours`:
+                                            enumValue = -1;
+                                            break;
+                                        case `Not Approved / Absent`:
+                                            enumValue = 0;
+                                            break;
+                                        case `Approved / Scheduled Hours`:
+                                            enumValue = 1;
+                                            break;
+                                        case `Changed Scheduled Hours`:
+                                            enumValue = 2;
+                                            break;
+                                    }
+                                    adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + `/timesheet/${path}`, data: {ID: record.ID, time_in: moment(values.tClockIn).toISOString(true), time_out: moment(values.tClockOut).toISOString(true), approved: enumValue}}, function (response) {
+                                        if (response === 'OK')
+                                        {
+                                            $("#options-modal-config-form").iziModal('close');
+                                            iziToast.show({
+                                                title: `Timesheet Edited!`,
+                                                message: `Timesheet record was edited!`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to edit timesheet!`,
+                                                message: `There was an error trying to edit the timesheet.`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                            $(`#options-modal-config-form-extra`).html(`Record created: <strong>${moment(record.createdAt).format("LLLL")}</strong><br />Record last updated: <strong>${moment(record.updatedAt).format("LLLL")}</strong><br /><br />Scheduled time in: <strong>${record.scheduled_in !== null ? moment(record.scheduled_in).format("LLLL") : `not scheduled`}</strong><br />Scheduled time out: <strong>${record.scheduled_out !== null ? moment(record.scheduled_out).format("LLLL") : `not scheduled`}</strong>`);
+                            $("#options-modal-config-form-label").html(`Edit Timesheet`);
+                            $("#options-modal-config-form").iziModal('open');
+                        });
+            } else if (e.target.id === `notification-timesheets`)
+            {
+                document.querySelector("#options-timesheets-date").value = moment(Meta.time).startOf('week').format("YYYY-MM-DD");
+                document.querySelector('#options-timesheets-records').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
+                $("#options-modal-timesheets").iziModal('open');
+                loadTimesheets(moment(Meta.time).startOf('week'));
             }
         }
     } catch (err) {
@@ -7503,15 +7905,15 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
 
                             if (response2.length > 1)
                             {
-                                var data = [];
+                                var theData = [];
                                 response2.map(listener => {
                                     if (moment(listener.createdAt).isBefore(moment(response[0].createdAt)))
                                         listener.createdAt = response[0].createdAt;
-                                    data.push({x: moment(listener.createdAt).toISOString(true), y: listener.listeners});
+                                    theData.push({x: moment(listener.createdAt).toISOString(true), y: listener.listeners});
                                 });
-                                data.push({x: moment(response[response.length - 1].createdAt).toISOString(true), y: response[response.length - 1].listeners});
+                                theData.push({x: moment(response[response.length - 1].createdAt).toISOString(true), y: response[response.length - 1].listeners});
                                 new Taucharts.Chart({
-                                    data: data,
+                                    data: theData,
                                     type: 'line',
                                     x: 'x',
                                     y: 'y',
@@ -7602,15 +8004,15 @@ document.querySelector(`#global-logs`).addEventListener("click", function (e) {
 
                             if (response2.length > 1)
                             {
-                                var data = [];
+                                var theData = [];
                                 response2.map(listener => {
                                     if (moment(listener.createdAt).isBefore(moment(response[0].createdAt)))
                                         listener.createdAt = response[0].createdAt;
-                                    data.push({x: moment(listener.createdAt).toISOString(true), y: listener.listeners});
+                                    theData.push({x: moment(listener.createdAt).toISOString(true), y: listener.listeners});
                                 });
-                                data.push({x: moment(response[response.length - 1].createdAt).toISOString(true), y: response[response.length - 1].listeners});
+                                theData.push({x: moment(response[response.length - 1].createdAt).toISOString(true), y: response[response.length - 1].listeners});
                                 new Taucharts.Chart({
-                                    data: data,
+                                    data: theData,
                                     type: 'line',
                                     x: 'x',
                                     y: 'y',
@@ -8726,7 +9128,7 @@ document.querySelector("#btn-messenger").onclick = function () {
 };
 
 document.querySelector("#live-handle").onkeyup = function () {
-    if (calType === 'Show' && document.querySelector("#live-handle").value === calHost)
+    if (cal.type === 'Show' && document.querySelector("#live-handle").value === cal.host)
     {
         document.querySelector("#live-handle").className = "form-control m-1";
     } else {
@@ -8735,7 +9137,7 @@ document.querySelector("#live-handle").onkeyup = function () {
 };
 
 document.querySelector("#live-show").onkeyup = function () {
-    if (calType === 'Show' && document.querySelector("#live-show").value === calShow)
+    if (cal.type === 'Show' && document.querySelector("#live-show").value === cal.show)
     {
         document.querySelector("#live-show").className = "form-control m-1";
     } else {
@@ -8744,7 +9146,7 @@ document.querySelector("#live-show").onkeyup = function () {
 };
 
 document.querySelector("#remote-handle").onkeyup = function () {
-    if (calType === 'Remote' && document.querySelector("#remote-handle").value === calHost)
+    if (cal.type === 'Remote' && document.querySelector("#remote-handle").value === cal.host)
     {
         document.querySelector("#remote-handle").className = "form-control m-1";
     } else {
@@ -8753,7 +9155,7 @@ document.querySelector("#remote-handle").onkeyup = function () {
 };
 
 document.querySelector("#remote-show").onkeyup = function () {
-    if (calType === 'Remote' && document.querySelector("#remote-show").value === calShow)
+    if (cal.type === 'Remote' && document.querySelector("#remote-show").value === cal.show)
     {
         document.querySelector("#remote-show").className = "form-control m-1";
     } else {
@@ -8762,7 +9164,7 @@ document.querySelector("#remote-show").onkeyup = function () {
 };
 
 document.querySelector("#sports-sport").addEventListener("change", function () {
-    if (calType === 'Sports' && document.querySelector("#sports-sport").value === calShow)
+    if (cal.type === 'Sports' && document.querySelector("#sports-sport").value === cal.show)
     {
         document.querySelector("#sports-sport").className = "form-control m-1";
     } else {
@@ -8771,7 +9173,7 @@ document.querySelector("#sports-sport").addEventListener("change", function () {
 });
 
 document.querySelector("#sportsremote-sport").addEventListener("change", function () {
-    if (calType === 'Sports' && document.querySelector("#sportsremote-sport").value === calShow)
+    if (cal.type === 'Sports' && document.querySelector("#sportsremote-sport").value === cal.show)
     {
         document.querySelector("#sportsremote-sport").className = "form-control m-1";
     } else {
@@ -8965,17 +9367,29 @@ function hostSocket(cb = function(token) {})
 
                     }
 
-                    if (client.admin || client.accountability)
+                    if (client.accountability)
                     {
-                        // Subscribe to the logs socket
-                        hostReq.request({method: 'POST', url: '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(1, 'days').toISOString(true), end: moment().toISOString(true)}}, function (body) {
+                        // Subscribe to Attendance socket to get attendance updates
+                        hostReq.request({method: 'post', url: nodeURL + '/attendance/get', data: {duration: 7}}, function serverResponded(body, JWR) {
                             //console.log(body);
                             try {
-                                // TODO
-                                processLogs(body, true);
+                                processAttendance(body, true);
                             } catch (e) {
                                 console.error(e);
-                                console.log('FAILED logs CONNECTION');
+                                console.log('FAILED attendance CONNECTION');
+                                clearTimeout(restarter);
+                                restarter = setTimeout(hostSocket, 10000);
+                            }
+                        });
+
+                        // Subscribe to Attendance socket to get attendance updates
+                        hostReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {fourteenDays: true}}, function serverResponded(body, JWR) {
+                            //console.log(body);
+                            try {
+                                processTimesheet(body, true);
+                            } catch (e) {
+                                console.error(e);
+                                console.log('FAILED timesheet CONNECTION');
                                 clearTimeout(restarter);
                                 restarter = setTimeout(hostSocket, 10000);
                             }
@@ -9292,9 +9706,6 @@ function doMeta(metan) {
                 metaTick();
                 metaTimer = setInterval(metaTick, 1000);
             }, moment(Meta.queueFinish).diff(moment(Meta.queueFinish).startOf('second')));
-
-            if (!Meta.state.startsWith("automation_") && Meta.state !== "live_prerecord")
-                checkCalendar(false);
         }
         // Reset ticker when time is provided
         else if (typeof metan.time !== 'undefined')
@@ -9505,9 +9916,6 @@ function doMeta(metan) {
                     window.peerErrorBitrate = 0;
                 }
             }
-
-            // Always re-do the calendar / clockwheel when states change.
-            checkCalendar(false);
 
             // Have the WWSU Operations box display buttons and operations depending on which state we are in
             var badge = document.querySelector('#operations-state');
@@ -9723,7 +10131,7 @@ function doMeta(metan) {
 
 function metaTick()
 {
-    Meta.time = moment(Meta.time).add(1, 'seconds');
+    Meta.time = moment(Meta.time).add(1, 'seconds').toISOString(true);
     doMeta({});
 
     if (recorderHour !== moment(Meta.time).hours())
@@ -9758,10 +10166,9 @@ function metaTick()
         checkMinutes = moment(Meta.time).minutes();
         checkAnnouncements();
         selectRecipient(activeRecipient);
-        checkCalendar(true);
-    } else {
-        checkCalendar(false);
     }
+
+    calendarWorker.postMessage([Calendar().get(), Meta, cal]);
 }
 
 // Shows a please wait box.
@@ -9825,7 +10232,7 @@ function checkAnnouncements() {
                         // If this DJ Controls is configured by WWSU to notify on technical problems, notify so.
                         if (client.emergencies)
                         {
-                            addNotification(`reported-problem`, `danger`, datum.createdAt, datum.announcement, `Reported Problems`, ``, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-attn-edit-${datum.ID}">Edit Announcements</button>`);
+                            addNotification(`reported-problem`, `attn-${datum.ID}`, `danger`, datum.createdAt, datum.announcement, `Reported Problems`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-attn-edit-${datum.ID}">Edit Announcements</button>`);
                         }
                     } else {
                         var temp = document.querySelector(`#attn-status-report-${datum.ID}`);
@@ -10060,1035 +10467,6 @@ function checkAnnouncements() {
                 `;
         });
     }
-}
-
-function checkCalendar(newData = false) {
-    try {
-        // Prepare the calendar variables
-
-        // Erase the clockwheel
-        $(".chart").empty();
-        data.sectors = [];
-        data.smallSectors = [];
-
-        // Define a comparison function that will order calendar events by start time when we run the iteration
-        var compare = function (a, b) {
-            try {
-                if (moment(a.start).valueOf() < moment(b.start).valueOf())
-                    return -1;
-                if (moment(a.start).valueOf() > moment(b.start).valueOf())
-                    return 1;
-                if (a.ID > b.ID)
-                    return -1;
-                if (b.ID > a.ID)
-                    return 1;
-                return 0;
-            } catch (e) {
-                console.error(e);
-                iziToast.show({
-                    title: 'An error occurred - Please check the logs',
-                    message: `Error occurred in the compare function of Calendar.sort in the checkCalendar call.`
-                });
-            }
-        };
-
-        // Declare empty temp variables for cal
-        var calPriorityN = 0;
-        var calTypeN = '';
-        var calHostN = '';
-        var calShowN = '';
-        var calTopicN = ``;
-        var calStartsN = null;
-
-        if (newData)
-        {
-            var records = Calendar().get();
-            if (records.length > 0)
-                records = records.filter(event => !event.title.startsWith("Genre:") && !event.title.startsWith("Playlist:") && moment(event.start).isBefore(moment(Meta.time).add(1, 'days')));
-        } else {
-            records = calendar;
-        }
-
-        calendar = [];
-
-        // Run through every event in memory, sorted by the comparison function, and add appropriate ones into our formatted calendar variable.
-        if (records.length > 0)
-        {
-
-            var nowEvent = null;
-            records.sort(compare);
-            records
-                    .map(event =>
-                    {
-                        try {
-                            var stripped = event.title.replace("Show: ", "");
-                            stripped = stripped.replace("Remote: ", "");
-                            stripped = stripped.replace("Sports: ", "");
-
-                            if (Meta.show === stripped && moment(event.end).isAfter(moment(Meta.time)))
-                                nowEvent = event;
-
-                            // null start or end? Use a default to prevent errors.
-                            if (!moment(event.start).isValid())
-                                event.start = moment(Meta.time).startOf('day');
-                            if (!moment(event.end).isValid())
-                                event.end = moment(Meta.time).add(1, 'days').startOf('day');
-
-                            // Does this event start within the next 12 hours, and has not yet ended? Add it to our formatted array.
-                            if (moment(Meta.time).add(12, 'hours').isAfter(moment(event.start)) && moment(Meta.time).isBefore(moment(event.end)))
-                            {
-                                calendar.push(event);
-                            }
-
-                            // Sports broadcasts. Check for broadcasts scheduled to start within the next 15 minutes. Skip any scheduled to end in 15 minutes.
-                            if (event.active === 1 && event.title.startsWith("Sports: ") && moment(Meta.time).add(15, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 10)
-                            {
-                                calPriorityN = 10;
-                                calTypeN = 'Sports';
-                                calHostN = '';
-                                calShowN = event.title.replace('Sports: ', '');
-                                calTopicN = truncateText(event.description, 256, `...`);
-                                calStartsN = event.start;
-                            }
-
-                            // Remote broadcasts. Check for broadcasts scheduled to start within the next 15 minutes. Skip any scheduled to end in 15 minutes.
-                            if (event.active === 1 && event.title.startsWith("Remote: ") && moment(Meta.time).add(15, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 7)
-                            {
-                                var summary = event.title.replace('Remote: ', '');
-                                var temp = summary.split(" - ");
-
-                                calPriorityN = 7;
-                                calTypeN = 'Remote';
-                                calHostN = temp[0];
-                                calShowN = temp[1];
-                                calTopicN = truncateText(event.description, 256, `...`);
-                                calStartsN = event.start;
-                            }
-
-                            // Radio shows. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
-                            if (event.active === 1 && event.title.startsWith("Show: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 5)
-                            {
-                                var summary = event.title.replace('Show: ', '');
-                                var temp = summary.split(" - ");
-
-                                calPriorityN = 5;
-                                calTypeN = 'Show';
-                                calHostN = temp[0];
-                                calShowN = temp[1];
-                                calTopicN = truncateText(event.description, 256, `...`);
-                                calStartsN = event.start;
-                            }
-
-                            // Prerecords. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
-                            if (event.active === 1 && event.title.startsWith("Prerecord: ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(Meta.time)) && calPriorityN < 3)
-                            {
-                                calPriorityN = 3;
-                                calTypeN = 'Prerecord';
-                                calHostN = '';
-                                calShowN = event.title.replace('Prerecord: ', '');
-                                calTopicN = truncateText(event.description, 256, `...`);
-                                calStartsN = event.start;
-                            }
-
-                            // OnAir Studio Prerecord Bookings.
-                            if (event.active === 1 && event.title.startsWith("OnAir Studio Prerecord Bookings ") && moment(Meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).isAfter(moment(Meta.time)) && calPriorityN < 1)
-                            {
-                                calPriorityN = 1;
-                                calTypeN = 'Booking';
-                                calHostN = '';
-                                calShowN = event.title.replace('OnAir Studio Prerecord Bookings ', '');
-                                calStartsN = event.start;
-                            }
-
-                        } catch (e) {
-                            console.error(e);
-                            iziToast.show({
-                                title: 'An error occurred - Please check the logs',
-                                message: `Error occurred during calendar iteration in processCalendar.`
-                            });
-                        }
-                    });
-        }
-
-        // Check for changes in determined upcoming scheduled event compared to what is stored in memory
-        if (calTypeN !== calType || calHostN !== calHost || calShowN !== calShow || calStartsN !== calStarts || calPriorityN !== calPriority)
-        {
-            calNotified = false;
-            calType = calTypeN;
-            calHost = calHostN;
-            calShow = calShowN;
-            calTopic = calTopicN;
-            calStarts = calStartsN;
-            calPriority = calPriorityN;
-            calHint = false;
-            // Cancel any active tutorials
-            if (trip)
-            {
-                trip.stop();
-                trip = null;
-            }
-        }
-
-        // Display tutorials when shows are upcoming
-        if ((Meta.state.startsWith("automation_") || Meta.state === 'live_prerecord') && !calHint)
-        {
-            calHint = true;
-            /*
-             if (calType === "Show")
-             {
-             setTimeout(function () {
-             trip = new Trip([
-             {
-             sel: $("#btn-golive"),
-             content: `Welcome, ${calHost}! To begin your show, click "Live". To skip the tutorial, click the x on this window.`,
-             expose: true,
-             position: "e",
-             nextClickSelector: $("#btn-golive")
-             },
-             {
-             sel: $("#go-live-modal"),
-             content: `I filled in your DJ and show names automatically.<br />
-             Write a show topic if you like, which will display on the website and display signs. <br />
-             If desired, uncheck "enable website chat" to prevent others from messaging you.<br />
-             <strong>Click "Go Live" when ready.</strong> This will start a countdown until you're live.`,
-             expose: true,
-             position: "n",
-             nextClickSelector: $("#live-go")
-             },
-             {
-             sel: $("#operations"),
-             content: `This box will now show how much time until you are live (click anywhere inside to continue the tutorial, or x to stop the tutorial).<br />
-             If you need more time, click +15-second PSA or +30-second PSA.<br />
-             <strong>Show intros and other music queued after the IDs do not count in the queue countdown.</strong>`,
-             expose: true,
-             position: "s",
-             nextClickSelector: $("#operations")
-             }
-             ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
-             trip = null;
-             console.log("trip closed");
-             }});
-             trip.start();
-             }, 5000);
-             }
-             
-             // Remote broadcasts
-             if (calType === "Remote")
-             {
-             setTimeout(function () {
-             trip = new Trip([
-             {
-             sel: $("#btn-goremote"),
-             content: `Hello! To begin the scheduled remote broadcast ${calHost} - ${calShow}, click "Remote". To skip the tutorial, click the x on this window.`,
-             expose: true,
-             position: "e",
-             nextClickSelector: $("#btn-goremote")
-             },
-             {
-             sel: $("#go-remote-modal"),
-             content: `I filled in your host and show names automatically.<br />
-             Write a topic if you like, which will display on the website and display signs.<br />
-             If desired, uncheck "enable website chat" to prevent others from messaging you.<br />
-             Ensure your remote encoder is connected and streaming audio to the remote server, and then <strong>Click "Go Remote" when ready.</strong> This will start a countdown until you're live.`,
-             expose: true,
-             position: "n",
-             nextClickSelector: $("#remote-go")
-             },
-             {
-             sel: $("#operations"),
-             content: `This box will now show how much time until your remote broadcast starts (click anywhere inside to continue the tutorial, or x to stop the tutorial).<br />
-             If you need more time, click +15-second PSA or +30-second PSA.<br />
-             <strong>Intros and other music queued after the IDs do not count in the queue countdown.</strong> A separate countdown will start after this one finishes so you know how much time is left in the intros / music.`,
-             expose: true,
-             position: "s",
-             nextClickSelector: $("#operations")
-             }
-             ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
-             trip = null;
-             console.log("trip closed");
-             }});
-             trip.start();
-             }, 5000);
-             }
-             
-             // Sports broadcasts
-             if (calType === "Sports")
-             {
-             setTimeout(function () {
-             trip = new Trip([
-             {
-             sel: $("#btn-gosports"),
-             content: `Hello! To begin the scheduled sports broadcast ${calShow}, click "Sports". To skip the tutorial, click the x on this window.`,
-             expose: true,
-             position: "e",
-             nextClickSelector: $("#btn-gosports")
-             },
-             {
-             sel: $("#go-sports-modal"),
-             content: `I selected the scheduled sport automatically.<br />
-             If desired, uncheck "enable website chat" to prevent others from messaging you.<br />
-             If this broadcast is being done remotely (no OnAir Studio producer), check "Remote Sports Broadcast" and ensure you are streaming audio to the remote stream on the encoder before clicking Go Sports.<br />
-             <strong>Click "Go Sports" when ready.</strong> This will start a countdown until you're live.`,
-             expose: true,
-             position: "n",
-             nextClickSelector: $("#sports-go")
-             },
-             {
-             sel: $("#operations"),
-             content: `This box will now show how much time until your sports broadcast starts (click anywhere inside to continue the tutorial, or x to stop the tutorial).<br />
-             If you need more time, click +15-second PSA or +30-second PSA.<br />
-             <strong>Intros and other music queued after the IDs do not count in the queue countdown.</strong> A separate countdown will start after this one finishes so you know how much time is left in the intros / music.`,
-             expose: true,
-             position: "s",
-             nextClickSelector: $("#operations")
-             }
-             ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
-             trip = null;
-             console.log("trip closed");
-             }});
-             trip.start();
-             }, 5000);
-             }
-             */
-        }
-
-        // Determine priority of what is currently on the air
-        var curPriority = 0;
-        if (Meta.state.startsWith("sports_"))
-            curPriority = 10;
-        if (Meta.state.startsWith("remote_"))
-            curPriority = 7;
-        if (Meta.state.startsWith("live_") && Meta.state !== 'live_prerecord')
-            curPriority = 5;
-        if (Meta.state === 'live_prerecord')
-            curPriority = 3;
-        if (Meta.state.startsWith("automation_"))
-            curPriority = 2;
-
-        // Determine if the DJ should be notified of the upcoming program
-        if ((curPriority <= calPriority || nowEvent === null) && !calNotified && isHost && Meta.show !== `${calHost} - ${calShow}` && Meta.changingState === null)
-        {
-            // Sports events should notify right away; allows for 15 minutes to transition
-            if (calType === 'Sports')
-            {
-                calNotified = true;
-                /*
-                 var notification = notifier.notify('Upcoming Sports Broadcast', {
-                 message: 'Please wrap-up / end your show in the next few minutes.',
-                 icon: 'https://icon2.kisspng.com/20171221/lje/gold-cup-trophy-png-clip-art-image-5a3c1fa99cbcb0.608850721513889705642.jpg',
-                 duration: 900000,
-                 });
-                 */
-                main.flashTaskbar();
-                iziToast.show({
-                    class: 'flash-bg',
-                    title: 'Sports broadcast in less than 15 minutes.',
-                    message: `If the sports broadcast is still planned, please wrap up your show now and click "End Show". That way, the sports team has time to set up.`,
-                    timeout: 900000,
-                    close: true,
-                    color: 'yellow',
-                    drag: false,
-                    position: 'center',
-                    closeOnClick: false,
-                    overlay: true,
-                    zindex: 501,
-                    layout: 2,
-                    image: `assets/images/sportsOff.png`,
-                    maxWidth: 480,
-                    buttons: [
-                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
-                                endShow();
-                                instance.hide({}, toast, 'button');
-                            }]
-                    ]
-                });
-            }
-
-            // Remote events should also notify right away; allows for 15 minutes to transition
-            if (calType === 'Remote')
-            {
-                calNotified = true;
-                /*
-                 var notification = notifier.notify('Upcoming Remote Broadcast', {
-                 message: 'Please wrap-up / end your show in the next few minutes.',
-                 icon: 'http://cdn.onlinewebfonts.com/svg/img_550701.png',
-                 duration: 900000,
-                 });
-                 */
-                main.flashTaskbar();
-                iziToast.show({
-                    class: 'flash-bg',
-                    title: 'Remote broadcast in less than 15 minutes.',
-                    message: `If the remote broadcast is still planned, please wrap up your show now and click "End Show". That way, the producers have time to set up for the broadcast.`,
-                    timeout: 900000,
-                    close: true,
-                    color: 'yellow',
-                    drag: false,
-                    position: 'center',
-                    closeOnClick: false,
-                    overlay: true,
-                    zindex: 501,
-                    layout: 2,
-                    image: `assets/images/remoteOff.png`,
-                    maxWidth: 480,
-                    buttons: [
-                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
-                                endShow();
-                                instance.hide({}, toast, 'button');
-                            }]
-                    ]
-                });
-            }
-
-            // Live shows should not notify until the scheduled start time is past the current time.
-            if (calType === 'Show' && moment(Meta.time).isAfter(moment(calStarts)))
-            {
-                calNotified = true;
-                /*
-                 var notification = notifier.notify('Interfering with Another Show', {
-                 message: 'Please wrap-up / end your show as soon as possible.',
-                 icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
-                 duration: 900000,
-                 });
-                 */
-                main.flashTaskbar();
-                iziToast.show({
-                    class: 'flash-bg',
-                    title: 'You are interfering with a scheduled show!',
-                    message: `Please wrap up your show now. Then, if the next producer will be ready within 5 minutes, click "Switch Show"; otherwise, click "End Show".`,
-                    timeout: 900000,
-                    close: true,
-                    color: 'red',
-                    drag: false,
-                    position: 'center',
-                    closeOnClick: false,
-                    overlay: true,
-                    zindex: 501,
-                    layout: 2,
-                    image: `assets/images/showOff.png`,
-                    maxWidth: 480,
-                    buttons: [
-                        ['<button>Switch Show</button>', function (instance, toast, button, e, inputs) {
-                                switchShow();
-                                instance.hide({}, toast, 'button');
-                            }],
-                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
-                                endShow();
-                                instance.hide({}, toast, 'button');
-                            }]
-                    ]
-                });
-            }
-
-            // Prerecords also should not notify until the scheduled start time is past the current time.
-            if (calType === 'Prerecord' && moment(Meta.time).isAfter(moment(calStarts)))
-            {
-                calNotified = true;
-                /*
-                 var notification = notifier.notify('Interfering with a Prerecord', {
-                 message: 'Please wrap-up / end your show as soon as possible.',
-                 icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
-                 duration: 900000,
-                 });
-                 */
-                main.flashTaskbar();
-                iziToast.show({
-                    class: 'flash-bg',
-                    title: 'You are interfering with a scheduled prerecord!',
-                    message: `Please wrap up your show and then click "End Show".`,
-                    timeout: 900000,
-                    close: true,
-                    color: 'red',
-                    drag: false,
-                    position: 'center',
-                    closeOnClick: false,
-                    overlay: true,
-                    zindex: 501,
-                    layout: 2,
-                    image: `assets/images/prerecordOff.png`,
-                    maxWidth: 480,
-                    buttons: [
-                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
-                                endShow();
-                                instance.hide({}, toast, 'button');
-                            }]
-                    ]
-                });
-            }
-
-            // OnAir Studio Reserve
-            if (calType === 'Booking' && calPriority < 7 && moment(Meta.time).isAfter(moment(calStarts)))
-            {
-                calNotified = true;
-                /*
-                 var notification = notifier.notify('OnAir Studio is Reserved', {
-                 message: 'Please wrap-up / end your show as soon as possible.',
-                 icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
-                 duration: 900000,
-                 });
-                 */
-                main.flashTaskbar();
-                iziToast.show({
-                    class: 'flash-bg',
-                    title: 'Someone has reserved the OnAir Studio for prerecording!',
-                    message: `If you are doing your show in the OnAir Studio, please wrap up your show now and click "End Show".`,
-                    timeout: 900000,
-                    close: true,
-                    color: 'red',
-                    drag: false,
-                    position: 'center',
-                    closeOnClick: false,
-                    overlay: true,
-                    zindex: 501,
-                    layout: 2,
-                    image: `assets/images/prerecordOff.png`,
-                    maxWidth: 480,
-                    buttons: [
-                        ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
-                                endShow();
-                                instance.hide({}, toast, 'button');
-                            }]
-                    ]
-                });
-            }
-        }
-
-        // Clear current list of events
-        document.querySelector('#calendar-events').innerHTML = '';
-
-        // Prepare some variables
-        var timeLeft = 1000000;
-        var timeLeft2 = 1000000;
-        var doLabel = null;
-        var doStart = 0;
-        var doSize = 0;
-        var doColor = 0;
-        var currentStart = moment();
-        var currentEnd = moment();
-        var firstEvent = '';
-
-        // Add in our new list, and include in clockwheel
-        if (calendar.length > 0)
-        {
-            calendar.map(event => {
-                // If we are not doing a show, proceed with a 12-hour clockwheel and events list
-                if (Meta.state.startsWith("automation_") || Meta.state === "live_prerecord")
-                {
-                    var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878');
-                    if (event.active < 1)
-                        finalColor = hexRgb('#161616');
-                    finalColor.red = Math.round(finalColor.red);
-                    finalColor.green = Math.round(finalColor.green);
-                    finalColor.blue = Math.round(finalColor.blue);
-                    document.querySelector('#calendar-events').innerHTML += ` <div class="m-1 bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
-                                    <div class="container">
-                                        <div class="row">
-                                            <div class="col-4">
-                                                ${moment(event.start).format("hh:mm A")} - ${moment(event.end).format("hh:mm A")}
-                                            </div>
-                                            <div class="col-8">
-                                                ${event.title}
-                                                ${event.active < 1 ? `<br /><strong>CANCELED</strong>` : ``}
-                                            </div>
-                                        </div>
-                                    </div></div>`;
-                    // Add upcoming shows to the clockwheel shading
-                    if (event.active === 1)
-                    {
-                        if (event.title.startsWith("Show: ") || event.title.startsWith("Remote: ") || event.title.startsWith("Sports: ") || event.title.startsWith("Prerecord: "))
-                        {
-                            if (moment(event.end).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
-                            {
-                                if (moment(event.start).isAfter(moment(Meta.time)))
-                                {
-                                    data.sectors.push({
-                                        label: event.title,
-                                        start: ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) + 0.5,
-                                        size: ((moment(event.end).diff(moment(event.start), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
-                                        color: event.color || '#787878'
-                                    });
-                                } else {
-                                    data.sectors.push({
-                                        label: event.title,
-                                        start: 0.5,
-                                        size: ((moment(event.end).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
-                                        color: event.color || '#787878'
-                                    });
-                                }
-                            } else if (moment(event.start).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
-                            {
-                                if (moment(event.start).isAfter(moment(Meta.time)))
-                                {
-                                    var start = ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360);
-                                    data.sectors.push({
-                                        label: event.title,
-                                        start: start + 0.5,
-                                        size: 360 - start,
-                                        color: event.color || '#787878'
-                                    });
-                                } else {
-                                    data.sectors.push({
-                                        label: event.title,
-                                        start: 0,
-                                        size: 360,
-                                        color: event.color || '#787878'
-                                    });
-                                }
-                            }
-                        } else {
-                            if (moment(event.end).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
-                            {
-                                if (moment(event.start).isAfter(moment(Meta.time)))
-                                {
-                                    data.smallSectors.push({
-                                        label: event.title,
-                                        start: ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) + 0.5,
-                                        size: ((moment(event.end).diff(moment(event.start), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
-                                        color: event.color || '#787878'
-                                    });
-                                } else {
-                                    data.smallSectors.push({
-                                        label: event.title,
-                                        start: 0.5,
-                                        size: ((moment(event.end).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
-                                        color: event.color || '#787878'
-                                    });
-                                }
-                            } else if (moment(event.start).diff(moment(Meta.time), 'seconds') < (12 * 60 * 60))
-                            {
-                                if (moment(event.start).isAfter(moment(Meta.time)))
-                                {
-                                    var start = ((moment(event.start).diff(moment(Meta.time), 'seconds') / (12 * 60 * 60)) * 360);
-                                    data.smallSectors.push({
-                                        label: event.title,
-                                        start: start + 0.5,
-                                        size: 360 - start,
-                                        color: event.color || '#787878'
-                                    });
-                                } else {
-                                    data.smallSectors.push({
-                                        label: event.title,
-                                        start: 0,
-                                        size: 360,
-                                        color: event.color || '#787878'
-                                    });
-                                }
-                            }
-                        }
-                    }
-                    // If we are doing a show, do a 1-hour clockwheel
-                } else {
-                    if (event.title.startsWith("Show: ") || event.title.startsWith("Remote: ") || event.title.startsWith("Sports: "))
-                    {
-                        var stripped = event.title.replace("Show: ", "");
-                        stripped = stripped.replace("Remote: ", "");
-                        stripped = stripped.replace("Sports: ", "");
-                        // If the event we are processing is what is on the air right now, and the event has not yet ended...
-                        if (Meta.show === stripped && moment(event.end).isAfter(moment(Meta.time)))
-                        {
-                            // Calculate base remaining time
-                            timeLeft = moment(event.end).diff(moment(Meta.time), 'minutes');
-                            // If there is less than 1 hour remaining in the show, only shade the clock for the portion of the hour remaining in the show
-                            if (moment(event.end).diff(moment(Meta.time), 'minutes') < 60)
-                            {
-                                if (moment(event.start).isAfter(moment(Meta.time)))
-                                {
-                                    doLabel = event.title;
-                                    doStart = ((moment(event.start).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360);
-                                    doSize = ((moment(event.end).diff(moment(event.start), 'seconds') / (60 * 60)) * 360);
-                                    doColor = event.color || '#787878';
-                                    currentStart = moment(event.start);
-                                    currentEnd = moment(event.end);
-                                } else {
-                                    var theSize = ((moment(event.end).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360);
-                                    doLabel = event.title;
-                                    doStart = 0;
-                                    doSize = theSize;
-                                    doColor = event.color || '#787878';
-                                    currentStart = moment(event.start);
-                                    currentEnd = moment(event.end);
-                                }
-                                // Otherwise, shade the entire hour, if the event has already started via the scheduled start time
-                            } else if (moment(event.start).isBefore(moment(Meta.time)))
-                            {
-                                doLabel = event.title;
-                                doStart = 0;
-                                doSize = 360;
-                                doColor = event.color || '#787878';
-                                currentStart = moment(event.start);
-                                currentEnd = moment(event.end);
-                            }
-                            // If the event being process is not what is live, but the end time is after the current time...
-                        } else if (moment(event.end).isAfter(moment(Meta.time)))
-                        {
-                            // Do a check to see if this event will intercept the currently live event
-                            timeLeft2 = moment(event.start).diff(moment(Meta.time), 'minutes');
-                            // Sports and remote broadcasts should be given an extra 15 minutes for preparation
-                            if (event.title.startsWith("Sports: ") || event.title.startsWith("Remote: "))
-                                timeLeft2 -= 15;
-                            if (timeLeft2 < 0)
-                                timeLeft2 = 0;
-                            // If timeLeft2 is less than timeleft, that means the currently live show needs to end earlier than the scheduled time.
-                            if (timeLeft2 < timeLeft)
-                            {
-                                timeLeft = timeLeft2;
-                                currentEnd = moment(event.start);
-                                if (event.title.startsWith("Sports: ") || event.title.startsWith("Remote: "))
-                                {
-                                    currentEnd = moment(currentEnd).subtract(15, 'minutes');
-                                }
-                                if (moment(currentEnd).isBefore(moment(Meta.time)))
-                                {
-                                    currentEnd = moment(Meta.time);
-                                    timeLeft = 0;
-                                }
-                            }
-                            if (timeLeft < 0)
-                                timeLeft = 0;
-                            // If the event being processed starts in less than 1 hour, add it to the hour clockwheel as a black shaded event
-                            if (event.active === 1)
-                            {
-                                if (moment(event.start).diff(moment(Meta.time), 'minutes') < 60)
-                                {
-                                    if (moment(event.start).isAfter(moment(Meta.time)))
-                                    {
-                                        var theStart = ((moment(event.start).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360);
-                                        var theSize = ((moment(event.end).diff(moment(event.start), 'seconds') / (60 * 60)) * 360);
-                                        if ((theSize + theStart) > 360)
-                                            theSize = 360 - theStart;
-                                        data.sectors.push({
-                                            label: event.title,
-                                            start: theStart,
-                                            size: theSize,
-                                            color: "#000000"
-                                        });
-                                    } else {
-                                        data.sectors.push({
-                                            label: event.title,
-                                            start: 0,
-                                            size: ((moment(event.end).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360),
-                                            color: "#000000"
-                                        });
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // Add the event to the list on the right of the clock
-                    if (moment(Meta.time).add(1, 'hours').isAfter(moment(event.start)) && moment(Meta.time).isBefore(moment(event.end)))
-                    {
-                        var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878');
-                        if (event.active < 1)
-                            finalColor = hexRgb('#161616');
-                        finalColor.red = Math.round(finalColor.red);
-                        finalColor.green = Math.round(finalColor.green);
-                        finalColor.blue = Math.round(finalColor.blue);
-                        var stripped = event.title.replace("Show: ", "");
-                        stripped = stripped.replace("Remote: ", "");
-                        stripped = stripped.replace("Sports: ", "");
-                        if (Meta.show !== stripped)
-                        {
-                            document.querySelector('#calendar-events').innerHTML += `  <div class="m-1 bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
-                                    <div class="container">
-                                        <div class="row">
-                                            <div class="col-4">
-                                                ${moment(event.start).format("hh:mm A")} - ${moment(event.end).format("hh:mm A")}
-                                            </div>
-                                            <div class="col-8">
-                                                ${event.title}
-                                                ${event.active < 1 ? `<strong>CANCELED</strong>` : ``}
-                                            </div>
-                                        </div>
-                                    </div></div>`;
-                        }
-                    }
-                }
-            });
-        }
-
-        // In automation, shade the clock in 12-hour format for upcoming shows
-        if (Meta.state.startsWith("automation_") || Meta.state === "live_prerecord")
-        {
-            var temp = document.getElementById("calendar-title");
-            temp.innerHTML = 'Clockwheel (next 12 hours)';
-            var start = moment(Meta.time).startOf('day');
-            if (moment(Meta.time).hour() >= 12)
-                start.add(12, 'hours');
-            var diff = moment(Meta.time).diff(moment(start), 'seconds');
-            data.start = (360 / 12 / 60 / 60) * diff;
-
-// Show an indicator on the clock for the current hour (extra visual to show 12-hour clock mode)
-            data.sectors.push({
-                label: 'current hour',
-                start: -1,
-                size: 2,
-                color: "#000000"
-            });
-
-
-            var sectors = calculateSectors(data);
-            var newSVG = document.getElementById("clock-program");
-            newSVG.setAttribute("transform", `rotate(${data.start})`);
-            sectors.normal.map(function (sector) {
-
-                var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                newSector.setAttributeNS(null, 'fill', sector.color);
-                newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
-                newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
-
-                newSVG.appendChild(newSector);
-            });
-            var newSVG = document.getElementById("clock-program-2");
-            newSVG.setAttribute("transform", `rotate(${data.start})`);
-            sectors.small.map(function (sector) {
-
-                var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                newSector.setAttributeNS(null, 'fill', sector.color);
-                newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
-                newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
-
-                newSVG.appendChild(newSector);
-            });
-            // During shows, use a 1-hour clockwheel
-        } else {
-            var temp = document.getElementById("calendar-title");
-            temp.innerHTML = 'Clockwheel (next hour)';
-            var start = moment(Meta.time).startOf('hour');
-            var diff = moment(Meta.time).diff(moment(start), 'seconds');
-            data.start = (360 / 60 / 60) * diff;
-
-            if (Meta.queueFinish !== null)
-            {
-                document.querySelector('#calendar-events').innerHTML = `  <div class="m-1 bs-callout bs-callout-default shadow-2">
-                                    <div class="container">
-                                        <div class="row">
-                                            <div class="col-4">
-                                                ${moment(Meta.queueFinish).format("hh:mm:ss A")}
-                                            </div>
-                                            <div class="col-8">
-                                                RadioDJ Queue
-                                            </div>
-                                        </div>
-                                    </div></div>` + document.querySelector('#calendar-events').innerHTML;
-            }
-
-
-            if (doLabel !== null)
-            {
-                var doTopOfHour = false;
-                if (!moment(Meta.lastID).add(10, 'minutes').startOf('hour').isSame(moment(Meta.time).startOf('hour')) && moment(Meta.time).diff(moment(Meta.time).startOf('hour'), 'minutes') < 10)
-                {
-                    var topOfHour = moment(Meta.time).startOf('hour');
-                    // This happens when the DJ has not yet taken their top of the hour break; keep the time in the events list the same until they take the break.
-                    if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
-                    {
-                        doTopOfHour = true;
-                        document.querySelector('#calendar-events').innerHTML = `  <div class="m-1 bs-callout bs-callout-warning shadow-2">
-                                    <div class="container">
-                                        <div class="row">
-                                            <div class="col-4">
-                                                ${moment(topOfHour).format("hh:mm A")}
-                                            </div>
-                                            <div class="col-8">
-                                                Mandatory Top-of-Hour Break
-                                            </div>
-                                        </div>
-                                    </div></div>` + document.querySelector('#calendar-events').innerHTML;
-
-                    }
-                } else {
-                    var topOfHour = moment(Meta.time).add(1, 'hours').startOf('hour');
-                    // If the DJ is expected to do a top of the hour break at the next top of hour, show so on the clock and in the events list
-                    if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour)))
-                    {
-                        doTopOfHour = true;
-                        document.querySelector('#calendar-events').innerHTML = `  <div class="m-1 bs-callout bs-callout-warning shadow-2">
-                                    <div class="container">
-                                        <div class="row">
-                                            <div class="col-4">
-                                                ${moment(topOfHour).format("hh:mm A")}
-                                            </div>
-                                            <div class="col-8">
-                                                Mandatory Top-of-Hour Break
-                                            </div>
-                                        </div>
-                                    </div></div>` + document.querySelector('#calendar-events').innerHTML;
-                    }
-                }
-
-                // First in the list of events, show the current show and how much time remains based on the schedule and whether or not something else will mandate this show
-                // ends early.
-                var finalColor = (typeof doColor !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(doColor)) ? hexRgb(doColor) : hexRgb('#787878');
-                finalColor.red = Math.round(finalColor.red);
-                finalColor.green = Math.round(finalColor.green);
-                finalColor.blue = Math.round(finalColor.blue);
-                document.querySelector('#calendar-events').innerHTML = `  <div class="m-1 bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
-                                    <div class="container">
-                                        <div class="row">
-                                            <div class="col-4">
-                                                ${moment.duration(moment(currentEnd).diff(moment(Meta.time), 'minutes'), 'minutes').format("h [hrs], m [mins]")} Left
-                                            </div>
-                                            <div class="col-8">
-                                                ${doLabel}
-                                            </div>
-                                        </div>
-                                    </div></div>` + document.querySelector('#calendar-events').innerHTML;
-                if (moment(currentEnd).diff(moment(Meta.time), 'minutes') < 60)
-                {
-                    if (moment(currentStart).isAfter(moment(Meta.time)))
-                    {
-                        var theStart = ((moment(currentStart).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360);
-                        var theSize = ((moment(currentEnd).diff(moment(currentStart), 'seconds') / (60 * 60)) * 360);
-                        data.sectors.push({
-                            label: doLabel,
-                            start: theStart,
-                            size: theSize,
-                            color: doColor
-                        });
-                    } else {
-                        var theSize = ((moment(currentEnd).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360);
-                        data.sectors.push({
-                            label: doLabel,
-                            start: 0,
-                            size: theSize,
-                            color: doColor
-                        });
-                    }
-                } else if (moment(currentStart).isBefore(moment(Meta.time)))
-                {
-                    data.sectors.push({
-                        label: doLabel,
-                        start: 0,
-                        size: 360,
-                        color: doColor
-                    });
-                } else {
-                    var theStart = ((moment(currentStart).diff(moment(Meta.time), 'seconds') / (60 * 60)) * 360);
-                    if (theStart < 360)
-                    {
-                        data.sectors.push({
-                            label: doLabel,
-                            start: theStart,
-                            size: 360 - theStart,
-                            color: doColor
-                        });
-                    }
-                }
-
-                // Then, shade the top of hour ID break on the clock if required
-                if (doTopOfHour)
-                {
-                    if (moment(Meta.lastID).add(10, 'minutes').startOf('hour') !== moment(Meta.time).startOf('hour') && moment(Meta.time).diff(moment(Meta.time).startOf('hour'), 'minutes') < 5)
-                    {
-                        var start = moment(Meta.time).startOf('hour').subtract(5, 'minutes');
-                        var diff = moment(Meta.time).diff(moment(start), 'seconds');
-                        data.sectors.push({
-                            label: 'current minute',
-                            start: 360 - (diff * (360 / 60 / 60)),
-                            size: 60,
-                            color: "#FFEB3B"
-                        });
-                    } else {
-                        var start = moment(Meta.time).add(1, 'hours').startOf('hour').subtract(5, 'minutes');
-                        var diff = moment(start).diff(moment(Meta.time), 'seconds');
-                        data.sectors.push({
-                            label: 'current minute',
-                            start: ((360 / 60 / 60) * diff),
-                            size: 60,
-                            color: "#FFEB3B"
-                        });
-                    }
-                }
-            }
-
-            // Finally, show an indicator on the clock for the current minute (extra visual to show 1-hour clock mode)
-            data.sectors.push({
-                label: 'current minute',
-                start: 0,
-                size: 2,
-                color: "#000000"
-            });
-
-
-            var sectors = calculateSectors(data);
-            var newSVG = document.getElementById("clock-program");
-            newSVG.setAttribute("transform", `rotate(${data.start})`);
-            sectors.normal.map(function (sector) {
-
-                var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                newSector.setAttributeNS(null, 'fill', sector.color);
-                newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
-                newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
-
-                newSVG.appendChild(newSector);
-            });
-            var newSVG = document.getElementById("clock-program-2");
-            newSVG.setAttribute("transform", `rotate(${data.start})`);
-            sectors.small.map(function (sector) {
-
-                var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                newSector.setAttributeNS(null, 'fill', sector.color);
-                newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
-                newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
-
-                newSVG.appendChild(newSector);
-            });
-
-            // Shade in queue time on the clockwheel
-            if (Meta.queueFinish !== null)
-            {
-                data.sectors = [];
-                var diff = moment(Meta.queueFinish).diff(moment(Meta.time), 'seconds');
-
-                if (diff < (60 * 60))
-                {
-                    data.sectors.push({
-                        label: 'queue time',
-                        start: 0,
-                        size: diff * 0.1,
-                        color: "#0000ff"
-                    });
-                } else {
-                    data.sectors.push({
-                        label: 'queue time',
-                        start: 0,
-                        size: 360,
-                        color: "#0000ff"
-                    });
-                }
-
-                var sectors = calculateSectors(data);
-                var newSVG = document.getElementById("clock-program");
-                newSVG.setAttribute("transform", `rotate(${data.start})`);
-                sectors.normal.map(function (sector) {
-
-                    var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    newSector.setAttributeNS(null, 'fill', sector.color);
-                    newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
-                    newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
-
-                    newSVG.appendChild(newSector);
-                });
-                var newSVG = document.getElementById("clock-program-2");
-                newSVG.setAttribute("transform", `rotate(${data.start})`);
-                sectors.small.map(function (sector) {
-
-                    var newSector = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    newSector.setAttributeNS(null, 'fill', sector.color);
-                    newSector.setAttributeNS(null, 'd', 'M' + sector.L + ',' + sector.L + ' L' + sector.L + ',0 A' + sector.L + ',' + sector.L + ' 1 0,1 ' + sector.X + ', ' + sector.Y + ' z');
-                    newSector.setAttributeNS(null, 'transform', 'rotate(' + sector.R + ', ' + sector.L + ', ' + sector.L + ')');
-
-                    newSVG.appendChild(newSector);
-                });
-            }
-        }
-    } catch (e) {
-        console.error(e);
-        iziToast.show({
-            title: 'An error occurred - Please check the logs',
-            message: `Error occurred during checkCalendar.`
-        });
-}
 }
 
 // Called when the recipients available to send/receive messages needs recalculating
@@ -11824,11 +11202,11 @@ function prepareLive() {
     document.querySelector("#live-handle").className = "form-control m-1 is-invalid";
     document.querySelector("#live-show").className = "form-control m-1 is-invalid";
     // Auto-fill show host and name if one is scheduled to go on
-    if (calType === 'Show')
+    if (cal.type === 'Show')
     {
-        document.querySelector("#live-handle").value = calHost;
-        document.querySelector("#live-show").value = calShow;
-        document.querySelector("#live-topic").placeholder = calTopic;
+        document.querySelector("#live-handle").value = cal.host;
+        document.querySelector("#live-show").value = cal.show;
+        document.querySelector("#live-topic").placeholder = cal.topic;
         document.querySelector("#live-handle").className = "form-control m-1";
         document.querySelector("#live-show").className = "form-control m-1";
     }
@@ -11836,7 +11214,7 @@ function prepareLive() {
 }
 
 function goLive() {
-    if (calType === 'Show' && document.querySelector("#live-handle").value === calHost && document.querySelector("#live-show").value === calShow)
+    if (cal.type === 'Show' && document.querySelector("#live-handle").value === cal.host && document.querySelector("#live-show").value === cal.show)
     {
         _goLive();
     } else {
@@ -11869,7 +11247,7 @@ function goLive() {
 }
 
 function _goLive() {
-    hostReq.request({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: (document.querySelector('#live-topic').value !== `` || calType !== `Show`) ? document.querySelector('#live-topic').value : calTopic, djcontrols: client.host, webchat: document.querySelector('#live-webchat').checked}}, function (response) {
+    hostReq.request({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: (document.querySelector('#live-topic').value !== `` || cal.type !== `Show`) ? document.querySelector('#live-topic').value : cal.topic, djcontrols: client.host, webchat: document.querySelector('#live-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
             isHost = true;
@@ -11906,11 +11284,11 @@ function prepareRemote() {
     document.querySelector("#remote-show").className = "form-control m-1 is-invalid";
     document.querySelector("#remote-webchat").checked = true;
     // Auto fill remote host and show if one is scheduled to go on
-    if (calType === 'Remote')
+    if (cal.type === 'Remote')
     {
-        document.querySelector("#remote-handle").value = calHost;
-        document.querySelector("#remote-show").value = calShow;
-        document.querySelector("#remote-topic").placeholder = calTopic;
+        document.querySelector("#remote-handle").value = cal.host;
+        document.querySelector("#remote-show").value = cal.show;
+        document.querySelector("#remote-topic").placeholder = cal.topic;
         document.querySelector("#remote-handle").className = "form-control m-1";
         document.querySelector("#remote-show").className = "form-control m-1";
     }
@@ -11956,7 +11334,7 @@ function prepareRemote() {
 }
 
 function goRemote() {
-    if (calType === 'Remote' && document.querySelector("#remote-handle").value === calHost && document.querySelector("#remote-show").value === calShow)
+    if (cal.type === 'Remote' && document.querySelector("#remote-handle").value === cal.host && document.querySelector("#remote-show").value === cal.show)
     {
         _goRemote();
     } else {
@@ -11997,7 +11375,7 @@ function _goRemote() {
         {
             if (development)
                 return null;
-            hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || calType !== `Remote`) ? document.querySelector('#remote-topic').value : calTopic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
+            hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || cal.type !== `Remote`) ? document.querySelector('#remote-topic').value : cal.topic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
                 if (response === 'OK')
                 {
                     isHost = true;
@@ -12024,11 +11402,11 @@ function prepareSports() {
     document.querySelector('#sports-topic').placeholder = "";
     document.querySelector("#sports-webchat").checked = true;
     // Auto fill the sport dropdown if a sport is scheduled
-    if (calType === 'Sports')
+    if (cal.type === 'Sports')
     {
-        document.querySelector("#sports-sport").value = calShow;
+        document.querySelector("#sports-sport").value = cal.show;
         document.querySelector('#sports-topic').value = "";
-        document.querySelector('#sports-topic').placeholder = calTopic;
+        document.querySelector('#sports-topic').placeholder = cal.topic;
         document.querySelector("#sports-sport").className = "form-control m-1";
         document.querySelector("#sports-webchat").checked = true;
     }
@@ -12036,7 +11414,7 @@ function prepareSports() {
 }
 
 function goSports() {
-    if (calType === 'Sports' && document.querySelector("#sports-sport").value === calShow)
+    if (cal.type === 'Sports' && document.querySelector("#sports-sport").value === cal.show)
     {
         _goSports();
     } else {
@@ -12071,7 +11449,7 @@ function goSports() {
 function _goSports() {
     var sportsOptions = document.getElementById('sports-sport');
     var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
-    hostReq.request({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, topic: (document.querySelector('#sports-topic').value !== `` || calType !== `Sports`) ? document.querySelector('#sports-topic').value : calTopic, webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, topic: (document.querySelector('#sports-topic').value !== `` || cal.type !== `Sports`) ? document.querySelector('#sports-topic').value : cal.topic, webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
         if (response === 'OK')
         {
             isHost = true;
@@ -12106,11 +11484,11 @@ function prepareSportsRemote() {
     document.querySelector('#sportsremote-topic').placeholder = "";
     document.querySelector("#sportsremote-webchat").checked = true;
     // Auto fill the sport dropdown if a sport is scheduled
-    if (calType === 'Sports')
+    if (cal.type === 'Sports')
     {
-        document.querySelector("#sportsremote-sport").value = calShow;
+        document.querySelector("#sportsremote-sport").value = cal.show;
         document.querySelector('#sportsremote-topic').value = "";
-        document.querySelector('#sportsremote-topic').placeholder = calTopic;
+        document.querySelector('#sportsremote-topic').placeholder = cal.topic;
         document.querySelector("#sportsremote-sport").className = "form-control m-1";
         document.querySelector("#sportsremote-webchat").checked = true;
     }
@@ -12156,7 +11534,7 @@ function prepareSportsRemote() {
 }
 
 function goSportsRemote() {
-    if (calType === 'Sports' && document.querySelector("#sportsremote-sport").value === calShow)
+    if (cal.type === 'Sports' && document.querySelector("#sportsremote-sport").value === cal.show)
     {
         _goSportsRemote();
     } else {
@@ -12197,7 +11575,7 @@ function _goSportsRemote() {
         {
             var sportsOptions = document.getElementById('sportsremote-sport');
             var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
-            hostReq.request({method: 'POST', url: nodeURL + '/state/sports-remote', data: {sport: selectedOption, topic: (document.querySelector('#sportsremote-topic').value !== `` || calType !== `Sports`) ? document.querySelector('#sportsremote-topic').value : calTopic, webchat: document.querySelector('#sportsremote-webchat').checked}}, function (response) {
+            hostReq.request({method: 'POST', url: nodeURL + '/state/sports-remote', data: {sport: selectedOption, topic: (document.querySelector('#sportsremote-topic').value !== `` || cal.type !== `Sports`) ? document.querySelector('#sportsremote-topic').value : cal.topic, webchat: document.querySelector('#sportsremote-webchat').checked}}, function (response) {
                 if (response === 'OK')
                 {
                     isHost = true;
@@ -13239,7 +12617,7 @@ function processMessages(data, replace = false)
                                 if (client.emergencies)
                                 {
                                     data[index].needsread = true;
-                                    addNotification(`reported-problem`, `danger`, datum.createdAt, datum.message, `Reported Problems`, ``, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-attn-edit-${datum.ID}">Edit Announcements</button>`);
+                                    addNotification(`reported-problem`, `attn-${datum.ID}`, `danger`, datum.createdAt, datum.message, `Reported Problems`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-attn-edit-${datum.ID}">Edit Announcements</button>`);
                                 }
                                 break;
                             case client.host:
@@ -13338,7 +12716,7 @@ function processMessages(data, replace = false)
                                     if (client.emergencies)
                                     {
                                         data[key].needsread = true;
-                                        addNotification(`reported-problem`, `danger`, data[key].createdAt, data[key].announcement, `Reported Problems`, ``, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-attn-edit-${data[key].ID}">Edit Announcements</button>`);
+                                        addNotification(`reported-problem`, `attn-${data[key].ID}`, `danger`, data[key].createdAt, data[key].announcement, `Reported Problems`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-attn-edit-${data[key].ID}">Edit Announcements</button>`);
                                     }
                                     break;
                                 case client.host:
@@ -13438,6 +12816,280 @@ function processMessages(data, replace = false)
         iziToast.show({
             title: 'An error occurred - Please check the logs',
             message: 'Error occurred during the processMessages function.'
+        });
+}
+}
+
+function processAttendance(data, replace = false)
+{
+    // Data processing
+    try {
+        var prev = [];
+        if (replace)
+        {
+            // Get all the EAS IDs currently in memory before replacing the data
+            prev = Attendance().select("ID");
+
+            // Replace with the new data
+            Attendance = TAFFY();
+            Attendance.insert(data);
+
+            // Go through the new data. If any IDs exists that did not exist before, consider it a new alert and make a notification.
+            Attendance().each(function (record)
+            {
+                if (prev.indexOf(record.ID) === -1)
+                {
+                    // Absences
+                    if (record.happened === 0 && record.dj !== null)
+                    {
+                        addNotification(`absent-broadcast`, `attendance-${record.ID}`, `urgent`, record.createdAt, `${record.event}<br />Scheduled Time: ${moment(record.scheduledStart).format("hh:mm A")} - ${moment(record.scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${record.ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${record.ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${record.ID}" title="Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : ``}`);
+                    }
+
+                    // Unscheduled broadcasts
+                    else if (record.happened === 1 && record.scheduledStart === null && record.scheduledEnd === null && record.dj !== null)
+                    {
+                        addNotification(`unauthorized-broadcast`, `attendance-${record.ID}`, `warning`, record.createdAt, `${record.event}<br />On-Air Time: ${moment(record.actualStart).format("hh:mm A")} - ${moment(record.actualEnd).format("hh:mm A")}`, `Unauthorized / Unscheduled Broadcasts`);
+                    }
+
+                    // Canceled broadcasts
+                    else if (record.happened === -1 && record.dj !== null)
+                    {
+                        addNotification(`canceled-broadcast`, `attendance-${record.ID}`, `info`, record.createdAt, `${record.event}<br />Scheduled Time: ${moment(record.scheduledStart).format("hh:mm A")} - ${moment(record.scheduledEnd).format("hh:mm A")}<br />Reason: ${record.happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${record.ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${record.ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${record.ID}" title="Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : ``}`);
+                    } else {
+                        addNotification(`broadcast-good`, `attendance-${record.ID}`);
+                    }
+                }
+            });
+
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
+                {
+                    switch (key)
+                    {
+                        case 'insert':
+                            Attendance.insert(data[key]);
+                            // Absences
+                            if (data[key].happened === 0 && data[key].dj !== null)
+                            {
+                                addNotification(`absent-broadcast`, `attendance-${data[key].ID}`, `urgent`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[key].ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : ``}`);
+                            }
+
+                            // Unscheduled broadcasts
+                            if (data[key].happened === 1 && data[key].scheduledStart === null && data[key].scheduledEnd === null && data[key].dj !== null)
+                            {
+                                addNotification(`unauthorized-broadcast`, `attendance-${data[key].ID}`, `warning`, data[key].createdAt, `${data[key].event}<br />On-Air Time: ${moment(data[key].actualStart).format("hh:mm A")} - ${moment(data[key].actualEnd).format("hh:mm A")}`, `Unauthorized / Unscheduled Broadcasts`);
+                            }
+
+                            // Canceled broadcasts
+                            if (data[key].happened === -1 && data[key].dj !== null)
+                            {
+                                addNotification(`canceled-broadcast`, `attendance-${data[key].ID}`, `info`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}<br />Reason: ${data[key].happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[key].ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : ``}`);
+                            }
+                            break;
+                        case 'update':
+                            Attendance({ID: data[key].ID}).update(data[key]);
+                            // Absences
+                            if (data[key].happened === 0 && data[key].dj !== null)
+                            {
+                                addNotification(`absent-broadcast`, `attendance-${data[key].ID}`, `urgent`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[key].ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : ``}`);
+                            }
+
+                            // Unscheduled broadcasts
+                            else if (data[key].happened === 1 && data[key].scheduledStart === null && data[key].scheduledEnd === null && data[key].dj !== null)
+                            {
+                                addNotification(`unauthorized-broadcast`, `attendance-${data[key].ID}`, `warning`, data[key].createdAt, `${data[key].event}<br />On-Air Time: ${moment(data[key].actualStart).format("hh:mm A")} - ${moment(data[key].actualEnd).format("hh:mm A")}`, `Unauthorized / Unscheduled Broadcasts`);
+                            }
+
+                            // Canceled broadcasts
+                            else if (data[key].happened === -1 && data[key].dj !== null)
+                            {
+                                addNotification(`canceled-broadcast`, `attendance-${data[key].ID}`, `info`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}<br />Reason: ${data[key].happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[key].ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : ``}`);
+                            } else {
+                                addNotification(`broadcast-good`, `attendance-${data[key].ID}`);
+                            }
+                            break;
+                        case 'remove':
+                            Attendance({ID: data[key]}).remove();
+
+                            // Absent broadcasts
+                            if (data[key].happened === 0 && data[key].dj !== null)
+                            {
+                                addNotification(`absent-broadcast`, `attendance-${data[key].ID}`);
+                            }
+
+                            // Unscheduled broadcasts
+                            if (data[key].happened === 1 && data[key].scheduledStart === null && data[key].scheduledEnd === null && data[key].dj !== null)
+                            {
+                                addNotification(`unauthorized-broadcast`, `attendance-${data[key].ID}`);
+                            }
+
+                            // Canceled broadcasts
+                            if (data[key].happened === -1 && data[key].dj !== null)
+                            {
+                                addNotification(`canceled-broadcast`, `attendance-${data[key].ID}`);
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: 'Error occurred during the processAttendance function.'
+        });
+}
+}
+
+function processTimesheet(data, replace = false)
+{
+    // Data processing
+    try {
+        var prev = [];
+        if (replace)
+        {
+            // Get all the EAS IDs currently in memory before replacing the data
+            prev = Timesheet().select("ID");
+
+            // Replace with the new data
+            Timesheet = TAFFY();
+            Timesheet.insert(data);
+
+            // Go through the new data. If any IDs exists that did not exist before, consider it a new alert and make a notification.
+            Timesheet().each(function (record)
+            {
+                if (prev.indexOf(record.ID) === -1)
+                {
+                    // Cancelled hours
+                    if (record.approved === -1)
+                    {
+                        addNotification(`timesheet-cancelled`, `timesheet-${record.ID}`, `info`, record.createdAt, `Director: ${record.name}<br />Canceled time: ${moment(record.scheduled_in).format("MM/DD/YYYY hh:mm A")} - ${moment(record.scheduled_out).format("hh:mm A")}`, `Canceled Director Hours`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                    }
+
+                    // Unapproved timesheet records
+                    else if (record.approved === 0 && record.time_in !== null && record.time_out !== null)
+                    {
+                        addNotification(`timesheet-needs-approved`, `timesheet-${record.ID}`, `info`, record.createdAt, `Director: ${record.name}<br />Time in: ${moment(record.time_in).format("hh:mm A")} - ${moment(record.time_out).format("hh:mm A")}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                    }
+
+                    // Absent Records
+                    else if (record.approved === 0 && record.time_in === null && record.time_out === null)
+                    {
+                        addNotification(`timesheet-absent`, `timesheet-${record.ID}`, `urgent`, record.createdAt, `Director: ${record.name}<br />Scheduled time: ${moment(record.scheduled_in).format("hh:mm A")} - ${moment(record.scheduled_out).format("hh:mm A")}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                    }
+
+                    // Unapproved timesheet records
+                    else if (record.approved === 2)
+                    {
+                        addNotification(`timesheet-changed`, `timesheet-${record.ID}`, `info`, record.createdAt, `Director: ${record.name}<br />New Hours: ${moment(record.scheduled_in).format("hh:mm A")} - ${moment(record.scheduled_out).format("hh:mm A")}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                    } else {
+                        addNotification(`timesheet-good`, `timesheet-${record.ID}`);
+                    }
+                }
+            });
+
+        } else {
+            for (var key in data)
+            {
+                if (data.hasOwnProperty(key))
+                {
+                    switch (key)
+                    {
+                        case 'insert':
+                            Timesheet.insert(data[key]);
+                            // Cancelled hours
+                            if (data[key].approved === -1)
+                            {
+                                addNotification(`timesheet-cancelled`, `timesheet-${data[key].ID}`, `info`, data[key].createdAt, `Director: ${data[key].name}<br />Canceled time: ${moment(data[key].scheduled_in).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].scheduled_out).format("hh:mm A")}`, `Canceled Director Hours`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                            }
+
+                            // Unapproved timesheet records
+                            if (data[key].approved === 0 && data[key].time_in !== null && data[key].time_out !== null)
+                            {
+                                addNotification(`timesheet-needs-approved`, `timesheet-${data[key].ID}`, `info`, data[key].createdAt, `Director: ${data[key].name}<br />Time in: ${moment(data[key].time_in).format("hh:mm A")} - ${moment(data[key].time_out).format("hh:mm A")}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                            }
+
+                            // Absent Records
+                            if (data[key].approved === 0 && data[key].time_in === null && data[key].time_out === null)
+                            {
+                                addNotification(`timesheet-absent`, `timesheet-${data[key].ID}`, `urgent`, data[key].createdAt, `Director: ${data[key].name}<br />Scheduled time: ${moment(data[key].scheduled_in).format("hh:mm A")} - ${moment(data[key].scheduled_out).format("hh:mm A")}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                            }
+
+                            // Unapproved timesheet records
+                            if (data[key].approved === 2)
+                            {
+                                addNotification(`timesheet-changed`, `timesheet-${data[key].ID}`, `info`, data[key].createdAt, `Director: ${data[key].name}<br />New Hours: ${moment(data[key].scheduled_in).format("hh:mm A")} - ${moment(data[key].scheduled_out).format("hh:mm A")}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                            }
+
+                            break;
+                        case 'update':
+                            Timesheet({ID: data[key].ID}).update(data[key]);
+                            // Cancelled hours
+                            if (data[key].approved === -1)
+                            {
+                                addNotification(`timesheet-cancelled`, `timesheet-${data[key].ID}`, `info`, data[key].createdAt, `Director: ${data[key].name}<br />Canceled time: ${moment(data[key].scheduled_in).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].scheduled_out).format("hh:mm A")}`, `Canceled Director Hours`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                            }
+
+                            // Unapproved timesheet records
+                            else if (data[key].approved === 0 && data[key].time_in !== null && data[key].time_out !== null)
+                            {
+                                addNotification(`timesheet-needs-approved`, `timesheet-${data[key].ID}`, `info`, data[key].createdAt, `Director: ${data[key].name}<br />Time in: ${moment(data[key].time_in).format("hh:mm A")} - ${moment(data[key].time_out).format("hh:mm A")}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                            }
+
+                            // Absent Records
+                            else if (data[key].approved === 0 && data[key].time_in === null && data[key].time_out === null)
+                            {
+                                addNotification(`timesheet-absent`, `timesheet-${data[key].ID}`, `urgent`, data[key].createdAt, `Director: ${data[key].name}<br />Scheduled time: ${moment(data[key].scheduled_in).format("hh:mm A")} - ${moment(data[key].scheduled_out).format("hh:mm A")}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                            }
+
+                            // Unapproved timesheet records
+                            else if (data[key].approved === 2)
+                            {
+                                addNotification(`timesheet-changed`, `timesheet-${data[key].ID}`, `info`, data[key].createdAt, `Director: ${data[key].name}<br />New Hours: ${moment(data[key].scheduled_in).format("hh:mm A")} - ${moment(data[key].scheduled_out).format("hh:mm A")}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                            } else {
+                                addNotification(`timesheet-good`, `timesheet-${data[key].ID}`);
+                            }
+                            break;
+                        case 'remove':
+                            Timesheet({ID: data[key]}).remove();
+                            // Cancelled hours
+                            if (data[key].approved === -1)
+                            {
+                                addNotification(`timesheet-cancelled`, `timesheet-${data[key].ID}`);
+                            }
+
+                            // Unapproved timesheet records
+                            if (data[key].approved === 0 && data[key].time_in !== null && data[key].time_out !== null)
+                            {
+                                addNotification(`timesheet-needs-approved`, `timesheet-${data[key].ID}`);
+                            }
+
+                            // Absent Records
+                            if (data[key].approved === 0 && data[key].time_in === null && data[key].time_out === null)
+                            {
+                                addNotification(`timesheet-absent`, `timesheet-${data[key].ID}`);
+                            }
+
+                            // Unapproved timesheet records
+                            if (data[key].approved === 2)
+                            {
+                                addNotification(`timesheet-changed`, `timesheet-${data[key].ID}`);
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: 'Error occurred during the processAttendance function.'
         });
 }
 }
@@ -14244,133 +13896,6 @@ function processDiscipline(data, replace = false)
 }
 }
 
-function processLogs(data, replace = false)
-{
-    // Data processing
-    try {
-        var prev = [];
-        if (replace)
-        {
-            // Get all the EAS IDs currently in memory before replacing the data
-            prev = Logs().select("ID");
-
-            // Replace with the new data
-            Logs = TAFFY();
-            Logs.insert(data);
-
-            // Go through the new data. If any IDs exists that did not exist before, consider it a new alert and make a notification.
-            Logs().each(function (record)
-            {
-                if (prev.indexOf(record.ID) === -1 && client.accountability)
-                {
-                    var newString = record.event.split(`<br />`);
-                    if (newString.length > 1)
-                    {
-                        newString.shift();
-                        newString = newString.join(`<br />`);
-                    } else {
-                        newString = record.event;
-                    }
-                    if (record.logtype === "absent")
-                    {
-                        addNotification(`absent-broadcast`, `urgent`, record.createdAt, newString, `Unexcused Broadcast Absences`, ``, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${record.attendanceID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button><button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${record.attendanceID}" title="Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>`);
-                    }
-                    if (record.logtype === "unauthorized")
-                    {
-                        addNotification(`unauthorized-broadcast`, `warning`, record.createdAt, newString, `Unauthorized / Unscheduled Broadcasts`);
-                    }
-                    if (record.logtype === "cancellation")
-                    {
-                        addNotification(`canceled-broadcast`, `info`, record.createdAt, newString, `Canceled Broadcasts`, ``, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${record.attendanceID}" title="Click if this cancellation should be considered an unexcused absence.">Unexcused Absence</button><button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${record.attendanceID}" title="Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>`);
-                    }
-                    if (record.logtype === "id")
-                    {
-                        addNotification(`failed-legal-id`, `urgent`, record.createdAt, newString, `Failed Top-of-Hour ID Breaks`);
-                    }
-                    if (record.logtype === "director-absent")
-                    {
-                        addNotification(`absent-director`, `urgent`, record.createdAt, newString, `Absent Directors`);
-                    }
-                    if (record.logtype === "director-cancellation")
-                    {
-                        addNotification(`director-canceled-hours`, `info`, record.createdAt, newString, `Director Cancelled Office Hours`);
-                    }
-                    if (record.logtype === "director-change")
-                    {
-                        addNotification(`director-change`, `info`, record.createdAt, newString, `Director Changed Office Hours`);
-                    }
-                }
-            });
-
-        } else {
-            for (var key in data)
-            {
-                if (data.hasOwnProperty(key))
-                {
-                    switch (key)
-                    {
-                        case 'insert':
-                            Logs.insert(data[key]);
-                            if (client.accountability)
-                            {
-                                var newString = data[key].event.split(`<br />`);
-                                if (newString.length > 1)
-                                {
-                                    newString.shift();
-                                    newString = newString.join(`<br />`);
-                                } else {
-                                    newString = data[key].event;
-                                }
-                                if (data[key].logtype === "absent")
-                                {
-                                    addNotification(`absent-broadcast`, `urgent`, data[key].createdAt, newString, `Unexcused Broadcast Absences`, ``, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[key].attendanceID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button><button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].attendanceID}" title="Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>`);
-                                }
-                                if (data[key].logtype === "unauthorizedd")
-                                {
-                                    addNotification(`unauthorized-broadcast`, `warning`, data[key].createdAt, newString, `Unauthorized / Unscheduled Broadcasts`);
-                                }
-                                if (data[key].logtype === "cancellation")
-                                {
-                                    addNotification(`cancelled-broadcast`, `info`, data[key].createdAt, newString, `Cancelled Broadcasts`, ``, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[key].attendanceID}" title="Click if this cancellation should be considered an unexcused absence.">Unexcused Absence</button><button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].attendanceID}" title="Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>`);
-                                }
-                                if (data[key].logtype === "id")
-                                {
-                                    addNotification(`failed-legal-id`, `urgent`, data[key].createdAt, newString, `Failed Top-of-Hour ID Breaks`);
-                                }
-                                if (data[key].logtype === "director-absent")
-                                {
-                                    addNotification(`absent-director`, `urgent`, data[key].createdAt, newString, `Absent Directors`);
-                                }
-                                if (data[key].logtype === "director-cancellation")
-                                {
-                                    addNotification(`director-canceled-hours`, `info`, data[key].createdAt, newString, `Director Cancelled Office Hours`);
-                                }
-                                if (data[key].logtype === "director-change")
-                                {
-                                    addNotification(`director-change`, `info`, data[key].createdAt, newString, `Director Changed Office Hours`);
-                                }
-                            }
-                            break;
-                        case 'update':
-                            Logs({ID: data[key].ID}).update(data[key]);
-                            break;
-                        case 'remove':
-                            Logs({ID: data[key]}).remove();
-                            break;
-                    }
-                }
-            }
-        }
-
-    } catch (e) {
-        console.error(e);
-        iziToast.show({
-            title: 'An error occurred - Please check the logs',
-            message: 'Error occurred during the processLogs function.'
-        });
-}
-}
-
 function loadTimesheets(date)
 {
     try {
@@ -14706,179 +14231,214 @@ function loadTimesheets(date)
                     {
                         inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
                         left = 0;
-                        width = (((moment(Meta.time).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
+                        width = (((moment().valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
                         timeline += `<div title="Director still clocked in since ${inT}" id="timesheet-t-${record.ID}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: 0%; height: ${width}%;"></div>`;
                     } else {
                         inT = moment(clockin).format(`h:mm A`);
-                        width = (((moment(Meta.time).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
+                        width = (((moment().valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
                         left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
                         timeline += `<div title="Director still clocked in since ${inT}" id="timesheet-t-${record.ID}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: ${left}%; height: ${width}%;"></div>`;
                     }
                     outT = 'IN NOW';
                 } else {
-                    if (record.approved)
+                    if (clockin !== null && clockout !== null && scheduledin !== null && scheduledout !== null && record.approved === 1)
                     {
-                        if (clockin !== null && clockout !== null && scheduledin !== null && scheduledout !== null)
+                        status = `success`;
+                        status2 = `This record is approved and fell within a scheduled office hours block.`;
+                        hours[record.name].add(clockout.diff(clockin));
+                        if (moment(clockin).isBefore(moment(clockout).startOf('week')))
                         {
-                            status = `success`;
-                            status2 = `This record is approved and fell within a scheduled office hours block.`;
-                            hours[record.name].add(clockout.diff(clockin));
-                            if (moment(clockin).isBefore(moment(clockout).startOf('week')))
-                            {
-                                inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
-                                left = 0;
-                            } else {
-                                inT = moment(clockin).format(`h:mm A`);
-                                left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
-                            }
-                            if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
-                            {
-                                outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
-                                width = 100 - left;
-                            } else {
-                                outT = moment(clockout).format(`h:mm A`);
-                                width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
-                            }
-                            if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
-                            {
-                                sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
-                                sLeft = 0;
-                            } else {
-                                sInT = moment(scheduledin).format(`h:mm A`);
-                                sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
-                            }
-                            if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
-                            {
-                                sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
-                                sWidth = 100 - sLeft;
-                            } else {
-                                sOutT = moment(scheduledout).format(`h:mm A`);
-                                sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
-                            }
-                            timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
-                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Hours (approved): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: ${left}%; height: ${width}%;"></div>`;
-                        } else if (clockin !== null && clockout !== null && (scheduledin === null || scheduledout === null)) {
-                            status = `success`;
-                            status2 = `This record is approved, but did not fall within a scheduled office hours block.`;
-                            hours[record.name].add(clockout.diff(clockin));
-                            if (moment(clockin).isBefore(moment(clockout).startOf('week')))
-                            {
-                                inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
-                                left = 0;
-                            } else {
-                                inT = moment(clockin).format(`h:mm A`);
-                                left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
-                            }
-                            if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
-                            {
-                                outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
-                                width = 100 - left;
-                            } else {
-                                outT = moment(clockout).format(`h:mm A`);
-                                width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
-                            }
-                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Unscheduled Hours (approved): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: ${left}%; height: ${width}%;"></div>`;
-                        } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null) {
-                            status = `secondary`;
-                            status2 = `This is NOT an actual timesheet; the director canceled scheduled office hours.`;
-                            if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
-                            {
-                                sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
-                                sLeft = 0;
-                            } else {
-                                sInT = moment(scheduledin).format(`h:mm A`);
-                                sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
-                            }
-                            if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
-                            {
-                                sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
-                                sWidth = 100 - sLeft;
-                            } else {
-                                sOutT = moment(scheduledout).format(`h:mm A`);
-                                sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
-                            }
-                            timeline += `<div title="Scheduled Hours (CANCELED): ${sInT} - ${sOutT}" class="" style="background-color: #787878; position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
+                            inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                            left = 0;
+                        } else {
+                            inT = moment(clockin).format(`h:mm A`);
+                            left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
                         }
-                    } else {
-                        if (clockin !== null && clockout !== null && scheduledin !== null && scheduledout !== null)
+                        if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
                         {
-                            status = `warning`;
-                            status2 = `This record is NOT approved, but fell within a scheduled office hours block.`;
-                            if (moment(clockin).isBefore(moment(clockout).startOf('week')))
-                            {
-                                inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
-                                left = 0;
-                            } else {
-                                inT = moment(clockin).format(`h:mm A`);
-                                left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
-                            }
-                            if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
-                            {
-                                outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
-                                width = 100 - left;
-                            } else {
-                                outT = moment(clockout).format(`h:mm A`);
-                                width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
-                            }
-                            if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
-                            {
-                                sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
-                                sLeft = 0;
-                            } else {
-                                sInT = moment(scheduledin).format(`h:mm A`);
-                                sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
-                            }
-                            if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
-                            {
-                                sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
-                                sWidth = 100 - sLeft;
-                            } else {
-                                sOutT = moment(scheduledout).format(`h:mm A`);
-                                sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
-                            }
-                            timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
-                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Hours (NEEDS REVIEW): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: ${left}%; height: ${width}%;"></div>`;
-                        } else if (clockin !== null && clockout !== null && (scheduledin === null || scheduledout === null)) {
-                            status = `warning`;
-                            status2 = `This record is NOT approved and did not fall within a scheduled office hours block.`;
-                            if (moment(clockin).isBefore(moment(clockout).startOf('week')))
-                            {
-                                inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
-                                left = 0;
-                            } else {
-                                inT = moment(clockin).format(`h:mm A`);
-                                left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
-                            }
-                            if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
-                            {
-                                outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
-                                width = 100 - left;
-                            } else {
-                                outT = moment(clockout).format(`h:mm A`);
-                                width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
-                            }
-                            timeline += `<div id="timesheet-t-${record.ID}" title="Actual Unscheduled Hours (NEEDS REVIEW): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: ${left}%; height: ${width}%;"></div>`;
-                        } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null) {
-                            status = `danger`;
-                            status2 = `This is NOT an actual timesheet; the director failed to clock in during scheduled office hours.`;
-                            if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
-                            {
-                                sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
-                                sLeft = 0;
-                            } else {
-                                sInT = moment(scheduledin).format(`h:mm A`);
-                                sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
-                            }
-                            if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
-                            {
-                                sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
-                                sWidth = 100 - sLeft;
-                            } else {
-                                sOutT = moment(scheduledout).format(`h:mm A`);
-                                sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
-                            }
-                            timeline += `<div title="Scheduled Hours (NO SHOW): ${sInT} - ${sOutT}" class="bg-danger" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
+                            outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                            width = 100 - left;
+                        } else {
+                            outT = moment(clockout).format(`h:mm A`);
+                            width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
                         }
+                        if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
+                        {
+                            sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                            sLeft = 0;
+                        } else {
+                            sInT = moment(scheduledin).format(`h:mm A`);
+                            sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
+                        }
+                        if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
+                        {
+                            sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                            sWidth = 100 - sLeft;
+                        } else {
+                            sOutT = moment(scheduledout).format(`h:mm A`);
+                            sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
+                        }
+                        timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
+                        timeline += `<div id="timesheet-t-${record.ID}" title="Actual Hours (approved): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: ${left}%; height: ${width}%;"></div>`;
+                    } else if (clockin !== null && clockout !== null && (scheduledin === null || scheduledout === null) && record.approved === 1) {
+                        status = `success`;
+                        status2 = `This record is approved, but did not fall within a scheduled office hours block.`;
+                        hours[record.name].add(clockout.diff(clockin));
+                        if (moment(clockin).isBefore(moment(clockout).startOf('week')))
+                        {
+                            inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                            left = 0;
+                        } else {
+                            inT = moment(clockin).format(`h:mm A`);
+                            left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
+                        }
+                        if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
+                        {
+                            outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                            width = 100 - left;
+                        } else {
+                            outT = moment(clockout).format(`h:mm A`);
+                            width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
+                        }
+                        timeline += `<div id="timesheet-t-${record.ID}" title="Actual Unscheduled Hours (approved): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: ${left}%; height: ${width}%;"></div>`;
+                    } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null && record.approved === -1) {
+                        status = `secondary`;
+                        status2 = `This is NOT an actual timesheet; the director canceled scheduled office hours.`;
+                        if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
+                        {
+                            sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                            sLeft = 0;
+                        } else {
+                            sInT = moment(scheduledin).format(`h:mm A`);
+                            sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
+                        }
+                        if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
+                        {
+                            sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                            sWidth = 100 - sLeft;
+                        } else {
+                            sOutT = moment(scheduledout).format(`h:mm A`);
+                            sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
+                        }
+                        timeline += `<div title="Scheduled Hours (CANCELED): ${sInT} - ${sOutT}" class="" style="background-color: #787878; position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
+                    } else if (clockin !== null && clockout !== null && scheduledin !== null && scheduledout !== null && record.approved === 0)
+                    {
+                        status = `warning`;
+                        status2 = `This record is NOT approved, but fell within a scheduled office hours block.`;
+                        if (moment(clockin).isBefore(moment(clockout).startOf('week')))
+                        {
+                            inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                            left = 0;
+                        } else {
+                            inT = moment(clockin).format(`h:mm A`);
+                            left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
+                        }
+                        if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
+                        {
+                            outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                            width = 100 - left;
+                        } else {
+                            outT = moment(clockout).format(`h:mm A`);
+                            width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
+                        }
+                        if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
+                        {
+                            sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                            sLeft = 0;
+                        } else {
+                            sInT = moment(scheduledin).format(`h:mm A`);
+                            sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
+                        }
+                        if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
+                        {
+                            sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                            sWidth = 100 - sLeft;
+                        } else {
+                            sOutT = moment(scheduledout).format(`h:mm A`);
+                            sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
+                        }
+                        timeline += `<div title="Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
+                        timeline += `<div id="timesheet-t-${record.ID}" title="Actual Hours (NEEDS REVIEW): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: ${left}%; height: ${width}%;"></div>`;
+                    } else if (clockin !== null && clockout !== null && (scheduledin === null || scheduledout === null) && record.approved === 0) {
+                        status = `warning`;
+                        status2 = `This record is NOT approved and did not fall within a scheduled office hours block.`;
+                        if (moment(clockin).isBefore(moment(clockout).startOf('week')))
+                        {
+                            inT = moment(clockin).format(`YYYY-MM-DD h:mm A`);
+                            left = 0;
+                        } else {
+                            inT = moment(clockin).format(`h:mm A`);
+                            left = ((moment(clockin).valueOf() - moment(clockin).startOf('day').valueOf()) / dayValue) * 100;
+                        }
+                        if (moment(clockout).isAfter(moment(clockin).startOf('week').add(1, 'weeks')) || !moment(clockout).isSame(moment(clockin), 'day'))
+                        {
+                            outT = moment(clockout).format(`YYYY-MM-DD h:mm A`);
+                            width = 100 - left;
+                        } else {
+                            outT = moment(clockout).format(`h:mm A`);
+                            width = (((moment(clockout).valueOf() - moment(clockin).valueOf()) / dayValue) * 100);
+                        }
+                        timeline += `<div id="timesheet-t-${record.ID}" title="Actual Unscheduled Hours (NEEDS REVIEW): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: ${left}%; height: ${width}%;"></div>`;
+                    } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null && record.approved === 0) {
+                        status = `danger`;
+                        status2 = `This is NOT an actual timesheet; the director failed to clock in during scheduled office hours.`;
+                        if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
+                        {
+                            sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                            sLeft = 0;
+                        } else {
+                            sInT = moment(scheduledin).format(`h:mm A`);
+                            sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
+                        }
+                        if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
+                        {
+                            sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                            sWidth = 100 - sLeft;
+                        } else {
+                            sOutT = moment(scheduledout).format(`h:mm A`);
+                            sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
+                        }
+                        timeline += `<div title="Scheduled Hours (NO SHOW): ${sInT} - ${sOutT}" class="bg-danger" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
+                    } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null && record.approved === 1) {
+                        status = `secondary`;
+                        status2 = `This is NOT an actual timesheet; the director failed to clock in during scheduled office hours.`;
+                        if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
+                        {
+                            sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                            sLeft = 0;
+                        } else {
+                            sInT = moment(scheduledin).format(`h:mm A`);
+                            sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
+                        }
+                        if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
+                        {
+                            sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                            sWidth = 100 - sLeft;
+                        } else {
+                            sOutT = moment(scheduledout).format(`h:mm A`);
+                            sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
+                        }
+                        timeline += `<div title="Future Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
+                    } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null && record.approved === 2) {
+                        status = `secondary`;
+                        status2 = `This is NOT an actual timesheet; the director failed to clock in during scheduled office hours.`;
+                        if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week')))
+                        {
+                            sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`);
+                            sLeft = 0;
+                        } else {
+                            sInT = moment(scheduledin).format(`h:mm A`);
+                            sLeft = ((moment(scheduledin).valueOf() - moment(scheduledin).startOf('day').valueOf()) / dayValue) * 100;
+                        }
+                        if (moment(scheduledout).isAfter(moment(scheduledin).startOf('week').add(1, 'weeks')) || !moment(scheduledout).isSame(moment(scheduledin), 'day'))
+                        {
+                            sOutT = moment(scheduledout).format(`YYYY-MM-DD h:mm A`);
+                            sWidth = 100 - sLeft;
+                        } else {
+                            sOutT = moment(scheduledout).format(`h:mm A`);
+                            sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100);
+                        }
+                        timeline += `<div title="Future Scheduled Hours (CHANGED): ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`;
                     }
                 }
 
@@ -14949,129 +14509,6 @@ function hexRgb(hex, options = {}) {
             message: 'Error occurred during hexRgb.'
         });
 }
-}
-
-function calculateSectors(data) {
-    var sectors = [];
-    var smallSectors = [];
-
-    var l = data.size / 2
-    var l2 = data.smallSize / 2
-    var a = 0 // Angle
-    var aRad = 0 // Angle in Rad
-    var z = 0 // Size z
-    var x = 0 // Side x
-    var y = 0 // Side y
-    var X = 0 // SVG X coordinate
-    var Y = 0 // SVG Y coordinate
-    var R = 0 // Rotation
-
-    data.sectors.map(function (item2) {
-        var doIt = function (item) {
-            a = item.size;
-            if ((item.start + item.size) > 360)
-                a = 360 - item.start;
-            aCalc = (a > 180) ? 180 : a;
-            aRad = aCalc * Math.PI / 180;
-            z = Math.sqrt(2 * l * l - (2 * l * l * Math.cos(aRad)));
-            if (aCalc <= 90) {
-                x = l * Math.sin(aRad);
-            } else {
-                x = l * Math.sin((180 - aCalc) * Math.PI / 180);
-            }
-
-            y = Math.sqrt(z * z - x * x);
-            Y = y;
-
-            if (a <= 180) {
-                X = l + x;
-                arcSweep = 0;
-            } else {
-                X = l - x;
-                arcSweep = 1;
-            }
-
-            sectors.push({
-                label: item.label,
-                color: item.color,
-                arcSweep: arcSweep,
-                L: l,
-                X: X,
-                Y: Y,
-                R: item.start
-            });
-
-            if (a > 180)
-            {
-                var temp = {
-                    label: item.label,
-                    size: 180 - (360 - a),
-                    start: 180 + item.start,
-                    color: item.color
-                };
-                doIt(temp);
-            }
-        };
-
-        doIt(item2);
-
-
-    })
-
-    data.smallSectors.map(function (item2) {
-        var doIt2 = function (item) {
-            a = item.size;
-            if ((item.start + item.size) > 360)
-                a = 360 - item.start;
-            aCalc = (a > 180) ? 180 : a;
-            aRad = aCalc * Math.PI / 180;
-            z = Math.sqrt(2 * l2 * l2 - (2 * l2 * l2 * Math.cos(aRad)));
-            if (aCalc <= 90) {
-                x = l2 * Math.sin(aRad);
-            } else {
-                x = l2 * Math.sin((180 - aCalc) * Math.PI / 180);
-            }
-
-            y = Math.sqrt(z * z - x * x);
-            Y = y;
-
-            if (a <= 180) {
-                X = l2 + x;
-                arcSweep = 0;
-            } else {
-                X = l2 - x;
-                arcSweep = 1;
-            }
-
-            smallSectors.push({
-                label: item.label,
-                color: item.color,
-                arcSweep: arcSweep,
-                L: l2,
-                X: X,
-                Y: Y,
-                R: item.start
-            });
-
-            if (a > 180)
-            {
-                var temp = {
-                    label: item.label,
-                    size: 180 - (360 - a),
-                    start: 180 + item.start,
-                    color: item.color
-                };
-                doIt2(temp);
-            }
-        };
-
-        doIt2(item2);
-
-
-    })
-
-
-    return {normal: sectors, small: smallSectors};
 }
 
 function formatInt(number) {
@@ -15214,9 +14651,28 @@ function processConfig(data) {
     }
 }
 
-function addNotification(group, level, time, notification, name, smallText, buttons)
+function addNotification(group, ID, level, time, notification, name, buttons)
 {
-    var notificationID = Notifications.push({group: group, level: level, time: time, notification: notification}) - 1;
+    if (level === undefined)
+    {
+        var temp = document.querySelector(`#notification-${ID}`);
+        if (temp !== null)
+        {
+            Notifications
+                    .filter((notif) => notif.ID === ID)
+                    .map((notif, index) => {
+                        var temp = document.querySelector(`#notification-${notif.ID}`);
+                        if (temp !== null)
+                        {
+                            temp.parentNode.removeChild(temp);
+                        }
+                        delete Notifications[index];
+                    });
+        }
+        return null;
+    }
+
+    Notifications.push({group: group, ID: ID, level: level, time: time, notification: notification}) - 1;
     var temp = document.querySelector(`#notification-group-${group}`);
     if (temp === null)
     {
@@ -15227,7 +14683,6 @@ function addNotification(group, level, time, notification, name, smallText, butt
     <div class="col text-primary" style="font-size: 2em;">
       ${name || group}
       <div id="notification-group-l-${group}" class="d-flex justify-content-center flex-wrap" style="font-size: 0.5em;"></div>
-      ${smallText ? `<br /><div class="text-dark" style="font-size: 0.35em;">${smallText}</div>` : ``}
     </div>
 </div>`;
             /*
@@ -15250,16 +14705,33 @@ function addNotification(group, level, time, notification, name, smallText, butt
     window.requestAnimationFrame(() => {
         var temp = document.querySelector(`#notification-group-l-${group}`);
         if (temp !== null)
-            temp.innerHTML += `<div class="row text-dark m-1 shadow-1 bg-light-1" style="width: 96%;" id="notification-id-${notificationID}">
+        {
+            var temp2 = document.querySelector(`#notification-${ID}`);
+            if (temp2 !== null)
+            {
+                Notifications
+                        .filter((notif) => notif.ID === ID)
+                        .map((notif, index) => {
+                            var temp = document.querySelector(`#notification-${notif.ID}`);
+                            if (temp !== null)
+                            {
+                                temp.parentNode.removeChild(temp);
+                            }
+                            delete Notifications[index];
+                        });
+                Notifications.push({group: group, ID: ID, level: level, time: time, notification: notification}) - 1;
+            }
+            temp.innerHTML += `<div class="row text-dark m-1 shadow-1 bg-light-1" style="width: 96%;" id="notification-${ID}">
     <div class="col-9 text-dark" style="font-size: 1em;">
         ${notification}<br />
-        <button type="button" class="btn btn-primary btn-sm" style="font-size: 0.66em;" id="notification-dismiss-${notificationID}">Dismiss</button>
+        <button type="button" class="btn btn-primary btn-sm" style="font-size: 0.66em;" id="notification-dismiss-${ID}">Dismiss</button>
         ${buttons ? `${buttons}` : ``}
     </div>
     <div class="col-3 text-primary" style="font-size: 0.75em;">
         ${moment(time).format("MM/DD/YYYY hh:mm A")}
     </div>
-</div>`
+</div>`;
+        }
     });
 }
 
