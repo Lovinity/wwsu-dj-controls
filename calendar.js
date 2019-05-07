@@ -1,9 +1,8 @@
 /* global moment */
 
-importScripts('assets/js/moment.min.js');
-importScripts('assets/js/moment-duration-format.js');
+var {ipcRenderer} = require('electron');
 
-    // Define hexrgb constants
+// Define hexrgb constants
     var hexChars = 'a-f\\d';
     var match3or4Hex = `#?[${hexChars}]{3}[${hexChars}]?`;
     var match6or8Hex = `#?[${hexChars}]{6}([${hexChars}]{2})?`;
@@ -765,7 +764,7 @@ function checkCalendar(records, meta, cal) {
         
         isRunning = false;
         var response = {events: html.events, title: html.title, clockwheel: clockwheel, cal: cal};
-        postMessage([response]);
+        ipcRenderer.send('processed-calendar', [response]);
     } catch (e) {
         isRunning = false;
         console.error(e);
@@ -896,13 +895,6 @@ function calculateSectors(data) {
     return {normal: sectors, small: smallSectors};
 }
 
-onmessage = function(e) {
-    if (!isRunning)
-    {
-        checkCalendar(e.data[0], e.data[1], e.data[2]);
-    }
-};
-
 function hexRgb(hex, options = {}) {
     try {
         if (typeof hex !== 'string' || nonHexChars.test(hex) || !validHexSize.test(hex)) {
@@ -939,3 +931,11 @@ function hexRgb(hex, options = {}) {
         console.error(e);
 }
 }
+
+ipcRenderer.on('process-calendar', (event, arg) => {
+    if (!isRunning)
+    {
+        checkCalendar(arg[0], arg[1], arg[2]);
+    }
+});
+

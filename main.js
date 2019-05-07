@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow, dialog, session} = require('electron');
+const {app, BrowserWindow, dialog, session, ipcMain} = require('electron');
 const {machineId, machineIdSync} = require('node-machine-id');
 
 /*
@@ -21,6 +21,7 @@ const {machineId, machineIdSync} = require('node-machine-id');
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
+let calendarWindow;
 let webRTC;
 
 function createWindow() {
@@ -40,6 +41,8 @@ function createWindow() {
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
         mainWindow = null;
+        calendarWindow.close();
+        calendarWindow = null;
     });
 
     /*
@@ -63,6 +66,7 @@ app.on('ready', () => {
     });
 
     createWindow();
+    createCalendarWindow();
 });
 
 // Quit when all windows are closed, including on MacOS
@@ -75,6 +79,20 @@ app.on('activate', function () {
     // dock icon is clicked and there are no other windows open.
     if (mainWindow === null) {
         createWindow();
+    }
+});
+
+ipcMain.on('process-calendar', (event, arg) => {
+    try {
+        calendarWindow.webContents.send('process-calendar', arg);
+    } catch (e) {
+    }
+});
+
+ipcMain.on('processed-calendar', (event, arg) => {
+    try {
+        mainWindow.webContents.send('processed-calendar', arg);
+    } catch (e) {
     }
 });
 
@@ -101,4 +119,14 @@ exports.directoryBrowse = () => {
 
 exports.openDevTools = () => {
     mainWindow.webContents.openDevTools();
+}
+
+function createCalendarWindow() {
+    calendarWindow = new BrowserWindow({show: false, webPreferences: {backgroundThrottling: false, nodeIntegration: true}});
+    calendarWindow.loadFile('calendar.html');
+
+    calendarWindow.on('closed', function () {
+        if (mainWindow !== null)
+            createCalendarWindow();
+    });
 }
