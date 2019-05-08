@@ -1,8 +1,5 @@
 /* global iziToast, io, moment, Infinity, err, ProgressBar, Taucharts, response, responsiveVoice, jdenticon, SIP, brutusin */
-
 try {
-    window.AudioContext = window.AudioContext || window.webkitAudioContext;
-
     var hidden, visibilityChange;
     if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support 
         hidden = "hidden";
@@ -15,22 +12,15 @@ try {
         visibilityChange = "webkitvisibilitychange";
     }
 
-    var development = true;
-
-    // Define hexrgb constants
-    var hexChars = 'a-f\\d';
-    var match3or4Hex = `#?[${hexChars}]{3}[${hexChars}]?`;
-    var match6or8Hex = `#?[${hexChars}]{6}([${hexChars}]{2})?`;
-
-    var nonHexChars = new RegExp(`[^#${hexChars}]`, 'gi');
-    var validHexSize = new RegExp(`^${match3or4Hex}$|^${match6or8Hex}$`, 'i');
+    var development = false;
+    var callInProgress;
+    var closeDialog = false;
+    var recorderDialog = false;
 
     // Define constants
-    var fs = require("fs"); // file system
     var main = require('electron').remote.require('./main');
     const {remote} = window.require('electron');
     var notifier = require('./electron-notifications/index.js');
-    var Sanitize = require("sanitize-filename");
     var settings = require('electron-settings');
     var {webFrame, ipcRenderer} = require('electron');
     var transform = require('sdp-transform');
@@ -304,328 +294,451 @@ try {
         }
     });
 
-    // Define peerJS and stream variables. These will be set after getting information about this host's settings.
-    var peer;
-    window.peerStream = undefined;
-    window.peerDevice = undefined;
-    window.peerHost = undefined;
-    window.peerError = 0;
-    window.peerGoodBitrate = 0;
-    window.peerErrorBitrate = 0;
-    window.peerErrorMajor = 0;
-    window.mainStream = undefined;
-    window.mainDevice = undefined;
-    window.peerVolume = -100;
-    window.mainVolume = -100;
-    var outgoingPeer;
-    var outgoingCall;
-    var bitRate = 128;
-    var incomingCall;
-    var incomingCloseIgnore = false;
-    var outgoingCloseIgnore = false;
-    var tryingCall;
-    var waitingFor;
-    var analyserStream;
-    var analyserStream0;
-    var analyserStream2;
-    var analyserDest;
-    var callTimer;
-    var callTimerSlot;
-    var callDropTimer;
-    var recorder;
-    var recorderTitle;
-    var recorderTitle2;
-    var recorderDialog = false;
-    var silenceTimer;
-    var silenceState = 0;
-    var newRecorder = false;
-    var recorderPending = false;
-    var meterLoop = false;
-    var closeDialog = false;
+    ipcRenderer.on(`peer-register`, (event, arg) => {
+        console.log(`Registering peer ID ${arg}`);
+        hostReq.request({method: 'POST', url: '/recipients/register-peer', data: {peer: arg}}, function (body) {
+            ipcRenderer.send('peer-try-calls', null);
+        });
+    });
 
-    var audioContext = new AudioContext();
-    var gain = audioContext.createGain();
-    gain.gain.value = 1;
-    var analyser = audioContext.createAnalyser();
-    analyser.fftSize = 512;
-    analyser.smoothingTimeConstant = 0.1;
-    var fftBins = new Float32Array(analyser.frequencyBinCount);
+    ipcRenderer.on(`peer-unavailable`, (event, arg) => {
+        console.log(`Peer ${arg.friendlyname} unavailable`);
+        $("#connecting-modal").iziModal('close');
 
-    var audioContext2 = new AudioContext();
-    var analyser2 = audioContext2.createAnalyser();
-    analyser2.fftSize = 512;
-    analyser2.smoothingTimeConstant = 0.1;
-    var fftBins2 = new Float32Array(analyser2.frequencyBinCount);
+        if (document.querySelector(`.peerjs-waiting`) !== null)
+            iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
 
-    var audioContext0 = new AudioContext();
-    var analyser0 = audioContext0.createAnalyser();
-    analyser0.fftSize = 512;
-    analyser0.smoothingTimeConstant = 0.1;
-    var fftBins0 = new Float32Array(analyser0.frequencyBinCount);
+        iziToast.show({
+            class: `peerjs-waiting`,
+            titleColor: '#000000',
+            messageColor: '#000000',
+            color: 'red',
+            close: false,
+            overlay: true,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            zindex: 1000,
+            layout: 1,
+            imageWidth: 100,
+            image: ``,
+            maxWidth: 480,
+            progressBarColor: `rgba(255, 0, 0, 0.5)`,
+            closeOnClick: false,
+            position: 'center',
+            timeout: false,
+            title: 'Error establishing audio call',
+            message: `${arg.friendlyname} is not available at this time. I will wait for the host to report online and then start the broadcast. If you wish to cancel this, please click "cancel".`,
+            buttons: [
+                ['<button><b>Cancel</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        ipcRenderer.send('peer-stop-trying', null);
+                    }]
+            ]
+        });
+    });
 
-    var incomingSilence = false;
-    var rtcStats = 1000;
-    var prevPLC = 0;
-    var meterLooper = function () {
-        try {
-            var temp0 = incomingCall !== `undefined` ? getMaxVolume(analyser0, fftBins0) : -50;
-            var temp = getMaxVolume(analyser, fftBins);
-            var temp2 = getMaxVolume(analyser2, fftBins2);
-
-            if (temp > window.peerVolume)
+    ipcRenderer.on(`peer-incoming-call`, (event, arg) => {
+        console.log(`Incoming call from peer ID ${arg}`);
+        if (client.answerCalls)
+        {
+            console.log(`Allowed to answer. Checking hosts.`);
+            try {
+                var recipient = Recipients({peer: arg}).first();
+            } catch (e) {
+                console.log(`The peer ${arg} does not appear in the list of recipients. Not answering the call.`);
+            }
+            if (recipient && Hosts({host: recipient.host, authorized: true, makeCalls: true}).get().length >= 0)
             {
-                window.peerVolume = temp;
+                console.log(`Peer ${arg} is authorized. Answering call...`);
+                ipcRenderer.send('peer-answer-call', null);
             } else {
-                window.peerVolume -= ((window.peerVolume - temp) / 16);
+                console.log(`Peer ${arg} is NOT authorized. Ignoring call.`);
             }
+        }
+    });
 
-            if (temp2 > window.mainVolume)
+    ipcRenderer.on(`peer-bail-break`, (event, arg) => {
+        console.log(`Peer wants to bail into a break due to an error.`);
+        goBreak(false);
+    });
+
+    ipcRenderer.on(`peer-very-bad-call-notify`, (event, arg) => {
+        console.log(`Peer wants us to display a notification about the very bad call.`);
+        /*
+         var notification = notifier.notify('Poor Audio Connection', {
+         message: `Please check DJ Controls for more information.`,
+         icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+         duration: 900000,
+         });
+         */
+        main.flashTaskbar();
+
+        iziToast.show({
+            titleColor: '#000000',
+            messageColor: '#000000',
+            color: 'red',
+            close: true,
+            overlay: true,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            zindex: 1000,
+            layout: 1,
+            imageWidth: 100,
+            image: ``,
+            maxWidth: 480,
+            progressBarColor: `rgba(255, 0, 0, 0.5)`,
+            closeOnClick: false,
+            position: 'center',
+            timeout: false,
+            title: 'Poor Audio Quality',
+            message: `The host receiving audio repeatedly reported choppy audio despite multiple tries to restart the audio call. I sent you to a break. Please ensure you have a reliable network and your audio device is receiving input. Then, click "Resume Broadcast". Or, you can close this window and change settings or end the broadcast.`,
+            buttons: [
+                ['<button><b>Resume Broadcast</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        returnBreak();
+                    }]
+            ]
+        });
+    });
+
+    ipcRenderer.on(`peer-no-answer`, (event, arg) => {
+        console.log(`Peer reports the call failed.`);
+        $("#connecting-modal").iziModal('close');
+        iziToast.show({
+            titleColor: '#000000',
+            messageColor: '#000000',
+            color: 'red',
+            close: true,
+            overlay: false,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            zindex: 100,
+            layout: 1,
+            imageWidth: 100,
+            image: ``,
+            progressBarColor: `rgba(255, 0, 0, 0.5)`,
+            closeOnClick: true,
+            position: 'center',
+            timeout: 30000,
+            title: 'Call not answered',
+            message: `Host ${arg} did not answer the call. Please try again later.`
+        });
+    });
+
+    ipcRenderer.on(`peer-waiting-answer`, (event, arg) => {
+        console.log(`Peer is waiting for an answer from ${arg}.`);
+        if (document.querySelector(`.peerjs-waiting`) !== null)
+            iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
+
+        iziToast.show({
+            class: `peerjs-waiting`,
+            titleColor: '#000000',
+            messageColor: '#000000',
+            color: 'red',
+            close: false,
+            overlay: true,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            zindex: 1000,
+            layout: 1,
+            imageWidth: 100,
+            image: ``,
+            maxWidth: 480,
+            progressBarColor: `rgba(255, 0, 0, 0.5)`,
+            closeOnClick: false,
+            position: 'center',
+            timeout: false,
+            title: 'Error establishing audio call',
+            message: `${arg} is not available at this time. I will wait for the host to report online and then start/resume the broadcast. If you wish to cancel this, please click "cancel".`,
+            buttons: [
+                ['<button><b>Cancel</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        ipcRenderer.send(`peer-stop-trying`, null);
+                    }]
+            ]
+        });
+    });
+
+    ipcRenderer.on(`peer-dropped-call`, (event, arg) => {
+        console.log(`Peer reports a call was dropped.`);
+        $("#connecting-modal").iziModal('close');
+        /*
+         var notification = notifier.notify('Lost Audio Call', {
+         message: `Please check DJ Controls for more information.`,
+         icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+         duration: 900000,
+         });
+         */
+        main.flashTaskbar();
+
+        if (document.querySelector(`.peerjs-waiting`) !== null)
+            iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
+
+        iziToast.show({
+            id: `peerjs-waiting`,
+            titleColor: '#000000',
+            messageColor: '#000000',
+            color: 'red',
+            close: false,
+            overlay: true,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            zindex: 1000,
+            layout: 1,
+            imageWidth: 100,
+            image: ``,
+            maxWidth: 480,
+            progressBarColor: `rgba(255, 0, 0, 0.5)`,
+            closeOnClick: false,
+            position: 'center',
+            timeout: false,
+            title: 'Lost Audio Call',
+            message: `The audio call with ${arg} was dropped. I tried sending you to break. I will wait until both you and the other DJ Controls is back online, and then try the call again. Click "cancel" to abort; clicking cancel will end the broadcast.`,
+            buttons: [
+                ['<button><b>Cancel</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        ipcRenderer.send(`peer-stop-trying`, null);
+                        endShow();
+                    }]
+            ]
+        });
+
+        if (!disconnected)
+            goBreak(false);
+    });
+
+    ipcRenderer.on(`peer-connecting-call`, (event, arg) => {
+        console.log(`Peer is connecting a call.`);
+        $("#connecting-modal").iziModal('open');
+    });
+
+    ipcRenderer.on(`peer-connected-call`, (event, arg) => {
+        console.log(`Peer has connected a call.`);
+        $("#connecting-modal").iziModal('close');
+        if (document.querySelector(`.peerjs-waiting`) !== null)
+            iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
+    });
+
+    ipcRenderer.on(`peer-get-host-info`, (event, arg) => {
+        console.log(`Peer wants information about host ${arg}.`);
+        var host = Hosts({host: arg}).first();
+        var peerID = null;
+        if (host)
+            peerID = Recipients({host: host.host}).first().peer;
+        ipcRenderer.send(`peer-host-info`, [host, peerID]);
+    });
+
+    ipcRenderer.on(`peer-device-input-error`, (event, arg) => {
+        console.log(`Peer says there was an error with the input device.`);
+        iziToast.show({
+            titleColor: '#000000',
+            messageColor: '#000000',
+            color: 'red',
+            close: true,
+            overlay: false,
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            zindex: 100,
+            layout: 1,
+            imageWidth: 100,
+            image: ``,
+            progressBarColor: `rgba(255, 0, 0, 0.5)`,
+            closeOnClick: true,
+            position: 'center',
+            timeout: 10000,
+            title: 'Audio Error',
+            message: `There was an error trying to load the input device for audio calling / remote broadcasting.`
+        });
+    });
+
+    ipcRenderer.on(`peer-device-output-error`, (event, arg) => {
+        console.log(`Peer reports there was an error with the output device.`);
+        if (client.receiveCalls)
+        {
+            iziToast.show({
+                titleColor: '#000000',
+                messageColor: '#000000',
+                color: 'red',
+                close: true,
+                overlay: true,
+                overlayColor: 'rgba(0, 0, 0, 0.75)',
+                zindex: 100,
+                layout: 1,
+                imageWidth: 100,
+                image: ``,
+                progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                closeOnClick: true,
+                position: 'center',
+                timeout: false,
+                maxWidth: 480,
+                title: 'Audio Error',
+                message: `There was an error trying to load the main output device. Please check your settings. Receiving audio calls will not work until this is fixed.`
+            });
+        }
+    });
+
+    ipcRenderer.on(`audio-silence`, (event, arg) => {
+        console.log(`Audio reports silence is ${arg}.`);
+        if (client.silenceDetection)
+        {
+            if (arg)
             {
-                window.mainVolume = temp2;
+                hostReq.request({method: 'POST', url: '/silence/active', data: {}}, function (body) {});
             } else {
-                window.mainVolume -= ((window.mainVolume - temp2) / 16);
+                hostReq.request({method: 'POST', url: '/silence/inactive', data: {}}, function (body) {});
             }
+        }
+    });
 
-            // Silence detection
-            if (client.silenceDetection && window.mainVolume <= -49)
-            {
-                if (silenceState === 0 || silenceState === -1)
+    ipcRenderer.on(`peer-audio-info`, (event, arg) => {
+        if (arg[2] || arg[3] || arg[5] < 0)
+        {
+            callInProgress = true;
+        } else {
+            callInProgress = false;
+        }
+
+        if (!document[hidden])
+        {
+            window.requestAnimationFrame(() => {
+                var temp5 = document.querySelector(`#remote-vu`);
+                var temp6 = document.querySelector(`#sportsremote-vu`);
+                var temp3 = document.querySelector(`#call-vu`);
+
+                if (temp5 !== null)
                 {
-                    silenceState = 1;
-                    silenceTimer = setTimeout(function () {
-                        silenceState = 2;
-                        hostReq.request({method: 'POST', url: '/silence/active', data: {}}, function (body) {});
-                    }, settings.get(`silence.time`) || 10000);
-                }
-            } else {
-                if (silenceState === 2 || silenceState === -1)
-                    hostReq.request({method: 'POST', url: '/silence/inactive', data: {}}, function (body) {});
-                silenceState = 0;
-                clearTimeout(silenceTimer);
-            }
+                    temp5.style.width = `${arg[0] > -50 ? ((arg[0] + 50) * 4) : 0}%`;
 
-            // Gain control. Immediately decrease gain when above -25dB. Slowly increase gain if volume is less than -30dB.
-            if (window.peerVolume > -25)
-            {
-                var gain1 = -50 - ((-50 - window.peerVolume) / gain.gain.value);
-                var diffVolume = gain1 - window.peerVolume;
-                var diffGain = gain.gain.value - 1;
-
-                var changeVolume = -25 - window.peerVolume;
-
-                var proportion = diffVolume / changeVolume;
-                var adjustGain = diffGain / proportion;
-
-                gain.gain.value = gain.gain.value - adjustGain;
-            } else if (window.peerVolume < -30) {
-                var proportion = window.peerVolume / -25;
-                var adjustGain = (gain.gain.value / proportion) / 32;
-                gain.gain.value += adjustGain;
-                if (gain.gain.value > 3)
-                    gain.gain.value = 3;
-            }
-
-            var temp5 = document.querySelector(`#remote-vu`);
-            var temp6 = document.querySelector(`#sportsremote-vu`);
-            var temp3 = document.querySelector(`#call-vu`);
-            var temp4 = document.querySelector(`#main-vu`);
-
-            if (temp5 !== null && !document[hidden])
-            {
-                temp5.style.width = `${window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0}%`;
-
-                // check if we're currently clipping
-                if (window.peerVolume > -25)
-                    temp5.className = "progress-bar bg-danger";
-                else
-                    temp5.className = "progress-bar bg-success";
-            }
-
-            if (temp6 !== null && !document[hidden])
-            {
-                temp6.style.width = `${window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0}%`;
-
-                // check if we're currently clipping
-                if (window.peerVolume > -25)
-                    temp6.className = "progress-bar bg-danger";
-                else
-                    temp6.className = "progress-bar bg-success";
-            }
-
-            if (temp3 !== null && !document[hidden])
-            {
-                temp3.style.width = `${window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0}%`;
-
-                // check if we're currently clipping
-                if (window.peerVolume > -25)
-                    temp3.className = "progress-bar bg-danger";
-                else
-                    temp3.className = "progress-bar bg-success";
-            }
-
-            if (temp4 !== null && !document[hidden])
-            {
-                temp4.style.width = `${window.mainVolume > -50 ? ((window.mainVolume + 50) * 4) : 0}%`;
-
-                // check if we're currently clipping
-                if (window.mainVolume > -25)
-                    temp4.className = "progress-bar bg-danger";
-                else
-                    temp4.className = "progress-bar bg-success";
-            }
-
-            if (typeof outgoingCall !== 'undefined' && window.peerError >= 0)
-            {
-                var temp8 = document.querySelector(`#audio-call-icon`);
-                if (temp8 !== null && !document[hidden])
-                {
-                    var percent = window.peerVolume > -50 ? ((window.peerVolume + 50) * 4) : 0;
-                    temp8.style.color = `rgb(0, ${percent < 100 ? parseInt((percent * 2) + 55) : 255}, 0)`;
-                }
-            } else if (typeof waitingFor !== 'undefined' || window.peerError === -2) {
-                var temp8 = document.querySelector(`#audio-call-icon`);
-                if (temp8 !== null)
-                    temp8.style.color = `rgb(255, 0, 0)`;
-            } else if (typeof tryingCall !== 'undefined' || window.peerError === -1) {
-                var temp8 = document.querySelector(`#audio-call-icon`);
-                if (temp8 !== null)
-                    temp8.style.color = `rgb(255, 255, 0)`;
-            } else if (typeof incomingCall !== 'undefined') {
-                var temp8 = document.querySelector(`#audio-call-icon`);
-                if (temp8 !== null && !document[hidden])
-                {
-                    var percent = temp0 > -50 ? ((temp0 + 50) * 4) : 0;
-                    temp8.style.color = `rgb(0, ${percent < 100 ? parseInt((percent * 2) + 55) : 255}, ${percent < 100 ? parseInt((percent * 2) + 55) : 255})`;
+                    // check if we're currently clipping
+                    if (arg[0] > -25)
+                        temp5.className = "progress-bar bg-danger";
+                    else
+                        temp5.className = "progress-bar bg-success";
                 }
 
-                // Check for glitches in audio every second; we want to send a bad-call event to restart the call if there are too many of them.
-                rtcStats -= 1000 / 50;
-                if (rtcStats <= 0)
+                if (temp6 !== null)
                 {
-                    rtcStats = 1000;
-                    var connections = peer.connections;
-                    for (var connection in connections)
+                    temp6.style.width = `${arg[0] > -50 ? ((arg[0] + 50) * 4) : 0}%`;
+
+                    // check if we're currently clipping
+                    if (arg[0] > -25)
+                        temp6.className = "progress-bar bg-danger";
+                    else
+                        temp6.className = "progress-bar bg-success";
+                }
+
+                if (temp3 !== null)
+                {
+                    temp3.style.width = `${arg[0] > -50 ? ((arg[0] + 50) * 4) : 0}%`;
+
+                    // check if we're currently clipping
+                    if (arg[0] > -25)
+                        temp3.className = "progress-bar bg-danger";
+                    else
+                        temp3.className = "progress-bar bg-success";
+                }
+
+                if (arg[2] && arg[5] >= 0)
+                {
+                    var temp8 = document.querySelector(`#audio-call-icon`);
+                    if (temp8 !== null)
                     {
-                        //if (connections.hasOwnProperty(connection))
-                        //{
-                        if (connections[connection].length > 0)
-                        {
-                            connections[connection].map((connectionObject) => {
-                                //console.dir(connectionObject);
-                                try {
-                                    connectionObject._negotiator._pc.getStats(function callback(connStats) {
-                                        var rtcStatsReports = connStats.result();
-                                        rtcStatsReports
-                                                .filter((stat) => stat.type === `ssrc`)
-                                                .map((stat, index) => {
-                                                    var properties = stat.names();
-                                                    properties
-                                                            .filter((property) => property === `googDecodingPLC`)
-                                                            .map((property) => {
-                                                                var value = stat.stat(property);
-
-                                                                // Choppiness was detected in the last second
-                                                                if (value > prevPLC)
-                                                                {
-                                                                    // Increase error counters and decrease good bitrate counter. Generally, we want the system to trigger call restarts when packet loss averages 4%+.
-                                                                    window.peerError += (value - prevPLC) / 2;
-                                                                    window.peerGoodBitrate -= (value - prevPLC) / 2;
-
-                                                                    console.log(`Choppiness detected! Current threshold: ${window.peerError}/30`);
-
-                                                                    // When error exceeds a certain threshold, that is a problem!
-                                                                    if (window.peerError >= 30)
-                                                                    {
-                                                                        // Send the system into break if we are in 64kbps and still having audio issues.
-                                                                        if (window.peerErrorMajor >= 30 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on")) {
-                                                                            window.peerErrorMajor = 0;
-                                                                            console.log(`Audio call remains choppy even on the lowest allowed bitrate of 64kbps. Giving up by sending the system into break.`);
-                                                                            if (!disconnected)
-                                                                                goBreak(false);
-                                                                            hostReq.request({method: 'POST', url: '/call/give-up', data: {}}, function (body) {});
-                                                                            window.peerError = -2;
-                                                                            // Reset bitRate to 96kbps as a mid-point starter for when the broadcast resumes.
-                                                                            bitRate = 96;
-                                                                        } else {
-
-                                                                            // Do not contribute to the possibility of giving up the audio call unless we are on the minimum allowed bitrate of 64kbps.
-                                                                            if (bitRate <= 64)
-                                                                                window.peerErrorMajor += 15;
-
-                                                                            console.log(`Audio choppiness threshold exceeded! Requesting call restart.`);
-
-                                                                            // Reduce the bitrate by 32kbps (with a minimum allowed of 64kbps) if we reach the choppy threshold multiple times in 15-30 seconds.
-                                                                            if (window.peerErrorBitrate > 0 && bitRate >= 96)
-                                                                            {
-                                                                                bitRate -= 32;
-                                                                                console.log(`Also requesting a lower bitrate: ${bitRate} kbps.`);
-                                                                                window.peerErrorBitrate = 10;
-                                                                            } else {
-                                                                                window.peerErrorBitrate = 30;
-                                                                            }
-
-                                                                            // Reset the good bitrate counter; we are not having a good connection.
-                                                                            window.peerGoodBitrate = 0;
-
-                                                                            hostReq.request({method: 'POST', url: '/call/bad', data: {bitRate: bitRate}}, function (body) {});
-
-                                                                            window.peerError = -1;
-                                                                        }
-                                                                    }
-                                                                    // Connection was good in the last second. Lower any error counters and also increase the good bitrate counter
-                                                                } else {
-                                                                    window.peerError -= 1;
-                                                                    if (window.peerError < 0)
-                                                                        window.peerError = 0;
-                                                                    window.peerErrorMajor -= 1;
-                                                                    if (window.peerErrorMajor < 0)
-                                                                        window.peerErrorMajor = 0;
-                                                                    window.peerErrorBitrate -= 1;
-                                                                    if (window.peerErrorBitrate < 0)
-                                                                        window.peerErrorBitrate = 0;
-                                                                    window.peerGoodBitrate += 1;
-                                                                }
-                                                                prevPLC = value;
-                                                            });
-                                                });
-                                    });
-                                } catch (e) {
-
-                                }
-                            });
-                        }
-                        //}
+                        var percent = arg[0] > -50 ? ((arg[0] + 50) * 4) : 0;
+                        temp8.style.color = `rgb(0, ${percent < 100 ? parseInt((percent * 2) + 55) : 255}, 0)`;
+                    }
+                } else if (arg[3] || arg[5] === -2) {
+                    var temp8 = document.querySelector(`#audio-call-icon`);
+                    if (temp8 !== null)
+                        temp8.style.color = `rgb(255, 0, 0)`;
+                } else if (arg[4] || arg[5] === -1) {
+                    var temp8 = document.querySelector(`#audio-call-icon`);
+                    if (temp8 !== null)
+                        temp8.style.color = `rgb(255, 255, 0)`;
+                } else if (arg[3]) {
+                    var temp8 = document.querySelector(`#audio-call-icon`);
+                    if (temp8 !== null && !document[hidden])
+                    {
+                        var percent = arg[1] > -50 ? ((arg[1] + 50) * 4) : 0;
+                        temp8.style.color = `rgb(0, ${percent < 100 ? parseInt((percent * 2) + 55) : 255}, ${percent < 100 ? parseInt((percent * 2) + 55) : 255})`;
                     }
                 }
-            } else {
-                var temp8 = document.querySelector(`#audio-call-icon`);
-                if (temp8 !== null)
+            });
+        }
+    });
+
+    ipcRenderer.on(`audio-audio-info`, (event, arg) => {
+        if (!document[hidden])
+        {
+            window.requestAnimationFrame(() => {
+                var temp4 = document.querySelector(`#main-vu`);
+                if (temp4 !== null)
                 {
-                    if (silenceState === 2)
+                    temp4.style.width = `${arg[0] > -50 ? ((arg[0] + 50) * 4) : 0}%`;
+
+                    // check if we're currently clipping
+                    if (arg[0] > -25)
+                        temp4.className = "progress-bar bg-danger";
+                    else
+                        temp4.className = "progress-bar bg-success";
+                }
+
+
+                var temp8 = document.querySelector(`#audio-call-icon`);
+                if (temp8 !== null && !callInProgress)
+                {
+                    if (arg[1] === 2)
                         temp8.style.color = `rgb(128, 0, 0)`;
-                    if (silenceState === 1)
+                    if (arg[1] === 1)
                         temp8.style.color = `rgb(128, 128, 0)`;
-                    if (silenceState === 0)
+                    if (arg[1] === 0)
                         temp8.style.color = `rgb(16, 16, 16)`;
                 }
-            }
-            meterLoop = false;
-        } catch (eee) {
-            // ignore errors
-            console.error(eee);
+            });
         }
-    };
+    });
 
-    setInterval(() => {
-        if (!meterLoop)
+    ipcRenderer.on(`peer-very-bad-call-send`, (event, arg) => {
+        console.log(`Peer reports very bad audio call. Sending this to the server and going to break.`);
+        if (!disconnected)
+            goBreak(false);
+        hostReq.request({method: 'POST', url: '/call/give-up', data: {}}, function (body) {});
+    });
+
+    ipcRenderer.on(`peer-bad-call-send`, (event, arg) => {
+        console.log(`Peer reports bad audio call. Requesting new call at ${arg} kbps.`);
+        hostReq.request({method: 'POST', url: '/call/bad', data: {bitRate: arg}}, function (body) {});
+    });
+
+    ipcRenderer.on(`audio-device-input-error`, (event, arg) => {
+        console.log(`Audio reports bad input device.`);
+        if (client.silenceDetection || client.recordAudio)
         {
-            meterLoop = true;
-            meterLooper();
+            iziToast.show({
+                titleColor: '#000000',
+                messageColor: '#000000',
+                color: 'red',
+                close: true,
+                overlay: true,
+                overlayColor: 'rgba(0, 0, 0, 0.75)',
+                zindex: 100,
+                layout: 1,
+                imageWidth: 100,
+                image: ``,
+                progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                closeOnClick: true,
+                position: 'center',
+                timeout: false,
+                maxWidth: 480,
+                title: 'Audio Error',
+                message: `There was an error trying to load the main input device for silence detection / recording. Please check your settings. Silence detection and audio recording will not work until this is fixed.`
+            });
         }
-    }, 1000 / 50);
+    });
 
-    var processor;
+    ipcRenderer.on(`audio-new-recording`, (event, arg) => {
+        console.log(`Audio reports it started a new recording at ${arg}`);
+        hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `<strong>A recording was started.</strong><br />Path: ${arg}`}}, function (response3) {
+        });
+    });
 
+    ipcRenderer.on(`audio-file-saved`, (event, arg) => {
+        if (recorderDialog)
+            window.close();
+    });
 
     // Define a function that finishes any recordings when DJ Controls is closed
     window.onbeforeunload = function (e) {
@@ -668,729 +781,14 @@ try {
             return false;
         }
 
-        if (recorder && recorder.isRecording())
+        if (!recorderDialog)
         {
+            ipcRenderer.send(`audio-shut-down`, true);
+            e.returnValue = `Waiting`;
             recorderDialog = true;
-            stopRecording(true);
-            e.returnValue = `Saving audio recording`;
             return false;
         }
-    }
-
-    function setupPeer() {
-        try {
-            peer.destroy();
-            peer = undefined;
-        } catch (ee) {
-            // Ignore errors
-        }
-
-        /*
-         peer = new Peer({key: `Peer4WWSU`, host: `server.wwsu1069.org`, path: '/webcaster', secure: true, debug: 3, config: {'iceServers': [
-         {urls: 'stun:stun.stunprotocol.org:3478'},
-         {
-         urls: 'turn:numb.viagenie.ca',
-         credential: 'WineDine1069',
-         username: 'engineer@wwsu1069.org'}]}});
-         */
-
-        peer = new Peer({
-            key: "71595709-5af2-4cc5-ac02-12044749ae90",
-            debug: 3,
-        });
-
-        peer.on('open', (id) => {
-            console.log(`peer opened with id ${id}`);
-            // Update database with the peer ID
-            hostReq.request({method: 'POST', url: '/recipients/register-peer', data: {peer: id}}, function (body) {
-                if (tryingCall && tryingCall.host && tryingCall.cb)
-                {
-                    startCall(tryingCall.host, tryingCall.cb)
-                }
-                /*
-                 getAudio(
-                 function (MediaStream) {
-                 console.log('now calling');
-                 var call = peer.call(`wwsu-1`, MediaStream);
-                 call.on('stream', onReceiveStream);
-                 }
-                 );
-                 */
-            });
-        });
-
-        peer.on('error', (err) => {
-            console.error(err);
-            if (err.type === `peer-unavailable`)
-            {
-                $("#connecting-modal").iziModal('close');
-
-                if (document.querySelector(`.peerjs-waiting`) !== null)
-                    iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
-
-                iziToast.show({
-                    class: `peerjs-waiting`,
-                    titleColor: '#000000',
-                    messageColor: '#000000',
-                    color: 'red',
-                    close: false,
-                    overlay: true,
-                    overlayColor: 'rgba(0, 0, 0, 0.75)',
-                    zindex: 1000,
-                    layout: 1,
-                    imageWidth: 100,
-                    image: ``,
-                    maxWidth: 480,
-                    progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                    closeOnClick: false,
-                    position: 'center',
-                    timeout: false,
-                    title: 'Error establishing audio call',
-                    message: `${tryingCall.friendlyname} is not available at this time. I will wait for the host to report online and then start the broadcast. If you wish to cancel this, please click "cancel".`,
-                    buttons: [
-                        ['<button><b>Cancel</b></button>', function (instance, toast) {
-                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                waitingFor = undefined;
-                                tryingCall = undefined;
-                            }]
-                    ]
-                });
-                try {
-                    waitingFor = tryingCall;
-                    clearInterval(callTimer);
-                    outgoingCloseIgnore = true;
-                    console.log(`Closing call via peer-unavailable`);
-                    outgoingCall.close();
-                    outgoingCall = undefined;
-                    outgoingCloseIgnore = false;
-                } catch (ee) {
-                    outgoingCloseIgnore = false;
-                }
-            }
-        });
-
-        peer.on(`disconnected`, () => {
-            setTimeout(() => {
-                if (peer && !peer.destroyed)
-                {
-                    peer.reconnect();
-                } else {
-                    setupPeer();
-                }
-            }, 2000);
-        });
-
-        peer.on('close', () => {
-            console.log(`Peer destroyed.`);
-            try {
-                peer = undefined;
-                hostReq.request({method: 'POST', url: '/recipients/register-peer', data: {peer: null}}, function (body) {});
-            } catch (ee) {
-
-            }
-            setTimeout(() => {
-                if (!peer || peer.destroyed)
-                    setupPeer();
-            }, 5000);
-        });
-
-        peer.on('call', (connection) => {
-            console.log(`Incoming call from ${connection.peer}`);
-            if (client.answerCalls)
-            {
-                console.log(`Allowed to answer. Checking hosts.`);
-                try {
-                    var recipient = Recipients({peer: connection.peer}).first();
-                } catch (e) {
-                    console.log(`The peer ${connection.peer} does not appear in the list of recipients. Not answering the call.`);
-                }
-                if (recipient && Hosts({host: recipient.host, authorized: true, makeCalls: true}).get().length >= 0)
-                {
-                    console.log(`Peer ${connection.peer} is authorized. Answering call...`);
-                    try {
-                        // Close any other active incoming calls
-                        incomingCloseIgnore = true;
-                        console.log(`Call ended via peer.on call`);
-                        incomingCall.close();
-                        incomingCall = undefined;
-                        analyserStream0.disconnect(analyser0);
-                        incomingCloseIgnore = false;
-                    } catch (ee) {
-                        incomingCloseIgnore = false;
-                        // Ignore errors
-                    }
-                    incomingCall = connection;
-                    incomingCall.answer(new MediaStream(), {
-                        audioBandwidth: bitRate,
-                        audioReceiveEnabled: true
-                    });
-                    clearTimeout(callDropTimer);
-                    incomingCall.on('stream', onReceiveStream);
-                    incomingCall.on(`close`, () => {
-                        console.log(`CALL CLOSED.`);
-                        incomingCall = undefined;
-                        analyserStream0.disconnect(analyser0);
-
-                        if (!incomingCloseIgnore)
-                        {
-                            console.log(`This was premature!`);
-                            window.peerError = -1;
-                            var callDropFn = () => {
-                                if (typeof incomingCall !== `undefined`)
-                                {
-                                    console.log(`Incoming call was re-established. Stopping the checks.`);
-                                } else if (!Meta.playing && (Meta.state === 'sportsremote_on' || Meta.state === 'remote_on'))
-                                {
-                                    console.log(`Since nothing else is playing, sending system into break!`)
-                                    goBreak(false);
-                                    window.peerError = -2;
-                                } else if (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote' || Meta.state === "sportsremote_returning" || Meta.state === "remote_returning" || Meta.state === "remote_break" || Meta.state === "sportsremote_break")
-                                {
-                                    console.log(`Something else is playing in RadioDJ, so ignore for now and check again in 10 seconds.`);
-                                    window.peerError = -2;
-                                    callDropTimer = setTimeout(() => {
-                                        callDropFn();
-                                    }, 10000);
-                                } else {
-                                    console.log(`Stopping checks; we are not actually supposed to be in a call right now.`);
-                                    window.peerError = 0;
-                                }
-                            };
-                            callDropFn();
-                        }
-
-                        incomingCloseIgnore = false;
-                    });
-                } else {
-                    console.log(`Peer ${connection.peer} is NOT authorized. Ignoring call.`);
-                }
-            }
-        });
-    }
-
-    function startCall(hostID, cb, reconnect = false, bitrate = bitRate) {
-        var callFailed = (keepTrying) => {
-            try {
-                outgoingCloseIgnore = true;
-                console.log(`Closing call via startCall call failed`);
-                outgoingCall.close();
-                outgoingCall = undefined;
-                outgoingCloseIgnore = false;
-                cb(false);
-            } catch (eee) {
-                outgoingCloseIgnore = false;
-                // ignore errors
-            }
-
-            clearInterval(callTimer);
-
-            if (!reconnect)
-            {
-                if (!keepTrying)
-                {
-                    $("#connecting-modal").iziModal('close');
-                    iziToast.show({
-                        titleColor: '#000000',
-                        messageColor: '#000000',
-                        color: 'red',
-                        close: true,
-                        overlay: false,
-                        overlayColor: 'rgba(0, 0, 0, 0.75)',
-                        zindex: 100,
-                        layout: 1,
-                        imageWidth: 100,
-                        image: ``,
-                        progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                        closeOnClick: true,
-                        position: 'center',
-                        timeout: 30000,
-                        title: 'Call not answered',
-                        message: `The host you were trying to call did not answer. Please try again later.`
-                    });
-                } else {
-                    if (document.querySelector(`.peerjs-waiting`) !== null)
-                        iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
-
-                    iziToast.show({
-                        class: `peerjs-waiting`,
-                        titleColor: '#000000',
-                        messageColor: '#000000',
-                        color: 'red',
-                        close: false,
-                        overlay: true,
-                        overlayColor: 'rgba(0, 0, 0, 0.75)',
-                        zindex: 1000,
-                        layout: 1,
-                        imageWidth: 100,
-                        image: ``,
-                        maxWidth: 480,
-                        progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                        closeOnClick: false,
-                        position: 'center',
-                        timeout: false,
-                        title: 'Error establishing audio call',
-                        message: `${tryingCall.friendlyname} is not available at this time. I will wait for the host to report online and then start/resume the broadcast. If you wish to cancel this, please click "cancel".`,
-                        buttons: [
-                            ['<button><b>Cancel</b></button>', function (instance, toast) {
-                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                    waitingFor = undefined;
-                                    tryingCall = undefined;
-                                }]
-                        ]
-                    });
-                    try {
-                        waitingFor = tryingCall;
-                        clearInterval(callTimer);
-                        outgoingCloseIgnore = true;
-                        console.log(`Closing call via callFailed keepTrying`);
-                        outgoingCall.close();
-                        outgoingCall = undefined;
-                        outgoingCloseIgnore = false;
-                    } catch (ee) {
-                        outgoingCloseIgnore = false;
-                    }
-                }
-            } else {
-                waitingFor = {host: hostID, cb: cb};
-
-                $("#connecting-modal").iziModal('close');
-                /*
-                 var notification = notifier.notify('Lost Audio Call', {
-                 message: `Please check DJ Controls for more information.`,
-                 icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
-                 duration: 900000,
-                 });
-                 */
-                main.flashTaskbar();
-
-                if (document.querySelector(`.peerjs-waiting`) !== null)
-                    iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
-
-                iziToast.show({
-                    id: `peerjs-waiting`,
-                    titleColor: '#000000',
-                    messageColor: '#000000',
-                    color: 'red',
-                    close: false,
-                    overlay: true,
-                    overlayColor: 'rgba(0, 0, 0, 0.75)',
-                    zindex: 1000,
-                    layout: 1,
-                    imageWidth: 100,
-                    image: ``,
-                    maxWidth: 480,
-                    progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                    closeOnClick: false,
-                    position: 'center',
-                    timeout: false,
-                    title: 'Lost Audio Call',
-                    message: `The audio call with ${tryingCall.friendlyname} was dropped. I tried sending you to break. I will wait until both you and the other DJ Controls is back online, and then try the call again. Click "cancel" to abort; clicking cancel will end the broadcast.`,
-                    buttons: [
-                        ['<button><b>Cancel</b></button>', function (instance, toast) {
-                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                                waitingFor = undefined;
-                                tryingCall = undefined;
-                                endShow();
-                            }]
-                    ]
-                });
-
-                if (!disconnected)
-                    goBreak(false);
-            }
-        };
-
-        try {
-            var host = Hosts({host: hostID}).first();
-        } catch (e) {
-            console.log(`INVALID HOST`);
-            callFailed(false);
-        }
-
-        console.log(`Trying to call ${host.friendlyname}`);
-
-        tryingCall = {host: hostID, cb: cb, friendlyname: host.friendlyname};
-
-        if (!reconnect)
-            $("#connecting-modal").iziModal('open');
-
-        try {
-            var peerID = Recipients({host: host.host}).first().peer;
-            if (peerID === null)
-            {
-                callFailed(true);
-                return null;
-            }
-        } catch (e) {
-            callFailed(true);
-        }
-
-        try {
-            // Terminate any existing outgoing calls first
-            waitingFor = undefined;
-            outgoingCloseIgnore = true;
-            console.log(`Closing call via startCall`);
-            outgoingCall.close();
-            outgoingCall = undefined;
-            outgoingCloseIgnore = false;
-            clearInterval(callTimer);
-        } catch (ee) {
-            outgoingCloseIgnore = false;
-            // Ignore errors
-        }
-
-        window.peerHost = hostID;
-        bitRate = bitrate;
-        outgoingCall = peer.call(peerID, window.peerStream, {
-            audioBandwidth: bitRate
-        });
-
-        callTimerSlot = 10;
-
-        callTimer = setInterval(() => {
-            callTimerSlot -= 1;
-            console.dir(outgoingCall);
-
-            if (outgoingCall && outgoingCall.open)
-            {
-                clearInterval(callTimer);
-                $("#connecting-modal").iziModal('close');
-
-                tryingCall = undefined;
-                window.peerError = 0;
-
-                if (document.querySelector(`.peerjs-waiting`) !== null)
-                    iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
-
-                outgoingCall.on(`close`, () => {
-                    console.log(`CALL CLOSED.`);
-                    // Premature close if we are still in remote or sportsremote state. Try to reconnect.
-                    outgoingCall = undefined;
-
-                    if (!outgoingCloseIgnore)
-                    {
-                        console.log(`This was premature!`);
-                        if (!Meta.state.includes("_halftime") && (Meta.state.startsWith(`remote_`) || Meta.state.startsWith(`sportsremote_`) || Meta.state === `automation_remote` || Meta.state === `automation_sportsremote`))
-                        {
-                            window.peerError = -1;
-                            console.log(`Trying to re-connect...`);
-                            startCall(host.host, (success) => {
-                                if (success)
-                                {
-                                    console.log(`re-connected!`);
-                                }
-                            }, true);
-                        } else {
-                            window.peerError = 0;
-                            console.log(`NOT reconnecting; we are not supposed to be connected to the call at this time.`)
-                        }
-                    }
-                    outgoingCloseIgnore = false;
-                });
-
-                cb(true);
-            } else {
-                if (callTimerSlot <= 1)
-                {
-                    callFailed(true);
-                }
-            }
-        }, 1000);
-    }
-
-    function getAudio(device) {
-        console.log(`getting audio`);
-        navigator.mediaDevices.getUserMedia({
-            "audio": {
-                deviceId: device ? {exact: device} : undefined,
-                echoCancellation: false,
-                channelCount: 2
-            },
-            video: false
-        })
-                .then((stream) => {
-                    console.log(`getUserMedia initiated`);
-
-                    // Reset stuff
-                    try {
-                        gain.disconnect(analyser);
-                        //gain.disconnect(analyserDest);
-                        analyserStream.disconnect(gain);
-                        window.peerStream.getTracks().forEach(track => track.stop());
-                    } catch (eee) {
-                        // ignore errors
-                    }
-
-                    gain.gain.value = 1;
-                    analyserDest = audioContext.createMediaStreamDestination();
-
-                    analyserStream = audioContext.createMediaStreamSource(stream);
-                    analyserStream.connect(gain);
-                    gain.connect(analyser);
-                    //gain.connect(analyserDest);
-
-                    if (outgoingCall)
-                        outgoingCall.replaceStream(stream);
-
-                    //window.peerStream = analyserDest.stream;
-                    window.peerStream = stream;
-                    window.peerDevice = device;
-                    window.peerVolume = -100;
-                })
-                .catch((err) => {
-                    iziToast.show({
-                        titleColor: '#000000',
-                        messageColor: '#000000',
-                        color: 'red',
-                        close: true,
-                        overlay: false,
-                        overlayColor: 'rgba(0, 0, 0, 0.75)',
-                        zindex: 100,
-                        layout: 1,
-                        imageWidth: 100,
-                        image: ``,
-                        progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                        closeOnClick: true,
-                        position: 'center',
-                        timeout: 10000,
-                        title: 'Audio Error',
-                        message: `Error trying to load that audio device. Please choose another device instead.`
-                    });
-                })
-    }
-
-    function setupRecorder(node) {
-        // Stop any active recordings
-        try {
-            if (recorder.isRecording())
-            {
-                recorderTitle2 = recorderTitle;
-                recorder.finishRecording();
-                console.log(`Finished recording`);
-                newRecorder = true;
-            } else {
-                recorder.destroyWorker();
-            }
-        } catch (eee) {
-            // ignore errors
-        }
-
-        // Reset the recorder
-        recorder = undefined;
-        recorder = new WebAudioRecorder(node, {
-            workerDir: "assets/js/workers/",
-            encoding: "mp3",
-            options: {
-                timeLimit: (60 * 60 * 3),
-                mp3: {
-                    bitRate: 192
-                },
-                bufferSize: 4096
-            }
-        });
-
-        recorder.onEncoderLoaded = function (recorder, encoding) {
-            var startRecording = null;
-            var preText = ``;
-            console.log(`Encoder Loaded.`);
-            if (Meta.state === 'live_on' || Meta.state === `live_prerecord`)
-            {
-                startRecording = 'live';
-                preText = `${sanitize(Meta.show)}${Meta.state === `live_prerecord` ? ` PRERECORDED` : ``}`;
-            } else if (Meta.state === 'remote_on')
-            {
-                startRecording = 'remote';
-                preText = sanitize(Meta.show);
-            } else if (Meta.state === 'sports_on' || Meta.state === 'sportsremote_on')
-            {
-                startRecording = 'sports';
-                preText = sanitize(Meta.show);
-            } else if (Meta.state.startsWith("automation_") && (!Meta.state.includes("_break") && !Meta.state.includes("_returning") && !Meta.state.includes("_halftime")))
-            {
-                startRecording = 'automation';
-                preText = sanitize(Meta.genre);
-            }
-            if (startRecording !== null) {
-                if (!development && client.recordAudio)
-                {
-                    newRecording(`${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`, true);
-                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `<strong>A recording was started.</strong><br />Path: ${settings.get(`recorder.path`)}/${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                    });
-                }
-            }
-        }
-
-        recorder.onComplete = function (recorder, blob) {
-            var fileReader = new FileReader();
-            fileReader.onload = function () {
-                fs.writeFileSync(`${settings.get(`recorder.path`) || ``}/${recorderTitle2}`, Buffer.from(new Uint8Array(this.result)));
-            };
-            fileReader.readAsArrayBuffer(blob);
-
-            if (recorderDialog)
-            {
-                recorderDialog = false;
-                window.close();
-            }
-
-            if (newRecorder)
-            {
-                newRecorder = false;
-                recorder.destroyWorker();
-            }
-        }
-
-    }
-
-    function getAudioMain(device) {
-        console.log(`getting audio main`);
-        navigator.mediaDevices.getUserMedia({
-            "audio": {
-                deviceId: device ? {exact: device} : undefined,
-                echoCancellation: false,
-                channelCount: 2
-            },
-            video: false
-        })
-                .then((stream) => {
-                    console.log(`getUserMedia initiated`);
-                    var restartRecorder = false;
-                    // Reset stuff
-                    try {
-                        analyserStream2.disconnect(analyser2);
-                        window.mainStream.getTracks().forEach(track => track.stop());
-                    } catch (eee) {
-                        // ignore errors
-                    }
-
-                    window.mainStream = stream;
-                    window.mainDevice = device;
-                    window.mainVolume = -100;
-
-                    analyserStream2 = audioContext2.createMediaStreamSource(stream);
-                    analyserStream2.connect(analyser2);
-
-                    setupRecorder(analyserStream2);
-
-                    settings.set(`audio.input.main`, device);
-                })
-                .catch((err) => {
-                    if (client.silenceDetection || client.recordAudio)
-                    {
-                        iziToast.show({
-                            titleColor: '#000000',
-                            messageColor: '#000000',
-                            color: 'red',
-                            close: true,
-                            overlay: true,
-                            overlayColor: 'rgba(0, 0, 0, 0.75)',
-                            zindex: 100,
-                            layout: 1,
-                            imageWidth: 100,
-                            image: ``,
-                            progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                            closeOnClick: true,
-                            position: 'center',
-                            timeout: false,
-                            maxWidth: 480,
-                            title: 'Audio Error',
-                            message: `There was an error trying to load the main input device for silence detection / recording. Please check your settings. Silence detection and audio recording will not work until this is fixed.`
-                        });
-                    }
-                })
-    }
-
-    function sinkAudio(device)
-    {
-        var temp = document.querySelector(`#remoteAudio`);
-        if (temp !== null)
-        {
-            if (typeof device !== 'undefined')
-            {
-                temp.setSinkId(device)
-                        .then(() => {
-                            settings.set(`audio.output.call`, device);
-                        })
-                        .catch((err) => {
-                            if (client.receiveCalls)
-                            {
-                                iziToast.show({
-                                    titleColor: '#000000',
-                                    messageColor: '#000000',
-                                    color: 'red',
-                                    close: true,
-                                    overlay: true,
-                                    overlayColor: 'rgba(0, 0, 0, 0.75)',
-                                    zindex: 100,
-                                    layout: 1,
-                                    imageWidth: 100,
-                                    image: ``,
-                                    progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                                    closeOnClick: true,
-                                    position: 'center',
-                                    timeout: false,
-                                    maxWidth: 480,
-                                    title: 'Audio Error',
-                                    message: `There was an error trying to load the main output device. Please check your settings. Receiving audio calls will not work until this is fixed.`
-                                });
-                            }
-                        })
-            } else {
-                temp.setSinkId(settings.get(`audio.output.call`))
-                        .catch((err) => {
-                            if (client.receiveCalls)
-                            {
-                                iziToast.show({
-                                    titleColor: '#000000',
-                                    messageColor: '#000000',
-                                    color: 'red',
-                                    close: true,
-                                    overlay: true,
-                                    overlayColor: 'rgba(0, 0, 0, 0.75)',
-                                    zindex: 100,
-                                    layout: 1,
-                                    imageWidth: 100,
-                                    image: ``,
-                                    progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                                    closeOnClick: true,
-                                    position: 'center',
-                                    timeout: false,
-                                    maxWidth: 480,
-                                    title: 'Audio Error',
-                                    message: `There was an error trying to load the main output device. Please check your settings. Receiving audio calls will not work until this is fixed.`
-                                });
-                            }
-                        })
-            }
-        }
-    }
-
-    function onReceiveStream(stream) {
-        console.log(`received stream`);
-        var audio = document.querySelector('#remoteAudio');
-        audio.srcObject = stream;
-        audio.load();
-        audio.oncanplay = function (e) {
-            audio.play();
-        }
-        window.peerError = 0;
-        analyserStream0 = audioContext0.createMediaStreamSource(stream);
-        analyserStream0.connect(analyser0);
-    }
-
-    function getMaxVolume(analyser, fftBins) {
-        var maxVolume = -100;
-        analyser.getFloatFrequencyData(fftBins);
-
-        for (var i = 4, ii = fftBins.length; i < ii; i++) {
-            if (fftBins[i] > maxVolume && fftBins[i] < 0) {
-                maxVolume = fftBins[i];
-            }
-        }
-        ;
-
-        return maxVolume;
-    }
+    };
 
     function createAudioMeter(ac) {
         var analyser = ac.createAnalyser();
@@ -1611,53 +1009,14 @@ try {
 
     socket.on('meta', function (data) {
         try {
-            var startRecording = null;
-            var preText = ``;
             for (var key in data)
             {
                 if (data.hasOwnProperty(key))
                 {
-                    if (key === 'state')
-                    {
-                        if (((Meta[key].startsWith("automation_") || Meta[key] === 'unknown') && Meta[key] !== 'automation_break') || (Meta[key].includes("_returning") && !data[key].includes("_returning")))
-                        {
-                            if (data[key] === 'live_on' || data[key] === 'live_prerecord')
-                            {
-                                startRecording = 'live';
-                                preText = `${sanitize(Meta.show)}${data[key] === 'live_prerecord' ? ` PRERECORDED` : ``}`;
-                            } else if (data[key] === 'remote_on')
-                            {
-                                startRecording = 'remote';
-                                preText = sanitize(Meta.show);
-                            } else if (data[key] === 'sports_on' || data[key] === 'sportsremote_on')
-                            {
-                                startRecording = 'sports';
-                                preText = sanitize(Meta.show);
-                            }
-                        } else if (!Meta[key].startsWith("automation_") && data[key].startsWith("automation_"))
-                        {
-                            startRecording = 'automation';
-                            preText = sanitize(Meta.genre);
-                        } else if (data[key].includes("_break") || data[key].includes("_returning") || data[key].includes("_halftime"))
-                        {
-                            if (!development && client.recordAudio)
-                            {
-                                stopRecording();
-                            }
-                        }
-                    }
                     Meta[key] = data[key];
                 }
             }
             doMeta(data);
-            if (startRecording !== null) {
-                if (!development && client.recordAudio)
-                {
-                    newRecording(`${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`);
-                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `<strong>A recording was started.</strong><br />Path: ${settings.get(`recorder.path`)}/${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                    });
-                }
-            }
         } catch (e) {
             iziToast.show({
                 title: 'An error occurred - Please inform engineer@wwsu1069.org.',
@@ -1738,73 +1097,12 @@ try {
     });
 
     socket.on('bad-call', function (bitRate) {
-        if (typeof outgoingCall !== `undefined`)
-        {
-            window.peerError = 0;
-            outgoingCloseIgnore = true;
-            console.log(`Closing call via bad-call event`);
-            outgoingCall.close();
-            outgoingCall = undefined;
-            outgoingCloseIgnore = false;
-
-            if (typeof window.peerHost !== `undefined`)
-            {
-                window.peerError = -1;
-                startCall(window.peerHost, (success) => {
-                }, true, bitRate);
-            }
-        }
+        ipcRenderer.send('peer-bad-call', bitRate);
     });
 
     socket.on('very-bad-call', function () {
-        if (typeof outgoingCall !== `undefined`)
-        {
-            window.peerError = -2;
-            outgoingCloseIgnore = true;
-            console.log(`Closing call via very-bad-call event`);
-            outgoingCall.close();
-            outgoingCall = undefined;
-            outgoingCloseIgnore = false;
-
-            /*
-             var notification = notifier.notify('Poor Audio Connection', {
-             message: `Please check DJ Controls for more information.`,
-             icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
-             duration: 900000,
-             });
-             */
-            main.flashTaskbar();
-
-            iziToast.show({
-                titleColor: '#000000',
-                messageColor: '#000000',
-                color: 'red',
-                close: true,
-                overlay: true,
-                overlayColor: 'rgba(0, 0, 0, 0.75)',
-                zindex: 1000,
-                layout: 1,
-                imageWidth: 100,
-                image: ``,
-                maxWidth: 480,
-                progressBarColor: `rgba(255, 0, 0, 0.5)`,
-                closeOnClick: false,
-                position: 'center',
-                timeout: false,
-                title: 'Poor Audio Quality',
-                message: `The host receiving audio repeatedly reported choppy audio despite multiple tries to restart the audio call. I sent you to a break. Please ensure you have a reliable network and your audio device is receiving input. Then, click "Resume Broadcast". Or, you can close this window and change settings or end the broadcast.`,
-                buttons: [
-                    ['<button><b>Resume Broadcast</b></button>', function (instance, toast) {
-                            instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
-                            returnBreak();
-                        }]
-                ]
-            });
-
-            // Reset bitRate to 96kbps as a mid-point starter for when the broadcast resumes.
-            bitRate = 96;
-        }
-    })
+        ipcRenderer.send('peer-very-bad-call', null);
+    });
 
     var messageFlash2;
     var messageFlash = setInterval(function () {
@@ -2687,7 +1985,7 @@ document.querySelector("#audio-call").onclick = () => {
                 {
                     temp.innerHTML = `<option value="">Choose an input device...</option>`;
                     temp.onchange = () => {
-                        getAudioMain(temp.value);
+                        ipcRenderer.send(`audio-change-input-device`, temp.value);
                     };
                 }
                 var temp2 = document.querySelector("#call-input");
@@ -2695,7 +1993,7 @@ document.querySelector("#audio-call").onclick = () => {
                 {
                     temp2.innerHTML = `<option value="">Choose an input device...</option>`;
                     temp2.onchange = () => {
-                        getAudio(temp2.value);
+                        ipcRenderer.send(`peer-change-input-device`, temp2.value);
                     };
                 }
                 var temp3 = document.querySelector("#call-output");
@@ -2703,7 +2001,7 @@ document.querySelector("#audio-call").onclick = () => {
                 {
                     temp3.innerHTML = `<option value="">Choose an output device...</option>`;
                     temp3.onchange = () => {
-                        sinkAudio(temp3.value);
+                        ipcRenderer.send(`peer-change-output-device`, temp3.value);
                     };
                 }
                 var temp4 = document.querySelector("#recorder-path");
@@ -9322,6 +8620,8 @@ function hostSocket(cb = function(token) {})
         //console.log(body);
         try {
             client = body;
+
+            ipcRenderer.send(`audio-should-record`, client.recordAudio);
             //authtoken = client.token;
             if (!client.authorized)
             {
@@ -9337,28 +8637,7 @@ function hostSocket(cb = function(token) {})
                 cb(true);
 
                 // Sink main audio devices
-                getAudioMain(settings.get(`audio.input.main`) || undefined);
-                sinkAudio();
-
-                // Determine if it is applicable to initiate the user media for audio calls
-                if (client.makeCalls)
-                {
-                    console.log(`Initiating getUserMedia for makeCalls`);
-                    getAudio(window.peerDevice);
-                }
-
-                // Disconnect current peer if it exists
-                try {
-                    peer.destroy();
-                } catch (e) {
-                    // Ignore errors
-                }
-
-                // Determine if we should start a new peer
-                if (client.makeCalls || client.answerCalls)
-                {
-                    setupPeer();
-                }
+                ipcRenderer.send(`audio-change-input-device`, settings.get(`audio.input.main`) || undefined);
 
                 // Reset silenceState
                 if (client.silenceDetection)
@@ -9513,6 +8792,7 @@ function onlineSocket()
     hostReq.request({method: 'post', url: nodeURL + '/recipients/add-computers', data: {host: client.host}}, function (response) {
         try {
             //main.notification(true, "Loaded", "DJ Controls is now loaded", null, 10000);
+            ipcRenderer.send(`peer-reregister`, null);
         } catch (e) {
             console.error(e);
             console.log('FAILED ONLINE CONNECTION');
@@ -9526,58 +8806,8 @@ function metaSocket() {
     console.log('attempting meta socket');
     noReq.request({method: 'POST', url: '/meta/get', data: {}}, function (body) {
         try {
-            var startRecording = null;
-            var preText = ``;
-            for (var key in body)
-            {
-                if (body.hasOwnProperty(key))
-                {
-                    // Manage NCH Software RecordPad recordings
-                    if (key === 'state')
-                    {
-                        if (((Meta[key].startsWith("automation_") || Meta[key] === 'unknown') && Meta[key] !== 'automation_break') || (Meta[key].includes("_returning") && !body[key].includes("_returning")))
-                        {
-                            if (body[key] === 'live_on' || body[key] === 'live_prerecord')
-                            {
-                                startRecording = 'live';
-                                preText = `${sanitize(Meta.show)}${body[key] === 'live_prerecord' ? ` PRERECORDED` : ``}`;
-                            } else if (body[key] === 'remote_on')
-                            {
-                                startRecording = 'remote';
-                                preText = sanitize(Meta.show);
-                            } else if (body[key] === 'sports_on' || body[key] === 'sportsremote_on')
-                            {
-                                startRecording = 'sports';
-                                preText = sanitize(Meta.show);
-                            } else if (body[key].startsWith("automation_"))
-                            {
-                                startRecording = 'automation';
-                                preText = sanitize(Meta.genre);
-                            }
-                        } else if (!Meta[key].startsWith("automation_") && body[key].startsWith("automation_"))
-                        {
-                            startRecording = 'automation';
-                            preText = sanitize(Meta.genre);
-                        } else if (body[key].includes("_break") || body[key].includes("_returning"))
-                        {
-                            if (!development && client.recordAudio)
-                            {
-                                stopRecording();
-                            }
-                        }
-                    }
-                    Meta[key] = body[key];
-                }
-            }
+            Meta = body;
             doMeta(body);
-            if (startRecording !== null) {
-                if (!development && client.recordAudio)
-                {
-                    newRecording(`${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`);
-                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `<strong>A recording was started.</strong><br />Path: ${settings.get(`recorder.path`)}/${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                    });
-                }
-            }
         } catch (e) {
             console.error(e);
             console.log(`FAILED META CONNECTION`);
@@ -9695,7 +8925,7 @@ function recipientsSocket() {
 // Called on change to any metadata info or by metaTick every second
 function doMeta(metan) {
     try {
-
+        ipcRenderer.send('new-meta', metan);
         // reset ticker timer on change to queue time
         if (typeof metan.queueFinish !== 'undefined')
         {
@@ -9858,63 +9088,6 @@ function doMeta(metan) {
         // Do stuff if the state changed
         if (typeof metan.state !== 'undefined' || typeof metan.playing !== 'undefined')
         {
-            // Disconnect outgoing calls on automation and halftime break
-            if (Meta.state === "sportsremote_halftime" || Meta.state === "automation_on" || Meta.state === "automation_break" || Meta.state === "automation_genre" || Meta.state === "automation_playlist" || Meta.state === "automation_prerecord" || Meta.state.startsWith("live_") || Meta.state.startsWith("sports_"))
-            {
-
-                try {
-                    outgoingCloseIgnore = true;
-                    console.log(`Closing outgoing call via doMeta`);
-                    outgoingCall.close();
-                    outgoingCall = undefined;
-                    outgoingCloseIgnore = false;
-                } catch (eee) {
-                    outgoingCloseIgnore = false;
-                }
-
-                try {
-                    incomingCloseIgnore = true;
-                    console.log(`Closing incoming call via doMeta`);
-                    incomingCall.close();
-                    incomingCall = undefined;
-                    analyserStream0.disconnect(analyser0);
-                    incomingCloseIgnore = false;
-                } catch (eee) {
-                    incomingCloseIgnore = false;
-                }
-            }
-            var temp = document.querySelector(`#remoteAudio`);
-            // Mute incoming audio if something is playing
-            if (Meta.state.startsWith("remote_") || Meta.state.startsWith("sportsremote_"))
-            {
-                if (!Meta.playing)
-                {
-                    if (temp !== null)
-                    {
-                        temp.muted = false;
-                        console.log(`UNMUTED remote audio`);
-                        window.peerErrorMajor = 0;
-                    }
-                } else {
-                    if (temp !== null)
-                    {
-                        temp.muted = !development;
-                        console.log(`MUTED remote audio`);
-                    }
-                }
-
-                // Mute audio and reset bitrate if not in any sportremote nor remote state
-            } else {
-                if (temp !== null)
-                {
-                    bitRate = 128;
-                    temp.muted = !development;
-                    console.log(`MUTED remote audio`);
-                    window.peerError = 0;
-                    window.peerErrorMajor = 0;
-                    window.peerErrorBitrate = 0;
-                }
-            }
 
             // Have the WWSU Operations box display buttons and operations depending on which state we are in
             var badge = document.querySelector('#operations-state');
@@ -10138,24 +9311,9 @@ function metaTick()
         recorderHour = moment(Meta.time).hours();
         processDjs();
         // Start a new recording if we are in automation
-        if (Meta.state.startsWith("automation_"))
+        if (Meta.state.startsWith("automation_") || Meta.state === "live_prerecord")
         {
-            if (!development && client.recordAudio)
-            {
-                newRecording(`automation/${sanitize(Meta.genre)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`);
-                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `<strong>A recording was started.</strong><br />Path: ${settings.get(`recorder.path`)}/automation/${sanitize(Meta.genre)} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                });
-            }
-        }
-        // Start a new recording if we are playing a prerecord
-        if (Meta.state === "live_prerecord")
-        {
-            if (!development && client.recordAudio)
-            {
-                newRecording(`live/${sanitize(Meta.show)} PRERECORDED (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`);
-                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `<strong>A recording was started.</strong><br />Path: ${settings.get(`recorder.path`)}/live/${sanitize(Meta.show)} PRERECORDED (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`}}, function (response3) {
-                });
-            }
+            ipcRenderer.send(`audio-start-new-recording`, true);
         }
     }
 
@@ -11164,17 +10322,7 @@ function returnBreak() {
     }
 
     // re-establish the call if it does not exist
-    if (typeof window.peerHost !== `undefined` && typeof outgoingCall === `undefined`)
-    {
-        startCall(window.peerHost, (success) => {
-            if (success)
-            {
-                afterFunction();
-            }
-        });
-    } else {
-        afterFunction();
-    }
+    ipcRenderer.send(`peer-resume-call`, afterFunction);
 }
 
 function queuePSA(duration) {
@@ -11307,7 +10455,7 @@ function prepareRemote() {
                     });
 
                     temp.onchange = () => {
-                        getAudio(temp.value);
+                        ipcRenderer.send(`peer-change-input-device`, temp.value);
                     };
                 }
             });
@@ -11368,30 +10516,30 @@ function goRemote() {
 function _goRemote() {
     var remoteOptions = document.getElementById('remote-host');
     var selectedOption = remoteOptions.options[remoteOptions.selectedIndex].value;
-    bitRate = 128;
-    startCall(selectedOption, (success) => {
-        if (success)
-        {
-            if (development)
-                return null;
-            hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || cal.type !== `Remote`) ? document.querySelector('#remote-topic').value : cal.topic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
-                if (response === 'OK')
-                {
-                    isHost = true;
-                    selectRecipient(null);
-                    $("#go-remote-modal").iziModal('close');
-                } else {
-                    iziToast.show({
-                        title: 'An error occurred',
-                        message: 'Cannot go remote at this time. Please try again in 15-30 seconds.',
-                        timeout: 10000
-                    });
-                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
-                }
-                console.log(JSON.stringify(response));
-            });
-        }
-    });
+    ipcRenderer.send(`peer-set-bitrate`, 128);
+    ipcRenderer.send(`peer-start-call`, [selectedOption, (success) => {
+            if (success)
+            {
+                if (development)
+                    return null;
+                hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || cal.type !== `Remote`) ? document.querySelector('#remote-topic').value : cal.topic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
+                    if (response === 'OK')
+                    {
+                        isHost = true;
+                        selectRecipient(null);
+                        $("#go-remote-modal").iziModal('close');
+                    } else {
+                        iziToast.show({
+                            title: 'An error occurred',
+                            message: 'Cannot go remote at this time. Please try again in 15-30 seconds.',
+                            timeout: 10000
+                        });
+                        hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+                    }
+                    console.log(JSON.stringify(response));
+                });
+            }
+        }]);
 }
 
 function prepareSports() {
@@ -11507,7 +10655,7 @@ function prepareSportsRemote() {
                     });
 
                     temp.onchange = () => {
-                        getAudio(temp.value);
+                        ipcRenderer.send(`peer-change-input-device`, temp.value);
                     };
                 }
             });
@@ -11568,30 +10716,30 @@ function goSportsRemote() {
 function _goSportsRemote() {
     var remoteOptions = document.getElementById('sportsremote-host');
     var selectedOption = remoteOptions.options[remoteOptions.selectedIndex].value;
-    bitRate = 128;
-    startCall(selectedOption, (success) => {
-        if (success)
-        {
-            var sportsOptions = document.getElementById('sportsremote-sport');
-            var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
-            hostReq.request({method: 'POST', url: nodeURL + '/state/sports-remote', data: {sport: selectedOption, topic: (document.querySelector('#sportsremote-topic').value !== `` || cal.type !== `Sports`) ? document.querySelector('#sportsremote-topic').value : cal.topic, webchat: document.querySelector('#sportsremote-webchat').checked}}, function (response) {
-                if (response === 'OK')
-                {
-                    isHost = true;
-                    selectRecipient(null);
-                    $("#go-sportsremote-modal").iziModal('close');
-                } else {
-                    iziToast.show({
-                        title: 'An error occurred',
-                        message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
-                        timeout: 10000
-                    });
-                    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
-                }
-                console.log(JSON.stringify(response));
-            });
-        }
-    });
+    ipcRenderer.send(`peer-set-bitrate`, 128);
+    ipcRenderer.send(`peer-start-call`, [selectedOption, (success) => {
+            if (success)
+            {
+                var sportsOptions = document.getElementById('sportsremote-sport');
+                var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
+                hostReq.request({method: 'POST', url: nodeURL + '/state/sports-remote', data: {sport: selectedOption, topic: (document.querySelector('#sportsremote-topic').value !== `` || cal.type !== `Sports`) ? document.querySelector('#sportsremote-topic').value : cal.topic, webchat: document.querySelector('#sportsremote-webchat').checked}}, function (response) {
+                    if (response === 'OK')
+                    {
+                        isHost = true;
+                        selectRecipient(null);
+                        $("#go-sportsremote-modal").iziModal('close');
+                    } else {
+                        iziToast.show({
+                            title: 'An error occurred',
+                            message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
+                            timeout: 10000
+                        });
+                        hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
+                    }
+                    console.log(JSON.stringify(response));
+                });
+            }
+        }]);
 }
 
 function promptIfNotHost(action, fn)
@@ -12541,8 +11689,7 @@ function processRecipients(data, replace = false)
                     data[index].unread = 0;
 
                     var temp = Recipients({ID: datum.ID}).first();
-                    if (waitingFor && waitingFor.host === datum.host && datum.peer !== null && (!temp || temp === null || typeof temp.host === `undefined` || temp.peer !== datum.peer))
-                        startCall(waitingFor.host, waitingFor.cb, true);
+                    ipcRenderer.send('peer-check-waiting', [datum, temp]);
                 });
             }
 
@@ -12558,14 +11705,12 @@ function processRecipients(data, replace = false)
                         case 'insert':
                             data[key].unread = 0;
                             Recipients.insert(data[key]);
-                            if (waitingFor && waitingFor.host === data[key].host && data[key].peer !== null)
-                                startCall(waitingFor.host, waitingFor.cb, true);
+                            ipcRenderer.send('peer-check-waiting', [data[key], null]);
                             break;
                         case 'update':
                             data[key].unread = 0;
                             var temp = Recipients({ID: data[key].ID}).first();
-                            if (temp && waitingFor && waitingFor.host === data[key].host && data[key].peer !== null && temp.peer !== data[key].peer)
-                                startCall(waitingFor.host, waitingFor.cb, true);
+                            ipcRenderer.send('peer-check-waiting', [data[key], temp]);
                             Recipients({ID: data[key].ID}).update(data[key]);
                             break;
                         case 'remove':
@@ -14470,46 +13615,6 @@ function loadTimesheets(date)
     }
 }
 
-function hexRgb(hex, options = {}) {
-    try {
-        if (typeof hex !== 'string' || nonHexChars.test(hex) || !validHexSize.test(hex)) {
-            throw new TypeError('Expected a valid hex string');
-        }
-
-        hex = hex.replace(/^#/, '');
-        let alpha = 255;
-
-        if (hex.length === 8) {
-            alpha = parseInt(hex.slice(6, 8), 16) / 255;
-            hex = hex.substring(0, 6);
-        }
-
-        if (hex.length === 4) {
-            alpha = parseInt(hex.slice(3, 4).repeat(2), 16) / 255;
-            hex = hex.substring(0, 3);
-        }
-
-        if (hex.length === 3) {
-            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-        }
-
-        const num = parseInt(hex, 16);
-        const red = num >> 16;
-        const green = (num >> 8) & 255;
-        const blue = num & 255;
-
-        return options.format === 'array' ?
-                [red, green, blue, alpha] :
-                {red, green, blue, alpha};
-    } catch (e) {
-        console.error(e);
-        iziToast.show({
-            title: 'An error occurred - Please check the logs',
-            message: 'Error occurred during hexRgb.'
-        });
-}
-}
-
 function formatInt(number) {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
@@ -14534,110 +13639,6 @@ function truncateText(str, strLength = 256, ending = `...`) {
     } else {
         return str;
 }
-}
-
-function sanitize(str) {
-    if (!str)
-        return ``;
-    str = Sanitize(str);
-    str = str.replace(` - `, `_SPLITTERDJSHOW_`);
-    str = str.replace('-', '_');
-    str = str.replace('/', '_');
-    str = str.replace(`\\`, '_');
-    str = str.replace(`_SPLITTERDJSHOW_`, ` - `);
-    return str;
-}
-
-function getRecordingPath() {
-    if (!client.recordAudio)
-        return undefined;
-    if (Meta.state.startsWith("automation_"))
-        return `automation/${sanitize(Meta.genre)} (${moment().format("YYYY_MM_DD hh_mm_ss")})`;
-    if (Meta.state === "live_on")
-        return `live/${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD hh_mm_ss")})`;
-    if (Meta.state === "live_prerecord")
-        return `live/${sanitize(Meta.show)} (prerecorded) (${moment().format("YYYY_MM_DD hh_mm_ss")})`;
-    if (Meta.state === "remote_on")
-        return `remote/${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD hh_mm_ss")})`;
-    if (Meta.state === "sportsremote_on" || Meta.state === "sports_on")
-        return `sports/${sanitize(Meta.show)} (${moment().format("YYYY_MM_DD hh_mm_ss")})`;
-    return undefined;
-}
-
-function newRecording(filename, forced = false)
-{
-    var _newRecording = () => {
-        try {
-            if (recorder.isRecording())
-            {
-                recorder.finishRecording();
-                console.log(`Finished recording`);
-            }
-            recorderTitle = filename;
-            if (recorderTitle)
-            {
-                recorder.startRecording();
-                console.log(`Started recording`);
-            }
-        } catch (eee) {
-            // ignore errors
-        }
-    };
-
-    recorderTitle2 = recorderTitle;
-    if (forced)
-    {
-        _newRecording();
-    } else if (!recorderPending) {
-        console.log(`Making new recording after delay`);
-        recorderPending = true;
-        setTimeout(function () {
-            _newRecording();
-            recorderPending = false;
-        }, settings.get(`recorder.delay`) || 1);
-}
-}
-
-function stopRecording(forced = false)
-{
-    var _stopRecording = () => {
-        try {
-            if (recorder.isRecording())
-            {
-                recorder.finishRecording();
-                console.log(`Finished recording`);
-            }
-        } catch (eee) {
-            // ignore errors
-        }
-    };
-    if (forced)
-    {
-        _stopRecording();
-    } else {
-        console.log(`Finishing recording after delay`);
-        recorderTitle2 = recorderTitle;
-        setTimeout(function () {
-            _stopRecording();
-        }, settings.get(`recorder.delay`) || 1);
-}
-}
-
-function startRecording(filename)
-{
-    console.log(`Starting recording after delay`);
-    setTimeout(function () {
-        try {
-            recorderTitle = filename;
-            if (recorderTitle)
-            {
-                recorder.startRecording();
-                console.log(`Started recording`);
-            }
-        } catch (eee) {
-            // ignore errors
-        }
-    }, settings.get(`recorder.delay`) || 1);
 }
 
 function processConfig(data) {

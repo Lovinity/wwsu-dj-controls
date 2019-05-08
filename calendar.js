@@ -94,7 +94,7 @@ function checkCalendar(records, meta, cal) {
                             }
 
                             // Sports broadcasts. Check for broadcasts scheduled to start within the next 15 minutes. Skip any scheduled to end in 15 minutes.
-                            if (event.active === 1 && event.title.startsWith("Sports: ") && moment(meta.time).add(15, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(meta.time)) && calPriorityN < 10)
+                            if (event.active > 0 && event.title.startsWith("Sports: ") && moment(meta.time).add(15, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(meta.time)) && calPriorityN < 10)
                             {
                                 calPriorityN = 10;
                                 calTypeN = 'Sports';
@@ -105,7 +105,7 @@ function checkCalendar(records, meta, cal) {
                             }
 
                             // Remote broadcasts. Check for broadcasts scheduled to start within the next 15 minutes. Skip any scheduled to end in 15 minutes.
-                            if (event.active === 1 && event.title.startsWith("Remote: ") && moment(meta.time).add(15, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(meta.time)) && calPriorityN < 7)
+                            if (event.active > 0 && event.title.startsWith("Remote: ") && moment(meta.time).add(15, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(meta.time)) && calPriorityN < 7)
                             {
                                 var summary = event.title.replace('Remote: ', '');
                                 var temp = summary.split(" - ");
@@ -119,7 +119,7 @@ function checkCalendar(records, meta, cal) {
                             }
 
                             // Radio shows. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
-                            if (event.active === 1 && event.title.startsWith("Show: ") && moment(meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(meta.time)) && calPriorityN < 5)
+                            if (event.active > 0 && event.title.startsWith("Show: ") && moment(meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(meta.time)) && calPriorityN < 5)
                             {
                                 var summary = event.title.replace('Show: ', '');
                                 var temp = summary.split(" - ");
@@ -133,7 +133,7 @@ function checkCalendar(records, meta, cal) {
                             }
 
                             // Prerecords. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
-                            if (event.active === 1 && event.title.startsWith("Prerecord: ") && moment(meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(meta.time)) && calPriorityN < 3)
+                            if (event.active > 0 && event.title.startsWith("Prerecord: ") && moment(meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(meta.time)) && calPriorityN < 3)
                             {
                                 calPriorityN = 3;
                                 calTypeN = 'Prerecord';
@@ -144,7 +144,7 @@ function checkCalendar(records, meta, cal) {
                             }
 
                             // OnAir Studio Prerecord Bookings.
-                            if (event.active === 1 && event.title.startsWith("OnAir Studio Prerecord Bookings ") && moment(meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).isAfter(moment(meta.time)) && calPriorityN < 1)
+                            if (event.active > 0 && event.title.startsWith("OnAir Studio Prerecord Bookings ") && moment(meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).isAfter(moment(meta.time)) && calPriorityN < 1)
                             {
                                 calPriorityN = 1;
                                 calTypeN = 'Booking';
@@ -346,7 +346,7 @@ function checkCalendar(records, meta, cal) {
                                         </div>
                                     </div></div>`;
                     // Add upcoming shows to the clockwheel shading
-                    if (event.active === 1)
+                    if (event.active > 0)
                     {
                         if (event.title.startsWith("Show: ") || event.title.startsWith("Remote: ") || event.title.startsWith("Sports: ") || event.title.startsWith("Prerecord: "))
                         {
@@ -499,7 +499,7 @@ function checkCalendar(records, meta, cal) {
                             if (timeLeft < 0)
                                 timeLeft = 0;
                             // If the event being processed starts in less than 1 hour, add it to the hour clockwheel as a black shaded event
-                            if (event.active === 1)
+                            if (event.active > 0)
                             {
                                 if (moment(event.start).diff(moment(meta.time), 'minutes') < 60)
                                 {
