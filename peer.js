@@ -461,13 +461,13 @@ function onReceiveStream(stream) {
                                                                 }
                                                                 // Connection was good in the last second. Lower any error counters and also increase the good bitrate counter
                                                             } else {
-                                                                //window.peerError -= 1;
+                                                                window.peerError -= 1;
                                                                 if (window.peerError < 0)
                                                                     window.peerError = 0;
-                                                                //window.peerErrorMajor -= 1;
+                                                                window.peerErrorMajor -= 1;
                                                                 if (window.peerErrorMajor < 0)
                                                                     window.peerErrorMajor = 0;
-                                                                //window.peerErrorBitrate -= 1;
+                                                                window.peerErrorBitrate -= 1;
                                                                 if (window.peerErrorBitrate < 0)
                                                                     window.peerErrorBitrate = 0;
                                                                 window.peerGoodBitrate += 1;
