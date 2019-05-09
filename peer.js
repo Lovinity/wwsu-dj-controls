@@ -3,6 +3,7 @@
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 var {ipcRenderer} = require('electron');
 var settings = require('electron-settings');
+const EventEmitter = require('events');
 
 var Meta = {state: 'unknown', playing: false};
 var peer;
@@ -16,30 +17,24 @@ window.peerErrorMajor = 0;
 window.peerVolume = -100;
 var outgoingPeer;
 var outgoingCall;
+var outgoingCallMeter;
 var pendingCall;
 var bitRate = 128;
 var incomingCall;
+var incomingCallMeter;
 var analyserStream;
 var analyserStream0;
 var analyserDest;
 var callTimer;
 var callTimerSlot;
 var callDropTimer;
-var meterLoop = false;
+var lastProcess = window.performance.now();
 
 var audioContext = new AudioContext();
 var gain = audioContext.createGain();
 gain.gain.value = 1;
-var analyser = audioContext.createAnalyser();
-analyser.fftSize = 512;
-analyser.smoothingTimeConstant = 0.1;
-var fftBins = new Float32Array(analyser.frequencyBinCount);
 
 var audioContext0 = new AudioContext();
-var analyser0 = audioContext0.createAnalyser();
-analyser0.fftSize = 512;
-analyser0.smoothingTimeConstant = 0.1;
-var fftBins0 = new Float32Array(analyser0.frequencyBinCount);
 
 var incomingSilence = false;
 var rtcStats = 1000;
@@ -82,11 +77,11 @@ ipcRenderer.on('new-meta', (event, arg) => {
                 console.log(`Closing incoming call via meta`);
                 incomingCall.close();
                 incomingCall = undefined;
-                analyserStream0.disconnect(analyser0);
+                incomingCallMeter.shutdown();
+                incomingCallMeter = undefined;
                 var audio = document.querySelector('#remoteAudio');
                 audio.srcObject = undefined;
                 audio.pause();
-                analyserStream0 = undefined;
                 incomingCloseIgnore = false;
             } catch (eee) {
                 incomingCloseIgnore = false;
@@ -159,11 +154,11 @@ ipcRenderer.on('peer-answer-call', (event, arg) => {
         incomingCloseIgnore = true;
         incomingCall.close();
         incomingCall = undefined;
-        analyserStream0.disconnect(analyser0);
+        incomingCallMeter.shutdown();
+        incomingCallMeter = undefined;
         var audio = document.querySelector('#remoteAudio');
         audio.srcObject = undefined;
         audio.pause();
-        analyserStream0 = undefined;
         incomingCloseIgnore = false;
     } catch (ee) {
         incomingCloseIgnore = false;
@@ -178,11 +173,11 @@ ipcRenderer.on('peer-answer-call', (event, arg) => {
     incomingCall.on(`close`, () => {
         console.log(`CALL CLOSED.`);
         incomingCall = undefined;
-        analyserStream0.disconnect(analyser0);
+        incomingCallMeter.shutdown();
+        incomingCallMeter = undefined;
         var audio = document.querySelector('#remoteAudio');
         audio.srcObject = undefined;
         audio.pause();
-        analyserStream0 = undefined;
 
         if (!incomingCloseIgnore)
         {
@@ -387,8 +382,114 @@ function onReceiveStream(stream) {
         audio.play();
     };
     window.peerError = 0;
+    incomingCallMeter = createAudioMeter(audioContext0);
     analyserStream0 = audioContext0.createMediaStreamSource(stream);
-    analyserStream0.connect(analyser0);
+    analyserStream0.connect(incomingCallMeter);
+    lastProcess = window.performance.now();
+    incomingCallMeter.events.on(`volume-processed`, (volume, clipping, maxVolume) => {
+        if (typeof incomingCall !== 'undefined') {
+
+            // Check for glitches in audio every second; we want to send a bad-call event to restart the call if there are too many of them.
+            rtcStats -= (window.performance.now() - lastProcess);
+            lastProcess = window.performance.now();
+            if (rtcStats <= 0)
+            {
+                rtcStats = 1000;
+                var connections = peer.connections;
+                for (var connection in connections)
+                {
+                    //if (connections.hasOwnProperty(connection))
+                    //{
+                    if (connections[connection].length > 0)
+                    {
+                        connections[connection].map((connectionObject) => {
+                            //console.dir(connectionObject);
+                            try {
+                                connectionObject._negotiator._pc.getStats(function callback(connStats) {
+                                    var rtcStatsReports = connStats.result();
+                                    rtcStatsReports
+                                            .filter((stat) => stat.type === `ssrc`)
+                                            .map((stat, index) => {
+                                                var properties = stat.names();
+                                                properties
+                                                        .filter((property) => property === `googDecodingPLC`)
+                                                        .map((property) => {
+                                                            var value = stat.stat(property);
+
+                                                            // Choppiness was detected in the last second
+                                                            if (value > prevPLC)
+                                                            {
+                                                                // Increase error counters and decrease good bitrate counter. Generally, we want the system to trigger call restarts when packet loss averages 4%+.
+                                                                window.peerError += (value - prevPLC) / 2;
+                                                                window.peerGoodBitrate -= (value - prevPLC) / 2;
+
+                                                                console.log(`Choppiness detected! Current threshold: ${window.peerError}/30`);
+
+                                                                // When error exceeds a certain threshold, that is a problem!
+                                                                if (window.peerError >= 30)
+                                                                {
+                                                                    // Send the system into break if we are in 64kbps and still having audio issues.
+                                                                    if (window.peerErrorMajor >= 30 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on")) {
+                                                                        window.peerErrorMajor = 0;
+                                                                        console.log(`Audio call remains choppy even on the lowest allowed bitrate of 64kbps. Giving up by sending the system into break.`);
+                                                                        ipcRenderer.send(`peer-very-bad-call-send`, 96);
+                                                                        window.peerError = -2;
+                                                                        // Reset bitRate to 96kbps as a mid-point starter for when the broadcast resumes.
+                                                                        bitRate = 96;
+                                                                    } else {
+
+                                                                        // Do not contribute to the possibility of giving up the audio call unless we are on the minimum allowed bitrate of 64kbps.
+                                                                        if (bitRate <= 64)
+                                                                            window.peerErrorMajor += 15;
+
+                                                                        console.log(`Audio choppiness threshold exceeded! Requesting call restart.`);
+
+                                                                        // Reduce the bitrate by 32kbps (with a minimum allowed of 64kbps) if we reach the choppy threshold multiple times in 15-30 seconds.
+                                                                        if (window.peerErrorBitrate > 0 && bitRate >= 96)
+                                                                        {
+                                                                            bitRate -= 32;
+                                                                            console.log(`Also requesting a lower bitrate: ${bitRate} kbps.`);
+                                                                            window.peerErrorBitrate = 10;
+                                                                        } else {
+                                                                            window.peerErrorBitrate = 30;
+                                                                        }
+
+                                                                        // Reset the good bitrate counter; we are not having a good connection.
+                                                                        window.peerGoodBitrate = 0;
+
+                                                                        ipcRenderer.send(`peer-bad-call-send`, bitRate);
+
+                                                                        window.peerError = -1;
+                                                                    }
+                                                                }
+                                                                // Connection was good in the last second. Lower any error counters and also increase the good bitrate counter
+                                                            } else {
+                                                                window.peerError -= 1;
+                                                                if (window.peerError < 0)
+                                                                    window.peerError = 0;
+                                                                window.peerErrorMajor -= 1;
+                                                                if (window.peerErrorMajor < 0)
+                                                                    window.peerErrorMajor = 0;
+                                                                window.peerErrorBitrate -= 1;
+                                                                if (window.peerErrorBitrate < 0)
+                                                                    window.peerErrorBitrate = 0;
+                                                                window.peerGoodBitrate += 1;
+                                                            }
+                                                            prevPLC = value;
+                                                        });
+                                            });
+                                });
+                            } catch (e) {
+                            }
+                        });
+                    }
+                    //}
+                }
+            }
+        }
+        ipcRenderer.send(`peer-audio-info-incoming`, [maxVolume, clipping, window.peerError, typeof tryingCall !== `undefined`, typeof outgoingCall !== `undefined`, typeof incomingCall !== `undefined`]);
+    });
+
 }
 
 function startCall(hostID, cb, reconnect = false, bitrate = bitRate)
@@ -539,11 +640,12 @@ function getAudio(device) {
 
                 // Reset stuff
                 try {
-                    gain.disconnect(analyser);
                     gain.disconnect(analyserDest);
                     analyserStream.disconnect(gain);
                     analyserDest = undefined;
                     analyserStream = undefined;
+                    outgoingCallMeter.shutdown();
+                    outgoingCallMeter = undefined;
                     window.peerStream.getTracks().forEach(track => track.stop());
                     window.peerStream = undefined;
                 } catch (eee) {
@@ -554,8 +656,31 @@ function getAudio(device) {
                 analyserDest = audioContext.createMediaStreamDestination();
                 analyserStream = audioContext.createMediaStreamSource(stream);
                 analyserStream.connect(gain);
-                gain.connect(analyser);
                 gain.connect(analyserDest);
+
+                outgoingCallMeter = createAudioMeter(audioContext);
+                gain.connect(outgoingCallMeter);
+                outgoingCallMeter.events.on(`volume-processed`, (volume, clipping, maxVolume) => {
+                    // Gain control. Immediately decrease gain when above 0.9. Slowly increase gain if volume is less than 0.5.
+                    if (maxVolume >= 0.98)
+                    {
+                        
+                        var volumeAtGain1 = maxVolume / gain.gain.value;
+                        gain.gain.value = 0.95 / volumeAtGain1;
+                        
+                    } else {
+                        
+                        var volumeAtGain1 = volume / gain.gain.value;
+                        var proportion = 0.25 / volumeAtGain1;
+                        var adjustGain = (gain.gain.value / proportion) / 64;
+                        gain.gain.value += adjustGain;
+                        if (gain.gain.value > 3)
+                            gain.gain.value = 3;
+                    }
+                    
+                    console.log(gain.gain.value);
+                    ipcRenderer.send(`peer-audio-info-outgoing`, [maxVolume, clipping, window.peerError, typeof tryingCall !== `undefined`, typeof outgoingCall !== `undefined`, typeof incomingCall !== `undefined`]);
+                });
 
                 if (outgoingCall)
                     outgoingCall.replaceStream(stream);
@@ -566,6 +691,7 @@ function getAudio(device) {
                 window.peerVolume = -100;
             })
             .catch((err) => {
+                console.error(err);
                 ipcRenderer.send(`peer-device-input-error`, err);
             });
 }
@@ -593,161 +719,11 @@ function sinkAudio(device)
     }
 }
 
-function meterLooper() {
-    try {
-        var temp0 = incomingCall !== `undefined` ? getMaxVolume(analyser0, fftBins0) : -50;
-        var temp = getMaxVolume(analyser, fftBins);
-
-        if (temp > window.peerVolume)
-        {
-            window.peerVolume = temp;
-        } else {
-            window.peerVolume -= ((window.peerVolume - temp) / 16);
-        }
-
-        // Gain control. Immediately decrease gain when above -25dB. Slowly increase gain if volume is less than -30dB.
-        if (window.peerVolume > -25)
-        {
-            var gain1 = -50 - ((-50 - window.peerVolume) / gain.gain.value);
-            var diffVolume = gain1 - window.peerVolume;
-            var diffGain = gain.gain.value - 1;
-
-            var changeVolume = -25 - window.peerVolume;
-
-            var proportion = diffVolume / changeVolume;
-            var adjustGain = diffGain / proportion;
-
-            gain.gain.value = gain.gain.value - adjustGain;
-        } else if (window.peerVolume < -30) {
-            var proportion = window.peerVolume / -25;
-            var adjustGain = (gain.gain.value / proportion) / 32;
-            gain.gain.value += adjustGain;
-            if (gain.gain.value > 3)
-                gain.gain.value = 3;
-        }
-        
-        ipcRenderer.send(`peer-audio-info`, [window.peerVolume, temp0, typeof outgoingCall !== 'undefined', typeof incomingCall !== 'undefined', typeof tryingCall !== `undefined`, window.peerError]);
-
-        if (typeof incomingCall !== 'undefined') {
-
-            // Check for glitches in audio every second; we want to send a bad-call event to restart the call if there are too many of them.
-            rtcStats -= 1000 / 50;
-            if (rtcStats <= 0)
-            {
-                rtcStats = 1000;
-                var connections = peer.connections;
-                for (var connection in connections)
-                {
-                    //if (connections.hasOwnProperty(connection))
-                    //{
-                    if (connections[connection].length > 0)
-                    {
-                        connections[connection].map((connectionObject) => {
-                            //console.dir(connectionObject);
-                            try {
-                                connectionObject._negotiator._pc.getStats(function callback(connStats) {
-                                    var rtcStatsReports = connStats.result();
-                                    rtcStatsReports
-                                            .filter((stat) => stat.type === `ssrc`)
-                                            .map((stat, index) => {
-                                                var properties = stat.names();
-                                                properties
-                                                        .filter((property) => property === `googDecodingPLC`)
-                                                        .map((property) => {
-                                                            var value = stat.stat(property);
-
-                                                            // Choppiness was detected in the last second
-                                                            if (value > prevPLC)
-                                                            {
-                                                                // Increase error counters and decrease good bitrate counter. Generally, we want the system to trigger call restarts when packet loss averages 4%+.
-                                                                window.peerError += (value - prevPLC) / 2;
-                                                                window.peerGoodBitrate -= (value - prevPLC) / 2;
-
-                                                                console.log(`Choppiness detected! Current threshold: ${window.peerError}/30`);
-
-                                                                // When error exceeds a certain threshold, that is a problem!
-                                                                if (window.peerError >= 30)
-                                                                {
-                                                                    // Send the system into break if we are in 64kbps and still having audio issues.
-                                                                    if (window.peerErrorMajor >= 30 && (Meta.state === "remote_on" || Meta.state === "sportsremote_on")) {
-                                                                        window.peerErrorMajor = 0;
-                                                                        console.log(`Audio call remains choppy even on the lowest allowed bitrate of 64kbps. Giving up by sending the system into break.`);
-                                                                        ipcRenderer.send(`peer-very-bad-call-send`, 96);
-                                                                        window.peerError = -2;
-                                                                        // Reset bitRate to 96kbps as a mid-point starter for when the broadcast resumes.
-                                                                        bitRate = 96;
-                                                                    } else {
-
-                                                                        // Do not contribute to the possibility of giving up the audio call unless we are on the minimum allowed bitrate of 64kbps.
-                                                                        if (bitRate <= 64)
-                                                                            window.peerErrorMajor += 15;
-
-                                                                        console.log(`Audio choppiness threshold exceeded! Requesting call restart.`);
-
-                                                                        // Reduce the bitrate by 32kbps (with a minimum allowed of 64kbps) if we reach the choppy threshold multiple times in 15-30 seconds.
-                                                                        if (window.peerErrorBitrate > 0 && bitRate >= 96)
-                                                                        {
-                                                                            bitRate -= 32;
-                                                                            console.log(`Also requesting a lower bitrate: ${bitRate} kbps.`);
-                                                                            window.peerErrorBitrate = 10;
-                                                                        } else {
-                                                                            window.peerErrorBitrate = 30;
-                                                                        }
-
-                                                                        // Reset the good bitrate counter; we are not having a good connection.
-                                                                        window.peerGoodBitrate = 0;
-                                                                        
-                                                                        ipcRenderer.send(`peer-bad-call-send`, bitRate);
-
-                                                                        window.peerError = -1;
-                                                                    }
-                                                                }
-                                                                // Connection was good in the last second. Lower any error counters and also increase the good bitrate counter
-                                                            } else {
-                                                                window.peerError -= 1;
-                                                                if (window.peerError < 0)
-                                                                    window.peerError = 0;
-                                                                window.peerErrorMajor -= 1;
-                                                                if (window.peerErrorMajor < 0)
-                                                                    window.peerErrorMajor = 0;
-                                                                window.peerErrorBitrate -= 1;
-                                                                if (window.peerErrorBitrate < 0)
-                                                                    window.peerErrorBitrate = 0;
-                                                                window.peerGoodBitrate += 1;
-                                                            }
-                                                            prevPLC = value;
-                                                        });
-                                            });
-                                });
-                            } catch (e) {
-                                meterLoop = false;
-                            }
-                        });
-                    }
-                    //}
-                }
-            }
-        }
-        meterLoop = false;
-    } catch (eee) {
-        // ignore errors
-        meterLoop = false;
-        console.error(eee);
-    }
-}
-;
-
-setInterval(() => {
-    if (!meterLoop)
-    {
-        meterLoop = true;
-        meterLooper();
-    }
-}, 1000 / 50);
-
 function getMaxVolume(analyser, fftBins) {
     var maxVolume = -100;
     analyser.getFloatFrequencyData(fftBins);
+
+    console.log(fftBins.length);
 
     for (var i = 4, ii = fftBins.length; i < ii; i++) {
         if (fftBins[i] > maxVolume && fftBins[i] < 0) {
@@ -757,4 +733,74 @@ function getMaxVolume(analyser, fftBins) {
     ;
 
     return maxVolume;
+}
+
+function createAudioMeter(audioContext, clipLevel, averaging, clipLag) {
+    var processor = audioContext.createScriptProcessor(512);
+    processor.onaudioprocess = volumeAudioProcess;
+    processor.clipping = false;
+    processor.lastClip = 0;
+    processor.volume = 0;
+    processor.maxVolume = 0;
+    processor.clipLevel = clipLevel || 0.98;
+    processor.averaging = averaging || 0.95;
+    processor.clipLag = clipLag || 750;
+    processor.events = new EventEmitter();
+
+    // this will have no effect, since we don't copy the input to the output,
+    // but works around a current Chrome bug.
+    processor.connect(audioContext.destination);
+
+    processor.checkClipping =
+            function () {
+                if (!this.clipping)
+                    return false;
+                if ((this.lastClip + this.clipLag) < window.performance.now())
+                    this.clipping = false;
+                return this.clipping;
+            };
+
+    processor.shutdown =
+            function () {
+                this.disconnect();
+                this.onaudioprocess = null;
+            };
+
+    return processor;
+}
+
+function volumeAudioProcess(event) {
+    var buf = event.inputBuffer.getChannelData(0);
+    var bufLength = buf.length;
+    var sum = 0;
+    var x;
+    var clippingNow = false;
+    var maxVolume = 0;
+
+    // Do a root-mean-square on the samples: sum up the squares...
+    for (var i = 0; i < bufLength; i++) {
+        x = buf[i];
+        if (Math.abs(x) > maxVolume)
+            maxVolume = Math.abs(x);
+        if (Math.abs(x) >= this.clipLevel) {
+            this.clipping = true;
+            this.lastClip = window.performance.now();
+            clippingNow = true;
+        }
+        sum += x * x;
+    }
+
+    if (!clippingNow && (this.lastClip + this.clipLag) < window.performance.now())
+        this.clipping = false;
+
+    // ... then take the square root of the sum.
+    var rms = Math.sqrt(sum / bufLength);
+
+    // Now smooth this out with the averaging factor applied
+    // to the previous sample - take the max here because we
+    // want "fast attack, slow release."
+    this.volume = Math.max(rms, this.volume * this.averaging);
+    this.maxVolume = Math.max(maxVolume, this.maxVolume * this.averaging);
+
+    this.events.emit(`volume-processed`, this.volume, this.clipping, this.maxVolume);
 }

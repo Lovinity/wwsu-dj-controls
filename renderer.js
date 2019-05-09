@@ -12,7 +12,7 @@ try {
         visibilityChange = "webkitvisibilitychange";
     }
 
-    var development = false;
+    var development = true;
     var callInProgress;
     var closeDialog = false;
     var recorderDialog = false;
@@ -581,6 +581,101 @@ try {
             } else {
                 hostReq.request({method: 'POST', url: '/silence/inactive', data: {}}, function (body) {});
             }
+        }
+    });
+
+    ipcRenderer.on(`peer-audio-info-outgoing`, (event, arg) => {
+        if (!document[hidden])
+        {
+            window.requestAnimationFrame(() => {
+                var temp5 = document.querySelector(`#remote-vu`);
+                var temp6 = document.querySelector(`#sportsremote-vu`);
+                var temp3 = document.querySelector(`#call-vu`);
+
+                if (temp5 !== null)
+                {
+                    temp5.style.width = `${arg[0] * 100}%`;
+
+                    // check if we're currently clipping
+                    if (arg[1])
+                        temp5.className = "progress-bar bg-danger";
+                    else
+                        temp5.className = "progress-bar bg-success";
+                }
+
+                if (temp6 !== null)
+                {
+                    temp6.style.width = `${arg[0] * 100}%`;
+
+                    // check if we're currently clipping
+                    if (arg[1])
+                        temp6.className = "progress-bar bg-danger";
+                    else
+                        temp6.className = "progress-bar bg-success";
+                }
+
+                if (temp3 !== null)
+                {
+                    temp3.style.width = `${arg[0] * 100}%`;
+
+                    // check if we're currently clipping
+                    if (arg[1])
+                        temp3.className = "progress-bar bg-danger";
+                    else
+                        temp3.className = "progress-bar bg-success";
+                }
+
+                if (!arg[5])
+                {
+                    if (arg[4] && arg[2] >= 0)
+                    {
+                        var temp8 = document.querySelector(`#audio-call-icon`);
+                        if (temp8 !== null)
+                            temp8.style.color = `rgb(0, ${(192 * arg[0]) + 63}, 0)`;
+                    } else if (arg[2] === -2) {
+                        var temp8 = document.querySelector(`#audio-call-icon`);
+                        if (temp8 !== null)
+                            temp8.style.color = `rgb(255, 0, 0)`;
+                    } else if (arg[2] === -1) {
+                        var temp8 = document.querySelector(`#audio-call-icon`);
+                        if (temp8 !== null)
+                            temp8.style.color = `rgb(255, 255, 0)`;
+                    } else {
+                        var temp8 = document.querySelector(`#audio-call-icon`);
+                        if (temp8 !== null)
+                            temp8.style.color = `rgb(16, 16, 16)`;
+                    }
+                }
+            });
+        }
+    });
+
+    ipcRenderer.on(`peer-audio-info-incoming`, (event, arg) => {
+        if (!document[hidden])
+        {
+            window.requestAnimationFrame(() => {
+                if (!arg[4])
+                {
+                    if (arg[5] && arg[2] >= 0)
+                    {
+                        var temp8 = document.querySelector(`#audio-call-icon`);
+                        if (temp8 !== null)
+                            temp8.style.color = `rgb(0, ${(192 * arg[0]) + 63}, ${(192 * arg[0]) + 63})`;
+                    } else if (arg[2] === -2) {
+                        var temp8 = document.querySelector(`#audio-call-icon`);
+                        if (temp8 !== null)
+                            temp8.style.color = `rgb(255, 0, 0)`;
+                    } else if (arg[2] === -1) {
+                        var temp8 = document.querySelector(`#audio-call-icon`);
+                        if (temp8 !== null)
+                            temp8.style.color = `rgb(255, 255, 0)`;
+                    } else {
+                        var temp8 = document.querySelector(`#audio-call-icon`);
+                        if (temp8 !== null)
+                            temp8.style.color = `rgb(16, 16, 16)`;
+                    }
+                }
+            });
         }
     });
 

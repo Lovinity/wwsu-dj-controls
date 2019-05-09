@@ -388,9 +388,17 @@ ipcMain.on('audio-silence', (event, arg) => {
     }
 });
 
-ipcMain.on('peer-audio-info', (event, arg) => {
+ipcMain.on('peer-audio-info-incoming', (event, arg) => {
     try {
-        mainWindow.webContents.send('peer-audio-info', arg);
+        mainWindow.webContents.send('peer-audio-info-incoming', arg);
+    } catch (e) {
+
+    }
+});
+
+ipcMain.on('peer-audio-info-outgoing', (event, arg) => {
+    try {
+        mainWindow.webContents.send('peer-audio-info-outgoing', arg);
     } catch (e) {
 
     }
@@ -518,7 +526,7 @@ exports.openDevTools = () => {
 }
 
 function createCalendarWindow() {
-    calendarWindow = new BrowserWindow({show: false, webPreferences: {backgroundThrottling: false, nodeIntegration: true}});
+    calendarWindow = new BrowserWindow({show: true, webPreferences: {backgroundThrottling: false, nodeIntegration: true}});
     calendarWindow.loadFile('calendar.html');
 
     calendarWindow.on('closed', function () {
@@ -528,7 +536,7 @@ function createCalendarWindow() {
 }
 
 function createPeerWindow() {
-    peerWindow = new BrowserWindow({show: false, webPreferences: {backgroundThrottling: false, nodeIntegration: true}});
+    peerWindow = new BrowserWindow({show: true, webPreferences: {backgroundThrottling: false, nodeIntegration: true}});
     peerWindow.loadFile('peer.html');
 
     peerWindow.on('closed', function () {
@@ -538,7 +546,7 @@ function createPeerWindow() {
 }
 
 function createAudioWindow() {
-    audioWindow = new BrowserWindow({show: false, webPreferences: {backgroundThrottling: false, nodeIntegration: true}});
+    audioWindow = new BrowserWindow({show: true, webPreferences: {backgroundThrottling: false, nodeIntegration: true}});
     audioWindow.loadFile('audio.html');
 
     audioWindow.on('closed', function () {
