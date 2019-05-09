@@ -4,6 +4,7 @@ window.AudioContext = window.AudioContext || window.webkitAudioContext;
 var {ipcRenderer} = require('electron');
 var settings = require('electron-settings');
 var Sanitize = require('sanitize-filename');
+const EventEmitter = require('events');
 
 var Meta = {state: 'unknown', playing: false};
 
@@ -167,6 +168,7 @@ function getAudioMain(device) {
                 settings.set(`audio.input.main`, device);
             })
             .catch((err) => {
+                console.error(err);
                 ipcRenderer.send(`audio-device-input-error`, null);
             });
 }
