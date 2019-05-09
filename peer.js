@@ -104,7 +104,7 @@ ipcRenderer.on('new-meta', (event, arg) => {
             } else {
                 if (temp !== null)
                 {
-                    //temp.muted = true;
+                    temp.muted = true;
                     console.log(`MUTED remote audio`);
                 }
             }
@@ -114,7 +114,7 @@ ipcRenderer.on('new-meta', (event, arg) => {
             if (temp !== null)
             {
                 bitRate = 128;
-                //temp.muted = true;
+                temp.muted = true;
                 console.log(`MUTED remote audio`);
                 window.peerError = 0;
                 window.peerErrorMajor = 0;
@@ -126,9 +126,9 @@ ipcRenderer.on('new-meta', (event, arg) => {
 
 ipcRenderer.on('peer-try-calls', (event, arg) => {
     console.log(`If trying a call, try again.`);
-    if (tryingCall && tryingCall.host && tryingCall.cb)
+    if (tryingCall && tryingCall.host)
     {
-        startCall(tryingCall.host, tryingCall.cb);
+        startCall(tryingCall.host);
     }
 });
 
@@ -205,16 +205,17 @@ ipcRenderer.on('peer-answer-call', (event, arg) => {
                     console.log(`Stopping checks; we are not actually supposed to be in a call right now.`);
                     window.peerError = 0;
                 }
+                ipcRenderer.send(`peer-audio-info-incoming`, [0, false, window.peerError, typeof tryingCall !== `undefined`, typeof outgoingCall !== `undefined`, typeof incomingCall !== `undefined`]);
             };
             callDropFn();
         }
-
         incomingCloseIgnore = false;
     });
 });
 
 ipcRenderer.on('peer-start-call', (event, arg) => {
     console.log(`Main wants to start a call with ${arg[0]}.`);
+    console.dir(arg[1]);
     startCall(arg[0], arg[1], arg[2] || undefined, arg[3] || undefined);
 });
 
@@ -225,7 +226,7 @@ ipcRenderer.on('peer-set-bitrate', (event, arg) => {
 
 ipcRenderer.on('peer-check-waiting', (event, arg) => {
     if (waitingFor && waitingFor.host === arg[0].host && arg[0].peer !== null && (!arg[1] || arg[1] === null || typeof arg[1].host === `undefined` || arg[1].peer !== arg[0].peer))
-        startCall(waitingFor.host, waitingFor.cb, true);
+        startCall(waitingFor.host, true);
 });
 
 ipcRenderer.on('peer-bad-call', (event, arg) => {
@@ -290,7 +291,7 @@ ipcRenderer.on('peer-resume-call', (event, arg) => {
 ipcRenderer.on('peer-host-info', (event, arg) => {
     console.log(`Received host information.`);
     if (pendingCall)
-        _startCall(pendingCall.hostID, arg[0], arg[1], pendingCall.cb, pendingCall.reconnect, pendingCall.bitrate);
+        _startCall(pendingCall.hostID, arg[0], arg[1], pendingCall.reconnect, pendingCall.bitrate);
     pendingCall = undefined;
 });
 
@@ -494,20 +495,19 @@ function onReceiveStream(stream) {
 
 }
 
-function startCall(hostID, cb, reconnect = false, bitrate = bitRate)
+function startCall(hostID, reconnect = false, bitrate = bitRate)
 {
-    pendingCall = {hostID: hostID, cb: cb, reconnect: reconnect, bitrate: bitrate};
+    pendingCall = {hostID: hostID, reconnect: reconnect, bitrate: bitrate};
     ipcRenderer.send(`peer-get-host-info`, hostID);
 }
 
-function _startCall(hostID, host, peerID, cb, reconnect = false, bitrate = bitRate) {
+function _startCall(hostID, host, peerID, reconnect = false, bitrate = bitRate) {
     var callFailed = (keepTrying) => {
         try {
             outgoingCloseIgnore = true;
             outgoingCall.close();
             outgoingCall = undefined;
             outgoingCloseIgnore = false;
-            cb(false);
         } catch (eee) {
             outgoingCloseIgnore = false;
             // ignore errors
@@ -534,7 +534,7 @@ function _startCall(hostID, host, peerID, cb, reconnect = false, bitrate = bitRa
                 }
             }
         } else {
-            waitingFor = {host: hostID, cb: cb};
+            waitingFor = {host: hostID};
 
             ipcRenderer.send(`peer-dropped-call`, null);
         }
@@ -549,7 +549,7 @@ function _startCall(hostID, host, peerID, cb, reconnect = false, bitrate = bitRa
 
     console.log(`Trying to call ${host.friendlyname}`);
 
-    tryingCall = {host: hostID, cb: cb, friendlyname: host.friendlyname};
+    tryingCall = {host: hostID, friendlyname: host.friendlyname};
 
     if (!reconnect)
         ipcRenderer.send(`peer-connecting-call`, null);
@@ -615,9 +615,9 @@ function _startCall(hostID, host, peerID, cb, reconnect = false, bitrate = bitRa
                         console.log(`NOT reconnecting; we are not supposed to be connected to the call at this time.`);
                     }
                 }
+                ipcRenderer.send(`peer-audio-info-outgoing`, [0, false, window.peerError, typeof tryingCall !== `undefined`, typeof outgoingCall !== `undefined`, typeof incomingCall !== `undefined`]);
                 outgoingCloseIgnore = false;
             });
-            cb(true);
         } else {
             if (callTimerSlot <= 1)
             {
@@ -666,12 +666,12 @@ function getAudio(device) {
                     // Gain control. Immediately decrease gain when above 0.9. Slowly increase gain if volume is less than 0.5.
                     if (maxVolume >= 0.98)
                     {
-                        
+
                         var volumeAtGain1 = maxVolume / gain.gain.value;
                         gain.gain.value = 0.95 / volumeAtGain1;
-                        
+
                     } else {
-                        
+
                         var volumeAtGain1 = volume / gain.gain.value;
                         var proportion = 0.25 / volumeAtGain1;
                         var adjustGain = (gain.gain.value / proportion) / 64;
@@ -679,7 +679,7 @@ function getAudio(device) {
                         if (gain.gain.value > 3)
                             gain.gain.value = 3;
                     }
-                    
+
                     ipcRenderer.send(`peer-audio-info-outgoing`, [maxVolume, clipping, window.peerError, typeof tryingCall !== `undefined`, typeof outgoingCall !== `undefined`, typeof incomingCall !== `undefined`]);
                 });
 

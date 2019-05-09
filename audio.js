@@ -25,10 +25,7 @@ var closeDialog = false;
 var recordAudio;
 
 var audioContext2 = new AudioContext();
-var analyser2 = audioContext2.createAnalyser();
-analyser2.fftSize = 512;
-analyser2.smoothingTimeConstant = 0.1;
-var fftBins2 = new Float32Array(analyser2.frequencyBinCount);
+var audioMeter;
 
 ipcRenderer.send('audio-ready', null);
 
@@ -127,7 +124,8 @@ function getAudioMain(device) {
                 var restartRecorder = false;
                 // Reset stuff
                 try {
-                    analyserStream2.disconnect(analyser2);
+                    audioMeter.shutdown();
+                    audioMeter = undefined;
                     window.mainStream.getTracks().forEach(track => track.stop());
                     analyserStream2 = undefined;
                     window.mainStream = undefined;
@@ -140,7 +138,29 @@ function getAudioMain(device) {
                 window.mainVolume = -100;
 
                 analyserStream2 = audioContext2.createMediaStreamSource(stream);
-                analyserStream2.connect(analyser2);
+                audioMeter = createAudioMeter(audioContext2);
+                analyserStream2.connect(audioMeter);
+                audioMeter.events.on(`volume-processed`, (volume, clipping, maxVolume) => {
+                    // Silence detection
+                    if (maxVolume <= 0.1)
+                    {
+                        if (silenceState === 0 || silenceState === -1)
+                        {
+                            silenceState = 1;
+                            silenceTimer = setTimeout(function () {
+                                silenceState = 2;
+                                ipcRenderer.send(`audio-silence`, true);
+                            }, settings.get(`silence.time`) || 10000);
+                        }
+                    } else {
+                        if (silenceState === 2 || silenceState === -1)
+                            ipcRenderer.send(`audio-silence`, false);
+                        silenceState = 0;
+                        clearTimeout(silenceTimer);
+                    }
+
+                    ipcRenderer.send(`audio-audio-info`, [maxVolume, clipping, silenceState]);
+                });
 
                 setupRecorder(analyserStream2);
 
@@ -223,47 +243,6 @@ function setupRecorder(node) {
 
 }
 
-function meterLooper() {
-    var temp2 = getMaxVolume(analyser2, fftBins2);
-
-    if (temp2 > window.mainVolume)
-    {
-        window.mainVolume = temp2;
-    } else {
-        window.mainVolume -= ((window.mainVolume - temp2) / 16);
-    }
-
-    // Silence detection
-    if (window.mainVolume <= -49)
-    {
-        if (silenceState === 0 || silenceState === -1)
-        {
-            silenceState = 1;
-            silenceTimer = setTimeout(function () {
-                silenceState = 2;
-                ipcRenderer.send(`audio-silence`, true);
-            }, settings.get(`silence.time`) || 10000);
-        }
-    } else {
-        if (silenceState === 2 || silenceState === -1)
-            ipcRenderer.send(`audio-silence`, false);
-        silenceState = 0;
-        clearTimeout(silenceTimer);
-    }
-
-    ipcRenderer.send(`audio-audio-info`, [window.mainVolume, silenceState]);
-
-    meterLoop = false;
-}
-
-setInterval(() => {
-    if (!meterLoop)
-    {
-        meterLoop = true;
-        meterLooper();
-    }
-}, 1000 / 50);
-
 function getMaxVolume(analyser, fftBins) {
     var maxVolume = -100;
     analyser.getFloatFrequencyData(fftBins);
@@ -276,6 +255,76 @@ function getMaxVolume(analyser, fftBins) {
     ;
 
     return maxVolume;
+}
+
+function createAudioMeter(audioContext, clipLevel, averaging, clipLag) {
+    var processor = audioContext.createScriptProcessor(512);
+    processor.onaudioprocess = volumeAudioProcess;
+    processor.clipping = false;
+    processor.lastClip = 0;
+    processor.volume = 0;
+    processor.maxVolume = 0;
+    processor.clipLevel = clipLevel || 0.98;
+    processor.averaging = averaging || 0.95;
+    processor.clipLag = clipLag || 750;
+    processor.events = new EventEmitter();
+
+    // this will have no effect, since we don't copy the input to the output,
+    // but works around a current Chrome bug.
+    processor.connect(audioContext.destination);
+
+    processor.checkClipping =
+            function () {
+                if (!this.clipping)
+                    return false;
+                if ((this.lastClip + this.clipLag) < window.performance.now())
+                    this.clipping = false;
+                return this.clipping;
+            };
+
+    processor.shutdown =
+            function () {
+                this.disconnect();
+                this.onaudioprocess = null;
+            };
+
+    return processor;
+}
+
+function volumeAudioProcess(event) {
+    var buf = event.inputBuffer.getChannelData(0);
+    var bufLength = buf.length;
+    var sum = 0;
+    var x;
+    var clippingNow = false;
+    var maxVolume = 0;
+
+    // Do a root-mean-square on the samples: sum up the squares...
+    for (var i = 0; i < bufLength; i++) {
+        x = buf[i];
+        if (Math.abs(x) > maxVolume)
+            maxVolume = Math.abs(x);
+        if (Math.abs(x) >= this.clipLevel) {
+            this.clipping = true;
+            this.lastClip = window.performance.now();
+            clippingNow = true;
+        }
+        sum += x * x;
+    }
+
+    if (!clippingNow && (this.lastClip + this.clipLag) < window.performance.now())
+        this.clipping = false;
+
+    // ... then take the square root of the sum.
+    var rms = Math.sqrt(sum / bufLength);
+
+    // Now smooth this out with the averaging factor applied
+    // to the previous sample - take the max here because we
+    // want "fast attack, slow release."
+    this.volume = Math.max(rms, this.volume * this.averaging);
+    this.maxVolume = Math.max(maxVolume, this.maxVolume * this.averaging);
+
+    this.events.emit(`volume-processed`, this.volume, this.clipping, this.maxVolume);
 }
 
 function sanitize(str) {

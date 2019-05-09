@@ -12,7 +12,7 @@ try {
         visibilityChange = "webkitvisibilitychange";
     }
 
-    var development = true;
+    var development = false;
     var callInProgressI = false;
     var callInProgressO = false;
     var closeDialog = false;
@@ -56,6 +56,7 @@ try {
         starts: null,
         hint: false
     };
+    var afterStartCall = () => {};
 
     ipcRenderer.on('processed-calendar', (event, e) => {
         e = e[0];
@@ -515,6 +516,9 @@ try {
         $("#connecting-modal").iziModal('close');
         if (document.querySelector(`.peerjs-waiting`) !== null)
             iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
+        
+        afterStartCall();
+        afterStartCall = () => {};
     });
 
     ipcRenderer.on(`peer-get-host-info`, (event, arg) => {
@@ -701,10 +705,10 @@ try {
                 var temp4 = document.querySelector(`#main-vu`);
                 if (temp4 !== null)
                 {
-                    temp4.style.width = `${arg[0] > -50 ? ((arg[0] + 50) * 4) : 0}%`;
+                    temp4.style.width = `${arg[0] * 100}%`;
 
                     // check if we're currently clipping
-                    if (arg[0] > -25)
+                    if (arg[1])
                         temp4.className = "progress-bar bg-danger";
                     else
                         temp4.className = "progress-bar bg-success";
@@ -714,11 +718,11 @@ try {
                 var temp8 = document.querySelector(`#audio-call-icon`);
                 if (temp8 !== null && !callInProgressI && !callInProgressO && client.silenceDetection)
                 {
-                    if (arg[1] === 2)
+                    if (arg[2] === 2)
                         temp8.style.color = `rgb(128, 0, 0)`;
-                    if (arg[1] === 1)
+                    if (arg[2] === 1)
                         temp8.style.color = `rgb(128, 128, 0)`;
-                    if (arg[1] === 0)
+                    if (arg[2] === 0)
                         temp8.style.color = `rgb(16, 16, 16)`;
                 }
             });
@@ -10551,29 +10555,27 @@ function _goRemote() {
     var remoteOptions = document.getElementById('remote-host');
     var selectedOption = remoteOptions.options[remoteOptions.selectedIndex].value;
     ipcRenderer.send(`peer-set-bitrate`, 128);
-    ipcRenderer.send(`peer-start-call`, [selectedOption, (success) => {
-            if (success)
+    ipcRenderer.send(`peer-start-call`, [selectedOption]);
+    afterStartCall = () => {
+        if (development)
+            return null;
+        hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || cal.type !== `Remote`) ? document.querySelector('#remote-topic').value : cal.topic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
+            if (response === 'OK')
             {
-                if (development)
-                    return null;
-                hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || cal.type !== `Remote`) ? document.querySelector('#remote-topic').value : cal.topic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
-                    if (response === 'OK')
-                    {
-                        isHost = true;
-                        selectRecipient(null);
-                        $("#go-remote-modal").iziModal('close');
-                    } else {
-                        iziToast.show({
-                            title: 'An error occurred',
-                            message: 'Cannot go remote at this time. Please try again in 15-30 seconds.',
-                            timeout: 10000
-                        });
-                        hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
-                    }
-                    console.log(JSON.stringify(response));
+                isHost = true;
+                selectRecipient(null);
+                $("#go-remote-modal").iziModal('close');
+            } else {
+                iziToast.show({
+                    title: 'An error occurred',
+                    message: 'Cannot go remote at this time. Please try again in 15-30 seconds.',
+                    timeout: 10000
                 });
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
             }
-        }]);
+            console.log(JSON.stringify(response));
+        });
+    };
 }
 
 function prepareSports() {
@@ -10751,29 +10753,27 @@ function _goSportsRemote() {
     var remoteOptions = document.getElementById('sportsremote-host');
     var selectedOption = remoteOptions.options[remoteOptions.selectedIndex].value;
     ipcRenderer.send(`peer-set-bitrate`, 128);
-    ipcRenderer.send(`peer-start-call`, [selectedOption, (success) => {
-            if (success)
+    ipcRenderer.send(`peer-start-call`, [selectedOption]);
+    afterStartCall = () => {
+        var sportsOptions = document.getElementById('sportsremote-sport');
+        var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
+        hostReq.request({method: 'POST', url: nodeURL + '/state/sports-remote', data: {sport: selectedOption, topic: (document.querySelector('#sportsremote-topic').value !== `` || cal.type !== `Sports`) ? document.querySelector('#sportsremote-topic').value : cal.topic, webchat: document.querySelector('#sportsremote-webchat').checked}}, function (response) {
+            if (response === 'OK')
             {
-                var sportsOptions = document.getElementById('sportsremote-sport');
-                var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
-                hostReq.request({method: 'POST', url: nodeURL + '/state/sports-remote', data: {sport: selectedOption, topic: (document.querySelector('#sportsremote-topic').value !== `` || cal.type !== `Sports`) ? document.querySelector('#sportsremote-topic').value : cal.topic, webchat: document.querySelector('#sportsremote-webchat').checked}}, function (response) {
-                    if (response === 'OK')
-                    {
-                        isHost = true;
-                        selectRecipient(null);
-                        $("#go-sportsremote-modal").iziModal('close');
-                    } else {
-                        iziToast.show({
-                            title: 'An error occurred',
-                            message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
-                            timeout: 10000
-                        });
-                        hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
-                    }
-                    console.log(JSON.stringify(response));
+                isHost = true;
+                selectRecipient(null);
+                $("#go-sportsremote-modal").iziModal('close');
+            } else {
+                iziToast.show({
+                    title: 'An error occurred',
+                    message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
+                    timeout: 10000
                 });
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) {});
             }
-        }]);
+            console.log(JSON.stringify(response));
+        });
+    };
 }
 
 function promptIfNotHost(action, fn)
