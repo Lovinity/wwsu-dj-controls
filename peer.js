@@ -104,7 +104,7 @@ ipcRenderer.on('new-meta', (event, arg) => {
             } else {
                 if (temp !== null)
                 {
-                    temp.muted = true;
+                    //temp.muted = true;
                     console.log(`MUTED remote audio`);
                 }
             }
@@ -114,7 +114,7 @@ ipcRenderer.on('new-meta', (event, arg) => {
             if (temp !== null)
             {
                 bitRate = 128;
-                temp.muted = true;
+                //temp.muted = true;
                 console.log(`MUTED remote audio`);
                 window.peerError = 0;
                 window.peerErrorMajor = 0;
@@ -680,7 +680,6 @@ function getAudio(device) {
                             gain.gain.value = 3;
                     }
                     
-                    console.log(gain.gain.value);
                     ipcRenderer.send(`peer-audio-info-outgoing`, [maxVolume, clipping, window.peerError, typeof tryingCall !== `undefined`, typeof outgoingCall !== `undefined`, typeof incomingCall !== `undefined`]);
                 });
 
