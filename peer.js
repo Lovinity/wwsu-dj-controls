@@ -128,7 +128,7 @@ ipcRenderer.on('peer-try-calls', (event, arg) => {
     console.log(`If trying a call, try again.`);
     if (tryingCall && tryingCall.host)
     {
-        startCall(tryingCall.host);
+        startCall(tryingCall.host, false, bitRate);
     }
 });
 
@@ -216,7 +216,7 @@ ipcRenderer.on('peer-answer-call', (event, arg) => {
 ipcRenderer.on('peer-start-call', (event, arg) => {
     console.log(`Main wants to start a call with ${arg[0]}.`);
     console.dir(arg[1]);
-    startCall(arg[0], arg[1], arg[2] || undefined, arg[3] || undefined);
+    startCall(arg[0], arg[1] || false, arg[2] || bitRate);
 });
 
 ipcRenderer.on('peer-set-bitrate', (event, arg) => {
@@ -226,7 +226,7 @@ ipcRenderer.on('peer-set-bitrate', (event, arg) => {
 
 ipcRenderer.on('peer-check-waiting', (event, arg) => {
     if (waitingFor && waitingFor.host === arg[0].host && arg[0].peer !== null && (!arg[1] || arg[1] === null || typeof arg[1].host === `undefined` || arg[1].peer !== arg[0].peer))
-        startCall(waitingFor.host, true);
+        startCall(waitingFor.host, true, bitRate);
 });
 
 ipcRenderer.on('peer-bad-call', (event, arg) => {
@@ -245,8 +245,7 @@ ipcRenderer.on('peer-bad-call', (event, arg) => {
         if (typeof window.peerHost !== `undefined`)
         {
             window.peerError = -1;
-            startCall(window.peerHost, (success) => {
-            }, true, arg);
+            startCall(window.peerHost, true, arg);
         }
     }
 });
@@ -276,12 +275,7 @@ ipcRenderer.on('peer-resume-call', (event, arg) => {
     console.log(`Main wants us to resume any calls on hold.`);
     if (typeof window.peerHost !== `undefined` && typeof outgoingCall === `undefined`)
     {
-        startCall(window.peerHost, (success) => {
-            if (success)
-            {
-                arg();
-            }
-        });
+        startCall(window.peerHost, false, bitRate);
     } else {
         console.log(`There are no calls on hold.`);
         arg();
@@ -604,12 +598,7 @@ function _startCall(hostID, host, peerID, reconnect = false, bitrate = bitRate) 
                     {
                         window.peerError = -1;
                         console.log(`Trying to re-connect...`);
-                        startCall(host.host, (success) => {
-                            if (success)
-                            {
-                                console.log(`re-connected!`);
-                            }
-                        }, true);
+                        startCall(host.host, true, bitRate);
                     } else {
                         window.peerError = 0;
                         console.log(`NOT reconnecting; we are not supposed to be connected to the call at this time.`);
