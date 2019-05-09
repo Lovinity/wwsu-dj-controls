@@ -216,10 +216,26 @@ ipcMain.on('peer-bad-call', (event, arg) => {
     }
 });
 
+ipcMain.on('peer-bad-call-send', (event, arg) => {
+    try {
+        mainWindow.webContents.send('peer-bad-call-send', arg);
+    } catch (e) {
+
+    }
+});
+
 ipcMain.on('peer-very-bad-call', (event, arg) => {
     try {
         console.log(`Peer very bad call ${arg}`);
         peerWindow.webContents.send('peer-very-bad-call', arg);
+    } catch (e) {
+
+    }
+});
+
+ipcMain.on('peer-very-bad-call-send', (event, arg) => {
+    try {
+        mainWindow.webContents.send('peer-very-bad-call-send', arg);
     } catch (e) {
 
     }
