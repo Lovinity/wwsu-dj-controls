@@ -21,6 +21,7 @@ var outgoingCallMeter;
 var pendingCall;
 var bitRate = 128;
 var incomingCall;
+var incomingCallPending;
 var incomingCallMeter;
 var analyserStream;
 var analyserStream0;
@@ -164,6 +165,7 @@ ipcRenderer.on('peer-answer-call', (event, arg) => {
         incomingCloseIgnore = false;
         // Ignore errors
     }
+    incomingCall = incomingCallPending;
     incomingCall.answer(new MediaStream(), {
         audioBandwidth: bitRate,
         audioReceiveEnabled: true
@@ -367,7 +369,7 @@ function setupPeer() {
 
     peer.on('call', (connection) => {
         console.log(`Incoming call from ${connection.peer}`);
-        incomingCall = connection;
+        incomingCallPending = connection;
         ipcRenderer.send('peer-incoming-call', connection.peer);
     });
 }
