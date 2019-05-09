@@ -278,7 +278,7 @@ ipcRenderer.on('peer-resume-call', (event, arg) => {
         startCall(window.peerHost, false, bitRate);
     } else {
         console.log(`There are no calls on hold.`);
-        arg();
+        ipcRenderer.send('peer-no-calls', null);
     }
 });
 
@@ -659,15 +659,24 @@ function getAudio(device) {
                         var volumeAtGain1 = maxVolume / gain.gain.value;
                         gain.gain.value = 0.95 / volumeAtGain1;
 
-                    } else {
-
+                    } else if (maxVolume <= 0.75) {
                         var volumeAtGain1 = volume / gain.gain.value;
-                        var proportion = 0.25 / volumeAtGain1;
-                        var adjustGain = (gain.gain.value / proportion) / 64;
+                        var proportion = 0.75 / volumeAtGain1;
+                        var adjustGain = proportion / 512;
                         gain.gain.value += adjustGain;
                         if (gain.gain.value > 3)
                             gain.gain.value = 3;
+                    } else if (maxVolume > 0.75)
+                    {
+                        var volumeAtGain1 = volume / gain.gain.value;
+                        var proportion = 0.75 / volumeAtGain1;
+                        var adjustGain = proportion / 512;
+                        gain.gain.value -= adjustGain;
+                        if (gain.gain.value > 3)
+                            gain.gain.value = 3;
                     }
+                    
+                    console.log(`Volume: ${maxVolume}, gain: ${gain.gain.value}`);
 
                     ipcRenderer.send(`peer-audio-info-outgoing`, [maxVolume, clipping, window.peerError, typeof tryingCall !== `undefined`, typeof outgoingCall !== `undefined`, typeof incomingCall !== `undefined`]);
                 });

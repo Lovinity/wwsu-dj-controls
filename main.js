@@ -516,6 +516,15 @@ ipcMain.on('audio-start-new-recording', (event, arg) => {
     }
 });
 
+ipcMain.on('peer-no-calls', (event, arg) => {
+    try {
+        console.log(`Peer no calls to resume`);
+        mainWindow.webContents.send('peer-no-calls', true);
+    } catch (e) {
+
+    }
+});
+
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 
