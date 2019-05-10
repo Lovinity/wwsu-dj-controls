@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "dist": "electron-packager .",
-	"build": "electron-builder .",
+    "build": "electron-builder .",
     "postinstall": "electron-rebuild"
   },
   "repository": "https://github.com/Lovinity/wwsu-dj-controls",
