@@ -10493,7 +10493,7 @@ function prepareRemote() {
                 var temp = document.querySelector("#remote-input");
                 if (temp !== null)
                 {
-                    temp.innerHTML = ``;
+                    temp.innerHTML = `<option value="">Choose an input device...</option>`;
 
                     devices.map((device, index) => {
                         if (device.kind === 'audioinput') {
@@ -10691,7 +10691,7 @@ function prepareSportsRemote() {
                 var temp = document.querySelector("#sportsremote-input");
                 if (temp !== null)
                 {
-                    temp.innerHTML = ``;
+                    temp.innerHTML = `<option value="">Choose an input device...</option>`;
 
                     devices.map((device, index) => {
                         if (device.kind === 'audioinput') {
