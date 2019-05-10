@@ -1,17 +1,19 @@
 {
   "name": "wwsu-dj-controls",
-  "version": "6.0.0-alpha.26",
+  "version": "6.0.0-alpha.27",
   "description": "A WWSU management application for DJs and Directors",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dist": "electron-packager .",
+	"build": "electron-builder .",
     "postinstall": "electron-rebuild"
   },
   "repository": "https://github.com/Lovinity/wwsu-dj-controls",
   "author": "Patrick Schmalstig",
   "devDependencies": {
     "electron": "^5.0.0",
+    "electron-builder": "^20.40.2",
     "electron-devtools-installer": "^2.2.4",
     "electron-installer-dmg": "^2.0.0",
     "electron-packager": "^13.1.1",
