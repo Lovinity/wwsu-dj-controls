@@ -475,7 +475,7 @@ try {
             iziToast.hide({}, document.querySelector(`.peerjs-waiting`));
 
         iziToast.show({
-            id: `peerjs-waiting`,
+            class: `peerjs-waiting`,
             titleColor: '#000000',
             messageColor: '#000000',
             color: 'red',

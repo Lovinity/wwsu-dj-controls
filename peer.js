@@ -33,7 +33,22 @@ var lastProcess = window.performance.now();
 
 var audioContext = new AudioContext();
 var gain = audioContext.createGain();
+var limiter = audioContext.createDynamicsCompressor();
 gain.gain.value = 1;
+limiter.threshold.value = 0.0; // this is the pitfall, leave some headroom
+limiter.knee.value = 0.0; // brute force
+limiter.ratio.value = 20.0; // max compression
+limiter.attack.value = 0.005; // 5ms attack
+limiter.release.value = 0.050; // 50ms release
+
+var dbToGain = function(db) {
+  return Math.exp(db*Math.log(10.0)/20.0);
+}
+
+var maximize = (function(db) {
+  gain.gain.value = dbToGain(db);
+  return arguments.callee;
+})(0);
 
 var audioContext0 = new AudioContext();
 
@@ -507,8 +522,6 @@ function _startCall(hostID, host, peerID, reconnect = false, bitrate = bitRate) 
             // ignore errors
         }
 
-        clearInterval(callTimer);
-
         if (!reconnect)
         {
             if (!keepTrying)
@@ -575,6 +588,7 @@ function _startCall(hostID, host, peerID, reconnect = false, bitrate = bitRate) 
 
     callTimerSlot = 10;
 
+    clearInterval(callTimer);
     callTimer = setInterval(() => {
         callTimerSlot -= 1;
 
@@ -610,6 +624,7 @@ function _startCall(hostID, host, peerID, reconnect = false, bitrate = bitRate) 
         } else {
             if (callTimerSlot <= 1)
             {
+                clearInterval(callTimer);
                 callFailed(true);
             }
         }
@@ -647,12 +662,14 @@ function getAudio(device) {
                 analyserDest = audioContext.createMediaStreamDestination();
                 analyserStream = audioContext.createMediaStreamSource(stream);
                 analyserStream.connect(gain);
-                gain.connect(analyserDest);
+                gain.connect(limiter);
+                limiter.connect(analyserDest);
 
                 outgoingCallMeter = createAudioMeter(audioContext);
                 gain.connect(outgoingCallMeter);
                 outgoingCallMeter.events.on(`volume-processed`, (volume, clipping, maxVolume) => {
                     // Gain control. Immediately decrease gain when above 0.9. Slowly increase gain if volume is less than 0.5.
+                    /*
                     if (maxVolume >= 0.98)
                     {
 
@@ -675,8 +692,9 @@ function getAudio(device) {
                         if (gain.gain.value > 3)
                             gain.gain.value = 3;
                     }
-                    
-                    console.log(`Volume: ${maxVolume}, gain: ${gain.gain.value}`);
+                    */
+
+                    //console.log(`Volume: ${maxVolume}, gain: ${gain.gain.value}`);
 
                     ipcRenderer.send(`peer-audio-info-outgoing`, [maxVolume, clipping, window.peerError, typeof tryingCall !== `undefined`, typeof outgoingCall !== `undefined`, typeof incomingCall !== `undefined`]);
                 });
