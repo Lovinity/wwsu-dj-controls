@@ -361,7 +361,7 @@ try {
 
     ipcRenderer.on(`peer-bail-break`, (event, arg) => {
         console.log(`Peer wants to bail into a break due to an error.`);
-        goBreak(false);
+        goBreak(false, true);
     });
 
     ipcRenderer.on(`peer-very-bad-call-notify`, (event, arg) => {
@@ -510,7 +510,7 @@ try {
         });
 
         if (!disconnected)
-            goBreak(false);
+            goBreak(false, true);
 
         responsiveVoice.speak("Attention: The audio call was dropped, and the broadcast was sent to break. DJ Controls will resume the broadcast automatically when a connection is re-established.");
     });
@@ -749,7 +749,7 @@ try {
     ipcRenderer.on(`peer-very-bad-call-send`, (event, arg) => {
         console.log(`Peer reports very bad audio call. Sending this to the server and going to break.`);
         if (!disconnected)
-            goBreak(false);
+            goBreak(false, true);
         hostReq.request({method: 'POST', url: '/call/give-up', data: {}}, function (body) {});
     });
 
@@ -830,7 +830,7 @@ try {
             });
 
             if (!disconnected)
-                goBreak(false);
+                goBreak(false, true);
 
             responsiveVoice.speak("Attention: Silence was detected on the input device. The broadcast was sent to break. Please check your device settings and resume the broadcast.");
         }
@@ -11083,8 +11083,8 @@ function switchShow() {
     });
 }
 
-function goBreak(halftime) {
-    hostReq.request({method: 'POST', url: nodeURL + '/state/break', data: {halftime: halftime}}, function (response) {
+function goBreak(halftime, techissue) {
+    hostReq.request({method: 'POST', url: nodeURL + '/state/break', data: {halftime: halftime, problem: techissue}}, function (response) {
         if (response !== 'OK')
         {
             iziToast.show({
