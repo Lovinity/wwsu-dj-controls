@@ -11083,7 +11083,7 @@ function switchShow() {
     });
 }
 
-function goBreak(halftime, techissue) {
+function goBreak(halftime = false, techissue = false) {
     hostReq.request({method: 'POST', url: nodeURL + '/state/break', data: {halftime: halftime, problem: techissue}}, function (response) {
         if (response !== 'OK')
         {
