@@ -561,7 +561,7 @@ function createCalendarWindow() {
 }
 
 function createPeerWindow() {
-    peerWindow = new BrowserWindow({show: true, webPreferences: {backgroundThrottling: false, nodeIntegration: true}});
+    peerWindow = new BrowserWindow({show: false, webPreferences: {backgroundThrottling: false, nodeIntegration: true}});
     peerWindow.loadFile('peer.html');
 
     peerWindow.on('closed', function () {
