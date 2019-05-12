@@ -30,6 +30,8 @@ var callTimer;
 var callTimerSlot;
 var callDropTimer;
 var lastProcess = window.performance.now();
+var silenceState;
+var silenceTimer;
 
 var audioContext = new AudioContext();
 var gain = audioContext.createGain();
@@ -696,6 +698,22 @@ function getAudio(device) {
                     */
 
                     //console.log(`Volume: ${maxVolume}, gain: ${gain.gain.value}`);
+                    
+                    // Silence detection
+                    if (maxVolume < 0.01 && (Meta.state === "sports_on" || Meta.state === "sportsremote_on"))
+                    {
+                        if (silenceState === 0 || silenceState === -1)
+                        {
+                            silenceState = 1;
+                            silenceTimer = setTimeout(function () {
+                                silenceState = 2;
+                                ipcRenderer.send(`peer-silence-outgoing`, true);
+                            }, 15000);
+                        }
+                    } else {
+                        silenceState = 0;
+                        clearTimeout(silenceTimer);
+                    }
 
                     ipcRenderer.send(`peer-audio-info-outgoing`, [maxVolume, clipping, window.peerError, typeof tryingCall !== `undefined`, typeof outgoingCall !== `undefined`, typeof incomingCall !== `undefined`]);
                 });

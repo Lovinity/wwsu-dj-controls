@@ -397,9 +397,15 @@ try {
                 ['<button><b>Resume Broadcast</b></button>', function (instance, toast) {
                         instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
                         returnBreak();
+                    }],
+                ['<button><b>End Broadcast</b></button>', function (instance, toast) {
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        endShow();
                     }]
             ]
         });
+
+        responsiveVoice.speak("Attention: the broadcast was sent to break due to a very poor audio connection. Please check or refresh your network and resume the broadcast.");
     });
 
     ipcRenderer.on(`peer-no-answer`, (event, arg) => {
@@ -505,6 +511,8 @@ try {
 
         if (!disconnected)
             goBreak(false);
+
+        responsiveVoice.speak("Attention: The audio call was dropped, and the broadcast was sent to break. DJ Controls will resume the broadcast automatically when a connection is re-established.");
     });
 
     ipcRenderer.on(`peer-connecting-call`, (event, arg) => {
@@ -785,6 +793,47 @@ try {
     ipcRenderer.on(`audio-file-saved`, (event, arg) => {
         if (recorderDialog)
             window.close();
+    });
+
+    ipcRenderer.on(`peer-silence-outgoing`, (event, arg) => {
+
+        if (Meta.state === "remote_on" || Meta.state === "Sportsremote_on")
+        {
+            console.log(`Peer reports silence on the input device.`);
+            /*
+             var notification = notifier.notify('Lost Audio Call', {
+             message: `Please check DJ Controls for more information.`,
+             icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+             duration: 900000,
+             });
+             */
+            main.flashTaskbar();
+
+            iziToast.show({
+                titleColor: '#000000',
+                messageColor: '#000000',
+                color: 'red',
+                close: true,
+                overlay: true,
+                overlayColor: 'rgba(0, 0, 0, 0.75)',
+                zindex: 1000,
+                layout: 1,
+                imageWidth: 100,
+                image: ``,
+                maxWidth: 480,
+                progressBarColor: `rgba(255, 0, 0, 0.5)`,
+                closeOnClick: true,
+                position: 'center',
+                timeout: false,
+                title: 'Silence on input device',
+                message: `The input device has been silent for 15 seconds. I sent the broadcast into break. Please check your input device by clicking the speaker icon, analyzing the volume meter under "Audio Call Input Device", changing the device if necessary, and then resuming the broadcast.`,
+            });
+
+            if (!disconnected)
+                goBreak(false);
+
+            responsiveVoice.speak("Attention: Silence was detected on the input device. The broadcast was sent to break. Please check your device settings and resume the broadcast.");
+        }
     });
 
     // Define a function that finishes any recordings when DJ Controls is closed
