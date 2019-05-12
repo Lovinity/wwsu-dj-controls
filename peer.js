@@ -646,7 +646,8 @@ function getAudio(device) {
 
                 // Reset stuff
                 try {
-                    gain.disconnect(analyserDest);
+                    limiter.disconnect(analyserDest);
+                    gain.disconnect(limiter);
                     analyserStream.disconnect(gain);
                     analyserDest = undefined;
                     analyserStream = undefined;
@@ -655,7 +656,7 @@ function getAudio(device) {
                     window.peerStream.getTracks().forEach(track => track.stop());
                     window.peerStream = undefined;
                 } catch (eee) {
-                    // ignore errors
+                    console.error(eee);
                 }
 
                 gain.gain.value = 1;
