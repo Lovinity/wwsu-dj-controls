@@ -39,11 +39,11 @@ var audioContext = new AudioContext();
 var gain = audioContext.createGain();
 var limiter = audioContext.createDynamicsCompressor();
 gain.gain.value = 1;
-limiter.threshold.value = 0.0; // this is the pitfall, leave some headroom
-limiter.knee.value = 0.0; // brute force
-limiter.ratio.value = 20.0; // max compression
-limiter.attack.value = 0.005; // 5ms attack
-limiter.release.value = 0.050; // 50ms release
+limiter.threshold.value = -18.0;
+limiter.knee.value = 18.0;
+limiter.ratio.value = 4.0;
+limiter.attack.value = 0.01;
+limiter.release.value = 0.05;
 
 var dbToGain = function (db) {
     return Math.exp(db * Math.log(10.0) / 20.0);
