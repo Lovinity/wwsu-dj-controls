@@ -837,7 +837,7 @@ try {
                 position: 'center',
                 timeout: false,
                 title: 'Are you sure you want to close DJ Controls?',
-                message: `If you close DJ Controls, you will no longer receive notifications. When you re-open DJ Controls, notifications from the last 24 hours will appear. You can also view issues from the last 7 days in the administration menu -> issues.`,
+                message: `If you close DJ Controls, you will no longer receive notifications. When you re-open DJ Controls, notifications from the last 7 days will appear. You can also view issues from the last 7 days in the administration menu -> issues.`,
                 buttons: [
                     ['<button><b>Close DJ Controls</b></button>', function (instance, toast) {
                         instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
