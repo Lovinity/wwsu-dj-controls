@@ -1,6 +1,6 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow, dialog, session, ipcMain} = require('electron');
-const {machineId, machineIdSync} = require('node-machine-id');
+const { app, BrowserWindow, dialog, session, ipcMain } = require('electron');
+const { machineId, machineIdSync } = require('node-machine-id');
 const fs = require("fs");
 
 /*
@@ -30,7 +30,7 @@ let Meta = {};
 
 function createWindow() {
     // Create the browser window.
-    mainWindow = new BrowserWindow({width: 1600, minWidth: 800, height: 900, backgroundColor: '#263238', resizable: true, webPreferences: {backgroundThrottling: false, nodeIntegration: true}});
+    mainWindow = new BrowserWindow({ width: 1600, minWidth: 800, height: 900, backgroundColor: '#263238', resizable: true, webPreferences: { backgroundThrottling: false, nodeIntegration: true } });
     mainWindow.once('focus', () => mainWindow.flashFrame(false));
 
     // and load the index.html of the app.
@@ -68,9 +68,9 @@ function createWindow() {
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
     // Set custom headers
-    session.defaultSession.webRequest.onBeforeSendHeaders({urls: ['*']}, (details, callback) => {
+    session.defaultSession.webRequest.onBeforeSendHeaders({ urls: ['*'] }, (details, callback) => {
         details.requestHeaders['Origin'] = 'https://server.wwsu1069.org';
-        callback({requestHeaders: details.requestHeaders});
+        callback({ requestHeaders: details.requestHeaders });
     });
 
     createWindow();
@@ -163,18 +163,20 @@ ipcMain.on('peer-answer-call', (event, arg) => {
 });
 
 ipcMain.on('new-meta', (event, arg) => {
-    console.log(`new meta`);
-    console.dir(arg);
-    for (var key in arg)
-    {
-        if (arg.hasOwnProperty(key))
-        {
+    var doSend = false;
+    for (var key in arg) {
+        if (arg.hasOwnProperty(key)) {
             Meta[key] = arg[key];
+            doSend = true;
         }
     }
     try {
-        peerWindow.webContents.send('new-meta', arg);
-        audioWindow.webContents.send('new-meta', arg);
+        if (doSend) {
+            console.log(`new meta`);
+            console.dir(arg);
+            peerWindow.webContents.send('new-meta', arg);
+            audioWindow.webContents.send('new-meta', arg);
+        }
     } catch (e) {
 
     }
@@ -510,7 +512,7 @@ ipcMain.on('audio-nothing-to-save', (event, arg) => {
 ipcMain.on('audio-start-new-recording', (event, arg) => {
     try {
         console.log(`Audio start new recording ${arg}`);
-        audioWindow.webContents.send('new-meta', {state: Meta.state});
+        audioWindow.webContents.send('new-meta', { state: Meta.state });
     } catch (e) {
 
     }
@@ -569,7 +571,7 @@ exports.openDevTools = () => {
 }
 
 function createCalendarWindow() {
-    calendarWindow = new BrowserWindow({show: false, webPreferences: {backgroundThrottling: false, nodeIntegration: true}});
+    calendarWindow = new BrowserWindow({ show: false, webPreferences: { backgroundThrottling: false, nodeIntegration: true } });
     calendarWindow.loadFile('calendar.html');
 
     calendarWindow.on('closed', function () {
@@ -579,7 +581,7 @@ function createCalendarWindow() {
 }
 
 function createPeerWindow() {
-    peerWindow = new BrowserWindow({show: false, webPreferences: {backgroundThrottling: false, nodeIntegration: true}});
+    peerWindow = new BrowserWindow({ show: false, webPreferences: { backgroundThrottling: false, nodeIntegration: true } });
     peerWindow.loadFile('peer.html');
 
     peerWindow.on('closed', function () {
@@ -589,7 +591,7 @@ function createPeerWindow() {
 }
 
 function createAudioWindow() {
-    audioWindow = new BrowserWindow({show: false, webPreferences: {backgroundThrottling: false, nodeIntegration: true}});
+    audioWindow = new BrowserWindow({ show: false, webPreferences: { backgroundThrottling: false, nodeIntegration: true } });
     audioWindow.loadFile('audio.html');
 
     audioWindow.on('closed', function () {

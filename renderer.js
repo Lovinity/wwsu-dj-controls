@@ -2033,6 +2033,10 @@ document.querySelector("#options").onclick = function () {
     $("#options-modal").iziModal('open');
 };
 
+document.querySelector("#open-notifications").onclick = function () {
+    $("#modal-notifications").iziModal('open');
+};
+
 document.querySelector("#audio-call").onclick = () => {
     navigator.mediaDevices.enumerateDevices()
         .then((devices) => {
@@ -6405,15 +6409,34 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
                     tempi2.innerHTML = ``;
                 }
                 $('#modal-notifications').iziModal('close');
+                var temp = document.querySelector(`#badge-notifications`);
+                if (temp) {
+                    temp.innerHTML = Notifications.length;
+                    if (Notifications.length > 0) {
+                        temp.classList = "notification2 badge badge-danger shadow-4";
+                    } else {
+                        temp.classList = "notification2 badge badge-secondary shadow-4";
+                    }
+                }
             } else if (e.target.id.startsWith(`notification-dismiss-`)) {
                 Notifications
-                    .filter((notif) => notif.ID === e.target.id.replace(`notification-dismiss-`, ``))
                     .map((notif, index) => {
-                        var temp = document.querySelector(`#notification-${notif.ID}`);
-                        if (temp !== null) {
-                            temp.parentNode.removeChild(temp);
+                        if (notif.ID === e.target.id.replace(`notification-dismiss-`, ``)) {
+                            var temp = document.querySelector(`#notification-${notif.ID}`);
+                            if (temp !== null) {
+                                temp.parentNode.removeChild(temp);
+                            }
+
+                            var temp = document.querySelector(`#badge-notifications`);
+                            if (temp) {
+                                temp.innerHTML = Notifications.length;
+                                if (Notifications.length > 0) {
+                                    temp.classList = "notification2 badge badge-danger shadow-4";
+                                } else {
+                                    temp.classList = "notification2 badge badge-secondary shadow-4";
+                                }
+                            }
                         }
-                        delete Notifications[index];
                     });
             } else if (e.target.id.startsWith(`notification-attn-edit-`)) {
                 var recordID = parseInt(e.target.id.replace(`notification-attn-edit-`, ``));
@@ -8647,6 +8670,22 @@ function hostSocket(cb = function (token) { }) {
                         restarter = setTimeout(hostSocket, 10000);
                     }
                 });
+            }
+
+            if (client.emergencies || client.accountability) {
+                var temp = document.querySelector(`#open-notifications`);
+                if (temp)
+                    temp.style.display = "inline";
+                var temp = document.querySelector(`#badge-notifications`);
+                if (temp)
+                    temp.style.display = "inline";
+            } else {
+                var temp = document.querySelector(`#open-notifications`);
+                if (temp)
+                    temp.style.display = "none";
+                var temp = document.querySelector(`#badge-notifications`);
+                if (temp)
+                    temp.style.display = "none";
             }
 
             if (client.admin) {
@@ -11760,17 +11799,17 @@ function processAttendance(data, replace = false) {
                 if (prev.indexOf(record.ID) === -1) {
                     // Absences
                     if (record.happened === 0 && record.dj !== null) {
-                        addNotification(`absent-broadcast`, `attendance-${record.ID}`, `urgent`, record.createdAt, `${record.event}<br />Scheduled Time: ${moment(record.scheduledStart).format("hh:mm A")} - ${moment(record.scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${record.ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${record.ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${record.ID}" title="Excuse this show from the DJ's reputation. Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${record.ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
+                        addNotification(`absent-broadcast`, `attendance-${record.ID}`, `urgent`, record.createdAt, `${record.event}<br />Scheduled Time: ${moment(record.scheduledStart).format("MM/DD/YYYY hh:mm A")} - ${moment(record.scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${record.ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${record.ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${record.ID}" title="Excuse this show from the DJ's reputation. Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${record.ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
                     }
 
                     // Unscheduled broadcasts
                     else if (record.happened === 1 && record.scheduledStart === null && record.scheduledEnd === null && record.dj !== null) {
-                        addNotification(`unauthorized-broadcast`, `attendance-${record.ID}`, `warning`, record.createdAt, `${record.event}<br />On-Air Time: ${moment(record.actualStart).format("hh:mm A")} - ${moment(record.actualEnd).format("hh:mm A")}`, `Unauthorized / Unscheduled Broadcasts`);
+                        addNotification(`unauthorized-broadcast`, `attendance-${record.ID}`, `warning`, record.createdAt, `${record.event}<br />On-Air Time: ${moment(record.actualStart).format("MM/DD/YYYY hh:mm A")} - ${moment(record.actualEnd).format("hh:mm A")}`, `Unauthorized / Unscheduled Broadcasts`);
                     }
 
                     // Canceled broadcasts
                     else if (record.happened === -1 && record.dj !== null) {
-                        addNotification(`canceled-broadcast`, `attendance-${record.ID}`, `info`, record.createdAt, `${record.event}<br />Scheduled Time: ${moment(record.scheduledStart).format("hh:mm A")} - ${moment(record.scheduledEnd).format("hh:mm A")}<br />Reason: ${record.happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${record.ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${record.ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${record.ID}" title="Excuse this show from the DJ's reputation. Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${record.ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
+                        addNotification(`canceled-broadcast`, `attendance-${record.ID}`, `info`, record.createdAt, `${record.event}<br />Scheduled Time: ${moment(record.scheduledStart).format("MM/DD/YYYY hh:mm A")} - ${moment(record.scheduledEnd).format("hh:mm A")}<br />Reason: ${record.happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${record.ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${record.ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${record.ID}" title="Excuse this show from the DJ's reputation. Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${record.ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
                     } else {
                         addNotification(`broadcast-good`, `attendance-${record.ID}`);
                     }
@@ -11785,34 +11824,34 @@ function processAttendance(data, replace = false) {
                             Attendance.insert(data[key]);
                             // Absences
                             if (data[key].happened === 0 && data[key].dj !== null) {
-                                addNotification(`absent-broadcast`, `attendance-${data[key].ID}`, `urgent`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[key].ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${record.ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
+                                addNotification(`absent-broadcast`, `attendance-${data[key].ID}`, `urgent`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[key].ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${data[key].ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
                             }
 
                             // Unscheduled broadcasts
                             if (data[key].happened === 1 && data[key].scheduledStart === null && data[key].scheduledEnd === null && data[key].dj !== null) {
-                                addNotification(`unauthorized-broadcast`, `attendance-${data[key].ID}`, `warning`, data[key].createdAt, `${data[key].event}<br />On-Air Time: ${moment(data[key].actualStart).format("hh:mm A")} - ${moment(data[key].actualEnd).format("hh:mm A")}`, `Unauthorized / Unscheduled Broadcasts`);
+                                addNotification(`unauthorized-broadcast`, `attendance-${data[key].ID}`, `warning`, data[key].createdAt, `${data[key].event}<br />On-Air Time: ${moment(data[key].actualStart).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].actualEnd).format("hh:mm A")}`, `Unauthorized / Unscheduled Broadcasts`);
                             }
 
                             // Canceled broadcasts
                             if (data[key].happened === -1 && data[key].dj !== null) {
-                                addNotification(`canceled-broadcast`, `attendance-${data[key].ID}`, `info`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}<br />Reason: ${data[key].happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[key].ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${record.ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
+                                addNotification(`canceled-broadcast`, `attendance-${data[key].ID}`, `info`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}<br />Reason: ${data[key].happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[key].ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${data[key].ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
                             }
                             break;
                         case 'update':
                             Attendance({ ID: data[key].ID }).update(data[key]);
                             // Absences
                             if (data[key].happened === 0 && data[key].dj !== null) {
-                                addNotification(`absent-broadcast`, `attendance-${data[key].ID}`, `urgent`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[key].ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${record.ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
+                                addNotification(`absent-broadcast`, `attendance-${data[key].ID}`, `urgent`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[key].ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${data[key].ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
                             }
 
                             // Unscheduled broadcasts
                             else if (data[key].happened === 1 && data[key].scheduledStart === null && data[key].scheduledEnd === null && data[key].dj !== null) {
-                                addNotification(`unauthorized-broadcast`, `attendance-${data[key].ID}`, `warning`, data[key].createdAt, `${data[key].event}<br />On-Air Time: ${moment(data[key].actualStart).format("hh:mm A")} - ${moment(data[key].actualEnd).format("hh:mm A")}`, `Unauthorized / Unscheduled Broadcasts`);
+                                addNotification(`unauthorized-broadcast`, `attendance-${data[key].ID}`, `warning`, data[key].createdAt, `${data[key].event}<br />On-Air Time: ${moment(data[key].actualStart).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].actualEnd).format("hh:mm A")}`, `Unauthorized / Unscheduled Broadcasts`);
                             }
 
                             // Canceled broadcasts
                             else if (data[key].happened === -1 && data[key].dj !== null) {
-                                addNotification(`canceled-broadcast`, `attendance-${data[key].ID}`, `info`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}<br />Reason: ${data[key].happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[key].ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${record.ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
+                                addNotification(`canceled-broadcast`, `attendance-${data[key].ID}`, `info`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}<br />Reason: ${data[key].happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[key].ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${data[key].ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
                             } else {
                                 addNotification(`broadcast-good`, `attendance-${data[key].ID}`);
                             }
@@ -11871,17 +11910,17 @@ function processTimesheet(data, replace = false) {
 
                     // Unapproved timesheet records
                     else if (record.approved === 0 && record.time_in !== null && record.time_out !== null) {
-                        addNotification(`timesheet-needs-approved`, `timesheet-${record.ID}`, `info`, record.createdAt, `Director: ${record.name}<br />Time in: ${moment(record.time_in).format("hh:mm A")} - ${moment(record.time_out).format("hh:mm A")}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                        addNotification(`timesheet-needs-approved`, `timesheet-${record.ID}`, `info`, record.createdAt, `Director: ${record.name}<br />Time in: ${moment(record.time_in).format("MM/DD/YYYY hh:mm A")} - ${moment(record.time_out).format("hh:mm A")}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
                     }
 
                     // Absent Records
                     else if (record.approved === 0 && record.time_in === null && record.time_out === null) {
-                        addNotification(`timesheet-absent`, `timesheet-${record.ID}`, `urgent`, record.createdAt, `Director: ${record.name}<br />Scheduled time: ${moment(record.scheduled_in).format("hh:mm A")} - ${moment(record.scheduled_out).format("hh:mm A")}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                        addNotification(`timesheet-absent`, `timesheet-${record.ID}`, `urgent`, record.createdAt, `Director: ${record.name}<br />Scheduled time: ${moment(record.scheduled_in).format("MM/DD/YYYY hh:mm A")} - ${moment(record.scheduled_out).format("hh:mm A")}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
                     }
 
                     // Unapproved timesheet records
                     else if (record.approved === 2) {
-                        addNotification(`timesheet-changed`, `timesheet-${record.ID}`, `info`, record.createdAt, `Director: ${record.name}<br />New Hours: ${moment(record.scheduled_in).format("hh:mm A")} - ${moment(record.scheduled_out).format("hh:mm A")}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                        addNotification(`timesheet-changed`, `timesheet-${record.ID}`, `info`, record.createdAt, `Director: ${record.name}<br />New Hours: ${moment(record.scheduled_in).format("MM/DD/YYYY hh:mm A")} - ${moment(record.scheduled_out).format("hh:mm A")}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
                     } else {
                         addNotification(`timesheet-good`, `timesheet-${record.ID}`);
                     }
@@ -11901,17 +11940,17 @@ function processTimesheet(data, replace = false) {
 
                             // Unapproved timesheet records
                             if (data[key].approved === 0 && data[key].time_in !== null && data[key].time_out !== null) {
-                                addNotification(`timesheet-needs-approved`, `timesheet-${data[key].ID}`, `info`, data[key].createdAt, `Director: ${data[key].name}<br />Time in: ${moment(data[key].time_in).format("hh:mm A")} - ${moment(data[key].time_out).format("hh:mm A")}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                                addNotification(`timesheet-needs-approved`, `timesheet-${data[key].ID}`, `info`, data[key].createdAt, `Director: ${data[key].name}<br />Time in: ${moment(data[key].time_in).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].time_out).format("hh:mm A")}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
                             }
 
                             // Absent Records
                             if (data[key].approved === 0 && data[key].time_in === null && data[key].time_out === null) {
-                                addNotification(`timesheet-absent`, `timesheet-${data[key].ID}`, `urgent`, data[key].createdAt, `Director: ${data[key].name}<br />Scheduled time: ${moment(data[key].scheduled_in).format("hh:mm A")} - ${moment(data[key].scheduled_out).format("hh:mm A")}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                                addNotification(`timesheet-absent`, `timesheet-${data[key].ID}`, `urgent`, data[key].createdAt, `Director: ${data[key].name}<br />Scheduled time: ${moment(data[key].scheduled_in).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].scheduled_out).format("hh:mm A")}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
                             }
 
                             // Unapproved timesheet records
                             if (data[key].approved === 2) {
-                                addNotification(`timesheet-changed`, `timesheet-${data[key].ID}`, `info`, data[key].createdAt, `Director: ${data[key].name}<br />New Hours: ${moment(data[key].scheduled_in).format("hh:mm A")} - ${moment(data[key].scheduled_out).format("hh:mm A")}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                                addNotification(`timesheet-changed`, `timesheet-${data[key].ID}`, `info`, data[key].createdAt, `Director: ${data[key].name}<br />New Hours: ${moment(data[key].scheduled_in).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].scheduled_out).format("hh:mm A")}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
                             }
 
                             break;
@@ -11924,17 +11963,17 @@ function processTimesheet(data, replace = false) {
 
                             // Unapproved timesheet records
                             else if (data[key].approved === 0 && data[key].time_in !== null && data[key].time_out !== null) {
-                                addNotification(`timesheet-needs-approved`, `timesheet-${data[key].ID}`, `info`, data[key].createdAt, `Director: ${data[key].name}<br />Time in: ${moment(data[key].time_in).format("hh:mm A")} - ${moment(data[key].time_out).format("hh:mm A")}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                                addNotification(`timesheet-needs-approved`, `timesheet-${data[key].ID}`, `info`, data[key].createdAt, `Director: ${data[key].name}<br />Time in: ${moment(data[key].time_in).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].time_out).format("hh:mm A")}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
                             }
 
                             // Absent Records
                             else if (data[key].approved === 0 && data[key].time_in === null && data[key].time_out === null) {
-                                addNotification(`timesheet-absent`, `timesheet-${data[key].ID}`, `urgent`, data[key].createdAt, `Director: ${data[key].name}<br />Scheduled time: ${moment(data[key].scheduled_in).format("hh:mm A")} - ${moment(data[key].scheduled_out).format("hh:mm A")}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                                addNotification(`timesheet-absent`, `timesheet-${data[key].ID}`, `urgent`, data[key].createdAt, `Director: ${data[key].name}<br />Scheduled time: ${moment(data[key].scheduled_in).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].scheduled_out).format("hh:mm A")}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
                             }
 
                             // Unapproved timesheet records
                             else if (data[key].approved === 2) {
-                                addNotification(`timesheet-changed`, `timesheet-${data[key].ID}`, `info`, data[key].createdAt, `Director: ${data[key].name}<br />New Hours: ${moment(data[key].scheduled_in).format("hh:mm A")} - ${moment(data[key].scheduled_out).format("hh:mm A")}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
+                                addNotification(`timesheet-changed`, `timesheet-${data[key].ID}`, `info`, data[key].createdAt, `Director: ${data[key].name}<br />New Hours: ${moment(data[key].scheduled_in).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].scheduled_out).format("hh:mm A")}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
                             } else {
                                 addNotification(`timesheet-good`, `timesheet-${data[key].ID}`);
                             }
@@ -13321,19 +13360,30 @@ function addNotification(group, ID, level, time, notification, name, buttons) {
         var temp = document.querySelector(`#notification-${ID}`);
         if (temp !== null) {
             Notifications
-                .filter((notif) => notif.ID === ID)
                 .map((notif, index) => {
-                    var temp = document.querySelector(`#notification-${notif.ID}`);
-                    if (temp !== null) {
-                        temp.parentNode.removeChild(temp);
+                    if (notif.ID === ID) {
+                        var temp = document.querySelector(`#notification-${notif.ID}`);
+                        if (temp !== null) {
+                            temp.parentNode.removeChild(temp);
+                        }
+                        Notifications.splice(index, 1);
+
+                        var temp = document.querySelector(`#badge-notifications`);
+                        if (temp) {
+                            temp.innerHTML = Notifications.length;
+                            if (Notifications.length > 0) {
+                                temp.classList = "notification2 badge badge-danger shadow-4";
+                            } else {
+                                temp.classList = "notification2 badge badge-secondary shadow-4";
+                            }
+                        }
                     }
-                    delete Notifications[index];
                 });
         }
         return null;
     }
 
-    Notifications.push({ group: group, ID: ID, level: level, time: time, notification: notification }) - 1;
+    Notifications.push({ group: group, ID: ID, level: level, time: time, notification: notification });
     var temp = document.querySelector(`#notification-group-${group}`);
     if (temp === null) {
         var tempi2 = document.querySelector(`#notification-groups`);
@@ -13366,15 +13416,16 @@ function addNotification(group, ID, level, time, notification, name, buttons) {
             var temp2 = document.querySelector(`#notification-${ID}`);
             if (temp2 !== null) {
                 Notifications
-                    .filter((notif) => notif.ID === ID)
                     .map((notif, index) => {
-                        var temp = document.querySelector(`#notification-${notif.ID}`);
-                        if (temp !== null) {
-                            temp.parentNode.removeChild(temp);
+                        if (notif.ID === ID) {
+                            var temp = document.querySelector(`#notification-${notif.ID}`);
+                            if (temp !== null) {
+                                temp.parentNode.removeChild(temp);
+                            }
+                            Notifications.splice(index, 1);
                         }
-                        delete Notifications[index];
                     });
-                Notifications.push({ group: group, ID: ID, level: level, time: time, notification: notification }) - 1;
+                Notifications.push({ group: group, ID: ID, level: level, time: time, notification: notification });
             }
             temp.innerHTML += `<div class="row text-dark m-1 shadow-1 bg-light-1" style="width: 96%;" id="notification-${ID}">
     <div class="col-9 text-dark" style="font-size: 1em;">
@@ -13386,6 +13437,16 @@ function addNotification(group, ID, level, time, notification, name, buttons) {
         ${moment(time).format("MM/DD/YYYY hh:mm A")}
     </div>
 </div>`;
+        }
+
+        var temp = document.querySelector(`#badge-notifications`);
+        if (temp) {
+            temp.innerHTML = Notifications.length;
+            if (Notifications.length > 0) {
+                temp.classList = "notification2 badge badge-danger shadow-4";
+            } else {
+                temp.classList = "notification2 badge badge-secondary shadow-4";
+            }
         }
     });
 }

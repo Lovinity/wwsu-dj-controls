@@ -213,6 +213,12 @@
                 right: 16px;
             }
 
+            .notification2 {
+                position:absolute;
+                top: 24px;
+                right: 2px;
+            }
+
             .overlay {
                 position: fixed;
                 display: block;
@@ -511,6 +517,10 @@
                     <span class="chip shadow-2" style="margin-left: 10px;" id="operations-state"><i class="chip-icon fas fa-question bg-secondary"></i>Unknown</span>
                     <button type="button" class="close p-2" id="options" aria-label="Options" style="display: none;" title="Access/modify settings, DJs, announcements, logs, and more.">
                         <span aria-hidden="true" id="options-icon"><i class="fas fa-cogs text-white"></i></span>
+                    </button>
+                    <button type="button" class="close p-2" style="position: relative;" id="open-notifications" aria-label="Notifications" title="View Notifications">
+                        <span class="notification2 badge badge-secondary shadow-4" id="badge-notifications" style="font-size: 0.5em;">0</span>
+                        <span aria-hidden="true" id="open-notifications-icon"><i class="fas fa-bell text-white"></i></span>
                     </button>
                     <button type="button" class="close p-2" id="audio-call" aria-label="Audio Call" title="Audio calling status. Click for settings.">
                         <span aria-hidden="true" id="audio-call-span"><i class="fas fa-volume-up" style="color: rgb(16, 16, 16);" id="audio-call-icon"></i></span>
