@@ -12297,11 +12297,13 @@ function loadDJ(dj = null, reset = true) {
                             <div class="col-4">
                                 <span class="text-secondary">UN-SCHEDULED</span><br />
                                 <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                                ${record.missedIDs > 0 ? `<br /><span class="text-primary">⚠Missed IDs: ${record.missedIDs}</span>` : ``}
                             </div>
                             <div class="col-2">
                                 <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
+                ${record.missedIDs > 0 ? `${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}` : ``}
                             </div>
                         </div>`;
                     } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)) && record.happened === 1) {
@@ -12348,6 +12350,7 @@ function loadDJ(dj = null, reset = true) {
                             <div class="col-4">
                                 <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
                                 <span class="text-primary">${tempStart} - ${tempEnd}</span>
+                                ${record.missedIDs > 0 ? `<br /><span class="text-primary">⚠Missed IDs: ${record.missedIDs}</span>` : ``}
                             </div>
                             <div class="col-2">
                                 <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
@@ -12367,11 +12370,13 @@ function loadDJ(dj = null, reset = true) {
                             <div class="col-4">
                                 <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
                                 <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                                ${record.missedIDs > 0 ? `<br /><span class="text-primary">⚠Missed IDs: ${record.missedIDs}</span>` : ``}
                             </div>
                             <div class="col-2">
                                 <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
+                ${record.missedIDs > 0 ? `${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}` : ``}
                             </div>
                         </div>`;
                         }
@@ -12386,11 +12391,13 @@ function loadDJ(dj = null, reset = true) {
                             <div class="col-4">
                                 <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
                                 <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                                ${record.missedIDs > 0 ? `<br /><span class="text-primary">⚠Missed IDs: ${record.missedIDs}</span>` : ``}
                             </div>
                             <div class="col-2">
                                 <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
+                ${record.missedIDs > 0 ? `${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}` : ``}
                             </div>
                         </div>`;
                     } else if (record.happened === 0) {
