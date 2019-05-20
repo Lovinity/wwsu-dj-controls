@@ -234,6 +234,7 @@ function setupRecorder(node) {
     };
 
     recorder.onComplete = function (recorder, blob) {
+        console.log(`Finished encoding. Saving to ${settings.get(`recorder.path`) || ``}/${recorderTitle2}`);
         var arrayBuffer;
         var fileReader = new FileReader();
         fileReader.onload = function () {
@@ -372,7 +373,7 @@ function newRecording(filename, forced = false)
             if (recorderTitle)
             {
                 recorder.startRecording();
-                console.log(`Started recording`);
+                console.log(`Started recording at ${recorderTitle}`);
             }
         } catch (eee) {
             // ignore errors

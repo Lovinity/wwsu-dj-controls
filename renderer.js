@@ -6433,7 +6433,7 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
                     image: `assets/images/userslash.png`,
                     maxWidth: 480,
                     title: 'Excuse / Ignore Reputation',
-                    message: `Are you sure you want to excuse this from the DJ's reputation statistics? Do this if the absence / cancellation was during an optional shows period, or if it was WWSU's fault (eg. maintenance or sports broadcasts).`,
+                    message: `Are you sure you want to excuse this show from the DJ's reputation statistics? Do this if the absence / cancellation was during an optional shows period, or if the issues were WWSU's fault (eg. maintenance or sports broadcasts).`,
                     position: 'center',
                     drag: false,
                     closeOnClick: false,
@@ -6459,6 +6459,62 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
                                     iziToast.show({
                                         title: `Failed to ignore!`,
                                         message: `There was an error trying to ignore the reputation of this record.`,
+                                        timeout: 10000,
+                                        close: true,
+                                        color: 'red',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                }
+                            });
+                        }],
+                        ['<button><b>No</b></button>', function (instance, toast) {
+                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                        }],
+                    ]
+                });
+            } else if (e.target.id.startsWith(`notification-unexcuse-`)) {
+                var recordID = parseInt(e.target.id.replace(`notification-unexcuse-`, ``));
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/userslash.png`,
+                    maxWidth: 480,
+                    title: 'Un-excuse reputation',
+                    message: `Are you sure you want to unexcuse this show from the DJ's reputation? Any absences/cancellations, early/late starts/ends, and other issues will count towards the DJ's reputation stats.`,
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Yes</b></button>', function (instance, toast) {
+                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: recordID, ignore: 0 } }, function (response) {
+                                if (response === 'OK') {
+                                    iziToast.show({
+                                        title: `Reputation un-excused!`,
+                                        message: `This record now registers on the DJ's reputation statistics.`,
+                                        timeout: 15000,
+                                        close: true,
+                                        color: 'green',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                } else {
+                                    console.dir(response);
+                                    iziToast.show({
+                                        title: `Failed to un-excuse!`,
+                                        message: `There was an error trying to un-excuse the reputation of this record.`,
                                         timeout: 10000,
                                         close: true,
                                         color: 'red',
@@ -6958,7 +7014,7 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                                 if (response === 'OK') {
                                     loadDJ(DJData.DJ, true);
                                     iziToast.show({
-                                        title: `Reputation Ignored!`,
+                                        title: `Reputation excused!`,
                                         message: `This record will no longer register on the DJ's reputation statistics.`,
                                         timeout: 15000,
                                         close: true,
@@ -6972,8 +7028,65 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                                 } else {
                                     console.dir(response);
                                     iziToast.show({
-                                        title: `Failed to ignore!`,
-                                        message: `There was an error trying to ignore the reputation of this record.`,
+                                        title: `Failed to excuse!`,
+                                        message: `There was an error trying to excuse the reputation of this record.`,
+                                        timeout: 10000,
+                                        close: true,
+                                        color: 'red',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                }
+                            });
+                        }],
+                        ['<button><b>No</b></button>', function (instance, toast) {
+                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                        }],
+                    ]
+                });
+            } else if (e.target.id.startsWith(`dj-show-logs-unignore-`)) {
+                var record = parseInt(e.target.id.replace(`dj-show-logs-unignore-`, ``));
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/userslash.png`,
+                    maxWidth: 480,
+                    title: 'Un-excuse reputation',
+                    message: `Are you sure you want to un-excuse this from the DJ's reputation statistics? Any absences/cancellations, early/late starts/ends, and so on for this show will count against the DJ's reputation.`,
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Yes</b></button>', function (instance, toast) {
+                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: record, ignore: 0 } }, function (response) {
+                                if (response === 'OK') {
+                                    loadDJ(DJData.DJ, true);
+                                    iziToast.show({
+                                        title: `Reputation un-excused!`,
+                                        message: `This record will now register on the DJ's reputation statistics.`,
+                                        timeout: 15000,
+                                        close: true,
+                                        color: 'green',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                } else {
+                                    console.dir(response);
+                                    iziToast.show({
+                                        title: `Failed to un-excuse!`,
+                                        message: `There was an error trying to un-excuse the reputation of this record.`,
                                         timeout: 10000,
                                         close: true,
                                         color: 'red',
@@ -11647,7 +11760,7 @@ function processAttendance(data, replace = false) {
                 if (prev.indexOf(record.ID) === -1) {
                     // Absences
                     if (record.happened === 0 && record.dj !== null) {
-                        addNotification(`absent-broadcast`, `attendance-${record.ID}`, `urgent`, record.createdAt, `${record.event}<br />Scheduled Time: ${moment(record.scheduledStart).format("hh:mm A")} - ${moment(record.scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${record.ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${record.ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${record.ID}" title="Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : ``}`);
+                        addNotification(`absent-broadcast`, `attendance-${record.ID}`, `urgent`, record.createdAt, `${record.event}<br />Scheduled Time: ${moment(record.scheduledStart).format("hh:mm A")} - ${moment(record.scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${record.ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${record.ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${record.ID}" title="Excuse this show from the DJ's reputation. Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${record.ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
                     }
 
                     // Unscheduled broadcasts
@@ -11657,7 +11770,7 @@ function processAttendance(data, replace = false) {
 
                     // Canceled broadcasts
                     else if (record.happened === -1 && record.dj !== null) {
-                        addNotification(`canceled-broadcast`, `attendance-${record.ID}`, `info`, record.createdAt, `${record.event}<br />Scheduled Time: ${moment(record.scheduledStart).format("hh:mm A")} - ${moment(record.scheduledEnd).format("hh:mm A")}<br />Reason: ${record.happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${record.ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${record.ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${record.ID}" title="Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : ``}`);
+                        addNotification(`canceled-broadcast`, `attendance-${record.ID}`, `info`, record.createdAt, `${record.event}<br />Scheduled Time: ${moment(record.scheduledStart).format("hh:mm A")} - ${moment(record.scheduledEnd).format("hh:mm A")}<br />Reason: ${record.happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${record.ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${record.ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${record.ID}" title="Excuse this show from the DJ's reputation. Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${record.ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
                     } else {
                         addNotification(`broadcast-good`, `attendance-${record.ID}`);
                     }
@@ -11672,7 +11785,7 @@ function processAttendance(data, replace = false) {
                             Attendance.insert(data[key]);
                             // Absences
                             if (data[key].happened === 0 && data[key].dj !== null) {
-                                addNotification(`absent-broadcast`, `attendance-${data[key].ID}`, `urgent`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[key].ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : ``}`);
+                                addNotification(`absent-broadcast`, `attendance-${data[key].ID}`, `urgent`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[key].ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${record.ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
                             }
 
                             // Unscheduled broadcasts
@@ -11682,14 +11795,14 @@ function processAttendance(data, replace = false) {
 
                             // Canceled broadcasts
                             if (data[key].happened === -1 && data[key].dj !== null) {
-                                addNotification(`canceled-broadcast`, `attendance-${data[key].ID}`, `info`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}<br />Reason: ${data[key].happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[key].ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : ``}`);
+                                addNotification(`canceled-broadcast`, `attendance-${data[key].ID}`, `info`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}<br />Reason: ${data[key].happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[key].ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${record.ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
                             }
                             break;
                         case 'update':
                             Attendance({ ID: data[key].ID }).update(data[key]);
                             // Absences
                             if (data[key].happened === 0 && data[key].dj !== null) {
-                                addNotification(`absent-broadcast`, `attendance-${data[key].ID}`, `urgent`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[key].ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : ``}`);
+                                addNotification(`absent-broadcast`, `attendance-${data[key].ID}`, `urgent`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[key].ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${record.ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
                             }
 
                             // Unscheduled broadcasts
@@ -11699,7 +11812,7 @@ function processAttendance(data, replace = false) {
 
                             // Canceled broadcasts
                             else if (data[key].happened === -1 && data[key].dj !== null) {
-                                addNotification(`canceled-broadcast`, `attendance-${data[key].ID}`, `info`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}<br />Reason: ${data[key].happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[key].ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : ``}`);
+                                addNotification(`canceled-broadcast`, `attendance-${data[key].ID}`, `info`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}<br />Reason: ${data[key].happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[key].ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${record.ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
                             } else {
                                 addNotification(`broadcast-good`, `attendance-${data[key].ID}`);
                             }
@@ -12172,6 +12285,20 @@ function loadDJ(dj = null, reset = true) {
                         </div>`;
                     } else if (record.actualStart !== null && record.actualEnd !== null && record.happened === 1) {
                         if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10) {
+                            var tempStart = moment(record.actualStart).format("h:mm A");
+                            var tempEnd = record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`;
+                            if (moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes') >= 10) {
+                                tempStart = `⚠️${moment(record.actualStart).format("h:mm A")}`;
+                            }
+                            if (moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes') <= -10) {
+                                tempStart = `${moment(record.actualStart).format("h:mm A")}⚠️`;
+                            }
+                            if (moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes') >= 10) {
+                                tempEnd = `⚠️${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}`;
+                            }
+                            if (moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes') <= -10) {
+                                tempEnd = `${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}⚠️`;
+                            }
                             newAtt += `<div class="row m-1 bg-light-1 border-left border-warning shadow-2" style="border-left-width: 5px !important;" title="The DJ signed on or off 10 or more minutes before or after scheduled time.">
                             <div class="col-2 text-danger">
                                 ${moment(theDate).format("MM/DD/YYYY")}
@@ -12181,13 +12308,13 @@ function loadDJ(dj = null, reset = true) {
                             </div>
                             <div class="col-4">
                                 <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
-                                <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                                <span class="text-primary">${tempStart} - ${tempEnd}</span>
                             </div>
                             <div class="col-2">
                                 <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
                 <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
                 </button>
-                            ${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse this early/late start/end: Click here if you do not want this to be held against this DJ for this show."><span aria-hidden="true"><i class="fas fa-user-slash text-dark"></i></span>` : ``}
+                            ${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}
                             </div>
                         </div>`;
                         } else {
@@ -12241,8 +12368,7 @@ function loadDJ(dj = null, reset = true) {
                             </div>
                             <div class="col-2">
                         <button type="button" id="dj-show-logs-excused-${record.ID}" class="close" aria-label="Marked Excused" title="Mark this show as having been canceled ahead of time."><span aria-hidden="true"><i class="fas fa-calendar-check text-dark"></i></span></button>
-                        ${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse this absence: Click here if you do not want this to be held against this DJ's reputation."><span aria-hidden="true"><i class="fas fa-user-slash text-dark"></i></span></button>` : ``}
-                            </div>
+                        ${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}                            </div>
                         </div>`;
                     } else if (record.happened === -1) {
                         newAtt += `<div class="row m-1 bg-light-1 border-left border-secondary shadow-2" style="border-left-width: 5px !important;" title="This show was canceled / an excused absence.">
@@ -12258,8 +12384,7 @@ function loadDJ(dj = null, reset = true) {
                             </div>
                             <div class="col-2">
                         <button type="button" id="dj-show-logs-absent-${record.ID}" class="close" aria-label="Marked Absent" title="Mark this show as a non-canceled / unexcused absence."><span aria-hidden="true"><i class="fas fa-calendar-times text-dark"></i></span></button>
-                        ${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse this cancellation: Click here if you do not want this to be held against this DJ's reputation."><span aria-hidden="true"><i class="fas fa-user-slash text-dark"></i></span></button>` : ``}
-                            </div>
+                        ${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}                            </div>
                         </div>`;
                     } else {
                         newAtt += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;" title="This show is scheduled, but has not begun yet.">
