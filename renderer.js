@@ -757,13 +757,9 @@ try {
         }
     });
 
-    ipcRenderer.on(`audio-new-recording`, (event, arg) => {
-        console.log(`Audio reports it started a new recording at ${arg}`);
-        hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `<strong>A recording was started.</strong><br />Path: ${arg}` } }, function (response3) {
-        });
-    });
-
     ipcRenderer.on(`audio-file-saved`, (event, arg) => {
+        hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `<strong>A recording was saved.</strong><br />Path: ${arg}` } }, function (response3) {
+        });
         if (recorderDialog)
             window.close();
     });
@@ -4078,6 +4074,9 @@ document.querySelector("#btn-options-config-categories").onclick = function () {
                         case "noMeta":
                             endText = `(Configured alternate meta will display when any of these tracks play. Also, when a broadcast is starting, the broadcast is considered started when no more tracks from noMeta are playing.)`;
                             break;
+                        case "noFade":
+                            endText = `(At the top of every hour, RadioDJ checks these tracks' cue points. If a fade in or fade out is set, it will be set those to 0 for no fading.)`;
+                            break;
                     }
                     temp2.innerHTML += `<div class="row m-1 bg-light-1 shadow-2" title="Category ${item}">
                             <div class="col-10 text-primary">
@@ -6425,6 +6424,7 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
                             var temp = document.querySelector(`#notification-${notif.ID}`);
                             if (temp !== null) {
                                 temp.parentNode.removeChild(temp);
+                                Notifications.splice(index, 1);
                             }
 
                             var temp = document.querySelector(`#badge-notifications`);

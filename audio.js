@@ -1,12 +1,12 @@
 /* global moment */
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
-var {ipcRenderer} = require('electron');
+var { ipcRenderer } = require('electron');
 var settings = require('electron-settings');
 var Sanitize = require('sanitize-filename');
 const EventEmitter = require('events');
 
-var Meta = {state: 'unknown', playing: false};
+var Meta = { state: 'unknown', playing: false };
 
 window.mainStream = undefined;
 window.mainDevice = undefined;
@@ -33,34 +33,25 @@ ipcRenderer.send('audio-ready', null);
 ipcRenderer.on('new-meta', (event, arg) => {
     var startRecording = null;
     var preText = ``;
-    for (var key in arg)
-    {
-        if (arg.hasOwnProperty(key))
-        {
-            if (key === 'state')
-            {
+    for (var key in arg) {
+        if (arg.hasOwnProperty(key)) {
+            if (key === 'state' && arg[key] !== Meta[key]) {
                 console.log(Meta.state);
                 console.log(arg[key]);
-                if (arg[key] === 'live_on' || arg[key] === 'live_prerecord')
-                {
+                if (arg[key] === 'live_on' || arg[key] === 'live_prerecord') {
                     startRecording = 'live';
                     preText = `${sanitize(Meta.show)}${arg[key] === 'live_prerecord' ? ` PRERECORDED` : ``}`;
-                } else if (arg[key] === 'remote_on')
-                {
+                } else if (arg[key] === 'remote_on') {
                     startRecording = 'remote';
                     preText = sanitize(Meta.show);
-                } else if (arg[key] === 'sports_on' || arg[key] === 'sportsremote_on')
-                {
+                } else if (arg[key] === 'sports_on' || arg[key] === 'sportsremote_on') {
                     startRecording = 'sports';
                     preText = sanitize(Meta.show);
-                } else if ((arg[key] === `automation_on` || arg[key] === `automation_genre` || arg[key] === `automation_playlist`) && (!Meta.state.startsWith("automation_") || Meta.state !== arg[key]))
-                {
+                } else if (arg[key] === `automation_on` || arg[key] === `automation_genre` || arg[key] === `automation_playlist`) {
                     startRecording = 'automation';
                     preText = sanitize(Meta.genre);
-                } else if (arg[key].includes("_break") || arg[key].includes("_returning") || arg[key].includes("_halftime"))
-                {
-                    if (recordAudio)
-                    {
+                } else if (arg[key].includes("_break") || arg[key].includes("_returning") || arg[key].includes("_halftime")) {
+                    if (recordAudio) {
                         stopRecording();
                     }
                 }
@@ -72,9 +63,7 @@ ipcRenderer.on('new-meta', (event, arg) => {
     console.log(startRecording);
     console.log(recordAudio);
     if (startRecording !== null) {
-        if (recordAudio)
-        {
-            ipcRenderer.send(`audio-new-recording`, `${settings.get(`recorder.path`)}/${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`);
+        if (recordAudio) {
             newRecording(`${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`);
         }
     }
@@ -93,8 +82,7 @@ ipcRenderer.on('audio-should-record', (event, arg) => {
 
 ipcRenderer.on('audio-file-saved', (event, arg) => {
     console.log(`Main reports the file was saved.`);
-    if (newRecorder)
-    {
+    if (newRecorder) {
         newRecorder = false;
         recorder.destroyWorker();
     }
@@ -102,11 +90,40 @@ ipcRenderer.on('audio-file-saved', (event, arg) => {
 
 ipcRenderer.on('audio-shut-down', (event, arg) => {
     console.log(`Main wants us to shut down.`);
-    if (recorder && recorder.isRecording())
-    {
+    if (recorder && recorder.isRecording()) {
         stopRecording(true);
     } else {
         ipcRenderer.send(`audio-nothing-to-save`, null);
+    }
+});
+
+ipcRenderer.on('audio-start-new-recording', (event, arg) => {
+    var startRecording = null;
+    var preText = ``;
+    if (Meta.state === 'live_on' || Meta.state === 'live_prerecord') {
+        startRecording = 'live';
+        preText = `${sanitize(Meta.show)}${Meta.state === 'live_prerecord' ? ` PRERECORDED` : ``}`;
+    } else if (Meta.state === 'remote_on') {
+        startRecording = 'remote';
+        preText = sanitize(Meta.show);
+    } else if (Meta.state === 'sports_on' || Meta.state === 'sportsremote_on') {
+        startRecording = 'sports';
+        preText = sanitize(Meta.show);
+    } else if (Meta.state === `automation_on` || Meta.state === `automation_genre` || Meta.state === `automation_playlist`) {
+        startRecording = 'automation';
+        preText = sanitize(Meta.genre);
+    } else if (Meta.state.includes("_break") || Meta.state.includes("_returning") || Meta.state.includes("_halftime")) {
+        if (recordAudio) {
+            stopRecording();
+        }
+    } else {
+        startRecording = 'automation';
+        preText = sanitize(Meta.genre);
+    }
+    if (startRecording !== null) {
+        if (recordAudio) {
+            newRecording(`${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`);
+        }
     }
 });
 
@@ -114,70 +131,67 @@ function getAudioMain(device) {
     console.log(`getting audio main`);
     navigator.mediaDevices.getUserMedia({
         "audio": {
-            deviceId: device ? {exact: device} : undefined,
+            deviceId: device ? { exact: device } : undefined,
             echoCancellation: false,
             channelCount: 2
         },
         video: false
     })
-            .then((stream) => {
-                console.log(`getUserMedia initiated`);
-                var restartRecorder = false;
-                // Reset stuff
-                try {
-                    audioMeter.shutdown();
-                    audioMeter = undefined;
-                    window.mainStream.getTracks().forEach(track => track.stop());
-                    analyserStream2 = undefined;
-                    window.mainStream = undefined;
-                } catch (eee) {
-                    // ignore errors
+        .then((stream) => {
+            console.log(`getUserMedia initiated`);
+            var restartRecorder = false;
+            // Reset stuff
+            try {
+                audioMeter.shutdown();
+                audioMeter = undefined;
+                window.mainStream.getTracks().forEach(track => track.stop());
+                analyserStream2 = undefined;
+                window.mainStream = undefined;
+            } catch (eee) {
+                // ignore errors
+            }
+
+            window.mainStream = stream;
+            window.mainDevice = device;
+            window.mainVolume = -100;
+
+            analyserStream2 = audioContext2.createMediaStreamSource(stream);
+            audioMeter = createAudioMeter(audioContext2);
+            analyserStream2.connect(audioMeter);
+            audioMeter.events.on(`volume-processed`, (volume, clipping, maxVolume) => {
+                // Silence detection
+                if (maxVolume <= 0.1) {
+                    if (silenceState === 0 || silenceState === -1) {
+                        silenceState = 1;
+                        silenceTimer = setTimeout(function () {
+                            silenceState = 2;
+                            ipcRenderer.send(`audio-silence`, true);
+                        }, settings.get(`silence.time`) || 10000);
+                    }
+                } else {
+                    if (silenceState === 2 || silenceState === -1)
+                        ipcRenderer.send(`audio-silence`, false);
+                    silenceState = 0;
+                    clearTimeout(silenceTimer);
                 }
 
-                window.mainStream = stream;
-                window.mainDevice = device;
-                window.mainVolume = -100;
-
-                analyserStream2 = audioContext2.createMediaStreamSource(stream);
-                audioMeter = createAudioMeter(audioContext2);
-                analyserStream2.connect(audioMeter);
-                audioMeter.events.on(`volume-processed`, (volume, clipping, maxVolume) => {
-                    // Silence detection
-                    if (maxVolume <= 0.1)
-                    {
-                        if (silenceState === 0 || silenceState === -1)
-                        {
-                            silenceState = 1;
-                            silenceTimer = setTimeout(function () {
-                                silenceState = 2;
-                                ipcRenderer.send(`audio-silence`, true);
-                            }, settings.get(`silence.time`) || 10000);
-                        }
-                    } else {
-                        if (silenceState === 2 || silenceState === -1)
-                            ipcRenderer.send(`audio-silence`, false);
-                        silenceState = 0;
-                        clearTimeout(silenceTimer);
-                    }
-
-                    ipcRenderer.send(`audio-audio-info`, [maxVolume, clipping, silenceState]);
-                });
-
-                setupRecorder(analyserStream2);
-
-                settings.set(`audio.input.main`, device);
-            })
-            .catch((err) => {
-                console.error(err);
-                ipcRenderer.send(`audio-device-input-error`, null);
+                ipcRenderer.send(`audio-audio-info`, [maxVolume, clipping, silenceState]);
             });
+
+            setupRecorder(analyserStream2);
+
+            settings.set(`audio.input.main`, device);
+        })
+        .catch((err) => {
+            console.error(err);
+            ipcRenderer.send(`audio-device-input-error`, null);
+        });
 }
 
 function setupRecorder(node) {
     // Stop any active recordings
     try {
-        if (recorder.isRecording())
-        {
+        if (recorder.isRecording()) {
             recorderTitle2 = recorderTitle;
             recorder.finishRecording();
             console.log(`Finished recording`);
@@ -207,27 +221,21 @@ function setupRecorder(node) {
         var startRecording = null;
         var preText = ``;
         console.log(`Encoder Loaded.`);
-        if (Meta.state === 'live_on' || Meta.state === `live_prerecord`)
-        {
+        if (Meta.state === 'live_on' || Meta.state === `live_prerecord`) {
             startRecording = 'live';
             preText = `${sanitize(Meta.show)}${Meta.state === `live_prerecord` ? ` PRERECORDED` : ``}`;
-        } else if (Meta.state === 'remote_on')
-        {
+        } else if (Meta.state === 'remote_on') {
             startRecording = 'remote';
             preText = sanitize(Meta.show);
-        } else if (Meta.state === 'sports_on' || Meta.state === 'sportsremote_on')
-        {
+        } else if (Meta.state === 'sports_on' || Meta.state === 'sportsremote_on') {
             startRecording = 'sports';
             preText = sanitize(Meta.show);
-        } else if (Meta.state.startsWith("automation_") && (!Meta.state.includes("_break") && !Meta.state.includes("_returning") && !Meta.state.includes("_halftime")))
-        {
+        } else if (Meta.state.startsWith("automation_") && (!Meta.state.includes("_break") && !Meta.state.includes("_returning") && !Meta.state.includes("_halftime"))) {
             startRecording = 'automation';
             preText = sanitize(Meta.genre);
         }
         if (startRecording !== null) {
-            ipcRenderer.send(`audio-new-recording`, `${settings.get(`recorder.path`)}/${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`);
-            if (recordAudio)
-            {
+            if (recordAudio) {
                 newRecording(`${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`, true);
             }
         }
@@ -243,6 +251,36 @@ function setupRecorder(node) {
         };
         fileReader.readAsArrayBuffer(blob);
     };
+
+    recorder.onTimeout = function () {
+        var startRecording = null;
+        var preText = ``;
+        if (Meta.state === 'live_on' || Meta.state === 'live_prerecord') {
+            startRecording = 'live';
+            preText = `${sanitize(Meta.show)}${Meta.state === 'live_prerecord' ? ` PRERECORDED` : ``}`;
+        } else if (Meta.state === 'remote_on') {
+            startRecording = 'remote';
+            preText = sanitize(Meta.show);
+        } else if (Meta.state === 'sports_on' || Meta.state === 'sportsremote_on') {
+            startRecording = 'sports';
+            preText = sanitize(Meta.show);
+        } else if (Meta.state === `automation_on` || Meta.state === `automation_genre` || Meta.state === `automation_playlist`) {
+            startRecording = 'automation';
+            preText = sanitize(Meta.genre);
+        } else if (Meta.state.includes("_break") || Meta.state.includes("_returning") || Meta.state.includes("_halftime")) {
+            if (recordAudio) {
+                stopRecording();
+            }
+        } else {
+            startRecording = 'automation';
+            preText = sanitize(Meta.genre);
+        }
+        if (startRecording !== null) {
+            if (recordAudio) {
+                newRecording(`${startRecording}/${preText} (${moment().format("YYYY_MM_DD HH_mm_ss")}).mp3`);
+            }
+        }
+    }
 
 }
 
@@ -277,19 +315,19 @@ function createAudioMeter(audioContext, clipLevel, averaging, clipLag) {
     processor.connect(audioContext.destination);
 
     processor.checkClipping =
-            function () {
-                if (!this.clipping)
-                    return false;
-                if ((this.lastClip + this.clipLag) < window.performance.now())
-                    this.clipping = false;
-                return this.clipping;
-            };
+        function () {
+            if (!this.clipping)
+                return false;
+            if ((this.lastClip + this.clipLag) < window.performance.now())
+                this.clipping = false;
+            return this.clipping;
+        };
 
     processor.shutdown =
-            function () {
-                this.disconnect();
-                this.onaudioprocess = null;
-            };
+        function () {
+            this.disconnect();
+            this.onaudioprocess = null;
+        };
 
     return processor;
 }
@@ -356,13 +394,11 @@ function getRecordingPath() {
     return undefined;
 }
 
-function newRecording(filename, forced = false)
-{
+function newRecording(filename, forced = false) {
     var _newRecording = () => {
         recorderTitle = filename;
         try {
-            if (recorder.isRecording())
-            {
+            if (recorder.isRecording()) {
                 recorder.finishRecording();
                 console.log(`Finished recording`);
             }
@@ -370,8 +406,7 @@ function newRecording(filename, forced = false)
             // ignore errors
         }
         try {
-            if (recorderTitle)
-            {
+            if (recorderTitle) {
                 recorder.startRecording();
                 console.log(`Started recording at ${recorderTitle}`);
             }
@@ -381,8 +416,7 @@ function newRecording(filename, forced = false)
     };
 
     recorderTitle2 = recorderTitle;
-    if (forced)
-    {
+    if (forced) {
         _newRecording();
     } else if (!recorderPending) {
         console.log(`Making new recording after delay`);
@@ -391,15 +425,13 @@ function newRecording(filename, forced = false)
             _newRecording();
             recorderPending = false;
         }, settings.get(`recorder.delay`) || 1);
-}
+    }
 }
 
-function stopRecording(forced = false)
-{
+function stopRecording(forced = false) {
     var _stopRecording = () => {
         try {
-            if (recorder.isRecording())
-            {
+            if (recorder.isRecording()) {
                 recorder.finishRecording();
                 console.log(`Finished recording`);
             }
@@ -409,13 +441,12 @@ function stopRecording(forced = false)
     };
 
     recorderTitle2 = recorderTitle;
-    if (forced)
-    {
+    if (forced) {
         _stopRecording();
     } else {
         console.log(`Finishing recording after delay`);
         setTimeout(function () {
             _stopRecording();
         }, settings.get(`recorder.delay`) || 1);
-}
+    }
 }

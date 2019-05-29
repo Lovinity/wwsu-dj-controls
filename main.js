@@ -482,8 +482,8 @@ ipcMain.on('audio-save-file', (event, arg) => {
             if (err) {
                 console.log("err", err);
             } else {
-                audioWindow.webContents.send(`audio-file-saved`, true);
-                mainWindow.webContents.send(`audio-file-saved`, true);
+                audioWindow.webContents.send(`audio-file-saved`, arg[0]);
+                mainWindow.webContents.send(`audio-file-saved`, arg[0]);
             }
         });
     } catch (e) {
@@ -512,7 +512,7 @@ ipcMain.on('audio-nothing-to-save', (event, arg) => {
 ipcMain.on('audio-start-new-recording', (event, arg) => {
     try {
         console.log(`Audio start new recording ${arg}`);
-        audioWindow.webContents.send('new-meta', { state: Meta.state });
+        audioWindow.webContents.send('audio-start-new-recording', true);
     } catch (e) {
 
     }
