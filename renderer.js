@@ -2416,7 +2416,7 @@ document.querySelector("#btn-options-config-meta").onclick = function () {
                 },
             },
             "value": {
-                "mClearTime": Config.Meta.clearTime || 0,
+                "mClearTime": Config.meta.clearTime || 0,
             },
             "onSubmitValid": function (values) {
                 directorReq.request({
@@ -2510,13 +2510,13 @@ document.querySelector("#btn-options-config-meta-alt").onclick = function () {
                 },
             },
             "value": {
-                "mAutomation": Config.Meta.alt.automation || ``,
-                "mPlaylist": Config.Meta.alt.playlist || ``,
-                "mGenre": Config.Meta.alt.genre || ``,
-                "mLive": Config.Meta.alt.live || ``,
-                "mPrerecord": Config.Meta.alt.prerecord || ``,
-                "mRemote": Config.Meta.alt.remote || ``,
-                "mSports": Config.Meta.alt.sports || ``,
+                "mAutomation": Config.meta.alt.automation || ``,
+                "mPlaylist": Config.meta.alt.playlist || ``,
+                "mGenre": Config.meta.alt.genre || ``,
+                "mLive": Config.meta.alt.live || ``,
+                "mPrerecord": Config.meta.alt.prerecord || ``,
+                "mRemote": Config.meta.alt.remote || ``,
+                "mSports": Config.meta.alt.sports || ``,
             },
             "onSubmitValid": function (values) {
                 directorReq.request({
@@ -2646,19 +2646,19 @@ document.querySelector("#btn-options-config-meta-prefix").onclick = function () 
                 },
             },
             "value": {
-                "mAutomation": Config.Meta.prefix.automation || ``,
-                "mGenre": Config.Meta.prefix.genre || ``,
-                "mPlaylist": Config.Meta.prefix.playlist || ``,
-                "mRequest": Config.Meta.prefix.request || ``,
-                "mPendLive": Config.Meta.prefix.pendLive || ``,
-                "mPendPrerecord": Config.Meta.prefix.pendPrerecord || ``,
-                "mPendRemote": Config.Meta.prefix.pendRemote || ``,
-                "mPendSports": Config.Meta.prefix.pendSports || ``,
-                "mPrerecord": Config.Meta.prefix.prerecord || ``,
-                "mLive": Config.Meta.prefix.live || ``,
-                "mRemote": Config.Meta.prefix.remote || ``,
-                "mSports": Config.Meta.prefix.sports || ``,
-                "mPlaying": Config.Meta.prefix.playing || ``,
+                "mAutomation": Config.meta.prefix.automation || ``,
+                "mGenre": Config.meta.prefix.genre || ``,
+                "mPlaylist": Config.meta.prefix.playlist || ``,
+                "mRequest": Config.meta.prefix.request || ``,
+                "mPendLive": Config.meta.prefix.pendLive || ``,
+                "mPendPrerecord": Config.meta.prefix.pendPrerecord || ``,
+                "mPendRemote": Config.meta.prefix.pendRemote || ``,
+                "mPendSports": Config.meta.prefix.pendSports || ``,
+                "mPrerecord": Config.meta.prefix.prerecord || ``,
+                "mLive": Config.meta.prefix.live || ``,
+                "mRemote": Config.meta.prefix.remote || ``,
+                "mSports": Config.meta.prefix.sports || ``,
+                "mPlaying": Config.meta.prefix.playing || ``,
             },
             "onSubmitValid": function (values) {
                 directorReq.request({
