@@ -8621,7 +8621,7 @@ function hostSocket(cb = function (token) { }) {
             if (client.otherHosts)
                 processHosts(client.otherHosts, true);
 
-            ipcRenderer.send(`audio-should-record`, !client.recordAudio);
+            ipcRenderer.send(`audio-should-record`, client.recordAudio);
             //authtoken = client.token;
             if (!client.authorized) {
                 var noConnection = document.getElementById('no-connection');

@@ -591,7 +591,7 @@ function createPeerWindow() {
 }
 
 function createAudioWindow() {
-    audioWindow = new BrowserWindow({ show: true, webPreferences: { backgroundThrottling: false, nodeIntegration: true } });
+    audioWindow = new BrowserWindow({ show: false, webPreferences: { backgroundThrottling: false, nodeIntegration: true } });
     audioWindow.loadFile('audio.html');
 
     audioWindow.on('closed', function () {
