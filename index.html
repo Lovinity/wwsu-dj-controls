@@ -2860,7 +2860,7 @@
     </div>
 
     <div class="modal" id="options-modal-underwriting" tabindex="-1" role="dialog">
-        <div class="modal-content text-dark bg-light-1">
+        <div class="modal-content text-dark bg-light-2">
             <header class="navbar navbar-full bg-success doc-navbar-default">
                 <span class="navbar-brand mr-auto text-white">New/Edit Underwriting</span>
                 <div class="iziModal-header-buttons"><a href="javascript:void(0)"
@@ -2878,14 +2878,10 @@
                         <option value="">Choose an underwriting track...</option>
                     </select>
                 </div>
-                <p>
-                    Status: <strong><span id="modal-underwriting-status">Unknown</span></strong> (set in RadioDJ)<br />
-                    Start Date: <strong><span id="modal-underwriting-start">Unknown</span></strong> (Set in
-                    RadioDJ)<br />
-                    End Date: <strong><span id="modal-underwriting-end">Unknown</span></strong> (set in RadioDJ)<br />
-                    Spin Count Limit: <strong><span id="modal-underwriting-limit">Unknown</span></strong> (set in
-                    RadioDJ)<br />
-                    Spins So Far: <strong><span id="modal-underwriting-spins">Unknown</span></strong><br />
+                <p class="bg-light-1 shadow-1">
+                    Track is <strong><span id="modal-underwriting-status">Unknown</span></strong>.<br />
+                    Will air <strong><span id="modal-underwriting-start">Unknown</span></strong> through <strong><span id="modal-underwriting-end">Unknown</span></strong>.<br />
+                    Aired <strong><span id="modal-underwriting-spins">Unknown</span></strong> out of <strong><span id="modal-underwriting-limit">Unknown</span></strong> times so far.
                 </p>
                 <div class="custom-control custom-switch"
                     title="Specify manual times for this underwriting to queue rather than it being determined automatically.">
@@ -2909,16 +2905,17 @@
                     <div id="modal-underwriting-schedule-list"
                         style="max-height: 240px; width: 100%; overflow-y: scroll;">
                     </div>
-                    <div class="bs-callout bs-callout-info shadow-4 text-white">
-                    *If no date/time nor show filters are specified, the underwriting will air any day at any time (we recommend using automatic airing instead, which accounts online listeners).<br />
-                    *If date/time filters specified but no show filters, underwriting will air during specified dates/times regardless of what show is airing.<br />
-                    *If show filters specified but no date/time filters, underwriting will air during any of the specified shows regardless of date/time.<br />
-                    *If both date/time and show filters specified, underwriting will only air during specified dates/times and only if any of the specified shows are airing.
-                    </div>
                     <button type="button" class="btn btn-success btn" id="modal-underwriting-schedule-new"
                         title="Specify dates and times this underwriting should air. Multiple entries allowed.">Add Date/Time Filter</button>
                         <button type="button" class="btn btn-urgent btn" id="modal-underwriting-schedule-new-show"
                         title="Specify names of shows this underwriting should air. Multiple entries allowed.">Add Show Filter</button>
+                    <div class="bs-callout bs-callout-info shadow-4 text-white">
+                    <h4>How filters work</h4>
+                    *<strong>No date/time nor show filters</strong>: will air anytime.<br />
+                    *<strong>Date/time filters but no show filters</strong>: will air during any specified dates/times.<br />
+                    *<strong>Show filters but no date/time filters</strong>: will air during any specified shows/broadcasts.<br />
+                    *<strong>Both date/time filters and show filters</strong>: will air during any specified shows/broadcasts only if the current date/time matches any date/time filters.
+                    </div>
                 </div>
             </div>
             <div class="modal-footer bg-light-1" id="modal-underwriting-buttons">
