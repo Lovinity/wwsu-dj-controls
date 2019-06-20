@@ -1393,7 +1393,7 @@
                     <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                         <button type="button" id="btn-options-underwritings" class="btn btn-purple btn-float"
                             title="Manage the airing of underwritings in the automation system."><i
-                                class="fas fa-ban"></i></button>
+                                class="fas fa-dollar-sign"></i></button>
                         <div style="text-align: center; font-size: 1em;">Manage Underwritings</div>
                     </div>
                     <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
@@ -2868,11 +2868,13 @@
                         title="Close this window"></a></div>
             </header>
             <div class="modal-body">
-                <div class="form-group" title="Give a name to this underwriting, which will be used to identify it in the status system if it falls behind schedule.">
+                <div class="form-group"
+                    title="Give a name to this underwriting, which will be used to identify it in the status system if it falls behind schedule.">
                     <label for="modal-underwriting-name">Underwriting Name</label>
                     <input class="form-control m-1" id="modal-underwriting-name" type="text">
                 </div>
-                <div class="form-group" title="Choose which underwriting track is associated with this underwriting entry.">
+                <div class="form-group"
+                    title="Choose which underwriting track is associated with this underwriting entry.">
                     <label for="modal-underwriting-track">Track in RadioDJ</label>
                     <select class="form-control" id="modal-underwriting-track">
                         <option value="">Choose an underwriting track...</option>
@@ -2880,14 +2882,18 @@
                 </div>
                 <p class="bg-light-1 shadow-1">
                     Track is <strong><span id="modal-underwriting-status">Unknown</span></strong>.<br />
-                    Will air <strong><span id="modal-underwriting-start">Unknown</span></strong> through <strong><span id="modal-underwriting-end">Unknown</span></strong>.<br />
-                    Aired <strong><span id="modal-underwriting-spins">Unknown</span></strong> out of <strong><span id="modal-underwriting-limit">Unknown</span></strong> times so far.
+                    Will air <strong><span id="modal-underwriting-start">Unknown</span></strong> through <strong><span
+                            id="modal-underwriting-end">Unknown</span></strong>.<br />
+                    Aired <strong><span id="modal-underwriting-spins">Unknown</span></strong> out of <strong><span
+                            id="modal-underwriting-limit">Unknown</span></strong> times so far.<br />
+                    <div id="modal-underwriting-track-button"></div>
                 </p>
                 <div class="custom-control custom-switch"
                     title="Specify manual times for this underwriting to queue rather than it being determined automatically.">
                     <input class="custom-control-input" id="modal-underwriting-manual" type="checkbox">
                     <span class="custom-control-track"></span>
-                    <label class="custom-control-label" for="modal-underwriting-manual">Specify a schedule and/or show filters for this underwriting?</label><br />
+                    <label class="custom-control-label" for="modal-underwriting-manual">Specify a schedule and/or show
+                        filters for this underwriting?</label><br />
                     <small>(If switch is off, system will queue the underwriting at automatic times depending on the
                         number of online listeners connected)</small>
                 </div>
@@ -2906,15 +2912,20 @@
                         style="max-height: 240px; width: 100%; overflow-y: scroll;">
                     </div>
                     <button type="button" class="btn btn-success btn" id="modal-underwriting-schedule-new"
-                        title="Specify dates and times this underwriting should air. Multiple entries allowed.">Add Date/Time Filter</button>
-                        <button type="button" class="btn btn-urgent btn" id="modal-underwriting-schedule-new-show"
-                        title="Specify names of shows this underwriting should air. Multiple entries allowed.">Add Show Filter</button>
+                        title="Specify dates and times this underwriting should air. Multiple entries allowed.">Add
+                        Date/Time Filter</button>
+                    <button type="button" class="btn btn-urgent btn" id="modal-underwriting-schedule-new-show"
+                        title="Specify names of shows this underwriting should air. Multiple entries allowed.">Add Show
+                        Filter</button>
                     <div class="bs-callout bs-callout-info shadow-4 text-white">
-                    <h4>How filters work</h4>
-                    *<strong>No date/time nor show filters</strong>: will air anytime.<br />
-                    *<strong>Date/time filters but no show filters</strong>: will air during any specified dates/times.<br />
-                    *<strong>Show filters but no date/time filters</strong>: will air during any specified shows/broadcasts.<br />
-                    *<strong>Both date/time filters and show filters</strong>: will air during any specified shows/broadcasts only if the current date/time matches any date/time filters.
+                        <h4>How filters work</h4>
+                        *<strong>No date/time nor show filters</strong>: will air anytime.<br />
+                        *<strong>Date/time filters but no show filters</strong>: will air during any specified
+                        dates/times.<br />
+                        *<strong>Show filters but no date/time filters</strong>: will air during any specified
+                        shows/broadcasts.<br />
+                        *<strong>Both date/time filters and show filters</strong>: will air during any specified
+                        shows/broadcasts only if the current date/time matches any date/time filters.
                     </div>
                 </div>
             </div>
@@ -3090,12 +3101,95 @@
                     <input class="form-control m-1" id="underwriting-schedule-show-input" type="text">
                 </div>
                 <div class="bs-callout bs-callout-info shadow-4 text-white">
-                    <strong>Be sure to type the show in exactly as it is used in the system / Google Calendar (without the prefix), case sensitive.</strong><br />
-                    *Shows / Remotes: Use the format "DJ / Host Handle - Show Name" (eg. "DJ Music - The Music Show" without the quotes).<br />
+                    <strong>Be sure to type the show in exactly as it is used in the system / Google Calendar (without
+                        the prefix), case sensitive.</strong><br />
+                    *Shows / Remotes: Use the format "DJ / Host Handle - Show Name" (eg. "DJ Music - The Music Show"
+                    without the quotes).<br />
                     *Sports: Specify the name of the sport, (eg. "Men's Basketball" without the quotes).
                 </div>
             </div>
             <div class="modal-footer bg-light-1" id="underwriting-schedule-show-buttons">
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="trackModal" tabindex="-1" role="dialog">
+        <div class="modal-content text-dark bg-light-2">
+            <header class="navbar navbar-full bg-info doc-navbar-default">
+                <span class="navbar-brand mr-auto text-white">Track Information</span>
+                <div class="iziModal-header-buttons"><a href="javascript:void(0)"
+                        class="iziModal-button iziModal-button-close" data-izimodal-close=""
+                        title="Close this window"></a></div>
+            </header>
+            <div class="modal-body">
+                <table class="table table-hover text-dark" border="1" cellpadding="1" cellspacing="1"
+                    style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th scope="col"><strong>Name</strong></th>
+                            <th scope="col"><strong>Value</strong></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Track ID</td>
+                            <td id="track-info-ID"></td>
+                        </tr>
+                        <tr>
+                            <td>Status</td>
+                            <td id="track-info-status"></td>
+                        </tr>
+                        <tr>
+                            <td>Artist</td>
+                            <td id="track-info-artist"></td>
+                        </tr>
+                        <tr>
+                            <td>Title</td>
+                            <td id="track-info-title"></td>
+                        </tr>
+                        <tr>
+                            <td>Album</td>
+                            <td id="track-info-album"></td>
+                        </tr>
+                        <tr>
+                            <td>Genre</td>
+                            <td id="track-info-genre"></td>
+                        </tr>
+                        <tr>
+                            <td>Duration</td>
+                            <td id="track-info-duration"></td>
+                        </tr>
+                        <tr>
+                            <td>Date Last Played</td>
+                            <td id="track-info-lastplayed"></td>
+                        </tr>
+                        <tr>
+                            <td>Track Limits</td>
+                            <td id="track-info-limits"></td>
+                        </tr>
+                        <tr>
+                            <td>Spin Counts</td>
+                            <td>
+                                <ul>
+                                    <li id="track-info-spins7"></li>
+                                    <li id="track-info-spins30"></li>
+                                    <li id="track-info-spinsytd"></li>
+                                    <li id="track-info-spinsyear"></li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="row m-1 bg-light-1 shadow-2">
+                    <div class="col-12 text-primary">
+                        Dates / Times aired
+                    </div>
+                </div>
+                <div class="container text-dark bg-light-1" id="track-spins-list"
+                    style="max-height: 240px; overflow-y: scroll;">
+                </div>
+            </div>
+            <div class="modal-footer bg-light-1">
             </div>
         </div>
     </div>
