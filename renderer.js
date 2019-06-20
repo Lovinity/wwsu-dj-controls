@@ -21,14 +21,14 @@ try {
 
     // Define constants
     var main = require('electron').remote.require('./main');
-    const { remote } = window.require('electron');
+    const {remote} = window.require('electron');
     var notifier = require('./electron-notifications/index.js');
     var settings = require('electron-settings');
-    var { webFrame, ipcRenderer } = require('electron');
+    var {webFrame, ipcRenderer} = require('electron');
     var transform = require('sdp-transform');
 
     // Define data variables
-    var Meta = { time: moment().toISOString(), lastID: moment().toISOString(), state: 'unknown', line1: '', line2: '', queueFinish: null, trackFinish: null };
+    var Meta = {time: moment().toISOString(), lastID: moment().toISOString(), state: 'unknown', line1: '', line2: '', queueFinish: null, trackFinish: null};
     var Attendance = TAFFY();
     var Calendar = TAFFY();
     var Discipline = TAFFY();
@@ -111,9 +111,9 @@ try {
                     maxWidth: 480,
                     buttons: [
                         ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
-                            endShow();
-                            instance.hide({}, toast, 'button');
-                        }]
+                                endShow();
+                                instance.hide({}, toast, 'button');
+                            }]
                     ]
                 });
             }
@@ -146,9 +146,9 @@ try {
                     maxWidth: 480,
                     buttons: [
                         ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
-                            endShow();
-                            instance.hide({}, toast, 'button');
-                        }]
+                                endShow();
+                                instance.hide({}, toast, 'button');
+                            }]
                     ]
                 });
             }
@@ -181,13 +181,13 @@ try {
                     maxWidth: 480,
                     buttons: [
                         ['<button>Switch Show</button>', function (instance, toast, button, e, inputs) {
-                            switchShow();
-                            instance.hide({}, toast, 'button');
-                        }],
+                                switchShow();
+                                instance.hide({}, toast, 'button');
+                            }],
                         ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
-                            endShow();
-                            instance.hide({}, toast, 'button');
-                        }]
+                                endShow();
+                                instance.hide({}, toast, 'button');
+                            }]
                     ]
                 });
             }
@@ -220,9 +220,9 @@ try {
                     maxWidth: 480,
                     buttons: [
                         ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
-                            endShow();
-                            instance.hide({}, toast, 'button');
-                        }]
+                                endShow();
+                                instance.hide({}, toast, 'button');
+                            }]
                     ]
                 });
             }
@@ -255,9 +255,9 @@ try {
                     maxWidth: 480,
                     buttons: [
                         ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
-                            endShow();
-                            instance.hide({}, toast, 'button');
-                        }]
+                                endShow();
+                                instance.hide({}, toast, 'button');
+                            }]
                     ]
                 });
             }
@@ -297,7 +297,7 @@ try {
 
     ipcRenderer.on(`peer-register`, (event, arg) => {
         console.log(`Registering peer ID ${arg}`);
-        hostReq.request({ method: 'POST', url: '/recipients/register-peer', data: { peer: arg } }, function (body) {
+        hostReq.request({method: 'POST', url: '/recipients/register-peer', data: {peer: arg}}, function (body) {
             ipcRenderer.send('peer-try-calls', null);
         });
     });
@@ -330,9 +330,9 @@ try {
             message: `${arg.friendlyname} is not available at this time. I will wait for the host to report online and then start the broadcast. If you wish to cancel this, please click "cancel".`,
             buttons: [
                 ['<button><b>Cancel</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                    ipcRenderer.send('peer-stop-trying', null);
-                }]
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        ipcRenderer.send('peer-stop-trying', null);
+                    }]
             ]
         });
     });
@@ -342,11 +342,11 @@ try {
         if (client.answerCalls) {
             console.log(`Allowed to answer. Checking hosts.`);
             try {
-                var recipient = Recipients({ peer: arg }).first();
+                var recipient = Recipients({peer: arg}).first();
             } catch (e) {
                 console.log(`The peer ${arg} does not appear in the list of recipients. Not answering the call.`);
             }
-            if (recipient && Hosts({ host: recipient.host, authorized: true, makeCalls: true }).get().length >= 0) {
+            if (recipient && Hosts({host: recipient.host, authorized: true, makeCalls: true}).get().length >= 0) {
                 console.log(`Peer ${arg} is authorized. Answering call...`);
                 ipcRenderer.send('peer-answer-call', null);
             } else {
@@ -391,13 +391,13 @@ try {
             message: `The host receiving audio repeatedly reported choppy audio despite multiple tries to restart the audio call. I sent you to a break. Please ensure you have a reliable network and your audio device is receiving input. Then, click "Resume Broadcast". Or, you can close this window and change settings or end the broadcast.`,
             buttons: [
                 ['<button><b>Resume Broadcast</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                    returnBreak();
-                }],
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        returnBreak();
+                    }],
                 ['<button><b>End Broadcast</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                    endShow();
-                }]
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        endShow();
+                    }]
             ]
         });
 
@@ -453,10 +453,10 @@ try {
             message: `${arg} is not available at this time. I will wait for the host to report online and then start/resume the broadcast. If you wish to cancel this, please click "cancel".`,
             buttons: [
                 ['<button><b>Cancel</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                    $("#connecting-modal").iziModal('close');
-                    ipcRenderer.send(`peer-stop-trying`, null);
-                }]
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        $("#connecting-modal").iziModal('close');
+                        ipcRenderer.send(`peer-stop-trying`, null);
+                    }]
             ]
         });
     });
@@ -497,11 +497,11 @@ try {
             message: `The audio call with ${arg} was dropped. I tried sending you to break. I will wait until both you and the other DJ Controls is back online, and then try the call again. Click "cancel" to abort; clicking cancel will end the broadcast.`,
             buttons: [
                 ['<button><b>Cancel</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                    ipcRenderer.send(`peer-stop-trying`, null);
-                    $("#connecting-modal").iziModal('close');
-                    endShow();
-                }]
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        ipcRenderer.send(`peer-stop-trying`, null);
+                        $("#connecting-modal").iziModal('close');
+                        endShow();
+                    }]
             ]
         });
 
@@ -536,10 +536,10 @@ try {
 
     ipcRenderer.on(`peer-get-host-info`, (event, arg) => {
         console.log(`Peer wants information about host ${arg}.`);
-        var host = Hosts({ host: arg }).first();
+        var host = Hosts({host: arg}).first();
         var peerID = null;
         if (host)
-            peerID = Recipients({ host: host.host }).first().peer;
+            peerID = Recipients({host: host.host}).first().peer;
         ipcRenderer.send(`peer-host-info`, [host, peerID]);
     });
 
@@ -594,9 +594,9 @@ try {
         console.log(`Audio reports silence is ${arg}.`);
         if (client.silenceDetection) {
             if (arg) {
-                hostReq.request({ method: 'POST', url: '/silence/active', data: {} }, function (body) { });
+                hostReq.request({method: 'POST', url: '/silence/active', data: {}}, function (body) { });
             } else {
-                hostReq.request({ method: 'POST', url: '/silence/inactive', data: {} }, function (body) { });
+                hostReq.request({method: 'POST', url: '/silence/inactive', data: {}}, function (body) { });
             }
         }
     });
@@ -729,12 +729,12 @@ try {
         console.log(`Peer reports very bad audio call. Sending this to the server and going to break.`);
         if (!disconnected)
             goBreak(false, true);
-        hostReq.request({ method: 'POST', url: '/call/give-up', data: {} }, function (body) { });
+        hostReq.request({method: 'POST', url: '/call/give-up', data: {}}, function (body) { });
     });
 
     ipcRenderer.on(`peer-bad-call-send`, (event, arg) => {
         console.log(`Peer reports bad audio call. Requesting new call at ${arg} kbps.`);
-        hostReq.request({ method: 'POST', url: '/call/bad', data: { bitRate: arg } }, function (body) { });
+        hostReq.request({method: 'POST', url: '/call/bad', data: {bitRate: arg}}, function (body) { });
     });
 
     ipcRenderer.on(`audio-device-input-error`, (event, arg) => {
@@ -763,10 +763,10 @@ try {
     });
 
     ipcRenderer.on(`audio-file-saved`, (event, arg) => {
-        hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `<strong>A recording was saved.</strong><br />Path: ${arg}` } }, function (response3) {
+        hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'recorder', logsubtype: 'automation', loglevel: 'info', event: `<strong>A recording was saved.</strong><br />Path: ${arg}`}}, function (response3) {
+            if (recorderDialog)
+                window.close();
         });
-        if (recorderDialog)
-            window.close();
     });
 
     ipcRenderer.on(`peer-silence-outgoing`, (event, arg) => {
@@ -841,20 +841,20 @@ try {
                 message: `If you close DJ Controls, you will no longer receive notifications. When you re-open DJ Controls, notifications from the last 7 days will appear. You can also view issues from the last 7 days in the administration menu -> issues.`,
                 buttons: [
                     ['<button><b>Close DJ Controls</b></button>', function (instance, toast) {
-                        instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        window.close();
-                    }, true],
+                            instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            window.close();
+                        }, true],
                     ['<button><b>Cancel</b></button>', function (instance, toast) {
-                        instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        closeDialog = false;
-                    }]
+                            instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            closeDialog = false;
+                        }]
                 ]
             });
             e.returnValue = `Are you sure you want to close DJ Controls? You will no longer receive notifications when DJ Controls is closed.`;
             return false;
-        }
-
-        if (!recorderDialog) {
+        } else if (!recorderDialog) {
+            $("#wait-modal").iziModal('open');
+            document.querySelector("#wait-text").innerHTML = `Saving audio recording before closing...`;
             ipcRenderer.send(`audio-shut-down`, true);
             e.returnValue = `Waiting`;
             recorderDialog = true;
@@ -1714,7 +1714,7 @@ try {
     var quill = new Quill('#themessage', {
         modules: {
             toolbar: [
-                ['bold', 'italic', 'underline', 'strike', { 'color': [] }],
+                ['bold', 'italic', 'underline', 'strike', {'color': []}],
                 ['link'],
                 ['clean']
             ],
@@ -1725,10 +1725,10 @@ try {
                         shiftKey: false,
                         handler: function (range, context) {
                             try {
-                                var host = Recipients({ ID: activeRecipient }).first().host;
-                                var label = Recipients({ ID: activeRecipient }).first().label;
+                                var host = Recipients({ID: activeRecipient}).first().host;
+                                var label = Recipients({ID: activeRecipient}).first().label;
                                 var message = quillGetHTML(this.quill.getContents());
-                                hostReq.request({ method: 'POST', url: nodeURL + '/messages/send', data: { from: client.host, to: host, to_friendly: label, message: message } }, (response) => {
+                                hostReq.request({method: 'POST', url: nodeURL + '/messages/send', data: {from: client.host, to: host, to_friendly: label, message: message}}, (response) => {
                                     if (response === 'OK') {
                                         this.quill.setText('');
                                         markRead(null);
@@ -1766,8 +1766,8 @@ try {
     var quill2 = new Quill('#theannouncement', {
         modules: {
             toolbar: [
-                [{ 'size': ['small', false, 'large', 'huge'] }, 'bold', 'italic', 'underline', 'strike', { 'color': [] }],
-                ['link', { 'indent': '-1' }, { 'indent': '+1' }, { 'list': 'ordered' }, { 'list': 'bullet' }, { 'align': [] }],
+                [{'size': ['small', false, 'large', 'huge']}, 'bold', 'italic', 'underline', 'strike', {'color': []}],
+                ['link', {'indent': '-1'}, {'indent': '+1'}, {'list': 'ordered'}, {'list': 'bullet'}, {'align': []}],
                 ['image', 'clean']
             ],
         },
@@ -2020,7 +2020,7 @@ document.querySelector("#btn-view-log-b").onclick = function () {
     document.querySelector('#dj-logs-listeners').innerHTML = '';
     document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
     $("#options-modal-dj-logs").iziModal('open');
-    hostReq.request({ method: 'POST', url: nodeURL + '/logs/get', data: { attendanceID: Meta.attendanceID } }, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: Meta.attendanceID}}, function (response) {
         var logs = document.querySelector('#dj-show-logs');
         logs.scrollTop = 0;
 
@@ -2100,80 +2100,80 @@ document.querySelector("#open-notifications").onclick = function () {
 
 document.querySelector("#audio-call").onclick = () => {
     navigator.mediaDevices.enumerateDevices()
-        .then((devices) => {
-            var temp = document.querySelector("#main-input");
-            if (temp !== null) {
-                temp.innerHTML = `<option value="">Choose an input device...</option>`;
-                temp.onchange = () => {
-                    ipcRenderer.send(`audio-change-input-device`, temp.value);
-                };
-            }
-            var temp2 = document.querySelector("#call-input");
-            if (temp2 !== null) {
-                temp2.innerHTML = `<option value="">Choose an input device...</option>`;
-                temp2.onchange = () => {
-                    ipcRenderer.send(`peer-change-input-device`, temp2.value);
-                };
-            }
-            var temp3 = document.querySelector("#call-output");
-            if (temp3 !== null) {
-                temp3.innerHTML = `<option value="">Choose an output device...</option>`;
-                temp3.onchange = () => {
-                    ipcRenderer.send(`peer-change-output-device`, temp3.value);
-                };
-            }
-            var temp4 = document.querySelector("#recorder-path");
-            if (temp4 !== null) {
-                temp4.className = `form-control${client.recordAudio ? `` : ` is-invalid`}`;
-                temp4.value = settings.get(`recorder.path`);
-                var dialogButton = document.querySelector("#recorder-path-browse");
-                if (dialogButton !== null) {
-                    dialogButton.onclick = () => {
-                        temp4.value = main.directoryBrowse();
-                        settings.set(`recorder.path`, temp4.value);
+            .then((devices) => {
+                var temp = document.querySelector("#main-input");
+                if (temp !== null) {
+                    temp.innerHTML = `<option value="">Choose an input device...</option>`;
+                    temp.onchange = () => {
+                        ipcRenderer.send(`audio-change-input-device`, temp.value);
                     };
                 }
-                temp4.onchange = () => {
-                    settings.set(`recorder.path`, temp4.value);
-                    console.log(temp4.value);
-                };
-            }
-            var temp5 = document.querySelector("#recorder-delay");
-            if (temp5 !== null) {
-                temp5.value = settings.get(`recorder.delay`);
-                temp5.onchange = () => {
-                    settings.set(`recorder.delay`, temp5.value);
-                };
-            }
-            var temp6 = document.querySelector("#silence-time");
-            if (temp6 !== null) {
-                temp6.className = `form-control${client.silenceDetection ? `` : ` is-invalid`}`;
-                temp6.value = settings.get(`silence.time`) || 10000;
-                temp6.onchange = () => {
-                    settings.set(`silence.time`, temp6.value);
-                };
-            }
-            devices.map((device, index) => {
-                if (device.kind === 'audioinput') {
-                    if (temp !== null)
-                        temp.innerHTML += `<option value="${device.deviceId}">${device.label || 'Microphone ' + (index + 1)}</option>`;
-                    if (temp2 !== null)
-                        temp2.innerHTML += `<option value="${device.deviceId}">${device.label || 'Microphone ' + (index + 1)}</option>`;
-                } else if (device.kind === 'audiooutput') {
-                    if (temp3 !== null)
-                        temp3.innerHTML += `<option value="${device.deviceId}">${device.label || 'Speaker ' + (index + 1)}</option>`;
+                var temp2 = document.querySelector("#call-input");
+                if (temp2 !== null) {
+                    temp2.innerHTML = `<option value="">Choose an input device...</option>`;
+                    temp2.onchange = () => {
+                        ipcRenderer.send(`peer-change-input-device`, temp2.value);
+                    };
                 }
+                var temp3 = document.querySelector("#call-output");
+                if (temp3 !== null) {
+                    temp3.innerHTML = `<option value="">Choose an output device...</option>`;
+                    temp3.onchange = () => {
+                        ipcRenderer.send(`peer-change-output-device`, temp3.value);
+                    };
+                }
+                var temp4 = document.querySelector("#recorder-path");
+                if (temp4 !== null) {
+                    temp4.className = `form-control${client.recordAudio ? `` : ` is-invalid`}`;
+                    temp4.value = settings.get(`recorder.path`);
+                    var dialogButton = document.querySelector("#recorder-path-browse");
+                    if (dialogButton !== null) {
+                        dialogButton.onclick = () => {
+                            temp4.value = main.directoryBrowse();
+                            settings.set(`recorder.path`, temp4.value);
+                        };
+                    }
+                    temp4.onchange = () => {
+                        settings.set(`recorder.path`, temp4.value);
+                        console.log(temp4.value);
+                    };
+                }
+                var temp5 = document.querySelector("#recorder-delay");
+                if (temp5 !== null) {
+                    temp5.value = settings.get(`recorder.delay`);
+                    temp5.onchange = () => {
+                        settings.set(`recorder.delay`, temp5.value);
+                    };
+                }
+                var temp6 = document.querySelector("#silence-time");
+                if (temp6 !== null) {
+                    temp6.className = `form-control${client.silenceDetection ? `` : ` is-invalid`}`;
+                    temp6.value = settings.get(`silence.time`) || 10000;
+                    temp6.onchange = () => {
+                        settings.set(`silence.time`, temp6.value);
+                    };
+                }
+                devices.map((device, index) => {
+                    if (device.kind === 'audioinput') {
+                        if (temp !== null)
+                            temp.innerHTML += `<option value="${device.deviceId}">${device.label || 'Microphone ' + (index + 1)}</option>`;
+                        if (temp2 !== null)
+                            temp2.innerHTML += `<option value="${device.deviceId}">${device.label || 'Microphone ' + (index + 1)}</option>`;
+                    } else if (device.kind === 'audiooutput') {
+                        if (temp3 !== null)
+                            temp3.innerHTML += `<option value="${device.deviceId}">${device.label || 'Speaker ' + (index + 1)}</option>`;
+                    }
+                });
+
+                if (temp !== null)
+                    temp.value = settings.get(`audio.input.main`) || ``;
+
+                if (temp2 !== null)
+                    temp2.value = window.peerDevice || ``;
+
+                if (temp3 !== null)
+                    temp3.value = settings.get(`audio.output.call`) || ``;
             });
-
-            if (temp !== null)
-                temp.value = settings.get(`audio.input.main`) || ``;
-
-            if (temp2 !== null)
-                temp2.value = window.peerDevice || ``;
-
-            if (temp3 !== null)
-                temp3.value = settings.get(`audio.output.call`) || ``;
-        });
 
     $("#audio-call-modal").iziModal('open');
 };
@@ -2299,15 +2299,15 @@ document.querySelector("#btn-options-config-display").onclick = function () {
         var iConfig;
         var pConfig;
         Config.displaysigns
-            .filter((sign) => sign.name === `public`)
-            .map((sign, index) => {
-                pConfig = sign;
-            });
+                .filter((sign) => sign.name === `public`)
+                .map((sign, index) => {
+                    pConfig = sign;
+                });
         Config.displaysigns
-            .filter((sign) => sign.name === `internal`)
-            .map((sign, index) => {
-                iConfig = sign;
-            });
+                .filter((sign) => sign.name === `internal`)
+                .map((sign, index) => {
+                    iConfig = sign;
+                });
         $('#options-modal-config-form-form').html(``);
         $('#options-modal-config-form-extra').html(``);
         $('#options-modal-config-form-form').jsonForm({
@@ -2481,7 +2481,7 @@ document.querySelector("#btn-options-config-meta").onclick = function () {
                 },
             },
             "value": {
-                "mClearTime": Config.Meta.clearTime || 0,
+                "mClearTime": Config.meta.clearTime || 0,
             },
             "onSubmitValid": function (values) {
                 directorReq.request({
@@ -2575,13 +2575,13 @@ document.querySelector("#btn-options-config-meta-alt").onclick = function () {
                 },
             },
             "value": {
-                "mAutomation": Config.Meta.alt.automation || ``,
-                "mPlaylist": Config.Meta.alt.playlist || ``,
-                "mGenre": Config.Meta.alt.genre || ``,
-                "mLive": Config.Meta.alt.live || ``,
-                "mPrerecord": Config.Meta.alt.prerecord || ``,
-                "mRemote": Config.Meta.alt.remote || ``,
-                "mSports": Config.Meta.alt.sports || ``,
+                "mAutomation": Config.meta.alt.automation || ``,
+                "mPlaylist": Config.meta.alt.playlist || ``,
+                "mGenre": Config.meta.alt.genre || ``,
+                "mLive": Config.meta.alt.live || ``,
+                "mPrerecord": Config.meta.alt.prerecord || ``,
+                "mRemote": Config.meta.alt.remote || ``,
+                "mSports": Config.meta.alt.sports || ``,
             },
             "onSubmitValid": function (values) {
                 directorReq.request({
@@ -2711,19 +2711,19 @@ document.querySelector("#btn-options-config-meta-prefix").onclick = function () 
                 },
             },
             "value": {
-                "mAutomation": Config.Meta.prefix.automation || ``,
-                "mGenre": Config.Meta.prefix.genre || ``,
-                "mPlaylist": Config.Meta.prefix.playlist || ``,
-                "mRequest": Config.Meta.prefix.request || ``,
-                "mPendLive": Config.Meta.prefix.pendLive || ``,
-                "mPendPrerecord": Config.Meta.prefix.pendPrerecord || ``,
-                "mPendRemote": Config.Meta.prefix.pendRemote || ``,
-                "mPendSports": Config.Meta.prefix.pendSports || ``,
-                "mPrerecord": Config.Meta.prefix.prerecord || ``,
-                "mLive": Config.Meta.prefix.live || ``,
-                "mRemote": Config.Meta.prefix.remote || ``,
-                "mSports": Config.Meta.prefix.sports || ``,
-                "mPlaying": Config.Meta.prefix.playing || ``,
+                "mAutomation": Config.meta.prefix.automation || ``,
+                "mGenre": Config.meta.prefix.genre || ``,
+                "mPlaylist": Config.meta.prefix.playlist || ``,
+                "mRequest": Config.meta.prefix.request || ``,
+                "mPendLive": Config.meta.prefix.pendLive || ``,
+                "mPendPrerecord": Config.meta.prefix.pendPrerecord || ``,
+                "mPendRemote": Config.meta.prefix.pendRemote || ``,
+                "mPendSports": Config.meta.prefix.pendSports || ``,
+                "mPrerecord": Config.meta.prefix.prerecord || ``,
+                "mLive": Config.meta.prefix.live || ``,
+                "mRemote": Config.meta.prefix.remote || ``,
+                "mSports": Config.meta.prefix.sports || ``,
+                "mPlaying": Config.meta.prefix.playing || ``,
             },
             "onSubmitValid": function (values) {
                 directorReq.request({
@@ -4163,7 +4163,7 @@ document.querySelector("#btn-options-config-categories").onclick = function () {
             }
 
             listNew = function () {
-                hostReq.request({ method: 'post', url: nodeURL + '/config/categories/get-available', data: {} }, function serverResponded(body, JWR) {
+                hostReq.request({method: 'post', url: nodeURL + '/config/categories/get-available', data: {}}, function serverResponded(body, JWR) {
                     //console.log(body);
                     try {
                         var categories = [`[DELETE THIS ENTRY]`];
@@ -4465,7 +4465,7 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                             });
                             var theData = {};
                             theData[item] = values.tasks || [];
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-live', data: theData }, function (response) {
+                            directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-live', data: theData}, function (response) {
                                 console.dir(response);
                                 if (response === 'OK') {
                                     $("#options-modal-config-form").iziModal('close');
@@ -4574,7 +4574,7 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                             });
                             var theData = {};
                             theData[item] = values.tasks || [];
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-remote', data: theData }, function (response) {
+                            directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-remote', data: theData}, function (response) {
                                 console.dir(response);
                                 if (response === 'OK') {
                                     $("#options-modal-config-form").iziModal('close');
@@ -4683,7 +4683,7 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                             });
                             var theData = {};
                             theData[item] = values.tasks || [];
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-sports', data: theData }, function (response) {
+                            directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-sports', data: theData}, function (response) {
                                 console.dir(response);
                                 if (response === 'OK') {
                                     $("#options-modal-config-form").iziModal('close');
@@ -4741,42 +4741,42 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                         closeOnClick: false,
                         buttons: [
                             ['<button><b>Remove</b></button>', function (instance, toast) {
-                                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-clock', data: { minute: parseInt(item), tasks: [] } }, function (response) {
-                                    if (response === 'OK') {
-                                        $(`#options-modal-config-list`).iziModal(`close`);
-                                        iziToast.show({
-                                            title: `Break Removed!`,
-                                            message: `Break was removed!`,
-                                            timeout: 15000,
-                                            close: true,
-                                            color: 'green',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    } else {
-                                        console.dir(response);
-                                        iziToast.show({
-                                            title: `Failed to remove break!`,
-                                            message: `There was an error trying to remove the break.`,
-                                            timeout: 10000,
-                                            close: true,
-                                            color: 'red',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    }
-                                });
-                            }],
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                    directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-clock', data: {minute: parseInt(item), tasks: []}}, function (response) {
+                                        if (response === 'OK') {
+                                            $(`#options-modal-config-list`).iziModal(`close`);
+                                            iziToast.show({
+                                                title: `Break Removed!`,
+                                                message: `Break was removed!`,
+                                                timeout: 15000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to remove break!`,
+                                                message: `There was an error trying to remove the break.`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }],
                             ['<button><b>Cancel</b></button>', function (instance, toast) {
-                                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            }],
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                }],
                         ]
                     });
                 }
@@ -4784,7 +4784,7 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
             if (e.target.id.startsWith(`config-categories-edit-`)) {
                 var item = e.target.id.replace(`config-categories-edit-`, ``);
                 if (typeof Config.categories[item] !== `undefined`) {
-                    hostReq.request({ method: 'post', url: nodeURL + '/config/categories/get-available', data: {} }, function serverResponded(body, JWR) {
+                    hostReq.request({method: 'post', url: nodeURL + '/config/categories/get-available', data: {}}, function serverResponded(body, JWR) {
                         try {
                             var categories = ["[DELETE THIS ENTRY]"];
                             for (var key in body) {
@@ -4800,10 +4800,10 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                             for (var key in Config.categories[item]) {
                                 if (Config.categories[item].hasOwnProperty(key)) {
                                     if (Config.categories[item][key].length === 0) {
-                                        values.push({ category: `${key} >>> [All Subcategories]` });
+                                        values.push({category: `${key} >>> [All Subcategories]`});
                                     } else {
                                         Config.categories[item][key].map((item2) => {
-                                            values.push({ category: `${key} >>> ${item2}` });
+                                            values.push({category: `${key} >>> ${item2}`});
                                         });
                                     }
                                 }
@@ -4916,42 +4916,42 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                         closeOnClick: false,
                         buttons: [
                             ['<button><b>Remove</b></button>', function (instance, toast) {
-                                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/config/categories/remove', data: { name: item } }, function (response) {
-                                    if (response === 'OK') {
-                                        $(`#options-modal-config-list`).iziModal(`close`);
-                                        iziToast.show({
-                                            title: `Category Removed!`,
-                                            message: `Category was removed! NOTE: If this category exists in any configuration (such a breaks), you may want to change/remove it!`,
-                                            timeout: 20000,
-                                            close: true,
-                                            color: 'green',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    } else {
-                                        console.dir(response);
-                                        iziToast.show({
-                                            title: `Failed to remove category!`,
-                                            message: `There was an error trying to remove the category.`,
-                                            timeout: 10000,
-                                            close: true,
-                                            color: 'red',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    }
-                                });
-                            }],
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                    directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/config/categories/remove', data: {name: item}}, function (response) {
+                                        if (response === 'OK') {
+                                            $(`#options-modal-config-list`).iziModal(`close`);
+                                            iziToast.show({
+                                                title: `Category Removed!`,
+                                                message: `Category was removed! NOTE: If this category exists in any configuration (such a breaks), you may want to change/remove it!`,
+                                                timeout: 20000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to remove category!`,
+                                                message: `There was an error trying to remove the category.`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }],
                             ['<button><b>Cancel</b></button>', function (instance, toast) {
-                                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            }],
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                }],
                         ]
                     });
                 }
@@ -5020,10 +5020,10 @@ document.querySelector("#btn-options-api").onclick = function () {
                         break;
                     case "admin director":
                         theReq = adminDirectorReq;
-                        db = Directors({ admin: true });
+                        db = Directors({admin: true});
                         break;
                 }
-                theReq.request({ db: db, method: 'POST', url: nodeURL + '/' + values.apiPath, data: JSON.parse(values.jsonData) }, function (response) {
+                theReq.request({db: db, method: 'POST', url: nodeURL + '/' + values.apiPath, data: JSON.parse(values.jsonData)}, function (response) {
                     iziToast.show({
                         title: `Query placed!`,
                         message: `Check the text box above the form for the output.`,
@@ -5096,7 +5096,7 @@ document.querySelector("#btn-options-schedule").onclick = function () {
 };
 
 document.querySelector("#modal-scheduler-calendar").onclick = function () {
-    hostReq.request({ method: 'POST', url: nodeURL + '/planner/add-calendar', data: {} }, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/planner/add-calendar', data: {}}, function (response) {
         iziToast.show({
             title: `Calendar Events Added!`,
             message: `Shows and Prerecords for the next 7 days were added and finalized! NOTE: these items have been set with a priority of 2. Edit them if necessary.`,
@@ -5130,41 +5130,41 @@ document.querySelector("#modal-scheduler-unfinalize").onclick = function () {
         closeOnClick: false,
         buttons: [
             ['<button><b>Un-finalize</b></button>', function (instance, toast) {
-                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                hostReq.request({ method: 'POST', url: nodeURL + '/planner/clear-all', data: {} }, function (response) {
-                    if (response === 'OK') {
-                        iziToast.show({
-                            title: `Un-finalized!`,
-                            message: `All records are no longer final and subject to scheduling!`,
-                            timeout: 15000,
-                            close: true,
-                            color: 'green',
-                            drag: false,
-                            position: 'center',
-                            closeOnClick: true,
-                            overlay: false,
-                            zindex: 1000
-                        });
-                    } else {
-                        console.dir(response);
-                        iziToast.show({
-                            title: `Failed to un-finalize!`,
-                            message: `There was an error trying to un-finalize all records.`,
-                            timeout: 10000,
-                            close: true,
-                            color: 'red',
-                            drag: false,
-                            position: 'center',
-                            closeOnClick: true,
-                            overlay: false,
-                            zindex: 1000
-                        });
-                    }
-                });
-            }],
+                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                    hostReq.request({method: 'POST', url: nodeURL + '/planner/clear-all', data: {}}, function (response) {
+                        if (response === 'OK') {
+                            iziToast.show({
+                                title: `Un-finalized!`,
+                                message: `All records are no longer final and subject to scheduling!`,
+                                timeout: 15000,
+                                close: true,
+                                color: 'green',
+                                drag: false,
+                                position: 'center',
+                                closeOnClick: true,
+                                overlay: false,
+                                zindex: 1000
+                            });
+                        } else {
+                            console.dir(response);
+                            iziToast.show({
+                                title: `Failed to un-finalize!`,
+                                message: `There was an error trying to un-finalize all records.`,
+                                timeout: 10000,
+                                close: true,
+                                color: 'red',
+                                drag: false,
+                                position: 'center',
+                                closeOnClick: true,
+                                overlay: false,
+                                zindex: 1000
+                            });
+                        }
+                    });
+                }],
             ['<button><b>Cancel</b></button>', function (instance, toast) {
-                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-            }],
+                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                }],
         ]
     });
 }
@@ -5187,41 +5187,41 @@ document.querySelector("#modal-scheduler-clear").onclick = function () {
         closeOnClick: false,
         buttons: [
             ['<button><b>Remove</b></button>', function (instance, toast) {
-                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                hostReq.request({ method: 'POST', url: nodeURL + '/planner/remove-all', data: {} }, function (response) {
-                    if (response === 'OK') {
-                        iziToast.show({
-                            title: `Removed!`,
-                            message: `All records have been removed!`,
-                            timeout: 15000,
-                            close: true,
-                            color: 'green',
-                            drag: false,
-                            position: 'center',
-                            closeOnClick: true,
-                            overlay: false,
-                            zindex: 1000
-                        });
-                    } else {
-                        console.dir(response);
-                        iziToast.show({
-                            title: `Failed to remove!`,
-                            message: `There was an error trying to remove all records.`,
-                            timeout: 10000,
-                            close: true,
-                            color: 'red',
-                            drag: false,
-                            position: 'center',
-                            closeOnClick: true,
-                            overlay: false,
-                            zindex: 1000
-                        });
-                    }
-                });
-            }],
+                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                    hostReq.request({method: 'POST', url: nodeURL + '/planner/remove-all', data: {}}, function (response) {
+                        if (response === 'OK') {
+                            iziToast.show({
+                                title: `Removed!`,
+                                message: `All records have been removed!`,
+                                timeout: 15000,
+                                close: true,
+                                color: 'green',
+                                drag: false,
+                                position: 'center',
+                                closeOnClick: true,
+                                overlay: false,
+                                zindex: 1000
+                            });
+                        } else {
+                            console.dir(response);
+                            iziToast.show({
+                                title: `Failed to remove!`,
+                                message: `There was an error trying to remove all records.`,
+                                timeout: 10000,
+                                close: true,
+                                color: 'red',
+                                drag: false,
+                                position: 'center',
+                                closeOnClick: true,
+                                overlay: false,
+                                zindex: 1000
+                            });
+                        }
+                    });
+                }],
             ['<button><b>Cancel</b></button>', function (instance, toast) {
-                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-            }],
+                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                }],
         ]
     });
 }
@@ -5304,7 +5304,7 @@ document.querySelector("#modal-scheduler-new").onclick = function () {
                     var temp = proposal.sEndTime.split(`:`);
                     var endHour = parseInt(temp[0]);
                     var endMinute = parseInt(temp[1]);
-                    proposals.push({ start: weekToInt(proposal.sStartDay, startHour, startMinute), end: weekToInt(proposal.sEndDay, endHour, endMinute) });
+                    proposals.push({start: weekToInt(proposal.sStartDay, startHour, startMinute), end: weekToInt(proposal.sEndDay, endHour, endMinute)});
                 });
             }
 
@@ -5356,12 +5356,12 @@ document.querySelector("#modal-scheduler-new").onclick = function () {
 
 
 document.querySelector("#modal-scheduler-generate").onclick = function () {
-    hostReq.request({ method: 'POST', url: nodeURL + '/planner/schedule', data: {} }, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/planner/schedule', data: {}}, function (response) {
         if (typeof response.schedule !== `undefined`) {
             var temp = document.querySelector(`#scheduler-generated-list`);
             if (temp !== null) {
                 var newHTML = ``;
-                var formatted = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+                var formatted = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []};
             }
 
             var compare = function (a, b) {
@@ -5495,7 +5495,7 @@ document.querySelector(`#scheduler-list`).addEventListener("click", function (e)
             console.log(e.target.id);
             if (e.target.id.startsWith(`scheduler-edit-`)) {
                 var recordID = parseInt(e.target.id.replace(`scheduler-edit-`, ``));
-                var record = Planner({ ID: recordID }).first();
+                var record = Planner({ID: recordID}).first();
 
                 if (record) {
                     var proposals = [];
@@ -5596,7 +5596,7 @@ document.querySelector(`#scheduler-list`).addEventListener("click", function (e)
                                     var temp = proposal.sEndTime.split(`:`);
                                     var endHour = parseInt(temp[0]);
                                     var endMinute = parseInt(temp[1]);
-                                    proposals.push({ start: weekToInt(proposal.sStartDay, startHour, startMinute), end: weekToInt(proposal.sEndDay, endHour, endMinute) });
+                                    proposals.push({start: weekToInt(proposal.sStartDay, startHour, startMinute), end: weekToInt(proposal.sEndDay, endHour, endMinute)});
                                 });
                             }
 
@@ -5651,7 +5651,7 @@ document.querySelector(`#scheduler-list`).addEventListener("click", function (e)
 
             if (e.target.id.startsWith(`scheduler-remove-`)) {
                 var recordID = parseInt(e.target.id.replace(`scheduler-remove-`, ``));
-                var record = Planner({ ID: recordID }).first();
+                var record = Planner({ID: recordID}).first();
 
                 if (record) {
                     iziToast.show({
@@ -5671,42 +5671,42 @@ document.querySelector(`#scheduler-list`).addEventListener("click", function (e)
                         closeOnClick: false,
                         buttons: [
                             ['<button><b>Remove</b></button>', function (instance, toast) {
-                                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                                hostReq.request({ method: 'POST', url: nodeURL + '/planner/remove', data: { ID: recordID } }, function (response) {
-                                    if (response === 'OK') {
-                                        $("#options-modal-dj").iziModal('close');
-                                        iziToast.show({
-                                            title: `Record Removed!`,
-                                            message: `Scheduler record was removed!`,
-                                            timeout: 15000,
-                                            close: true,
-                                            color: 'green',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    } else {
-                                        console.dir(response);
-                                        iziToast.show({
-                                            title: `Failed to remove scheduler record!`,
-                                            message: `There was an error trying to remove that scheduler record.`,
-                                            timeout: 10000,
-                                            close: true,
-                                            color: 'red',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    }
-                                });
-                            }],
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                    hostReq.request({method: 'POST', url: nodeURL + '/planner/remove', data: {ID: recordID}}, function (response) {
+                                        if (response === 'OK') {
+                                            $("#options-modal-dj").iziModal('close');
+                                            iziToast.show({
+                                                title: `Record Removed!`,
+                                                message: `Scheduler record was removed!`,
+                                                timeout: 15000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to remove scheduler record!`,
+                                                message: `There was an error trying to remove that scheduler record.`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }],
                             ['<button><b>Cancel</b></button>', function (instance, toast) {
-                                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            }],
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                }],
                         ]
                     });
                 }
@@ -5728,7 +5728,7 @@ document.querySelector("#filter-global-logs").onclick = function () {
 function filterGlobalLogs(date) {
     try {
         document.querySelector('#global-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
-        hostReq.request({ method: 'POST', url: nodeURL + '/attendance/get', data: { date: moment(date).toISOString(true) } }, function (response) {
+        hostReq.request({method: 'POST', url: nodeURL + '/attendance/get', data: {date: moment(date).toISOString(true)}}, function (response) {
             var att = document.querySelector('#global-logs');
             att.innerHTML = ``;
             att.scrollTop = 0;
@@ -5898,7 +5898,7 @@ document.querySelector("#btn-options-issues").onclick = function () {
     document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
     document.querySelector('#dj-logs-listeners').innerHTML = '';
     $("#options-modal-dj-logs").iziModal('open');
-    hostReq.request({ method: 'POST', url: nodeURL + '/logs/get', data: { subtype: "ISSUES", start: moment().subtract(7, 'days').toISOString(true), end: moment().toISOString(true) } }, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/logs/get', data: {subtype: "ISSUES", start: moment().subtract(7, 'days').toISOString(true), end: moment().toISOString(true)}}, function (response) {
         var logs = document.querySelector('#dj-show-logs');
         logs.innerHTML = ``;
         logs.scrollTop = 0;
@@ -6099,41 +6099,41 @@ document.querySelector("#btn-options-radiodj").onclick = function () {
             closeOnClick: false,
             buttons: [
                 ['<button><b>Switch RadioDJ</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                    directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/state/change-radio-dj', data: {} }, function (response) {
-                        if (response === 'OK') {
-                            iziToast.show({
-                                title: `RadioDJ changed!`,
-                                message: `RadioDJ instance was changed.`,
-                                timeout: 5000,
-                                close: true,
-                                color: 'green',
-                                drag: false,
-                                position: 'center',
-                                closeOnClick: true,
-                                overlay: false,
-                                zindex: 1000
-                            });
-                        } else {
-                            console.dir(response);
-                            iziToast.show({
-                                title: `Failed to change RadioDJ!`,
-                                message: `There was an error trying to change RadioDJ instances.`,
-                                timeout: 10000,
-                                close: true,
-                                color: 'red',
-                                drag: false,
-                                position: 'center',
-                                closeOnClick: true,
-                                overlay: false,
-                                zindex: 1000
-                            });
-                        }
-                    });
-                }],
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/state/change-radio-dj', data: {}}, function (response) {
+                            if (response === 'OK') {
+                                iziToast.show({
+                                    title: `RadioDJ changed!`,
+                                    message: `RadioDJ instance was changed.`,
+                                    timeout: 5000,
+                                    close: true,
+                                    color: 'green',
+                                    drag: false,
+                                    position: 'center',
+                                    closeOnClick: true,
+                                    overlay: false,
+                                    zindex: 1000
+                                });
+                            } else {
+                                console.dir(response);
+                                iziToast.show({
+                                    title: `Failed to change RadioDJ!`,
+                                    message: `There was an error trying to change RadioDJ instances.`,
+                                    timeout: 10000,
+                                    close: true,
+                                    color: 'red',
+                                    drag: false,
+                                    position: 'center',
+                                    closeOnClick: true,
+                                    overlay: false,
+                                    zindex: 1000
+                                });
+                            }
+                        });
+                    }],
                 ['<button><b>Cancel</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                }],
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                    }],
             ]
         });
     } catch (e) {
@@ -6185,46 +6185,46 @@ document.querySelector(`#options-modal-djs`).addEventListener("click", function 
                         closeOnClick: false,
                         inputs: [
                             ['<input type="text">', 'keyup', function (instance, toast, input, e) {
-                                inputData = input.value;
-                            }, true],
+                                    inputData = input.value;
+                                }, true],
                         ],
                         buttons: [
                             ['<button><b>Submit</b></button>', function (instance, toast) {
-                                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/djs/add', data: { name: inputData, login: null } }, function (response) {
-                                    if (response === 'OK') {
-                                        iziToast.show({
-                                            title: `DJ Added!`,
-                                            message: `DJ was added!`,
-                                            timeout: 10000,
-                                            close: true,
-                                            color: 'green',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    } else {
-                                        console.dir(response);
-                                        iziToast.show({
-                                            title: `Failed to add DJ!`,
-                                            message: `There was an error trying to add the new DJ.`,
-                                            timeout: 10000,
-                                            close: true,
-                                            color: 'red',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    }
-                                });
-                            }],
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                    directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/djs/add', data: {name: inputData, login: null}}, function (response) {
+                                        if (response === 'OK') {
+                                            iziToast.show({
+                                                title: `DJ Added!`,
+                                                message: `DJ was added!`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to add DJ!`,
+                                                message: `There was an error trying to add the new DJ.`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }],
                             ['<button><b>Cancel</b></button>', function (instance, toast) {
-                                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            }],
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                }],
                         ]
                     });
                 }
@@ -6310,46 +6310,46 @@ document.querySelector(`#options-djs`).addEventListener("click", function (e) {
                         closeOnClick: false,
                         inputs: [
                             ['<input type="text">', 'keyup', function (instance, toast, input, e) {
-                                inputData = input.value;
-                            }, true],
+                                    inputData = input.value;
+                                }, true],
                         ],
                         buttons: [
                             ['<button><b>Submit</b></button>', function (instance, toast) {
-                                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/djs/add', data: { name: inputData, login: null } }, function (response) {
-                                    if (response === 'OK') {
-                                        iziToast.show({
-                                            title: `DJ Added!`,
-                                            message: `DJ was added!`,
-                                            timeout: 10000,
-                                            close: true,
-                                            color: 'green',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    } else {
-                                        console.dir(response);
-                                        iziToast.show({
-                                            title: `Failed to add DJ!`,
-                                            message: `There was an error trying to add the new DJ.`,
-                                            timeout: 10000,
-                                            close: true,
-                                            color: 'red',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    }
-                                });
-                            }],
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                    directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/djs/add', data: {name: inputData, login: null}}, function (response) {
+                                        if (response === 'OK') {
+                                            iziToast.show({
+                                                title: `DJ Added!`,
+                                                message: `DJ was added!`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to add DJ!`,
+                                                message: `There was an error trying to add the new DJ.`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }],
                             ['<button><b>Cancel</b></button>', function (instance, toast) {
-                                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            }],
+                                    instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                }],
                         ]
                     });
                 }
@@ -6371,106 +6371,106 @@ document.querySelector(`#options-timesheets-records`).addEventListener("click", 
             if (e.target.id.startsWith(`timesheet-t-`)) {
                 var timesheetID = parseInt(e.target.id.replace(`timesheet-t-`, ``));
                 Timesheets
-                    .filter(record => record.ID === timesheetID)
-                    .map(record => {
-                        document.querySelector(`#options-modal-config-form-form`).innerHTML = ``;
-                        $('#options-modal-config-form-extra').html(``);
-                        var enumValue = ``;
-                        switch (record.approved) {
-                            case - 1:
-                                enumValue = `Canceled Hours`;
-                                break;
-                            case 0:
-                                enumValue = `Not Approved / Absent`;
-                                break;
-                            case 1:
-                                enumValue = `Approved / Scheduled Hours`;
-                                break;
-                            case 2:
-                                enumValue = `Changed Scheduled Hours`;
-                                break;
-                        }
-                        $('#options-modal-config-form-form').jsonForm({
-                            "schema": {
-                                "tClockIn": {
-                                    "title": "Clocked In",
-                                    "description": "Date and time the director clocked in.",
-                                    "type": "datetime-local"
-                                },
-                                "tClockOut": {
-                                    "title": "Clocked Out",
-                                    "description": "Date and time the director clocked out",
-                                    "type": "datetime-local"
-                                },
-                                "tApproved": {
-                                    "title": "Approved",
-                                    "description": "Is this record approved / counting towards weekly hours?",
-                                    "type": "string",
-                                    enum: ["DELETE THIS ENTRY", "Canceled Hours", "Not Approved / Absent", "Approved / Scheduled Hours", "Changed Scheduled Hours"]
-                                },
-                            },
-                            "value": {
-                                "tClockIn": record.time_in !== null ? moment(record.time_in).format("YYYY-MM-DD\THH:mm") : ``,
-                                "tClockOut": record.time_out !== null ? moment(record.time_out).format("YYYY-MM-DD\THH:mm") : ``,
-                                "tApproved": enumValue,
-                            },
-                            "onSubmitValid": function (values) {
-                                var enumValue = 1;
-                                var path = `edit`;
-                                switch (values.tApproved) {
-                                    case `DELETE THIS ENTRY`:
-                                        path = `remove`;
-                                        break;
-                                    case `Canceled Hours`:
-                                        enumValue = -1;
-                                        break;
-                                    case `Not Approved / Absent`:
-                                        enumValue = 0;
-                                        break;
-                                    case `Approved / Scheduled Hours`:
-                                        enumValue = 1;
-                                        break;
-                                    case `Changed Scheduled Hours`:
-                                        enumValue = 2;
-                                        break;
-                                }
-                                adminDirectorReq.request({ db: Directors({ admin: true }), method: 'POST', url: nodeURL + `/timesheet/${path}`, data: { ID: record.ID, time_in: moment(values.tClockIn).toISOString(true), time_out: moment(values.tClockOut).toISOString(true), approved: enumValue } }, function (response) {
-                                    if (response === 'OK') {
-                                        $("#options-modal-config-form").iziModal('close');
-                                        iziToast.show({
-                                            title: `Timesheet Edited!`,
-                                            message: `Timesheet record was edited!`,
-                                            timeout: 10000,
-                                            close: true,
-                                            color: 'green',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    } else {
-                                        console.dir(response);
-                                        iziToast.show({
-                                            title: `Failed to edit timesheet!`,
-                                            message: `There was an error trying to edit the timesheet.`,
-                                            timeout: 10000,
-                                            close: true,
-                                            color: 'red',
-                                            drag: false,
-                                            position: 'center',
-                                            closeOnClick: true,
-                                            overlay: false,
-                                            zindex: 1000
-                                        });
-                                    }
-                                });
+                        .filter(record => record.ID === timesheetID)
+                        .map(record => {
+                            document.querySelector(`#options-modal-config-form-form`).innerHTML = ``;
+                            $('#options-modal-config-form-extra').html(``);
+                            var enumValue = ``;
+                            switch (record.approved) {
+                                case - 1:
+                                    enumValue = `Canceled Hours`;
+                                    break;
+                                case 0:
+                                    enumValue = `Not Approved / Absent`;
+                                    break;
+                                case 1:
+                                    enumValue = `Approved / Scheduled Hours`;
+                                    break;
+                                case 2:
+                                    enumValue = `Changed Scheduled Hours`;
+                                    break;
                             }
+                            $('#options-modal-config-form-form').jsonForm({
+                                "schema": {
+                                    "tClockIn": {
+                                        "title": "Clocked In",
+                                        "description": "Date and time the director clocked in.",
+                                        "type": "datetime-local"
+                                    },
+                                    "tClockOut": {
+                                        "title": "Clocked Out",
+                                        "description": "Date and time the director clocked out",
+                                        "type": "datetime-local"
+                                    },
+                                    "tApproved": {
+                                        "title": "Approved",
+                                        "description": "Is this record approved / counting towards weekly hours?",
+                                        "type": "string",
+                                        enum: ["DELETE THIS ENTRY", "Canceled Hours", "Not Approved / Absent", "Approved / Scheduled Hours", "Changed Scheduled Hours"]
+                                    },
+                                },
+                                "value": {
+                                    "tClockIn": record.time_in !== null ? moment(record.time_in).format("YYYY-MM-DD\THH:mm") : ``,
+                                    "tClockOut": record.time_out !== null ? moment(record.time_out).format("YYYY-MM-DD\THH:mm") : ``,
+                                    "tApproved": enumValue,
+                                },
+                                "onSubmitValid": function (values) {
+                                    var enumValue = 1;
+                                    var path = `edit`;
+                                    switch (values.tApproved) {
+                                        case `DELETE THIS ENTRY`:
+                                            path = `remove`;
+                                            break;
+                                        case `Canceled Hours`:
+                                            enumValue = -1;
+                                            break;
+                                        case `Not Approved / Absent`:
+                                            enumValue = 0;
+                                            break;
+                                        case `Approved / Scheduled Hours`:
+                                            enumValue = 1;
+                                            break;
+                                        case `Changed Scheduled Hours`:
+                                            enumValue = 2;
+                                            break;
+                                    }
+                                    adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + `/timesheet/${path}`, data: {ID: record.ID, time_in: moment(values.tClockIn).toISOString(true), time_out: moment(values.tClockOut).toISOString(true), approved: enumValue}}, function (response) {
+                                        if (response === 'OK') {
+                                            $("#options-modal-config-form").iziModal('close');
+                                            iziToast.show({
+                                                title: `Timesheet Edited!`,
+                                                message: `Timesheet record was edited!`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to edit timesheet!`,
+                                                message: `There was an error trying to edit the timesheet.`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                            $(`#options-modal-config-form-extra`).html(`Record created: <strong>${moment(record.createdAt).format("LLLL")}</strong><br />Record last updated: <strong>${moment(record.updatedAt).format("LLLL")}</strong><br /><br />Scheduled time in: <strong>${record.scheduled_in !== null ? moment(record.scheduled_in).format("LLLL") : `not scheduled`}</strong><br />Scheduled time out: <strong>${record.scheduled_out !== null ? moment(record.scheduled_out).format("LLLL") : `not scheduled`}</strong>`);
+                            $("#options-modal-config-form-label").html(`Edit Timesheet`);
+                            $("#options-modal-config-form").iziModal('open');
                         });
-                        $(`#options-modal-config-form-extra`).html(`Record created: <strong>${moment(record.createdAt).format("LLLL")}</strong><br />Record last updated: <strong>${moment(record.updatedAt).format("LLLL")}</strong><br /><br />Scheduled time in: <strong>${record.scheduled_in !== null ? moment(record.scheduled_in).format("LLLL") : `not scheduled`}</strong><br />Scheduled time out: <strong>${record.scheduled_out !== null ? moment(record.scheduled_out).format("LLLL") : `not scheduled`}</strong>`);
-                        $("#options-modal-config-form-label").html(`Edit Timesheet`);
-                        $("#options-modal-config-form").iziModal('open');
-                    });
             }
         }
     } catch (err) {
@@ -6499,25 +6499,25 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
                 }
             } else if (e.target.id.startsWith(`notification-dismiss-`)) {
                 Notifications
-                    .map((notif, index) => {
-                        if (notif.ID === e.target.id.replace(`notification-dismiss-`, ``)) {
-                            var temp = document.querySelector(`#notification-${notif.ID}`);
-                            if (temp !== null) {
-                                temp.parentNode.removeChild(temp);
-                                Notifications.splice(index, 1);
-                            }
+                        .map((notif, index) => {
+                            if (notif.ID === e.target.id.replace(`notification-dismiss-`, ``)) {
+                                var temp = document.querySelector(`#notification-${notif.ID}`);
+                                if (temp !== null) {
+                                    temp.parentNode.removeChild(temp);
+                                    Notifications.splice(index, 1);
+                                }
 
-                            var temp = document.querySelector(`#badge-notifications`);
-                            if (temp) {
-                                temp.innerHTML = Notifications.length;
-                                if (Notifications.length > 0) {
-                                    temp.classList = "notification2 badge badge-danger shadow-4";
-                                } else {
-                                    temp.classList = "notification2 badge badge-secondary shadow-4";
+                                var temp = document.querySelector(`#badge-notifications`);
+                                if (temp) {
+                                    temp.innerHTML = Notifications.length;
+                                    if (Notifications.length > 0) {
+                                        temp.classList = "notification2 badge badge-danger shadow-4";
+                                    } else {
+                                        temp.classList = "notification2 badge badge-secondary shadow-4";
+                                    }
                                 }
                             }
-                        }
-                    });
+                        });
             } else if (e.target.id.startsWith(`notification-attn-edit-`)) {
                 var recordID = parseInt(e.target.id.replace(`notification-attn-edit-`, ``));
                 document.querySelector('#options-announcements').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
@@ -6542,41 +6542,41 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
                     closeOnClick: false,
                     buttons: [
                         ['<button><b>Yes</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: recordID, ignore: 2 } }, function (response) {
-                                if (response === 'OK') {
-                                    iziToast.show({
-                                        title: `Reputation Ignored!`,
-                                        message: `This record will no longer register on the DJ's reputation statistics.`,
-                                        timeout: 15000,
-                                        close: true,
-                                        color: 'green',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                } else {
-                                    console.dir(response);
-                                    iziToast.show({
-                                        title: `Failed to ignore!`,
-                                        message: `There was an error trying to ignore the reputation of this record.`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                }
-                            });
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: recordID, ignore: 2}}, function (response) {
+                                    if (response === 'OK') {
+                                        iziToast.show({
+                                            title: `Reputation Ignored!`,
+                                            message: `This record will no longer register on the DJ's reputation statistics.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to ignore!`,
+                                            message: `There was an error trying to ignore the reputation of this record.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
                         ['<button><b>No</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             } else if (e.target.id.startsWith(`notification-unexcuse-`)) {
@@ -6598,41 +6598,41 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
                     closeOnClick: false,
                     buttons: [
                         ['<button><b>Yes</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: recordID, ignore: 0 } }, function (response) {
-                                if (response === 'OK') {
-                                    iziToast.show({
-                                        title: `Reputation un-excused!`,
-                                        message: `This record now registers on the DJ's reputation statistics.`,
-                                        timeout: 15000,
-                                        close: true,
-                                        color: 'green',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                } else {
-                                    console.dir(response);
-                                    iziToast.show({
-                                        title: `Failed to un-excuse!`,
-                                        message: `There was an error trying to un-excuse the reputation of this record.`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                }
-                            });
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: recordID, ignore: 0}}, function (response) {
+                                    if (response === 'OK') {
+                                        iziToast.show({
+                                            title: `Reputation un-excused!`,
+                                            message: `This record now registers on the DJ's reputation statistics.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to un-excuse!`,
+                                            message: `There was an error trying to un-excuse the reputation of this record.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
                         ['<button><b>No</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             } else if (e.target.id.startsWith(`notification-cancel-`)) {
@@ -6654,41 +6654,41 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
                     closeOnClick: false,
                     buttons: [
                         ['<button><b>Yes</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: recordID, happened: -1 } }, function (response) {
-                                if (response === 'OK') {
-                                    iziToast.show({
-                                        title: `Record marked canceled!`,
-                                        message: `This record was now marked as a cancellation.`,
-                                        timeout: 15000,
-                                        close: true,
-                                        color: 'green',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                } else {
-                                    console.dir(response);
-                                    iziToast.show({
-                                        title: `Failed to mark canceled!`,
-                                        message: `There was an error trying to mark that record as canceled.`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                }
-                            });
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: recordID, happened: -1}}, function (response) {
+                                    if (response === 'OK') {
+                                        iziToast.show({
+                                            title: `Record marked canceled!`,
+                                            message: `This record was now marked as a cancellation.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to mark canceled!`,
+                                            message: `There was an error trying to mark that record as canceled.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
                         ['<button><b>No</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             } else if (e.target.id.startsWith(`notification-absent-`)) {
@@ -6710,117 +6710,13 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
                     closeOnClick: false,
                     buttons: [
                         ['<button><b>Yes</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: recordID, happened: 0 } }, function (response) {
-                                if (response === 'OK') {
-                                    iziToast.show({
-                                        title: `Absence marked unexcused!`,
-                                        message: `This record was now marked as an unexcused absence.`,
-                                        timeout: 15000,
-                                        close: true,
-                                        color: 'green',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                } else {
-                                    console.dir(response);
-                                    iziToast.show({
-                                        title: `Failed to marked unexcused!`,
-                                        message: `There was an error trying to mark that record as an unexcused absence.`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                }
-                            });
-                        }],
-                        ['<button><b>No</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        }],
-                    ]
-                });
-            } else if (e.target.id.startsWith(`notification-timesheet-`)) {
-                var timesheetID = parseInt(e.target.id.replace(`notification-timesheet-`, ``));
-                console.log(timesheetID);
-                Timesheet().get()
-                    .filter(record => record.ID === timesheetID)
-                    .map(record => {
-                        document.querySelector(`#options-modal-config-form-form`).innerHTML = ``;
-                        $('#options-modal-config-form-extra').html(``);
-                        var enumValue = ``;
-                        switch (record.approved) {
-                            case - 1:
-                                enumValue = `Canceled Hours`;
-                                break;
-                            case 0:
-                                enumValue = `Not Approved / Absent`;
-                                break;
-                            case 1:
-                                enumValue = `Approved / Scheduled Hours`;
-                                break;
-                            case 2:
-                                enumValue = `Changed Scheduled Hours`;
-                                break;
-                        }
-                        $('#options-modal-config-form-form').jsonForm({
-                            "schema": {
-                                "tClockIn": {
-                                    "title": "Clocked In",
-                                    "description": "Date and time the director clocked in.",
-                                    "type": "datetime-local"
-                                },
-                                "tClockOut": {
-                                    "title": "Clocked Out",
-                                    "description": "Date and time the director clocked out",
-                                    "type": "datetime-local"
-                                },
-                                "tApproved": {
-                                    "title": "Approved",
-                                    "description": "Is this record approved / counting towards weekly hours?",
-                                    "type": "string",
-                                    enum: ["DELETE THIS ENTRY", "Canceled Hours", "Not Approved / Absent", "Approved / Scheduled Hours", "Changed Scheduled Hours"]
-                                },
-                            },
-                            "value": {
-                                "tClockIn": record.time_in !== null ? moment(record.time_in).format("YYYY-MM-DD\THH:mm") : ``,
-                                "tClockOut": record.time_out !== null ? moment(record.time_out).format("YYYY-MM-DD\THH:mm") : ``,
-                                "tApproved": enumValue,
-                            },
-                            "onSubmitValid": function (values) {
-                                var enumValue = 1;
-                                var path = `edit`;
-                                switch (values.tApproved) {
-                                    case `DELETE THIS ENTRY`:
-                                        path = `remove`;
-                                        break;
-                                    case `Canceled Hours`:
-                                        enumValue = -1;
-                                        break;
-                                    case `Not Approved / Absent`:
-                                        enumValue = 0;
-                                        break;
-                                    case `Approved / Scheduled Hours`:
-                                        enumValue = 1;
-                                        break;
-                                    case `Changed Scheduled Hours`:
-                                        enumValue = 2;
-                                        break;
-                                }
-                                adminDirectorReq.request({ db: Directors({ admin: true }), method: 'POST', url: nodeURL + `/timesheet/${path}`, data: { ID: record.ID, time_in: moment(values.tClockIn).toISOString(true), time_out: moment(values.tClockOut).toISOString(true), approved: enumValue } }, function (response) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: recordID, happened: 0}}, function (response) {
                                     if (response === 'OK') {
-                                        $("#options-modal-config-form").iziModal('close');
                                         iziToast.show({
-                                            title: `Timesheet Edited!`,
-                                            message: `Timesheet record was edited!`,
-                                            timeout: 10000,
+                                            title: `Absence marked unexcused!`,
+                                            message: `This record was now marked as an unexcused absence.`,
+                                            timeout: 15000,
                                             close: true,
                                             color: 'green',
                                             drag: false,
@@ -6832,8 +6728,8 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
                                     } else {
                                         console.dir(response);
                                         iziToast.show({
-                                            title: `Failed to edit timesheet!`,
-                                            message: `There was an error trying to edit the timesheet.`,
+                                            title: `Failed to marked unexcused!`,
+                                            message: `There was an error trying to mark that record as an unexcused absence.`,
                                             timeout: 10000,
                                             close: true,
                                             color: 'red',
@@ -6845,12 +6741,116 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
                                         });
                                     }
                                 });
+                            }],
+                        ['<button><b>No</b></button>', function (instance, toast) {
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
+                    ]
+                });
+            } else if (e.target.id.startsWith(`notification-timesheet-`)) {
+                var timesheetID = parseInt(e.target.id.replace(`notification-timesheet-`, ``));
+                console.log(timesheetID);
+                Timesheet().get()
+                        .filter(record => record.ID === timesheetID)
+                        .map(record => {
+                            document.querySelector(`#options-modal-config-form-form`).innerHTML = ``;
+                            $('#options-modal-config-form-extra').html(``);
+                            var enumValue = ``;
+                            switch (record.approved) {
+                                case - 1:
+                                    enumValue = `Canceled Hours`;
+                                    break;
+                                case 0:
+                                    enumValue = `Not Approved / Absent`;
+                                    break;
+                                case 1:
+                                    enumValue = `Approved / Scheduled Hours`;
+                                    break;
+                                case 2:
+                                    enumValue = `Changed Scheduled Hours`;
+                                    break;
                             }
+                            $('#options-modal-config-form-form').jsonForm({
+                                "schema": {
+                                    "tClockIn": {
+                                        "title": "Clocked In",
+                                        "description": "Date and time the director clocked in.",
+                                        "type": "datetime-local"
+                                    },
+                                    "tClockOut": {
+                                        "title": "Clocked Out",
+                                        "description": "Date and time the director clocked out",
+                                        "type": "datetime-local"
+                                    },
+                                    "tApproved": {
+                                        "title": "Approved",
+                                        "description": "Is this record approved / counting towards weekly hours?",
+                                        "type": "string",
+                                        enum: ["DELETE THIS ENTRY", "Canceled Hours", "Not Approved / Absent", "Approved / Scheduled Hours", "Changed Scheduled Hours"]
+                                    },
+                                },
+                                "value": {
+                                    "tClockIn": record.time_in !== null ? moment(record.time_in).format("YYYY-MM-DD\THH:mm") : ``,
+                                    "tClockOut": record.time_out !== null ? moment(record.time_out).format("YYYY-MM-DD\THH:mm") : ``,
+                                    "tApproved": enumValue,
+                                },
+                                "onSubmitValid": function (values) {
+                                    var enumValue = 1;
+                                    var path = `edit`;
+                                    switch (values.tApproved) {
+                                        case `DELETE THIS ENTRY`:
+                                            path = `remove`;
+                                            break;
+                                        case `Canceled Hours`:
+                                            enumValue = -1;
+                                            break;
+                                        case `Not Approved / Absent`:
+                                            enumValue = 0;
+                                            break;
+                                        case `Approved / Scheduled Hours`:
+                                            enumValue = 1;
+                                            break;
+                                        case `Changed Scheduled Hours`:
+                                            enumValue = 2;
+                                            break;
+                                    }
+                                    adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + `/timesheet/${path}`, data: {ID: record.ID, time_in: moment(values.tClockIn).toISOString(true), time_out: moment(values.tClockOut).toISOString(true), approved: enumValue}}, function (response) {
+                                        if (response === 'OK') {
+                                            $("#options-modal-config-form").iziModal('close');
+                                            iziToast.show({
+                                                title: `Timesheet Edited!`,
+                                                message: `Timesheet record was edited!`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'green',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        } else {
+                                            console.dir(response);
+                                            iziToast.show({
+                                                title: `Failed to edit timesheet!`,
+                                                message: `There was an error trying to edit the timesheet.`,
+                                                timeout: 10000,
+                                                close: true,
+                                                color: 'red',
+                                                drag: false,
+                                                position: 'center',
+                                                closeOnClick: true,
+                                                overlay: false,
+                                                zindex: 1000
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                            $(`#options-modal-config-form-extra`).html(`Record created: <strong>${moment(record.createdAt).format("LLLL")}</strong><br />Record last updated: <strong>${moment(record.updatedAt).format("LLLL")}</strong><br /><br />Scheduled time in: <strong>${record.scheduled_in !== null ? moment(record.scheduled_in).format("LLLL") : `not scheduled`}</strong><br />Scheduled time out: <strong>${record.scheduled_out !== null ? moment(record.scheduled_out).format("LLLL") : `not scheduled`}</strong>`);
+                            $("#options-modal-config-form-label").html(`Edit Timesheet`);
+                            $("#options-modal-config-form").iziModal('open');
                         });
-                        $(`#options-modal-config-form-extra`).html(`Record created: <strong>${moment(record.createdAt).format("LLLL")}</strong><br />Record last updated: <strong>${moment(record.updatedAt).format("LLLL")}</strong><br /><br />Scheduled time in: <strong>${record.scheduled_in !== null ? moment(record.scheduled_in).format("LLLL") : `not scheduled`}</strong><br />Scheduled time out: <strong>${record.scheduled_out !== null ? moment(record.scheduled_out).format("LLLL") : `not scheduled`}</strong>`);
-                        $("#options-modal-config-form-label").html(`Edit Timesheet`);
-                        $("#options-modal-config-form").iziModal('open');
-                    });
             } else if (e.target.id === `notification-timesheets`) {
                 document.querySelector("#options-timesheets-date").value = moment(Meta.time).startOf('week').format("YYYY-MM-DD");
                 document.querySelector('#options-timesheets-records').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
@@ -7230,7 +7230,7 @@ document.querySelector(`#options-directors`).addEventListener("click", function 
             console.log(e.target.id);
             if (e.target.id.startsWith(`options-director-`)) {
                 var director = parseInt(e.target.id.replace("options-director-", ""));
-                var director2 = Directors({ ID: director }).first();
+                var director2 = Directors({ID: director}).first();
                 document.querySelector("#options-director-name").value = director2.name;
                 document.querySelector("#options-director-login").value = "";
                 document.querySelector("#options-director-position").value = director2.position;
@@ -7274,46 +7274,46 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                     closeOnClick: false,
                     inputs: [
                         ['<input type="text">', 'keyup', function (instance, toast, input, e) {
-                            inputData = input.value;
-                        }, true],
+                                inputData = input.value;
+                            }, true],
                     ],
                     buttons: [
                         ['<button><b>Edit</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/djs/edit', data: { ID: e.target.dataset.dj, name: inputData } }, function (response) {
-                                if (response === 'OK') {
-                                    iziToast.show({
-                                        title: `DJ Edited!`,
-                                        message: `DJ was edited!`,
-                                        timeout: 15000,
-                                        close: true,
-                                        color: 'green',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                } else {
-                                    console.dir(response);
-                                    iziToast.show({
-                                        title: `Failed to edit DJ!`,
-                                        message: `There was an error trying to edit the DJ.`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                }
-                            });
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/djs/edit', data: {ID: e.target.dataset.dj, name: inputData}}, function (response) {
+                                    if (response === 'OK') {
+                                        iziToast.show({
+                                            title: `DJ Edited!`,
+                                            message: `DJ was edited!`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to edit DJ!`,
+                                            message: `There was an error trying to edit the DJ.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
                         ['<button><b>Cancel</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             } else if (e.target.id === 'btn-options-dj-remove') {
@@ -7335,42 +7335,42 @@ document.querySelector(`#options-dj-buttons`).addEventListener("click", function
                     closeOnClick: false,
                     buttons: [
                         ['<button><b>Remove</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/djs/remove', data: { ID: e.target.dataset.dj } }, function (response) {
-                                if (response === 'OK') {
-                                    $("#options-modal-dj").iziModal('close');
-                                    iziToast.show({
-                                        title: `DJ Removed!`,
-                                        message: `DJ was removed!`,
-                                        timeout: 15000,
-                                        close: true,
-                                        color: 'green',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                } else {
-                                    console.dir(response);
-                                    iziToast.show({
-                                        title: `Failed to remove DJ!`,
-                                        message: `There was an error trying to remove the DJ.`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                }
-                            });
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/djs/remove', data: {ID: e.target.dataset.dj}}, function (response) {
+                                    if (response === 'OK') {
+                                        $("#options-modal-dj").iziModal('close');
+                                        iziToast.show({
+                                            title: `DJ Removed!`,
+                                            message: `DJ was removed!`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to remove DJ!`,
+                                            message: `There was an error trying to remove the DJ.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
                         ['<button><b>Cancel</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             } else if (e.target.id === 'btn-options-dj-xp') {
@@ -7442,42 +7442,42 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                     closeOnClick: false,
                     buttons: [
                         ['<button><b>Yes</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: record, ignore: 2 } }, function (response) {
-                                if (response === 'OK') {
-                                    loadDJ(DJData.DJ, true);
-                                    iziToast.show({
-                                        title: `Reputation excused!`,
-                                        message: `This record will no longer register on the DJ's reputation statistics.`,
-                                        timeout: 15000,
-                                        close: true,
-                                        color: 'green',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                } else {
-                                    console.dir(response);
-                                    iziToast.show({
-                                        title: `Failed to excuse!`,
-                                        message: `There was an error trying to excuse the reputation of this record.`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                }
-                            });
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: record, ignore: 2}}, function (response) {
+                                    if (response === 'OK') {
+                                        loadDJ(DJData.DJ, true);
+                                        iziToast.show({
+                                            title: `Reputation excused!`,
+                                            message: `This record will no longer register on the DJ's reputation statistics.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to excuse!`,
+                                            message: `There was an error trying to excuse the reputation of this record.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
                         ['<button><b>No</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             } else if (e.target.id.startsWith(`dj-show-logs-unignore-`)) {
@@ -7499,42 +7499,42 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                     closeOnClick: false,
                     buttons: [
                         ['<button><b>Yes</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: record, ignore: 0 } }, function (response) {
-                                if (response === 'OK') {
-                                    loadDJ(DJData.DJ, true);
-                                    iziToast.show({
-                                        title: `Reputation un-excused!`,
-                                        message: `This record will now register on the DJ's reputation statistics.`,
-                                        timeout: 15000,
-                                        close: true,
-                                        color: 'green',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                } else {
-                                    console.dir(response);
-                                    iziToast.show({
-                                        title: `Failed to un-excuse!`,
-                                        message: `There was an error trying to un-excuse the reputation of this record.`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                }
-                            });
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: record, ignore: 0}}, function (response) {
+                                    if (response === 'OK') {
+                                        loadDJ(DJData.DJ, true);
+                                        iziToast.show({
+                                            title: `Reputation un-excused!`,
+                                            message: `This record will now register on the DJ's reputation statistics.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to un-excuse!`,
+                                            message: `There was an error trying to un-excuse the reputation of this record.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
                         ['<button><b>No</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             } else if (e.target.id.startsWith(`dj-show-logs-absent-`)) {
@@ -7556,42 +7556,42 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                     closeOnClick: false,
                     buttons: [
                         ['<button><b>Yes</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: record, happened: 0 } }, function (response) {
-                                if (response === 'OK') {
-                                    loadDJ(DJData.DJ, true);
-                                    iziToast.show({
-                                        title: `Absence marked unexcused!`,
-                                        message: `This record was now marked as an unexcused absence.`,
-                                        timeout: 15000,
-                                        close: true,
-                                        color: 'green',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                } else {
-                                    console.dir(response);
-                                    iziToast.show({
-                                        title: `Failed to marked unexcused!`,
-                                        message: `There was an error trying to mark that record as an unexcused absence.`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                }
-                            });
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: record, happened: 0}}, function (response) {
+                                    if (response === 'OK') {
+                                        loadDJ(DJData.DJ, true);
+                                        iziToast.show({
+                                            title: `Absence marked unexcused!`,
+                                            message: `This record was now marked as an unexcused absence.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to marked unexcused!`,
+                                            message: `There was an error trying to mark that record as an unexcused absence.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
                         ['<button><b>No</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             } else if (e.target.id.startsWith(`dj-show-logs-excused-`)) {
@@ -7613,49 +7613,49 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                     closeOnClick: false,
                     buttons: [
                         ['<button><b>Yes</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: record, happened: -1 } }, function (response) {
-                                if (response === 'OK') {
-                                    loadDJ(DJData.DJ, true);
-                                    iziToast.show({
-                                        title: `Record marked canceled!`,
-                                        message: `This record was now marked as a cancellation.`,
-                                        timeout: 15000,
-                                        close: true,
-                                        color: 'green',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                } else {
-                                    console.dir(response);
-                                    iziToast.show({
-                                        title: `Failed to mark canceled!`,
-                                        message: `There was an error trying to mark that record as canceled.`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                }
-                            });
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: {ID: record, happened: -1}}, function (response) {
+                                    if (response === 'OK') {
+                                        loadDJ(DJData.DJ, true);
+                                        iziToast.show({
+                                            title: `Record marked canceled!`,
+                                            message: `This record was now marked as a cancellation.`,
+                                            timeout: 15000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to mark canceled!`,
+                                            message: `There was an error trying to mark that record as canceled.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
                         ['<button><b>No</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             } else if (e.target.id.startsWith(`dj-show-logs-`)) {
                 document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
                 document.querySelector('#dj-logs-listeners').innerHTML = '';
                 $("#options-modal-dj-logs").iziModal('open');
-                hostReq.request({ method: 'POST', url: nodeURL + '/logs/get', data: { attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``)) } }, function (response) {
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``))}}, function (response) {
                     var logs = document.querySelector('#dj-show-logs');
                     logs.scrollTop = 0;
 
@@ -7675,16 +7675,16 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                             </div>`;
                         });
                         logs.innerHTML = newLog;
-                        hostReq.request({ method: 'POST', url: nodeURL + '/listeners/get', data: { start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true) } }, function (response2) {
+                        hostReq.request({method: 'POST', url: nodeURL + '/listeners/get', data: {start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true)}}, function (response2) {
 
                             if (response2.length > 1) {
                                 var theData = [];
                                 response2.map(listener => {
                                     if (moment(listener.createdAt).isBefore(moment(response[0].createdAt)))
                                         listener.createdAt = response[0].createdAt;
-                                    theData.push({ x: moment(listener.createdAt).toISOString(true), y: listener.listeners });
+                                    theData.push({x: moment(listener.createdAt).toISOString(true), y: listener.listeners});
                                 });
-                                theData.push({ x: moment(response[response.length - 1].createdAt).toISOString(true), y: response[response.length - 1].listeners });
+                                theData.push({x: moment(response[response.length - 1].createdAt).toISOString(true), y: response[response.length - 1].listeners});
                                 new Taucharts.Chart({
                                     data: theData,
                                     type: 'line',
@@ -7692,8 +7692,8 @@ document.querySelector(`#dj-attendance`).addEventListener("click", function (e) 
                                     y: 'y',
                                     color: 'wwsu-red',
                                     guide: {
-                                        y: { label: { text: 'Online Listeners' }, autoScale: true, nice: true },
-                                        x: { label: { text: 'Time' }, autoScale: true, nice: false },
+                                        y: {label: {text: 'Online Listeners'}, autoScale: true, nice: true},
+                                        x: {label: {text: 'Time'}, autoScale: true, nice: false},
                                         interpolate: 'step-after',
                                         showGridLines: 'xy',
                                     },
@@ -7750,7 +7750,7 @@ document.querySelector(`#global-logs`).addEventListener("click", function (e) {
                 document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
                 document.querySelector('#dj-logs-listeners').innerHTML = '';
                 $("#options-modal-dj-logs").iziModal('open');
-                hostReq.request({ method: 'POST', url: nodeURL + '/logs/get', data: { attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``)) } }, function (response) {
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/get', data: {attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``))}}, function (response) {
                     var logs = document.querySelector('#dj-show-logs');
                     logs.scrollTop = 0;
 
@@ -7771,16 +7771,16 @@ document.querySelector(`#global-logs`).addEventListener("click", function (e) {
                         });
                         logs.innerHTML = newLog;
 
-                        hostReq.request({ method: 'POST', url: nodeURL + '/listeners/get', data: { start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true) } }, function (response2) {
+                        hostReq.request({method: 'POST', url: nodeURL + '/listeners/get', data: {start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true)}}, function (response2) {
 
                             if (response2.length > 1) {
                                 var theData = [];
                                 response2.map(listener => {
                                     if (moment(listener.createdAt).isBefore(moment(response[0].createdAt)))
                                         listener.createdAt = response[0].createdAt;
-                                    theData.push({ x: moment(listener.createdAt).toISOString(true), y: listener.listeners });
+                                    theData.push({x: moment(listener.createdAt).toISOString(true), y: listener.listeners});
                                 });
-                                theData.push({ x: moment(response[response.length - 1].createdAt).toISOString(true), y: response[response.length - 1].listeners });
+                                theData.push({x: moment(response[response.length - 1].createdAt).toISOString(true), y: response[response.length - 1].listeners});
                                 new Taucharts.Chart({
                                     data: theData,
                                     type: 'line',
@@ -7788,8 +7788,8 @@ document.querySelector(`#global-logs`).addEventListener("click", function (e) {
                                     y: 'y',
                                     color: 'wwsu-red',
                                     guide: {
-                                        y: { label: { text: 'Online Listeners' }, autoScale: true, nice: true },
-                                        x: { label: { text: 'Time' }, autoScale: true, nice: false },
+                                        y: {label: {text: 'Online Listeners'}, autoScale: true, nice: true},
+                                        x: {label: {text: 'Time'}, autoScale: true, nice: false},
                                         interpolate: 'step-after',
                                         showGridLines: 'xy',
                                     },
@@ -7861,65 +7861,65 @@ document.querySelector(`#dj-xp-logs`).addEventListener("click", function (e) {
                     closeOnClick: false,
                     buttons: [
                         ['<button><b>Remove</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/xp/remove', data: { ID: parseInt(e.target.id.replace(`dj-xp-remove-`, ``)) } }, function (response) {
-                                if (response === 'OK') {
-                                    iziToast.show({
-                                        title: `Log removed!`,
-                                        message: `Log was removed!`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'green',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                } else {
-                                    console.dir(response);
-                                    iziToast.show({
-                                        title: `Failed to remove log!`,
-                                        message: `There was an error trying to remove the log.`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                }
-                            });
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/xp/remove', data: {ID: parseInt(e.target.id.replace(`dj-xp-remove-`, ``))}}, function (response) {
+                                    if (response === 'OK') {
+                                        iziToast.show({
+                                            title: `Log removed!`,
+                                            message: `Log was removed!`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to remove log!`,
+                                            message: `There was an error trying to remove the log.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
                         ['<button><b>Cancel</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             }
             if (e.target.id.startsWith(`dj-xp-edit-`)) {
                 var recordID = parseInt(e.target.id.replace(`dj-xp-edit-`, ``));
                 DJData.XP
-                    .filter(record => record.ID === recordID)
-                    .map(record => {
-                        document.querySelector("#options-xp-date").value = moment(record.createdAt).format("YYYY-MM-DD\THH:mm");
-                        document.querySelector("#options-xp-type").value = `${record.type}-${record.subtype}`;
-                        document.querySelector("#options-xp-description").value = record.description;
-                        document.querySelector("#options-xp-amount").value = parseFloat(record.amount);
-                        document.querySelector("#options-xp-djs").style.display = "none";
-                        document.querySelector("#options-xp-djs-none").style.display = "inline-block";
-                        document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-xp-edit-${recordID}" title="Edit Note/Remote/XP">Edit</button>`;
-                        Djs().each(dj => {
-                            var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
+                        .filter(record => record.ID === recordID)
+                        .map(record => {
+                            document.querySelector("#options-xp-date").value = moment(record.createdAt).format("YYYY-MM-DD\THH:mm");
+                            document.querySelector("#options-xp-type").value = `${record.type}-${record.subtype}`;
+                            document.querySelector("#options-xp-description").value = record.description;
+                            document.querySelector("#options-xp-amount").value = parseFloat(record.amount);
+                            document.querySelector("#options-xp-djs").style.display = "none";
+                            document.querySelector("#options-xp-djs-none").style.display = "inline-block";
+                            document.querySelector("#options-xp-button").innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-xp-edit-${recordID}" title="Edit Note/Remote/XP">Edit</button>`;
+                            Djs().each(dj => {
+                                var temp = document.querySelector(`#options-xp-djs-i-${dj.ID}`);
+                                if (temp)
+                                    temp.checked = false;
+                            });
+                            var temp = document.querySelector(`#options-xp-djs-i-${record.dj}`);
                             if (temp)
-                                temp.checked = false;
+                                temp.checked = true;
                         });
-                        var temp = document.querySelector(`#options-xp-djs-i-${record.dj}`);
-                        if (temp)
-                            temp.checked = true;
-                    });
                 $("#options-modal-dj-xp-add").iziModal('open');
             }
         }
@@ -8041,47 +8041,47 @@ document.querySelector(`#options-announcements`).addEventListener("click", funct
                     closeOnClick: false,
                     buttons: [
                         ['<button><b>Remove</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/announcements/remove', data: { ID: parseInt(e.target.id.replace(`options-announcements-remove-`, ``)) } }, function (response) {
-                                if (response === 'OK') {
-                                    checkAnnouncements();
-                                    iziToast.show({
-                                        title: `Announcement removed!`,
-                                        message: `Announcement was removed!`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'green',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                } else {
-                                    console.dir(response);
-                                    iziToast.show({
-                                        title: `Failed to remove announcement!`,
-                                        message: `There was an error trying to remove the announcement.`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                }
-                            });
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/announcements/remove', data: {ID: parseInt(e.target.id.replace(`options-announcements-remove-`, ``))}}, function (response) {
+                                    if (response === 'OK') {
+                                        checkAnnouncements();
+                                        iziToast.show({
+                                            title: `Announcement removed!`,
+                                            message: `Announcement was removed!`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to remove announcement!`,
+                                            message: `There was an error trying to remove the announcement.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
                         ['<button><b>Cancel</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             }
             if (e.target.id.startsWith("options-announcements-edit-")) {
-                var response = Announcements({ ID: parseInt(e.target.id.replace(`options-announcements-edit-`, ``)) }).first();
+                var response = Announcements({ID: parseInt(e.target.id.replace(`options-announcements-edit-`, ``))}).first();
                 document.querySelector("#options-announcement-starts").value = moment(response.starts).format("YYYY-MM-DD\THH:mm");
                 document.querySelector("#options-announcement-expires").value = moment(response.expires).format("YYYY-MM-DD\THH:mm");
                 document.querySelector("#options-announcement-type").value = response.type;
@@ -8108,7 +8108,7 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
             console.log(e.target.id);
             if (e.target.id.startsWith("options-djcontrols-remove-")) {
                 var inputData = "";
-                var host = Hosts({ ID: parseInt(e.target.id.replace(`options-djcontrols-remove-`, ``)) }).first();
+                var host = Hosts({ID: parseInt(e.target.id.replace(`options-djcontrols-remove-`, ``))}).first();
                 iziToast.show({
                     timeout: 60000,
                     overlay: true,
@@ -8126,43 +8126,43 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
                     closeOnClick: false,
                     buttons: [
                         ['<button><b>Remove</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/hosts/remove', data: { ID: parseInt(e.target.id.replace(`options-djcontrols-remove-`, ``)) } }, function (response) {
-                                if (response === 'OK') {
-                                    checkAnnouncements();
-                                    iziToast.show({
-                                        title: `DJ Controls host removed!`,
-                                        message: `DJ Controls host was removed!`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'green',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                } else {
-                                    console.dir(response);
-                                    iziToast.show({
-                                        title: `Failed to remove DJ Controls host!`,
-                                        message: `There was an error trying to remove the DJ Controls host. ${response}.`,
-                                        timeout: 20000,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000,
-                                        maxWidth: 480
-                                    });
-                                }
-                            });
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/hosts/remove', data: {ID: parseInt(e.target.id.replace(`options-djcontrols-remove-`, ``))}}, function (response) {
+                                    if (response === 'OK') {
+                                        checkAnnouncements();
+                                        iziToast.show({
+                                            title: `DJ Controls host removed!`,
+                                            message: `DJ Controls host was removed!`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to remove DJ Controls host!`,
+                                            message: `There was an error trying to remove the DJ Controls host. ${response}.`,
+                                            timeout: 20000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000,
+                                            maxWidth: 480
+                                        });
+                                    }
+                                });
+                            }],
                         ['<button><b>Cancel</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             }
@@ -8178,7 +8178,7 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
                 document.querySelector("#options-host-record").onchange = checkCaution;
                 document.querySelector("#options-host-silence").onchange = checkCaution;
 
-                var host = Hosts({ ID: parseInt(e.target.id.replace(`options-djcontrols-edit-`, ``)) }).first();
+                var host = Hosts({ID: parseInt(e.target.id.replace(`options-djcontrols-edit-`, ``))}).first();
                 document.querySelector("#options-host-name").value = host.friendlyname;
                 document.querySelector("#options-host-authorized").checked = host.authorized;
                 document.querySelector("#options-host-admin").checked = host.admin;
@@ -8193,7 +8193,7 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
 
                 checkCaution();
 
-                if (Hosts({ authorized: true, admin: true }).get().length <= 1 && host.authorized && host.admin) {
+                if (Hosts({authorized: true, admin: true}).get().length <= 1 && host.authorized && host.admin) {
                     document.querySelector("#options-host-authorized").disabled = true;
                     document.querySelector("#options-host-admin").disabled = true;
                     document.querySelector("#options-host-authorized").classList.add("is-invalid");
@@ -8204,7 +8204,7 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
                     document.querySelector("#options-host-authorized").classList.remove("is-invalid");
                     document.querySelector("#options-host-admin").classList.remove("is-invalid");
                 }
-                if (Hosts({ silenceDetection: true }).get().length >= 1 && !host.silenceDetection) {
+                if (Hosts({silenceDetection: true}).get().length >= 1 && !host.silenceDetection) {
                     document.querySelector("#options-host-silence").disabled = true;
                     document.querySelector("#options-host-silence").classList.add("is-invalid");
                 } else {
@@ -8212,7 +8212,7 @@ document.querySelector(`#options-djcontrols`).addEventListener("click", function
                     document.querySelector("#options-host-silence").classList.remove("is-invalid");
                 }
 
-                if (Hosts({ recordAudio: true }).get().length >= 1 && !host.recordAudio) {
+                if (Hosts({recordAudio: true}).get().length >= 1 && !host.recordAudio) {
                     document.querySelector("#options-host-record").disabled = true;
                     document.querySelector("#options-host-record").classList.add("is-invalid");
                 } else {
@@ -8239,7 +8239,7 @@ document.querySelector(`#options-discipline`).addEventListener("click", function
             console.log(e.target.id);
             if (e.target.id.startsWith("options-discipline-remove-")) {
                 var inputData = "";
-                var discipline = Discipline({ ID: parseInt(e.target.id.replace(`options-discipline-remove-`, ``)) }).first();
+                var discipline = Discipline({ID: parseInt(e.target.id.replace(`options-discipline-remove-`, ``))}).first();
                 iziToast.show({
                     timeout: 60000,
                     overlay: true,
@@ -8257,47 +8257,47 @@ document.querySelector(`#options-discipline`).addEventListener("click", function
                     closeOnClick: false,
                     buttons: [
                         ['<button><b>Remove</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/discipline/remove', data: { ID: parseInt(e.target.id.replace(`options-discipline-remove-`, ``)) } }, function (response) {
-                                if (response === 'OK') {
-                                    iziToast.show({
-                                        title: `Discipline removed!`,
-                                        message: `Discipline record was removed!`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'green',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                } else {
-                                    console.dir(response);
-                                    iziToast.show({
-                                        title: `Failed to remove discipline record!`,
-                                        message: `There was an error trying to remove the discipline record. ${response}.`,
-                                        timeout: 20000,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000,
-                                        maxWidth: 480
-                                    });
-                                }
-                            });
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/discipline/remove', data: {ID: parseInt(e.target.id.replace(`options-discipline-remove-`, ``))}}, function (response) {
+                                    if (response === 'OK') {
+                                        iziToast.show({
+                                            title: `Discipline removed!`,
+                                            message: `Discipline record was removed!`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to remove discipline record!`,
+                                            message: `There was an error trying to remove the discipline record. ${response}.`,
+                                            timeout: 20000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000,
+                                            maxWidth: 480
+                                        });
+                                    }
+                                });
+                            }],
                         ['<button><b>Cancel</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             }
             if (e.target.id.startsWith("options-discipline-edit-")) {
-                var discipline = Discipline({ ID: parseInt(e.target.id.replace(`options-discipline-edit-`, ``)) }).first();
+                var discipline = Discipline({ID: parseInt(e.target.id.replace(`options-discipline-edit-`, ``))}).first();
 
                 document.querySelector("#discipline-IP").value = discipline.IP;
                 document.querySelector("#discipline-action").value = discipline.action;
@@ -8341,7 +8341,7 @@ document.querySelector(`#options-discipline-button`).addEventListener("click", f
         if (e.target) {
             console.log(e.target.id);
             if (e.target.id.startsWith("options-discipline-button-edit-")) {
-                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/discipline/edit', data: { ID: parseInt(e.target.id.replace(`options-discipline-button-edit-`, ``)), active: document.querySelector("#discipline-active").checked, IP: document.querySelector("#discipline-IP").value, action: document.querySelector("#discipline-action").value, message: document.querySelector("#discipline-message").value } }, function (response) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/discipline/edit', data: {ID: parseInt(e.target.id.replace(`options-discipline-button-edit-`, ``)), active: document.querySelector("#discipline-active").checked, IP: document.querySelector("#discipline-IP").value, action: document.querySelector("#discipline-action").value, message: document.querySelector("#discipline-message").value}}, function (response) {
                     if (response === 'OK') {
                         $("#options-modal-discipline-record").iziModal('close');
                         iziToast.show({
@@ -8374,7 +8374,7 @@ document.querySelector(`#options-discipline-button`).addEventListener("click", f
                 });
             }
             if (e.target.id === "options-discipline-button-add") {
-                hostReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/discipline/add', data: { active: document.querySelector("#discipline-active").checked, IP: document.querySelector("#discipline-IP").value, action: document.querySelector("#discipline-action").value, message: document.querySelector("#discipline-message").value } }, function (response) {
+                hostReq.request({db: Directors(), method: 'POST', url: nodeURL + '/discipline/add', data: {active: document.querySelector("#discipline-active").checked, IP: document.querySelector("#discipline-IP").value, action: document.querySelector("#discipline-action").value, message: document.querySelector("#discipline-message").value}}, function (response) {
                     if (response === 'OK') {
                         checkAnnouncements();
                         $("#options-modal-discipline-record").iziModal('close');
@@ -8422,7 +8422,7 @@ document.querySelector(`#options-announcement-button`).addEventListener("click",
         if (e.target) {
             console.log(e.target.id);
             if (e.target.id.startsWith("options-announcement-edit-")) {
-                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/announcements/edit', data: { ID: parseInt(e.target.id.replace(`options-announcement-edit-`, ``)), starts: moment(document.querySelector("#options-announcement-starts").value).toISOString(true), expires: moment(document.querySelector("#options-announcement-expires").value).toISOString(true), type: document.querySelector("#options-announcement-type").value, level: document.querySelector("#options-announcement-level").value, title: document.querySelector("#options-announcement-title").value, announcement: quillGetHTML(quill2.getContents()), displayTime: document.querySelector("#options-announcement-displaytime").value } }, function (response) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/announcements/edit', data: {ID: parseInt(e.target.id.replace(`options-announcement-edit-`, ``)), starts: moment(document.querySelector("#options-announcement-starts").value).toISOString(true), expires: moment(document.querySelector("#options-announcement-expires").value).toISOString(true), type: document.querySelector("#options-announcement-type").value, level: document.querySelector("#options-announcement-level").value, title: document.querySelector("#options-announcement-title").value, announcement: quillGetHTML(quill2.getContents()), displayTime: document.querySelector("#options-announcement-displaytime").value}}, function (response) {
                     if (response === 'OK') {
                         checkAnnouncements();
                         $("#options-modal-announcement").iziModal('close');
@@ -8456,7 +8456,7 @@ document.querySelector(`#options-announcement-button`).addEventListener("click",
                 });
             }
             if (e.target.id === "options-announcement-add") {
-                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/announcements/add', data: { starts: moment(document.querySelector("#options-announcement-starts").value).toISOString(true), expires: moment(document.querySelector("#options-announcement-expires").value).toISOString(true), displayTime: document.querySelector("#options-announcement-displaytime").value, type: document.querySelector("#options-announcement-type").value, level: document.querySelector("#options-announcement-level").value, title: document.querySelector("#options-announcement-title").value, announcement: quillGetHTML(quill2.getContents()) } }, function (response) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/announcements/add', data: {starts: moment(document.querySelector("#options-announcement-starts").value).toISOString(true), expires: moment(document.querySelector("#options-announcement-expires").value).toISOString(true), displayTime: document.querySelector("#options-announcement-displaytime").value, type: document.querySelector("#options-announcement-type").value, level: document.querySelector("#options-announcement-level").value, title: document.querySelector("#options-announcement-title").value, announcement: quillGetHTML(quill2.getContents())}}, function (response) {
                     if (response === 'OK') {
                         checkAnnouncements();
                         $("#options-modal-announcement").iziModal('close');
@@ -8504,7 +8504,7 @@ document.querySelector(`#options-host-button`).addEventListener("click", functio
         if (e.target) {
             console.log(e.target.id);
             if (e.target.id.startsWith("options-host-edit-")) {
-                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/hosts/edit', data: { ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector("#options-host-name").value, authorized: document.querySelector("#options-host-authorized").checked, admin: document.querySelector("#options-host-admin").checked, requests: document.querySelector("#options-host-requests").checked, emergencies: document.querySelector("#options-host-emergencies").checked, webmessages: document.querySelector("#options-host-webmessages").checked, makeCalls: document.querySelector("#options-host-makecalls").checked, answerCalls: document.querySelector("#options-host-answercalls").checked, silenceDetection: document.querySelector("#options-host-silence").checked, recordAudio: document.querySelector("#options-host-record").checked } }, function (response) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/hosts/edit', data: {ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector("#options-host-name").value, authorized: document.querySelector("#options-host-authorized").checked, admin: document.querySelector("#options-host-admin").checked, requests: document.querySelector("#options-host-requests").checked, emergencies: document.querySelector("#options-host-emergencies").checked, webmessages: document.querySelector("#options-host-webmessages").checked, makeCalls: document.querySelector("#options-host-makecalls").checked, answerCalls: document.querySelector("#options-host-answercalls").checked, silenceDetection: document.querySelector("#options-host-silence").checked, recordAudio: document.querySelector("#options-host-record").checked}}, function (response) {
                     if (response === 'OK') {
                         $("#options-modal-host").iziModal('close');
                         iziToast.show({
@@ -8553,7 +8553,7 @@ document.querySelector(`#options-xp-button`).addEventListener("click", function 
             console.log(e.target.id);
             if (e.target.id.startsWith("options-xp-edit-")) {
                 var types = document.querySelector("#options-xp-type").value.split("-");
-                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/xp/edit', data: { ID: parseInt(e.target.id.replace(`options-xp-edit-`, ``)), type: types[0], subtype: types[1], description: document.querySelector("#options-xp-description").value, amount: parseFloat(document.querySelector("#options-xp-amount").value), date: moment(document.querySelector("#options-xp-date").value).toISOString(true) } }, function (response) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/xp/edit', data: {ID: parseInt(e.target.id.replace(`options-xp-edit-`, ``)), type: types[0], subtype: types[1], description: document.querySelector("#options-xp-description").value, amount: parseFloat(document.querySelector("#options-xp-amount").value), date: moment(document.querySelector("#options-xp-date").value).toISOString(true)}}, function (response) {
                     if (response === 'OK') {
                         $("#options-modal-dj-xp-add").iziModal('close');
                         iziToast.show({
@@ -8593,7 +8593,7 @@ document.querySelector(`#options-xp-button`).addEventListener("click", function 
                         djs.push(dj.ID);
                 });
                 var types = document.querySelector("#options-xp-type").value.split("-");
-                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/xp/add', data: { djs: djs, type: types[0], subtype: types[1], description: document.querySelector("#options-xp-description").value, amount: parseFloat(document.querySelector("#options-xp-amount").value), date: moment(document.querySelector("#options-xp-date").value).toISOString(true) } }, function (response) {
+                directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/xp/add', data: {djs: djs, type: types[0], subtype: types[1], description: document.querySelector("#options-xp-description").value, amount: parseFloat(document.querySelector("#options-xp-amount").value), date: moment(document.querySelector("#options-xp-date").value).toISOString(true)}}, function (response) {
                     if (response === 'OK') {
                         $("#options-modal-dj-xp-add").iziModal('close');
                         iziToast.show({
@@ -8640,7 +8640,7 @@ document.querySelector(`#options-director-button`).addEventListener("click", fun
         if (e.target) {
             console.log(e.target.id);
             if (e.target.id.startsWith("options-director-edit-")) {
-                adminDirectorReq.request({ db: Directors({ admin: true }), method: 'POST', url: nodeURL + '/directors/edit', data: { ID: parseInt(e.target.id.replace(`options-director-edit-`, ``)), name: document.querySelector("#options-director-name").value, login: document.querySelector("#options-director-login").value, position: document.querySelector("#options-director-position").value, admin: document.querySelector("#options-director-admin").checked, assistant: document.querySelector("#options-director-assistant").checked } }, function (response) {
+                adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + '/directors/edit', data: {ID: parseInt(e.target.id.replace(`options-director-edit-`, ``)), name: document.querySelector("#options-director-name").value, login: document.querySelector("#options-director-login").value, position: document.querySelector("#options-director-position").value, admin: document.querySelector("#options-director-admin").checked, assistant: document.querySelector("#options-director-assistant").checked}}, function (response) {
                     if (response === 'OK') {
                         $("#options-modal-director").iziModal('close');
                         iziToast.show({
@@ -8673,7 +8673,7 @@ document.querySelector(`#options-director-button`).addEventListener("click", fun
                 });
             }
             if (e.target.id === "options-director-add") {
-                adminDirectorReq.request({ db: Directors({ admin: true }), method: 'POST', url: nodeURL + '/directors/add', data: { name: document.querySelector("#options-director-name").value, login: document.querySelector("#options-director-login").value, position: document.querySelector("#options-director-position").value, admin: document.querySelector("#options-director-admin").checked, assistant: document.querySelector("#options-director-assistant").checked } }, function (response) {
+                adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + '/directors/add', data: {name: document.querySelector("#options-director-name").value, login: document.querySelector("#options-director-login").value, position: document.querySelector("#options-director-position").value, admin: document.querySelector("#options-director-admin").checked, assistant: document.querySelector("#options-director-assistant").checked}}, function (response) {
                     if (response === 'OK') {
                         $("#options-modal-director").iziModal('close');
                         iziToast.show({
@@ -8723,42 +8723,42 @@ document.querySelector(`#options-director-button`).addEventListener("click", fun
                     closeOnClick: false,
                     buttons: [
                         ['<button><b>Remove</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                            adminDirectorReq.request({ db: Directors({ admin: true }), method: 'POST', url: nodeURL + '/directors/remove', data: { ID: parseInt(e.target.id.replace(`options-director-remove-`, ``)) } }, function (response) {
-                                if (response === 'OK') {
-                                    $("#options-modal-director").iziModal('close');
-                                    iziToast.show({
-                                        title: `Director removed!`,
-                                        message: `Director was removed! <br /><strong>WARNING!!!</strong> If you gave access for this director to run DJ Controls on their personal computer(s), you may want to revoke access by removing them from Manage Hosts.`,
-                                        timeout: 30000,
-                                        close: true,
-                                        color: 'green',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                } else {
-                                    console.dir(response);
-                                    iziToast.show({
-                                        title: `Failed to remove director!`,
-                                        message: `There was an error trying to remove the director.`,
-                                        timeout: 10000,
-                                        close: true,
-                                        color: 'red',
-                                        drag: false,
-                                        position: 'center',
-                                        closeOnClick: true,
-                                        overlay: false,
-                                        zindex: 1000
-                                    });
-                                }
-                            });
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                                adminDirectorReq.request({db: Directors({admin: true}), method: 'POST', url: nodeURL + '/directors/remove', data: {ID: parseInt(e.target.id.replace(`options-director-remove-`, ``))}}, function (response) {
+                                    if (response === 'OK') {
+                                        $("#options-modal-director").iziModal('close');
+                                        iziToast.show({
+                                            title: `Director removed!`,
+                                            message: `Director was removed! <br /><strong>WARNING!!!</strong> If you gave access for this director to run DJ Controls on their personal computer(s), you may want to revoke access by removing them from Manage Hosts.`,
+                                            timeout: 30000,
+                                            close: true,
+                                            color: 'green',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    } else {
+                                        console.dir(response);
+                                        iziToast.show({
+                                            title: `Failed to remove director!`,
+                                            message: `There was an error trying to remove the director.`,
+                                            timeout: 10000,
+                                            close: true,
+                                            color: 'red',
+                                            drag: false,
+                                            position: 'center',
+                                            closeOnClick: true,
+                                            overlay: false,
+                                            zindex: 1000
+                                        });
+                                    }
+                                });
+                            }],
                         ['<button><b>Cancel</b></button>', function (instance, toast) {
-                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                        }],
+                                instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                            }],
                     ]
                 });
             }
@@ -8779,9 +8779,9 @@ document.querySelector(`#messages-unread`).addEventListener("click", function (e
             if (e.target.offsetParent !== null && e.target.offsetParent.id !== `messages-unread` && !e.target.id.startsWith("message-n-x-")) {
                 if (e.target.offsetParent.id.startsWith("message-n-m-")) {
                     target = parseInt(e.target.offsetParent.id.replace(`message-n-m-`, ``));
-                    var message = Messages({ ID: target }).first();
+                    var message = Messages({ID: target}).first();
                     var host = (message.to === 'DJ' ? 'website' : message.from);
-                    selectRecipient(Recipients({ host: host }).first().ID || null);
+                    selectRecipient(Recipients({host: host}).first().ID || null);
                     $("#messages-modal").iziModal('open');
                 }
             } else {
@@ -8791,9 +8791,9 @@ document.querySelector(`#messages-unread`).addEventListener("click", function (e
                 }
                 if (e.target.id.startsWith("message-n-m-")) {
                     target = parseInt(e.target.id.replace(`message-n-m-`, ``));
-                    var message = Messages({ ID: target }).first();
+                    var message = Messages({ID: target}).first();
                     var host = (message.to === 'DJ' ? 'website' : message.from);
-                    selectRecipient(Recipients({ host: host }).first().ID || null);
+                    selectRecipient(Recipients({host: host}).first().ID || null);
                     $("#messages-modal").iziModal('open');
                 }
             }
@@ -9056,7 +9056,7 @@ function waitFor(check, callback, count = 0) {
         }
     } else {
         callback();
-    }
+}
 }
 
 // Called on connection to WWSU to get data and subscribe to notifications
@@ -9075,7 +9075,7 @@ function doSockets() {
 }
 
 function hostSocket(cb = function (token) { }) {
-    hostReq.request({ method: 'POST', url: '/hosts/get', data: { host: main.getMachineID() } }, function (body) {
+    hostReq.request({method: 'POST', url: '/hosts/get', data: {host: main.getMachineID()}}, function (body) {
         //console.log(body);
         try {
             client = body;
@@ -9108,7 +9108,7 @@ function hostSocket(cb = function (token) { }) {
 
             if (client.accountability) {
                 // Subscribe to Attendance socket to get attendance updates
-                hostReq.request({ method: 'post', url: nodeURL + '/attendance/get', data: { duration: 7 } }, function serverResponded(body, JWR) {
+                hostReq.request({method: 'post', url: nodeURL + '/attendance/get', data: {duration: 7}}, function serverResponded(body, JWR) {
                     //console.log(body);
                     try {
                         processAttendance(body, true);
@@ -9121,7 +9121,7 @@ function hostSocket(cb = function (token) { }) {
                 });
 
                 // Subscribe to Attendance socket to get attendance updates
-                hostReq.request({ method: 'post', url: nodeURL + '/timesheet/get', data: { fourteenDays: true } }, function serverResponded(body, JWR) {
+                hostReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {fourteenDays: true}}, function serverResponded(body, JWR) {
                     //console.log(body);
                     try {
                         processTimesheet(body, true);
@@ -9157,7 +9157,7 @@ function hostSocket(cb = function (token) { }) {
                     temp.style.display = "inline";
 
                 // Get djs and subscribe to the dj socket
-                noReq.request({ method: 'post', url: nodeURL + '/djs/get', data: {} }, function serverResponded(body, JWR) {
+                noReq.request({method: 'post', url: nodeURL + '/djs/get', data: {}}, function serverResponded(body, JWR) {
                     //console.log(body);
                     try {
                         processDjs(body, true);
@@ -9170,7 +9170,7 @@ function hostSocket(cb = function (token) { }) {
                 });
 
                 // Get directors and subscribe to the directors socket
-                noReq.request({ method: 'post', url: nodeURL + '/directors/get', data: {} }, function serverResponded(body, JWR) {
+                noReq.request({method: 'post', url: nodeURL + '/directors/get', data: {}}, function serverResponded(body, JWR) {
                     //console.log(body);
                     try {
                         processDirectors(body, true);
@@ -9183,7 +9183,7 @@ function hostSocket(cb = function (token) { }) {
                 });
 
                 // Subscribe to the XP socket
-                hostReq.request({ method: 'post', url: nodeURL + '/xp/get', data: {} }, function serverResponded(body, JWR) {
+                hostReq.request({method: 'post', url: nodeURL + '/xp/get', data: {}}, function serverResponded(body, JWR) {
                     //console.log(body);
                     try {
                     } catch (e) {
@@ -9195,7 +9195,7 @@ function hostSocket(cb = function (token) { }) {
                 });
 
                 // Subscribe to the timesheet socket
-                noReq.request({ method: 'post', url: nodeURL + '/timesheet/get', data: {} }, function serverResponded(body, JWR) {
+                noReq.request({method: 'post', url: nodeURL + '/timesheet/get', data: {}}, function serverResponded(body, JWR) {
                     //console.log(body);
                     try {
                     } catch (e) {
@@ -9207,7 +9207,7 @@ function hostSocket(cb = function (token) { }) {
                 });
 
                 // Subscribe to the discipline socket
-                hostReq.request({ method: 'POST', url: '/discipline/get', data: {} }, function (body) {
+                hostReq.request({method: 'POST', url: '/discipline/get', data: {}}, function (body) {
                     //console.log(body);
                     try {
                         processDiscipline(body, true);
@@ -9220,7 +9220,7 @@ function hostSocket(cb = function (token) { }) {
                 });
 
                 // Subscribe to the config socket
-                hostReq.request({ method: 'POST', url: '/config/get', data: {} }, function (body) {
+                hostReq.request({method: 'POST', url: '/config/get', data: {}}, function (body) {
                     //console.log(body);
                     try {
                         processConfig(body);
@@ -9233,7 +9233,7 @@ function hostSocket(cb = function (token) { }) {
                 });
 
                 // Subscribe to the planner socket
-                hostReq.request({ method: 'post', url: nodeURL + '/planner/get', data: {} }, function serverResponded(body, JWR) {
+                hostReq.request({method: 'post', url: nodeURL + '/planner/get', data: {}}, function serverResponded(body, JWR) {
                     //console.log(body);
                     try {
                         processPlanner(body, true);
@@ -9274,7 +9274,7 @@ function hostSocket(cb = function (token) { }) {
 // Registers this DJ Controls as a recipient
 function onlineSocket() {
     console.log('attempting online socket');
-    hostReq.request({ method: 'post', url: nodeURL + '/recipients/add-computers', data: { host: client.host } }, function (response) {
+    hostReq.request({method: 'post', url: nodeURL + '/recipients/add-computers', data: {host: client.host}}, function (response) {
         try {
             //main.notification(true, "Loaded", "DJ Controls is now loaded", null, 10000);
             ipcRenderer.send(`peer-reregister`, null);
@@ -9289,7 +9289,7 @@ function onlineSocket() {
 // Gets wwsu metadata
 function metaSocket() {
     console.log('attempting meta socket');
-    noReq.request({ method: 'POST', url: '/meta/get', data: {} }, function (body) {
+    noReq.request({method: 'POST', url: '/meta/get', data: {}}, function (body) {
         try {
             Meta = body;
             doMeta(body);
@@ -9304,7 +9304,7 @@ function metaSocket() {
 // Internal emergency alerts
 function easSocket() {
     console.log('attempting eas socket');
-    noReq.request({ method: 'POST', url: '/eas/get', data: {} }, function (body) {
+    noReq.request({method: 'POST', url: '/eas/get', data: {}}, function (body) {
         try {
             processEas(body, true);
         } catch (e) {
@@ -9318,7 +9318,7 @@ function easSocket() {
 // Status checks
 function statusSocket() {
     console.log('attempting statuc socket');
-    noReq.request({ method: 'POST', url: '/status/get', data: {} }, function (body) {
+    noReq.request({method: 'POST', url: '/status/get', data: {}}, function (body) {
         //console.log(body);
         try {
             processStatus(body, true);
@@ -9333,7 +9333,7 @@ function statusSocket() {
 // Event calendar from Google
 function calendarSocket() {
     console.log('attempting calendar socket');
-    noReq.request({ method: 'POST', url: '/calendar/get', data: {} }, function (body) {
+    noReq.request({method: 'POST', url: '/calendar/get', data: {}}, function (body) {
         //console.log(body);
         try {
             processCalendar(body, true);
@@ -9349,7 +9349,7 @@ function calendarSocket() {
 function messagesSocket() {
     console.log('attempting messages socket');
     try {
-        hostReq.request({ method: 'post', url: nodeURL + '/messages/get', data: { host: client.host } }, function (body2) {
+        hostReq.request({method: 'post', url: nodeURL + '/messages/get', data: {host: client.host}}, function (body2) {
             //console.log(body);
             try {
                 processMessages(body2, true);
@@ -9361,7 +9361,7 @@ function messagesSocket() {
             }
         });
 
-        hostReq.request({ method: 'post', url: nodeURL + '/requests/get', data: {} }, function (body3) {
+        hostReq.request({method: 'post', url: nodeURL + '/requests/get', data: {}}, function (body3) {
             //console.log(body);
             try {
                 processRequests(body3, true);
@@ -9372,7 +9372,7 @@ function messagesSocket() {
                 setTimeout(messagesSocket, 10000);
             }
         });
-        noReq.request({ method: 'POST', url: '/announcements/get', data: { type: client.admin ? 'all' : 'djcontrols' } }, function (body) {
+        noReq.request({method: 'POST', url: '/announcements/get', data: {type: client.admin ? 'all' : 'djcontrols'}}, function (body) {
             //console.log(body);
             try {
                 processAnnouncements(body, true);
@@ -9392,7 +9392,7 @@ function messagesSocket() {
 // Retrieving a list of clients we can send/receive messages to/from
 function recipientsSocket() {
     console.log('attempting recipients socket');
-    hostReq.request({ method: 'POST', url: '/recipients/get', data: {} }, function (body) {
+    hostReq.request({method: 'POST', url: '/recipients/get', data: {}}, function (body) {
         //console.log(body);
         try {
             processRecipients(body, true);
@@ -9511,9 +9511,9 @@ function doMeta(metan) {
                     maxWidth: 480,
                     buttons: [
                         ['<button>Take a Break</button>', function (instance, toast, button, e, inputs) {
-                            goBreak(false);
-                            instance.hide({}, toast, 'button');
-                        }]
+                                goBreak(false);
+                                instance.hide({}, toast, 'button');
+                            }]
                     ]
                 });
             }
@@ -9552,7 +9552,7 @@ function doMeta(metan) {
             window.peerGoodBitrate = 0;
             bitRate += 32;
             console.log(`Connection has been consistently good; requesting a bitrate bump to ${bitRate} kbps.`);
-            hostReq.request({ method: 'POST', url: '/call/bad', data: { bitRate: bitRate } }, function (body) { });
+            hostReq.request({method: 'POST', url: '/call/bad', data: {bitRate: bitRate}}, function (body) { });
         }
 
         // Do stuff if the state changed
@@ -9626,9 +9626,9 @@ function doMeta(metan) {
                         maxWidth: 480,
                         buttons: [
                             ['<button>Resume Show</button>', function (instance, toast, button, e, inputs) {
-                                returnBreak();
-                                instance.hide({}, toast, 'button');
-                            }]
+                                    returnBreak();
+                                    instance.hide({}, toast, 'button');
+                                }]
                         ]
                     });
                 /*
@@ -9810,7 +9810,7 @@ function checkAnnouncements() {
     var prevStatus = [];
     // Add applicable announcements
 
-    Announcements({ type: 'djcontrols' }).each(datum => {
+    Announcements({type: 'djcontrols'}).each(datum => {
         try {
             // Check to make sure the announcement is valid / not expired
             if (moment(datum.starts).isBefore(moment(Meta.time)) && moment(datum.expires).isAfter(moment(Meta.time))) {
@@ -10171,11 +10171,11 @@ function selectRecipient(recipient = null) {
             }
         });
 
-        var host = Recipients({ ID: recipient }).first().host;
-        var ID = Recipients({ ID: recipient }).first().ID;
-        var status = Recipients({ ID: recipient }).first().status;
-        var label = Recipients({ ID: recipient }).first().label;
-        var theTime = Recipients({ ID: recipient }).first().time;
+        var host = Recipients({ID: recipient}).first().host;
+        var ID = Recipients({ID: recipient}).first().ID;
+        var status = Recipients({ID: recipient}).first().status;
+        var label = Recipients({ID: recipient}).first().label;
+        var theTime = Recipients({ID: recipient}).first().time;
 
         var temp = document.querySelector(`#users-u-${ID}`);
         if (temp !== null) {
@@ -10278,9 +10278,9 @@ function selectRecipient(recipient = null) {
         };
 
         // Get only the relevant messages to show in the "new messages" box
-        var query = [{ from: host, to: [client.host, 'DJ', 'DJ-private'] }, { to: host }];
+        var query = [{from: host, to: [client.host, 'DJ', 'DJ-private']}, {to: host}];
         if (host === 'website') {
-            query = [{ to: ['DJ', 'website'] }];
+            query = [{to: ['DJ', 'website']}];
         }
 
         totalUnread = 0;
@@ -10301,7 +10301,7 @@ function selectRecipient(recipient = null) {
                     if (temp3) {
                         temp3.parentNode.removeChild(temp3);
                     }
-                    Messages({ ID: message.ID }).remove();
+                    Messages({ID: message.ID}).remove();
                     // Do not continue; no need if the message is being deleted
                     return null;
                 }
@@ -10340,7 +10340,7 @@ function selectRecipient(recipient = null) {
 
         for (var key in recipientUnread) {
             if (recipientUnread.hasOwnProperty(key)) {
-                Recipients({ host: key }).update({ unread: recipientUnread[key] });
+                Recipients({host: key}).update({unread: recipientUnread[key]});
             }
         }
 
@@ -10393,25 +10393,25 @@ function selectRecipient(recipient = null) {
             title: 'An error occurred - Please check the logs',
             message: `Error occurred during selectRecipient.`
         });
-    }
+}
 }
 
 // Called when a message needs to be marked as read. A null message means mark all messages by the currently selected recipient as read.
 function markRead(message = null) {
     try {
-        var query = { ID: message };
+        var query = {ID: message};
         if (message === null) {
             if (activeRecipient === null)
                 return null;
 
-            var host = Recipients({ ID: activeRecipient }).first().host;
+            var host = Recipients({ID: activeRecipient}).first().host;
             if (host === 'website') {
-                query = { from: { left: 'website' } };
+                query = {from: {left: 'website'}};
             } else {
-                query = { from: host };
+                query = {from: host};
             }
         }
-        Messages(query).update({ needsread: false });
+        Messages(query).update({needsread: false});
         selectRecipient(activeRecipient);
     } catch (e) {
         console.error(e);
@@ -10419,12 +10419,12 @@ function markRead(message = null) {
             title: 'An error occurred - Please check the logs',
             message: `Error occurred during markRead.`
         });
-    }
+}
 }
 
 // Called when the user requests to have a message deleted
 function deleteMessage(message) {
-    hostReq.request({ method: 'POST', url: nodeURL + '/messages/remove', data: { ID: message } }, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/messages/remove', data: {ID: message}}, function (response) {
         if (response === 'OK') {
             iziToast.show({
                 title: `Message deleted!`,
@@ -10451,7 +10451,7 @@ function deleteMessage(message) {
                 overlay: false,
                 zindex: 1000
             });
-            hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to delete message ${message} but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to delete message ${message} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
         }
         console.log(JSON.stringify(response));
     });
@@ -10460,7 +10460,7 @@ function deleteMessage(message) {
 // Prompt the user to confirm a mute when they ask to mute someone
 function prepareMute(recipient) {
     try {
-        var label = Recipients({ ID: recipient }).first().label;
+        var label = Recipients({ID: recipient}).first().label;
         var inputData = "";
         iziToast.show({
             title: `Confirm mute of ${label}`,
@@ -10478,17 +10478,17 @@ function prepareMute(recipient) {
             maxWidth: 480,
             inputs: [
                 ['<input type="text">', 'keyup', function (instance, toast, input, e) {
-                    inputData = input.value;
-                }, true],
+                        inputData = input.value;
+                    }, true],
             ],
             buttons: [
                 ['<button>Mute</button>', function (instance, toast, button, e, inputs) {
-                    finishMute(recipient, inputData);
-                    instance.hide({}, toast, 'button');
-                }],
+                        finishMute(recipient, inputData);
+                        instance.hide({}, toast, 'button');
+                    }],
                 ['<button>Cancel</button>', function (instance, toast, button, e, inputs) {
-                    instance.hide({}, toast, 'button');
-                }]
+                        instance.hide({}, toast, 'button');
+                    }]
             ]
         });
     } catch (e) {
@@ -10503,7 +10503,7 @@ function prepareMute(recipient) {
 // Prompt the user when they ask to ban someone
 function prepareBan(recipient) {
     try {
-        var label = Recipients({ ID: recipient }).first().label;
+        var label = Recipients({ID: recipient}).first().label;
         var inputData = "";
         iziToast.show({
             title: `Confirm ban of ${label}`,
@@ -10521,17 +10521,17 @@ function prepareBan(recipient) {
             maxWidth: 480,
             inputs: [
                 ['<input type="text">', 'keyup', function (instance, toast, input, e) {
-                    inputData = input.value;
-                }, true],
+                        inputData = input.value;
+                    }, true],
             ],
             buttons: [
                 ['<button>Ban</button>', function (instance, toast, button, e, inputs) {
-                    finishBan(recipient, inputData);
-                    instance.hide({}, toast, 'button');
-                }],
+                        finishBan(recipient, inputData);
+                        instance.hide({}, toast, 'button');
+                    }],
                 ['<button>Cancel</button>', function (instance, toast, button, e, inputs) {
-                    instance.hide({}, toast, 'button');
-                }]
+                        instance.hide({}, toast, 'button');
+                    }]
             ]
         });
     } catch (e) {
@@ -10546,8 +10546,8 @@ function prepareBan(recipient) {
 // Finalizes and issues a mute
 function finishMute(recipient, reason) {
     try {
-        var host = Recipients({ ID: recipient }).first().host;
-        hostReq.request({ method: 'POST', url: nodeURL + '/discipline/add', data: { active: true, IP: host, action: 'dayban', message: reason } }, function (response) {
+        var host = Recipients({ID: recipient}).first().host;
+        hostReq.request({method: 'POST', url: nodeURL + '/discipline/add', data: {active: true, IP: host, action: 'dayban', message: reason}}, function (response) {
             if (response === 'OK') {
                 iziToast.show({
                     title: `User muted!`,
@@ -10574,7 +10574,7 @@ function finishMute(recipient, reason) {
                     overlay: false,
                     zindex: 1000
                 });
-                hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to mute ${host} but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to mute ${host} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
             }
             console.log(JSON.stringify(response));
         });
@@ -10590,8 +10590,8 @@ function finishMute(recipient, reason) {
 // Finalizes and issues a ban
 function finishBan(recipient, reason) {
     try {
-        var host = Recipients({ ID: recipient }).first().host;
-        hostReq.request({ method: 'POST', url: nodeURL + '/discipline/add', data: { active: true, IP: host, action: 'permaban', message: reason } }, function (response) {
+        var host = Recipients({ID: recipient}).first().host;
+        hostReq.request({method: 'POST', url: nodeURL + '/discipline/add', data: {active: true, IP: host, action: 'permaban', message: reason}}, function (response) {
             if (response === 'OK') {
                 iziToast.show({
                     title: `User banned!`,
@@ -10618,7 +10618,7 @@ function finishBan(recipient, reason) {
                     overlay: false,
                     zindex: 1000
                 });
-                hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to ban ${host} but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to ban ${host} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
             }
             console.log(JSON.stringify(response));
         });
@@ -10647,12 +10647,12 @@ function prepareAttnRemove(ID) {
             zindex: 1000,
             buttons: [
                 ['<button>Yes</button>', function (instance, toast, button, e, inputs) {
-                    finishAttnRemove(ID);
-                    instance.hide({}, toast, 'button');
-                }],
+                        finishAttnRemove(ID);
+                        instance.hide({}, toast, 'button');
+                    }],
                 ['<button>No</button>', function (instance, toast, button, e, inputs) {
-                    instance.hide({}, toast, 'button');
-                }]
+                        instance.hide({}, toast, 'button');
+                    }]
             ]
         });
     } catch (e) {
@@ -10667,7 +10667,7 @@ function prepareAttnRemove(ID) {
 // Finalizes and removes an announcement
 function finishAttnRemove(ID) {
     try {
-        directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/announcements/remove', data: { ID: ID } }, function (response) {
+        directorReq.request({db: Directors(), method: 'POST', url: nodeURL + '/announcements/remove', data: {ID: ID}}, function (response) {
             if (response === 'OK') {
                 iziToast.show({
                     title: `Announcement removed!`,
@@ -10694,7 +10694,7 @@ function finishAttnRemove(ID) {
                     overlay: false,
                     zindex: 1000
                 });
-                hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `Someone on ${client.host} DJ Controls attempted to delete announcement ${ID} but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `Someone on ${client.host} DJ Controls attempted to delete announcement ${ID} but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
             }
             console.log(JSON.stringify(response));
         });
@@ -10712,7 +10712,7 @@ function finishAttnRemove(ID) {
 
 function returnBreak() {
     afterStartCall = () => {
-        hostReq.request({ method: 'POST', url: nodeURL + '/state/return' }, function (response) {
+        hostReq.request({method: 'POST', url: nodeURL + '/state/return'}, function (response) {
             console.log(JSON.stringify(response));
             if (response !== 'OK') {
                 iziToast.show({
@@ -10720,7 +10720,7 @@ function returnBreak() {
                     message: 'Cannot return from break. Please try again in 15-30 seconds.',
                     timeout: 10000
                 });
-                hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to return from break, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to return from break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
             }
         });
     };
@@ -10730,7 +10730,7 @@ function returnBreak() {
 }
 
 function queuePSA(duration) {
-    hostReq.request({ method: 'POST', url: nodeURL + '/songs/queue-psa', data: { duration: duration } }, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/songs/queue-psa', data: {duration: duration}}, function (response) {
         console.log(JSON.stringify(response));
         if (response !== 'OK') {
             iziToast.show({
@@ -10738,7 +10738,7 @@ function queuePSA(duration) {
                 message: 'Could not queue a PSA. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to queue a PSA, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to queue a PSA, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
         }
     });
 }
@@ -10783,19 +10783,19 @@ function goLive() {
             closeOnClick: false,
             buttons: [
                 ['<button><b>Continue</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                    _goLive();
-                }],
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        _goLive();
+                    }],
                 ['<button><b>Cancel</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                }],
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                    }],
             ]
         });
     }
 }
 
 function _goLive() {
-    hostReq.request({ method: 'post', url: nodeURL + '/state/live', data: { showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: (document.querySelector('#live-topic').value !== `` || cal.type !== `Show`) ? document.querySelector('#live-topic').value : cal.topic, djcontrols: client.host, webchat: document.querySelector('#live-webchat').checked } }, function (response) {
+    hostReq.request({method: 'post', url: nodeURL + '/state/live', data: {showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: (document.querySelector('#live-topic').value !== `` || cal.type !== `Show`) ? document.querySelector('#live-topic').value : cal.topic, djcontrols: client.host, webchat: document.querySelector('#live-webchat').checked}}, function (response) {
         if (response === 'OK') {
             isHost = true;
             selectRecipient(null);
@@ -10806,7 +10806,7 @@ function _goLive() {
                 message: 'Cannot go live at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go live, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go live, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
         }
         console.log(JSON.stringify(response));
     });
@@ -10840,30 +10840,30 @@ function prepareRemote() {
 
     // Populate input devices
     navigator.mediaDevices.enumerateDevices()
-        .then((devices) => {
-            var temp = document.querySelector("#remote-input");
-            if (temp !== null) {
-                temp.innerHTML = `<option value="">Choose an input device...</option>`;
+            .then((devices) => {
+                var temp = document.querySelector("#remote-input");
+                if (temp !== null) {
+                    temp.innerHTML = `<option value="">Choose an input device...</option>`;
 
-                devices.map((device, index) => {
-                    if (device.kind === 'audioinput') {
-                        temp.innerHTML += `<option value="${device.deviceId}">${device.label || 'Microphone ' + (index + 1)}</option>`;
-                    }
-                });
+                    devices.map((device, index) => {
+                        if (device.kind === 'audioinput') {
+                            temp.innerHTML += `<option value="${device.deviceId}">${device.label || 'Microphone ' + (index + 1)}</option>`;
+                        }
+                    });
 
-                temp.onchange = () => {
-                    ipcRenderer.send(`peer-change-input-device`, temp.value);
-                };
-            }
-        });
+                    temp.onchange = () => {
+                        ipcRenderer.send(`peer-change-input-device`, temp.value);
+                    };
+                }
+            });
 
     // Populate hosts that can be audio-called
     var temp2 = document.querySelector("#remote-host");
     if (temp2 !== null) {
         temp2.innerHTML = ``;
-        Hosts({ authorized: true, answerCalls: true }).each((host) => {
+        Hosts({authorized: true, answerCalls: true}).each((host) => {
             console.dir(host);
-            Recipients({ host: host.host }).each((recipient) => {
+            Recipients({host: host.host}).each((recipient) => {
                 console.dir(recipient);
                 if (host.host !== client.host && recipient.peer !== null) {
                     temp2.innerHTML += `<option value="${host.host}">${host.friendlyname}</option>`;
@@ -10896,12 +10896,12 @@ function goRemote() {
             closeOnClick: false,
             buttons: [
                 ['<button><b>Continue</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                    _goRemote();
-                }],
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        _goRemote();
+                    }],
                 ['<button><b>Cancel</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                }],
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                    }],
             ]
         });
     }
@@ -10915,7 +10915,7 @@ function _goRemote() {
     afterStartCall = () => {
         if (development)
             return null;
-        hostReq.request({ method: 'POST', url: nodeURL + '/state/remote', data: { showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || cal.type !== `Remote`) ? document.querySelector('#remote-topic').value : cal.topic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked } }, function (response) {
+        hostReq.request({method: 'POST', url: nodeURL + '/state/remote', data: {showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || cal.type !== `Remote`) ? document.querySelector('#remote-topic').value : cal.topic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked}}, function (response) {
             if (response === 'OK') {
                 isHost = true;
                 selectRecipient(null);
@@ -10926,7 +10926,7 @@ function _goRemote() {
                     message: 'Cannot go remote at this time. Please try again in 15-30 seconds.',
                     timeout: 10000
                 });
-                hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
             }
             console.log(JSON.stringify(response));
         });
@@ -10971,12 +10971,12 @@ function goSports() {
             closeOnClick: false,
             buttons: [
                 ['<button><b>Continue</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                    _goSports();
-                }],
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        _goSports();
+                    }],
                 ['<button><b>Cancel</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                }],
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                    }],
             ]
         });
     }
@@ -10985,7 +10985,7 @@ function goSports() {
 function _goSports() {
     var sportsOptions = document.getElementById('sports-sport');
     var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
-    hostReq.request({ method: 'POST', url: nodeURL + '/state/sports', data: { sport: selectedOption, topic: (document.querySelector('#sports-topic').value !== `` || cal.type !== `Sports`) ? document.querySelector('#sports-topic').value : cal.topic, webchat: document.querySelector('#sports-webchat').checked } }, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/state/sports', data: {sport: selectedOption, topic: (document.querySelector('#sports-topic').value !== `` || cal.type !== `Sports`) ? document.querySelector('#sports-topic').value : cal.topic, webchat: document.querySelector('#sports-webchat').checked}}, function (response) {
         if (response === 'OK') {
             isHost = true;
             selectRecipient(null);
@@ -10996,7 +10996,7 @@ function _goSports() {
                 message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
         }
         console.log(JSON.stringify(response));
     });
@@ -11028,30 +11028,30 @@ function prepareSportsRemote() {
 
     // Populate input devices
     navigator.mediaDevices.enumerateDevices()
-        .then((devices) => {
-            var temp = document.querySelector("#sportsremote-input");
-            if (temp !== null) {
-                temp.innerHTML = `<option value="">Choose an input device...</option>`;
+            .then((devices) => {
+                var temp = document.querySelector("#sportsremote-input");
+                if (temp !== null) {
+                    temp.innerHTML = `<option value="">Choose an input device...</option>`;
 
-                devices.map((device, index) => {
-                    if (device.kind === 'audioinput') {
-                        temp.innerHTML += `<option value="${device.deviceId}">${device.label || 'Microphone ' + (index + 1)}</option>`;
-                    }
-                });
+                    devices.map((device, index) => {
+                        if (device.kind === 'audioinput') {
+                            temp.innerHTML += `<option value="${device.deviceId}">${device.label || 'Microphone ' + (index + 1)}</option>`;
+                        }
+                    });
 
-                temp.onchange = () => {
-                    ipcRenderer.send(`peer-change-input-device`, temp.value);
-                };
-            }
-        });
+                    temp.onchange = () => {
+                        ipcRenderer.send(`peer-change-input-device`, temp.value);
+                    };
+                }
+            });
 
     // Populate hosts that can be audio-called
     var temp2 = document.querySelector("#sportsremote-host");
     if (temp2 !== null) {
         temp2.innerHTML = ``;
-        Hosts({ authorized: true, answerCalls: true }).each((host) => {
+        Hosts({authorized: true, answerCalls: true}).each((host) => {
             console.dir(host);
-            Recipients({ host: host.host }).each((recipient) => {
+            Recipients({host: host.host}).each((recipient) => {
                 console.dir(recipient);
                 if (host.host !== client.host && recipient.peer !== null) {
                     temp2.innerHTML += `<option value="${host.host}">${host.friendlyname}</option>`;
@@ -11084,12 +11084,12 @@ function goSportsRemote() {
             closeOnClick: false,
             buttons: [
                 ['<button><b>Continue</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                    _goSportsRemote();
-                }],
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        _goSportsRemote();
+                    }],
                 ['<button><b>Cancel</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                }],
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                    }],
             ]
         });
     }
@@ -11103,7 +11103,7 @@ function _goSportsRemote() {
     afterStartCall = () => {
         var sportsOptions = document.getElementById('sportsremote-sport');
         var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
-        hostReq.request({ method: 'POST', url: nodeURL + '/state/sports-remote', data: { sport: selectedOption, topic: (document.querySelector('#sportsremote-topic').value !== `` || cal.type !== `Sports`) ? document.querySelector('#sportsremote-topic').value : cal.topic, webchat: document.querySelector('#sportsremote-webchat').checked } }, function (response) {
+        hostReq.request({method: 'POST', url: nodeURL + '/state/sports-remote', data: {sport: selectedOption, topic: (document.querySelector('#sportsremote-topic').value !== `` || cal.type !== `Sports`) ? document.querySelector('#sportsremote-topic').value : cal.topic, webchat: document.querySelector('#sportsremote-webchat').checked}}, function (response) {
             if (response === 'OK') {
                 isHost = true;
                 selectRecipient(null);
@@ -11114,7 +11114,7 @@ function _goSportsRemote() {
                     message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
                     timeout: 10000
                 });
-                hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports remote, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports remote, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
             }
             console.log(JSON.stringify(response));
         });
@@ -11142,13 +11142,13 @@ function promptIfNotHost(action, fn) {
             closeOnClick: false,
             buttons: [
                 ['<button><b>Yes</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                    isHost = true;
-                    fn();
-                }],
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                        isHost = true;
+                        fn();
+                    }],
                 ['<button><b>No</b></button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                }],
+                        instance.hide({transitionOut: 'fadeOut'}, toast, 'button');
+                    }],
             ]
         });
     }
@@ -11166,7 +11166,7 @@ function prepareLog() {
 function saveLog() {
     var thelog = 'DJ/Producer played a track.';
     var dateObject = moment(document.querySelector("#log-datetime").value);
-    hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'manual', logsubtype: Meta.show, loglevel: 'secondary', event: thelog, trackArtist: document.querySelector("#log-artist").value, trackTitle: document.querySelector("#log-title").value, trackAlbum: document.querySelector("#log-album").value, trackLabel: document.querySelector("#log-label").value, date: dateObject.toISOString() } }, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.show, loglevel: 'secondary', event: thelog, trackArtist: document.querySelector("#log-artist").value, trackTitle: document.querySelector("#log-title").value, trackAlbum: document.querySelector("#log-album").value, trackLabel: document.querySelector("#log-label").value, date: dateObject.toISOString()}}, function (response) {
         if (response === 'OK') {
             $("#log-modal").iziModal('close');
             iziToast.show({
@@ -11194,13 +11194,13 @@ function saveLog() {
                     overlay: false,
                     buttons: [
                         ['<button>Playing Another Track</button>', function (instance, toast, button, e, inputs) {
-                            prepareLog();
-                            instance.hide({}, toast, 'button');
-                        }],
+                                prepareLog();
+                                instance.hide({}, toast, 'button');
+                            }],
                         ['<button>Playing No Tracks</button>', function (instance, toast, button, e, inputs) {
-                            hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'manual', logsubtype: Meta.show, loglevel: 'secondary', event: 'DJ/Producer finished playing music.', trackArtist: '', trackTitle: '', trackAlbum: '', trackLabel: '', date: moment().toISOString(true) } }, function (response) { });
-                            instance.hide({}, toast, 'button');
-                        }]
+                                hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'manual', logsubtype: Meta.show, loglevel: 'secondary', event: 'DJ/Producer finished playing music.', trackArtist: '', trackTitle: '', trackAlbum: '', trackLabel: '', date: moment().toISOString(true)}}, function (response) { });
+                                instance.hide({}, toast, 'button');
+                            }]
                     ]
                 });
             }
@@ -11209,7 +11209,7 @@ function saveLog() {
                 title: 'An error occurred',
                 message: 'Error occurred trying to submit a log entry. Please email engineer@wwsu1069.org.'
             });
-            hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to add a log, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to add a log, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
         }
         console.log(JSON.stringify(response));
     });
@@ -11222,7 +11222,7 @@ function prepareEmergency() {
 }
 
 function sendEmergency() {
-    hostReq.request({ method: 'POST', url: nodeURL + '/announcements/add-problem', data: { information: `<strong>${moment().format("MM/DD/YYYY hh:mm A")}</strong>: ${document.querySelector("#emergency-issue").value}` } }, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/announcements/add-problem', data: {information: `<strong>${moment().format("MM/DD/YYYY hh:mm A")}</strong>: ${document.querySelector("#emergency-issue").value}`}}, function (response) {
         if (response === 'OK') {
             $("#emergency-modal").iziModal('close');
             iziToast.show({
@@ -11242,7 +11242,7 @@ function sendEmergency() {
                 title: 'An error occurred',
                 message: 'Error occurred trying to submit a problem. Please email your issue to engineer@wwsu1069.org instead.'
             });
-            hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to report a problem, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to report a problem, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
         }
         console.log(JSON.stringify(response));
     });
@@ -11255,7 +11255,7 @@ function prepareDisplay() {
 }
 
 function sendDisplay() {
-    hostReq.request({ method: 'POST', url: nodeURL + '/messages/send', data: { from: client.host, to: `display-public`, to_friendly: `Display (Public)`, message: document.querySelector("#display-message").value } }, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/messages/send', data: {from: client.host, to: `display-public`, to_friendly: `Display (Public)`, message: document.querySelector("#display-message").value}}, function (response) {
         if (response === 'OK') {
             $("#display-modal").iziModal('close');
             iziToast.show({
@@ -11275,7 +11275,7 @@ function sendDisplay() {
                 title: 'An error occurred',
                 message: 'Error occurred trying to submit a message to the display signs. Please email engineer@wwsu1069.org'
             });
-            hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to send a message to display signs, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to send a message to display signs, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
         }
         console.log(JSON.stringify(response));
     });
@@ -11283,7 +11283,7 @@ function sendDisplay() {
 
 function endShow() {
     outgoingCloseIgnore = true;
-    hostReq.request({ method: 'POST', url: nodeURL + '/state/automation' }, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/state/automation'}, function (response) {
         if (typeof response.showTime === 'undefined') {
             outgoingCloseIgnore = false;
             iziToast.show({
@@ -11291,7 +11291,7 @@ function endShow() {
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to end their show, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to end their show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
         } else {
             $("#xp-modal").iziModal('open');
             document.querySelector(`#stat-showTime`).innerHTML = parseInt((response.showTime || 0) / 6) / 10;
@@ -11323,7 +11323,7 @@ function endShow() {
 
 function switchShow() {
     outgoingCloseIgnore = true;
-    hostReq.request({ method: 'POST', url: nodeURL + '/state/automation', data: { transition: true } }, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/state/automation', data: {transition: true}}, function (response) {
         if (typeof response.showTime === 'undefined') {
             outgoingCloseIgnore = false;
             iziToast.show({
@@ -11331,7 +11331,7 @@ function switchShow() {
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to switch show, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to switch show, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
         } else {
             $("#xp-modal").iziModal('open');
             document.querySelector(`#stat-showTime`).innerHTML = parseInt((response.showTime || 0) / 6) / 10;
@@ -11363,14 +11363,14 @@ function switchShow() {
 }
 
 function goBreak(halftime = false, techissue = false) {
-    hostReq.request({ method: 'POST', url: nodeURL + '/state/break', data: { halftime: halftime, problem: techissue } }, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/state/break', data: {halftime: halftime, problem: techissue}}, function (response) {
         if (response !== 'OK') {
             iziToast.show({
                 title: 'An error occurred',
                 message: 'Error occurred trying to go into break. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go to break, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go to break, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
         }
         console.log(JSON.stringify(response));
     });
@@ -11379,14 +11379,14 @@ function goBreak(halftime = false, techissue = false) {
 function playTopAdd() {
     $("#wait-modal").iziModal('open');
     document.querySelector("#wait-text").innerHTML = 'Queuing/playing Top Add';
-    hostReq.request({ method: 'POST', url: nodeURL + '/songs/queue-add' }, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/songs/queue-add'}, function (response) {
         if (response !== 'OK') {
             iziToast.show({
                 title: 'An error occurred',
                 message: 'Error occurred trying to play a Top Add. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to play a Top Add, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to play a Top Add, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
         }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -11396,14 +11396,14 @@ function playTopAdd() {
 function playLiner() {
     $("#wait-modal").iziModal('open');
     document.querySelector("#wait-text").innerHTML = 'Queuing/playing Liner';
-    hostReq.request({ method: 'POST', url: nodeURL + '/songs/queue-liner' }, function (response) {
+    hostReq.request({method: 'POST', url: nodeURL + '/songs/queue-liner'}, function (response) {
         if (response !== 'OK') {
             iziToast.show({
                 title: 'An error occurred',
                 message: 'Error occurred trying to play a liner. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
-            hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to play a Liner, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
+            hostReq.request({method: 'POST', url: nodeURL + '/logs/add', data: {logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'warning', event: `DJ attempted to play a Liner, but an error was returned: ${JSON.stringify(response) || response}`}}, function (response) { });
         }
         $("#wait-modal").iziModal('close');
         console.log(JSON.stringify(response));
@@ -11413,7 +11413,7 @@ function playLiner() {
 // Finalizes and issues a mute
 function queueRequest(requestID) {
     try {
-        hostReq.request({ method: 'POST', url: nodeURL + '/requests/queue', data: { ID: requestID } }, function (response) {
+        hostReq.request({method: 'POST', url: nodeURL + '/requests/queue', data: {ID: requestID}}, function (response) {
             if (response === 'OK') {
                 iziToast.show({
                     title: `Request queued!`,
@@ -11496,9 +11496,9 @@ function processEas(data, replace = false) {
                                 maxWidth: 640,
                                 buttons: [
                                     ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
-                                        endShow();
-                                        instance.hide({}, toast, 'button');
-                                    }]
+                                            endShow();
+                                            instance.hide({}, toast, 'button');
+                                        }]
                                 ]
                             });
                         } else {
@@ -11596,9 +11596,9 @@ function processEas(data, replace = false) {
                                         maxWidth: 640,
                                         buttons: [
                                             ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
-                                                endShow();
-                                                instance.hide({}, toast, 'button');
-                                            }]
+                                                    endShow();
+                                                    instance.hide({}, toast, 'button');
+                                                }]
                                         ]
                                     });
                                 } else {
@@ -11648,7 +11648,7 @@ function processEas(data, replace = false) {
                             }
                             break;
                         case 'update':
-                            Eas({ ID: data[key].ID }).update(data[key]);
+                            Eas({ID: data[key].ID}).update(data[key]);
                             var className = 'secondary';
                             if (data[key].severity === 'Extreme') {
                                 className = 'danger';
@@ -11665,7 +11665,7 @@ function processEas(data, replace = false) {
                             }
                             break;
                         case 'remove':
-                            Eas({ ID: data[key] }).remove();
+                            Eas({ID: data[key]}).remove();
                             var easAttn = document.querySelector(`#attn-eas-${data[key]}`);
                             if (easAttn !== null)
                                 easAttn.parentNode.removeChild(easAttn);
@@ -11684,7 +11684,7 @@ function processEas(data, replace = false) {
             title: 'An error occurred - Please check the logs',
             message: 'Error occurred during the processEas function.'
         });
-    }
+}
 }
 
 // Update recipients as changes happen
@@ -11788,7 +11788,7 @@ function processStatus(data, replace = false) {
                             }
                             break;
                         case 'update':
-                            Status({ ID: data[key].ID }).update(data[key]);
+                            Status({ID: data[key].ID}).update(data[key]);
                             var className = 'secondary';
                             if (data[key].status === 1) {
                                 className = 'danger';
@@ -11838,7 +11838,7 @@ function processStatus(data, replace = false) {
                             }
                             break;
                         case 'remove':
-                            Status({ ID: data[key] }).remove();
+                            Status({ID: data[key]}).remove();
                             break;
                     }
                 }
@@ -11854,7 +11854,7 @@ function processStatus(data, replace = false) {
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred in the processStatus function.'
         });
-    }
+}
 }
 
 // Update announcements as they come in
@@ -11873,10 +11873,10 @@ function processAnnouncements(data, replace = false) {
                             Announcements.insert(data[key]);
                             break;
                         case 'update':
-                            Announcements({ ID: data[key].ID }).update(data[key]);
+                            Announcements({ID: data[key].ID}).update(data[key]);
                             break;
                         case 'remove':
-                            Announcements({ ID: data[key] }).remove();
+                            Announcements({ID: data[key]}).remove();
                             break;
                     }
                 }
@@ -11891,7 +11891,7 @@ function processAnnouncements(data, replace = false) {
             title: 'An error occurred - Please check the logs',
             message: 'Error occurred during the processAnnouncements function.'
         });
-    }
+}
 }
 
 // Update announcements as they come in
@@ -11910,10 +11910,10 @@ function processCalendar(data, replace = false) {
                             Calendar.insert(data[key]);
                             break;
                         case 'update':
-                            Calendar({ ID: data[key].ID }).update(data[key]);
+                            Calendar({ID: data[key].ID}).update(data[key]);
                             break;
                         case 'remove':
-                            Calendar({ ID: data[key] }).remove();
+                            Calendar({ID: data[key]}).remove();
                             break;
                     }
                 }
@@ -11926,7 +11926,7 @@ function processCalendar(data, replace = false) {
             title: 'An error occurred - Please check the logs',
             message: 'Error occurred during the processCalendar function.'
         });
-    }
+}
 }
 
 function processPlanner(data, replace = false) {
@@ -11945,10 +11945,10 @@ function processPlanner(data, replace = false) {
                             Planner.insert(data[key]);
                             break;
                         case 'update':
-                            Planner({ ID: data[key].ID }).update(data[key]);
+                            Planner({ID: data[key].ID}).update(data[key]);
                             break;
                         case 'remove':
-                            Planner({ ID: data[key] }).remove();
+                            Planner({ID: data[key]}).remove();
                             break;
                     }
                 }
@@ -11985,7 +11985,7 @@ function processPlanner(data, replace = false) {
             title: 'An error occurred - Please check the logs',
             message: 'Error occurred during the processPlanner function.'
         });
-    }
+}
 }
 
 // Update recipients as changes happen
@@ -11997,7 +11997,7 @@ function processRecipients(data, replace = false) {
                 data.map((datum, index) => {
                     data[index].unread = 0;
 
-                    var temp = Recipients({ ID: datum.ID }).first();
+                    var temp = Recipients({ID: datum.ID}).first();
                     ipcRenderer.send('peer-check-waiting', [datum, temp]);
                 });
             }
@@ -12015,12 +12015,12 @@ function processRecipients(data, replace = false) {
                             break;
                         case 'update':
                             data[key].unread = 0;
-                            var temp = Recipients({ ID: data[key].ID }).first();
+                            var temp = Recipients({ID: data[key].ID}).first();
                             ipcRenderer.send('peer-check-waiting', [data[key], temp]);
-                            Recipients({ ID: data[key].ID }).update(data[key]);
+                            Recipients({ID: data[key].ID}).update(data[key]);
                             break;
                         case 'remove':
-                            Recipients({ ID: data[key] }).remove();
+                            Recipients({ID: data[key]}).remove();
                             break;
                     }
                 }
@@ -12033,7 +12033,7 @@ function processRecipients(data, replace = false) {
             title: 'An error occurred - Please check the logs',
             message: 'Error occurred during the processRecipients function.'
         });
-    }
+}
 }
 
 // Update messages as changes happen
@@ -12089,10 +12089,10 @@ function processMessages(data, replace = false) {
                                     maxWidth: 480,
                                     buttons: [
                                         ['<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
-                                            $("#messages-modal").iziModal('open');
-                                            selectRecipient(Recipients({ host: datum.from }).first().ID || null);
-                                            instance.hide({}, toast, 'button');
-                                        }]
+                                                $("#messages-modal").iziModal('open');
+                                                selectRecipient(Recipients({host: datum.from}).first().ID || null);
+                                                instance.hide({}, toast, 'button');
+                                            }]
                                     ]
                                 });
                                 data[index].needsread = true;
@@ -12123,11 +12123,11 @@ function processMessages(data, replace = false) {
                                         maxWidth: 480,
                                         buttons: [
                                             ['<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
-                                                $("#messages-modal").iziModal('open');
-                                                var host = (datum.to === 'DJ' ? 'website' : datum.from);
-                                                selectRecipient(Recipients({ host: host }).first().ID || null);
-                                                instance.hide({}, toast, 'button');
-                                            }]
+                                                    $("#messages-modal").iziModal('open');
+                                                    var host = (datum.to === 'DJ' ? 'website' : datum.from);
+                                                    selectRecipient(Recipients({host: host}).first().ID || null);
+                                                    instance.hide({}, toast, 'button');
+                                                }]
                                         ]
                                     });
                                     data[index].needsread = true;
@@ -12182,10 +12182,10 @@ function processMessages(data, replace = false) {
                                         maxWidth: 480,
                                         buttons: [
                                             ['<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
-                                                $("#messages-modal").iziModal('open');
-                                                selectRecipient(Recipients({ host: data[key].from }).first().ID || null);
-                                                instance.hide({}, toast, 'button');
-                                            }]
+                                                    $("#messages-modal").iziModal('open');
+                                                    selectRecipient(Recipients({host: data[key].from}).first().ID || null);
+                                                    instance.hide({}, toast, 'button');
+                                                }]
                                         ]
                                     });
                                     data[key].needsread = true;
@@ -12216,11 +12216,11 @@ function processMessages(data, replace = false) {
                                             maxWidth: 480,
                                             buttons: [
                                                 ['<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
-                                                    $("#messages-modal").iziModal('open');
-                                                    var host = (data[key].to === 'DJ' ? 'website' : data[key].from);
-                                                    selectRecipient(Recipients({ host: host }).first().ID || null);
-                                                    instance.hide({}, toast, 'button');
-                                                }]
+                                                        $("#messages-modal").iziModal('open');
+                                                        var host = (data[key].to === 'DJ' ? 'website' : data[key].from);
+                                                        selectRecipient(Recipients({host: host}).first().ID || null);
+                                                        instance.hide({}, toast, 'button');
+                                                    }]
                                             ]
                                         });
                                         data[key].needsread = true;
@@ -12236,11 +12236,11 @@ function processMessages(data, replace = false) {
                             data[key].from_real = data[key].from;
                             if (data[key].to === `DJ`)
                                 data[key].from_real = `website`;
-                            Messages({ ID: data[key].ID }).update(data[key]);
+                            Messages({ID: data[key].ID}).update(data[key]);
                             selectRecipient(activeRecipient);
                             break;
                         case 'remove':
-                            Messages({ ID: data[key] }).remove();
+                            Messages({ID: data[key]}).remove();
                             selectRecipient(activeRecipient);
                             break;
                     }
@@ -12254,7 +12254,7 @@ function processMessages(data, replace = false) {
             title: 'An error occurred - Please check the logs',
             message: 'Error occurred during the processMessages function.'
         });
-    }
+}
 }
 
 function processAttendance(data, replace = false) {
@@ -12313,7 +12313,7 @@ function processAttendance(data, replace = false) {
                             }
                             break;
                         case 'update':
-                            Attendance({ ID: data[key].ID }).update(data[key]);
+                            Attendance({ID: data[key].ID}).update(data[key]);
                             // Absences
                             if (data[key].happened === 0 && data[key].dj !== null) {
                                 addNotification(`absent-broadcast`, `attendance-${data[key].ID}`, `urgent`, data[key].createdAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].scheduledEnd).format("hh:mm A")}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[key].ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${data[key].ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`);
@@ -12332,7 +12332,7 @@ function processAttendance(data, replace = false) {
                             }
                             break;
                         case 'remove':
-                            Attendance({ ID: data[key] }).remove();
+                            Attendance({ID: data[key]}).remove();
 
                             // Absent broadcasts
                             if (data[key].happened === 0 && data[key].dj !== null) {
@@ -12360,7 +12360,7 @@ function processAttendance(data, replace = false) {
             title: 'An error occurred - Please check the logs',
             message: 'Error occurred during the processAttendance function.'
         });
-    }
+}
 }
 
 function processTimesheet(data, replace = false) {
@@ -12430,7 +12430,7 @@ function processTimesheet(data, replace = false) {
 
                             break;
                         case 'update':
-                            Timesheet({ ID: data[key].ID }).update(data[key]);
+                            Timesheet({ID: data[key].ID}).update(data[key]);
                             // Cancelled hours
                             if (data[key].approved === -1) {
                                 addNotification(`timesheet-cancelled`, `timesheet-${data[key].ID}`, `info`, data[key].createdAt, `Director: ${data[key].name}<br />Canceled time: ${moment(data[key].scheduled_in).format("MM/DD/YYYY hh:mm A")} - ${moment(data[key].scheduled_out).format("hh:mm A")}`, `Canceled Director Hours`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`);
@@ -12454,7 +12454,7 @@ function processTimesheet(data, replace = false) {
                             }
                             break;
                         case 'remove':
-                            Timesheet({ ID: data[key] }).remove();
+                            Timesheet({ID: data[key]}).remove();
                             // Cancelled hours
                             if (data[key].approved === -1) {
                                 addNotification(`timesheet-cancelled`, `timesheet-${data[key].ID}`);
@@ -12486,7 +12486,7 @@ function processTimesheet(data, replace = false) {
             title: 'An error occurred - Please check the logs',
             message: 'Error occurred during the processAttendance function.'
         });
-    }
+}
 }
 
 // WORK ON THIS
@@ -12529,9 +12529,9 @@ function processRequests(data, replace = false) {
                             maxWidth: 480,
                             buttons: [
                                 ['<button>View Requests</button>', function (instance, toast, button, e, inputs) {
-                                    $("#requests-modal").iziModal('open');
-                                    instance.hide({}, toast, 'button');
-                                }]
+                                        $("#requests-modal").iziModal('open');
+                                        instance.hide({}, toast, 'button');
+                                    }]
                             ]
                         });
                     }
@@ -12573,19 +12573,19 @@ function processRequests(data, replace = false) {
                                     maxWidth: 480,
                                     buttons: [
                                         ['<button>View Requests</button>', function (instance, toast, button, e, inputs) {
-                                            $("#requests-modal").iziModal('open');
-                                            instance.hide({}, toast, 'button');
-                                        }]
+                                                $("#requests-modal").iziModal('open');
+                                                instance.hide({}, toast, 'button');
+                                            }]
                                     ]
                                 });
                             }
                             Requests.insert(data[key]);
                             break;
                         case 'update':
-                            Requests({ ID: data[key].ID }).update(data[key]);
+                            Requests({ID: data[key].ID}).update(data[key]);
                             break;
                         case 'remove':
-                            Requests({ ID: data[key] }).remove();
+                            Requests({ID: data[key]}).remove();
                             break;
                     }
                 }
@@ -12595,7 +12595,7 @@ function processRequests(data, replace = false) {
         var prev = [];
 
         // Update track requests
-        Requests({ played: 0 }).each(function (datum) {
+        Requests({played: 0}).each(function (datum) {
             try {
                 prev.push(`request-${datum.ID}`);
                 if (document.querySelector(`#request-${datum.ID}`) === null) {
@@ -12641,13 +12641,13 @@ function processRequests(data, replace = false) {
 
     } catch (e) {
         console.error(e);
-    }
+}
 }
 
 function loadDJ(dj = null, reset = true) {
     try {
         var afterFunction = function () {
-            var DJName = Djs({ ID: parseInt(DJData.DJ) }).first().name;
+            var DJName = Djs({ID: parseInt(DJData.DJ)}).first().name;
             document.querySelector('#options-dj-name').innerHTML = `${jdenticon.toSvg(`DJ ${DJName}`, 48)}   ${DJName}`;
             document.querySelector(`#dj-xp-add-div`).innerHTML = `<button type="button" class="btn btn-success btn-lg" id="dj-xp-add" data-dj="${dj}" title="Add a Note / Remote Credit / XP">Add</button>`;
             document.querySelector('#options-dj-buttons').innerHTML = `
@@ -12957,7 +12957,7 @@ function loadDJ(dj = null, reset = true) {
             DJData.attendance = [];
             DJData.DJ = dj === null ? DJData.DJ || '' : dj;
             DJData.stats = {};
-            hostReq.request({ method: 'POST', url: nodeURL + '/djs/get', data: { dj: DJData.DJ } }, function (response) {
+            hostReq.request({method: 'POST', url: nodeURL + '/djs/get', data: {dj: DJData.DJ}}, function (response) {
                 DJData.XP = response.XP;
                 DJData.startOfSemester = response.startOfSemester;
                 DJData.attendance = response.attendance;
@@ -12973,7 +12973,7 @@ function loadDJ(dj = null, reset = true) {
             title: 'An error occurred - Please check the logs',
             message: `Error occurred in loadDJ.`
         });
-    }
+}
 }
 ;
 
@@ -12992,10 +12992,10 @@ function processDjs(data = {}, replace = false) {
                             Djs.insert(data[key]);
                             break;
                         case 'update':
-                            Djs({ ID: data[key].ID }).update(data[key]);
+                            Djs({ID: data[key].ID}).update(data[key]);
                             break;
                         case 'remove':
-                            Djs({ ID: data[key] }).remove();
+                            Djs({ID: data[key]}).remove();
                             break;
                     }
                 }
@@ -13034,7 +13034,7 @@ function processDjs(data = {}, replace = false) {
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred in the processDjs function.'
         });
-    }
+}
 }
 
 // Update recipients as changes happen
@@ -13053,10 +13053,10 @@ function processDirectors(data, replace = false) {
                             Directors.insert(data[key]);
                             break;
                         case 'update':
-                            Directors({ ID: data[key].ID }).update(data[key]);
+                            Directors({ID: data[key].ID}).update(data[key]);
                             break;
                         case 'remove':
-                            Directors({ ID: data[key] }).remove();
+                            Directors({ID: data[key]}).remove();
                             break;
                     }
                 }
@@ -13078,7 +13078,7 @@ function processDirectors(data, replace = false) {
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred in the processDirectors function.'
         });
-    }
+}
 }
 
 // Update underwritings as changes happen
@@ -13153,7 +13153,7 @@ function processHosts(data, replace = false) {
                             }
                             break;
                         case 'update':
-                            Hosts({ ID: data[key].ID }).update(data[key]);
+                            Hosts({ID: data[key].ID}).update(data[key]);
                             // Changes to this host should cause a refresh of the socket
                             if (data[key].host === main.getMachineID()) {
                                 socket.disconnect();
@@ -13161,9 +13161,9 @@ function processHosts(data, replace = false) {
                             }
                             break;
                         case 'remove':
-                            Hosts({ ID: data[key] }).remove();
+                            Hosts({ID: data[key]}).remove();
                             // If this host no longer exists, disconnect the socket
-                            if (!Hosts({ host: main.getMachineID() }).first())
+                            if (!Hosts({host: main.getMachineID()}).first())
                                 socket.disconnect();
                             break;
                     }
@@ -13207,7 +13207,7 @@ function processHosts(data, replace = false) {
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred in the processDirectors function.'
         });
-    }
+}
 }
 
 
@@ -13224,18 +13224,18 @@ function processXp(data) {
                 case 'update':
                     if (data[key].dj === parseInt(DJData.DJ)) {
                         DJData.XP
-                            .filter(record => record.ID === data[key].ID)
-                            .map((record, index) => DJData.XP[index] = data[key]);
+                                .filter(record => record.ID === data[key].ID)
+                                .map((record, index) => DJData.XP[index] = data[key]);
                         loadDJ(DJData.DJ, false);
                     }
                     break;
                 case 'remove':
                     DJData.XP
-                        .filter(record => record.ID === data[key])
-                        .map((record, index) => {
-                            delete DJData.XP[index];
-                            loadDJ(DJData.DJ, false);
-                        });
+                            .filter(record => record.ID === data[key])
+                            .map((record, index) => {
+                                delete DJData.XP[index];
+                                loadDJ(DJData.DJ, false);
+                            });
                     break;
             }
         }
@@ -13256,10 +13256,10 @@ function processDiscipline(data, replace = false) {
                             Discipline.insert(data[key]);
                             break;
                         case 'update':
-                            Discipline({ ID: data[key].ID }).update(data[key]);
+                            Discipline({ID: data[key].ID}).update(data[key]);
                             break;
                         case 'remove':
-                            Discipline({ ID: data[key] }).remove();
+                            Discipline({ID: data[key]}).remove();
                             break;
                     }
                 }
@@ -13310,7 +13310,7 @@ function processDiscipline(data, replace = false) {
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred in the processDiscipline function.'
         });
-    }
+}
 }
 
 function loadTimesheets(date) {
@@ -13319,7 +13319,7 @@ function loadTimesheets(date) {
             date = moment(Meta.time);
         var records = document.querySelector('#options-timesheets-records');
         records.innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`;
-        noReq.request({ method: 'POST', url: nodeURL + '/timesheet/get', data: { date: date.toISOString(true) } }, function (response) {
+        noReq.request({method: 'POST', url: nodeURL + '/timesheet/get', data: {date: date.toISOString(true)}}, function (response) {
             records.innerHTML = ``;
             Timesheets = response;
             var hours = {};
@@ -13879,7 +13879,7 @@ function truncateText(str, strLength = 256, ending = `...`) {
         return str.substring(0, strLength - ending.length) + ending;
     } else {
         return str;
-    }
+}
 }
 
 function processConfig(data) {
@@ -13895,30 +13895,30 @@ function addNotification(group, ID, level, time, notification, name, buttons) {
         var temp = document.querySelector(`#notification-${ID}`);
         if (temp !== null) {
             Notifications
-                .map((notif, index) => {
-                    if (notif.ID === ID) {
-                        var temp = document.querySelector(`#notification-${notif.ID}`);
-                        if (temp !== null) {
-                            temp.parentNode.removeChild(temp);
-                        }
-                        Notifications.splice(index, 1);
+                    .map((notif, index) => {
+                        if (notif.ID === ID) {
+                            var temp = document.querySelector(`#notification-${notif.ID}`);
+                            if (temp !== null) {
+                                temp.parentNode.removeChild(temp);
+                            }
+                            Notifications.splice(index, 1);
 
-                        var temp = document.querySelector(`#badge-notifications`);
-                        if (temp) {
-                            temp.innerHTML = Notifications.length;
-                            if (Notifications.length > 0) {
-                                temp.classList = "notification2 badge badge-danger shadow-4";
-                            } else {
-                                temp.classList = "notification2 badge badge-secondary shadow-4";
+                            var temp = document.querySelector(`#badge-notifications`);
+                            if (temp) {
+                                temp.innerHTML = Notifications.length;
+                                if (Notifications.length > 0) {
+                                    temp.classList = "notification2 badge badge-danger shadow-4";
+                                } else {
+                                    temp.classList = "notification2 badge badge-secondary shadow-4";
+                                }
                             }
                         }
-                    }
-                });
+                    });
         }
         return null;
     }
 
-    Notifications.push({ group: group, ID: ID, level: level, time: time, notification: notification });
+    Notifications.push({group: group, ID: ID, level: level, time: time, notification: notification});
     var temp = document.querySelector(`#notification-group-${group}`);
     if (temp === null) {
         var tempi2 = document.querySelector(`#notification-groups`);
@@ -13951,16 +13951,16 @@ function addNotification(group, ID, level, time, notification, name, buttons) {
             var temp2 = document.querySelector(`#notification-${ID}`);
             if (temp2 !== null) {
                 Notifications
-                    .map((notif, index) => {
-                        if (notif.ID === ID) {
-                            var temp = document.querySelector(`#notification-${notif.ID}`);
-                            if (temp !== null) {
-                                temp.parentNode.removeChild(temp);
+                        .map((notif, index) => {
+                            if (notif.ID === ID) {
+                                var temp = document.querySelector(`#notification-${notif.ID}`);
+                                if (temp !== null) {
+                                    temp.parentNode.removeChild(temp);
+                                }
+                                Notifications.splice(index, 1);
                             }
-                            Notifications.splice(index, 1);
-                        }
-                    });
-                Notifications.push({ group: group, ID: ID, level: level, time: time, notification: notification });
+                        });
+                Notifications.push({group: group, ID: ID, level: level, time: time, notification: notification});
             }
             temp.innerHTML += `<div class="row text-dark m-1 shadow-1 bg-light-1" style="width: 96%;" id="notification-${ID}">
     <div class="col-9 text-dark" style="font-size: 1em;">
@@ -14056,6 +14056,7 @@ function intToWeek(integer) {
     currentValue -= hour * 60;
 
     var minute = currentValue;
+<<<<<<< HEAD
     return { dayOfWeekS: dayOfWeekS, dayOfWeek: dayOfWeek, hour: hour, minute: minute };
 }
 
@@ -14205,4 +14206,7 @@ function loadShow(ID = null) {
             title="Add this show filter">Add Show Filter</button>`;
     }
     $("#options-modal-underwriting-schedule-show").iziModal('open');
+=======
+    return {dayOfWeekS: dayOfWeekS, dayOfWeek: dayOfWeek, hour: hour, minute: minute};
+>>>>>>> 5e88b60ab7f8e03690e38583d6fccc9ef7e843a0
 }

@@ -6,12 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Support for new configuration system in the server via admin menu -> server configuration.
+- Support for new configuration system in the server via admin menu -> server configuration. [Issue 31](https://github.com/Lovinity/wwsu-dj-controls/issues/31)
 - Make direct API queries to the WWSU system from the admin menu.
 - Taskbar icon displays a progress bar counting down queue time from 100 seconds when starting a broadcast or returning from break.
-- During a remote broadcast (once re-enabled), the receiving DJ Controls will monitor for audio choppiness. If choppy, it will call call/bad, which triggers the other DJ Controls to restart the audio call. If really bad, will trigger call/give-up, which sends the system into break.
-- Notifications modal that displays notifications grouped by type (example, absent broadcasts / directors). Also provides action buttons for each notification.
-- Additional DJ analytics on the Dj screens of Manage DJs.
+- During a remote broadcast, the receiving DJ Controls will monitor for audio choppiness. If choppy, it will call call/bad, which triggers the other DJ Controls to restart the audio call. It may also request a lower bitrate in call/bad. If really bad, will trigger call/give-up, which sends the system into break.
+- Notifications modal that displays notifications grouped by type (example, absent broadcasts / directors). Also provides action buttons for each notification. Also has an icon on the WWSU Operations block to open notifications.
+- Additional DJ analytics on the DJ screens of Manage DJs.
 - Attendance history buttons to mark certain records as excused in terms of the new DJ reputation analytics. Also, buttons to toggle between unexcused show absence and canceled show.
 - Prompt for DJ Controls set to receive emergencies or accountability notifications when closing.
 
@@ -19,9 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Timesheet window in admin options -> manage directors -> timesheets now displays timesheets as vertical Gantt Charts.
 - All applicable operation buttons and queue timer is now always visible in WWSU Operations.
 - Using skywayJS instead of peerJS.
+- DJ Controls uses a separate thread each for calendar processing, remote broadcast audio calling, and audio recording / silence detection. This should improve performance and audio quality.
 
 ### Fixed
 - "Cannot read property muted of undefined" error that sometimes appeared and prevented operation buttons from appearing.
+- Audio recorder should operate reliably and not go periods of time without recording.
+- Audio recorder should properly save active recordings when shutting down DJ Controls and stall its closing until complete.
+- Random high CPU use in some DJ Controls on slower systems. [Issue 28](https://github.com/Lovinity/wwsu-dj-controls/issues/28)
 
 ### Removed
 - Pop-up notification boxes outside of the main application; no longer functional in Electron.js 5.
