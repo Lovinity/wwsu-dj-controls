@@ -12,7 +12,8 @@ try {
         visibilityChange = "webkitvisibilitychange";
     }
 
-    var development = false;
+    var development = true;
+
     var callInProgressI = false;
     var callInProgressO = false;
     var closeDialog = false;
@@ -41,9 +42,13 @@ try {
     var Requests = TAFFY();
     var Djs = TAFFY();
     var Hosts = TAFFY();
+    var Underwritings = TAFFY();
+    var UnderwritingsSchedules = [];
+    var UnderwritingsShows = [];
     var Config = {};
     var DJData = {};
     var Timesheet = TAFFY();
+    var Underwritingtracks = [];
     var Timesheets = [];
     var Notifications = [];
     var cal = {
@@ -1127,6 +1132,10 @@ try {
         processTimesheet(data);
     });
 
+    socket.on('underwritings', function (data) {
+        processUnderwritings(data);
+    });
+
     socket.on('discipline', function (data) {
         processDiscipline(data);
     });
@@ -1450,6 +1459,34 @@ try {
         zindex: 61
     });
 
+    $("#options-modal-underwritings").iziModal({
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 61
+    });
+
+    $("#options-modal-underwriting").iziModal({
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 62
+    });
+
     $("#options-modal-dj-logs").iziModal({
         width: 800,
         focusInput: true,
@@ -1532,6 +1569,34 @@ try {
         pauseOnHover: true,
         timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
         zindex: 61
+    });
+
+    $("#options-modal-underwriting-schedule").iziModal({
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 62
+    });
+
+    $("#options-modal-underwriting-schedule-show").iziModal({
+        width: 800,
+        focusInput: true,
+        arrowKeys: false,
+        navigateCaption: false,
+        navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        timeout: false,
+        pauseOnHover: true,
+        timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+        zindex: 62
     });
 
     $("#announcement-view-modal").iziModal({
@@ -3583,8 +3648,8 @@ document.querySelector("#btn-options-config-breaks-clock").onclick = function ()
                                         "type": "string",
                                         "title": "Break Task",
                                         "required": true,
-                                        "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates"],
-                                        "description": `Choose the task. Delete this entry = choose this to ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                        "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates", "queueUnderwritings"],
+                                        "description": `Choose the task. Delete this entry = choose this to ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates. queueUnderwritings = queue scheduled underwritings added via admin menu -> manage underwritings.`
                                     },
                                     "event": {
                                         "type": "string",
@@ -3599,7 +3664,7 @@ document.querySelector("#btn-options-config-breaks-clock").onclick = function ()
                                     },
                                     "quantity": {
                                         "type": "integer",
-                                        "title": "Number of Tracks to Queue (queueRequests and queue tasks only)",
+                                        "title": "Number of Tracks to Queue (queueRequests, queueUnderwritings, and queue tasks only)",
                                         "description": "Number of tracks that should be queued, if queuing tracks."
                                     },
                                     "rules": {
@@ -3868,8 +3933,8 @@ document.querySelector("#btn-options-config-breaks-automation").onclick = functi
                                 "type": "string",
                                 "title": "Break Task",
                                 "required": true,
-                                "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates"],
-                                "description": `Choose the task. Delete this entry = ignore this entry completely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates", "queueUnderwritings"],
+                                "description": `Choose the task. Delete this entry = ignore this entry completely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates. queueUnderwritings = queue scheduled underwritings added via admin menu -> manage underwritings.`
                             },
                             "event": {
                                 "type": "string",
@@ -3884,7 +3949,7 @@ document.querySelector("#btn-options-config-breaks-automation").onclick = functi
                             },
                             "quantity": {
                                 "type": "integer",
-                                "title": "Number of Tracks to Queue (queueRequests and queue tasks only)",
+                                "title": "Number of Tracks to Queue (queueRequests, queueUnderwritings, and queue tasks only)",
                                 "description": "Number of tracks that should be queued, if queuing tracks."
                             },
                             "rules": {
@@ -4036,7 +4101,7 @@ document.querySelector("#btn-options-config-categories").onclick = function () {
                     var endText = ``;
                     switch (item) {
                         case "music":
-                            endText = `(Tracks in this category can be requested)`;
+                            endText = `(Tracks in these categories can be requested via the track request system)`;
                             break;
                         case "adds":
                             endText = `(These tracks may be played via the "Play Top Add" DJ Controls button)`;
@@ -4049,6 +4114,9 @@ document.querySelector("#btn-options-config-categories").onclick = function () {
                             break;
                         case "sweepers":
                             endText = `(Fun non-legal station IDs)`;
+                            break;
+                        case "underwritings":
+                            endText = `(Commercials / underwritings; tracks in these categories can be chosen in the admin menu -> Manage Underwritings)`;
                             break;
                         case "liners":
                             endText = `(Short few-second IDs played between music tracks in automation)`;
@@ -4246,8 +4314,8 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                             "type": "string",
                                             "title": "Break Task",
                                             "required": true,
-                                            "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates"],
-                                            "description": `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                            "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates", "queueUnderwritings"],
+                                            "description": `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates. queueUnderwritings = queue scheduled underwritings added via admin menu -> manage underwritings.`
                                         },
                                         "event": {
                                             "type": "string",
@@ -4262,7 +4330,7 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                         },
                                         "quantity": {
                                             "type": "integer",
-                                            "title": "Number of Tracks to Queue (queueRequests and queue tasks only)",
+                                            "title": "Number of Tracks to Queue (queueRequests, queueUnderwritings, and queue tasks only)",
                                             "description": "Number of tracks that should be queued, if queuing tracks."
                                         },
                                         "rules": {
@@ -4358,8 +4426,8 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                             "type": "string",
                                             "title": "Break Task",
                                             "required": true,
-                                            "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates"],
-                                            "description": `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                            "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates", "queueUnderwritings"],
+                                            "description": `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates. queueUnderwritings = queue scheduled underwritings added via admin menu -> manage underwritings.`
                                         },
                                         "event": {
                                             "type": "string",
@@ -4374,7 +4442,7 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                         },
                                         "quantity": {
                                             "type": "integer",
-                                            "title": "Number of Tracks to Queue (queueRequests and queue tasks only)",
+                                            "title": "Number of Tracks to Queue (queueRequests, queueUnderwritings, and queue tasks only)",
                                             "description": "Number of tracks that should be queued, if queuing tracks."
                                         },
                                         "rules": {
@@ -4467,8 +4535,8 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                             "type": "string",
                                             "title": "Break Task",
                                             "required": true,
-                                            "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates"],
-                                            "description": `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                            "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates", "queueUnderwritings"],
+                                            "description": `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates. queueUnderwritings = queue scheduled underwritings added via admin menu -> manage underwritings.`
                                         },
                                         "event": {
                                             "type": "string",
@@ -4483,7 +4551,7 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                         },
                                         "quantity": {
                                             "type": "integer",
-                                            "title": "Number of Tracks to Queue (queueRequests and queue tasks only)",
+                                            "title": "Number of Tracks to Queue (queueRequests, queueUnderwritings, and queue tasks only)",
                                             "description": "Number of tracks that should be queued, if queuing tracks."
                                         },
                                         "rules": {
@@ -4576,8 +4644,8 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                             "type": "string",
                                             "title": "Break Task",
                                             "required": true,
-                                            "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates"],
-                                            "description": `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates.`
+                                            "enum": ["[DELETE THIS ENTRY]", "", "log", "queueRequests", "queue", "queueDuplicates", "queueUnderwritings"],
+                                            "description": `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates. queueUnderwritings = queue scheduled underwritings added via admin menu -> manage underwritings.`
                                         },
                                         "event": {
                                             "type": "string",
@@ -4592,7 +4660,7 @@ document.querySelector("#options-modal-config-list-items").onclick = function (e
                                         },
                                         "quantity": {
                                             "type": "integer",
-                                            "title": "Number of Tracks to Queue (queueRequests and queue tasks only)",
+                                            "title": "Number of Tracks to Queue (queueRequests, queueUnderwritings, and queue tasks only)",
                                             "description": "Number of tracks that should be queued, if queuing tracks."
                                         },
                                         "rules": {
@@ -6001,6 +6069,18 @@ document.querySelector("#btn-options-discipline").onclick = function () {
     }
 };
 
+document.querySelector("#btn-options-underwritings").onclick = function () {
+    try {
+        $("#options-modal-underwritings").iziModal('open');
+    } catch (e) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-discipline.'
+        });
+    }
+};
+
 document.querySelector("#btn-options-radiodj").onclick = function () {
     try {
         iziToast.show({
@@ -6779,6 +6859,336 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
             }
         }
     } catch (err) {
+    }
+});
+
+document.querySelector("#modal-underwriting-manual").onchange = function () {
+    if (document.querySelector("#modal-underwriting-manual").checked) {
+        document.querySelector("#modal-underwriting-schedule").style.display = "inline";
+    } else {
+        document.querySelector("#modal-underwriting-schedule").style.display = "none";
+    }
+};
+
+document.querySelector(`#options-modal-underwritings`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id === `options-underwritings-new`) {
+                loadUnderwriting(null);
+            } else if (e.target.id.startsWith(`options-underwritings-remove-`)) {
+                var inputData = "";
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/trash.png`,
+                    maxWidth: 480,
+                    title: 'Remove Underwriting',
+                    message: 'THIS CANNOT BE UNDONE! Are you sure you want to remove this underwriting?',
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Remove</b></button>', function (instance, toast) {
+                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                            directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/underwritings/remove', data: { ID: parseInt(e.target.id.replace(`options-underwritings-remove-`, ``)) } }, function (response) {
+                                if (response === 'OK') {
+                                    iziToast.show({
+                                        title: `Underwriting removed!`,
+                                        message: `Underwriting was removed!`,
+                                        timeout: 10000,
+                                        close: true,
+                                        color: 'green',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                } else {
+                                    console.dir(response);
+                                    iziToast.show({
+                                        title: `Failed to remove underwriting!`,
+                                        message: `There was an error trying to remove the underwriting.`,
+                                        timeout: 10000,
+                                        close: true,
+                                        color: 'red',
+                                        drag: false,
+                                        position: 'center',
+                                        closeOnClick: true,
+                                        overlay: false,
+                                        zindex: 1000
+                                    });
+                                }
+                            });
+                        }],
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                        }],
+                    ]
+                });
+            }
+            if (e.target.id.startsWith(`options-underwritings-edit-`)) {
+                var recordID = parseInt(e.target.id.replace(`options-underwritings-edit-`, ``));
+                loadUnderwriting(recordID);
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-modal-underwritings.'
+        });
+    }
+});
+
+document.querySelector(`#options-modal-underwriting`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id === `modal-underwriting-schedule-new`) {
+                loadSchedule(null);
+            }
+            if (e.target.id === `modal-underwriting-schedule-new-show`) {
+                loadShow(null);
+            }
+            if (e.target.id.startsWith(`modal-underwriting-edit-`)) {
+                var ID = parseInt(e.target.id.replace(`modal-underwriting-edit-`, ``));
+                var underwritingTracks = document.getElementById('modal-underwriting-track');
+                var selectedTrack = underwritingTracks.options[underwritingTracks.selectedIndex].value;
+                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/underwritings/edit', data: { ID: ID, name: document.querySelector(`#modal-underwriting-name`).value, trackID: selectedTrack, mode: { mode: document.querySelector(`#modal-underwriting-manual`).checked ? 0 : 1, schedule: { schedules: UnderwritingsSchedules }, show: UnderwritingsShows } } }, function (response) {
+                    if (response === 'OK') {
+                        $("#options-modal-underwriting").iziModal('close');
+                        iziToast.show({
+                            title: `Underwriting Edited!`,
+                            message: `Underwriting was edited!`,
+                            timeout: 15000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to edit underwriting!`,
+                            message: `There was an error trying to edit the underwriting.`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+            if (e.target.id === `modal-underwriting-add`) {
+                var underwritingTracks = document.getElementById('modal-underwriting-track');
+                var selectedTrack = underwritingTracks.options[underwritingTracks.selectedIndex].value;
+                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/underwritings/add', data: { name: document.querySelector(`#modal-underwriting-name`).value, trackID: selectedTrack, mode: { mode: document.querySelector(`#modal-underwriting-manual`).checked ? 0 : 1, schedule: { schedules: UnderwritingsSchedules }, show: UnderwritingsShows } } }, function (response) {
+                    if (response === 'OK') {
+                        $("#options-modal-underwriting").iziModal('close');
+                        iziToast.show({
+                            title: `Underwriting added!`,
+                            message: `Underwriting was added!`,
+                            timeout: 15000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to add underwriting!`,
+                            message: `There was an error trying to add the underwriting.`,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #options-modal-underwriting.'
+        });
+    }
+});
+
+document.querySelector(`#modal-underwriting-schedule-list`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id.startsWith(`options-underwriting-schedule-edit-`)) {
+                var ID = parseInt(e.target.id.replace(`options-underwriting-schedule-edit-`, ``));
+                loadSchedule(ID);
+            } else if (e.target.id.startsWith(`options-underwriting-schedule-remove-`)) {
+                var ID = parseInt(e.target.id.replace(`options-underwriting-schedule-remove-`, ``));
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/trash.png`,
+                    maxWidth: 480,
+                    title: 'Remove Underwriting Schedule Entry',
+                    message: 'Are you sure you want to remove this schedule entry? The change will NOT be saved until you click "Add/Edit Underwriting".',
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Remove</b></button>', function (instance, toast) {
+                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                            if (typeof UnderwritingsSchedules[ID] !== `undefined`) {
+                                UnderwritingsSchedules.splice(ID, 1);
+                                var temp = document.querySelector(`#options-underwriting-schedule-entry-${ID}`);
+                                if (temp !== null)
+                                    temp.parentNode.removeChild(temp);
+                            }
+                        }],
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                        }],
+                    ]
+                });
+            } else if (e.target.id.startsWith(`modal-underwriting-schedule-show-edit-`)) {
+                var ID = parseInt(e.target.id.replace(`modal-underwriting-schedule-show-edit-`, ``));
+                loadShow(ID);
+            } else if (e.target.id.startsWith(`modal-underwriting-schedule-show-remove-`)) {
+                var ID = parseInt(e.target.id.replace(`modal-underwriting-schedule-show-remove-`, ``));
+                iziToast.show({
+                    timeout: 60000,
+                    overlay: true,
+                    displayMode: 'once',
+                    color: 'yellow',
+                    id: 'inputs',
+                    zindex: 999,
+                    layout: 2,
+                    image: `assets/images/trash.png`,
+                    maxWidth: 480,
+                    title: 'Remove Underwriting Show Filter',
+                    message: 'Are you sure you want to remove this show filter? The change will NOT be saved until you click "Add/Edit Underwriting".',
+                    position: 'center',
+                    drag: false,
+                    closeOnClick: false,
+                    buttons: [
+                        ['<button><b>Remove</b></button>', function (instance, toast) {
+                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                            if (typeof UnderwritingsShows[ID] !== `undefined`) {
+                                UnderwritingsShows.splice(ID, 1);
+                                var temp = document.querySelector(`#options-underwriting-schedule-show-entry-${ID}`);
+                                if (temp !== null)
+                                    temp.parentNode.removeChild(temp);
+                            }
+                        }],
+                        ['<button><b>Cancel</b></button>', function (instance, toast) {
+                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                        }],
+                    ]
+                });
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #modal-underwriting-schedule-list.'
+        });
+    }
+});
+
+document.querySelector(`#underwriting-schedule-buttons`).addEventListener("click", function (e) {
+    try {
+        if (e.target) {
+            console.log(e.target.id);
+            if (e.target.id === `modal-underwriting-schedule-f-add`)
+            {
+                var schedule = {dw: [], h: []};
+                for (var i = 0; i < 7; i++) {
+                    if (document.querySelector(`#underwriting-schedule-dw-${i}`).checked)
+                    schedule.dw.push(i);
+                }
+                for (var i = 0; i < 24; i++) {
+                    if (document.querySelector(`#underwriting-schedule-h-${i}`).checked)
+                    schedule.h.push(i);
+                }
+                var index = UnderwritingsSchedules.push(schedule) - 1;
+                document.querySelector(`#modal-underwriting-schedule-list`).innerHTML += `<div class="row m-1" id="options-underwriting-schedule-entry-${index}">
+                    <div class="col-9 text-primary">
+                        Schedule: ${JSON.stringify(schedule)}
+                    </div>
+            <div class="col-3 text-success">
+            <button type="button" id="options-underwriting-schedule-edit-${index}" class="close" aria-label="Edit Schedule" title="Edit Schedule">
+                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+                </button>
+                <button type="button" id="options-underwriting-schedule-remove-${index}" class="close" aria-label="Remove Schedule" title="Remove Schedule">
+                <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
+                </button>
+            </div>
+                </div>`;
+            }
+            if (e.target.id.startsWith(`modal-underwriting-schedule-f-edit-`))
+            {
+                var index = parseInt(e.target.id.replace(`modal-underwriting-schedule-f-edit-`, ``));
+                var schedule = {dw: [], h: []};
+                for (var i = 0; i < 7; i++) {
+                    if (document.querySelector(`#underwriting-schedule-dw-${i}`).checked)
+                    schedule.dw.push(i);
+                }
+                for (var i = 0; i < 24; i++) {
+                    if (document.querySelector(`#underwriting-schedule-h-${i}`).checked)
+                    schedule.h.push(i);
+                }
+                UnderwritingsSchedules[index] = schedule;
+                var temp = document.querySelector(`#options-underwriting-schedule-entry-${index}`);
+                if (temp !== null)
+                {
+                    temp.innerHTML = `<div class="col-9 text-primary">
+                    Schedule: ${JSON.stringify(schedule)}
+                </div>
+        <div class="col-3 text-success">
+        <button type="button" id="options-underwriting-schedule-edit-${index}" class="close" aria-label="Edit Schedule" title="Edit Schedule">
+            <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+            </button>
+            <button type="button" id="options-underwriting-schedule-remove-${index}" class="close" aria-label="Remove Schedule" title="Remove Schedule">
+            <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
+            </button>
+        </div>`;
+                }
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #underwriting-schedule-buttons.'
+        });
     }
 });
 
@@ -8481,6 +8891,58 @@ document.querySelector("#sportsremote-sport").addEventListener("change", functio
     }
 });
 
+document.querySelector("#modal-underwriting-track").addEventListener("change", function () {
+    if (document.querySelector("#modal-underwriting-track").value !== "0") {
+        var trackID = parseInt(document.querySelector("#modal-underwriting-track").value);
+        var temp2 = document.querySelector(`#modal-underwriting-status`);
+        temp2.innerHTML = `Unknown`;
+        var temp3 = document.querySelector(`#modal-underwriting-start`);
+        temp3.innerHTML = `Unknown`;
+        var temp4 = document.querySelector(`#modal-underwriting-end`);
+        temp4.innerHTML = `Unknown`;
+        var temp5 = document.querySelector(`#modal-underwriting-limit`);
+        temp5.innerHTML = `Unknown`;
+        var temp6 = document.querySelector(`#modal-underwriting-spins`);
+        temp6.innerHTML = `Unknown`;
+        Underwritingtracks
+            .filter((track) => track.ID === trackID)
+            .map((track) => {
+
+                switch (track.enabled) {
+                    case 1:
+                        temp2.innerHTML = `Enabled`;
+                        break;
+                    case 0:
+                        temp2.innerHTML = `Disabled`;
+                        break;
+                    case -1:
+                        temp2.innerHTML = `Invalid / Corrupted Track`;
+                        break;
+                }
+
+                if (moment(track.start_date).isAfter("2002-01-01 00:00:01")) {
+                    temp3.innerHTML = moment(track.start_date).format("LLL");
+                } else {
+                    temp3.innerHTML = `Immediately (not set)`;
+                }
+
+                if (moment(track.end_date).isAfter("2002-01-01 00:00:01")) {
+                    temp4.innerHTML = moment(track.end_date).format("LLL");
+                } else {
+                    temp4.innerHTML = `Indefinitely (not set)`;
+                }
+
+                if (track.play_limit > 0) {
+                    temp5.innerHTML = track.play_limit;
+                } else {
+                    temp5.innerHTML = `Unlimited`;
+                }
+
+                temp6.innerHTML = track.count_played;
+            });
+    }
+});
+
 document.querySelector(`#track-requests`).addEventListener("click", function (e) {
     try {
         console.log(e.target.id);
@@ -8778,6 +9240,19 @@ function hostSocket(cb = function (token) { }) {
                     } catch (e) {
                         console.error(e);
                         console.log('FAILED PLANNER CONNECTION');
+                        clearTimeout(restarter);
+                        restarter = setTimeout(hostSocket, 10000);
+                    }
+                });
+
+                // Subscribe to the underwritings socket
+                noReq.request({ method: 'post', url: nodeURL + '/underwritings/get', data: {} }, function serverResponded(body, JWR) {
+                    //console.log(body);
+                    try {
+                        processUnderwritings(body, true);
+                    } catch (e) {
+                        console.error(e);
+                        console.log('FAILED Underwritings CONNECTION');
                         clearTimeout(restarter);
                         restarter = setTimeout(hostSocket, 10000);
                     }
@@ -12606,6 +13081,59 @@ function processDirectors(data, replace = false) {
     }
 }
 
+// Update underwritings as changes happen
+function processUnderwritings(data, replace = false) {
+    // Data processing
+    try {
+        if (replace) {
+            Underwritings = TAFFY();
+            Underwritings.insert(data);
+
+        } else {
+            for (var key in data) {
+                if (data.hasOwnProperty(key)) {
+                    switch (key) {
+                        case 'insert':
+                            Underwritings.insert(data[key]);
+                            break;
+                        case 'update':
+                            Underwritings({ ID: data[key].ID }).update(data[key]);
+                            break;
+                        case 'remove':
+                            Underwritings({ ID: data[key] }).remove();
+                            break;
+                    }
+                }
+            }
+        }
+
+        document.querySelector('#underwritings-list').innerHTML = ``;
+
+        Underwritings().each(function (underwriting, index) {
+            document.querySelector('#underwritings-list').innerHTML += `<div class="row m-1">
+                    <div class="col-9 text-primary">
+                        ${underwriting.name}
+                    </div>
+            <div class="col-3 text-success">
+            <button type="button" id="options-underwritings-edit-${underwriting.ID}" class="close" aria-label="Edit Underwriting" title="Edit ${underwriting.name}">
+                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+                </button>
+                <button type="button" id="options-underwritings-remove-${underwriting.ID}" class="close" aria-label="Remove Underwriting" title="Remove ${underwriting.name}">
+                <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
+                </button>
+            </div>
+                </div>`;
+        });
+
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred in the processUnderwritings function.'
+        });
+    }
+}
+
 // Update recipients as changes happen
 function processHosts(data, replace = false) {
     // Data processing
@@ -13529,4 +14057,152 @@ function intToWeek(integer) {
 
     var minute = currentValue;
     return { dayOfWeekS: dayOfWeekS, dayOfWeek: dayOfWeek, hour: hour, minute: minute };
+}
+
+function loadUnderwriting(ID = null) {
+    Underwritingtracks = [];
+    UnderwritingsSchedules = [];
+    UnderwritingsShows = [];
+    var temp = document.querySelector(`#modal-underwriting-track`);
+    temp.innerHTML = `<option value="">Choose an underwriting track...</option>`;
+    var temp2 = document.querySelector(`#modal-underwriting-status`);
+    temp2.innerHTML = `Unknown`;
+    var temp3 = document.querySelector(`#modal-underwriting-start`);
+    temp3.innerHTML = `Unknown`;
+    var temp4 = document.querySelector(`#modal-underwriting-end`);
+    temp4.innerHTML = `Unknown`;
+    var temp5 = document.querySelector(`#modal-underwriting-limit`);
+    temp5.innerHTML = `Unknown`;
+    var temp6 = document.querySelector(`#modal-underwriting-spins`);
+    temp6.innerHTML = `Unknown`;
+    var temp7 = document.querySelector(`#modal-underwriting-manual`);
+    temp7.checked = false;
+    var temp8 = document.querySelector(`#modal-underwriting-schedule`);
+    temp8.style.display = "none";
+    var temp9 = document.querySelector(`#modal-underwriting-schedule-list`);
+    temp9.innerHTML = ``;
+    var temp11 = document.querySelector(`#modal-underwriting-name`);
+    temp11.innerHTML = ``;
+    var temp10 = document.querySelector(`#modal-underwriting-buttons`);
+    document.querySelector("#modal-underwriting-schedule").style.display = "none";
+    if (temp10) {
+        if (ID !== null) {
+            temp10.innerHTML = `<button type="button" class="btn btn-urgent btn" id="modal-underwriting-edit-${ID}"
+            title="Edit this underwriting">Edit Underwriting</button>`;
+        } else {
+            temp10.innerHTML = `<button type="button" class="btn btn-success btn" id="modal-underwriting-add"
+            title="Add this underwriting">Add Underwriting</button>`;
+        }
+    }
+    hostReq.request({ method: 'POST', url: nodeURL + '/songs/get', data: { category: "underwritings", limit: 1000 } }, function (response) {
+        if (response.length > 0) {
+            Underwritingtracks = response;
+            response.map((track) => {
+                temp.innerHTML += `<option value="${track.ID}">${track.artist} - ${track.title} ${track.enabled !== 1 ? `(DISABLED)` : ``}</option>`;
+            });
+        }
+        if (ID !== null) {
+            var underwriting = Underwritings({ ID: ID }).first();
+            if (underwriting) {
+                temp.value = underwriting.trackID;
+                temp11.value = underwriting.name;
+                if (typeof underwriting.mode !== `undefined` && typeof underwriting.mode.mode !== `undefined`) {
+                    if (underwriting.mode.mode === 0) {
+                        document.querySelector("#modal-underwriting-manual").checked = true;
+                        document.querySelector("#modal-underwriting-schedule").style.display = "inline";
+                        if (underwriting.mode.schedule !== `undefined` && typeof underwriting.mode.schedule.schedules !== `undefined` && underwriting.mode.schedule.schedules.length > 0) {
+                            underwriting.mode.schedule.schedules.map((schedule, index) => {
+                                temp9.innerHTML += `<div class="row m-1" id="options-underwriting-schedule-entry-${index}">
+                    <div class="col-9 text-primary">
+                        Schedule: ${JSON.stringify(schedule)}
+                    </div>
+            <div class="col-3 text-success">
+            <button type="button" id="options-underwriting-schedule-edit-${index}" class="close" aria-label="Edit Schedule" title="Edit Schedule">
+                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+                </button>
+                <button type="button" id="options-underwriting-schedule-remove-${index}" class="close" aria-label="Remove Schedule" title="Remove Schedule">
+                <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
+                </button>
+            </div>
+                </div>`;
+                                UnderwritingsSchedules[index] = schedule;
+                            });
+                        }
+                        if (underwriting.mode.show !== `undefined` && underwriting.mode.show.length > 0) {
+                            underwriting.mode.show.map((show, index) => {
+                                temp9.innerHTML += `<div class="row m-1" id="options-underwriting-schedule-show-entry-${index}">
+                <div class="col-9 text-primary">
+                    Show: ${show}
+                </div>
+        <div class="col-3 text-success">
+        <button type="button" id="options-underwriting-schedule-show-edit-${index}" class="close" aria-label="Edit Show Filter" title="Edit Show Filter">
+            <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+            </button>
+            <button type="button" id="options-underwriting-schedule-show-remove-${index}" class="close" aria-label="Remove Show Filter" title="Remove Show Filter">
+            <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
+            </button>
+        </div>
+            </div>`;
+                                UnderwritingsShows[index] = show;
+                            });
+                        }
+                    } else if (underwriting.mode.mode === 1) {
+                        document.querySelector("#modal-underwriting-manual").checked = false;
+                    }
+                }
+            }
+        }
+        $("#options-modal-underwriting").iziModal('open');
+    });
+}
+
+function loadSchedule(ID = null) {
+    for (var i = 0; i < 7; i++) {
+        document.querySelector(`#underwriting-schedule-dw-${i}`).checked = false;
+    }
+    for (var i = 0; i < 24; i++) {
+        document.querySelector(`#underwriting-schedule-h-${i}`).checked = false;
+    }
+    if (ID !== null && typeof UnderwritingsSchedules[ID] !== `undefined`) {
+        for (var key in UnderwritingsSchedules[ID]) {
+            if (UnderwritingsSchedules[ID].hasOwnProperty(key)) {
+                switch (key) {
+                    case "dw":
+                        if (UnderwritingsSchedules[ID][key].length > 0) {
+                            UnderwritingsSchedules[ID][key].map((day, index) => {
+                                document.querySelector(`#underwriting-schedule-dw-${day}`).checked = true;
+                            });
+                        }
+                        break;
+                    case "h":
+                        if (UnderwritingsSchedules[ID][key].length > 0) {
+                            UnderwritingsSchedules[ID][key].map((hour, index) => {
+                                document.querySelector(`#underwriting-schedule-h-${hour}`).checked = true;
+                            });
+                        }
+                        break;
+                }
+            }
+        }
+    }
+    if (ID !== null) {
+        document.querySelector(`#underwriting-schedule-buttons`).innerHTML = `<button type="button" class="btn btn-urgent btn" id="modal-underwriting-schedule-f-edit-${ID}"
+            title="Edit this schedule">Edit Schedule</button>`;
+    } else {
+        document.querySelector(`#underwriting-schedule-buttons`).innerHTML = `<button type="button" class="btn btn-success btn" id="modal-underwriting-schedule-f-add"
+            title="Add this Schedule">Add Schedule</button>`;
+    }
+    $("#options-modal-underwriting-schedule").iziModal('open');
+}
+
+function loadShow(ID = null) {
+    document.querySelector(`#underwriting-schedule-show-input`).value = ID !== null && typeof UnderwritingsShows[ID] !== `undefined` ? UnderwritingsShows[ID] : ``;
+    if (ID !== null) {
+        document.querySelector(`#underwriting-schedule-show-buttons`).innerHTML = `<button type="button" class="btn btn-urgent btn" id="modal-underwriting-schedule-show-f-edit-${ID}"
+            title="Edit this show filter">Edit Show Filter</button>`;
+    } else {
+        document.querySelector(`#underwriting-schedule-show-buttons`).innerHTML = `<button type="button" class="btn btn-success btn" id="modal-underwriting-schedule-show-f-add"
+            title="Add this show filter">Add Show Filter</button>`;
+    }
+    $("#options-modal-underwriting-schedule-show").iziModal('open');
 }
