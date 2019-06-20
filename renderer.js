@@ -14056,8 +14056,7 @@ function intToWeek(integer) {
     currentValue -= hour * 60;
 
     var minute = currentValue;
-<<<<<<< HEAD
-    return { dayOfWeekS: dayOfWeekS, dayOfWeek: dayOfWeek, hour: hour, minute: minute };
+    return {dayOfWeekS: dayOfWeekS, dayOfWeek: dayOfWeek, hour: hour, minute: minute};
 }
 
 function loadUnderwriting(ID = null) {
@@ -14206,7 +14205,4 @@ function loadShow(ID = null) {
             title="Add this show filter">Add Show Filter</button>`;
     }
     $("#options-modal-underwriting-schedule-show").iziModal('open');
-=======
-    return {dayOfWeekS: dayOfWeekS, dayOfWeek: dayOfWeek, hour: hour, minute: minute};
->>>>>>> 5e88b60ab7f8e03690e38583d6fccc9ef7e843a0
 }
