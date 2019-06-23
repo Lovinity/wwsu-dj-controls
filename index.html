@@ -2890,14 +2890,15 @@
                 </p>
                 <div class="custom-control custom-switch"
                     title="Specify manual times for this underwriting to queue rather than it being determined automatically.">
-                    <input class="custom-control-input" id="modal-underwriting-manual" type="checkbox">
+                    <input class="custom-control-input" id="modal-underwriting-listeners" type="checkbox">
                     <span class="custom-control-track"></span>
-                    <label class="custom-control-label" for="modal-underwriting-manual">Specify a schedule and/or show
-                        filters for this underwriting?</label><br />
-                    <small>(If switch is off, system will queue the underwriting at automatic times depending on the
-                        number of online listeners connected)</small>
+                    <label class="custom-control-label" for="modal-underwriting-listeners">Adjust frequency of airing
+                        depending on number of online listeners connected?</label><br />
+                    <small>If enabled (brown and to the right), the underwriting will play more often when more online
+                        listeners are connected, and less often otherwise. The system will still ensure required spin
+                        counts are met by the end date if both an end date and spin counts are specified.</small>
                 </div>
-                <div id="modal-underwriting-schedule" style="display: none;">
+                <div id="modal-underwriting-schedule">
                     <div class="row m-1 bg-light-1 shadow-2">
                         <div class="col-9 text-primary">
                             Schedule
@@ -2906,9 +2907,7 @@
                             Actions
                         </div>
                     </div>
-                    <div class="container" id="modal-underwriting-schedule-list">
-                    </div>
-                    <div id="modal-underwriting-schedule-list"
+                    <div class="container" id="modal-underwriting-schedule-list"
                         style="max-height: 240px; width: 100%; overflow-y: scroll;">
                     </div>
                     <button type="button" class="btn btn-success btn" id="modal-underwriting-schedule-new"

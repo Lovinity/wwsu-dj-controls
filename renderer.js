@@ -12,7 +12,7 @@ try {
         visibilityChange = "webkitvisibilitychange";
     }
 
-    var development = true;
+    var development = false;
 
     var callInProgressI = false;
     var callInProgressO = false;
@@ -6876,14 +6876,6 @@ document.querySelector(`#modal-notifications`).addEventListener("click", functio
     }
 });
 
-document.querySelector("#modal-underwriting-manual").onchange = function () {
-    if (document.querySelector("#modal-underwriting-manual").checked) {
-        document.querySelector("#modal-underwriting-schedule").style.display = "inline";
-    } else {
-        document.querySelector("#modal-underwriting-schedule").style.display = "none";
-    }
-};
-
 document.querySelector(`#options-modal-underwritings`).addEventListener("click", function (e) {
     try {
         if (e.target) {
@@ -6977,7 +6969,7 @@ document.querySelector(`#options-modal-underwriting`).addEventListener("click", 
                 var selectedTrack = underwritingTracks.options[underwritingTracks.selectedIndex].value;
                 UnderwritingsSchedules = UnderwritingsSchedules.filter((schedule) => schedule !== null);
                 UnderwritingsShows = UnderwritingsShows.filter((show) => show !== null);
-                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/underwritings/edit', data: { ID: ID, name: document.querySelector(`#modal-underwriting-name`).value, trackID: selectedTrack, mode: { mode: document.querySelector(`#modal-underwriting-manual`).checked ? 0 : 1, schedule: { schedules: UnderwritingsSchedules }, show: UnderwritingsShows } } }, function (response) {
+                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/underwritings/edit', data: { ID: ID, name: document.querySelector(`#modal-underwriting-name`).value, trackID: selectedTrack, mode: { mode: document.querySelector(`#modal-underwriting-listeners`).checked ? 1 : 0, schedule: { schedules: UnderwritingsSchedules }, show: UnderwritingsShows } } }, function (response) {
                     if (response === 'OK') {
                         $("#options-modal-underwriting").iziModal('close');
                         iziToast.show({
@@ -7014,7 +7006,7 @@ document.querySelector(`#options-modal-underwriting`).addEventListener("click", 
                 var selectedTrack = underwritingTracks.options[underwritingTracks.selectedIndex].value;
                 UnderwritingsSchedules = UnderwritingsSchedules.filter((schedule) => schedule !== null);
                 UnderwritingsShows = UnderwritingsShows.filter((show) => show !== null);
-                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/underwritings/add', data: { name: document.querySelector(`#modal-underwriting-name`).value, trackID: selectedTrack, mode: { mode: document.querySelector(`#modal-underwriting-manual`).checked ? 0 : 1, schedule: { schedules: UnderwritingsSchedules }, show: UnderwritingsShows } } }, function (response) {
+                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/underwritings/add', data: { name: document.querySelector(`#modal-underwriting-name`).value, trackID: selectedTrack, mode: { mode: document.querySelector(`#modal-underwriting-listeners`).checked ? 1 : 0, schedule: { schedules: UnderwritingsSchedules }, show: UnderwritingsShows } } }, function (response) {
                     if (response === 'OK') {
                         $("#options-modal-underwriting").iziModal('close');
                         iziToast.show({
@@ -14100,16 +14092,14 @@ function loadUnderwriting(ID = null) {
     temp5.innerHTML = `Unknown`;
     var temp6 = document.querySelector(`#modal-underwriting-spins`);
     temp6.innerHTML = `Unknown`;
-    var temp7 = document.querySelector(`#modal-underwriting-manual`);
+    var temp7 = document.querySelector(`#modal-underwriting-listeners`);
     temp7.checked = false;
     var temp8 = document.querySelector(`#modal-underwriting-schedule`);
-    temp8.style.display = "none";
     var temp9 = document.querySelector(`#modal-underwriting-schedule-list`);
     temp9.innerHTML = ``;
     var temp11 = document.querySelector(`#modal-underwriting-name`);
     temp11.value = ``;
     var temp10 = document.querySelector(`#modal-underwriting-buttons`);
-    document.querySelector("#modal-underwriting-schedule").style.display = "none";
     if (temp10) {
         if (ID !== null) {
             temp10.innerHTML = `<button type="button" class="btn btn-urgent btn" id="modal-underwriting-edit-${ID}"
@@ -14133,12 +14123,14 @@ function loadUnderwriting(ID = null) {
                 loadUnderwritingTrackInfo(underwriting.trackID);
                 temp11.value = underwriting.name;
                 if (typeof underwriting.mode !== `undefined` && typeof underwriting.mode.mode !== `undefined`) {
-                    if (underwriting.mode.mode === 0) {
-                        document.querySelector("#modal-underwriting-manual").checked = true;
-                        document.querySelector("#modal-underwriting-schedule").style.display = "inline";
-                        if (underwriting.mode.schedule !== `undefined` && typeof underwriting.mode.schedule.schedules !== `undefined` && underwriting.mode.schedule.schedules.length > 0) {
-                            underwriting.mode.schedule.schedules.map((schedule, index) => {
-                                temp9.innerHTML += `<div class="row m-1" id="options-underwriting-schedule-entry-${index}">
+                    if (underwriting.mode.mode === 1) {
+                        document.querySelector("#modal-underwriting-listeners").checked = true;
+                    } else {
+                        document.querySelector("#modal-underwriting-listeners").checked = false;
+                    }
+                    if (underwriting.mode.schedule !== `undefined` && typeof underwriting.mode.schedule.schedules !== `undefined` && underwriting.mode.schedule.schedules.length > 0) {
+                        underwriting.mode.schedule.schedules.map((schedule, index) => {
+                            temp9.innerHTML += `<div class="row m-1" id="options-underwriting-schedule-entry-${index}">
                     <div class="col-9 text-primary">
                         Schedule: ${JSON.stringify(schedule)}
                     </div>
@@ -14151,12 +14143,12 @@ function loadUnderwriting(ID = null) {
                 </button>
             </div>
                 </div>`;
-                                UnderwritingsSchedules[index] = schedule;
-                            });
-                        }
-                        if (underwriting.mode.show !== `undefined` && underwriting.mode.show.length > 0) {
-                            underwriting.mode.show.map((show, index) => {
-                                temp9.innerHTML += `<div class="row m-1" id="options-underwriting-schedule-show-entry-${index}">
+                            UnderwritingsSchedules[index] = schedule;
+                        });
+                    }
+                    if (underwriting.mode.show !== `undefined` && underwriting.mode.show.length > 0) {
+                        underwriting.mode.show.map((show, index) => {
+                            temp9.innerHTML += `<div class="row m-1" id="options-underwriting-schedule-show-entry-${index}">
                 <div class="col-9 text-primary">
                     Show: ${show}
                 </div>
@@ -14169,11 +14161,8 @@ function loadUnderwriting(ID = null) {
             </button>
         </div>
             </div>`;
-                                UnderwritingsShows[index] = show;
-                            });
-                        }
-                    } else if (underwriting.mode.mode === 1) {
-                        document.querySelector("#modal-underwriting-manual").checked = false;
+                            UnderwritingsShows[index] = show;
+                        });
                     }
                 }
             }

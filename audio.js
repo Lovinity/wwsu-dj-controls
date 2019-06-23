@@ -355,9 +355,7 @@ function sanitize(str) {
         return ``;
     str = Sanitize(str);
     str = str.replace(` - `, `_SPLITTERDJSHOW_`);
-    str = str.replace('-', '_');
-    str = str.replace('/', '_');
-    str = str.replace(`\\`, '_');
+    str = str.replace(new RegExp("-", "g"), '_');
     str = str.replace(`_SPLITTERDJSHOW_`, ` - `);
     return str;
 }
