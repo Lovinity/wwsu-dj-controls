@@ -6967,9 +6967,19 @@ document.querySelector(`#options-modal-underwriting`).addEventListener("click", 
                 var ID = parseInt(e.target.id.replace(`modal-underwriting-edit-`, ``));
                 var underwritingTracks = document.getElementById('modal-underwriting-track');
                 var selectedTrack = underwritingTracks.options[underwritingTracks.selectedIndex].value;
+                var UnderwritingsSchedulesForced = [];
                 UnderwritingsSchedules = UnderwritingsSchedules.filter((schedule) => schedule !== null);
+                UnderwritingsSchedules = UnderwritingsSchedules.filter((schedule, index) => {
+                    if (schedule.forced) {
+                        UnderwritingsSchedulesForced.push(schedule);
+                        return false;
+                    }
+                    return true;
+                });
+                UnderwritingsSchedules.forEach((v) => { delete v.forced });
+                UnderwritingsSchedulesForced.forEach((v) => { delete v.forced });
                 UnderwritingsShows = UnderwritingsShows.filter((show) => show !== null);
-                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/underwritings/edit', data: { ID: ID, name: document.querySelector(`#modal-underwriting-name`).value, trackID: selectedTrack, mode: { mode: document.querySelector(`#modal-underwriting-listeners`).checked ? 1 : 0, schedule: { schedules: UnderwritingsSchedules }, show: UnderwritingsShows } } }, function (response) {
+                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/underwritings/edit', data: { ID: ID, name: document.querySelector(`#modal-underwriting-name`).value, trackID: selectedTrack, mode: { mode: document.querySelector(`#modal-underwriting-listeners`).checked ? 1 : 0, schedule: { schedules: UnderwritingsSchedules }, scheduleForced: { schedules: UnderwritingsSchedulesForced }, show: UnderwritingsShows } } }, function (response) {
                     if (response === 'OK') {
                         $("#options-modal-underwriting").iziModal('close');
                         iziToast.show({
@@ -7004,9 +7014,19 @@ document.querySelector(`#options-modal-underwriting`).addEventListener("click", 
             if (e.target.id === `modal-underwriting-add`) {
                 var underwritingTracks = document.getElementById('modal-underwriting-track');
                 var selectedTrack = underwritingTracks.options[underwritingTracks.selectedIndex].value;
+                var UnderwritingsSchedulesForced = [];
                 UnderwritingsSchedules = UnderwritingsSchedules.filter((schedule) => schedule !== null);
+                UnderwritingsSchedules = UnderwritingsSchedules.filter((schedule, index) => {
+                    if (schedule.forced) {
+                        UnderwritingsSchedulesForced.push(schedule);
+                        return false;
+                    }
+                    return true;
+                });
+                UnderwritingsSchedules.forEach((v) => { delete v.forced });
+                UnderwritingsSchedulesForced.forEach((v) => { delete v.forced });
                 UnderwritingsShows = UnderwritingsShows.filter((show) => show !== null);
-                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/underwritings/add', data: { name: document.querySelector(`#modal-underwriting-name`).value, trackID: selectedTrack, mode: { mode: document.querySelector(`#modal-underwriting-listeners`).checked ? 1 : 0, schedule: { schedules: UnderwritingsSchedules }, show: UnderwritingsShows } } }, function (response) {
+                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/underwritings/add', data: { name: document.querySelector(`#modal-underwriting-name`).value, trackID: selectedTrack, mode: { mode: document.querySelector(`#modal-underwriting-listeners`).checked ? 1 : 0, schedule: { schedules: UnderwritingsSchedules }, scheduleForced: { schedules: UnderwritingsSchedulesForced }, show: UnderwritingsShows } } }, function (response) {
                     if (response === 'OK') {
                         $("#options-modal-underwriting").iziModal('close');
                         iziToast.show({
@@ -7142,8 +7162,8 @@ document.querySelector(`#underwriting-schedule-buttons`).addEventListener("click
         if (e.target) {
             console.log(e.target.id);
             if (e.target.id === `modal-underwriting-schedule-f-add`) {
-                var schedule = { dw: [], h: [] };
-                for (var i = 0; i < 7; i++) {
+                var schedule = { dw: [], h: [], forced: document.querySelector(`#underwriting-schedule-forced`).checked };
+                for (var i = 1; i <= 7; i++) {
                     if (document.querySelector(`#underwriting-schedule-dw-${i}`).checked)
                         schedule.dw.push(i);
                 }
@@ -7154,7 +7174,7 @@ document.querySelector(`#underwriting-schedule-buttons`).addEventListener("click
                 var index = UnderwritingsSchedules.push(schedule) - 1;
                 document.querySelector(`#modal-underwriting-schedule-list`).innerHTML += `<div class="row m-1" id="options-underwriting-schedule-entry-${index}">
                     <div class="col-9 text-primary">
-                        Schedule: ${JSON.stringify(schedule)}
+                        Schedule: ${parseSchedule(schedule)}
                     </div>
             <div class="col-3 text-success">
             <button type="button" id="options-underwriting-schedule-edit-${index}" class="close" aria-label="Edit Schedule" title="Edit Schedule">
@@ -7169,8 +7189,8 @@ document.querySelector(`#underwriting-schedule-buttons`).addEventListener("click
             }
             if (e.target.id.startsWith(`modal-underwriting-schedule-f-edit-`)) {
                 var index = parseInt(e.target.id.replace(`modal-underwriting-schedule-f-edit-`, ``));
-                var schedule = { dw: [], h: [] };
-                for (var i = 0; i < 7; i++) {
+                var schedule = { dw: [], h: [], forced: document.querySelector(`#underwriting-schedule-forced`).checked };
+                for (var i = 1; i <= 7; i++) {
                     if (document.querySelector(`#underwriting-schedule-dw-${i}`).checked)
                         schedule.dw.push(i);
                 }
@@ -7182,7 +7202,7 @@ document.querySelector(`#underwriting-schedule-buttons`).addEventListener("click
                 var temp = document.querySelector(`#options-underwriting-schedule-entry-${index}`);
                 if (temp !== null) {
                     temp.innerHTML = `<div class="col-9 text-primary">
-                    Schedule: ${JSON.stringify(schedule)}
+                    Schedule: ${parseSchedule(schedule)}
                 </div>
         <div class="col-3 text-success">
         <button type="button" id="options-underwriting-schedule-edit-${index}" class="close" aria-label="Edit Schedule" title="Edit Schedule">
@@ -14046,25 +14066,25 @@ function intToWeek(integer) {
 
     var dayOfWeekS = `Unknown`;
     switch (dayOfWeek) {
-        case 0:
+        case 1:
             dayOfWeekS = "Sunday";
             break;
-        case 1:
+        case 2:
             dayOfWeekS = "Monday";
             break;
-        case 2:
+        case 3:
             dayOfWeekS = "Tuesday";
             break;
-        case 3:
+        case 4:
             dayOfWeekS = "Wednesday";
             break;
-        case 4:
+        case 5:
             dayOfWeekS = "Thursday";
             break;
-        case 5:
+        case 6:
             dayOfWeekS = "Friday";
             break;
-        case 6:
+        case 7:
             dayOfWeekS = "Saturday";
             break;
     }
@@ -14128,11 +14148,24 @@ function loadUnderwriting(ID = null) {
                     } else {
                         document.querySelector("#modal-underwriting-listeners").checked = false;
                     }
+                    var schedules = [];
                     if (underwriting.mode.schedule !== `undefined` && typeof underwriting.mode.schedule.schedules !== `undefined` && underwriting.mode.schedule.schedules.length > 0) {
                         underwriting.mode.schedule.schedules.map((schedule, index) => {
+                            schedule.forced = false;
+                            schedules.push(schedule);
+                        });
+                    }
+                    if (underwriting.mode.scheduleForced !== `undefined` && typeof underwriting.mode.scheduleForced.schedules !== `undefined` && underwriting.mode.scheduleForced.schedules.length > 0) {
+                        underwriting.mode.scheduleForced.schedules.map((schedule, index) => {
+                            schedule.forced = true;
+                            schedules.push(schedule);
+                        });
+                    }
+                    if (schedules.length > 0) {
+                        schedules.map((schedule, index) => {
                             temp9.innerHTML += `<div class="row m-1" id="options-underwriting-schedule-entry-${index}">
                     <div class="col-9 text-primary">
-                        Schedule: ${JSON.stringify(schedule)}
+                        Schedule: ${parseSchedule(schedule)}
                     </div>
             <div class="col-3 text-success">
             <button type="button" id="options-underwriting-schedule-edit-${index}" class="close" aria-label="Edit Schedule" title="Edit Schedule">
@@ -14172,7 +14205,8 @@ function loadUnderwriting(ID = null) {
 }
 
 function loadSchedule(ID = null) {
-    for (var i = 0; i < 7; i++) {
+    document.querySelector(`#underwriting-schedule-forced`).checked = false;
+    for (var i = 1; i <= 7; i++) {
         document.querySelector(`#underwriting-schedule-dw-${i}`).checked = false;
     }
     for (var i = 0; i < 24; i++) {
@@ -14203,10 +14237,12 @@ function loadSchedule(ID = null) {
     if (ID !== null) {
         document.querySelector(`#underwriting-schedule-buttons`).innerHTML = `<button type="button" class="btn btn-urgent btn" id="modal-underwriting-schedule-f-edit-${ID}"
             title="Edit this schedule">Edit Schedule</button>`;
+        document.querySelector(`#underwriting-schedule-forced`).checked = UnderwritingsSchedules[ID].forced;
     } else {
         document.querySelector(`#underwriting-schedule-buttons`).innerHTML = `<button type="button" class="btn btn-success btn" id="modal-underwriting-schedule-f-add"
             title="Add this Schedule">Add Schedule</button>`;
     }
+
     $("#options-modal-underwriting-schedule").iziModal('open');
 }
 
@@ -14327,4 +14363,66 @@ function loadTrackInfo(trackID) {
             console.error(e);
         }
     });
+}
+
+function parseSchedule(schedule) {
+    var string = ``;
+    if (typeof schedule.dw === `undefined` || schedule.dw.length === 0) {
+        string += `Every day`;
+    } else {
+        string += `Every `;
+        schedule.dw.map((dw, index) => {
+            if (index > 0)
+                string += `, `;
+            switch (dw) {
+                case 1:
+                    string += `Sunday`;
+                    break;
+                case 2:
+                    string += `Monday`;
+                    break;
+                case 3:
+                    string += `Tuesday`;
+                    break;
+                case 4:
+                    string += `Wednesday`;
+                    break;
+                case 5:
+                    string += `Thursday`;
+                    break;
+                case 6:
+                    string += `Friday`;
+                    break;
+                case 7:
+                    string += `Saturday`;
+                    break;
+            }
+        });
+    }
+    string += `, at `;
+
+    if (typeof schedule.h === `undefined` || schedule.h.length === 0) {
+        string += `every hour of the day.`;
+    } else {
+        schedule.h.map((h, index) => {
+            if (index > 0)
+                string += `, `;
+            if (h === 0) {
+                string += `12a`;
+            } else if (h < 12) {
+                string += `${h}a`;
+            } else if (h === 12) {
+                string += `12p`;
+            } else {
+                string += `${h - 12}p`;
+            }
+        });
+    }
+
+    if (schedule.forced)
+        string += ` (forced)`;
+
+    string += `.`;
+
+    return string;
 }
