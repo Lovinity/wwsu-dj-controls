@@ -6976,8 +6976,20 @@ document.querySelector(`#options-modal-underwriting`).addEventListener("click", 
                     }
                     return true;
                 });
-                UnderwritingsSchedules.forEach((v) => { delete v.forced });
-                UnderwritingsSchedulesForced.forEach((v) => { delete v.forced });
+                UnderwritingsSchedules.forEach((v) => {
+                    delete v.forced;
+                    if (typeof v.dw !== `undefined` && v.dw.length === 0)
+                        delete v.dw;
+                    if (typeof v.h !== `undefined` && v.h.length === 0)
+                        delete v.h;
+                });
+                UnderwritingsSchedulesForced.forEach((v) => {
+                    delete v.forced;
+                    if (typeof v.dw !== `undefined` && v.dw.length === 0)
+                        delete v.dw;
+                    if (typeof v.h !== `undefined` && v.h.length === 0)
+                        delete v.h;
+                });
                 UnderwritingsShows = UnderwritingsShows.filter((show) => show !== null);
                 directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/underwritings/edit', data: { ID: ID, name: document.querySelector(`#modal-underwriting-name`).value, trackID: selectedTrack, mode: { mode: document.querySelector(`#modal-underwriting-listeners`).checked ? 1 : 0, schedule: { schedules: UnderwritingsSchedules }, scheduleForced: { schedules: UnderwritingsSchedulesForced }, show: UnderwritingsShows } } }, function (response) {
                     if (response === 'OK') {
@@ -7023,8 +7035,20 @@ document.querySelector(`#options-modal-underwriting`).addEventListener("click", 
                     }
                     return true;
                 });
-                UnderwritingsSchedules.forEach((v) => { delete v.forced });
-                UnderwritingsSchedulesForced.forEach((v) => { delete v.forced });
+                UnderwritingsSchedules.forEach((v) => {
+                    delete v.forced;
+                    if (typeof v.dw !== `undefined` && v.dw.length === 0)
+                        delete v.dw;
+                    if (typeof v.h !== `undefined` && v.h.length === 0)
+                        delete v.h;
+                });
+                UnderwritingsSchedulesForced.forEach((v) => {
+                    delete v.forced;
+                    if (typeof v.dw !== `undefined` && v.dw.length === 0)
+                        delete v.dw;
+                    if (typeof v.h !== `undefined` && v.h.length === 0)
+                        delete v.h;
+                });
                 UnderwritingsShows = UnderwritingsShows.filter((show) => show !== null);
                 directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/underwritings/add', data: { name: document.querySelector(`#modal-underwriting-name`).value, trackID: selectedTrack, mode: { mode: document.querySelector(`#modal-underwriting-listeners`).checked ? 1 : 0, schedule: { schedules: UnderwritingsSchedules }, scheduleForced: { schedules: UnderwritingsSchedulesForced }, show: UnderwritingsShows } } }, function (response) {
                     if (response === 'OK') {
@@ -7104,6 +7128,24 @@ document.querySelector(`#modal-underwriting-schedule-list`).addEventListener("cl
                                 var temp = document.querySelector(`#options-underwriting-schedule-entry-${ID}`);
                                 if (temp !== null)
                                     temp.parentNode.removeChild(temp);
+                                var count = 0;
+                                UnderwritingsSchedules.map((schedule) => {
+                                    if (schedule !== null)
+                                        count++;
+                                });
+                                UnderwritingsShows.map((schedule) => {
+                                    if (schedule !== null)
+                                        count++;
+                                });
+                                if (count === 0) {
+                                    document.querySelector(`#modal-underwriting-schedule-list`).innerHTML += `<div class="row m-1" id="options-underwriting-schedule-show-entry-none">
+                <div class="col-9 text-primary">
+                    It could air any day at any time.
+                </div>
+                        <div class="col-3 text-success">
+                        </div>
+                </div>`;
+                                }
                             }
                         }],
                         ['<button><b>Cancel</b></button>', function (instance, toast) {
@@ -7139,6 +7181,24 @@ document.querySelector(`#modal-underwriting-schedule-list`).addEventListener("cl
                                 var temp = document.querySelector(`#options-underwriting-schedule-show-entry-${ID}`);
                                 if (temp !== null)
                                     temp.parentNode.removeChild(temp);
+                                var count = 0;
+                                UnderwritingsSchedules.map((schedule) => {
+                                    if (schedule !== null)
+                                        count++;
+                                });
+                                UnderwritingsShows.map((schedule) => {
+                                    if (schedule !== null)
+                                        count++;
+                                });
+                                if (count === 0) {
+                                    document.querySelector(`#modal-underwriting-schedule-list`).innerHTML += `<div class="row m-1" id="options-underwriting-schedule-show-entry-none">
+                <div class="col-9 text-primary">
+                    It could air any day at any time.
+                </div>
+                        <div class="col-3 text-success">
+                        </div>
+                </div>`;
+                                }
                             }
                         }],
                         ['<button><b>Cancel</b></button>', function (instance, toast) {
@@ -7162,6 +7222,9 @@ document.querySelector(`#underwriting-schedule-buttons`).addEventListener("click
         if (e.target) {
             console.log(e.target.id);
             if (e.target.id === `modal-underwriting-schedule-f-add`) {
+                var temp = document.querySelector(`#options-underwriting-schedule-show-entry-none`);
+                if (temp !== null)
+                    document.querySelector(`#modal-underwriting-schedule-list`).innerHTML = ``;
                 var schedule = { dw: [], h: [], forced: document.querySelector(`#underwriting-schedule-forced`).checked };
                 for (var i = 1; i <= 7; i++) {
                     if (document.querySelector(`#underwriting-schedule-dw-${i}`).checked)
@@ -7174,7 +7237,7 @@ document.querySelector(`#underwriting-schedule-buttons`).addEventListener("click
                 var index = UnderwritingsSchedules.push(schedule) - 1;
                 document.querySelector(`#modal-underwriting-schedule-list`).innerHTML += `<div class="row m-1" id="options-underwriting-schedule-entry-${index}">
                     <div class="col-9 text-primary">
-                        Schedule: ${parseSchedule(schedule)}
+                        ${parseSchedule(schedule)}
                     </div>
             <div class="col-3 text-success">
             <button type="button" id="options-underwriting-schedule-edit-${index}" class="close" aria-label="Edit Schedule" title="Edit Schedule">
@@ -7202,7 +7265,7 @@ document.querySelector(`#underwriting-schedule-buttons`).addEventListener("click
                 var temp = document.querySelector(`#options-underwriting-schedule-entry-${index}`);
                 if (temp !== null) {
                     temp.innerHTML = `<div class="col-9 text-primary">
-                    Schedule: ${parseSchedule(schedule)}
+                    ${parseSchedule(schedule)}
                 </div>
         <div class="col-3 text-success">
         <button type="button" id="options-underwriting-schedule-edit-${index}" class="close" aria-label="Edit Schedule" title="Edit Schedule">
@@ -7230,11 +7293,14 @@ document.querySelector(`#underwriting-schedule-show-buttons`).addEventListener("
         if (e.target) {
             console.log(e.target.id);
             if (e.target.id === `modal-underwriting-schedule-show-f-add`) {
+                var temp = document.querySelector(`#options-underwriting-schedule-show-entry-none`);
+                if (temp !== null)
+                    document.querySelector(`#modal-underwriting-schedule-list`).innerHTML = ``;
                 var theShow = document.querySelector(`#underwriting-schedule-show-input`).value;
                 var index = UnderwritingsShows.push(theShow) - 1;
                 document.querySelector(`#modal-underwriting-schedule-list`).innerHTML += `<div class="row m-1" id="options-underwriting-schedule-show-entry-${index}">
                     <div class="col-9 text-primary">
-                        Show Filter: ${theShow}
+                    It will not air unless <strong>${theShow}</strong> is live.
                     </div>
             <div class="col-3 text-success">
             <button type="button" id="options-underwriting-schedule-show-edit-${index}" class="close" aria-label="Edit Show" title="Edit Show Filter">
@@ -7254,7 +7320,7 @@ document.querySelector(`#underwriting-schedule-show-buttons`).addEventListener("
                 var temp = document.querySelector(`#options-underwriting-schedule-show-entry-${index}`);
                 if (temp !== null) {
                     temp.innerHTML = `<div class="col-9 text-primary">
-                    Show Filter: ${theShow}
+                    It will not air unless <strong>${theShow}</strong> is live.
                 </div>
         <div class="col-3 text-success">
         <button type="button" id="options-underwriting-schedule-show-edit-${index}" class="close" aria-label="Edit Show Filter" title="Edit Show Filter">
@@ -14165,7 +14231,7 @@ function loadUnderwriting(ID = null) {
                         schedules.map((schedule, index) => {
                             temp9.innerHTML += `<div class="row m-1" id="options-underwriting-schedule-entry-${index}">
                     <div class="col-9 text-primary">
-                        Schedule: ${parseSchedule(schedule)}
+                        ${parseSchedule(schedule)}
                     </div>
             <div class="col-3 text-success">
             <button type="button" id="options-underwriting-schedule-edit-${index}" class="close" aria-label="Edit Schedule" title="Edit Schedule">
@@ -14183,7 +14249,7 @@ function loadUnderwriting(ID = null) {
                         underwriting.mode.show.map((show, index) => {
                             temp9.innerHTML += `<div class="row m-1" id="options-underwriting-schedule-show-entry-${index}">
                 <div class="col-9 text-primary">
-                    Show: ${show}
+                    It will not air unless <strong>${show}</strong> is live.
                 </div>
         <div class="col-3 text-success">
         <button type="button" id="options-underwriting-schedule-show-edit-${index}" class="close" aria-label="Edit Show Filter" title="Edit Show Filter">
@@ -14197,8 +14263,25 @@ function loadUnderwriting(ID = null) {
                             UnderwritingsShows[index] = show;
                         });
                     }
+                    if ((underwriting.mode.show === `undefined` || underwriting.mode.show.length === 0) && schedules.length === 0) {
+                        temp9.innerHTML += `<div class="row m-1" id="options-underwriting-schedule-show-entry-none">
+                <div class="col-9 text-primary">
+                    It could air any day at any time.
+                </div>
+                        <div class="col-3 text-success">
+                        </div>
+                </div>`;
+                    }
                 }
             }
+        } else {
+            temp9.innerHTML += `<div class="row m-1" id="options-underwriting-schedule-show-entry-none">
+                <div class="col-9 text-primary">
+                    It could air any day at any time.
+                </div>
+                        <div class="col-3 text-success">
+                        </div>
+                </div>`;
         }
         $("#options-modal-underwriting").iziModal('open');
     });
@@ -14366,11 +14449,21 @@ function loadTrackInfo(trackID) {
 }
 
 function parseSchedule(schedule) {
-    var string = ``;
+    var string = `It could air `;
+    if (schedule.forced)
+        string = `It will air once per hour `;
     if (typeof schedule.dw === `undefined` || schedule.dw.length === 0) {
-        string += `Every day`;
+        if (schedule.forced) {
+            string += `every day `;
+        } else {
+            string += `any day `;
+        }
     } else {
-        string += `Every `;
+        if (schedule.forced) {
+            string += `every `;
+        } else {
+            string += `on `;
+        }
         schedule.dw.map((dw, index) => {
             if (index > 0)
                 string += `, `;
@@ -14402,7 +14495,11 @@ function parseSchedule(schedule) {
     string += `, at `;
 
     if (typeof schedule.h === `undefined` || schedule.h.length === 0) {
-        string += `every hour of the day.`;
+        if (schedule.forced) {
+            string += `every hour of the day`;
+        } else {
+            string += `any hour of the day`;
+        }
     } else {
         schedule.h.map((h, index) => {
             if (index > 0)
@@ -14418,9 +14515,6 @@ function parseSchedule(schedule) {
             }
         });
     }
-
-    if (schedule.forced)
-        string += ` (forced)`;
 
     string += `.`;
 

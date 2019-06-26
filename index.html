@@ -2889,14 +2889,15 @@
                     <div id="modal-underwriting-track-button"></div>
                 </p>
                 <div class="custom-control custom-switch"
-                    title="Specify manual times for this underwriting to queue rather than it being determined automatically.">
+                    title="Turn this switch on to fluctuate the chance an underwriting will air at a break depending on number of online listeners connected.">
                     <input class="custom-control-input" id="modal-underwriting-listeners" type="checkbox">
                     <span class="custom-control-track"></span>
-                    <label class="custom-control-label" for="modal-underwriting-listeners">Adjust frequency of airing
-                        depending on number of online listeners connected?</label><br />
-                    <small>If enabled (brown and to the right), the underwriting will play more often when more online
-                        listeners are connected, and less often otherwise. The system will still ensure required spin
-                        counts are met by the end date if both an end date and spin counts are specified.</small>
+                    <label class="custom-control-label" for="modal-underwriting-listeners">Increase airtime with higher
+                        online listener connections</label><br />
+                    <small><strong>ON (brown)</strong>: The more online listeners that are connected during a break, the
+                        more likely this underwriting will be aired on that break.<br />
+                        <strong>OFF (white)</strong>: This underwriting will have the same chance of airing at each
+                        break regardless of the number of listeners connected.</small>
                 </div>
                 <div id="modal-underwriting-schedule">
                     <div class="row m-1 bg-light-1 shadow-2">
@@ -2916,16 +2917,8 @@
                     <button type="button" class="btn btn-urgent btn" id="modal-underwriting-schedule-new-show"
                         title="Specify names of shows this underwriting should air. Multiple entries allowed.">Add Show
                         Filter</button>
-                    <div class="bs-callout bs-callout-info shadow-4 text-white">
-                        <h4>How filters work</h4>
-                        *<strong>No date/time nor show filters</strong>: will air anytime.<br />
-                        *<strong>Date/time filters but no show filters</strong>: will air during any specified
-                        dates/times.<br />
-                        *<strong>Show filters but no date/time filters</strong>: will air during any specified
-                        shows/broadcasts.<br />
-                        *<strong>Both date/time filters and show filters</strong>: will air during any specified
-                        shows/broadcasts only if the current date/time matches any date/time filters.
-                    </div>
+                    <p><small><strong>Underwritings with both an end date and a spin count limit set might air outside
+                                of these filters if/when they are significantly behind schedule.</strong></small></p>
                 </div>
             </div>
             <div class="modal-footer bg-light-1" id="modal-underwriting-buttons">
@@ -3079,15 +3072,21 @@
                             <label class="form-check-label" for="underwriting-schedule-h-23">11p</label>
                         </div>
                     </div>
+                    <p><small><strong>Selecting none of the days of week assumes all days of week. Selecting none of the
+                                hours assumes all hours of the day.</strong></small></p>
                     <div class="custom-control custom-switch"
                         title="Force the underwriting to play once every hour during selected times?">
                         <input class="custom-control-input" id="underwriting-schedule-forced" type="checkbox">
                         <span class="custom-control-track"></span>
-                        <label class="custom-control-label" for="underwriting-schedule-forced">Forced
-                            schedule</label><br />
-                        <small>When enabled (brown and to the right), the underwriting will be forcefully queued and
-                            aired at
-                            these specified times regardless of algorithms.</small>
+                        <label class="custom-control-label" for="underwriting-schedule-forced">Always air hourly at
+                            these times / Ignore algorithms</label><br />
+                        <small><strong>ON (brown)</strong>: The underwriting <u>will always</u> air once per hour at the
+                            chosen times. Server will ignore online listeners and track priorities during the
+                            chosen schedule.<br />
+                            <strong>OFF (white)</strong>: The underwriting <u>might</u> air during any of the selected
+                            times; the server will decide based on time/spins remaining, track priority, and/or online
+                            listeners. <strong>It is highly recommended to keep off when both end date and spin count
+                                limit is set on the underwriting track.</strong></small>
                     </div>
                 </div>
             </div>
