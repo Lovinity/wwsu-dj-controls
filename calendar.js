@@ -939,3 +939,10 @@ ipcRenderer.on('process-calendar', (event, arg) => {
     }
 });
 
+function truncateText(str, strLength = 256, ending = `...`) {
+    if (str.length > strLength) {
+        return str.substring(0, strLength - ending.length) + ending;
+    } else {
+        return str;
+    }
+}
