@@ -22,7 +22,6 @@ try {
     // Define constants
     var main = require('electron').remote.require('./main');
     const { remote } = window.require('electron');
-    var notifier = require('./electron-notifications/index.js');
     var settings = require('electron-settings');
     var { webFrame, ipcRenderer } = require('electron');
     var transform = require('sdp-transform');
