@@ -6128,6 +6128,8 @@ document.querySelector("#btn-options-radiodj").onclick = function () {
             buttons: [
                 ['<button><b>Switch RadioDJ</b></button>', function (instance, toast) {
                     instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                    $("#wait-modal").iziModal('open');
+                    document.querySelector("#wait-text").innerHTML = `Processing Request: Change RadioDJ`;
                     directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/state/change-radio-dj', data: {} }, function (response) {
                         if (response === 'OK') {
                             iziToast.show({
@@ -6142,6 +6144,7 @@ document.querySelector("#btn-options-radiodj").onclick = function () {
                                 overlay: false,
                                 zindex: 1000
                             });
+                            $("#wait-modal").iziModal('close');
                         } else {
                             console.dir(response);
                             iziToast.show({
@@ -6156,6 +6159,7 @@ document.querySelector("#btn-options-radiodj").onclick = function () {
                                 overlay: false,
                                 zindex: 1000
                             });
+                            $("#wait-modal").iziModal('close');
                         }
                     });
                 }],
@@ -10829,6 +10833,8 @@ function finishAttnRemove(ID) {
 
 function returnBreak() {
     afterStartCall = () => {
+        $("#wait-modal").iziModal('open');
+        document.querySelector("#wait-text").innerHTML = `Processing Request: Return from Break`;
         hostReq.request({ method: 'POST', url: nodeURL + '/state/return' }, function (response) {
             console.log(JSON.stringify(response));
             if (response !== 'OK') {
@@ -10837,6 +10843,7 @@ function returnBreak() {
                     message: 'Cannot return from break. Please try again in 15-30 seconds.',
                     timeout: 10000
                 });
+                $("#wait-modal").iziModal('close');
                 hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to return from break, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
             }
         });
@@ -10912,6 +10919,8 @@ function goLive() {
 }
 
 function _goLive() {
+    $("#wait-modal").iziModal('open');
+    document.querySelector("#wait-text").innerHTML = `Processing Request: Go Live`;
     hostReq.request({ method: 'post', url: nodeURL + '/state/live', data: { showname: document.querySelector('#live-handle').value + ' - ' + document.querySelector('#live-show').value, topic: (document.querySelector('#live-topic').value !== `` || cal.type !== `Show`) ? document.querySelector('#live-topic').value : cal.topic, djcontrols: client.host, webchat: document.querySelector('#live-webchat').checked } }, function (response) {
         if (response === 'OK') {
             isHost = true;
@@ -10923,6 +10932,7 @@ function _goLive() {
                 message: 'Cannot go live at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
+            $("#wait-modal").iziModal('close');
             hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go live, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
         }
         console.log(JSON.stringify(response));
@@ -11032,6 +11042,8 @@ function _goRemote() {
     afterStartCall = () => {
         if (development)
             return null;
+        $("#wait-modal").iziModal('open');
+        document.querySelector("#wait-text").innerHTML = `Processing Request: Go Remote`;
         hostReq.request({ method: 'POST', url: nodeURL + '/state/remote', data: { showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || cal.type !== `Remote`) ? document.querySelector('#remote-topic').value : cal.topic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked } }, function (response) {
             if (response === 'OK') {
                 isHost = true;
@@ -11043,6 +11055,7 @@ function _goRemote() {
                     message: 'Cannot go remote at this time. Please try again in 15-30 seconds.',
                     timeout: 10000
                 });
+                $("#wait-modal").iziModal('close');
                 hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go remote, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
             }
             console.log(JSON.stringify(response));
@@ -11102,6 +11115,8 @@ function goSports() {
 function _goSports() {
     var sportsOptions = document.getElementById('sports-sport');
     var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
+    $("#wait-modal").iziModal('open');
+    document.querySelector("#wait-text").innerHTML = `Processing Request: Go Sports`;
     hostReq.request({ method: 'POST', url: nodeURL + '/state/sports', data: { sport: selectedOption, topic: (document.querySelector('#sports-topic').value !== `` || cal.type !== `Sports`) ? document.querySelector('#sports-topic').value : cal.topic, webchat: document.querySelector('#sports-webchat').checked } }, function (response) {
         if (response === 'OK') {
             isHost = true;
@@ -11113,6 +11128,7 @@ function _goSports() {
                 message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
+            $("#wait-modal").iziModal('close');
             hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
         }
         console.log(JSON.stringify(response));
@@ -11220,6 +11236,8 @@ function _goSportsRemote() {
     afterStartCall = () => {
         var sportsOptions = document.getElementById('sportsremote-sport');
         var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value;
+        $("#wait-modal").iziModal('open');
+        document.querySelector("#wait-text").innerHTML = `Processing Request: Go Sports Remote`;
         hostReq.request({ method: 'POST', url: nodeURL + '/state/sports-remote', data: { sport: selectedOption, topic: (document.querySelector('#sportsremote-topic').value !== `` || cal.type !== `Sports`) ? document.querySelector('#sportsremote-topic').value : cal.topic, webchat: document.querySelector('#sportsremote-webchat').checked } }, function (response) {
             if (response === 'OK') {
                 isHost = true;
@@ -11231,6 +11249,7 @@ function _goSportsRemote() {
                     message: 'Cannot go to sports broadcast at this time. Please try again in 15-30 seconds.',
                     timeout: 10000
                 });
+                $("#wait-modal").iziModal('close');
                 hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go sports remote, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
             }
             console.log(JSON.stringify(response));
@@ -11400,6 +11419,8 @@ function sendDisplay() {
 
 function endShow() {
     outgoingCloseIgnore = true;
+    $("#wait-modal").iziModal('open');
+    document.querySelector("#wait-text").innerHTML = `Processing Request: Go Automatiob`;
     hostReq.request({ method: 'POST', url: nodeURL + '/state/automation' }, function (response) {
         if (typeof response.showTime === 'undefined') {
             outgoingCloseIgnore = false;
@@ -11408,6 +11429,7 @@ function endShow() {
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
+            $("#wait-modal").iziModal('close');
             hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to end their show, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
         } else {
             $("#xp-modal").iziModal('open');
@@ -11440,6 +11462,8 @@ function endShow() {
 
 function switchShow() {
     outgoingCloseIgnore = true;
+    $("#wait-modal").iziModal('open');
+    document.querySelector("#wait-text").innerHTML = `Processing Request: Switch Show`;
     hostReq.request({ method: 'POST', url: nodeURL + '/state/automation', data: { transition: true } }, function (response) {
         if (typeof response.showTime === 'undefined') {
             outgoingCloseIgnore = false;
@@ -11448,6 +11472,7 @@ function switchShow() {
                 message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
+            $("#wait-modal").iziModal('close');
             hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to switch show, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
         } else {
             $("#xp-modal").iziModal('open');
@@ -11480,6 +11505,8 @@ function switchShow() {
 }
 
 function goBreak(halftime = false, techissue = false) {
+    $("#wait-modal").iziModal('open');
+    document.querySelector("#wait-text").innerHTML = `Processing Request: Go Break`;
     hostReq.request({ method: 'POST', url: nodeURL + '/state/break', data: { halftime: halftime, problem: techissue } }, function (response) {
         if (response !== 'OK') {
             iziToast.show({
@@ -11487,6 +11514,7 @@ function goBreak(halftime = false, techissue = false) {
                 message: 'Error occurred trying to go into break. Please try again in 15-30 seconds.',
                 timeout: 10000
             });
+            $("#wait-modal").iziModal('close');
             hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go to break, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { });
         }
         console.log(JSON.stringify(response));
