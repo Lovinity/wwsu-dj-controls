@@ -5767,7 +5767,7 @@ function filterGlobalLogs(date) {
                     } else if (record.event.startsWith("Genre: ") || record.event.startsWith("Playlist: ")) {
                         theClass = "info";
                     }
-                    if (record.scheduledStart === null && record.happened) {
+                    if (record.scheduledStart === null && record.happened === 1) {
                         formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-7 text-info">
                                     ${record.event}
@@ -5863,6 +5863,21 @@ function filterGlobalLogs(date) {
                         <span class="text-primary">${record.happened === 0 ? `DID NOT AIR` : `CANCELED`}</span>
                                 </div>
                                     <div class="col-1">
+                                        </div>
+                            </div>`);
+                    } else if (record.actualStart !== null && record.actualEnd !== null) {
+                        formatted[moment(theDate).format("MM/DD/YYYY")].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+                                <div class="col-7 text-info">
+                                    ${record.event}
+                                </div>
+                                <div class="col-4">
+                        <span class="text-secondary">${moment(record.scheduledStart).format("h:mm A")} - ${moment(record.scheduledEnd).format("h:mm A")}</span><br />
+                        <span class="text-primary">${moment(record.actualStart).format("h:mm A")} - ${record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`}</span>
+                                </div>
+                                    <div class="col-1">
+                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
+                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
+                </button>
                                         </div>
                             </div>`);
                     } else {
@@ -12901,7 +12916,7 @@ function loadDJ(dj = null, reset = true) {
                 </button>
                             </div>
                         </div>`;
-                    } else if (record.actualStart !== null && record.actualEnd !== null && record.happened === 1) {
+                    } else if (record.actualStart !== null && record.actualEnd !== null) {
                         if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10) {
                             var tempStart = moment(record.actualStart).format("h:mm A");
                             var tempEnd = record.actualEnd !== null ? moment(record.actualEnd).format("h:mm A") : `ONGOING`;
