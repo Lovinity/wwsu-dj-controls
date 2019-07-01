@@ -11281,7 +11281,7 @@ function prepareLog() {
 }
 
 function saveLog() {
-    var thelog = 'DJ/Producer played a track.';
+    var thelog = '<strong>DJ/Producer played a track.</strong>';
     var dateObject = moment(document.querySelector("#log-datetime").value);
     hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'manual', logsubtype: Meta.show, loglevel: 'secondary', event: thelog, trackArtist: document.querySelector("#log-artist").value, trackTitle: document.querySelector("#log-title").value, trackAlbum: document.querySelector("#log-album").value, trackLabel: document.querySelector("#log-label").value, date: dateObject.toISOString() } }, function (response) {
         if (response === 'OK') {
