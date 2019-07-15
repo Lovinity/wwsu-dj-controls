@@ -406,6 +406,7 @@ function newRecording(filename, forced = false) {
             recorderPending = false;
         }, settings.get(`recorder.delay`) || 1);
     } else {
+        recorderTitle = filename;
         console.log(`No new recording; pending to start one already.`);
 }
 }
