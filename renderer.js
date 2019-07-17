@@ -18,6 +18,7 @@ try {
     var callInProgressO = false;
     var closeDialog = false;
     var recorderDialog = false;
+    var darkskyTimer;
 
     // Define constants
     var main = require('electron').remote.require('./main');
@@ -30,6 +31,7 @@ try {
     var Meta = { time: moment().toISOString(), lastID: moment().toISOString(), state: 'unknown', line1: '', line2: '', queueFinish: null, trackFinish: null };
     var Attendance = TAFFY();
     var Calendar = TAFFY();
+    var Darksky = TAFFY();
     var Discipline = TAFFY();
     var Status = TAFFY();
     var Messages = TAFFY();
@@ -62,6 +64,17 @@ try {
     };
     var afterStartCall = () => {
     };
+
+    ipcRenderer.on('processed-darksky', (event, e) => {
+        var temp = document.querySelector(`#current-weather`);
+        if (temp !== null) {
+            temp.innerHTML = e[0];
+        }
+        var temp = document.querySelector(`#weather-messages`);
+        if (temp !== null) {
+            temp.innerHTML = e[1];
+        }
+    });
 
     ipcRenderer.on('processed-calendar', (event, e) => {
         e = e[0];
@@ -1101,6 +1114,10 @@ try {
 
     socket.on('calendar', function (data) {
         processCalendar(data);
+    });
+
+    socket.on('darksky', function (data) {
+        processDarksky(data);
     });
 
     socket.on('messages', function (data) {
@@ -9276,6 +9293,7 @@ function doSockets() {
             calendarSocket();
             messagesSocket();
             recipientsSocket();
+            darkskySocket();
         }
     });
 }
@@ -9547,6 +9565,21 @@ function calendarSocket() {
             console.error(e);
             console.log('FAILED Calendar CONNECTION');
             setTimeout(calendarSocket, 10000);
+        }
+    });
+}
+
+// Darksky
+function darkskySocket() {
+    console.log('attempting darksky socket');
+    noReq.request({ method: 'POST', url: '/darksky/get', data: {} }, function (body) {
+        //console.log(body);
+        try {
+            processDarksky(body, true);
+        } catch (e) {
+            console.error(e);
+            console.log('FAILED darksky CONNECTION');
+            setTimeout(darkskySocket, 10000);
         }
     });
 }
@@ -12155,6 +12188,47 @@ function processCalendar(data, replace = false) {
         iziToast.show({
             title: 'An error occurred - Please check the logs',
             message: 'Error occurred during the processCalendar function.'
+        });
+    }
+}
+
+// Update darksky weather
+function processDarksky(data, replace = false) {
+    // Data processing
+    try {
+        if (replace) {
+            // Replace with the new data
+            Darksky = TAFFY();
+            Darksky.insert(data);
+        } else {
+            for (var key in data) {
+                if (data.hasOwnProperty(key)) {
+                    switch (key) {
+                        case 'insert':
+                            Darksky.insert(data[key]);
+                            break;
+                        case 'update':
+                            Darksky({ ID: data[key].ID }).update(data[key]);
+                            break;
+                        case 'remove':
+                            Darksky({ ID: data[key] }).remove();
+                            break;
+                    }
+                }
+            }
+        }
+
+        clearTimeout(darkskyTimer);
+
+        darkskyTimer = setTimeout(() => {
+            ipcRenderer.send('process-darksky', [Darksky().get(), Meta.time]);
+        }, 5000);
+
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: 'Error occurred during the processDarksky function.'
         });
     }
 }

@@ -528,6 +528,37 @@
                 transform: scale(1.5);
             }
         }
+
+        .blink {
+            animation: pulsate 1s ease-out;
+            animation-iteration-count: infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 0.25;
+            }
+
+            50% {
+                opacity: 1.0;
+            }
+
+            100% {
+                opacity: 0.25;
+            }
+        }
+
+        .row.no-gutters {
+            margin-right: 0;
+            margin-left: 0;
+        }
+
+        .row.no-gutters>[class^=col-],
+        .row.no-gutters>[class*=" col-"] {
+            padding-right: 0;
+            padding-left: 0;
+        }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
@@ -714,6 +745,15 @@
                     style="font-size: 0.5em;">Click for more information</span></div>
             <div class="card-body" style="overflow: auto;">
                 <div class="list-group text-white" id="announcements-body">
+                </div>
+            </div>
+            <div class="card-footer bg-dark-2 shadow-1" style="position: relative; color: #FFFFFF; height: 64px;"
+                title="Current weather information at WWSU Radio.">
+                <div style="color: #FFFFFF; font-size: 0.8em; position: absolute; top: 0; width: 95%; height: 64px;">
+                    <div class="d-flex">
+                        <div class="p-2" id="current-weather"></div>
+                        <div class="p-2 flex-grow-1" id="weather-messages"></div>
+                    </div>
                 </div>
             </div>
         </div>

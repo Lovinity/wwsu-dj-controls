@@ -102,9 +102,23 @@ ipcMain.on('process-calendar', (event, arg) => {
     }
 });
 
+ipcMain.on('process-darksky', (event, arg) => {
+    try {
+        calendarWindow.webContents.send('process-darksky', arg);
+    } catch (e) {
+    }
+});
+
 ipcMain.on('processed-calendar', (event, arg) => {
     try {
         mainWindow.webContents.send('processed-calendar', arg);
+    } catch (e) {
+    }
+});
+
+ipcMain.on('processed-darksky', (event, arg) => {
+    try {
+        mainWindow.webContents.send('processed-darksky', arg);
     } catch (e) {
     }
 });
