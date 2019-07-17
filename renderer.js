@@ -2810,14 +2810,21 @@ document.querySelector("#btn-options-config-onesignal").onclick = function () {
                     "description": "Change the REST API key for the OneSignal app used to send push notifications to people who subscribe to WWSU / any of the shows.",
                     "type": "password"
                 },
+                "oApp": {
+                    "title": "App ID",
+                    "description": "ID of the OneSignal application for sending push notifications.",
+                    "type": "string"
+                },
             },
             "value": {
                 "oRest": ``,
+                "oApp": Config.onesignal.app,
             },
             "onSubmitValid": function (values) {
                 directorReq.request({
                     db: Directors(), method: 'POST', url: nodeURL + '/config/onesignal/set', data: {
-                        rest: values.oRest
+                        rest: values.oRest,
+                        app: values.oApp
                     }
                 }, function (response) {
                     if (response === 'OK') {
@@ -2859,6 +2866,84 @@ document.querySelector("#btn-options-config-onesignal").onclick = function () {
         iziToast.show({
             title: 'An error occurred - Please inform engineer@wwsu1069.org.',
             message: 'Error occurred during the click event of #btn-options-config-onesignal.'
+        });
+    }
+};
+
+document.querySelector("#btn-options-config-darksky").onclick = function () {
+    try {
+        $('#options-modal-config-form-form').html(``);
+        $('#options-modal-config-form-extra').html(``);
+        $('#options-modal-config-form-form').jsonForm({
+            "schema": {
+                "oApi": {
+                    "title": "API Key",
+                    "description": "Change the API key for Darksky.net",
+                    "type": "password"
+                },
+                "oLatitude": {
+                    "title": "Latitude",
+                    "description": "Enter the Latitude number for where current weather and forecast should be retrieved. Use a negative value for below the equator.",
+                    "type": "number"
+                },
+                "oLongitude": {
+                    "title": "Longitude",
+                    "description": "Enter the Longitude number for where current weather and forecast should be retrieved. Use a negative value for west of the Prime Meridian.",
+                    "type": "number"
+                },
+            },
+            "value": {
+                "oApi": ``,
+                "oLatitude": Config.darksky.position.latitude,
+                "oLongitude": Config.darksky.position.longitude,
+            },
+            "onSubmitValid": function (values) {
+                directorReq.request({
+                    db: Directors(), method: 'POST', url: nodeURL + '/config/darksky/set', data: {
+                        api: values.oApi,
+                        latitude: values.oLatitude,
+                        longitude: values.oLongitude
+                    }
+                }, function (response) {
+                    if (response === 'OK') {
+                        $("#options-modal-config-form").iziModal('close');
+                        iziToast.show({
+                            title: `Darksky configuration updated!`,
+                            message: ``,
+                            timeout: 10000,
+                            close: true,
+                            color: 'green',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    } else {
+                        console.dir(response);
+                        iziToast.show({
+                            title: `Failed to save Darksky configuration`,
+                            message: response,
+                            timeout: 10000,
+                            close: true,
+                            color: 'red',
+                            drag: false,
+                            position: 'center',
+                            closeOnClick: true,
+                            overlay: false,
+                            zindex: 1000
+                        });
+                    }
+                });
+            }
+        });
+        $("#options-modal-config-form-label").html(`Server Configuration - Darksky`);
+        $("#options-modal-config-form").iziModal('open');
+    } catch (e) {
+        console.error(e);
+        iziToast.show({
+            title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+            message: 'Error occurred during the click event of #btn-options-config-darksky.'
         });
     }
 };
