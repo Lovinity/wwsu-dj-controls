@@ -931,15 +931,15 @@ function processDarksky(db, time) {
 
             if (item.currently.precipType) {
                 if (precipStart === 0 && precipEnd >= 59) {
-                    weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-umbrella"></i> ${item.currently.precipType || `precipitation`} falling; ${item.currently.precipIntensity} fluid inches per hour.`;
+                    weatherMessages += `<i style="font-size: 16px;"class="fas fa-umbrella"></i> ${item.currently.precipType || `precipitation`} falling; ${item.currently.precipIntensity} fluid inches per hour.<br />`;
                 } else if (precipStart === 0) {
-                    weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-umbrella"></i> ${item.currently.precipType || `precipitation`} falling; ${item.currently.precipIntensity} fluid inches per hour; ending at ${moment(time).add(precipEnd, 'minutes').format('h:mmA')}.`;
+                    weatherMessages += `<i style="font-size: 16px;"class="fas fa-umbrella"></i> ${item.currently.precipType || `precipitation`} falling; ${item.currently.precipIntensity} fluid inches per hour; ending at ${moment(time).add(precipEnd, 'minutes').format('h:mmA')}.<br />`;
                 } else if (precipStart < 61) {
-                    weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-umbrella"></i> ${item.currently.precipType || `precipitation`} is possible starting at ${moment(time).add(precipStart, 'minutes').format('h:mmA')}.`;
+                    weatherMessages += `<i style="font-size: 16px;"class="fas fa-umbrella"></i> ${item.currently.precipType || `precipitation`} is possible starting at ${moment(time).add(precipStart, 'minutes').format('h:mmA')}.<br />`;
                 }
             } else {
                 if (precipStart < 61) {
-                    weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-umbrella"></i> ${item.currently.precipType || `precipitation`} is possible starting at ${moment(time).add(precipStart, 'minutes').format('h:mmA')}.`;
+                    weatherMessages += `<i style="font-size: 16px;"class="fas fa-umbrella"></i> ${precipType || `precipitation`} is possible starting at ${moment(time).add(precipStart, 'minutes').format('h:mmA')}.<br />`;
                 }
             }
 
@@ -956,49 +956,49 @@ function processDarksky(db, time) {
 
             // Is it windy?
             if (item.currently.windSpeed >= 73 || item.currently.windGust >= 73) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-wind"></i> <strong>Destructive winds!</strong> ${item.currently.windSpeed}mph, gusts to ${item.currently.windGust}mph.`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-wind"></i> <strong>Destructive winds!</strong> ${item.currently.windSpeed}mph, gusts to ${item.currently.windGust}mph.<br />`;
             } else if (item.currently.windSpeed >= 55 || item.currently.windGust >= 55) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-wind"></i> <strong>Gale force winds!</strong> ${item.currently.windSpeed}mph, gusts to ${item.currently.windGust}mph.`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-wind"></i> <strong>Gale force winds!</strong> ${item.currently.windSpeed}mph, gusts to ${item.currently.windGust}mph.<br />`;
             } else if (item.currently.windSpeed >= 39 || item.currently.windGust >= 39) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-wind"></i> Windy! ${item.currently.windSpeed}mph, gusts to ${item.currently.windGust}mph.`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-wind"></i> Windy! ${item.currently.windSpeed}mph, gusts to ${item.currently.windGust}mph.<br />`;
             } else if (item.currently.windSpeed >= 25 || item.currently.windGust >= 25) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-wind"></i> Breezy. ${item.currently.windSpeed}mph, gusts to ${item.currently.windGust}mph.`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-wind"></i> Breezy. ${item.currently.windSpeed}mph, gusts to ${item.currently.windGust}mph.<br />`;
             }
 
             // UV index
             if (item.currently.uvIndex > 10) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-sun"></i> <strong>Extreme UV Index!</strong>`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-sun"></i> <strong>Extreme UV Index!</strong><br />`;
             } else if (item.currently.uvIndex >= 8) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-sun"></i> <strong>Severe UV Index!</strong>`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-sun"></i> <strong>Severe UV Index!</strong><br />`;
             } else if (item.currently.uvIndex >= 6) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-sun"></i> High UV Index!`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-sun"></i> High UV Index!<br />`;
             }
 
             // Visibility
             if (item.currently.visibility <= 0.25) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-car"></i> <strong>Dangerous Visibility!</strong> ${item.currently.visibility} miles.`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-car"></i> <strong>Dangerous Visibility!</strong> ${item.currently.visibility} miles.<br />`;
             } else if (item.currently.visibility <= 1) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-car"></i> <strong>Very low Visibility!</strong> ${item.currently.visibility} miles.`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-car"></i> <strong>Very low Visibility!</strong> ${item.currently.visibility} miles.<br />`;
             } else if (item.currently.visibility <= 3) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-car"></i> Low Visibility. ${item.currently.visibility} miles.`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-car"></i> Low Visibility. ${item.currently.visibility} miles.<br />`;
             }
 
             // Apparent temperature, cold
             if (item.currently.apparentTemperature <= -48) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-temperature-low"></i> <strong>Dangerous Wind Chill!</strong> ${item.currently.apparentTemperature}°F`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-temperature-low"></i> <strong>Dangerous Wind Chill!</strong> ${item.currently.apparentTemperature}°F<br />`;
             } else if (item.currently.apparentTemperature <= -32) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-temperature-low"></i> <strong>Very Low Wind Chill!</strong> ${item.currently.apparentTemperature}°F`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-temperature-low"></i> <strong>Very Low Wind Chill!</strong> ${item.currently.apparentTemperature}°F<br />`;
             } else if (item.currently.apparentTemperature <= -18) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-temperature-low"></i> Low Wind Chill. ${item.currently.apparentTemperature}°F`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-temperature-low"></i> Low Wind Chill. ${item.currently.apparentTemperature}°F<br />`;
             }
 
             // Apparent temperature, hot
             if (item.currently.apparentTemperature >= 115) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-temperature-high"></i> <strong>Dangerous Heat Index!</strong> ${item.currently.apparentTemperature}°F`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-temperature-high"></i> <strong>Dangerous Heat Index!</strong> ${item.currently.apparentTemperature}°F<br />`;
             } else if (item.currently.apparentTemperature >= 103) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-temperature-high"></i> <strong>Very High Index!</strong> ${item.currently.apparentTemperature}°F`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-temperature-high"></i> <strong>Very High Index!</strong> ${item.currently.apparentTemperature}°F<br />`;
             } else if (item.currently.apparentTemperature >= 91) {
-                weatherMessages += `<br /><i style="font-size: 16px;"class="fas fa-temperature-high"></i> High Heat Index. ${item.currently.apparentTemperature}°F`;
+                weatherMessages += `<i style="font-size: 16px;"class="fas fa-temperature-high"></i> High Heat Index. ${item.currently.apparentTemperature}°F<br />`;
             }
 
             ipcRenderer.send('processed-darksky', [currentWeather, weatherMessages]);
