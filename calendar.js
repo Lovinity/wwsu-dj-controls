@@ -901,9 +901,6 @@ function truncateText(str, strLength = 256, ending = `...`) {
 function processDarksky(db, time) {
     db.map((item) => {
         try {
-            // Array of objects. {type: "clouds" || "rain" || "sleet" || "snow", amount: cloudCover || precipIntensity, temperature: tempreature, visibility: visibility}
-            var conditions = [];
-
             var precipStart = 61;
             var precipEnd = -1;
             var precipType = `precipitation`;
@@ -919,7 +916,7 @@ function processDarksky(db, time) {
             var precipExpected = false;
 
             item.minutely.data.map((data, index) => {
-                if (data.precipType && data.precipProbability >= 0.1) {
+                if (data.precipType && data.precipProbability >= 0.3) {
                     if (precipStart > index) {
                         precipStart = index;
                         precipType = data.precipType;
@@ -942,17 +939,6 @@ function processDarksky(db, time) {
                     weatherMessages += `<i style="font-size: 16px;"class="fas fa-umbrella"></i> ${precipType || `precipitation`} is possible starting at ${moment(time).add(precipStart, 'minutes').format('h:mmA')}.<br />`;
                 }
             }
-
-            // Determine if it will rain in the next 24 hours.
-            // Also generate 48 hour forecast.
-            item.hourly.data.map((data, index) => {
-                if (data.precipType && data.precipProbability >= 0.1) {
-                    conditions[index] = { type: data.precipType, amount: data.precipIntensity, temperature: data.temperature, visibility: data.visibility };
-                } else {
-                    conditions[index] = { type: 'clouds', amount: data.cloudCover, temperature: data.temperature, visibility: data.visibility };
-                }
-            });
-            console.log(conditions);
 
             // Is it windy?
             if (item.currently.windSpeed >= 73 || item.currently.windGust >= 73) {
