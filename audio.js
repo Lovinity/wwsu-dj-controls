@@ -1,4 +1,4 @@
-/* global moment */
+/* global moment, WebAudioRecorder */
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext
 var { ipcRenderer } = require('electron')
@@ -15,13 +15,9 @@ window.mainVolume = -100
 var analyserStream2
 var recorderTitle
 var recorderTitle2
-var recorderDialog = false
 var silenceTimer
 var silenceState = 0
-var newRecorder = false
 var recorderPending = false
-var meterLoop = false
-var closeDialog = false
 var recordAudio
 
 var audioContext2 = new AudioContext()
@@ -116,7 +112,7 @@ ipcRenderer.on('new-meta', (event, arg) => {
   var startRecording = null
   var preText = ``
   for (var key in arg) {
-    if (arg.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(arg, key)) {
       if (key === 'state' && arg[key] !== Meta[key]) {
         console.log(Meta.state)
         console.log(arg[key])
@@ -265,20 +261,6 @@ function getAudioMain (device) {
     })
 }
 
-function getMaxVolume (analyser, fftBins) {
-  var maxVolume = -100
-  analyser.getFloatFrequencyData(fftBins)
-
-  for (var i = 4, ii = fftBins.length; i < ii; i++) {
-    if (fftBins[i] > maxVolume && fftBins[i] < 0) {
-      maxVolume = fftBins[i]
-    }
-  }
-  ;
-
-  return maxVolume
-}
-
 function createAudioMeter (audioContext, clipLevel, averaging, clipLag) {
   var processor = audioContext.createScriptProcessor(512)
   processor.onaudioprocess = volumeAudioProcess
@@ -352,15 +334,6 @@ function sanitize (str) {
   str = str.replace(new RegExp('-', 'g'), '_')
   str = str.replace(`_SPLITTERDJSHOW_`, ` - `)
   return str
-}
-
-function getRecordingPath () {
-  if (Meta.state.startsWith('automation_')) { return `automation/${sanitize(Meta.genre)} (${moment().format('YYYY_MM_DD hh_mm_ss')})` }
-  if (Meta.state === 'live_on') { return `live/${sanitize(Meta.show)} (${moment().format('YYYY_MM_DD hh_mm_ss')})` }
-  if (Meta.state === 'live_prerecord') { return `live/${sanitize(Meta.show)} (prerecorded) (${moment().format('YYYY_MM_DD hh_mm_ss')})` }
-  if (Meta.state === 'remote_on') { return `remote/${sanitize(Meta.show)} (${moment().format('YYYY_MM_DD hh_mm_ss')})` }
-  if (Meta.state === 'sportsremote_on' || Meta.state === 'sports_on') { return `sports/${sanitize(Meta.show)} (${moment().format('YYYY_MM_DD hh_mm_ss')})` }
-  return undefined
 }
 
 function newRecording (filename, forced = false) {

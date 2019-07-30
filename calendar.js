@@ -21,7 +21,7 @@ var clockwheel = {
   processed: { normal: [], small: [] }
 }
 
-isRunning = false
+var isRunning = false
 
 function checkCalendar (records, meta, cal) {
   isRunning = true
@@ -106,8 +106,8 @@ function checkCalendar (records, meta, cal) {
 
             // Radio shows. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
             if (event.active > 0 && event.title.startsWith('Show: ') && moment(meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(meta.time)) && calPriorityN < 5) {
-              var summary = event.title.replace('Show: ', '')
-              var temp = summary.split(' - ')
+              summary = event.title.replace('Show: ', '')
+              temp = summary.split(' - ')
 
               calPriorityN = 5
               calTypeN = 'Show'
@@ -292,12 +292,9 @@ function checkCalendar (records, meta, cal) {
     var timeLeft = 1000000
     var timeLeft2 = 1000000
     var doLabel = null
-    var doStart = 0
-    var doSize = 0
     var doColor = 0
     var currentStart = moment()
     var currentEnd = moment()
-    var firstEvent = ''
     var html = { events: ``, title: `` }
 
     // Add in our new list, and include in clockwheel
@@ -378,7 +375,7 @@ function checkCalendar (records, meta, cal) {
                 }
               } else if (moment(event.start).diff(moment(meta.time), 'seconds') < (12 * 60 * 60)) {
                 if (moment(event.start).isAfter(moment(meta.time))) {
-                  var start = ((moment(event.start).diff(moment(meta.time), 'seconds') / (12 * 60 * 60)) * 360)
+                  start = ((moment(event.start).diff(moment(meta.time), 'seconds') / (12 * 60 * 60)) * 360)
                   clockwheel.smallSectors.push({
                     label: event.title,
                     start: start + 0.5,
@@ -410,16 +407,12 @@ function checkCalendar (records, meta, cal) {
               if (moment(event.end).diff(moment(meta.time), 'minutes') < 60) {
                 if (moment(event.start).isAfter(moment(meta.time))) {
                   doLabel = event.title
-                  doStart = ((moment(event.start).diff(moment(meta.time), 'seconds') / (60 * 60)) * 360)
-                  doSize = ((moment(event.end).diff(moment(event.start), 'seconds') / (60 * 60)) * 360)
                   doColor = event.color || '#787878'
                   currentStart = moment(event.start)
                   currentEnd = moment(event.end)
                 } else {
                   var theSize = ((moment(event.end).diff(moment(meta.time), 'seconds') / (60 * 60)) * 360)
                   doLabel = event.title
-                  doStart = 0
-                  doSize = theSize
                   doColor = event.color || '#787878'
                   currentStart = moment(event.start)
                   currentEnd = moment(event.end)
@@ -427,8 +420,6 @@ function checkCalendar (records, meta, cal) {
                 // Otherwise, shade the entire hour, if the event has already started via the scheduled start time
               } else if (moment(event.start).isBefore(moment(meta.time))) {
                 doLabel = event.title
-                doStart = 0
-                doSize = 360
                 doColor = event.color || '#787878'
                 currentStart = moment(event.start)
                 currentEnd = moment(event.end)
@@ -458,7 +449,7 @@ function checkCalendar (records, meta, cal) {
                 if (moment(event.start).diff(moment(meta.time), 'minutes') < 60) {
                   if (moment(event.start).isAfter(moment(meta.time))) {
                     var theStart = ((moment(event.start).diff(moment(meta.time), 'seconds') / (60 * 60)) * 360)
-                    var theSize = ((moment(event.end).diff(moment(event.start), 'seconds') / (60 * 60)) * 360)
+                    theSize = ((moment(event.end).diff(moment(event.start), 'seconds') / (60 * 60)) * 360)
                     if ((theSize + theStart) > 360) { theSize = 360 - theStart }
                     clockwheel.sectors.push({
                       label: event.title,
@@ -480,12 +471,12 @@ function checkCalendar (records, meta, cal) {
           }
           // Add the event to the list on the right of the clock
           if (moment(meta.time).add(1, 'hours').isAfter(moment(event.start)) && moment(meta.time).isBefore(moment(event.end))) {
-            var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878')
+            finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878')
             if (event.active < 1) { finalColor = hexRgb('#161616') }
             finalColor.red = Math.round(finalColor.red)
             finalColor.green = Math.round(finalColor.green)
             finalColor.blue = Math.round(finalColor.blue)
-            var stripped = event.title.replace('Show: ', '')
+            stripped = event.title.replace('Show: ', '')
             stripped = stripped.replace('Remote: ', '')
             stripped = stripped.replace('Sports: ', '')
             if (meta.show !== stripped) {
@@ -526,8 +517,8 @@ function checkCalendar (records, meta, cal) {
       // During shows, use a 1-hour clockwheel
     } else {
       html.title = 'Clockwheel (next hour)'
-      var start = moment(meta.time).startOf('hour')
-      var diff = moment(meta.time).diff(moment(start), 'seconds')
+      start = moment(meta.time).startOf('hour')
+      diff = moment(meta.time).diff(moment(start), 'seconds')
       clockwheel.start = (360 / 60 / 60) * diff
 
       if (meta.queueFinish !== null) {
@@ -564,7 +555,7 @@ function checkCalendar (records, meta, cal) {
                                     </div></div>` + html.events
           }
         } else {
-          var topOfHour = moment(meta.time).add(1, 'hours').startOf('hour')
+          topOfHour = moment(meta.time).add(1, 'hours').startOf('hour')
           // If the DJ is expected to do a top of the hour break at the next top of hour, show so on the clock and in the events list
           if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour))) {
             doTopOfHour = true
@@ -610,7 +601,7 @@ function checkCalendar (records, meta, cal) {
               color: doColor
             })
           } else {
-            var theSize = ((moment(currentEnd).diff(moment(meta.time), 'seconds') / (60 * 60)) * 360)
+            theSize = ((moment(currentEnd).diff(moment(meta.time), 'seconds') / (60 * 60)) * 360)
             clockwheel.sectors.push({
               label: doLabel,
               start: 0,
@@ -626,7 +617,7 @@ function checkCalendar (records, meta, cal) {
             color: doColor
           })
         } else {
-          var theStart = ((moment(currentStart).diff(moment(meta.time), 'seconds') / (60 * 60)) * 360)
+          theStart = ((moment(currentStart).diff(moment(meta.time), 'seconds') / (60 * 60)) * 360)
           if (theStart < 360) {
             clockwheel.sectors.push({
               label: doLabel,
@@ -640,8 +631,8 @@ function checkCalendar (records, meta, cal) {
         // Then, shade the top of hour ID break on the clock if required
         if (doTopOfHour) {
           if (moment(meta.lastID).add(10, 'minutes').startOf('hour') !== moment(meta.time).startOf('hour') && moment(meta.time).diff(moment(meta.time).startOf('hour'), 'minutes') < 5) {
-            var start = moment(meta.time).startOf('hour').subtract(5, 'minutes')
-            var diff = moment(meta.time).diff(moment(start), 'seconds')
+            start = moment(meta.time).startOf('hour').subtract(5, 'minutes')
+            diff = moment(meta.time).diff(moment(start), 'seconds')
             clockwheel.sectors.push({
               label: 'current minute',
               start: 360 - (diff * (360 / 60 / 60)),
@@ -649,8 +640,8 @@ function checkCalendar (records, meta, cal) {
               color: '#FFEB3B'
             })
           } else {
-            var start = moment(meta.time).add(1, 'hours').startOf('hour').subtract(5, 'minutes')
-            var diff = moment(start).diff(moment(meta.time), 'seconds')
+            start = moment(meta.time).add(1, 'hours').startOf('hour').subtract(5, 'minutes')
+            diff = moment(start).diff(moment(meta.time), 'seconds')
             clockwheel.sectors.push({
               label: 'current minute',
               start: ((360 / 60 / 60) * diff),
@@ -671,7 +662,7 @@ function checkCalendar (records, meta, cal) {
 
       // Shade in queue time on the clockwheel
       if (meta.queueFinish !== null) {
-        var diff = moment(meta.queueFinish).diff(moment(meta.time), 'seconds')
+        diff = moment(meta.queueFinish).diff(moment(meta.time), 'seconds')
 
         if (diff < (60 * 60)) {
           clockwheel.sectors.push({
@@ -715,7 +706,8 @@ function calculateSectors (data) {
   var y = 0 // Side y
   var X = 0 // SVG X coordinate
   var Y = 0 // SVG Y coordinate
-  var R = 0 // Rotation
+  var aCalc
+  var arcSweep
 
   data.sectors.map(function (item2) {
     var doIt = function (item) {
@@ -886,7 +878,6 @@ function processDarksky (db, time) {
             <i style="font-size: 48px;"class="fas ${getConditionIcon(item.currently.icon)}"></i> ${item.currently.temperature}°F`
 
       // Determine when precipitation is going to fall
-      var precipExpected = false
 
       item.minutely.data.map((data, index) => {
         if (data.precipType && data.precipProbability >= 0.3) {
@@ -894,7 +885,6 @@ function processDarksky (db, time) {
             precipStart = index
             precipType = data.precipType
           }
-          precipExpected = true
           if (precipEnd < index) { precipEnd = index }
         }
       })

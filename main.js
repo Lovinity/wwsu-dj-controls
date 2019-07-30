@@ -1,6 +1,6 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, dialog, session, ipcMain } = require('electron')
-const { machineId, machineIdSync } = require('node-machine-id')
+const { machineIdSync } = require('node-machine-id')
 const fs = require('fs')
 
 /*
@@ -22,7 +22,6 @@ let mainWindow
 let calendarWindow
 let peerWindow
 let audioWindow
-let webRTC
 const Meta = {}
 
 function createWindow () {
@@ -67,6 +66,7 @@ app.on('ready', () => {
   // Set custom headers
   session.defaultSession.webRequest.onBeforeSendHeaders({ urls: ['*'] }, (details, callback) => {
     details.requestHeaders['Origin'] = 'https://server.wwsu1069.org'
+    // eslint-disable-next-line standard/no-callback-literal
     callback({ requestHeaders: details.requestHeaders })
   })
 
@@ -176,7 +176,7 @@ ipcMain.on('peer-answer-call', (event, arg) => {
 ipcMain.on('new-meta', (event, arg) => {
   var doSend = false
   for (var key in arg) {
-    if (arg.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(arg, key)) {
       Meta[key] = arg[key]
       doSend = true
     }

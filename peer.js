@@ -1,4 +1,4 @@
-/* global peer, moment */
+/* global Peer */
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext
 var { ipcRenderer } = require('electron')
@@ -15,7 +15,6 @@ window.peerGoodBitrate = 0
 window.peerErrorBitrate = 0
 window.peerErrorMajor = 0
 window.peerVolume = -100
-var outgoingPeer
 var outgoingCall
 var outgoingCallMeter
 var pendingCall
@@ -34,6 +33,8 @@ var silenceState
 var silenceTimer
 var silenceState0
 var silenceTimer0
+var outgoingCloseIgnore = false
+var incomingCloseIgnore = false
 
 var audioContext = new AudioContext()
 var gain = audioContext.createGain()
@@ -45,18 +46,8 @@ limiter.ratio.value = 4.0
 limiter.attack.value = 0.01
 limiter.release.value = 0.05
 
-var dbToGain = function (db) {
-  return Math.exp(db * Math.log(10.0) / 20.0)
-}
-
-var maximize = (function (db) {
-  gain.gain.value = dbToGain(db)
-  return arguments.callee
-})(0)
-
 var audioContext0 = new AudioContext()
 
-var incomingSilence = false
 var rtcStats = 1000
 var prevPLC = 0
 
@@ -68,7 +59,7 @@ sinkAudio()
 
 ipcRenderer.on('new-meta', (event, arg) => {
   for (var key in arg) {
-    if (arg.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(arg, key)) {
       Meta[key] = arg[key]
     }
   }
@@ -714,22 +705,6 @@ function sinkAudio (device) {
         })
     }
   }
-}
-
-function getMaxVolume (analyser, fftBins) {
-  var maxVolume = -100
-  analyser.getFloatFrequencyData(fftBins)
-
-  console.log(fftBins.length)
-
-  for (var i = 4, ii = fftBins.length; i < ii; i++) {
-    if (fftBins[i] > maxVolume && fftBins[i] < 0) {
-      maxVolume = fftBins[i]
-    }
-  }
-  ;
-
-  return maxVolume
 }
 
 function createAudioMeter (audioContext, clipLevel, averaging, clipLag) {
