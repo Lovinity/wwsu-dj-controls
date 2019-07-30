@@ -1624,7 +1624,8 @@ try {
     return tempCont.getElementsByClassName('ql-editor')[0].innerHTML
   }
 
-  Quill('#themessage', {
+  // eslint-disable-next-line no-unused-vars
+  var quill = new Quill('#themessage', {
     modules: {
       toolbar: [
         ['bold', 'italic', 'underline', 'strike', { color: [] }],
