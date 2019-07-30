@@ -8354,6 +8354,7 @@ document.querySelector(`#options-djcontrols`).addEventListener('click', function
 
         host = Hosts({ ID: parseInt(e.target.id.replace(`options-djcontrols-edit-`, ``)) }).first()
         document.querySelector('#options-host-name').value = host.friendlyname
+        document.querySelector('#options-host-locktodj').value = host.lockToDJ === null ? '' : host.lockToDJ
         document.querySelector('#options-host-authorized').checked = host.authorized
         document.querySelector('#options-host-admin').checked = host.admin
         document.querySelector('#options-host-makecalls').checked = host.makeCalls
@@ -8679,7 +8680,8 @@ document.querySelector(`#options-host-button`).addEventListener('click', functio
     if (e.target) {
       console.log(e.target.id)
       if (e.target.id.startsWith('options-host-edit-')) {
-        directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/hosts/edit', data: { ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector('#options-host-name').value, authorized: document.querySelector('#options-host-authorized').checked, admin: document.querySelector('#options-host-admin').checked, requests: document.querySelector('#options-host-requests').checked, emergencies: document.querySelector('#options-host-emergencies').checked, webmessages: document.querySelector('#options-host-webmessages').checked, makeCalls: document.querySelector('#options-host-makecalls').checked, answerCalls: document.querySelector('#options-host-answercalls').checked, silenceDetection: document.querySelector('#options-host-silence').checked, recordAudio: document.querySelector('#options-host-record').checked } }, function (response) {
+        var selectedOption = document.querySelector('#options-host-locktodj').options[document.querySelector('#options-host-locktodj').selectedIndex].value
+        directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/hosts/edit', data: { ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector('#options-host-name').value, lockToDJ: selectedOption === '' ? null : parseInt(selectedOption), authorized: document.querySelector('#options-host-authorized').checked, admin: document.querySelector('#options-host-admin').checked, requests: document.querySelector('#options-host-requests').checked, emergencies: document.querySelector('#options-host-emergencies').checked, webmessages: document.querySelector('#options-host-webmessages').checked, makeCalls: document.querySelector('#options-host-makecalls').checked, answerCalls: document.querySelector('#options-host-answercalls').checked, silenceDetection: document.querySelector('#options-host-silence').checked, recordAudio: document.querySelector('#options-host-record').checked } }, function (response) {
           if (response === 'OK') {
             $('#options-modal-host').iziModal('close')
             iziToast.show({
@@ -12848,6 +12850,7 @@ function processDjs (data = {}, replace = false) {
 
     document.querySelector('#options-xp-djs').innerHTML = ``
     document.querySelector('#options-djs').innerHTML = ``
+    document.querySelector('#options-host-locktodj').innerHTML = `<option value="">Do not lock (can start any kind of broadcast at any time from this host)</option><option value="0">No DJs (prevents starting any shows/broadcasts from this host)</option>`
 
     Djs().each(function (dj, index) {
       var djClass = `danger`
@@ -12870,6 +12873,7 @@ function processDjs (data = {}, replace = false) {
   <span class="custom-control-track"></span>
   <label class="custom-control-label" for="options-xp-djs-i-${dj.ID}">${dj.name}</label>
 </div>`
+      document.querySelector('#options-host-locktodj').innerHTML += `<option value="${dj.ID}">${dj.name}</option>`
     })
   } catch (e) {
     console.error(e)

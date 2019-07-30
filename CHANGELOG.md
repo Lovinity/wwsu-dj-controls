@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Attendance history buttons to mark certain records as excused in terms of the new DJ reputation analytics. Also, buttons to toggle between unexcused show absence and canceled show.
 - Prompt for DJ Controls set to receive emergencies or accountability notifications when closing.
 - Management of the airing of underwritings through DJ Controls.
+- locking of hosts to a specific DJ (or no DJs) via manage hosts. When a DJ Controls is locked to a specific DJ, it will prevent starting any shows/broadcasts that are unscheduled or not under the DJ's name, and also will prevent interfering with other shows.
 
 ### Changed
 - Timesheet window in admin options -> manage directors -> timesheets now displays timesheets as vertical Gantt Charts.

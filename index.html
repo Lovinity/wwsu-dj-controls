@@ -2451,6 +2451,13 @@
                         <label for="options-host-name">Friendly Name</label>
                         <input type="text" id="options-host-name" class="form-control" placeholder="">
                     </div>
+                    <div class="form-group" title="If this host is a DJ Controls running on a non-WWSU computer, it is wise to lock it to a specific DJ. That way, they cannot interfere with other shows nor start any un-scheduled broadcasts from their computer.">
+                        <label for="options-host-locktodj">Lock this host to a specific DJ to prevent the user from interfering with other shows</label>
+                        <select class="form-control" id="options-host-locktodj">
+                            <option value="">Do not lock (can start any kind of broadcast at any time from this host)</option>
+                            <option value="0">No DJs (prevents starting any shows/broadcasts from this host)</option>
+                        </select>
+                    </div>
                     <div class="form-group" title="Should this host be allowed to connect to WWSU?">
                         <div class="custom-control custom-switch">
                             <input class="custom-control-input" id="options-host-authorized" type="checkbox">
