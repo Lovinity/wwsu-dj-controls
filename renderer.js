@@ -10126,7 +10126,7 @@ function checkRecipients () {
             }
             temp = document.querySelector(`#users-g-${key}`)
             temp.innerHTML += `
-<div id="users-u-${recipient.ID}" class="recipient nav-item nav-link${activeRecipient === recipient.ID ? ` active` : ``} d-flex justify-content-between align-items-center">
+<div id="users-u-${recipient.ID}" class="recipient nav-item nav-link${activeRecipient === recipient.ID ? ` active` : ``} d-flex justify-content-between align-items-center" style="cursor: pointer;">
 <span id="users-l-${recipient.ID}">${theClass}${recipient.label}</span>
 <div>
 <span class="badge badge-${recipient.unread > 0 ? 'primary' : 'secondary'} badge-pill" id="users-n-${recipient.host}">${recipient.unread}</span>
@@ -10154,49 +10154,50 @@ function checkRecipients () {
 // Called when the user clicks on a recipient to view the messages from that recipient
 function selectRecipient (recipient = null) {
   try {
-    activeRecipient = recipient
-
-    var messages = document.querySelector('#messages-info')
-    var messageIDs = []
-    messages.innerHTML = ``
-
-    Recipients().each(function (recipientb) {
-      // Update all the recipients, ensuring only the selected one is active
-      var temp = document.querySelector(`#users-u-${recipientb.ID}`)
-      if (temp !== null) {
-        temp.classList.remove('active')
-      }
-    })
-
     var host = Recipients({ ID: recipient }).first().host
     var ID = Recipients({ ID: recipient }).first().ID
     var status = Recipients({ ID: recipient }).first().status
     var label = Recipients({ ID: recipient }).first().label
     var theTime = Recipients({ ID: recipient }).first().time
 
-    var temp = document.querySelector(`#users-u-${ID}`)
-    if (temp !== null) {
-      temp.classList.add('active')
-    }
+    var afterFunction = () => {
+      activeRecipient = recipient
 
-    temp = document.querySelector(`#messenger-buttons`)
-    if (ID && host && host.startsWith('website-')) {
-      if (temp) { temp.innerHTML = `<button type="button" class="btn btn-urgent btn-lg" id="users-o-mute-${ID}" title="Mute this user for 24 hours">Mute</button><button type="button" class="btn btn-danger btn-lg" id="users-o-ban-${ID}" title="Ban this user indefinitely">Ban</button>` }
-    } else {
-      if (temp) { temp.innerHTML = `` }
-    }
+      var messages = document.querySelector('#messages-info')
+      var messageIDs = []
+      messages.innerHTML = ``
 
-    // Add labels at the top of the messages box to explain stuff
-    if (recipient === null || typeof host === 'undefined') {
-      messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
+      Recipients().each(function (recipientb) {
+        // Update all the recipients, ensuring only the selected one is active
+        var temp = document.querySelector(`#users-u-${recipientb.ID}`)
+        if (temp !== null) {
+          temp.classList.remove('active')
+        }
+      })
+
+      var temp = document.querySelector(`#users-u-${ID}`)
+      if (temp !== null) {
+        temp.classList.add('active')
+      }
+
+      temp = document.querySelector(`#messenger-buttons`)
+      if (ID && host && host.startsWith('website-')) {
+        if (temp) { temp.innerHTML = `<button type="button" class="btn btn-urgent btn-lg" id="users-o-mute-${ID}" title="Mute this user for 24 hours">Mute</button><button type="button" class="btn btn-danger btn-lg" id="users-o-ban-${ID}" title="Ban this user indefinitely">Ban</button>` }
+      } else {
+        if (temp) { temp.innerHTML = `` }
+      }
+
+      // Add labels at the top of the messages box to explain stuff
+      if (recipient === null || typeof host === 'undefined') {
+        messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
                             <div>To begin, click recipients in the bottom right corner and select a recipient.</div>
                     </div>`
-    } else if (host === 'website' && Meta.webchat) {
-      messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
+      } else if (host === 'website' && Meta.webchat) {
+        messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
                             <div>You are viewing public web messages. Messages sent will be visible by all web recipients.</div>
                     </div>`
-    } else if (host.startsWith('website-') && Meta.webchat) {
-      messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
+      } else if (host.startsWith('website-') && Meta.webchat) {
+        messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
                             <div class="container">
                             <div class="row">
                             <div class="col-3">
@@ -10212,12 +10213,12 @@ function selectRecipient (recipient = null) {
                             </div>
                             </div>
                     </div>`
-    } else if (host === 'website' && !Meta.webchat) {
-      messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
+      } else if (host === 'website' && !Meta.webchat) {
+        messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
                             <div>You are viewing public web messages. The chat is currently disabled, therefore recipients cannot send you messages.</div>
                     </div>`
-    } else if (host.startsWith('website-') && !Meta.webchat) {
-      messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
+      } else if (host.startsWith('website-') && !Meta.webchat) {
+        messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
                             <div class="container">
                             <div class="row">
                             <div class="col-3">
@@ -10233,8 +10234,8 @@ function selectRecipient (recipient = null) {
                             </div>
                             </div>
                     </div>`
-    } else {
-      messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
+      } else {
+        messages.innerHTML = `<div class="bs-callout bs-callout-info shadow-4">
                             <div class="container">
                             <div class="row">
                             <div class="col-3">
@@ -10249,103 +10250,103 @@ function selectRecipient (recipient = null) {
                             </div>
                             </div>
                     </div>`
-    }
-
-    // Define a comparison function that will order messages by createdAt when we run the iteration
-    var compare = function (a, b) {
-      try {
-        if (moment(a.createdAt).valueOf() < moment(b.createdAt).valueOf()) { return -1 }
-        if (moment(a.createdAt).valueOf() > moment(b.createdAt).valueOf()) { return 1 }
-        if (a.ID > b.ID) { return -1 }
-        if (b.ID > a.ID) { return 1 }
-        return 0
-      } catch (e) {
-        console.error(e)
-        iziToast.show({
-          title: 'An error occurred - Please check the logs',
-          message: `Error occurred in the compare function of selectRecipient.`
-        })
       }
-    }
 
-    // Get only the relevant messages to show in the "new messages" box
-    var query = [{ from: host, to: [client.host, 'DJ', 'DJ-private'] }, { to: host }]
-    if (host === 'website') {
-      query = [{ to: ['DJ', 'website'] }]
-    }
-
-    totalUnread = 0
-    var recipientUnread = {}
-    var records = Recipients().get()
-
-    if (records.length > 0) { records.map(recipient2 => { recipientUnread[recipient2.host] = 0 }) }
-
-    records = Messages().get().sort(compare)
-    var unreadIDs = []
-
-    if (records.length > 0) {
-      records.map(message => {
-        // Delete messages older than 1 hour
-        if (moment().subtract(1, 'hours').isAfter(moment(message.createdAt))) {
-          var temp3 = document.querySelector(`#message-n-m-${message.ID}`)
-          if (temp3) {
-            temp3.parentNode.removeChild(temp3)
-          }
-          Messages({ ID: message.ID }).remove()
-          // Do not continue; no need if the message is being deleted
-          return null
+      // Define a comparison function that will order messages by createdAt when we run the iteration
+      var compare = function (a, b) {
+        try {
+          if (moment(a.createdAt).valueOf() < moment(b.createdAt).valueOf()) { return -1 }
+          if (moment(a.createdAt).valueOf() > moment(b.createdAt).valueOf()) { return 1 }
+          if (a.ID > b.ID) { return -1 }
+          if (b.ID > a.ID) { return 1 }
+          return 0
+        } catch (e) {
+          console.error(e)
+          iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: `Error occurred in the compare function of selectRecipient.`
+          })
         }
-        // Do not continue if this message is not new
-        if (!message.needsread) { return null }
-        totalUnread++
-        if (typeof recipientUnread[message.from_real] === 'undefined') { recipientUnread[message.from_real] = 0 }
-        recipientUnread[message.from_real]++
-        unreadIDs.push(`message-n-m-${message.ID}`)
+      }
 
-        var temp = document.querySelector(`#message-n-m-${message.ID}`)
-        if (temp === null) {
-          var temp2 = document.querySelector(`#messages-unread`)
-          temp2.innerHTML += `<div class="m-1 bs-callout bs-callout-primary shadow-4 message-n animated bounceIn slow" style="cursor: pointer;" id="message-n-m-${message.ID}">
+      // Get only the relevant messages to show in the "new messages" box
+      var query = [{ from: host, to: [client.host, 'DJ', 'DJ-private'] }, { to: host }]
+      if (host === 'website') {
+        query = [{ to: ['DJ', 'website'] }]
+      }
+
+      totalUnread = 0
+      var recipientUnread = {}
+      var records = Recipients().get()
+
+      if (records.length > 0) { records.map(recipient2 => { recipientUnread[recipient2.host] = 0 }) }
+
+      records = Messages().get().sort(compare)
+      var unreadIDs = []
+
+      if (records.length > 0) {
+        records.map(message => {
+          // Delete messages older than 1 hour
+          if (moment().subtract(1, 'hours').isAfter(moment(message.createdAt))) {
+            var temp3 = document.querySelector(`#message-n-m-${message.ID}`)
+            if (temp3) {
+              temp3.parentNode.removeChild(temp3)
+            }
+            Messages({ ID: message.ID }).remove()
+            // Do not continue; no need if the message is being deleted
+            return null
+          }
+          // Do not continue if this message is not new
+          if (!message.needsread) { return null }
+          totalUnread++
+          if (typeof recipientUnread[message.from_real] === 'undefined') { recipientUnread[message.from_real] = 0 }
+          recipientUnread[message.from_real]++
+          unreadIDs.push(`message-n-m-${message.ID}`)
+
+          var temp = document.querySelector(`#message-n-m-${message.ID}`)
+          if (temp === null) {
+            var temp2 = document.querySelector(`#messages-unread`)
+            temp2.innerHTML += `<div class="m-1 bs-callout bs-callout-primary shadow-4 message-n animated bounceIn slow" style="cursor: pointer;" id="message-n-m-${message.ID}">
                                         <span class="close text-white" id="message-n-x-${message.ID}" style="pointer-events: auto;">X</span>
                                         <div id="message-n-a-${message.ID}" style="pointer-events: auto;">
                                             <div id="message-n-t-${message.ID}">${message.message}</div>
                                             <div id="message-n-b-${message.ID}" style="font-size: 0.66em;">${moment(message.createdAt).format('hh:mm A')} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' (Private)' : ``}</span>
                                         </div>
                                     </div>`
-        } else {
-          document.querySelector(`#message-n-t-${message.ID}`).innerHTML = message.message
-          document.querySelector(`#message-n-b-${message.ID}`).innerHTML = `${moment(message.createdAt).format('hh:mm A')} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' (Private)' : ``}`
-        }
-      })
-    }
-
-    // Remove new messages no longer valid
-    var attn = document.querySelectorAll('.message-n')
-    for (var i = 0; i < attn.length; i++) {
-      if (unreadIDs.indexOf(attn[i].id) === -1) { attn[i].parentNode.removeChild(attn[i]) }
-    }
-
-    for (var key in recipientUnread) {
-      if (Object.prototype.hasOwnProperty.call(recipientUnread, key)) {
-        Recipients({ host: key }).update({ unread: recipientUnread[key] })
+          } else {
+            document.querySelector(`#message-n-t-${message.ID}`).innerHTML = message.message
+            document.querySelector(`#message-n-b-${message.ID}`).innerHTML = `${moment(message.createdAt).format('hh:mm A')} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' (Private)' : ``}`
+          }
+        })
       }
-    }
 
-    checkRecipients()
+      // Remove new messages no longer valid
+      var attn = document.querySelectorAll('.message-n')
+      for (var i = 0; i < attn.length; i++) {
+        if (unreadIDs.indexOf(attn[i].id) === -1) { attn[i].parentNode.removeChild(attn[i]) }
+      }
 
-    // Now, get other messages according to selected recipient
-    messages = document.querySelector('#messages')
-    temp = document.querySelector(`#btn-messenger-unread`)
-    temp.className = `notification badge badge-${totalUnread > 0 ? 'primary' : 'secondary'} shadow-4`
-    temp.innerHTML = totalUnread
-    records = Messages(query).get().sort(compare)
+      for (var key in recipientUnread) {
+        if (Object.prototype.hasOwnProperty.call(recipientUnread, key)) {
+          Recipients({ host: key }).update({ unread: recipientUnread[key] })
+        }
+      }
 
-    if (records.length > 0) {
-      records.map(message => {
-        messageIDs.push(`message-m-${message.ID}`)
-        var temp2 = document.querySelector(`#message-m-${message.ID}`)
-        if (temp2 === null) {
-          messages.innerHTML += `
+      checkRecipients()
+
+      // Now, get other messages according to selected recipient
+      messages = document.querySelector('#messages')
+      temp = document.querySelector(`#btn-messenger-unread`)
+      temp.className = `notification badge badge-${totalUnread > 0 ? 'primary' : 'secondary'} shadow-4`
+      temp.innerHTML = totalUnread
+      records = Messages(query).get().sort(compare)
+
+      if (records.length > 0) {
+        records.map(message => {
+          messageIDs.push(`message-m-${message.ID}`)
+          var temp2 = document.querySelector(`#message-m-${message.ID}`)
+          if (temp2 === null) {
+            messages.innerHTML += `
 <div class="row text-dark message m-1 shadow-1 border-left ${message.needsread ? `border-primary` : `border-light`} bg-light-1" style="width: 96%; border-left-width: 5px !important;" id="message-m-${message.ID}">
     <div class="col-2">
       ${jdenticon.toSvg(message.from, 64)}<br />
@@ -10358,18 +10359,27 @@ function selectRecipient (recipient = null) {
       <small>${moment(message.createdAt).format('hh:mm A')}</small>
     </div>
 </div>`
-        } else {
-          temp2.className = `row text-dark message m-1 shadow-1 border-left ${message.needsread ? `border-primary` : `border-light`} bg-light-1`
-          var temp3 = document.querySelector(`#message-t-${message.ID}`)
-          temp3.innerHTML = message.message
-        }
-      })
+          } else {
+            temp2.className = `row text-dark message m-1 shadow-1 border-left ${message.needsread ? `border-primary` : `border-light`} bg-light-1`
+            var temp3 = document.querySelector(`#message-t-${message.ID}`)
+            temp3.innerHTML = message.message
+          }
+        })
+      }
+
+      // Remove recipients no longer valid
+      attn = document.querySelectorAll('.message')
+      for (var i5 = 0; i5 < attn.length; i5++) {
+        if (messageIDs.indexOf(attn[i5].id) === -1) { attn[i5].parentNode.removeChild(attn[i5]) }
+      }
     }
 
-    // Remove recipients no longer valid
-    attn = document.querySelectorAll('.message')
-    for (var i5 = 0; i5 < attn.length; i5++) {
-      if (messageIDs.indexOf(attn[i5].id) === -1) { attn[i5].parentNode.removeChild(attn[i5]) }
+    if (host.startsWith('website') && client.lockToDJ !== null && client.lockToDJ !== Meta.dj) {
+      errorIfLockDJ('select a web recipient', () => {
+        afterFunction()
+      })
+    } else {
+      afterFunction()
     }
   } catch (e) {
     console.error(e)
@@ -12990,23 +13000,22 @@ function processHosts (data, replace = false) {
           switch (key) {
             case 'insert':
               Hosts.insert(data[key])
+              // Changes to this host should trigger a reload of the renderer thread.
               if (data[key].host === main.getMachineID()) {
-                socket.disconnect()
-                socket.reconnect()
+                window.location.reload(true)
               }
               break
             case 'update':
               Hosts({ ID: data[key].ID }).update(data[key])
-              // Changes to this host should cause a refresh of the socket
+              // Changes to this host should trigger a reload of the renderer thread
               if (data[key].host === main.getMachineID()) {
-                socket.disconnect()
-                socket.reconnect()
+                window.location.reload(true)
               }
               break
             case 'remove':
               Hosts({ ID: data[key] }).remove()
-              // If this host no longer exists, disconnect the socket
-              if (!Hosts({ host: main.getMachineID() }).first()) { socket.disconnect() }
+              // If this host no longer exists, refresh the renderer
+              if (!Hosts({ host: main.getMachineID() }).first()) { window.location.reload(true) }
               break
           }
         }
