@@ -7,7 +7,7 @@
     "start": "electron .",
     "dist": "electron-packager .",
     "build": "electron-builder .",
-    "postinstall": "electron-rebuild"
+    "postinstall": "electron-builder install-app-deps"
   },
   "repository": "https://github.com/Lovinity/wwsu-dj-controls",
   "author": "Patrick Schmalstig",
@@ -17,7 +17,6 @@
     "electron-devtools-installer": "^2.2.4",
     "electron-installer-dmg": "^2.0.0",
     "electron-packager": "^13.1.1",
-    "electron-rebuild": "^1.8.4",
     "electron-squirrel-startup": "^1.0.0",
     "eslint": "^6.1.0",
     "eslint-config-standard": "^13.0.1",
@@ -41,7 +40,7 @@
   "build": {
     "appId": "com.electron.wwsu-dj-controls",
     "productName": "WWSU DJ Controls",
-    "copyright": "Copyright © 2018 WWSU 106.9 FM",
+    "copyright": "Copyright © 2018-2019 WWSU 106.9 FM",
     "mac": {
       "category": "public.app-category.business"
     }
