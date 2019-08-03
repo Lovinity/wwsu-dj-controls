@@ -10374,7 +10374,7 @@ function selectRecipient (recipient = null) {
       }
     }
 
-    if (host.startsWith('website') && client.lockToDJ !== null && client.lockToDJ !== Meta.dj) {
+    if (host && host.startsWith('website') && client.lockToDJ !== null && client.lockToDJ !== Meta.dj) {
       errorIfLockDJ('select a web recipient', () => {
         afterFunction()
       })
