@@ -3746,10 +3746,11 @@ document.querySelector('#btn-options-config-breaks-clock').onclick = function ()
               }
             }
           },
-          onSubmitValid: function (values) {
-            console.dir(values)
-            values.tasks.map((task, index) => {
-              if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
+          onSubmitValid: function (values2) {
+            console.dir(values2)
+            var values = []
+            values2.tasks.map((task, index) => {
+              if (task.task !== `[DELETE THIS ENTRY]`) { values.push(task) }
             })
             directorReq.request({
               db: Directors(),
@@ -4035,9 +4036,11 @@ document.querySelector('#btn-options-config-breaks-automation').onclick = functi
       value: {
         tasks: tasks
       },
-      onSubmitValid: function (values) {
-        values.tasks.map((task, index) => {
-          if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
+      onSubmitValid: function (values2) {
+        console.dir(values2)
+        var values = []
+        values2.tasks.map((task, index) => {
+          if (task.task !== `[DELETE THIS ENTRY]`) { values.push(task) }
         })
         directorReq.request({
           db: Directors(),
@@ -4423,10 +4426,11 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             value: {
               tasks: values
             },
-            onSubmitValid: function (values) {
-              console.dir(values)
-              values.tasks.map((task, index) => {
-                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
+            onSubmitValid: function (values2) {
+              console.dir(values2)
+              var values = []
+              values2.tasks.map((task, index) => {
+                if (task.task !== `[DELETE THIS ENTRY]`) { values.push(task) }
               })
               directorReq.request({
                 db: Directors(),
@@ -4539,10 +4543,11 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             value: {
               tasks: values
             },
-            onSubmitValid: function (values) {
-              console.dir(values)
-              values.tasks.map((task, index) => {
-                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
+            onSubmitValid: function (values2) {
+              console.dir(values2)
+              var values = []
+              values2.tasks.map((task, index) => {
+                if (task.task !== `[DELETE THIS ENTRY]`) { values.push(task) }
               })
               var theData = {}
               theData[item] = values.tasks || []
@@ -4649,10 +4654,11 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             value: {
               tasks: values
             },
-            onSubmitValid: function (values) {
-              console.dir(values)
-              values.tasks.map((task, index) => {
-                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
+            onSubmitValid: function (values2) {
+              console.dir(values2)
+              var values = []
+              values2.tasks.map((task, index) => {
+                if (task.task !== `[DELETE THIS ENTRY]`) { values.push(task) }
               })
               var theData = {}
               theData[item] = values.tasks || []
@@ -4759,10 +4765,11 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             value: {
               tasks: values
             },
-            onSubmitValid: function (values) {
-              console.dir(values)
-              values.tasks.map((task, index) => {
-                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
+            onSubmitValid: function (values2) {
+              console.dir(values2)
+              var values = []
+              values2.tasks.map((task, index) => {
+                if (task.task !== `[DELETE THIS ENTRY]`) { values.push(task) }
               })
               var theData = {}
               theData[item] = values.tasks || []
@@ -5372,15 +5379,15 @@ document.querySelector('#modal-scheduler-new').onclick = function () {
         }
       }
     },
-    onSubmitValid: function (values) {
-      console.dir(values)
+    onSubmitValid: function (values2) {
+      console.dir(values2)
+      var values = []
+      values2.sProposal.map((proposal, index) => {
+        if (proposal.sStartDay !== `[DELETE THIS ENTRY]`) { values.push(proposal) }
+      })
       var proposals = []
       if (typeof values.sProposal !== `undefined` && typeof values.sProposal[0] !== `undefined` && values.sProposal.length > 0) {
         values.sProposal.map((proposal, index) => {
-          if (proposal.sStartDay === `[DELETE THIS ENTRY]`) {
-            delete values.sProposal[index]
-            return null
-          }
           var temp = proposal.sStartTime.split(`:`)
           var startHour = parseInt(temp[0])
           var startMinute = parseInt(temp[1])
@@ -5661,15 +5668,15 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
               sPriority: record.priority,
               sProposal: proposals
             },
-            onSubmitValid: function (values) {
-              console.dir(values)
+            onSubmitValid: function (values2) {
+              console.dir(values2)
+              var values = []
+              values2.sProposal.map((proposal, index) => {
+                if (proposal.sStartDay !== `[DELETE THIS ENTRY]`) { values.push(proposal) }
+              })
               var proposals = []
               if (typeof values.sProposal !== `undefined` && typeof values.sProposal[0] !== `undefined` && values.sProposal.length > 0) {
                 values.sProposal.map((proposal, index) => {
-                  if (proposal.sStartDay === `[DELETE THIS ENTRY]`) {
-                    delete values.sProposal[index]
-                    return null
-                  }
                   var temp = proposal.sStartTime.split(`:`)
                   var startHour = parseInt(temp[0])
                   var startMinute = parseInt(temp[1])
