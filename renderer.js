@@ -3981,6 +3981,9 @@ document.querySelector('#btn-options-config-breaks-automation').onclick = functi
     }
     var tasks = []
     Config.specialBreaks.automation.during.map((task) => {
+      if (task === null) {
+        return null
+      }
       tasks.push({
         task: task.task || '',
         event: task.event || '',
@@ -4364,6 +4367,9 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             if (key !== `_doNotRemove` && Object.prototype.hasOwnProperty.call(Config.categories, key)) { categories.push(key) }
           }
           Config.breaks[item].map((task) => {
+            if (task === null) {
+              return null
+            }
             values.push({
               task: task.task || ``,
               event: task.event || ``,
@@ -4477,6 +4483,9 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             if (key2 !== `_doNotRemove` && Object.prototype.hasOwnProperty.call(Config.categories, key2)) { categories.push(key2) }
           }
           Config.specialBreaks.live[item].map((task) => {
+            if (task === null) {
+              return null
+            }
             values.push({
               task: task.task || ``,
               event: task.event || ``,
@@ -4584,6 +4593,9 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             if (key3 !== `_doNotRemove` && Object.prototype.hasOwnProperty.call(Config.categories, key3)) { categories.push(key3) }
           }
           Config.specialBreaks.remote[item].map((task) => {
+            if (task === null) {
+              return null
+            }
             values.push({
               task: task.task || ``,
               event: task.event || ``,
@@ -4691,6 +4703,9 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             if (key4 !== `_doNotRemove` && Object.prototype.hasOwnProperty.call(Config.categories, key4)) { categories.push(key4) }
           }
           Config.specialBreaks.sports[item].map((task) => {
+            if (task === null) {
+              return null
+            }
             values.push({
               task: task.task || ``,
               event: task.event || ``,
