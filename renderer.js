@@ -3746,11 +3746,10 @@ document.querySelector('#btn-options-config-breaks-clock').onclick = function ()
               }
             }
           },
-          onSubmitValid: function (values2) {
-            console.dir(values2)
-            var values = []
-            values2.tasks.map((task, index) => {
-              if (task.task !== `[DELETE THIS ENTRY]`) { values.push(task) }
+          onSubmitValid: function (values) {
+            console.dir(values)
+            values.tasks.map((task, index) => {
+              if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
             })
             directorReq.request({
               db: Directors(),
@@ -3982,9 +3981,6 @@ document.querySelector('#btn-options-config-breaks-automation').onclick = functi
     }
     var tasks = []
     Config.specialBreaks.automation.during.map((task) => {
-      if (task === null) {
-        return null
-      }
       tasks.push({
         task: task.task || '',
         event: task.event || '',
@@ -4036,11 +4032,9 @@ document.querySelector('#btn-options-config-breaks-automation').onclick = functi
       value: {
         tasks: tasks
       },
-      onSubmitValid: function (values2) {
-        console.dir(values2)
-        var values = []
-        values2.tasks.map((task, index) => {
-          if (task.task !== `[DELETE THIS ENTRY]`) { values.push(task) }
+      onSubmitValid: function (values) {
+        values.tasks.map((task, index) => {
+          if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
         })
         directorReq.request({
           db: Directors(),
@@ -4370,9 +4364,6 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             if (key !== `_doNotRemove` && Object.prototype.hasOwnProperty.call(Config.categories, key)) { categories.push(key) }
           }
           Config.breaks[item].map((task) => {
-            if (task === null) {
-              return null
-            }
             values.push({
               task: task.task || ``,
               event: task.event || ``,
@@ -4426,11 +4417,10 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             value: {
               tasks: values
             },
-            onSubmitValid: function (values2) {
-              console.dir(values2)
-              var values = []
-              values2.tasks.map((task, index) => {
-                if (task.task !== `[DELETE THIS ENTRY]`) { values.push(task) }
+            onSubmitValid: function (values) {
+              console.dir(values)
+              values.tasks.map((task, index) => {
+                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
               })
               directorReq.request({
                 db: Directors(),
@@ -4487,9 +4477,6 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             if (key2 !== `_doNotRemove` && Object.prototype.hasOwnProperty.call(Config.categories, key2)) { categories.push(key2) }
           }
           Config.specialBreaks.live[item].map((task) => {
-            if (task === null) {
-              return null
-            }
             values.push({
               task: task.task || ``,
               event: task.event || ``,
@@ -4543,11 +4530,10 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             value: {
               tasks: values
             },
-            onSubmitValid: function (values2) {
-              console.dir(values2)
-              var values = []
-              values2.tasks.map((task, index) => {
-                if (task.task !== `[DELETE THIS ENTRY]`) { values.push(task) }
+            onSubmitValid: function (values) {
+              console.dir(values)
+              values.tasks.map((task, index) => {
+                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
               })
               var theData = {}
               theData[item] = values.tasks || []
@@ -4598,9 +4584,6 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             if (key3 !== `_doNotRemove` && Object.prototype.hasOwnProperty.call(Config.categories, key3)) { categories.push(key3) }
           }
           Config.specialBreaks.remote[item].map((task) => {
-            if (task === null) {
-              return null
-            }
             values.push({
               task: task.task || ``,
               event: task.event || ``,
@@ -4654,11 +4637,10 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             value: {
               tasks: values
             },
-            onSubmitValid: function (values2) {
-              console.dir(values2)
-              var values = []
-              values2.tasks.map((task, index) => {
-                if (task.task !== `[DELETE THIS ENTRY]`) { values.push(task) }
+            onSubmitValid: function (values) {
+              console.dir(values)
+              values.tasks.map((task, index) => {
+                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
               })
               var theData = {}
               theData[item] = values.tasks || []
@@ -4709,9 +4691,6 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             if (key4 !== `_doNotRemove` && Object.prototype.hasOwnProperty.call(Config.categories, key4)) { categories.push(key4) }
           }
           Config.specialBreaks.sports[item].map((task) => {
-            if (task === null) {
-              return null
-            }
             values.push({
               task: task.task || ``,
               event: task.event || ``,
@@ -4765,11 +4744,10 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             value: {
               tasks: values
             },
-            onSubmitValid: function (values2) {
-              console.dir(values2)
-              var values = []
-              values2.tasks.map((task, index) => {
-                if (task.task !== `[DELETE THIS ENTRY]`) { values.push(task) }
+            onSubmitValid: function (values) {
+              console.dir(values)
+              values.tasks.map((task, index) => {
+                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
               })
               var theData = {}
               theData[item] = values.tasks || []
@@ -5379,15 +5357,15 @@ document.querySelector('#modal-scheduler-new').onclick = function () {
         }
       }
     },
-    onSubmitValid: function (values2) {
-      console.dir(values2)
-      var values = []
-      values2.sProposal.map((proposal, index) => {
-        if (proposal.sStartDay !== `[DELETE THIS ENTRY]`) { values.push(proposal) }
-      })
+    onSubmitValid: function (values) {
+      console.dir(values)
       var proposals = []
       if (typeof values.sProposal !== `undefined` && typeof values.sProposal[0] !== `undefined` && values.sProposal.length > 0) {
         values.sProposal.map((proposal, index) => {
+          if (proposal.sStartDay === `[DELETE THIS ENTRY]`) {
+            delete values.sProposal[index]
+            return null
+          }
           var temp = proposal.sStartTime.split(`:`)
           var startHour = parseInt(temp[0])
           var startMinute = parseInt(temp[1])
@@ -5668,15 +5646,15 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
               sPriority: record.priority,
               sProposal: proposals
             },
-            onSubmitValid: function (values2) {
-              console.dir(values2)
-              var values = []
-              values2.sProposal.map((proposal, index) => {
-                if (proposal.sStartDay !== `[DELETE THIS ENTRY]`) { values.push(proposal) }
-              })
+            onSubmitValid: function (values) {
+              console.dir(values)
               var proposals = []
               if (typeof values.sProposal !== `undefined` && typeof values.sProposal[0] !== `undefined` && values.sProposal.length > 0) {
                 values.sProposal.map((proposal, index) => {
+                  if (proposal.sStartDay === `[DELETE THIS ENTRY]`) {
+                    delete values.sProposal[index]
+                    return null
+                  }
                   var temp = proposal.sStartTime.split(`:`)
                   var startHour = parseInt(temp[0])
                   var startMinute = parseInt(temp[1])
