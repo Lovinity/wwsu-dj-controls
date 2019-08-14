@@ -13852,25 +13852,25 @@ function intToWeek (integer) {
 
   var dayOfWeekS = `Unknown`
   switch (dayOfWeek) {
-    case 1:
+    case 0:
       dayOfWeekS = 'Sunday'
       break
-    case 2:
+    case 1:
       dayOfWeekS = 'Monday'
       break
-    case 3:
+    case 2:
       dayOfWeekS = 'Tuesday'
       break
-    case 4:
+    case 3:
       dayOfWeekS = 'Wednesday'
       break
-    case 5:
+    case 4:
       dayOfWeekS = 'Thursday'
       break
-    case 6:
+    case 5:
       dayOfWeekS = 'Friday'
       break
-    case 7:
+    case 6:
       dayOfWeekS = 'Saturday'
       break
   }
