@@ -5531,18 +5531,6 @@ document.querySelector('#modal-scheduler-generate').onclick = function () {
       temp.innerHTML = newHTML
 
       $('#modal-scheduler-generated').iziModal('open')
-      iziToast.show({
-        title: `Calendar Events Added!`,
-        message: `Shows and Prerecords for the next 7 days were added and finalized! NOTE: these items have been set with a priority of 2. Edit them if necessary.`,
-        timeout: 20000,
-        close: true,
-        color: 'green',
-        drag: false,
-        position: 'center',
-        closeOnClick: true,
-        overlay: false,
-        zindex: 1000
-      })
     } else {
       iziToast.show({
         title: `Failed to generate schedule!`,
