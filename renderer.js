@@ -3738,9 +3738,10 @@ document.querySelector('#btn-options-config-breaks-clock').onclick = function ()
                     description: 'Number of tracks that should be queued, if queuing tracks.'
                   },
                   rules: {
-                    type: 'boolean',
+                    type: 'string',
                     title: 'Rotation Rules (queue tasks only)',
-                    description: 'For queue tasks, should the system consider configured RadioDJ playlist rotation rules when deciding which tracks to queue?'
+                    enum: ['noRules', 'lenientRules', 'strictRules'],
+                    description: 'For queue tasks: noRules = do not consider rotation rules. lenientRules = consider rotation rules until/unless there are no more tracks that can be queued, then queue randomly. strictRules = consider rotation rules and stop queuing when there are no more tracks that can be queued.'
                   }
                 }
               }
@@ -4021,9 +4022,10 @@ document.querySelector('#btn-options-config-breaks-automation').onclick = functi
                 description: 'Number of tracks that should be queued, if queuing tracks.'
               },
               rules: {
-                type: 'boolean',
+                type: 'string',
                 title: 'Rotation Rules (queue tasks only)',
-                description: 'For queue tasks, should the system consider configured RadioDJ playlist rotation rules when deciding which tracks to queue?'
+                enum: ['noRules', 'lenientRules', 'strictRules'],
+                description: 'For queue tasks: noRules = do not consider rotation rules. lenientRules = consider rotation rules until/unless there are no more tracks that can be queued, then queue randomly. strictRules = consider rotation rules and stop queuing when there are no more tracks that can be queued.'
               }
             }
           }
@@ -4406,9 +4408,10 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
                       description: 'Number of tracks that should be queued, if queuing tracks.'
                     },
                     rules: {
-                      type: 'boolean',
+                      type: 'string',
                       title: 'Rotation Rules (queue tasks only)',
-                      description: 'For queue tasks, should the system consider configured RadioDJ playlist rotation rules when deciding which tracks to queue?'
+                      enum: ['noRules', 'lenientRules', 'strictRules'],
+                      description: 'For queue tasks: noRules = do not consider rotation rules. lenientRules = consider rotation rules until/unless there are no more tracks that can be queued, then queue randomly. strictRules = consider rotation rules and stop queuing when there are no more tracks that can be queued.'
                     }
                   }
                 }
@@ -4519,9 +4522,10 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
                       description: 'Number of tracks that should be queued, if queuing tracks.'
                     },
                     rules: {
-                      type: 'boolean',
+                      type: 'string',
                       title: 'Rotation Rules (queue tasks only)',
-                      description: 'For queue tasks, should the system consider configured RadioDJ playlist rotation rules when deciding which tracks to queue?'
+                      enum: ['noRules', 'lenientRules', 'strictRules'],
+                      description: 'For queue tasks: noRules = do not consider rotation rules. lenientRules = consider rotation rules until/unless there are no more tracks that can be queued, then queue randomly. strictRules = consider rotation rules and stop queuing when there are no more tracks that can be queued.'
                     }
                   }
                 }
@@ -4626,9 +4630,10 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
                       description: 'Number of tracks that should be queued, if queuing tracks.'
                     },
                     rules: {
-                      type: 'boolean',
+                      type: 'string',
                       title: 'Rotation Rules (queue tasks only)',
-                      description: 'For queue tasks, should the system consider configured RadioDJ playlist rotation rules when deciding which tracks to queue?'
+                      enum: ['noRules', 'lenientRules', 'strictRules'],
+                      description: 'For queue tasks: noRules = do not consider rotation rules. lenientRules = consider rotation rules until/unless there are no more tracks that can be queued, then queue randomly. strictRules = consider rotation rules and stop queuing when there are no more tracks that can be queued.'
                     }
                   }
                 }
@@ -4733,9 +4738,10 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
                       description: 'Number of tracks that should be queued, if queuing tracks.'
                     },
                     rules: {
-                      type: 'boolean',
+                      type: 'string',
                       title: 'Rotation Rules (queue tasks only)',
-                      description: 'For queue tasks, should the system consider configured RadioDJ playlist rotation rules when deciding which tracks to queue?'
+                      enum: ['noRules', 'lenientRules', 'strictRules'],
+                      description: 'For queue tasks: noRules = do not consider rotation rules. lenientRules = consider rotation rules until/unless there are no more tracks that can be queued, then queue randomly. strictRules = consider rotation rules and stop queuing when there are no more tracks that can be queued.'
                     }
                   }
                 }
@@ -9537,6 +9543,14 @@ function doMeta (metan) {
           buttons: [
             ['<button>Take a Break</button>', function (instance, toast, button, e, inputs) {
               goBreak(false)
+              instance.hide({}, toast, 'button')
+            }],
+            ['<button>Switch Show</button>', function (instance, toast, button, e, inputs) {
+              switchShow()
+              instance.hide({}, toast, 'button')
+            }],
+            ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+              endShow()
               instance.hide({}, toast, 'button')
             }]
           ]
