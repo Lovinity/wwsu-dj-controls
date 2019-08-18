@@ -87,6 +87,7 @@ function checkCalendar (records, meta, cal) {
               calTypeN = 'Sports'
               calHostN = ''
               calShowN = event.title.replace('Sports: ', '')
+              calShowN = calShowN.indexOf(' vs.') > -1 ? calShowN.substring(0, calShowN.indexOf(' vs.')) : calShowN
               calTopicN = truncateText(event.description, 256, `...`)
               calStartsN = event.start
             }
