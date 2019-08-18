@@ -6472,8 +6472,8 @@ document.querySelector(`#options-timesheets-records`).addEventListener('click', 
                 }
               },
               value: {
-                tClockIn: record.time_in !== null ? moment(record.time_in).format('YYYY-MM-DDTHH:mm') : ``,
-                tClockOut: record.time_out !== null ? moment(record.time_out).format('YYYY-MM-DDTHH:mm') : ``,
+                tClockIn: record.timeIn !== null ? moment(record.timeIn).format('YYYY-MM-DDTHH:mm') : ``,
+                tClockOut: record.timeOut !== null ? moment(record.timeOut).format('YYYY-MM-DDTHH:mm') : ``,
                 tApproved: enumValue
               },
               onSubmitValid: function (values) {
@@ -6496,7 +6496,7 @@ document.querySelector(`#options-timesheets-records`).addEventListener('click', 
                     enumValue = 2
                     break
                 }
-                adminDirectorReq.request({ db: Directors({ admin: true }), method: 'POST', url: nodeURL + `/timesheet/${path}`, data: { ID: record.ID, time_in: moment(values.tClockIn).toISOString(true), time_out: moment(values.tClockOut).toISOString(true), approved: enumValue } }, function (response) {
+                adminDirectorReq.request({ db: Directors({ admin: true }), method: 'POST', url: nodeURL + `/timesheet/${path}`, data: { ID: record.ID, timeIn: moment(values.tClockIn).toISOString(true), timeOut: moment(values.tClockOut).toISOString(true), approved: enumValue } }, function (response) {
                   if (response === 'OK') {
                     $('#options-modal-config-form').iziModal('close')
                     iziToast.show({
@@ -6529,7 +6529,7 @@ document.querySelector(`#options-timesheets-records`).addEventListener('click', 
                 })
               }
             })
-            $(`#options-modal-config-form-extra`).html(`Record created: <strong>${moment(record.createdAt).format('LLLL')}</strong><br />Record last updated: <strong>${moment(record.updatedAt).format('LLLL')}</strong><br /><br />Scheduled time in: <strong>${record.scheduled_in !== null ? moment(record.scheduled_in).format('LLLL') : `not scheduled`}</strong><br />Scheduled time out: <strong>${record.scheduled_out !== null ? moment(record.scheduled_out).format('LLLL') : `not scheduled`}</strong>`)
+            $(`#options-modal-config-form-extra`).html(`Record created: <strong>${moment(record.createdAt).format('LLLL')}</strong><br />Record last updated: <strong>${moment(record.updatedAt).format('LLLL')}</strong><br /><br />Scheduled time in: <strong>${record.scheduledIn !== null ? moment(record.scheduledIn).format('LLLL') : `not scheduled`}</strong><br />Scheduled time out: <strong>${record.scheduledOut !== null ? moment(record.scheduledOut).format('LLLL') : `not scheduled`}</strong>`)
             $('#options-modal-config-form-label').html(`Edit Timesheet`)
             $('#options-modal-config-form').iziModal('open')
           })
@@ -6852,8 +6852,8 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
                 }
               },
               value: {
-                tClockIn: record.time_in !== null ? moment(record.time_in).format('YYYY-MM-DDTHH:mm') : ``,
-                tClockOut: record.time_out !== null ? moment(record.time_out).format('YYYY-MM-DDTHH:mm') : ``,
+                tClockIn: record.timeIn !== null ? moment(record.timeIn).format('YYYY-MM-DDTHH:mm') : ``,
+                tClockOut: record.timeOut !== null ? moment(record.timeOut).format('YYYY-MM-DDTHH:mm') : ``,
                 tApproved: enumValue
               },
               onSubmitValid: function (values) {
@@ -6876,7 +6876,7 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
                     enumValue = 2
                     break
                 }
-                adminDirectorReq.request({ db: Directors({ admin: true }), method: 'POST', url: nodeURL + `/timesheet/${path}`, data: { ID: record.ID, time_in: moment(values.tClockIn).toISOString(true), time_out: moment(values.tClockOut).toISOString(true), approved: enumValue } }, function (response) {
+                adminDirectorReq.request({ db: Directors({ admin: true }), method: 'POST', url: nodeURL + `/timesheet/${path}`, data: { ID: record.ID, timeIn: moment(values.tClockIn).toISOString(true), timeOut: moment(values.tClockOut).toISOString(true), approved: enumValue } }, function (response) {
                   if (response === 'OK') {
                     $('#options-modal-config-form').iziModal('close')
                     iziToast.show({
@@ -6909,7 +6909,7 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
                 })
               }
             })
-            $(`#options-modal-config-form-extra`).html(`Record created: <strong>${moment(record.createdAt).format('LLLL')}</strong><br />Record last updated: <strong>${moment(record.updatedAt).format('LLLL')}</strong><br /><br />Scheduled time in: <strong>${record.scheduled_in !== null ? moment(record.scheduled_in).format('LLLL') : `not scheduled`}</strong><br />Scheduled time out: <strong>${record.scheduled_out !== null ? moment(record.scheduled_out).format('LLLL') : `not scheduled`}</strong>`)
+            $(`#options-modal-config-form-extra`).html(`Record created: <strong>${moment(record.createdAt).format('LLLL')}</strong><br />Record last updated: <strong>${moment(record.updatedAt).format('LLLL')}</strong><br /><br />Scheduled time in: <strong>${record.scheduledIn !== null ? moment(record.scheduledIn).format('LLLL') : `not scheduled`}</strong><br />Scheduled time out: <strong>${record.scheduledOut !== null ? moment(record.scheduledOut).format('LLLL') : `not scheduled`}</strong>`)
             $('#options-modal-config-form-label').html(`Edit Timesheet`)
             $('#options-modal-config-form').iziModal('open')
           })
@@ -12276,13 +12276,13 @@ function processTimesheet (data, replace = false) {
         if (prev.indexOf(record.ID) === -1) {
           // Cancelled hours
           if (record.approved === -1) {
-            addNotification(`timesheet-cancelled`, `timesheet-${record.ID}`, `info`, record.updatedAt, `Director: ${record.name}<br />Canceled time: ${moment(record.scheduled_in).format('MM/DD/YYYY hh:mm A')} - ${moment(record.scheduled_out).format('hh:mm A')}`, `Canceled Director Hours`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
-          } else if (record.approved === 0 && record.time_in !== null && record.time_out !== null) {
-            addNotification(`timesheet-needs-approved`, `timesheet-${record.ID}`, `info`, record.updatedAt, `Director: ${record.name}<br />Time in: ${moment(record.time_in).format('MM/DD/YYYY hh:mm A')} - ${moment(record.time_out).format('hh:mm A')}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
-          } else if (record.approved === 0 && record.time_in === null && record.time_out === null) {
-            addNotification(`timesheet-absent`, `timesheet-${record.ID}`, `urgent`, record.updatedAt, `Director: ${record.name}<br />Scheduled time: ${moment(record.scheduled_in).format('MM/DD/YYYY hh:mm A')} - ${moment(record.scheduled_out).format('hh:mm A')}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+            addNotification(`timesheet-cancelled`, `timesheet-${record.ID}`, `info`, record.updatedAt, `Director: ${record.name}<br />Canceled time: ${moment(record.scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(record.scheduledOut).format('hh:mm A')}`, `Canceled Director Hours`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+          } else if (record.approved === 0 && record.timeIn !== null && record.timeOut !== null) {
+            addNotification(`timesheet-needs-approved`, `timesheet-${record.ID}`, `info`, record.updatedAt, `Director: ${record.name}<br />Time in: ${moment(record.timeIn).format('MM/DD/YYYY hh:mm A')} - ${moment(record.timeOut).format('hh:mm A')}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+          } else if (record.approved === 0 && record.timeIn === null && record.timeOut === null) {
+            addNotification(`timesheet-absent`, `timesheet-${record.ID}`, `urgent`, record.updatedAt, `Director: ${record.name}<br />Scheduled time: ${moment(record.scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(record.scheduledOut).format('hh:mm A')}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
           } else if (record.approved === 2) {
-            addNotification(`timesheet-changed`, `timesheet-${record.ID}`, `info`, record.updatedAt, `Director: ${record.name}<br />New Hours: ${moment(record.scheduled_in).format('MM/DD/YYYY hh:mm A')} - ${moment(record.scheduled_out).format('hh:mm A')}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+            addNotification(`timesheet-changed`, `timesheet-${record.ID}`, `info`, record.updatedAt, `Director: ${record.name}<br />New Hours: ${moment(record.scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(record.scheduledOut).format('hh:mm A')}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${record.ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
           } else {
             addNotification(`timesheet-good`, `timesheet-${record.ID}`)
           }
@@ -12296,22 +12296,22 @@ function processTimesheet (data, replace = false) {
               Timesheet.insert(data[key])
               // Cancelled hours
               if (data[key].approved === -1) {
-                addNotification(`timesheet-cancelled`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />Canceled time: ${moment(data[key].scheduled_in).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduled_out).format('hh:mm A')}`, `Canceled Director Hours`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+                addNotification(`timesheet-cancelled`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />Canceled time: ${moment(data[key].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledOut).format('hh:mm A')}`, `Canceled Director Hours`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
               }
 
               // Unapproved timesheet records
-              if (data[key].approved === 0 && data[key].time_in !== null && data[key].time_out !== null) {
-                addNotification(`timesheet-needs-approved`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />Time in: ${moment(data[key].time_in).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].time_out).format('hh:mm A')}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+              if (data[key].approved === 0 && data[key].timeIn !== null && data[key].timeOut !== null) {
+                addNotification(`timesheet-needs-approved`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />Time in: ${moment(data[key].timeIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].timeOut).format('hh:mm A')}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
               }
 
               // Absent Records
-              if (data[key].approved === 0 && data[key].time_in === null && data[key].time_out === null) {
-                addNotification(`timesheet-absent`, `timesheet-${data[key].ID}`, `urgent`, data[key].updatedAt, `Director: ${data[key].name}<br />Scheduled time: ${moment(data[key].scheduled_in).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduled_out).format('hh:mm A')}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+              if (data[key].approved === 0 && data[key].timeIn === null && data[key].timeOut === null) {
+                addNotification(`timesheet-absent`, `timesheet-${data[key].ID}`, `urgent`, data[key].updatedAt, `Director: ${data[key].name}<br />Scheduled time: ${moment(data[key].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledOut).format('hh:mm A')}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
               }
 
               // Unapproved timesheet records
               if (data[key].approved === 2) {
-                addNotification(`timesheet-changed`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />New Hours: ${moment(data[key].scheduled_in).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduled_out).format('hh:mm A')}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+                addNotification(`timesheet-changed`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />New Hours: ${moment(data[key].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledOut).format('hh:mm A')}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
               }
 
               break
@@ -12319,13 +12319,13 @@ function processTimesheet (data, replace = false) {
               Timesheet({ ID: data[key].ID }).update(data[key])
               // Cancelled hours
               if (data[key].approved === -1) {
-                addNotification(`timesheet-cancelled`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />Canceled time: ${moment(data[key].scheduled_in).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduled_out).format('hh:mm A')}`, `Canceled Director Hours`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
-              } else if (data[key].approved === 0 && data[key].time_in !== null && data[key].time_out !== null) {
-                addNotification(`timesheet-needs-approved`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />Time in: ${moment(data[key].time_in).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].time_out).format('hh:mm A')}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
-              } else if (data[key].approved === 0 && data[key].time_in === null && data[key].time_out === null) {
-                addNotification(`timesheet-absent`, `timesheet-${data[key].ID}`, `urgent`, data[key].updatedAt, `Director: ${data[key].name}<br />Scheduled time: ${moment(data[key].scheduled_in).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduled_out).format('hh:mm A')}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+                addNotification(`timesheet-cancelled`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />Canceled time: ${moment(data[key].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledOut).format('hh:mm A')}`, `Canceled Director Hours`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+              } else if (data[key].approved === 0 && data[key].timeIn !== null && data[key].timeOut !== null) {
+                addNotification(`timesheet-needs-approved`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />Time in: ${moment(data[key].timeIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].timeOut).format('hh:mm A')}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+              } else if (data[key].approved === 0 && data[key].timeIn === null && data[key].timeOut === null) {
+                addNotification(`timesheet-absent`, `timesheet-${data[key].ID}`, `urgent`, data[key].updatedAt, `Director: ${data[key].name}<br />Scheduled time: ${moment(data[key].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledOut).format('hh:mm A')}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
               } else if (data[key].approved === 2) {
-                addNotification(`timesheet-changed`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />New Hours: ${moment(data[key].scheduled_in).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduled_out).format('hh:mm A')}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+                addNotification(`timesheet-changed`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />New Hours: ${moment(data[key].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledOut).format('hh:mm A')}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
               } else {
                 addNotification(`timesheet-good`, `timesheet-${data[key].ID}`)
               }
@@ -12338,12 +12338,12 @@ function processTimesheet (data, replace = false) {
               }
 
               // Unapproved timesheet records
-              if (data[key].approved === 0 && data[key].time_in !== null && data[key].time_out !== null) {
+              if (data[key].approved === 0 && data[key].timeIn !== null && data[key].timeOut !== null) {
                 addNotification(`timesheet-needs-approved`, `timesheet-${data[key].ID}`)
               }
 
               // Absent Records
-              if (data[key].approved === 0 && data[key].time_in === null && data[key].time_out === null) {
+              if (data[key].approved === 0 && data[key].timeIn === null && data[key].timeOut === null) {
                 addNotification(`timesheet-absent`, `timesheet-${data[key].ID}`)
               }
 
@@ -13433,10 +13433,10 @@ function loadTimesheets (date) {
         }
 
         // Prepare clock moments
-        var clockin = record.time_in !== null ? moment(record.time_in) : null
-        var clockout = record.time_out !== null ? moment(record.time_out) : null
-        var scheduledin = record.scheduled_in !== null ? moment(record.scheduled_in) : null
-        var scheduledout = record.scheduled_out !== null ? moment(record.scheduled_out) : null
+        var clockin = record.timeIn !== null ? moment(record.timeIn) : null
+        var clockout = record.timeOut !== null ? moment(record.timeOut) : null
+        var scheduledin = record.scheduledIn !== null ? moment(record.scheduledIn) : null
+        var scheduledout = record.scheduledOut !== null ? moment(record.scheduledOut) : null
         var clocknow = moment(Meta.time)
         var clockday = moment(clockin !== null ? clockin : scheduledin).format('e')
 
