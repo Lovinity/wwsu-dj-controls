@@ -6065,10 +6065,10 @@ document.querySelector('#btn-options-calendar').onclick = function () {
                                     ${moment(event.start).format('h:mm A')} - ${moment(event.end).format('h:mm A')}
                                 </div>
                                 <div class="col-3 text-secondary">
-                                    ${event.verify_titleHTML}
+                                    ${event.verifyTitleHTML}
                                 </div>
                                     <div class="col-6 text-info">
-                                        ${event.verify_message}
+                                        ${event.verifyMessage}
                                         </div>
                             </div>`)
       })
