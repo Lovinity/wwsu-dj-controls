@@ -79,8 +79,8 @@ try {
     var curPriority = 0
     if (Meta.state.startsWith('sports_')) { curPriority = 10 }
     if (Meta.state.startsWith('remote_')) { curPriority = 7 }
-    if (Meta.state.startsWith('live_') && Meta.state !== 'live_prerecord') { curPriority = 5 }
-    if (Meta.state === 'live_prerecord') { curPriority = 3 }
+    if (Meta.state.startsWith('live_') && !Meta.state.startsWith('prerecord_')) { curPriority = 5 }
+    if (Meta.state.startsWith('prerecord_')) { curPriority = 3 }
     if (Meta.state.startsWith('automation_')) { curPriority = 2 }
 
     // Determine if the DJ should be notified of the upcoming program
@@ -9611,7 +9611,7 @@ function doMeta (metan) {
         document.querySelector('#btn-goremote').style.display = 'inline'
         document.querySelector('#btn-gosports').style.display = 'inline'
         document.querySelector('#btn-gosportsremote').style.display = 'inline'
-      } else if (Meta.state === 'live_prerecord' || Meta.state === 'automation_prerecord') {
+      } else if (Meta.state.startsWith('prerecord_') || Meta.state === 'automation_prerecord') {
         isHost = false
         badge.innerHTML = `<i class="chip-icon fas fa-compact-disc bg-primary"></i>${Meta.state}`
         document.querySelector('#btn-golive').style.display = 'inline'
@@ -9791,7 +9791,7 @@ function metaTick () {
     recorderHour = moment(Meta.time).hours()
     processDjs()
     // Start a new recording if we are in automation
-    if (Meta.state.startsWith('automation_') || Meta.state === 'live_prerecord') {
+    if (Meta.state.startsWith('automation_')) {
       ipcRenderer.send(`audio-start-new-recording`, true)
     }
   }

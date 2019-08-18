@@ -163,7 +163,7 @@ function checkCalendar (records, meta, cal) {
     }
 
     // Display tutorials when shows are upcoming
-    if ((meta.state.startsWith('automation_') || meta.state === 'live_prerecord') && !cal.hint) {
+    if ((meta.state.startsWith('automation_') || meta.state.startsWith('prerecord_')) && !cal.hint) {
       cal.hint = true
       /*
              if (calType === "Show")
@@ -301,7 +301,7 @@ function checkCalendar (records, meta, cal) {
     if (calendar.length > 0) {
       calendar.map(event => {
         // If we are not doing a show, proceed with a 12-hour clockwheel and events list
-        if (meta.state.startsWith('automation_') || meta.state === 'live_prerecord') {
+        if (meta.state.startsWith('automation_') || meta.state.startsWith('prerecord_')) {
           var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878')
           if (event.active < 1) { finalColor = hexRgb('#161616') }
           finalColor.red = Math.round(finalColor.red)
@@ -499,7 +499,7 @@ function checkCalendar (records, meta, cal) {
     }
 
     // In automation, shade the clock in 12-hour format for upcoming shows
-    if (meta.state.startsWith('automation_') || meta.state === 'live_prerecord') {
+    if (meta.state.startsWith('automation_') || meta.state.startsWith('automation_')) {
       html.title = 'Clockwheel (next 12 hours)'
       var start = moment(meta.time).startOf('day')
       if (moment(meta.time).hour() >= 12) { start.add(12, 'hours') }

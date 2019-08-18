@@ -41,9 +41,9 @@ recorder.onEncoderLoaded = function (recorder, encoding) {
   var startRecording = null
   var preText = ``
   console.log(`Encoder Loaded.`)
-  if (Meta.state === 'live_on' || Meta.state === `live_prerecord`) {
+  if (Meta.state === 'live_on' || Meta.state === `prerecord_on`) {
     startRecording = 'live'
-    preText = `${sanitize(Meta.show)}${Meta.state === `live_prerecord` ? ` PRERECORDED` : ``}`
+    preText = `${sanitize(Meta.show)}${Meta.state === `prerecord_on` ? ` PRERECORDED` : ``}`
   } else if (Meta.state === 'remote_on') {
     startRecording = 'remote'
     preText = sanitize(Meta.show)
@@ -79,9 +79,9 @@ recorder.onTimeout = function () {
   console.log(`Recording timed out.`)
   var startRecording = null
   var preText = ``
-  if (Meta.state === 'live_on' || Meta.state === 'live_prerecord') {
+  if (Meta.state === 'live_on' || Meta.state === 'prerecord_on') {
     startRecording = 'live'
-    preText = `${sanitize(Meta.show)}${Meta.state === 'live_prerecord' ? ` PRERECORDED` : ``}`
+    preText = `${sanitize(Meta.show)}${Meta.state === 'prerecord_on' ? ` PRERECORDED` : ``}`
   } else if (Meta.state === 'remote_on') {
     startRecording = 'remote'
     preText = sanitize(Meta.show)
@@ -116,9 +116,9 @@ ipcRenderer.on('new-meta', (event, arg) => {
       if (key === 'state' && arg[key] !== Meta[key]) {
         console.log(Meta.state)
         console.log(arg[key])
-        if (arg[key] === 'live_on' || arg[key] === 'live_prerecord') {
+        if (arg[key] === 'live_on' || arg[key] === 'prerecord_on') {
           startRecording = 'live'
-          preText = `${sanitize(Meta.show)}${arg[key] === 'live_prerecord' ? ` PRERECORDED` : ``}`
+          preText = `${sanitize(Meta.show)}${arg[key] === 'prerecord_on' ? ` PRERECORDED` : ``}`
         } else if (arg[key] === 'remote_on') {
           startRecording = 'remote'
           preText = sanitize(Meta.show)
@@ -175,9 +175,9 @@ ipcRenderer.on('audio-start-new-recording', (event, arg) => {
   console.log(`Main wants us to start a new recording.`)
   var startRecording = null
   var preText = ``
-  if (Meta.state === 'live_on' || Meta.state === 'live_prerecord') {
+  if (Meta.state === 'live_on' || Meta.state === 'prerecord_on') {
     startRecording = 'live'
-    preText = `${sanitize(Meta.show)}${Meta.state === 'live_prerecord' ? ` PRERECORDED` : ``}`
+    preText = `${sanitize(Meta.show)}${Meta.state === 'prerecord_on' ? ` PRERECORDED` : ``}`
   } else if (Meta.state === 'remote_on') {
     startRecording = 'remote'
     preText = sanitize(Meta.show)

@@ -67,7 +67,7 @@ ipcRenderer.on('new-meta', (event, arg) => {
   // Do stuff if the state changed
   if (typeof arg.state !== 'undefined' || typeof arg.playing !== 'undefined') {
     // Disconnect outgoing calls on automation and halftime break
-    if (Meta.state === 'sportsremote_halftime' || Meta.state === 'automation_on' || Meta.state === 'automation_break' || Meta.state === 'automation_genre' || Meta.state === 'automation_playlist' || Meta.state === 'automation_prerecord' || Meta.state.startsWith('live_') || Meta.state.startsWith('sports_')) {
+    if (Meta.state === 'sportsremote_halftime' || Meta.state === 'automation_on' || Meta.state === 'automation_break' || Meta.state === 'automation_genre' || Meta.state === 'automation_playlist' || Meta.state === 'automation_prerecord' || Meta.state.startsWith('live_') || Meta.state.startsWith('sports_') || Meta.state.startsWith('prerecord_')) {
       try {
         outgoingCloseIgnore = true
         console.log(`Closing outgoing call via meta`)
