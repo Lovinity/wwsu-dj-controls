@@ -1643,7 +1643,7 @@ try {
                 var label = Recipients({ ID: activeRecipient }).first().label
                 var message = quillGetHTML(this.quill.getContents())
                 var callback = () => {
-                  hostReq.request({ method: 'POST', url: nodeURL + '/messages/send', data: { from: client.host, to: host, to_friendly: label, message: message } }, (response) => {
+                  hostReq.request({ method: 'POST', url: nodeURL + '/messages/send', data: { from: client.host, to: host, toFriendly: label, message: message } }, (response) => {
                     if (response === 'OK') {
                       this.quill.setText('')
                       markRead(null)
@@ -10312,12 +10312,12 @@ function selectRecipient (recipient = null) {
                                         <span class="close text-white" id="message-n-x-${message.ID}" style="pointer-events: auto;">X</span>
                                         <div id="message-n-a-${message.ID}" style="pointer-events: auto;">
                                             <div id="message-n-t-${message.ID}">${message.message}</div>
-                                            <div id="message-n-b-${message.ID}" style="font-size: 0.66em;">${moment(message.createdAt).format('hh:mm A')} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' (Private)' : ``}</span>
+                                            <div id="message-n-b-${message.ID}" style="font-size: 0.66em;">${moment(message.createdAt).format('hh:mm A')} by ${message.fromFriendly} ${(message.to === 'DJ-private') ? ' (Private)' : ``}</span>
                                         </div>
                                     </div>`
           } else {
             document.querySelector(`#message-n-t-${message.ID}`).innerHTML = message.message
-            document.querySelector(`#message-n-b-${message.ID}`).innerHTML = `${moment(message.createdAt).format('hh:mm A')} by ${message.from_friendly} ${(message.to === 'DJ-private') ? ' (Private)' : ``}`
+            document.querySelector(`#message-n-b-${message.ID}`).innerHTML = `${moment(message.createdAt).format('hh:mm A')} by ${message.fromFriendly} ${(message.to === 'DJ-private') ? ' (Private)' : ``}`
           }
         })
       }
@@ -10354,7 +10354,7 @@ function selectRecipient (recipient = null) {
       ${jdenticon.toSvg(message.from, 64)}<br />
     </div>
     <div class="col-8">
-      <small>${message.from_friendly} -> ${(message.to === 'DJ-private') ? 'DJ (Private)' : `${message.to_friendly}`}</small>
+      <small>${message.fromFriendly} -> ${(message.to === 'DJ-private') ? 'DJ (Private)' : `${message.toFriendly}`}</small>
       <div id="message-t-${message.ID}">${message.message}</div>
     </div>
     <div class="col-2">
@@ -11191,7 +11191,7 @@ function prepareDisplay () {
 }
 
 function sendDisplay () {
-  hostReq.request({ method: 'POST', url: nodeURL + '/messages/send', data: { from: client.host, to: `display-public`, to_friendly: `Display (Public)`, message: document.querySelector('#display-message').value } }, function (response) {
+  hostReq.request({ method: 'POST', url: nodeURL + '/messages/send', data: { from: client.host, to: `display-public`, toFriendly: `Display (Public)`, message: document.querySelector('#display-message').value } }, function (response) {
     if (response === 'OK') {
       $('#display-modal').iziModal('close')
       iziToast.show({
@@ -11980,14 +11980,14 @@ function processMessages (data, replace = false) {
               case 'all':
                 /*
                                  var notification = notifier.notify('New Message', {
-                                 message: `You have a new message from ${datum.from_friendly} (see DJ Controls).`,
+                                 message: `You have a new message from ${datum.fromFriendly} (see DJ Controls).`,
                                  icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
                                  duration: 30000,
                                  });
                                  */
                 main.flashTaskbar()
                 iziToast.show({
-                  title: `Message from ${datum.from_friendly}`,
+                  title: `Message from ${datum.fromFriendly}`,
                   message: `${datum.message}`,
                   timeout: 30000,
                   close: true,
@@ -12014,14 +12014,14 @@ function processMessages (data, replace = false) {
                 if (typeof Meta.state !== 'undefined' && ((Meta.state.includes('automation_') && client.webmessages) || (!Meta.state.includes('automation_') && isHost))) {
                   /*
                                      var notification = notifier.notify('New Web Message', {
-                                     message: `You have a new web message from ${datum.from_friendly} (see DJ Controls).`,
+                                     message: `You have a new web message from ${datum.fromFriendly} (see DJ Controls).`,
                                      icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
                                      duration: 30000,
                                      });
                                      */
                   main.flashTaskbar()
                   iziToast.show({
-                    title: `Web message from ${datum.from_friendly}`,
+                    title: `Web message from ${datum.fromFriendly}`,
                     message: `${datum.message}`,
                     timeout: 30000,
                     close: true,
@@ -12072,14 +12072,14 @@ function processMessages (data, replace = false) {
                 case 'all':
                   /*
                                      var notification = notifier.notify('New Message', {
-                                     message: `You have a new message from ${data[key].from_friendly} (see DJ Controls).`,
+                                     message: `You have a new message from ${data[key].fromFriendly} (see DJ Controls).`,
                                      icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
                                      duration: 30000,
                                      });
                                      */
                   main.flashTaskbar()
                   iziToast.show({
-                    title: `Message from ${data[key].from_friendly}`,
+                    title: `Message from ${data[key].fromFriendly}`,
                     message: `${data[key].message}`,
                     timeout: 30000,
                     close: true,
@@ -12106,14 +12106,14 @@ function processMessages (data, replace = false) {
                   if (typeof Meta.state !== 'undefined' && ((Meta.state.includes('automation_') && client.webmessages) || (!Meta.state.includes('automation_') && isHost))) {
                     /*
                                          var notification = notifier.notify('New Web Message', {
-                                         message: `You have a new web message from ${data[key].from_friendly} (see DJ Controls).`,
+                                         message: `You have a new web message from ${data[key].fromFriendly} (see DJ Controls).`,
                                          icon: 'https://images.vexels.com/media/users/3/136398/isolated/preview/b682d2f42a8d5d26e484abff38f92e78-flat-message-icon-by-vexels.png',
                                          duration: 30000,
                                          });
                                          */
                     main.flashTaskbar()
                     iziToast.show({
-                      title: `Web message from ${data[key].from_friendly}`,
+                      title: `Web message from ${data[key].fromFriendly}`,
                       message: `${data[key].message}`,
                       timeout: 30000,
                       close: true,
