@@ -7850,7 +7850,7 @@ document.querySelector(`#dj-attendance`).addEventListener('click', function (e) 
                             </div>`
             })
             logs.innerHTML = newLog
-            hostReq.request({ method: 'POST', url: nodeURL + '/listeners/get', data: { start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true) } }, function (response2) {
+            hostReq.request({ method: 'POST', url: nodeURL + '/analytics/listeners', data: { start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true) } }, function (response2) {
               if (response2.length > 1) {
                 var theData = []
                 response2.map(listener => {
@@ -7944,7 +7944,7 @@ document.querySelector(`#global-logs`).addEventListener('click', function (e) {
             })
             logs.innerHTML = newLog
 
-            hostReq.request({ method: 'POST', url: nodeURL + '/listeners/get', data: { start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true) } }, function (response2) {
+            hostReq.request({ method: 'POST', url: nodeURL + '/analytics/listeners', data: { start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true) } }, function (response2) {
               if (response2.length > 1) {
                 var theData = []
                 response2.map(listener => {
@@ -11295,7 +11295,7 @@ function goBreak (halftime = false, techissue = false) {
 function playTopAdd () {
   $('#wait-modal').iziModal('open')
   document.querySelector('#wait-text').innerHTML = 'Queuing/playing Top Add'
-  hostReq.request({ method: 'POST', url: nodeURL + '/songs/queue-add' }, function (response) {
+  hostReq.request({ method: 'POST', url: nodeURL + '/songs/queue-top-add' }, function (response) {
     if (response !== 'OK') {
       iziToast.show({
         title: 'An error occurred',
