@@ -5326,11 +5326,35 @@ document.querySelector('#modal-scheduler-new').onclick = function () {
         maximum: 1000,
         description: `0 - 1000. Higher priorities mean higher likelihood this DJ will get one of their most preferred show times. Typically, use the number of remote credits the DJ earned from last semester, or a default number if this is a new DJ.`
       },
+      sActualStartDay: {
+        type: 'string',
+        title: 'Scheduled Start Day',
+        required: true,
+        enum: ['[GENERATE IT]', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        description: `What day of the week is this DJ's show officially scheduled to start? Select [GENERATE IT] to indicate the show has not yet been scheduled; the next time you generate a schedule, a time will be assigned based on the proposals specified in the proposals section. NOTE: there is no schedule conflict detection if you edit this!`
+      },
+      sActualStartTime: {
+        type: 'time',
+        title: 'Scheduled Start Time',
+        description: `What time is the DJ's show officially scheduled to start? Ignored if start day is set to generate it. NOTE: there is no schedule conflict detection if you edit this!`
+      },
+      sActualEndDay: {
+        type: 'string',
+        title: 'Scheduled End Day',
+        enum: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        description: `What day of the week is this DJ's show officially scheduled to end? Ignored if start day is set to generate it. NOTE: there is no schedule conflict detection if you edit this!`
+      },
+      sActualEndTime: {
+        type: 'time',
+        title: 'Scheduled End Time',
+        description: `What time is the DJ's show officially scheduled for? Ignored if start day is set to generate it. NOTE: there is no schedule conflict detection if you edit this!`
+      },
       sProposal: {
         type: 'array',
+        title: 'Show Proposals (most preferred first)',
         items: {
           type: 'object',
-          title: 'Show Time Proposal',
+          title: 'Proposal',
           description: "Specify this DJ's preferred show times in order from most preferred first to least preferred.",
           properties: {
             sStartDay: {
@@ -5383,6 +5407,36 @@ document.querySelector('#modal-scheduler-new').onclick = function () {
         })
       }
 
+      try {
+        var actual = {}
+        if (values.sActualStartDay !== '[GENERATE IT]') {
+          var temp2 = values.sActualStartTime.split(`:`)
+          var actualStartHour = parseInt(temp2[0])
+          var actualStartMinute = parseInt(temp2[1])
+
+          temp2 = values.sActualEndTime.split(`:`)
+          var actualEndHour = parseInt(temp2[0])
+          var actualEndMinute = parseInt(temp2[1])
+
+          actual.start = weekToInt(values.sActualStartDay, actualStartHour, actualStartMinute)
+          actual.end = weekToInt(values.sActualEndDay, actualEndHour, actualEndMinute)
+        }
+      } catch (e) {
+        iziToast.show({
+          title: `Failed to add schedule planner item.`,
+          message: `You selected a scheduled start day, but one or more of scheduled start time or scheduled end time was not filled out.`,
+          timeout: 10000,
+          close: true,
+          color: 'red',
+          drag: false,
+          position: 'center',
+          closeOnClick: true,
+          overlay: false,
+          zindex: 1000
+        })
+        return null
+      }
+
       hostReq.request({
         method: 'POST',
         url: nodeURL + '/planner/add',
@@ -5390,7 +5444,8 @@ document.querySelector('#modal-scheduler-new').onclick = function () {
           dj: values.sDj,
           show: values.sShow,
           priority: values.sPriority,
-          proposal: proposals
+          proposal: proposals,
+          actual: actual
         }
       }, function (response) {
         console.dir(response)
@@ -5573,8 +5628,18 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
             })
           }
 
+          var actual = { sActualStartDay: '[GENERATE IT]', sActualStartTime: undefined, sActualEndDay: 'Sunday', sActualEndTime: undefined }
+          if (typeof record.actual.start !== 'undefined' && typeof record.actual.end !== 'undefined') {
+            var actualStart = intToWeek(record.actual.start)
+            var actualEnd = intToWeek(record.actual.end)
+            actual.sActualStartDay = actualStart.dayOfWeekS
+            actual.sActualStartTime = `${actualStart.hour}:${actualStart.minute < 10 ? `0${actualStart.minute}` : actualStart.minute}`
+            actual.sActualEndDay = actualEnd.dayOfWeekS
+            actual.sActualEndTime = `${actualEnd.hour}:${actualEnd.minute < 10 ? `0${actualEnd.minute}` : actualEnd.minute}`
+          }
+
           $('#options-modal-config-form-form').html(``)
-          $('#options-modal-config-form-extra').html(record.actual !== null && typeof record.actual.start !== `undefined` ? `<strong>This record already has a finalized timeslot.</strong> If you edit it, it will become un-finalized, which means it will be re-scheduled on the next generation.` : ``)
+          $('#options-modal-config-form-extra').html(record.actual !== null && typeof record.actual.start !== `undefined` ? `<strong>This record already has a finalized timeslot.</strong> You can change the finalized timeslot as necessary. If you want the scheduler to re-generate a schedule for this show based on the specified proposals, set the scheduled start day to GENERATE IT.` : ``)
           $('#options-modal-config-form-form').jsonForm({
             schema: {
               sDj: {
@@ -5597,8 +5662,32 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
                 maximum: 1000,
                 description: `0 - 1000. Higher priorities mean higher likelihood this DJ will get one of their most preferred show times. Typically, use the number of remote credits the DJ earned from last semester, or a default number if this is a new DJ.`
               },
+              sActualStartDay: {
+                type: 'string',
+                title: 'Scheduled Start Day',
+                required: true,
+                enum: ['[GENERATE IT]', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                description: `What day of the week is this DJ's show officially scheduled to start? Select [GENERATE IT] to indicate the show has not yet been scheduled; the next time you generate a schedule, a time will be assigned based on the proposals specified in the proposals section. NOTE: there is no schedule conflict detection if you edit this!`
+              },
+              sActualStartTime: {
+                type: 'time',
+                title: 'Scheduled Start Time',
+                description: `What time is the DJ's show officially scheduled to start? Ignored if start day is set to generate it. NOTE: there is no schedule conflict detection if you edit this!`
+              },
+              sActualEndDay: {
+                type: 'string',
+                title: 'Scheduled End Day',
+                enum: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                description: `What day of the week is this DJ's show officially scheduled to end? Ignored if start day is set to generate it. NOTE: there is no schedule conflict detection if you edit this!`
+              },
+              sActualEndTime: {
+                type: 'time',
+                title: 'Scheduled End Time',
+                description: `What time is the DJ's show officially scheduled for? Ignored if start day is set to generate it. NOTE: there is no schedule conflict detection if you edit this!`
+              },
               sProposal: {
                 type: 'array',
+                title: 'Show Proposals (most preferred first)',
                 items: {
                   type: 'object',
                   title: 'Show Time Proposal',
@@ -5638,6 +5727,10 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
               sDj: record.dj,
               sShow: record.show,
               sPriority: record.priority,
+              sActualStartDay: actual.sActualStartDay,
+              sActualStartTime: actual.sActualStartTime,
+              sActualEndDay: actual.sActualEndDay,
+              sActualEndTime: actual.sActualEndTime,
               sProposal: proposals
             },
             onSubmitValid: function (values) {
@@ -5660,6 +5753,36 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
                 })
               }
 
+              try {
+                var actual = {}
+                if (values.sActualStartDay !== '[GENERATE IT]') {
+                  var temp2 = values.sActualStartTime.split(`:`)
+                  var actualStartHour = parseInt(temp2[0])
+                  var actualStartMinute = parseInt(temp2[1])
+
+                  temp2 = values.sActualEndTime.split(`:`)
+                  var actualEndHour = parseInt(temp2[0])
+                  var actualEndMinute = parseInt(temp2[1])
+
+                  actual.start = weekToInt(values.sActualStartDay, actualStartHour, actualStartMinute)
+                  actual.end = weekToInt(values.sActualEndDay, actualEndHour, actualEndMinute)
+                }
+              } catch (e) {
+                iziToast.show({
+                  title: `Failed to edit schedule planner item.`,
+                  message: `You selected a scheduled start day, but one or more of scheduled start time or scheduled end time was not filled out.`,
+                  timeout: 10000,
+                  close: true,
+                  color: 'red',
+                  drag: false,
+                  position: 'center',
+                  closeOnClick: true,
+                  overlay: false,
+                  zindex: 1000
+                })
+                return null
+              }
+
               hostReq.request({
                 method: 'POST',
                 url: nodeURL + '/planner/edit',
@@ -5669,7 +5792,7 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
                   show: values.sShow,
                   priority: values.sPriority,
                   proposal: proposals,
-                  clearActual: true
+                  actual: actual
                 }
               }, function (response) {
                 console.dir(response)
@@ -9557,7 +9680,7 @@ function doMeta (metan) {
     queueTime.innerHTML = moment.duration(queueLength, 'seconds').format('mm:ss')
 
     // Flash the WWSU Operations box when queue time goes below 15 seconds.
-    if (queueLength < 15 && queueLength > 0 && document.querySelector('#queue').style.display !== 'none') {
+    if (queueLength < 15 && queueLength > 0 && document.querySelector('#queue').style.display !== 'none' && (Meta.state.startsWith('_returning') || Meta.state.startsWith('automation_'))) {
       var operations = document.querySelector('#operations')
       operations.className = 'card p-1 m-3 text-white'
       operations.style.backgroundColor = '#ff6f00'
@@ -11872,7 +11995,7 @@ function processPlanner (data, replace = false) {
     if (temp !== null) {
       var newHTML = ``
       Planner().each((item) => {
-        newHTML += `<div class="row m-1 bg-light-1 border-left border-${item.actual !== null && typeof item.actual.start !== 'undefined' ? `success` : `secondary`} shadow-2" style="border-left-width: 5px !important;" title="${item.actual !== null && typeof item.actual.start !== 'undefined' ? `This record is finalized and has a scheduled timeslot that will not change upon generation.` : `This record is not finalized; generating a new schedule will assign a timeslot.`}">
+        newHTML += `<div class="row m-1 bg-light-1 border-left border-${item.actual !== null && typeof item.actual.start !== 'undefined' ? `success` : `secondary`} shadow-2" style="border-left-width: 5px !important;" title="${item.actual !== null && typeof item.actual.start !== 'undefined' ? `This record is finalized and has a scheduled timeslot that will not change upon generation (you can edit it by clicking edit).` : `This record is not finalized; generating a new schedule will assign a timeslot based on the proposals specified.`}">
                             <div class="col-6 text-primary">
                                 ${item.dj} - ${item.show}
                             </div>
