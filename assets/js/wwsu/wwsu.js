@@ -1,6 +1,8 @@
+/* eslint-disable standard/no-callback-literal */
 /* global iziToast, moment */
 
 // Class for managing data from WWSU
+// eslint-disable-next-line no-unused-vars
 class WWSUdb {
   constructor (db) {
     this._db = db
@@ -52,7 +54,7 @@ class WWSUdb {
       return null
     } else {
       for (var key in query) {
-        if (query.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(query, key)) {
           switch (key) {
             case 'insert':
               this._db.insert(query[key])
@@ -94,6 +96,7 @@ class WWSUdb {
 }
 
 // Class for managing requests and authorization to WWSU's API
+// eslint-disable-next-line no-unused-vars
 class WWSUreq {
   constructor (socket, host, usernameField = null, authPath = null, authName = null) {
     this.socket = socket
@@ -320,6 +323,7 @@ class WWSUreq {
 }
 
 // Use this function to wait for an element to exist. Calls back the cb when it exists, providing the DOM as a parameter.
+// eslint-disable-next-line no-unused-vars
 function waitForElement (theelement, cb) {
   console.log(theelement)
   if (!document.querySelector(theelement)) {

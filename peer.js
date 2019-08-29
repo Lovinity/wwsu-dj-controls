@@ -479,7 +479,7 @@ function startCall (hostID, reconnect = false, bitrate = bitRate) {
   ipcRenderer.send(`peer-get-host-info`, hostID)
 }
 
-function _startCall (hostID, host, peerID, reconnect = false, bitrate = bitRate) {
+function _startCall (hostID, friendlyName, peerID, reconnect = false, bitrate = bitRate) {
   var callFailed = (keepTrying) => {
     try {
       outgoingCloseIgnore = true
@@ -493,9 +493,9 @@ function _startCall (hostID, host, peerID, reconnect = false, bitrate = bitRate)
 
     if (!reconnect) {
       if (!keepTrying) {
-        ipcRenderer.send(`peer-no-answer`, host.friendlyName || hostID)
+        ipcRenderer.send(`peer-no-answer`, friendlyName || hostID)
       } else {
-        ipcRenderer.send(`peer-waiting-answer`, host.friendlyName)
+        ipcRenderer.send(`peer-waiting-answer`, friendlyName)
         try {
           waitingFor = tryingCall
           clearInterval(callTimer)
@@ -514,15 +514,9 @@ function _startCall (hostID, host, peerID, reconnect = false, bitrate = bitRate)
     }
   }
 
-  if (!host) {
-    console.log(`INVALID HOST`)
-    callFailed(false)
-    return null
-  }
+  console.log(`Trying to call ${friendlyName}`)
 
-  console.log(`Trying to call ${host.friendlyname}`)
-
-  tryingCall = { host: hostID, friendlyname: host.friendlyname }
+  tryingCall = { host: hostID, friendlyname: friendlyName }
 
   if (!reconnect) { ipcRenderer.send(`peer-connecting-call`, null) }
 
@@ -573,7 +567,7 @@ function _startCall (hostID, host, peerID, reconnect = false, bitrate = bitRate)
           if (!Meta.state.includes('_halftime') && (Meta.state.startsWith(`remote_`) || Meta.state.startsWith(`sportsremote_`) || Meta.state === `automation_remote` || Meta.state === `automation_sportsremote`)) {
             window.peerError = -1
             console.log(`Trying to re-connect...`)
-            startCall(host.host, true, bitRate)
+            startCall(hostID, true, bitRate)
           } else {
             window.peerError = 0
             console.log(`NOT reconnecting; we are not supposed to be connected to the call at this time.`)

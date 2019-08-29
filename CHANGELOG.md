@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Using skywayJS instead of peerJS.
 - DJ Controls uses a separate thread each for calendar processing, remote broadcast audio calling, and audio recording / silence detection. This should improve performance and audio quality.
 - Updated instances of live_prerecord to utilize new prerecord_on and prerecord_break, including in the audio recorder.
+- Audio calling utilizes new, more secure recipients system.
 
 ### Fixed
 - "Cannot read property muted of undefined" error that sometimes appeared and prevented operation buttons from appearing.

@@ -345,7 +345,7 @@ try {
       } catch (e) {
         console.log(`The peer ${arg} does not appear in the list of recipients. Not answering the call.`)
       }
-      if (recipient && Hosts({ host: recipient.host, authorized: true, makeCalls: true }).get().length >= 0) {
+      if (recipient && recipient.makeCalls) {
         console.log(`Peer ${arg} is authorized. Answering call...`)
         ipcRenderer.send('peer-answer-call', null)
       } else {
@@ -531,10 +531,31 @@ try {
 
   ipcRenderer.on(`peer-get-host-info`, (event, arg) => {
     console.log(`Peer wants information about host ${arg}.`)
-    var host = Hosts({ host: arg }).first()
-    var peerID = null
-    if (host) { peerID = Recipients({ host: host.host }).first().peer }
-    ipcRenderer.send(`peer-host-info`, [host, peerID])
+    var stuff = Recipients({ host: arg }).first()
+    if (stuff && stuff !== null) {
+      var peerID = stuff.peer
+      var friendlyName = stuff.label
+      ipcRenderer.send(`peer-host-info`, [friendlyName, peerID])
+    } else {
+      iziToast.show({
+        titleColor: '#000000',
+        messageColor: '#000000',
+        color: 'red',
+        close: true,
+        overlay: false,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        zindex: 100,
+        layout: 1,
+        imageWidth: 100,
+        image: ``,
+        progressBarColor: `rgba(255, 0, 0, 0.5)`,
+        closeOnClick: true,
+        position: 'center',
+        timeout: 10000,
+        title: 'Peer Error',
+        message: `There was an error trying to initiate the audio call in peer-get-host-info.`
+      })
+    }
   })
 
   ipcRenderer.on(`peer-device-input-error`, (event, arg) => {
@@ -10912,14 +10933,11 @@ function prepareRemote () {
   var temp2 = document.querySelector('#remote-host')
   if (temp2 !== null) {
     temp2.innerHTML = ``
-    Hosts({ authorized: true, answerCalls: true }).each((host) => {
-      console.dir(host)
-      Recipients({ host: host.host }).each((recipient) => {
-        console.dir(recipient)
-        if (host.host !== client.host && recipient.peer !== null) {
-          temp2.innerHTML += `<option value="${host.host}">${host.friendlyname}</option>`
-        }
-      })
+    Recipients({ answerCalls: true }).each((recipient) => {
+      console.dir(recipient)
+      if (recipient.host !== `computer-${client.ID}` && recipient.peer !== null) {
+        temp2.innerHTML += `<option value="${recipient.host}">${recipient.label}</option>`
+      }
     })
   }
 
@@ -11105,14 +11123,11 @@ function prepareSportsRemote () {
   var temp2 = document.querySelector('#sportsremote-host')
   if (temp2 !== null) {
     temp2.innerHTML = ``
-    Hosts({ authorized: true, answerCalls: true }).each((host) => {
-      console.dir(host)
-      Recipients({ host: host.host }).each((recipient) => {
-        console.dir(recipient)
-        if (host.host !== client.host && recipient.peer !== null) {
-          temp2.innerHTML += `<option value="${host.host}">${host.friendlyname}</option>`
-        }
-      })
+    Recipients({ answerCalls: true }).each((recipient) => {
+      console.dir(recipient)
+      if (recipient.host !== `computer-${client.ID}` && recipient.peer !== null) {
+        temp2.innerHTML += `<option value="${recipient.host}">${recipient.label}</option>`
+      }
     })
   }
 
