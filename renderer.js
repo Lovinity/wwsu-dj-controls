@@ -8798,7 +8798,7 @@ document.querySelector(`#options-host-button`).addEventListener('click', functio
       console.log(e.target.id)
       if (e.target.id.startsWith('options-host-edit-')) {
         var selectedOption = document.querySelector('#options-host-locktodj').options[document.querySelector('#options-host-locktodj').selectedIndex].value
-        directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/hosts/edit', data: { ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector('#options-host-name').value, lockToDJ: selectedOption === '' ? null : parseInt(selectedOption), authorized: document.querySelector('#options-host-authorized').checked, admin: document.querySelector('#options-host-admin').checked, requests: document.querySelector('#options-host-requests').checked, emergencies: document.querySelector('#options-host-emergencies').checked, webmessages: document.querySelector('#options-host-webmessages').checked, makeCalls: document.querySelector('#options-host-makecalls').checked, answerCalls: document.querySelector('#options-host-answercalls').checked, silenceDetection: document.querySelector('#options-host-silence').checked, recordAudio: document.querySelector('#options-host-record').checked } }, function (response) {
+        directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/hosts/edit', data: { ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector('#options-host-name').value, lockToDJ: selectedOption === '' ? null : parseInt(selectedOption), authorized: document.querySelector('#options-host-authorized').checked, admin: document.querySelector('#options-host-admin').checked, requests: document.querySelector('#options-host-requests').checked, emergencies: document.querySelector('#options-host-emergencies').checked, webmessages: document.querySelector('#options-host-webmessages').checked, makeCalls: document.querySelector('#options-host-makecalls').checked, answerCalls: document.querySelector('#options-host-answercalls').checked, silenceDetection: document.querySelector('#options-host-silence').checked, recordAudio: document.querySelector('#options-host-record').checked, accountability: document.querySelector('#options-host-accountability').checked } }, function (response) {
           if (response === 'OK') {
             $('#options-modal-host').iziModal('close')
             iziToast.show({
@@ -9233,7 +9233,7 @@ function hostSocket (cb = function (token) { }) {
 
       if (client.otherHosts) { processHosts(client.otherHosts, true) }
 
-      ipcRenderer.send(`audio-should-record`, client.recordAudio)
+      ipcRenderer.send(`audio-should-record`, client.recordAudio && client.authorized)
       // authtoken = client.token;
       if (!client.authorized) {
         var noConnection = document.getElementById('no-connection')
