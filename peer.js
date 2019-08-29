@@ -39,7 +39,7 @@ var incomingCloseIgnore = false
 var audioContext = new AudioContext()
 var gain = audioContext.createGain()
 var limiter = audioContext.createDynamicsCompressor()
-gain.gain.value = 1
+gain.gain.value = 1.2
 limiter.threshold.value = -18.0
 limiter.knee.value = 18.0
 limiter.ratio.value = 4.0
@@ -613,7 +613,7 @@ function getAudio (device) {
         console.error(eee)
       }
 
-      gain.gain.value = 1
+      gain.gain.value = 1.2
       analyserDest = audioContext.createMediaStreamDestination()
       analyserStream = audioContext.createMediaStreamSource(stream)
       analyserStream.connect(gain)
