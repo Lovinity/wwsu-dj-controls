@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Management of the airing of underwritings through DJ Controls.
 - locking of hosts to a specific DJ (or no DJs) via manage hosts. When a DJ Controls is locked to a specific DJ, it will prevent starting any shows/broadcasts that are unscheduled or not under the DJ's name, and also will prevent interfering with other shows.
 - Ability to change finalized show times in the schedule generator.
+- Multiple instance checking via the server [Issue 39](https://github.com/Lovinity/wwsu-dj-controls/issues/39)
 
 ### Changed
 - Timesheet window in admin options -> manage directors -> timesheets now displays timesheets as vertical Gantt Charts.
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - DJ Controls uses a separate thread each for calendar processing, remote broadcast audio calling, and audio recording / silence detection. This should improve performance and audio quality.
 - Updated instances of live_prerecord to utilize new prerecord_on and prerecord_break, including in the audio recorder.
 - Audio calling utilizes new, more secure recipients system.
+- Because sometimes depending on remote input device the automated countdown voice will go on the air, the "on the air" notification was removed and replaced with a 1 second warning.
 
 ### Fixed
 - "Cannot read property muted of undefined" error that sometimes appeared and prevented operation buttons from appearing.

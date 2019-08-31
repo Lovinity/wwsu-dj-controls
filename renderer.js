@@ -60,6 +60,7 @@ try {
   var afterStartCall = () => {
   }
   var queueUnknown = false
+  var connectedBefore = false
 
   ipcRenderer.on('processed-darksky', (event, e) => {
     var temp = document.querySelector(`#current-weather`)
@@ -9235,7 +9236,6 @@ document.querySelector(`#track-requests`).addEventListener('click', function (e)
 function doSockets () {
   hostSocket(function (token) {
     if (token) {
-      onlineSocket()
       metaSocket()
       easSocket()
       statusSocket()
@@ -9252,6 +9252,8 @@ function hostSocket (cb = function (token) { }) {
     // console.log(body);
     try {
       client = body
+      // eslint-disable-next-line no-unused-vars
+      var restarter
 
       if (client.otherHosts) { processHosts(client.otherHosts, true) }
 
@@ -9268,182 +9270,183 @@ function hostSocket (cb = function (token) { }) {
         // eslint-disable-next-line standard/no-callback-literal
         cb(false)
       } else {
-        // eslint-disable-next-line standard/no-callback-literal
-        cb(true)
+        hostReq.request({ method: 'post', url: nodeURL + '/recipients/add-computers', data: { host: client.host } }, function (response2) {
+          if (connectedBefore || (typeof response2.alreadyConnected !== 'undefined' && !response2.alreadyConnected)) {
+            connectedBefore = true
+            ipcRenderer.send(`peer-reregister`, null)
 
-        // Sink main audio devices
-        ipcRenderer.send(`audio-change-input-device`, settings.get(`audio.input.main`) || undefined)
-      }
+            // Sink main audio devices
+            ipcRenderer.send(`audio-change-input-device`, settings.get(`audio.input.main`) || undefined)
+            if (client.accountability) {
+              // Subscribe to Attendance socket to get attendance updates
+              hostReq.request({ method: 'post', url: nodeURL + '/attendance/get', data: { duration: 7 } }, function serverResponded (body, JWR) {
+                // console.log(body);
+                try {
+                  processAttendance(body, true)
+                } catch (e) {
+                  console.error(e)
+                  console.log('FAILED attendance CONNECTION')
+                  clearTimeout(restarter)
+                  restarter = setTimeout(hostSocket, 10000)
+                }
+              })
 
-      if (client.accountability) {
-        // Subscribe to Attendance socket to get attendance updates
-        hostReq.request({ method: 'post', url: nodeURL + '/attendance/get', data: { duration: 7 } }, function serverResponded (body, JWR) {
-          // console.log(body);
-          try {
-            processAttendance(body, true)
-          } catch (e) {
-            console.error(e)
-            console.log('FAILED attendance CONNECTION')
-            clearTimeout(restarter)
-            restarter = setTimeout(hostSocket, 10000)
+              // Subscribe to Attendance socket to get attendance updates
+              hostReq.request({ method: 'post', url: nodeURL + '/timesheet/get', data: { fourteenDays: true } }, function serverResponded (body, JWR) {
+                // console.log(body);
+                try {
+                  processTimesheet(body, true)
+                } catch (e) {
+                  console.error(e)
+                  console.log('FAILED timesheet CONNECTION')
+                  clearTimeout(restarter)
+                  restarter = setTimeout(hostSocket, 10000)
+                }
+              })
+            }
+
+            if (client.emergencies || client.accountability) {
+              var temp = document.querySelector(`#open-notifications`)
+              if (temp) { temp.style.display = 'inline' }
+              temp = document.querySelector(`#badge-notifications`)
+              if (temp) { temp.style.display = 'inline' }
+            } else {
+              temp = document.querySelector(`#open-notifications`)
+              if (temp) { temp.style.display = 'none' }
+              temp = document.querySelector(`#badge-notifications`)
+              if (temp) { temp.style.display = 'none' }
+            }
+
+            if (client.admin) {
+              temp = document.querySelector(`#options`)
+              var restarter
+              if (temp) { temp.style.display = 'inline' }
+
+              // Get djs and subscribe to the dj socket
+              noReq.request({ method: 'post', url: nodeURL + '/djs/get', data: {} }, function serverResponded (body, JWR) {
+                // console.log(body);
+                try {
+                  processDjs(body, true)
+                } catch (e) {
+                  console.error(e)
+                  console.log('FAILED DJs CONNECTION')
+                  clearTimeout(restarter)
+                  restarter = setTimeout(hostSocket, 10000)
+                }
+              })
+
+              // Get directors and subscribe to the directors socket
+              noReq.request({ method: 'post', url: nodeURL + '/directors/get', data: {} }, function serverResponded (body, JWR) {
+                // console.log(body);
+                try {
+                  processDirectors(body, true)
+                } catch (e) {
+                  console.error(e)
+                  console.log('FAILED directors CONNECTION')
+                  clearTimeout(restarter)
+                  restarter = setTimeout(hostSocket, 10000)
+                }
+              })
+
+              // Subscribe to the XP socket
+              hostReq.request({ method: 'post', url: nodeURL + '/xp/get', data: {} }, function serverResponded (body, JWR) {
+                // console.log(body);
+                try {
+                } catch (e) {
+                  console.error(e)
+                  console.log('FAILED XP CONNECTION')
+                  clearTimeout(restarter)
+                  restarter = setTimeout(hostSocket, 10000)
+                }
+              })
+
+              // Subscribe to the timesheet socket
+              noReq.request({ method: 'post', url: nodeURL + '/timesheet/get', data: {} }, function serverResponded (body, JWR) {
+                // console.log(body);
+                try {
+                } catch (e) {
+                  console.error(e)
+                  console.log('FAILED TIMESHEET CONNECTION')
+                  clearTimeout(restarter)
+                  restarter = setTimeout(hostSocket, 10000)
+                }
+              })
+
+              // Subscribe to the discipline socket
+              hostReq.request({ method: 'POST', url: '/discipline/get', data: {} }, function (body) {
+                // console.log(body);
+                try {
+                  processDiscipline(body, true)
+                } catch (e) {
+                  console.error(e)
+                  console.log('FAILED discipline CONNECTION')
+                  clearTimeout(restarter)
+                  restarter = setTimeout(hostSocket, 10000)
+                }
+              })
+
+              // Subscribe to the config socket
+              hostReq.request({ method: 'POST', url: '/config/get', data: {} }, function (body) {
+                // console.log(body);
+                try {
+                  processConfig(body)
+                } catch (e) {
+                  console.error(e)
+                  console.log('FAILED config CONNECTION')
+                  clearTimeout(restarter)
+                  restarter = setTimeout(hostSocket, 10000)
+                }
+              })
+
+              // Subscribe to the planner socket
+              hostReq.request({ method: 'post', url: nodeURL + '/planner/get', data: {} }, function serverResponded (body, JWR) {
+                // console.log(body);
+                try {
+                  processPlanner(body, true)
+                } catch (e) {
+                  console.error(e)
+                  console.log('FAILED PLANNER CONNECTION')
+                  clearTimeout(restarter)
+                  restarter = setTimeout(hostSocket, 10000)
+                }
+              })
+
+              // Subscribe to the underwritings socket
+              noReq.request({ method: 'post', url: nodeURL + '/underwritings/get', data: {} }, function serverResponded (body, JWR) {
+                // console.log(body);
+                try {
+                  processUnderwritings(body, true)
+                } catch (e) {
+                  console.error(e)
+                  console.log('FAILED Underwritings CONNECTION')
+                  clearTimeout(restarter)
+                  restarter = setTimeout(hostSocket, 10000)
+                }
+              })
+            } else {
+              temp = document.querySelector(`#options`)
+              if (temp) { temp.style.display = 'none' }
+            }
+            // eslint-disable-next-line standard/no-callback-literal
+            cb(true)
+          } else {
+            var noConnection = document.getElementById('no-connection')
+            noConnection.style.display = 'inline'
+            noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
+                <h2 style="text-align: center; font-size: 4em; color: #F44336">Already connected!</h2>
+                <h2 style="text-align: center; font-size: 2em; color: #F44336">Another program on this computer is already connected to WWSU. Please close the other program, wait 1 minute, and then close / re-open DJ Controls.</h2>
+            </div>`
+            // eslint-disable-next-line standard/no-callback-literal
+            cb(false)
           }
         })
-
-        // Subscribe to Attendance socket to get attendance updates
-        hostReq.request({ method: 'post', url: nodeURL + '/timesheet/get', data: { fourteenDays: true } }, function serverResponded (body, JWR) {
-          // console.log(body);
-          try {
-            processTimesheet(body, true)
-          } catch (e) {
-            console.error(e)
-            console.log('FAILED timesheet CONNECTION')
-            clearTimeout(restarter)
-            restarter = setTimeout(hostSocket, 10000)
-          }
-        })
-      }
-
-      if (client.emergencies || client.accountability) {
-        var temp = document.querySelector(`#open-notifications`)
-        if (temp) { temp.style.display = 'inline' }
-        temp = document.querySelector(`#badge-notifications`)
-        if (temp) { temp.style.display = 'inline' }
-      } else {
-        temp = document.querySelector(`#open-notifications`)
-        if (temp) { temp.style.display = 'none' }
-        temp = document.querySelector(`#badge-notifications`)
-        if (temp) { temp.style.display = 'none' }
-      }
-
-      if (client.admin) {
-        temp = document.querySelector(`#options`)
-        var restarter
-        if (temp) { temp.style.display = 'inline' }
-
-        // Get djs and subscribe to the dj socket
-        noReq.request({ method: 'post', url: nodeURL + '/djs/get', data: {} }, function serverResponded (body, JWR) {
-          // console.log(body);
-          try {
-            processDjs(body, true)
-          } catch (e) {
-            console.error(e)
-            console.log('FAILED DJs CONNECTION')
-            clearTimeout(restarter)
-            restarter = setTimeout(hostSocket, 10000)
-          }
-        })
-
-        // Get directors and subscribe to the directors socket
-        noReq.request({ method: 'post', url: nodeURL + '/directors/get', data: {} }, function serverResponded (body, JWR) {
-          // console.log(body);
-          try {
-            processDirectors(body, true)
-          } catch (e) {
-            console.error(e)
-            console.log('FAILED directors CONNECTION')
-            clearTimeout(restarter)
-            restarter = setTimeout(hostSocket, 10000)
-          }
-        })
-
-        // Subscribe to the XP socket
-        hostReq.request({ method: 'post', url: nodeURL + '/xp/get', data: {} }, function serverResponded (body, JWR) {
-          // console.log(body);
-          try {
-          } catch (e) {
-            console.error(e)
-            console.log('FAILED XP CONNECTION')
-            clearTimeout(restarter)
-            restarter = setTimeout(hostSocket, 10000)
-          }
-        })
-
-        // Subscribe to the timesheet socket
-        noReq.request({ method: 'post', url: nodeURL + '/timesheet/get', data: {} }, function serverResponded (body, JWR) {
-          // console.log(body);
-          try {
-          } catch (e) {
-            console.error(e)
-            console.log('FAILED TIMESHEET CONNECTION')
-            clearTimeout(restarter)
-            restarter = setTimeout(hostSocket, 10000)
-          }
-        })
-
-        // Subscribe to the discipline socket
-        hostReq.request({ method: 'POST', url: '/discipline/get', data: {} }, function (body) {
-          // console.log(body);
-          try {
-            processDiscipline(body, true)
-          } catch (e) {
-            console.error(e)
-            console.log('FAILED discipline CONNECTION')
-            clearTimeout(restarter)
-            restarter = setTimeout(hostSocket, 10000)
-          }
-        })
-
-        // Subscribe to the config socket
-        hostReq.request({ method: 'POST', url: '/config/get', data: {} }, function (body) {
-          // console.log(body);
-          try {
-            processConfig(body)
-          } catch (e) {
-            console.error(e)
-            console.log('FAILED config CONNECTION')
-            clearTimeout(restarter)
-            restarter = setTimeout(hostSocket, 10000)
-          }
-        })
-
-        // Subscribe to the planner socket
-        hostReq.request({ method: 'post', url: nodeURL + '/planner/get', data: {} }, function serverResponded (body, JWR) {
-          // console.log(body);
-          try {
-            processPlanner(body, true)
-          } catch (e) {
-            console.error(e)
-            console.log('FAILED PLANNER CONNECTION')
-            clearTimeout(restarter)
-            restarter = setTimeout(hostSocket, 10000)
-          }
-        })
-
-        // Subscribe to the underwritings socket
-        noReq.request({ method: 'post', url: nodeURL + '/underwritings/get', data: {} }, function serverResponded (body, JWR) {
-          // console.log(body);
-          try {
-            processUnderwritings(body, true)
-          } catch (e) {
-            console.error(e)
-            console.log('FAILED Underwritings CONNECTION')
-            clearTimeout(restarter)
-            restarter = setTimeout(hostSocket, 10000)
-          }
-        })
-      } else {
-        temp = document.querySelector(`#options`)
-        if (temp) { temp.style.display = 'none' }
       }
     } catch (e) {
+      // eslint-disable-next-line standard/no-callback-literal
+      cb(false)
       console.error(e)
       console.log('FAILED HOST CONNECTION')
       restarter = setTimeout(hostSocket, 10000)
-    }
-  })
-}
-
-// Registers this DJ Controls as a recipient
-function onlineSocket () {
-  console.log('attempting online socket')
-  hostReq.request({ method: 'post', url: nodeURL + '/recipients/add-computers', data: { host: client.host } }, function (response) {
-    try {
-      // main.notification(true, "Loaded", "DJ Controls is now loaded", null, 10000);
-      ipcRenderer.send(`peer-reregister`, null)
-    } catch (e) {
-      console.error(e)
-      console.log('FAILED ONLINE CONNECTION')
-      setTimeout(onlineSocket, 10000)
     }
   })
 }
