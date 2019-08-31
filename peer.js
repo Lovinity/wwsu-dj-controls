@@ -370,13 +370,13 @@ function onReceiveStream (stream) {
   incomingCallMeter.events.on(`volume-processed`, (volume, clipping, maxVolume) => {
     if (typeof incomingCall !== 'undefined') {
       // Silence detection
-      if (maxVolume < 0.01 && (Meta.state === 'sports_on' || Meta.state === 'sportsremote_on')) {
+      if (maxVolume < 0.01 && (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on')) {
         if (silenceState0 === 0 || silenceState0 === -1) {
           silenceState0 = 1
           silenceTimer0 = setTimeout(function () {
             silenceState0 = 2
             ipcRenderer.send(`peer-silence-incoming`, true)
-          }, 12000)
+          }, 13000)
         }
       } else {
         silenceState0 = 0
@@ -652,7 +652,7 @@ function getAudio (device) {
         // console.log(`Volume: ${maxVolume}, gain: ${gain.gain.value}`);
 
         // Silence detection
-        if (maxVolume < 0.01 && (Meta.state === 'sports_on' || Meta.state === 'sportsremote_on')) {
+        if (maxVolume < 0.01 && (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on')) {
           if (silenceState === 0 || silenceState === -1) {
             silenceState = 1
             silenceTimer = setTimeout(function () {
