@@ -389,7 +389,7 @@ try {
       position: 'center',
       timeout: false,
       title: 'Poor Audio Quality',
-      message: `The host receiving audio repeatedly reported choppy audio despite multiple tries to restart the audio call. I sent you to a break. Please ensure you have a reliable network and your audio device is receiving input. Then, click "Resume Broadcast". Or, you can close this window and change settings or end the broadcast.`,
+      message: `The host receiving audio repeatedly reported choppy audio despite multiple tries to restart the audio call. I sent you to a break. Please ensure you have a reliable network, and your audio device is receiving input by clicking the speaker icon. Then, click "Resume Broadcast". Or, you can close this window and change settings or end the broadcast.`,
       buttons: [
         ['<button><b>Resume Broadcast</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
@@ -403,6 +403,50 @@ try {
     })
 
     responsiveVoice.speak('Attention: the broadcast was sent to break due to a very poor audio connection. Please check or refresh your network and resume the broadcast.')
+  })
+
+  ipcRenderer.on(`peer-silent-call-notify`, (event, arg) => {
+    console.log(`Peer wants us to display a notification about silent call.`)
+    /*
+         var notification = notifier.notify('Poor Audio Connection', {
+         message: `Please check DJ Controls for more information.`,
+         icon: 'http://pluspng.com/img-png/stop-png-hd-stop-sign-clipart-png-clipart-2400.png',
+         duration: 900000,
+         });
+         */
+    main.flashTaskbar()
+
+    iziToast.show({
+      titleColor: '#000000',
+      messageColor: '#000000',
+      color: 'red',
+      close: true,
+      overlay: true,
+      overlayColor: 'rgba(0, 0, 0, 0.75)',
+      zindex: 1000,
+      layout: 1,
+      imageWidth: 100,
+      image: ``,
+      maxWidth: 480,
+      progressBarColor: `rgba(255, 0, 0, 0.5)`,
+      closeOnClick: false,
+      position: 'center',
+      timeout: false,
+      title: 'Silence detected on other end',
+      message: `The host receiving audio has reported silence for 15 seconds on the audio call. Your broadcast has been sent to break. Please check your audio device settings by clicking the speaker icon and ensuring you are receiving audio. Please also ensure you have a good network connection and restart it if necessary. Then, resume the broadcast. Or, you can end the broadcast instead.`,
+      buttons: [
+        ['<button><b>Resume Broadcast</b></button>', function (instance, toast) {
+          instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
+          returnBreak()
+        }],
+        ['<button><b>End Broadcast</b></button>', function (instance, toast) {
+          instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
+          endShow()
+        }]
+      ]
+    })
+
+    responsiveVoice.speak('Attention: the broadcast was sent to break because of silence detected on the audio call for 15 seconds. Please check or refresh your network, ensure DJ Controls is receiving audio from your input device, and resume the broadcast.')
   })
 
   ipcRenderer.on(`peer-no-answer`, (event, arg) => {
@@ -791,7 +835,7 @@ try {
         position: 'center',
         timeout: false,
         title: 'Silence on input device',
-        message: `The input device has been silent for 15 seconds. I sent the broadcast into break. Please check your input device by clicking the speaker icon, analyzing the volume meter under "Audio Call Input Device", changing the device if necessary, and then resuming the broadcast.`
+        message: `The input device has been silent for 13 seconds. I sent the broadcast into break. Please check your input device by clicking the speaker icon, analyzing the volume meter under "Audio Call Input Device", changing the device if necessary, and then resuming the broadcast.`
       })
 
       if (!disconnected) { goBreak(false, true) }
@@ -1088,6 +1132,9 @@ try {
     ipcRenderer.send('peer-very-bad-call', null)
   })
 
+  socket.on('silent-call', function () {
+    ipcRenderer.send('peer-silent-call', null)
+  })
   var messageFlash2
   setInterval(function () {
     var messaging = document.querySelector('#messaging')

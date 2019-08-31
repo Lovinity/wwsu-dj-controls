@@ -246,6 +246,15 @@ ipcMain.on('peer-very-bad-call', (event, arg) => {
   }
 })
 
+ipcMain.on('peer-silent-call', (event, arg) => {
+  try {
+    console.log(`Peer silent call ${arg}`)
+    peerWindow.webContents.send('peer-silent-call', arg)
+  } catch (e) {
+
+  }
+})
+
 ipcMain.on('peer-very-bad-call-send', (event, arg) => {
   try {
     mainWindow.webContents.send('peer-very-bad-call-send', arg)
@@ -258,6 +267,15 @@ ipcMain.on('peer-very-bad-call-notify', (event, arg) => {
   try {
     console.log(`Peer very bad call notify`)
     mainWindow.webContents.send('peer-very-bad-call-notify', null)
+  } catch (e) {
+
+  }
+})
+
+ipcMain.on('peer-silent-call-notify', (event, arg) => {
+  try {
+    console.log(`Peer silent call notify`)
+    mainWindow.webContents.send('peer-silent-call-notify', null)
   } catch (e) {
 
   }

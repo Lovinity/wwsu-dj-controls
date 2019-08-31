@@ -262,6 +262,23 @@ ipcRenderer.on('peer-very-bad-call', (event, arg) => {
   }
 })
 
+ipcRenderer.on('peer-silent-call', (event, arg) => {
+  if (typeof outgoingCall !== `undefined`) {
+    console.log(`Main says the other end reported silence on the audio call. Bailing the call.`)
+    try {
+      window.peerError = -2
+      outgoingCloseIgnore = true
+      outgoingCall.close()
+      outgoingCall = undefined
+      outgoingCloseIgnore = false
+    } catch (e) {
+
+    }
+
+    ipcRenderer.send('peer-silent-call-notify', null)
+  }
+})
+
 ipcRenderer.on('peer-resume-call', (event, arg) => {
   console.log(`Main wants us to resume any calls on hold.`)
   if (typeof window.peerHost !== `undefined` && typeof outgoingCall === `undefined`) {
@@ -376,7 +393,7 @@ function onReceiveStream (stream) {
           silenceTimer0 = setTimeout(function () {
             silenceState0 = 2
             ipcRenderer.send(`peer-silence-incoming`, true)
-          }, 13000)
+          }, 15000)
         }
       } else {
         silenceState0 = 0
@@ -658,7 +675,7 @@ function getAudio (device) {
             silenceTimer = setTimeout(function () {
               silenceState = 2
               ipcRenderer.send(`peer-silence-outgoing`, true)
-            }, 15000)
+            }, 13000)
           }
         } else {
           silenceState = 0
