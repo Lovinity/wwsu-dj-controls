@@ -59,6 +59,7 @@ try {
   }
   var afterStartCall = () => {
   }
+  var queueUnknown = false
 
   ipcRenderer.on('processed-darksky', (event, e) => {
     var temp = document.querySelector(`#current-weather`)
@@ -9585,8 +9586,22 @@ function recipientsSocket () {
 function doMeta (metan) {
   try {
     ipcRenderer.send('new-meta', metan)
+
+    // If changingState, display please wait overlay
+    if (typeof metan.changingState !== 'undefined') {
+      if (metan.changingState !== null) {
+        $('#wait-modal').iziModal('open')
+        document.querySelector('#wait-text').innerHTML = metan.changingState
+      } else {
+        $('#wait-modal').iziModal('close')
+      }
+    }
+
+    if (typeof metan.state !== `undefined`) { queueUnknown = true }
+
     // reset ticker timer on change to queue time
     if (typeof metan.queueFinish !== 'undefined') {
+      queueUnknown = false
       clearInterval(metaTimer)
       clearTimeout(metaTimer)
       metaTimer = setTimeout(function () {
@@ -9597,16 +9612,6 @@ function doMeta (metan) {
       clearInterval(metaTimer)
       clearTimeout(metaTimer)
       metaTimer = setInterval(metaTick, 1000)
-    }
-
-    // If changingState, display please wait overlay
-    if (typeof metan.changingState !== 'undefined') {
-      if (metan.changingState !== null) {
-        $('#wait-modal').iziModal('open')
-        document.querySelector('#wait-text').innerHTML = metan.changingState
-      } else {
-        $('#wait-modal').iziModal('close')
-      }
     }
 
     // Manage queueLength
@@ -9624,8 +9629,6 @@ function doMeta (metan) {
     }
 
     if (isHost) {
-      if (typeof metan.state !== 'undefined' && (metan.state === 'sports_on' || metan.state === 'sportsremote_on' || metan.state === 'remote_on')) { responsiveVoice.speak('On the air') }
-
       if (typeof metan.state !== 'undefined' && (metan.state === 'sports_break' || metan.state === 'sports_halftime' || metan.state === 'remote_break' || metan.state === 'sportsremote_break' || metan.state === 'sportsremote_halftime')) { responsiveVoice.speak(`On break`) }
 
       if (typeof metan.state !== 'undefined' && (metan.state === 'sports_returning' || metan.state === 'sportsremote_returning' || metan.state === 'remote_returning')) { responsiveVoice.speak(`Returning in ${moment.duration(queueLength, 'seconds').format('m [minutes], s [seconds]')}`) }
@@ -9638,6 +9641,7 @@ function doMeta (metan) {
           if (queueLength === 30) { responsiveVoice.speak('30 seconds') }
           if (queueLength === 15) { responsiveVoice.speak('15 seconds') }
           if (queueLength === 5) { responsiveVoice.speak('5 seconds') }
+          if (queueLength === 1) { responsiveVoice.speak('1 second') }
         }
       }
     }
@@ -9698,7 +9702,7 @@ function doMeta (metan) {
 
     // Make queue timer show current queue length (when visible)
     var queueTime = document.querySelector('#queue-seconds')
-    queueTime.innerHTML = moment.duration(queueLength, 'seconds').format('mm:ss')
+    queueTime.innerHTML = queueUnknown ? `???` : moment.duration(queueLength, 'seconds').format('mm:ss')
 
     // Flash the WWSU Operations box when queue time goes below 15 seconds.
     if (queueLength < 15 && queueLength > 0 && document.querySelector('#queue').style.display !== 'none' && (Meta.state.startsWith('_returning') || Meta.state.startsWith('automation_'))) {
