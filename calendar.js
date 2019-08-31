@@ -500,7 +500,7 @@ function checkCalendar (records, meta, cal) {
     }
 
     // In automation, shade the clock in 12-hour format for upcoming shows
-    if (meta.state.startsWith('automation_') || meta.state.startsWith('automation_')) {
+    if (meta.state.startsWith('automation_') || meta.state.startsWith('prerecord_')) {
       html.title = 'Clockwheel (next 12 hours)'
       var start = moment(meta.time).startOf('day')
       if (moment(meta.time).hour() >= 12) { start.add(12, 'hours') }
