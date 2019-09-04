@@ -6424,6 +6424,7 @@ document.querySelector(`#options-modal-djs`).addEventListener('click', function 
           $('#options-modal-dj-xp-add').iziModal('open')
         } else if (e.target.id === 'options-dj-add') {
           var inputData = ''
+          var inputData2 = ''
           iziToast.show({
             timeout: 180000,
             overlay: true,
@@ -6434,20 +6435,23 @@ document.querySelector(`#options-modal-djs`).addEventListener('click', function 
             layout: 2,
             image: `assets/images/renameDJ.png`,
             maxWidth: 480,
-            title: 'Case-Sensitive DJ Name',
-            message: 'Make sure you type it correctly and it matches what you use on Google Calendar (if applicable)!',
+            title: 'Case-sensitive DJ Name and Password',
+            message: 'In the left box, type the name of the DJ case sensitive (as it is used on Google Calendar, if applicable). In the box on the right, provide a password that this DJ will use to access their DJ Web panel (such as their door code).',
             position: 'center',
             drag: false,
             closeOnClick: false,
             inputs: [
-              ['<input type="text">', 'keyup', function (instance, toast, input, e) {
+              ['<input type="text" placeholder="DJ Name">', 'keyup', function (instance, toast, input, e) {
                 inputData = input.value
-              }, true]
+              }, true],
+              ['<input type="password">', 'keyup', function (instance, toast, input, e) {
+                inputData2 = input.value
+              }]
             ],
             buttons: [
               ['<button><b>Submit</b></button>', function (instance, toast) {
                 instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/djs/add', data: { name: inputData, login: null } }, function (response) {
+                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/djs/add', data: { name: inputData, login: inputData2 === '' ? null : inputData2 } }, function (response) {
                   if (response === 'OK') {
                     iziToast.show({
                       title: `DJ Added!`,
@@ -6548,6 +6552,7 @@ document.querySelector(`#options-djs`).addEventListener('click', function (e) {
           $('#options-modal-dj-xp-add').iziModal('open')
         } else {
           var inputData = ''
+          var inputData2 = ''
           iziToast.show({
             timeout: 180000,
             overlay: true,
@@ -6558,20 +6563,23 @@ document.querySelector(`#options-djs`).addEventListener('click', function (e) {
             layout: 2,
             image: `assets/images/renameDJ.png`,
             maxWidth: 480,
-            title: 'Case-Sensitive DJ Name',
-            message: 'Make sure you type it correctly and it matches what you use on Google Calendar (if applicable)!',
+            title: 'Case-sensitive DJ Name and Password',
+            message: 'In the left box, type the name of the DJ case sensitive (as it is used on Google Calendar, if applicable). In the box on the right, provide a password that this DJ will use to access their DJ Web panel (such as their door code).',
             position: 'center',
             drag: false,
             closeOnClick: false,
             inputs: [
-              ['<input type="text">', 'keyup', function (instance, toast, input, e) {
+              ['<input type="text" placeholder="DJ Name">', 'keyup', function (instance, toast, input, e) {
                 inputData = input.value
-              }, true]
+              }, true],
+              ['<input type="password">', 'keyup', function (instance, toast, input, e) {
+                inputData2 = input.value
+              }]
             ],
             buttons: [
               ['<button><b>Submit</b></button>', function (instance, toast) {
                 instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/djs/add', data: { name: inputData, login: null } }, function (response) {
+                directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/djs/add', data: { name: inputData, login: inputData2 === '' ? null : inputData2 } }, function (response) {
                   if (response === 'OK') {
                     iziToast.show({
                       title: `DJ Added!`,
@@ -7628,6 +7636,7 @@ document.querySelector(`#options-dj-buttons`).addEventListener('click', function
       console.log(e.target.id)
       if (e.target.id === 'btn-options-dj-edit') {
         var inputData = ''
+        var inputData2 = ''
         iziToast.show({
           timeout: 180000,
           overlay: true,
@@ -7638,20 +7647,25 @@ document.querySelector(`#options-dj-buttons`).addEventListener('click', function
           layout: 2,
           image: `assets/images/renameDJ.png`,
           maxWidth: 480,
-          title: 'Case-Sensitive DJ Name',
-          message: 'Make sure you type it correctly and it matches what you use on Google Calendar (if applicable)! If you provide the name of a DJ that already exists, all Notes, Remote Credits, XP, and logs from this DJ will be merged with the other DJ.',
+          title: 'Case-Sensitive DJ Name and password',
+          message: 'In the left box, type the new name for the DJ case sensitive (as it is used on Google Calendar, if applicable). If you provide the name of a DJ that exists, this DJ and their logs/stats will be merged into the DJ you typed. In the right box, if you want to change the password the DJ will use for the DJ Web Panel, type their new password in.',
           position: 'center',
           drag: false,
           closeOnClick: false,
           inputs: [
             ['<input type="text">', 'keyup', function (instance, toast, input, e) {
               inputData = input.value
-            }, true]
+            }, true],
+            ['<input type="password">', 'keyup', function (instance, toast, input, e) {
+              inputData2 = input.value
+            }]
           ],
           buttons: [
             ['<button><b>Edit</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-              directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/djs/edit', data: { ID: e.target.dataset.dj, name: inputData } }, function (response) {
+              var data = { ID: e.target.dataset.dj, name: inputData }
+              if (inputData2 !== '') { data.login = inputData2 }
+              directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/djs/edit', data: data }, function (response) {
                 if (response === 'OK') {
                   iziToast.show({
                     title: `DJ Edited!`,

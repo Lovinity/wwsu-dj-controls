@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - locking of hosts to a specific DJ (or no DJs) via manage hosts. When a DJ Controls is locked to a specific DJ, it will prevent starting any shows/broadcasts that are unscheduled or not under the DJ's name, and also will prevent interfering with other shows.
 - Ability to change finalized show times in the schedule generator.
 - Multiple instance checking via the server [Issue 39](https://github.com/Lovinity/wwsu-dj-controls/issues/39)
+- Ability to specify DJ Web Panel password for DJs when adding or editing (DJ Web Panel is a future feature for the server).
 
 ### Changed
 - Timesheet window in admin options -> manage directors -> timesheets now displays timesheets as vertical Gantt Charts.
