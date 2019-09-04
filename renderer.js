@@ -1,15 +1,47 @@
 /* global iziToast, io, moment, Infinity, err, Taucharts, responsiveVoice, jdenticon, TAFFY, WWSUreq, Quill, $ */
 try {
-  var hidden
-  if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
-    hidden = 'hidden'
-  } else if (typeof document.msHidden !== 'undefined') {
-    hidden = 'msHidden'
-  } else if (typeof document.webkitHidden !== 'undefined') {
-    hidden = 'webkitHidden'
-  }
-
   var development = false
+  // These variables and functions deal with managing the UI when the window is not in focus
+  var animations = {}
+  var inView = true
+
+  var visibilityChange = (function (window) {
+    console.log('VisibilityChange constructor')
+    return function (fn) {
+      console.log('VisibilityChange constructor function')
+      window.onfocus = window.onblur = window.onpageshow = window.onpagehide = function (e) {
+        console.log('Visibility change event')
+        if ({ focus: 1, pageshow: 1 }[e.type]) {
+          if (inView) return
+          fn('visible')
+          inView = true
+          console.log('Now Visible')
+        } else if (inView) {
+          fn('hidden')
+          inView = false
+          console.log('Now hidden')
+        }
+      }
+    }
+  }(this))
+  visibilityChange(function (state) {
+    console.log('visibility changed')
+    for (var key in animations) {
+      if (Object.prototype.hasOwnProperty.call(animations, key)) {
+        console.log(`executed animation ${name}`)
+        animations[key]()
+        delete animations[key]
+      }
+    }
+  })
+
+  var addAnimation = (name, fn) => {
+    if (inView) {
+      fn()
+    } else {
+      animations[name] = fn
+    }
+  }
 
   var callInProgressI = false
   var callInProgressO = false
@@ -268,7 +300,7 @@ try {
     }
 
     // Only update calendar and events when DJ Controls is not hidden. Saves on resources.
-    if (!document[hidden]) {
+    addAnimation('calendar-clock', () => {
       $('.chart').empty()
 
       var newSVG = document.getElementById('clock-program')
@@ -294,7 +326,7 @@ try {
 
       document.querySelector('#calendar-events').innerHTML = e.events
       document.querySelector('#calendar-title').innerHTML = e.title
-    }
+    })
   })
 
   ipcRenderer.on(`peer-register`, (event, arg) => {
@@ -668,7 +700,7 @@ try {
     } else {
       callInProgressO = false
     }
-    if (!document[hidden]) {
+    addAnimation('peer-audio-info-outgoing', () => {
       window.requestAnimationFrame(() => {
         var temp5 = document.querySelector(`#remote-vu`)
         var temp6 = document.querySelector(`#sportsremote-vu`)
@@ -712,7 +744,7 @@ try {
           }
         }
       })
-    }
+    })
   })
 
   ipcRenderer.on(`peer-audio-info-incoming`, (event, arg) => {
@@ -721,7 +753,7 @@ try {
     } else {
       callInProgressI = false
     }
-    if (!document[hidden]) {
+    addAnimation('peer-audio-info-incoming', () => {
       window.requestAnimationFrame(() => {
         if (!arg[4]) {
           var temp8
@@ -740,11 +772,11 @@ try {
           }
         }
       })
-    }
+    })
   })
 
   ipcRenderer.on(`audio-audio-info`, (event, arg) => {
-    if (!document[hidden]) {
+    addAnimation('peer-audio-info', () => {
       window.requestAnimationFrame(() => {
         var temp4 = document.querySelector(`#main-vu`)
         if (temp4 !== null) {
@@ -761,7 +793,7 @@ try {
           if (arg[2] === 0) { temp8.style.color = `rgb(16, 16, 16)` }
         }
       })
-    }
+    })
   })
 
   ipcRenderer.on(`peer-very-bad-call-send`, (event, arg) => {
@@ -920,43 +952,45 @@ try {
   var recorderHour = -1
   var checkMinutes = -1
   setInterval(function () {
-    date = moment(Meta.time)
-    seconds = date.seconds()
-    minutes = date.minutes()
-    hours = date.hours()
-    var angle = 0
-    var dateStamp = document.getElementById('datestamp')
-    dateStamp.innerHTML = date.format('dddd MM/DD/YYYY hh:mm A')
+    addAnimation('clock-tick', () => {
+      date = moment(Meta.time)
+      seconds = date.seconds()
+      minutes = date.minutes()
+      hours = date.hours()
+      var angle = 0
+      var dateStamp = document.getElementById('datestamp')
+      dateStamp.innerHTML = date.format('dddd MM/DD/YYYY hh:mm A')
 
-    // First, do the hour hand
-    angle = ((hours * (360 / 12)) + ((360 / 12) * (minutes / 60)))
-    var containers = document.querySelectorAll('.hours-container')
-    if (containers) {
-      for (var i = 0; i < containers.length; i++) {
-        containers[i].style.webkitTransform = 'rotateZ(' + angle + 'deg)'
-        containers[i].style.transform = 'rotateZ(' + angle + 'deg)'
+      // First, do the hour hand
+      angle = ((hours * (360 / 12)) + ((360 / 12) * (minutes / 60)))
+      var containers = document.querySelectorAll('.hours-container')
+      if (containers) {
+        for (var i = 0; i < containers.length; i++) {
+          containers[i].style.webkitTransform = 'rotateZ(' + angle + 'deg)'
+          containers[i].style.transform = 'rotateZ(' + angle + 'deg)'
+        }
       }
-    }
 
-    // Now do the minutes hand
-    angle = ((minutes * (360 / 60)) + ((360 / 60) * (seconds / 60)))
-    containers = document.querySelectorAll('.minutes-container')
-    if (containers) {
-      for (var i2 = 0; i2 < containers.length; i2++) {
-        containers[i2].style.webkitTransform = 'rotateZ(' + angle + 'deg)'
-        containers[i2].style.transform = 'rotateZ(' + angle + 'deg)'
+      // Now do the minutes hand
+      angle = ((minutes * (360 / 60)) + ((360 / 60) * (seconds / 60)))
+      containers = document.querySelectorAll('.minutes-container')
+      if (containers) {
+        for (var i2 = 0; i2 < containers.length; i2++) {
+          containers[i2].style.webkitTransform = 'rotateZ(' + angle + 'deg)'
+          containers[i2].style.transform = 'rotateZ(' + angle + 'deg)'
+        }
       }
-    }
 
-    // Now do the seconds hand
-    angle = (seconds * (360 / 60))
-    containers = document.querySelectorAll('.seconds-container')
-    if (containers) {
-      for (var i3 = 0; i3 < containers.length; i3++) {
-        containers[i3].style.webkitTransform = 'rotateZ(' + angle + 'deg)'
-        containers[i3].style.transform = 'rotateZ(' + angle + 'deg)'
+      // Now do the seconds hand
+      angle = (seconds * (360 / 60))
+      containers = document.querySelectorAll('.seconds-container')
+      if (containers) {
+        for (var i3 = 0; i3 < containers.length; i3++) {
+          containers[i3].style.webkitTransform = 'rotateZ(' + angle + 'deg)'
+          containers[i3].style.transform = 'rotateZ(' + angle + 'deg)'
+        }
       }
-    }
+    })
   }, 100)
 
   // Connect the socket
@@ -9332,7 +9366,7 @@ function hostSocket (cb = function (token) { }) {
         cb(false)
       } else {
         hostReq.request({ method: 'post', url: nodeURL + '/recipients/add-computers', data: { host: client.host } }, function (response2) {
-          if (connectedBefore || (typeof response2.alreadyConnected !== 'undefined' && !response2.alreadyConnected)) {
+          if (connectedBefore || (typeof response2.alreadyConnected !== 'undefined' && !response2.alreadyConnected) || development) {
             connectedBefore = true
             ipcRenderer.send(`peer-reregister`, null)
 
@@ -9637,7 +9671,6 @@ function recipientsSocket () {
     // console.log(body);
     try {
       processRecipients(body, true)
-      if (development) { prepareRemote() }
     } catch (e) {
       console.error(e)
       console.log('FAILED recipients CONNECTION')
@@ -9707,7 +9740,9 @@ function doMeta (metan) {
       }
     }
 
-    document.querySelector('#nowplaying').innerHTML = `<div class="text-warning" style="position: absolute; top: -16px; left: 0px;">${Meta.trackFinish !== null ? moment.duration(moment(Meta.trackFinish).diff(moment(Meta.time), 'seconds'), 'seconds').format() : ''}</div>${Meta.line1}<br />${Meta.line2}`
+    addAnimation('meta-nowplaying', () => {
+      document.querySelector('#nowplaying').innerHTML = `<div class="text-warning" style="position: absolute; top: -16px; left: 0px;">${Meta.trackFinish !== null ? moment.duration(moment(Meta.trackFinish).diff(moment(Meta.time), 'seconds'), 'seconds').format() : ''}</div>${Meta.line1}<br />${Meta.line2}`
+    })
 
     // Notify the DJ of a mandatory top of the hour break if they need to take one
     if (moment(Meta.time).minutes() >= 2 && moment(Meta.time).minutes() < 5 && moment(Meta.time).diff(moment(Meta.lastID), 'minutes') >= 10 && isHost) {
@@ -9762,8 +9797,10 @@ function doMeta (metan) {
     if (typeof metan.playing !== 'undefined' && typeof metan.state === 'undefined') { metan.state = Meta.state }
 
     // Make queue timer show current queue length (when visible)
-    var queueTime = document.querySelector('#queue-seconds')
-    queueTime.innerHTML = queueUnknown ? `???` : moment.duration(queueLength, 'seconds').format('mm:ss')
+    addAnimation('meta-queue', () => {
+      var queueTime = document.querySelector('#queue-seconds')
+      queueTime.innerHTML = queueUnknown ? `???` : moment.duration(queueLength, 'seconds').format('mm:ss')
+    })
 
     // Flash the WWSU Operations box when queue time goes below 15 seconds.
     if (queueLength < 15 && queueLength > 0 && document.querySelector('#queue').style.display !== 'none' && (Meta.state.startsWith('_returning') || Meta.state.startsWith('automation_'))) {
@@ -10041,217 +10078,216 @@ function checkAnnouncementColor () {
 
 // Re-do the announcements shown in the announcements box
 function checkAnnouncements () {
-  var prev = []
-  var prevStatus = []
-  // Add applicable announcements
-
-  Announcements({ type: 'djcontrols' }).each(datum => {
-    try {
-      // Check to make sure the announcement is valid / not expired
-      if (moment(datum.starts).isBefore(moment(Meta.time)) && moment(datum.expires).isAfter(moment(Meta.time))) {
-        prev.push(`attn-${datum.ID}`)
-        if (datum.title === 'Reported Problem') {
-          prevStatus.push(`attn-status-report-${datum.ID}`)
-          if (document.querySelector(`#attn-status-report-${datum.ID}`) === null) {
-            var temp = document.querySelector(`#attn-status`)
-            if (!temp) {
-              var attn = document.querySelector('#announcements-body')
-
-              attn.innerHTML += `<div class="bg-dark-2 border-left border-danger shadow-2 p-1" style="border-left-width: 5px !important;" id="attn-status">
+  addAnimation('check-announcements', () => {
+    var prev = []
+    var prevStatus = []
+    // Add applicable announcements
+    Announcements({ type: 'djcontrols' }).each(datum => {
+      try {
+        // Check to make sure the announcement is valid / not expired
+        if (moment(datum.starts).isBefore(moment(Meta.time)) && moment(datum.expires).isAfter(moment(Meta.time))) {
+          prev.push(`attn-${datum.ID}`)
+          if (datum.title === 'Reported Problem') {
+            prevStatus.push(`attn-status-report-${datum.ID}`)
+            if (document.querySelector(`#attn-status-report-${datum.ID}`) === null) {
+              var temp = document.querySelector(`#attn-status`)
+              if (!temp) {
+                var attn = document.querySelector('#announcements-body')
+                attn.innerHTML += `<div class="bg-dark-2 border-left border-danger shadow-2 p-1" style="border-left-width: 5px !important;" id="attn-status">
                             <h4 id="attn-title-status" class="text-white p-1 m-1">System Problems Detected</h4>
                                 <div id="attn-body-status" style="display: none;">
                                 <small class="p-1">Major and critical issues could affect your ability to run a show.</small>
                                     <p class="attn-status shadow-2 bg-secondary text-white" id="attn-status-report-${datum.ID}"><span class="badge badge-purple m-1">Reported by DJ</span> ${datum.announcement}</p>
                                 </div>
                             </div>`
+              } else {
+                temp = document.querySelector(`#attn-status`)
+                temp.className = `bg-dark-2 border-left border-danger shadow-2 p-1`
+                temp = document.querySelector(`#attn-body-status`)
+                temp.innerHTML += `<p class="attn-status shadow-2 bg-secondary text-white" id="attn-status-report-${datum.ID}"><span class="badge badge-purple m-1">Reported by DJ</span> ${datum.announcement}</p>`
+              }
+              // If this DJ Controls is configured by WWSU to notify on technical problems, notify so.
+              if (client.emergencies) {
+                addNotification(`reported-problem`, `attn-${datum.ID}`, `danger`, datum.updatedAt, datum.announcement, `Reported Problems`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-attn-edit-${datum.ID}">Edit Announcements</button>`)
+              }
             } else {
-              temp = document.querySelector(`#attn-status`)
-              temp.className = `bg-dark-2 border-left border-danger shadow-2 p-1`
-              temp = document.querySelector(`#attn-body-status`)
-              temp.innerHTML += `<p class="attn-status shadow-2 bg-secondary text-white" id="attn-status-report-${datum.ID}"><span class="badge badge-purple m-1">Reported by DJ</span> ${datum.announcement}</p>`
-            }
-            // If this DJ Controls is configured by WWSU to notify on technical problems, notify so.
-            if (client.emergencies) {
-              addNotification(`reported-problem`, `attn-${datum.ID}`, `danger`, datum.updatedAt, datum.announcement, `Reported Problems`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-attn-edit-${datum.ID}">Edit Announcements</button>`)
+              temp = document.querySelector(`#attn-status-report-${datum.ID}`)
+              temp.innerHTML = `<span class="badge badge-purple m-1">Reported by DJ</span>${datum.announcement}`
             }
           } else {
-            temp = document.querySelector(`#attn-status-report-${datum.ID}`)
-            temp.innerHTML = `<span class="badge badge-purple m-1">Reported by DJ</span>${datum.announcement}`
-          }
-        } else {
-          if (document.querySelector(`#attn-${datum.ID}`) === null) {
-            attn = document.querySelector('#announcements-body')
-            attn.innerHTML += `<div class="attn bg-dark-2 border-left border-${datum.level} shadow-2 p-1" style="border-left-width: 5px !important;" id="attn-${datum.ID}">
+            if (document.querySelector(`#attn-${datum.ID}`) === null) {
+              attn = document.querySelector('#announcements-body')
+              attn.innerHTML += `<div class="attn bg-dark-2 border-left border-${datum.level} shadow-2 p-1" style="border-left-width: 5px !important;" id="attn-${datum.ID}">
                             <h4 id="attn-title-${datum.ID}" class="text-white p-1 m-1">${datum.title}</h4>
                                 <div id="attn-body-${datum.ID}" style="display: none;">
                                     ${datum.announcement}
                                 </div>
                             </div>`
-          } else {
-            temp = document.querySelector(`#attn-${datum.ID}`)
-            temp.className = `attn bg-dark-2 border-left border-${datum.level} shadow-2 p-1`
-            temp = document.querySelector(`#attn-title-${datum.ID}`)
-            temp.innerHTML = datum.title
-            temp = document.querySelector(`#attn-body-${datum.ID}`)
-            temp.innerHTML = datum.announcement
+            } else {
+              temp = document.querySelector(`#attn-${datum.ID}`)
+              temp.className = `attn bg-dark-2 border-left border-${datum.level} shadow-2 p-1`
+              temp = document.querySelector(`#attn-title-${datum.ID}`)
+              temp.innerHTML = datum.title
+              temp = document.querySelector(`#attn-body-${datum.ID}`)
+              temp.innerHTML = datum.announcement
+            }
           }
         }
+      } catch (e) {
+        iziToast.show({
+          title: 'An error occurred - Please inform engineer@wwsu1069.org.',
+          message: 'Error occurred in the checkAnnouncements each djcontrols. ' + e.message
+        })
+        console.error(e)
       }
-    } catch (e) {
-      iziToast.show({
-        title: 'An error occurred - Please inform engineer@wwsu1069.org.',
-        message: 'Error occurred in the checkAnnouncements each djcontrols. ' + e.message
-      })
-      console.error(e)
-    }
-  })
+    })
 
-  var highestLevel = (prevStatus.length > 0) ? 1 : 5
-  Status().each(datum => {
-    if (datum.status <= 3) {
-      var badge = `<span class="badge badge-dark">Unknown</span>`
-      switch (datum.status) {
-        case 1:
-          badge = `<span class="badge badge-danger m-1">CRITICAL</span>`
-          break
-        case 2:
-          badge = `<span class="badge badge-urgent m-1">Major</span>`
-          break
-        case 3:
-          badge = `<span class="badge badge-warning m-1">Minor</span>`
-          break
-      }
-      if (highestLevel > datum.status) { highestLevel = datum.status }
-      if (document.querySelector(`#attn-status-${datum.name}`) === null && prevStatus.indexOf(`attn-status-${datum.name}`) === -1) {
-        var temp = document.querySelector(`#attn-status`)
-        if (!temp) {
-          var attn = document.querySelector('#announcements-body')
-          attn.innerHTML += `<div class="bg-dark-2 border-left border-danger shadow-2 p-1" style="border-left-width: 5px !important;" id="attn-status">
+    var highestLevel = (prevStatus.length > 0) ? 1 : 5
+    Status().each(datum => {
+      if (datum.status <= 3) {
+        var badge = `<span class="badge badge-dark">Unknown</span>`
+        switch (datum.status) {
+          case 1:
+            badge = `<span class="badge badge-danger m-1">CRITICAL</span>`
+            break
+          case 2:
+            badge = `<span class="badge badge-urgent m-1">Major</span>`
+            break
+          case 3:
+            badge = `<span class="badge badge-warning m-1">Minor</span>`
+            break
+        }
+        if (highestLevel > datum.status) { highestLevel = datum.status }
+        if (document.querySelector(`#attn-status-${datum.name}`) === null && prevStatus.indexOf(`attn-status-${datum.name}`) === -1) {
+          var temp = document.querySelector(`#attn-status`)
+          if (!temp) {
+            var attn = document.querySelector('#announcements-body')
+            attn.innerHTML += `<div class="bg-dark-2 border-left border-danger shadow-2 p-1" style="border-left-width: 5px !important;" id="attn-status">
                             <h4 id="attn-title-status" class="text-white p-1 m-1">System Problems Detected</h4>
                                 <div id="attn-body-status" style="display: none;">
                                 <small class="p-1">Major and critical issues could affect your ability to run a show.</small>
                                     <p class="attn-status shadow-2 bg-secondary text-white" id="attn-status-${datum.name}">${badge}<strong>${datum.label}</strong>: ${datum.data}</p>
                                 </div>
                             </div>`
+          } else {
+            temp = document.querySelector(`#attn-body-status`)
+            temp.innerHTML += `<p class="attn-status shadow-2 bg-secondary text-white" id="attn-status-${datum.name}">${badge}<strong>${datum.label}</strong>: ${datum.data}</p>`
+          }
         } else {
-          temp = document.querySelector(`#attn-body-status`)
-          temp.innerHTML += `<p class="attn-status shadow-2 bg-secondary text-white" id="attn-status-${datum.name}">${badge}<strong>${datum.label}</strong>: ${datum.data}</p>`
+          temp = document.querySelector(`#attn-status-${datum.name}`)
+          if (temp) { temp.innerHTML = `${badge}<strong>${datum.label}</strong>: ${datum.data}` }
         }
-      } else {
-        temp = document.querySelector(`#attn-status-${datum.name}`)
-        if (temp) { temp.innerHTML = `${badge}<strong>${datum.label}</strong>: ${datum.data}` }
+        prevStatus.push(`attn-status-${datum.name}`)
       }
-      prevStatus.push(`attn-status-${datum.name}`)
-    }
-  })
+    })
 
-  var temp = document.querySelector(`#attn-status`)
-  if (temp) {
-    if (highestLevel === 1 || highestLevel === 2) {
-      temp.className = `bg-dark-2 border-left border-danger shadow-2 p-1`
-    } else if (highestLevel <= 3) {
-      temp.className = `bg-dark-2 border-left border-trivial shadow-2 p-1`
+    var temp = document.querySelector(`#attn-status`)
+    if (temp) {
+      if (highestLevel === 1 || highestLevel === 2) {
+        temp.className = `bg-dark-2 border-left border-danger shadow-2 p-1`
+      } else if (highestLevel <= 3) {
+        temp.className = `bg-dark-2 border-left border-trivial shadow-2 p-1`
+      }
+      if (prevStatus.length <= 0) { temp.parentNode.removeChild(temp) }
     }
-    if (prevStatus.length <= 0) { temp.parentNode.removeChild(temp) }
-  }
 
-  var prevEas = []
-  var highestEas = 5
-  Eas().each(datum => {
-    var badge = `<span class="badge badge-dark">Unknown</span>`
-    switch (datum.severity) {
-      case 'Extreme':
-        badge = `<span class="badge badge-danger m-1">EXTREME</span>`
-        highestEas = 1
-        break
-      case 'Severe':
-        badge = `<span class="badge badge-urgent m-1">Severe</span>`
-        if (highestEas > 2) { highestEas = 2 }
-        break
-      case 'Moderate':
-        badge = `<span class="badge badge-warning m-1">Moderate</span>`
-        if (highestEas > 3) { highestEas = 3 }
-        break
-      case 'Minor':
-        badge = `<span class="badge badge-trivial m-1">Minor</span>`
-        if (highestEas > 4) { highestEas = 4 }
-        break
-    }
-    if (document.querySelector(`#attn-eas-${datum.ID}`) === null && prevEas.indexOf(`attn-eas-${datum.ID}`) === -1) {
-      var temp = document.querySelector(`#attn-eas`)
-      if (!temp) {
-        var attn = document.querySelector('#announcements-body')
+    var prevEas = []
+    var highestEas = 5
+    Eas().each(datum => {
+      var badge = `<span class="badge badge-dark">Unknown</span>`
+      switch (datum.severity) {
+        case 'Extreme':
+          badge = `<span class="badge badge-danger m-1">EXTREME</span>`
+          highestEas = 1
+          break
+        case 'Severe':
+          badge = `<span class="badge badge-urgent m-1">Severe</span>`
+          if (highestEas > 2) { highestEas = 2 }
+          break
+        case 'Moderate':
+          badge = `<span class="badge badge-warning m-1">Moderate</span>`
+          if (highestEas > 3) { highestEas = 3 }
+          break
+        case 'Minor':
+          badge = `<span class="badge badge-trivial m-1">Minor</span>`
+          if (highestEas > 4) { highestEas = 4 }
+          break
+      }
+      if (document.querySelector(`#attn-eas-${datum.ID}`) === null && prevEas.indexOf(`attn-eas-${datum.ID}`) === -1) {
+        var temp = document.querySelector(`#attn-eas`)
+        if (!temp) {
+          var attn = document.querySelector('#announcements-body')
 
-        attn.innerHTML += `<div class="bg-dark-2 border-left border-${highestEas <= 2 ? `danger` : `trivial`} shadow-2 p-1" style="border-left-width: 5px !important;" id="attn-eas">
+          attn.innerHTML += `<div class="bg-dark-2 border-left border-${highestEas <= 2 ? `danger` : `trivial`} shadow-2 p-1" style="border-left-width: 5px !important;" id="attn-eas">
                             <h4 id="attn-title-eas" class="text-white p-1 m-1">Emergency / Weather Alerts</h4>
                                 <div id="attn-body-eas" style="display: none;">
                                 <small class="p-1">You may want to consider ending your show and seeking shelter if there is an extreme alert in effect.</small>
                                     <p class="attn-eas shadow-2 bg-secondary text-white" id="attn-eas-${datum.ID}">${badge}<strong>${datum.alert}</strong> in effect for the counties ${datum.counties}</p>
                                 </div>
                             </div>`
+        } else {
+          temp = document.querySelector(`#attn-eas`)
+          if (temp) { temp.className = `bg-dark-2 border-left border-${highestEas <= 2 ? `danger` : `trivial`} shadow-2 p-1` }
+          temp = document.querySelector(`#attn-body-eas`)
+          if (temp) { temp.innerHTML += `<p class="attn-eas shadow-2 bg-secondary text-white" id="attn-eas-${datum.ID}">${badge}<strong>${datum.alert}</strong> in effect for the counties ${datum.counties}</p>` }
+        }
       } else {
         temp = document.querySelector(`#attn-eas`)
         if (temp) { temp.className = `bg-dark-2 border-left border-${highestEas <= 2 ? `danger` : `trivial`} shadow-2 p-1` }
-        temp = document.querySelector(`#attn-body-eas`)
-        if (temp) { temp.innerHTML += `<p class="attn-eas shadow-2 bg-secondary text-white" id="attn-eas-${datum.ID}">${badge}<strong>${datum.alert}</strong> in effect for the counties ${datum.counties}</p>` }
+        temp = document.querySelector(`#attn-eas-${datum.ID}`)
+        if (temp) { temp.innerHTML = `${badge}<strong>${datum.alert}</strong> in effect for the counties ${datum.counties}` }
       }
-    } else {
+      prevEas.push(`attn-eas-${datum.ID}`)
+    })
+
+    // Remove announcements no longer valid from the announcements box
+    var attn = document.querySelectorAll('.attn')
+    for (var i = 0; i < attn.length; i++) {
+      if (prev.indexOf(attn[i].id) === -1) { attn[i].parentNode.removeChild(attn[i]) }
+    }
+
+    // Remove statuses no longer valid from the announcements box
+    attn = document.querySelectorAll('.attn-status')
+    for (var i2 = 0; i2 < attn.length; i2++) {
+      if (prevStatus.indexOf(attn[i2].id) === -1) { attn[i2].parentNode.removeChild(attn[i2]) }
+    }
+
+    if (prevStatus.length <= 0) {
+      temp = document.querySelector(`#attn-status`)
+      if (temp) { temp.parentNode.removeChild(temp) }
+    }
+
+    // Remove eas alerts no longer valid from the announcements box
+    attn = document.querySelectorAll('.attn-eas')
+    for (var i3 = 0; i3 < attn.length; i3++) {
+      if (prevEas.indexOf(attn[i3].id) === -1) { attn[i3].parentNode.removeChild(attn[i3]) }
+    }
+
+    if (prevEas.length <= 0) {
       temp = document.querySelector(`#attn-eas`)
-      if (temp) { temp.className = `bg-dark-2 border-left border-${highestEas <= 2 ? `danger` : `trivial`} shadow-2 p-1` }
-      temp = document.querySelector(`#attn-eas-${datum.ID}`)
-      if (temp) { temp.innerHTML = `${badge}<strong>${datum.alert}</strong> in effect for the counties ${datum.counties}` }
+      if (temp) { temp.parentNode.removeChild(temp) }
     }
-    prevEas.push(`attn-eas-${datum.ID}`)
-  })
 
-  // Remove announcements no longer valid from the announcements box
-  var attn = document.querySelectorAll('.attn')
-  for (var i = 0; i < attn.length; i++) {
-    if (prev.indexOf(attn[i].id) === -1) { attn[i].parentNode.removeChild(attn[i]) }
-  }
+    // Process all announcements for the announcements menu, if applicable
+    if (client.admin) {
+      var announcements = document.querySelector('#options-announcements')
+      announcements.innerHTML = ``
 
-  // Remove statuses no longer valid from the announcements box
-  attn = document.querySelectorAll('.attn-status')
-  for (var i2 = 0; i2 < attn.length; i2++) {
-    if (prevStatus.indexOf(attn[i2].id) === -1) { attn[i2].parentNode.removeChild(attn[i2]) }
-  }
-
-  if (prevStatus.length <= 0) {
-    temp = document.querySelector(`#attn-status`)
-    if (temp) { temp.parentNode.removeChild(temp) }
-  }
-
-  // Remove eas alerts no longer valid from the announcements box
-  attn = document.querySelectorAll('.attn-eas')
-  for (var i3 = 0; i3 < attn.length; i3++) {
-    if (prevEas.indexOf(attn[i3].id) === -1) { attn[i3].parentNode.removeChild(attn[i3]) }
-  }
-
-  if (prevEas.length <= 0) {
-    temp = document.querySelector(`#attn-eas`)
-    if (temp) { temp.parentNode.removeChild(temp) }
-  }
-
-  // Process all announcements for the announcements menu, if applicable
-  if (client.admin) {
-    var announcements = document.querySelector('#options-announcements')
-    announcements.innerHTML = ``
-
-    var compare = function (a, b) {
-      try {
-        if (moment(a.starts).valueOf() < moment(b.starts).valueOf()) { return -1 }
-        if (moment(a.starts).valueOf() > moment(b.starts).valueOf()) { return 1 }
-        return 0
-      } catch (e) {
-        console.error(e)
-        iziToast.show({
-          title: 'An error occurred - Please check the logs',
-          message: `Error occurred in the compare function of loadAnnouncements.`
-        })
+      var compare = function (a, b) {
+        try {
+          if (moment(a.starts).valueOf() < moment(b.starts).valueOf()) { return -1 }
+          if (moment(a.starts).valueOf() > moment(b.starts).valueOf()) { return 1 }
+          return 0
+        } catch (e) {
+          console.error(e)
+          iziToast.show({
+            title: 'An error occurred - Please check the logs',
+            message: `Error occurred in the compare function of loadAnnouncements.`
+          })
+        }
       }
-    }
-    Announcements().get().sort(compare).map(announcement => {
-      announcements.innerHTML += `<div class="row m-1 bg-light-1 border-left border-${announcement.level} shadow-2" style="border-left-width: 5px !important;">
+      Announcements().get().sort(compare).map(announcement => {
+        announcements.innerHTML += `<div class="row m-1 bg-light-1 border-left border-${announcement.level} shadow-2" style="border-left-width: 5px !important;">
                     <div class="col-4 text-primary">
                         ${moment(announcement.starts).format('MM/DD/YYYY h:mm A')}<br />
                         - ${moment(announcement.expires).format('MM/DD/YYYY h:mm A')}
@@ -10272,94 +10308,97 @@ function checkAnnouncements () {
                     </div>
                 </div>
                 `
-    })
-  }
+      })
+    }
+  })
 }
 
 // Called when the recipients available to send/receive messages needs recalculating
 function checkRecipients () {
-  try {
-    var recipients = {}
-    var groupIDs = []
-    var recipientIDs = []
+  addAnimation('check-recipients', () => {
+    try {
+      var recipients = {}
+      var groupIDs = []
+      var recipientIDs = []
 
-    Recipients().each(function (recipient) {
-      // Skip system and display recipients; we do not want to use those in the messages system.
-      if (recipient.group === 'system' || recipient.group === 'display') { return null }
+      Recipients().each(function (recipient) {
+        // Skip system and display recipients; we do not want to use those in the messages system.
+        if (recipient.group === 'system' || recipient.group === 'display') { return null }
 
-      if (typeof recipients[recipient.group] === 'undefined') {
-        recipients[recipient.group] = []
-        groupIDs.push(`users-g-${recipient.group}`)
-      }
-      recipientIDs.push(`users-u-${recipient.ID}`)
-      recipients[recipient.group].push(recipient)
-    })
+        if (typeof recipients[recipient.group] === 'undefined') {
+          recipients[recipient.group] = []
+          groupIDs.push(`users-g-${recipient.group}`)
+        }
+        recipientIDs.push(`users-u-${recipient.ID}`)
+        recipients[recipient.group].push(recipient)
+      })
 
-    for (var key in recipients) {
-      if (Object.prototype.hasOwnProperty.call(recipients, key)) {
-        var temp = document.querySelector(`#users-g-${key}`)
-        if (temp === null) {
-          temp = document.querySelector(`#users`)
-          temp.innerHTML += `<p class="navdrawer-subheader">${key}</p>
+      for (var key in recipients) {
+        if (Object.prototype.hasOwnProperty.call(recipients, key)) {
+          var temp = document.querySelector(`#users-g-${key}`)
+          if (temp === null) {
+            temp = document.querySelector(`#users`)
+            temp.innerHTML += `<p class="navdrawer-subheader">${key}</p>
                     <ul class="navdrawer-nav" id="users-g-${key}">
                     </ul>
                     <div class="navdrawer-divider"></div>`
-        }
-        if (recipients[key].length > 0) {
-          recipients[key].map(recipient => {
-            var temp = document.querySelector(`#users-u-${recipient.ID}`)
-            var theClass = '<i class="chip-icon bg-dark">OFF</i>'
-            // Online recipients in wwsu-red color, offline in dark color.
-            switch (recipient.status) {
-              case 1:
-                theClass = '<i class="chip-icon bg-primary">ON</i>'
-                break
-              case 2:
-                theClass = '<i class="chip-icon bg-primary">ON</i>'
-                break
-              case 3:
-                theClass = '<i class="chip-icon bg-primary">ON</i>'
-                break
-              case 4:
-                theClass = '<i class="chip-icon bg-primary">ON</i>'
-                break
-              case 5:
-                theClass = '<i class="chip-icon bg-primary">ON</i>'
-                break
-              default:
-                theClass = '<i class="chip-icon bg-dark">OFF</i>'
-                break
-            }
-            // Make "Web Public" red if the webchat is enabled.
-            if (recipient.host === 'website' && Meta.webchat) { theClass = '<i class="chip-icon bg-primary">ON</i>' }
-            if (temp !== null) {
-              temp.remove()
-            }
-            temp = document.querySelector(`#users-g-${key}`)
-            temp.innerHTML += `
+          }
+          if (recipients[key].length > 0) {
+            recipients[key].map(recipient => {
+              var temp = document.querySelector(`#users-u-${recipient.ID}`)
+              var theClass = '<i class="chip-icon bg-dark">OFF</i>'
+              // Online recipients in wwsu-red color, offline in dark color.
+              switch (recipient.status) {
+                case 1:
+                  theClass = '<i class="chip-icon bg-primary">ON</i>'
+                  break
+                case 2:
+                  theClass = '<i class="chip-icon bg-primary">ON</i>'
+                  break
+                case 3:
+                  theClass = '<i class="chip-icon bg-primary">ON</i>'
+                  break
+                case 4:
+                  theClass = '<i class="chip-icon bg-primary">ON</i>'
+                  break
+                case 5:
+                  theClass = '<i class="chip-icon bg-primary">ON</i>'
+                  break
+                default:
+                  theClass = '<i class="chip-icon bg-dark">OFF</i>'
+                  break
+              }
+              // Make "Web Public" red if the webchat is enabled.
+              if (recipient.host === 'website' && Meta.webchat) { theClass = '<i class="chip-icon bg-primary">ON</i>' }
+              if (temp !== null) {
+                temp.remove()
+              }
+              temp = document.querySelector(`#users-g-${key}`)
+              temp.innerHTML += `
 <div id="users-u-${recipient.ID}" class="recipient nav-item nav-link${activeRecipient === recipient.ID ? ` active` : ``} d-flex justify-content-between align-items-center" style="cursor: pointer;">
 <span id="users-l-${recipient.ID}">${theClass}${recipient.label}</span>
 <div>
 <span class="badge badge-${recipient.unread > 0 ? 'primary' : 'secondary'} badge-pill" id="users-n-${recipient.host}">${recipient.unread}</span>
 </div>
 `
-          })
-        }
+            })
+          }
 
-        // Remove recipients no longer valid
-        var attn = document.querySelectorAll('.recipient')
-        for (var i = 0; i < attn.length; i++) {
-          if (recipientIDs.indexOf(attn[i].id) === -1) { attn[i].parentNode.removeChild(attn[i]) }
+          // Remove recipients no longer valid
+          var attn = document.querySelectorAll('.recipient')
+          for (var i = 0; i < attn.length; i++) {
+            if (recipientIDs.indexOf(attn[i].id) === -1) { attn[i].parentNode.removeChild(attn[i]) }
+          }
         }
       }
+    } catch (e) {
+      console.error(e)
+      iziToast.show({
+        title: 'An error occurred - Please check the logs',
+        message: `Error occurred during checkRecipients.`
+      })
     }
-  } catch (e) {
-    console.error(e)
-    iziToast.show({
-      title: 'An error occurred - Please check the logs',
-      message: `Error occurred during checkRecipients.`
-    })
-  }
+  })
 }
 
 // Called when the user clicks on a recipient to view the messages from that recipient
@@ -11047,7 +11086,6 @@ function _goRemote () {
   ipcRenderer.send(`peer-set-bitrate`, 128)
   ipcRenderer.send(`peer-start-call`, [selectedOption])
   afterStartCall = () => {
-    if (development) { return null }
     $('#wait-modal').iziModal('open')
     document.querySelector('#wait-text').innerHTML = `Processing Request: Go Remote`
     hostReq.request({ method: 'POST', url: nodeURL + '/state/remote', data: { showname: document.querySelector('#remote-handle').value + ' - ' + document.querySelector('#remote-show').value, topic: (document.querySelector('#remote-topic').value !== `` || cal.type !== `Remote`) ? document.querySelector('#remote-topic').value : cal.topic, djcontrols: client.host, webchat: document.querySelector('#remote-webchat').checked } }, function (response) {
