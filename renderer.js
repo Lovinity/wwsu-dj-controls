@@ -9647,11 +9647,8 @@ function doMeta (metan) {
       }
     }
 
-    if (typeof metan.state !== `undefined`) { queueUnknown = true }
-
     // reset ticker timer on change to queue time
     if (typeof metan.queueFinish !== 'undefined') {
-      queueUnknown = false
       clearInterval(metaTimer)
       clearTimeout(metaTimer)
       metaTimer = setTimeout(function () {
@@ -11411,30 +11408,9 @@ function sendDisplay () {
 
 function endShow () {
   $('#wait-modal').iziModal('open')
-  document.querySelector('#wait-text').innerHTML = `Processing Request: Go Automatiob`
+  document.querySelector('#wait-text').innerHTML = `Processing Request: Go Automation`
   hostReq.request({ method: 'POST', url: nodeURL + '/state/automation' }, function (response) {
-    if (typeof response.showTime === 'undefined') {
-      iziToast.show({
-        title: 'An error occurred',
-        message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
-        timeout: 10000
-      })
-      $('#wait-modal').iziModal('close')
-      hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to end their show, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { })
-    } else {
-      $('#xp-modal').iziModal('open')
-      document.querySelector(`#stat-showTime`).innerHTML = parseInt((response.showTime || 0) / 6) / 10
-      document.querySelector(`#stat-listenerMinutes`).innerHTML = parseInt((response.listenerMinutes || 0) / 6) / 10
-      document.querySelector(`#stat-subtotalXP`).innerHTML = typeof response.subtotalXP !== 'undefined' ? formatInt(response.subtotalXP) : `-`
-      document.querySelector(`#stat-semesterXP`).innerHTML = typeof response.semester.xp !== 'undefined' ? formatInt(response.semester.xp) : `-`
-      document.querySelector(`#stat-totalXP`).innerHTML = typeof response.overall.xp !== 'undefined' ? formatInt(response.overall.xp) : `-`
-      document.querySelector(`#stat-remoteCredits`).innerHTML = typeof response.semester.remoteCredits !== 'undefined' ? formatInt(response.semester.remoteCredits) : `-`
-      document.querySelector(`#stat-totalShowTime`).innerHTML = typeof response.overall.showtime !== 'undefined' ? formatInt(parseInt(response.overall.showtime / 6) / 10) : `-`
-      document.querySelector(`#stat-semesterShowTime`).innerHTML = typeof response.semester.showtime !== 'undefined' ? formatInt(parseInt(response.semester.showtime / 6) / 10) : `-`
-      document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.overall.listeners !== 'undefined' ? formatInt(parseInt(response.overall.listeners / 6) / 10) : `-`
-      document.querySelector(`#stat-semesterListeners`).innerHTML = typeof response.semester.listeners !== 'undefined' ? formatInt(parseInt(response.semester.listeners / 6) / 10) : `-`
-    }
-    console.log(JSON.stringify(response))
+    afterEndShow(response)
   })
 }
 
@@ -11442,29 +11418,33 @@ function switchShow () {
   $('#wait-modal').iziModal('open')
   document.querySelector('#wait-text').innerHTML = `Processing Request: Switch Show`
   hostReq.request({ method: 'POST', url: nodeURL + '/state/automation', data: { transition: true } }, function (response) {
-    if (typeof response.showTime === 'undefined') {
-      iziToast.show({
-        title: 'An error occurred',
-        message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
-        timeout: 10000
-      })
-      $('#wait-modal').iziModal('close')
-      hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to switch show, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { })
-    } else {
-      $('#xp-modal').iziModal('open')
-      document.querySelector(`#stat-showTime`).innerHTML = parseInt((response.showTime || 0) / 6) / 10
-      document.querySelector(`#stat-listenerMinutes`).innerHTML = parseInt((response.listenerMinutes || 0) / 6) / 10
-      document.querySelector(`#stat-subtotalXP`).innerHTML = typeof response.subtotalXP !== 'undefined' ? formatInt(response.subtotalXP) : `-`
-      document.querySelector(`#stat-semesterXP`).innerHTML = typeof response.semester.xp !== 'undefined' ? formatInt(response.semester.xp) : `-`
-      document.querySelector(`#stat-totalXP`).innerHTML = typeof response.overall.xp !== 'undefined' ? formatInt(response.overall.xp) : `-`
-      document.querySelector(`#stat-remoteCredits`).innerHTML = typeof response.semester.remoteCredits !== 'undefined' ? formatInt(response.semester.remoteCredits) : `-`
-      document.querySelector(`#stat-totalShowTime`).innerHTML = typeof response.overall.showtime !== 'undefined' ? formatInt(parseInt(response.overall.showtime / 6) / 10) : `-`
-      document.querySelector(`#stat-semesterShowTime`).innerHTML = typeof response.semester.showtime !== 'undefined' ? formatInt(parseInt(response.semester.showtime / 6) / 10) : `-`
-      document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.overall.listeners !== 'undefined' ? formatInt(parseInt(response.overall.listeners / 6) / 10) : `-`
-      document.querySelector(`#stat-semesterListeners`).innerHTML = typeof response.semester.listeners !== 'undefined' ? formatInt(parseInt(response.semester.listeners / 6) / 10) : `-`
-    }
-    console.log(JSON.stringify(response))
+    afterEndShow(response)
   })
+}
+
+function afterEndShow (response, show) {
+  if (typeof response.showTime === 'undefined') {
+    iziToast.show({
+      title: 'An error occurred',
+      message: 'Error occurred trying to end your broadcast. Please try again in 15-30 seconds.',
+      timeout: 10000
+    })
+    $('#wait-modal').iziModal('close')
+    hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to end their show, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { })
+  } else {
+    $('#xp-modal').iziModal('open')
+    document.querySelector(`#stat-showTime`).innerHTML = parseInt((response.showTime || 0) / 6) / 10
+    document.querySelector(`#stat-listenerMinutes`).innerHTML = parseInt((response.listenerMinutes || 0) / 6) / 10
+    document.querySelector(`#stat-subtotalXP`).innerHTML = typeof response.subtotalXP !== 'undefined' ? formatInt(response.subtotalXP) : `-`
+    document.querySelector(`#stat-semesterXP`).innerHTML = typeof response.semester.xp !== 'undefined' ? formatInt(response.semester.xp) : `-`
+    document.querySelector(`#stat-totalXP`).innerHTML = typeof response.overall.xp !== 'undefined' ? formatInt(response.overall.xp) : `-`
+    document.querySelector(`#stat-remoteCredits`).innerHTML = typeof response.semester.remoteCredits !== 'undefined' ? formatInt(response.semester.remoteCredits) : `-`
+    document.querySelector(`#stat-totalShowTime`).innerHTML = typeof response.overall.showtime !== 'undefined' ? formatInt(parseInt(response.overall.showtime / 6) / 10) : `-`
+    document.querySelector(`#stat-semesterShowTime`).innerHTML = typeof response.semester.showtime !== 'undefined' ? formatInt(parseInt(response.semester.showtime / 6) / 10) : `-`
+    document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.overall.listeners !== 'undefined' ? formatInt(parseInt(response.overall.listeners / 6) / 10) : `-`
+    document.querySelector(`#stat-semesterListeners`).innerHTML = typeof response.semester.listeners !== 'undefined' ? formatInt(parseInt(response.semester.listeners / 6) / 10) : `-`
+  }
+  console.log(JSON.stringify(response))
 }
 
 function goBreak (halftime = false, techissue = false) {
@@ -13753,7 +13733,7 @@ function loadTimesheets (date) {
               sOutT = moment(scheduledout).format(`h:mm A`)
               sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100)
             }
-            timeline += `<div title="Scheduled Hours (CANCELED): ${sInT} - ${sOutT}" class="" style="background-color: #787878; position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`
+            timeline += `<div title="Scheduled Hours (CANCELED): ${sInT} - ${sOutT}" id="timesheet-t-${record.ID}" class="" style="background-color: #787878; position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`
           } else if (clockin !== null && clockout !== null && scheduledin !== null && scheduledout !== null && record.approved === 0) {
             status = `warning`
             if (moment(clockin).isBefore(moment(clockout).startOf('week'))) {
@@ -13819,7 +13799,7 @@ function loadTimesheets (date) {
               sOutT = moment(scheduledout).format(`h:mm A`)
               sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100)
             }
-            timeline += `<div title="Scheduled Hours (NO SHOW): ${sInT} - ${sOutT}" class="bg-danger" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`
+            timeline += `<div title="Scheduled Hours (NO SHOW): ${sInT} - ${sOutT}" id="timesheet-t-${record.ID}" class="bg-danger" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`
           } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null && record.approved === 1) {
             status = `secondary`
             if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week'))) {
@@ -13836,7 +13816,7 @@ function loadTimesheets (date) {
               sOutT = moment(scheduledout).format(`h:mm A`)
               sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100)
             }
-            timeline += `<div title="Future Scheduled Hours: ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`
+            timeline += `<div title="Future Scheduled Hours: ${sInT} - ${sOutT}" id="timesheet-t-${record.ID}" class="bg-secondary" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`
           } else if (scheduledin !== null && scheduledout !== null && clockin === null && clockout === null && record.approved === 2) {
             status = `secondary`
             if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week'))) {
@@ -13853,7 +13833,7 @@ function loadTimesheets (date) {
               sOutT = moment(scheduledout).format(`h:mm A`)
               sWidth = (((moment(scheduledout).valueOf() - moment(scheduledin).valueOf()) / dayValue) * 100)
             }
-            timeline += `<div title="Future Scheduled Hours (CHANGED): ${sInT} - ${sOutT}" class="bg-secondary" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`
+            timeline += `<div title="Future Scheduled Hours (CHANGED): ${sInT} - ${sOutT}" id="timesheet-t-${record.ID}" class="bg-secondary" style="position: absolute; left: 5%; width: 15%; top: ${sLeft}%; height: ${sWidth}%;"></div>`
           }
         }
 
