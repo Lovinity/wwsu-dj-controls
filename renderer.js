@@ -1,42 +1,32 @@
 /* global iziToast, io, moment, Infinity, err, Taucharts, responsiveVoice, jdenticon, TAFFY, WWSUreq, Quill, $ */
 try {
+  var hidden
+  if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
+    hidden = 'hidden'
+  } else if (typeof document.msHidden !== 'undefined') {
+    hidden = 'msHidden'
+  } else if (typeof document.webkitHidden !== 'undefined') {
+    hidden = 'webkitHidden'
+  }
+
   var development = false
   // These variables and functions deal with managing the UI when the window is not in focus
   var animations = {}
-  var inView = true
 
-  var visibilityChange = (function (window) {
-    console.log('VisibilityChange constructor')
-    return function (fn) {
-      console.log('VisibilityChange constructor function')
-      window.onfocus = window.onblur = window.onpageshow = window.onpagehide = function (e) {
-        console.log('Visibility change event')
-        if ({ focus: 1, pageshow: 1 }[e.type]) {
-          if (inView) return
-          fn('visible')
-          inView = true
-          console.log('Now Visible')
-        } else if (inView) {
-          fn('hidden')
-          inView = false
-          console.log('Now hidden')
+  setInterval(() => {
+    if (!document[hidden]) {
+      for (var key in animations) {
+        if (Object.prototype.hasOwnProperty.call(animations, key)) {
+          console.log(`executed animation ${name}`)
+          animations[key]()
+          delete animations[key]
         }
       }
     }
-  }(this))
-  visibilityChange(function (state) {
-    console.log('visibility changed')
-    for (var key in animations) {
-      if (Object.prototype.hasOwnProperty.call(animations, key)) {
-        console.log(`executed animation ${name}`)
-        animations[key]()
-        delete animations[key]
-      }
-    }
-  })
+  }, 1000)
 
   var addAnimation = (name, fn) => {
-    if (inView) {
+    if (!document[hidden]) {
       fn()
     } else {
       animations[name] = fn
