@@ -9684,6 +9684,20 @@ function doMeta (metan) {
       }
     }
 
+    if (typeof metan.state !== 'undefined') {
+      queueUnknown = true
+      if (isHost) {
+        if ((Meta.state === 'sports_break' || Meta.state === 'sports_halftime' || Meta.state === 'remote_break' || Meta.state === 'sportsremote_break' || Meta.state === 'sportsremote_halftime')) { responsiveVoice.speak(`On break`) }
+      }
+      setTimeout(() => {
+        queueUnknown = false
+        if (isHost) {
+          if ((Meta.state === 'sports_returning' || Meta.state === 'sportsremote_returning' || Meta.state === 'remote_returning')) { responsiveVoice.speak(`Returning in ${moment.duration(queueLength, 'seconds').format('m [minutes], s [seconds]')}`) }
+          if ((Meta.state === 'automation_sports' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote')) { responsiveVoice.speak(`Going on the air in ${moment.duration(queueLength, 'seconds').format('m [minutes], s [seconds]')}`) }
+        }
+      }, 4000)
+    }
+
     // reset ticker timer on change to queue time
     if (typeof metan.queueFinish !== 'undefined') {
       clearInterval(metaTimer)
@@ -9712,7 +9726,7 @@ function doMeta (metan) {
       main.setProgressBar(-1)
     }
 
-    if (isHost) {
+    if (isHost && !queueUnknown) {
       if (typeof metan.state !== 'undefined' && (metan.state === 'sports_break' || metan.state === 'sports_halftime' || metan.state === 'remote_break' || metan.state === 'sportsremote_break' || metan.state === 'sportsremote_halftime')) { responsiveVoice.speak(`On break`) }
 
       if (typeof metan.state !== 'undefined' && (metan.state === 'sports_returning' || metan.state === 'sportsremote_returning' || metan.state === 'remote_returning')) { responsiveVoice.speak(`Returning in ${moment.duration(queueLength, 'seconds').format('m [minutes], s [seconds]')}`) }
@@ -9789,7 +9803,7 @@ function doMeta (metan) {
     // Make queue timer show current queue length (when visible)
     addAnimation('meta-queue', () => {
       var queueTime = document.querySelector('#queue-seconds')
-      queueTime.innerHTML = queueUnknown ? `???` : moment.duration(queueLength, 'seconds').format('mm:ss')
+      queueTime.innerHTML = queueUnknown ? `<i class="fas fa-hourglass-half"></i>` : moment.duration(queueLength, 'seconds').format('mm:ss')
     })
 
     // Flash the WWSU Operations box when queue time goes below 15 seconds.
