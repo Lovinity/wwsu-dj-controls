@@ -932,6 +932,7 @@ try {
   var queueLength = 0
   var metaTimer
   var isHost = false
+  var hostAlias = ''
   var bitRate = 128
 
   // Clock stuff
@@ -9358,6 +9359,7 @@ function hostSocket (cb = function (token) { }) {
         hostReq.request({ method: 'post', url: nodeURL + '/recipients/add-computers', data: { host: client.host } }, function (response2) {
           if (connectedBefore || (typeof response2.alreadyConnected !== 'undefined' && !response2.alreadyConnected) || development) {
             connectedBefore = true
+            hostAlias = response2.host
             ipcRenderer.send(`peer-reregister`, null)
 
             // Sink main audio devices
@@ -10524,7 +10526,7 @@ function selectRecipient (recipient = null) {
       }
 
       // Get only the relevant messages to show in the "new messages" box
-      var query = [{ from: host, to: [client.host, 'DJ', 'DJ-private'] }, { to: host }]
+      var query = [{ from: host, to: [client.host, 'DJ', 'DJ-private', hostAlias] }, { to: host }]
       if (host === 'website') {
         query = [{ to: ['DJ', 'website'] }]
       }
@@ -12206,6 +12208,7 @@ function processMessages (data, replace = false) {
                 break
               case client.host:
               case 'all':
+              case hostAlias:
                 /*
                                  var notification = notifier.notify('New Message', {
                                  message: `You have a new message from ${datum.fromFriendly} (see DJ Controls).`,
@@ -12298,6 +12301,7 @@ function processMessages (data, replace = false) {
                   break
                 case client.host:
                 case 'all':
+                case hostAlias:
                   /*
                                      var notification = notifier.notify('New Message', {
                                      message: `You have a new message from ${data[key].fromFriendly} (see DJ Controls).`,
