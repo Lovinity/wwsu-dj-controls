@@ -11560,7 +11560,7 @@ function playLiner () {
 function queueRequest (requestID) {
   try {
     hostReq.request({ method: 'POST', url: nodeURL + '/requests/queue', data: { ID: requestID } }, function (response) {
-      if (response === 'OK') {
+      if (response) {
         iziToast.show({
           title: `Request queued!`,
           message: `The request was queued successfully. The request entry will not disappear until the request is played.`,
