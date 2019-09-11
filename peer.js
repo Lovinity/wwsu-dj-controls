@@ -201,7 +201,7 @@ ipcRenderer.on('peer-answer-call', (event, arg) => {
     } catch (eee) {
       incomingCloseIgnore = false
     }
-    ipcRenderer.send('peer-no-audio-incoming', null)
+    ipcRenderer.send('peer-finalize-incoming', false)
   }, 1000)
   incomingCall.on('stream', onReceiveStream)
   incomingCall.on(`close`, () => {
@@ -476,7 +476,7 @@ function onReceiveStream (stream) {
           console.log(`Audio detected.`)
           clearTimeout(incomingCallAudioTimer)
           incomingCallAudioTimer = undefined
-          // Put finish call here
+          ipcRenderer.send('peer-finalize-incoming', true)
         }
       }
 

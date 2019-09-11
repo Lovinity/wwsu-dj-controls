@@ -697,9 +697,9 @@ try {
     })
   })
 
-  ipcRenderer.on(`peer-no-audio-incoming`, (event, arg) => {
-    console.log(`Peer reports no audio being received. Asking to abort remote call.`)
-    hostReq.request({ method: 'POST', url: '/call/no-audio', data: {} }, function (body) { })
+  ipcRenderer.on(`peer-finalize-incoming`, (event, arg) => {
+    console.log(`Peer reports success = ${arg}. Telling the calling host.`)
+    hostReq.request({ method: 'POST', url: '/call/finalize', data: { success: arg } }, function (body) { })
   })
 
   ipcRenderer.on(`peer-no-audio-incoming-notify`, (event, arg) => {
