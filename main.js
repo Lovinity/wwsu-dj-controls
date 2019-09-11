@@ -281,6 +281,42 @@ ipcMain.on('peer-silent-call-notify', (event, arg) => {
   }
 })
 
+ipcMain.on('peer-no-audio-call', (event, arg) => {
+  try {
+    console.log(`Peer no audio call`)
+    peerWindow.webContents.send('peer-no-audio-call', null)
+  } catch (e) {
+
+  }
+})
+
+ipcMain.on('peer-no-audio-incoming-notify', (event, arg) => {
+  try {
+    console.log(`Peer no audio incoming notify`)
+    mainWindow.webContents.send('peer-no-audio-incoming-notify', null)
+  } catch (e) {
+
+  }
+})
+
+ipcMain.on('peer-no-audio-incoming', (event, arg) => {
+  try {
+    console.log(`Peer no audio incoming`)
+    mainWindow.webContents.send('peer-no-audio-incoming', null)
+  } catch (e) {
+
+  }
+})
+
+ipcMain.on('peer-no-audio-outgoing', (event, arg) => {
+  try {
+    console.log(`Peer no audio outgoing`)
+    mainWindow.webContents.send('peer-no-audio-outgoing', null)
+  } catch (e) {
+
+  }
+})
+
 ipcMain.on('peer-resume-call', (event, arg) => {
   try {
     console.log(`Peer resume call`)

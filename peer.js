@@ -17,11 +17,13 @@ window.peerErrorMajor = 0
 window.peerVolume = -100
 var outgoingCall
 var outgoingCallMeter
+var outgoingCallAudioMeter
 var pendingCall
 var bitRate = 128
 var incomingCall
 var incomingCallPending
 var incomingCallMeter
+var incomingCallAudioTimer
 var analyserStream
 var analyserStream0
 var analyserDest
@@ -81,10 +83,14 @@ ipcRenderer.on('new-meta', (event, arg) => {
       try {
         incomingCloseIgnore = true
         console.log(`Closing incoming call via meta`)
-        incomingCall.close()
-        incomingCall = undefined
-        incomingCallMeter.shutdown()
-        incomingCallMeter = undefined
+        if (incomingCall) {
+          incomingCall.close()
+          incomingCall = undefined
+        }
+        if (incomingCallMeter) {
+          incomingCallMeter.shutdown()
+          incomingCallMeter = undefined
+        }
         var audio = document.querySelector('#remoteAudio')
         audio.srcObject = undefined
         audio.pause()
@@ -152,10 +158,15 @@ ipcRenderer.on('peer-answer-call', (event, arg) => {
   try {
     // Close any other active incoming calls
     incomingCloseIgnore = true
-    incomingCall.close()
-    incomingCall = undefined
-    incomingCallMeter.shutdown()
-    incomingCallMeter = undefined
+    if (incomingCall) {
+      incomingCall.close()
+      incomingCall = undefined
+    }
+    if (incomingCallMeter) {
+      incomingCallMeter.shutdown()
+      incomingCallMeter = undefined
+    }
+
     var audio = document.querySelector('#remoteAudio')
     audio.srcObject = undefined
     audio.pause()
@@ -170,12 +181,37 @@ ipcRenderer.on('peer-answer-call', (event, arg) => {
     audioReceiveEnabled: true
   })
   clearTimeout(callDropTimer)
+  incomingCallAudioTimer = setTimeout(() => {
+    try {
+      incomingCloseIgnore = true
+      console.log(`Closing incoming call; no audio`)
+      if (incomingCall) {
+        incomingCall.close()
+        incomingCall = undefined
+      }
+      if (incomingCallMeter) {
+        incomingCallMeter.shutdown()
+        incomingCallMeter = undefined
+      }
+      var audio = document.querySelector('#remoteAudio')
+      audio.srcObject = undefined
+      audio.pause()
+      incomingCloseIgnore = false
+    } catch (eee) {
+      incomingCloseIgnore = false
+    }
+    ipcRenderer.send('peer-no-audio-incoming', null)
+  }, 1000)
   incomingCall.on('stream', onReceiveStream)
   incomingCall.on(`close`, () => {
     console.log(`CALL CLOSED.`)
-    incomingCall = undefined
-    incomingCallMeter.shutdown()
-    incomingCallMeter = undefined
+    if (incomingCall) {
+      incomingCall = undefined
+    }
+    if (incomingCallMeter) {
+      incomingCallMeter.shutdown()
+      incomingCallMeter = undefined
+    }
     var audio = document.querySelector('#remoteAudio')
     audio.srcObject = undefined
     audio.pause()
@@ -203,6 +239,9 @@ ipcRenderer.on('peer-answer-call', (event, arg) => {
         ipcRenderer.send(`peer-audio-info-incoming`, [0, false, window.peerError, typeof tryingCall !== `undefined`, typeof outgoingCall !== `undefined`, typeof incomingCall !== `undefined`])
       }
       callDropFn()
+    } else {
+      window.peerError = 0
+      ipcRenderer.send(`peer-audio-info-incoming`, [0, false, 0, typeof tryingCall !== `undefined`, typeof outgoingCall !== `undefined`, typeof incomingCall !== `undefined`])
     }
     incomingCloseIgnore = false
   })
@@ -229,11 +268,13 @@ ipcRenderer.on('peer-bad-call', (event, arg) => {
     try {
       window.peerError = 0
       outgoingCloseIgnore = true
-      outgoingCall.close()
-      outgoingCall = undefined
+      if (outgoingCall) {
+        outgoingCall.close()
+        outgoingCall = undefined
+      }
       outgoingCloseIgnore = false
     } catch (e) {
-
+      outgoingCloseIgnore = false
     }
     if (typeof window.peerHost !== `undefined`) {
       window.peerError = -1
@@ -248,11 +289,13 @@ ipcRenderer.on('peer-very-bad-call', (event, arg) => {
     try {
       window.peerError = -2
       outgoingCloseIgnore = true
-      outgoingCall.close()
-      outgoingCall = undefined
+      if (outgoingCall) {
+        outgoingCall.close()
+        outgoingCall = undefined
+      }
       outgoingCloseIgnore = false
     } catch (e) {
-
+      outgoingCloseIgnore = false
     }
 
     ipcRenderer.send('peer-very-bad-call-notify', null)
@@ -268,14 +311,35 @@ ipcRenderer.on('peer-silent-call', (event, arg) => {
     try {
       window.peerError = -2
       outgoingCloseIgnore = true
-      outgoingCall.close()
-      outgoingCall = undefined
+      if (outgoingCall) {
+        outgoingCall.close()
+        outgoingCall = undefined
+      }
       outgoingCloseIgnore = false
     } catch (e) {
-
+      outgoingCloseIgnore = false
     }
 
     ipcRenderer.send('peer-silent-call-notify', null)
+  }
+})
+
+ipcRenderer.on('peer-no-audio-call', (event, arg) => {
+  if (typeof outgoingCall !== `undefined`) {
+    console.log(`Main says the other end reported silence on the audio call. Aborting the call.`)
+    try {
+      window.peerError = -2
+      outgoingCloseIgnore = true
+      if (outgoingCall) {
+        outgoingCall.close()
+        outgoingCall = undefined
+      }
+      outgoingCloseIgnore = false
+    } catch (e) {
+      outgoingCloseIgnore = false
+    }
+
+    ipcRenderer.send('peer-no-audio-incoming-notify', null)
   }
 })
 
@@ -398,6 +462,11 @@ function onReceiveStream (stream) {
       } else {
         silenceState0 = 0
         clearTimeout(silenceTimer0)
+        if (incomingCallAudioTimer) {
+          clearTimeout(incomingCallAudioTimer)
+          incomingCallAudioTimer = undefined
+          // Put finish call here
+        }
       }
 
       // Check for glitches in audio every second; we want to send a bad-call event to restart the call if there are too many of them.
@@ -493,15 +562,21 @@ function onReceiveStream (stream) {
 
 function startCall (hostID, reconnect = false, bitrate = bitRate) {
   pendingCall = { hostID: hostID, reconnect: reconnect, bitrate: bitrate }
-  ipcRenderer.send(`peer-get-host-info`, hostID)
+  ipcRenderer.send(`peer-connecting-call`, null)
+  outgoingCallAudioMeter = setTimeout(() => {
+    pendingCall = undefined
+    ipcRenderer.send(`peer-no-audio-outgoing`, null)
+  }, 1000)
 }
 
 function _startCall (hostID, friendlyName, peerID, reconnect = false, bitrate = bitRate) {
   var callFailed = (keepTrying) => {
     try {
       outgoingCloseIgnore = true
-      outgoingCall.close()
-      outgoingCall = undefined
+      if (outgoingCall) {
+        outgoingCall.close()
+        outgoingCall = undefined
+      }
       outgoingCloseIgnore = false
     } catch (eee) {
       outgoingCloseIgnore = false
@@ -513,16 +588,8 @@ function _startCall (hostID, friendlyName, peerID, reconnect = false, bitrate = 
         ipcRenderer.send(`peer-no-answer`, friendlyName || hostID)
       } else {
         ipcRenderer.send(`peer-waiting-answer`, friendlyName)
-        try {
-          waitingFor = tryingCall
-          clearInterval(callTimer)
-          outgoingCloseIgnore = true
-          outgoingCall.close()
-          outgoingCall = undefined
-          outgoingCloseIgnore = false
-        } catch (ee) {
-          outgoingCloseIgnore = false
-        }
+        waitingFor = tryingCall
+        clearInterval(callTimer)
       }
     } else {
       waitingFor = { host: hostID }
@@ -531,11 +598,7 @@ function _startCall (hostID, friendlyName, peerID, reconnect = false, bitrate = 
     }
   }
 
-  console.log(`Trying to call ${friendlyName}`)
-
   tryingCall = { host: hostID, friendlyname: friendlyName }
-
-  if (!reconnect) { ipcRenderer.send(`peer-connecting-call`, null) }
 
   if (peerID === null) {
     callFailed(true)
@@ -546,8 +609,10 @@ function _startCall (hostID, friendlyName, peerID, reconnect = false, bitrate = 
     // Terminate any existing outgoing calls first
     waitingFor = undefined
     outgoingCloseIgnore = true
-    outgoingCall.close()
-    outgoingCall = undefined
+    if (outgoingCall) {
+      outgoingCall.close()
+      outgoingCall = undefined
+    }
     outgoingCloseIgnore = false
     clearInterval(callTimer)
   } catch (ee) {
@@ -675,11 +740,16 @@ function getAudio (device) {
             silenceTimer = setTimeout(function () {
               silenceState = 2
               ipcRenderer.send(`peer-silence-outgoing`, true)
-            }, 13000)
+            }, 10000)
           }
         } else {
           silenceState = 0
           clearTimeout(silenceTimer)
+          if (outgoingCallAudioMeter) {
+            clearTimeout(outgoingCallAudioMeter)
+            outgoingCallAudioMeter = undefined
+            ipcRenderer.send(`peer-get-host-info`, pendingCall.hostID)
+          }
         }
 
         ipcRenderer.send(`peer-audio-info-outgoing`, [maxVolume, clipping, window.peerError, typeof tryingCall !== `undefined`, typeof outgoingCall !== `undefined`, typeof incomingCall !== `undefined`])

@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ability to change finalized show times in the schedule generator.
 - Multiple instance checking via the server [Issue 39](https://github.com/Lovinity/wwsu-dj-controls/issues/39)
 - Ability to specify DJ Web Panel password for DJs when adding or editing (DJ Web Panel is a future feature for the server).
+- Initial silence detection both on outgoing and incoming DJ Controls when establishing an audio call.
 
 ### Changed
 - Timesheet window in admin options -> manage directors -> timesheets now displays timesheets as vertical Gantt Charts.

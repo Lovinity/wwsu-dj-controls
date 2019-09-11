@@ -673,6 +673,58 @@ try {
     }
   })
 
+  ipcRenderer.on(`peer-no-audio-outgoing`, (event, arg) => {
+    $('#connecting-modal').iziModal('close')
+    console.log(`Peer audio call forfeited; no audio on device`)
+    iziToast.show({
+      titleColor: '#000000',
+      messageColor: '#000000',
+      color: 'red',
+      close: true,
+      overlay: false,
+      overlayColor: 'rgba(0, 0, 0, 0.75)',
+      zindex: 100,
+      layout: 1,
+      imageWidth: 100,
+      image: ``,
+      progressBarColor: `rgba(255, 0, 0, 0.5)`,
+      closeOnClick: true,
+      position: 'center',
+      timeout: 10000,
+      maxWidth: 480,
+      title: 'Remote Call Failed',
+      message: `The remote call was aborted; no audio was detected on your selected input device. Please check your device and try again.`
+    })
+  })
+
+  ipcRenderer.on(`peer-no-audio-incoming`, (event, arg) => {
+    console.log(`Peer reports no audio being received. Asking to abort remote call.`)
+    hostReq.request({ method: 'POST', url: '/call/no-audio', data: {} }, function (body) { })
+  })
+
+  ipcRenderer.on(`peer-no-audio-incoming-notify`, (event, arg) => {
+    console.log(`Peer audio call forfeited; no audio on device`)
+    iziToast.show({
+      titleColor: '#000000',
+      messageColor: '#000000',
+      color: 'red',
+      close: true,
+      overlay: false,
+      overlayColor: 'rgba(0, 0, 0, 0.75)',
+      zindex: 100,
+      layout: 1,
+      imageWidth: 100,
+      image: ``,
+      progressBarColor: `rgba(255, 0, 0, 0.5)`,
+      closeOnClick: true,
+      position: 'center',
+      timeout: 10000,
+      maxWidth: 480,
+      title: 'Remote Call Failed',
+      message: `The remote call was aborted; the host you called was not receiving any audio from you. Please check your device and your network connection and try again.`
+    })
+  })
+
   ipcRenderer.on(`audio-silence`, (event, arg) => {
     console.log(`Audio reports silence is ${arg}.`)
     if (client.silenceDetection) {
@@ -1159,6 +1211,10 @@ try {
 
   socket.on('silent-call', function () {
     ipcRenderer.send('peer-silent-call', null)
+  })
+
+  socket.on('no-audio-call', function () {
+    ipcRenderer.send('peer-no-audio-call', null)
   })
   var messageFlash2
   setInterval(function () {
