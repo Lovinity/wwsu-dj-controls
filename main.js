@@ -292,8 +292,8 @@ ipcMain.on('peer-finalize-call', (event, arg) => {
 
 ipcMain.on('peer-no-audio-incoming-notify', (event, arg) => {
   try {
-    console.log(`Peer no audio incoming notify`)
-    mainWindow.webContents.send('peer-no-audio-incoming-notify', null)
+    console.log(`Peer no audio incoming notify ${arg}`)
+    mainWindow.webContents.send('peer-no-audio-incoming-notify', arg)
   } catch (e) {
 
   }
