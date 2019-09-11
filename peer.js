@@ -324,22 +324,25 @@ ipcRenderer.on('peer-silent-call', (event, arg) => {
   }
 })
 
-ipcRenderer.on('peer-no-audio-call', (event, arg) => {
-  if (typeof outgoingCall !== `undefined`) {
-    console.log(`Main says the other end reported silence on the audio call. Aborting the call.`)
-    try {
-      window.peerError = -2
-      outgoingCloseIgnore = true
-      if (outgoingCall) {
-        outgoingCall.close()
-        outgoingCall = undefined
+ipcRenderer.on('peer-finalize-call', (event, arg) => {
+  if (!arg && Meta.state !== 'remote_on' && Meta.state !== 'sportsremote_on') {
+    if (typeof outgoingCall !== `undefined`) {
+      console.log(`Main says the other end reported silence on the audio call. Aborting the call.`)
+      try {
+        window.peerError = -2
+        outgoingCloseIgnore = true
+        if (outgoingCall) {
+          outgoingCall.close()
+          outgoingCall = undefined
+        }
+        outgoingCloseIgnore = false
+      } catch (e) {
+        outgoingCloseIgnore = false
       }
-      outgoingCloseIgnore = false
-    } catch (e) {
-      outgoingCloseIgnore = false
+      ipcRenderer.send('peer-no-audio-incoming-notify', null)
     }
-
-    ipcRenderer.send('peer-no-audio-incoming-notify', null)
+  } else {
+    ipcRenderer.send(`peer-connected-call`, null)
   }
 })
 
@@ -451,7 +454,7 @@ function onReceiveStream (stream) {
   incomingCallMeter.events.on(`volume-processed`, (volume, clipping, maxVolume) => {
     if (typeof incomingCall !== 'undefined') {
       // Silence detection
-      if (maxVolume < 0.01 && (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on')) {
+      if (maxVolume < 0.02 && (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on')) {
         if (silenceState0 === 0 || silenceState0 === -1) {
           silenceState0 = 1
           silenceTimer0 = setTimeout(function () {
@@ -462,6 +465,9 @@ function onReceiveStream (stream) {
       } else {
         silenceState0 = 0
         clearTimeout(silenceTimer0)
+      }
+
+      if (maxVolume >= 0.02) {
         if (incomingCallAudioTimer) {
           clearTimeout(incomingCallAudioTimer)
           incomingCallAudioTimer = undefined
@@ -634,7 +640,6 @@ function _startCall (hostID, friendlyName, peerID, reconnect = false, bitrate = 
 
     if (outgoingCall && outgoingCall.open) {
       clearInterval(callTimer)
-      ipcRenderer.send(`peer-connected-call`, null)
 
       tryingCall = undefined
       window.peerError = 0
@@ -734,7 +739,7 @@ function getAudio (device) {
         // console.log(`Volume: ${maxVolume}, gain: ${gain.gain.value}`);
 
         // Silence detection
-        if (maxVolume < 0.01 && (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on')) {
+        if (maxVolume < 0.02 && (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on')) {
           if (silenceState === 0 || silenceState === -1) {
             silenceState = 1
             silenceTimer = setTimeout(function () {
@@ -745,6 +750,9 @@ function getAudio (device) {
         } else {
           silenceState = 0
           clearTimeout(silenceTimer)
+        }
+
+        if (maxVolume >= 0.02) {
           if (outgoingCallAudioMeter) {
             clearTimeout(outgoingCallAudioMeter)
             outgoingCallAudioMeter = undefined

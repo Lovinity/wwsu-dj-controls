@@ -703,6 +703,7 @@ try {
   })
 
   ipcRenderer.on(`peer-no-audio-incoming-notify`, (event, arg) => {
+    $('#connecting-modal').iziModal('close')
     console.log(`Peer audio call forfeited; no audio on device`)
     iziToast.show({
       titleColor: '#000000',
@@ -1213,8 +1214,8 @@ try {
     ipcRenderer.send('peer-silent-call', null)
   })
 
-  socket.on('no-audio-call', function () {
-    ipcRenderer.send('peer-no-audio-call', null)
+  socket.on('finalize-call', function (success) {
+    ipcRenderer.send('peer-finalize-call', success)
   })
   var messageFlash2
   setInterval(function () {
