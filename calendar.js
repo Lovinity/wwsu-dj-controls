@@ -87,7 +87,7 @@ function checkCalendar (records, meta, cal) {
               calTypeN = 'Sports'
               calHostN = ''
               calShowN = event.title.replace('Sports: ', '')
-              calShowN = calShowN.indexOf(' vs.') > -1 ? calShowN.substring(0, calShowN.indexOf(' vs.')) : calShowN
+              calShowN = calShowN.split(' vs.')[0]
               calTopicN = truncateText(event.description, 256, `...`)
               calStartsN = event.start
             }
@@ -120,10 +120,13 @@ function checkCalendar (records, meta, cal) {
 
             // Prerecords. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 15 minutes.
             if (event.active > 0 && event.title.startsWith('Prerecord: ') && moment(meta.time).add(10, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(15, 'minutes').isAfter(moment(meta.time)) && calPriorityN < 3) {
+              summary = event.title.replace('Prerecord: ', '')
+              temp = summary.split(' - ')
+
               calPriorityN = 3
               calTypeN = 'Prerecord'
-              calHostN = ''
-              calShowN = event.title.replace('Prerecord: ', '')
+              calHostN = temp[0]
+              calShowN = temp[1]
               calTopicN = truncateText(event.description, 256, `...`)
               calStartsN = event.start
             }
@@ -400,6 +403,7 @@ function checkCalendar (records, meta, cal) {
             var stripped = event.title.replace('Show: ', '')
             stripped = stripped.replace('Remote: ', '')
             stripped = stripped.replace('Sports: ', '')
+            if (event.title.startsWith('Sports: ')) { stripped = stripped.split(' vs.')[0] }
             // If the event we are processing is what is on the air right now, and the event has not yet ended...
             if (meta.show === stripped && moment(event.end).isAfter(moment(meta.time))) {
               // Calculate base remaining time
