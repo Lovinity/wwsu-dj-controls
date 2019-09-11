@@ -299,10 +299,10 @@ ipcMain.on('peer-no-audio-incoming-notify', (event, arg) => {
   }
 })
 
-ipcMain.on('peer-no-audio-incoming', (event, arg) => {
+ipcMain.on('peer-finalize-incoming', (event, arg) => {
   try {
-    console.log(`Peer no audio incoming`)
-    mainWindow.webContents.send('peer-no-audio-incoming', null)
+    console.log(`Peer finalize incoming ${arg}`)
+    mainWindow.webContents.send('peer-finalize-incoming', arg)
   } catch (e) {
 
   }
@@ -645,7 +645,7 @@ function createCalendarWindow () {
 }
 
 function createPeerWindow () {
-  peerWindow = new BrowserWindow({ show: false, webPreferences: { backgroundThrottling: false, nodeIntegration: true } })
+  peerWindow = new BrowserWindow({ show: true, webPreferences: { backgroundThrottling: false, nodeIntegration: true } })
   peerWindow.loadFile('peer.html')
 
   peerWindow.on('closed', function () {
