@@ -181,6 +181,7 @@ ipcRenderer.on('peer-answer-call', (event, arg) => {
     audioReceiveEnabled: true
   })
   clearTimeout(callDropTimer)
+  console.log(`Checking for audio on stream`)
   incomingCallAudioTimer = setTimeout(() => {
     try {
       incomingCloseIgnore = true
@@ -343,6 +344,9 @@ ipcRenderer.on('peer-finalize-call', (event, arg) => {
     }
   } else {
     ipcRenderer.send(`peer-connected-call`, null)
+    clearInterval(callTimer)
+    tryingCall = undefined
+    window.peerError = 0
   }
 })
 
@@ -469,6 +473,7 @@ function onReceiveStream (stream) {
 
       if (maxVolume >= 0.02) {
         if (incomingCallAudioTimer) {
+          console.log(`Audio detected.`)
           clearTimeout(incomingCallAudioTimer)
           incomingCallAudioTimer = undefined
           // Put finish call here
@@ -569,7 +574,9 @@ function onReceiveStream (stream) {
 function startCall (hostID, reconnect = false, bitrate = bitRate) {
   pendingCall = { hostID: hostID, reconnect: reconnect, bitrate: bitrate }
   ipcRenderer.send(`peer-connecting-call`, null)
+  console.log(`Checking for audio on device`)
   outgoingCallAudioMeter = setTimeout(() => {
+    console.log(`NO AUDIO on device!`)
     pendingCall = undefined
     ipcRenderer.send(`peer-no-audio-outgoing`, null)
   }, 1000)
@@ -631,6 +638,25 @@ function _startCall (hostID, friendlyName, peerID, reconnect = false, bitrate = 
   outgoingCall = peer.call(peerID, window.peerStream, {
     audioBandwidth: bitRate
   })
+  outgoingCall.on(`close`, () => {
+    console.log(`CALL CLOSED.`)
+    // Premature close if we are still in remote or sportsremote state. Try to reconnect.
+    outgoingCall = undefined
+
+    if (!outgoingCloseIgnore) {
+      console.log(`This was premature!`)
+      if (!Meta.state.includes('_halftime') && (Meta.state.startsWith(`remote_`) || Meta.state.startsWith(`sportsremote_`) || Meta.state === `automation_remote` || Meta.state === `automation_sportsremote`)) {
+        window.peerError = -1
+        console.log(`Trying to re-connect...`)
+        startCall(hostID, true, bitRate)
+      } else {
+        window.peerError = 0
+        console.log(`NOT reconnecting; we are not supposed to be connected to the call at this time.`)
+      }
+    }
+    ipcRenderer.send(`peer-audio-info-outgoing`, [0, false, window.peerError, typeof tryingCall !== `undefined`, typeof outgoingCall !== `undefined`, typeof incomingCall !== `undefined`])
+    outgoingCloseIgnore = false
+  })
 
   callTimerSlot = 10
 
@@ -638,36 +664,9 @@ function _startCall (hostID, friendlyName, peerID, reconnect = false, bitrate = 
   callTimer = setInterval(() => {
     callTimerSlot -= 1
 
-    if (outgoingCall && outgoingCall.open) {
+    if (callTimerSlot <= 1) {
       clearInterval(callTimer)
-
-      tryingCall = undefined
-      window.peerError = 0
-
-      outgoingCall.on(`close`, () => {
-        console.log(`CALL CLOSED.`)
-        // Premature close if we are still in remote or sportsremote state. Try to reconnect.
-        outgoingCall = undefined
-
-        if (!outgoingCloseIgnore) {
-          console.log(`This was premature!`)
-          if (!Meta.state.includes('_halftime') && (Meta.state.startsWith(`remote_`) || Meta.state.startsWith(`sportsremote_`) || Meta.state === `automation_remote` || Meta.state === `automation_sportsremote`)) {
-            window.peerError = -1
-            console.log(`Trying to re-connect...`)
-            startCall(hostID, true, bitRate)
-          } else {
-            window.peerError = 0
-            console.log(`NOT reconnecting; we are not supposed to be connected to the call at this time.`)
-          }
-        }
-        ipcRenderer.send(`peer-audio-info-outgoing`, [0, false, window.peerError, typeof tryingCall !== `undefined`, typeof outgoingCall !== `undefined`, typeof incomingCall !== `undefined`])
-        outgoingCloseIgnore = false
-      })
-    } else {
-      if (callTimerSlot <= 1) {
-        clearInterval(callTimer)
-        callFailed(true)
-      }
+      callFailed(true)
     }
   }, 1000)
 }
@@ -754,6 +753,7 @@ function getAudio (device) {
 
         if (maxVolume >= 0.02) {
           if (outgoingCallAudioMeter) {
+            console.log(`Audio detected.`)
             clearTimeout(outgoingCallAudioMeter)
             outgoingCallAudioMeter = undefined
             ipcRenderer.send(`peer-get-host-info`, pendingCall.hostID)
