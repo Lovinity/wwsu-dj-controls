@@ -554,8 +554,8 @@ function onReceiveStream (stream) {
 
                           // Dead Silence because of networking issue
                           } else if (maxVolume < 0.001) {
-                            window.peerError += 4
-                            window.peerGoodBitrate -= 4
+                            window.peerError += 6
+                            window.peerGoodBitrate -= 6
                             checkPeerError()
                             // Connection was good in the last second. Lower any error counters and also increase the good bitrate counter
                           } else {
