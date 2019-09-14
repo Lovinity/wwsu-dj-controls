@@ -508,14 +508,7 @@ function onReceiveStream (stream) {
                         .map((property) => {
                           var value = stat.stat(property)
 
-                          // Choppiness was detected in the last second
-                          if (value > prevPLC) {
-                            // Increase error counters and decrease good bitrate counter. Generally, we want the system to trigger call restarts when packet loss averages 4%+.
-                            window.peerError += (value - prevPLC) / 2
-                            window.peerGoodBitrate -= (value - prevPLC) / 2
-
-                            console.log(`Choppiness detected! Current threshold: ${window.peerError}/30`)
-
+                          var checkPeerError = () => {
                             // When error exceeds a certain threshold, that is a problem!
                             if (window.peerError >= 30) {
                               // Send the system into break if we are in 64kbps and still having audio issues.
@@ -549,6 +542,21 @@ function onReceiveStream (stream) {
                                 window.peerError = -1
                               }
                             }
+                          }
+
+                          // Choppiness was detected in the last second
+                          if (value > prevPLC) {
+                            // Increase error counters and decrease good bitrate counter. Generally, we want the system to trigger call restarts when packet loss averages 4%+.
+                            window.peerError += (value - prevPLC) / 2
+                            window.peerGoodBitrate -= (value - prevPLC) / 2
+                            checkPeerError()
+                            console.log(`Choppiness detected! Current threshold: ${window.peerError}/30`)
+
+                          // Dead Silence because of networking issue
+                          } else if (maxVolume < 0.001) {
+                            window.peerError += 4
+                            window.peerGoodBitrate -= 4
+                            checkPeerError()
                             // Connection was good in the last second. Lower any error counters and also increase the good bitrate counter
                           } else {
                             window.peerError -= 1

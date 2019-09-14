@@ -14514,7 +14514,7 @@ function parseSchedule (schedule) {
 }
 
 function errorIfLockDJ (action, cb) {
-  if (client.lockToDJ === null || client.lockToDJ === Meta.dj) {
+  if (client.lockToDJ === null || client.lockToDJ === Meta.dj || isHost) {
     cb()
   } else {
     iziToast.show({
