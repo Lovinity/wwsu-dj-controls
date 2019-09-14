@@ -17,7 +17,7 @@ try {
     if (!document[hidden]) {
       for (var key in animations) {
         if (Object.prototype.hasOwnProperty.call(animations, key)) {
-          console.log(`executed animation ${name}`)
+          console.log(`Resumed inactive animation ${name}`)
           animations[key]()
           delete animations[key]
         }
@@ -83,6 +83,10 @@ try {
   }
   var queueUnknown = false
   var connectedBefore = false
+
+  ipcRenderer.on('main-log', (event, arg) => {
+    console.log(arg)
+  })
 
   ipcRenderer.on('processed-darksky', (event, e) => {
     var temp = document.querySelector(`#current-weather`)
@@ -320,14 +324,12 @@ try {
   })
 
   ipcRenderer.on(`peer-register`, (event, arg) => {
-    console.log(`Registering peer ID ${arg}`)
     hostReq.request({ method: 'POST', url: '/recipients/register-peer', data: { peer: arg } }, function (body) {
       ipcRenderer.send('peer-try-calls', null)
     })
   })
 
   ipcRenderer.on(`peer-unavailable`, (event, arg) => {
-    console.log(`Peer ${arg.friendlyname} unavailable`)
     $('#connecting-modal').iziModal('close')
 
     if (document.querySelector(`.peerjs-waiting`) !== null) { iziToast.hide({}, document.querySelector(`.peerjs-waiting`)) }
@@ -361,7 +363,6 @@ try {
   })
 
   ipcRenderer.on(`peer-incoming-call`, (event, arg) => {
-    console.log(`Incoming call from peer ID ${arg}`)
     if (client.answerCalls) {
       console.log(`Allowed to answer. Checking hosts.`)
       try {
@@ -379,12 +380,10 @@ try {
   })
 
   ipcRenderer.on(`peer-bail-break`, (event, arg) => {
-    console.log(`Peer wants to bail into a break due to an error.`)
     goBreak(false, true)
   })
 
   ipcRenderer.on(`peer-very-bad-call-notify`, (event, arg) => {
-    console.log(`Peer wants us to display a notification about the very bad call.`)
     /*
          var notification = notifier.notify('Poor Audio Connection', {
          message: `Please check DJ Controls for more information.`,
@@ -428,7 +427,6 @@ try {
   })
 
   ipcRenderer.on(`peer-silent-call-notify`, (event, arg) => {
-    console.log(`Peer wants us to display a notification about silent call.`)
     /*
          var notification = notifier.notify('Poor Audio Connection', {
          message: `Please check DJ Controls for more information.`,
@@ -472,7 +470,6 @@ try {
   })
 
   ipcRenderer.on(`peer-no-answer`, (event, arg) => {
-    console.log(`Peer reports the call failed.`)
     $('#connecting-modal').iziModal('close')
     iziToast.show({
       titleColor: '#000000',
@@ -495,7 +492,6 @@ try {
   })
 
   ipcRenderer.on(`peer-waiting-answer`, (event, arg) => {
-    console.log(`Peer is waiting for an answer from ${arg}.`)
     if (document.querySelector(`.peerjs-waiting`) !== null) { iziToast.hide({}, document.querySelector(`.peerjs-waiting`)) }
 
     iziToast.show({
@@ -528,7 +524,6 @@ try {
   })
 
   ipcRenderer.on(`peer-dropped-call`, (event, arg) => {
-    console.log(`Peer reports a call was dropped.`)
     $('#connecting-modal').iziModal('close')
     /*
          var notification = notifier.notify('Lost Audio Call', {
@@ -576,12 +571,10 @@ try {
   })
 
   ipcRenderer.on(`peer-connecting-call`, (event, arg) => {
-    console.log(`Peer is connecting a call.`)
     $('#connecting-modal').iziModal('open')
   })
 
   ipcRenderer.on(`peer-connected-call`, (event, arg) => {
-    console.log(`Peer has connected a call.`)
     $('#connecting-modal').iziModal('close')
     if (document.querySelector(`.peerjs-waiting`) !== null) { iziToast.hide({}, document.querySelector(`.peerjs-waiting`)) }
 
@@ -591,14 +584,12 @@ try {
   })
 
   ipcRenderer.on(`peer-no-calls`, (event, arg) => {
-    console.log(`Peer has no calls to resume.`)
     afterStartCall()
     afterStartCall = () => {
     }
   })
 
   ipcRenderer.on(`peer-get-host-info`, (event, arg) => {
-    console.log(`Peer wants information about host ${arg}.`)
     var stuff = Recipients({ host: arg }).first()
     if (stuff && stuff !== null) {
       var peerID = stuff.peer
@@ -627,7 +618,6 @@ try {
   })
 
   ipcRenderer.on(`peer-device-input-error`, (event, arg) => {
-    console.log(`Peer says there was an error with the input device.`)
     iziToast.show({
       titleColor: '#000000',
       messageColor: '#000000',
@@ -649,7 +639,6 @@ try {
   })
 
   ipcRenderer.on(`peer-device-output-error`, (event, arg) => {
-    console.log(`Peer reports there was an error with the output device.`)
     if (client.receiveCalls) {
       iziToast.show({
         titleColor: '#000000',
@@ -675,7 +664,6 @@ try {
 
   ipcRenderer.on(`peer-no-audio-outgoing`, (event, arg) => {
     $('#connecting-modal').iziModal('close')
-    console.log(`Peer audio call forfeited; no audio on device`)
     iziToast.show({
       titleColor: '#000000',
       messageColor: '#000000',
@@ -698,13 +686,11 @@ try {
   })
 
   ipcRenderer.on(`peer-finalize-incoming`, (event, arg) => {
-    console.log(`Peer reports success = ${arg}. Telling the calling host.`)
     hostReq.request({ method: 'POST', url: '/call/finalize', data: { success: arg } }, function (body) { })
   })
 
   ipcRenderer.on(`peer-no-audio-incoming-notify`, (event, arg) => {
     $('#connecting-modal').iziModal('close')
-    console.log(`Peer audio call forfeited; no audio on device`)
     iziToast.show({
       titleColor: '#000000',
       messageColor: '#000000',
@@ -840,13 +826,11 @@ try {
   })
 
   ipcRenderer.on(`peer-very-bad-call-send`, (event, arg) => {
-    console.log(`Peer reports very bad audio call. Sending this to the server and going to break.`)
     if (!disconnected) { goBreak(false, true) }
     hostReq.request({ method: 'POST', url: '/call/give-up', data: {} }, function (body) { })
   })
 
   ipcRenderer.on(`peer-bad-call-send`, (event, arg) => {
-    console.log(`Peer reports bad audio call. Requesting new call at ${arg} kbps.`)
     hostReq.request({ method: 'POST', url: '/call/bad', data: { bitRate: arg } }, function (body) { })
   })
 
@@ -883,7 +867,6 @@ try {
 
   ipcRenderer.on(`peer-silence-outgoing`, (event, arg) => {
     if (Meta.state === 'remote_on' || Meta.state === 'Sportsremote_on') {
-      console.log(`Peer reports silence on the input device.`)
       /*
              var notification = notifier.notify('Lost Audio Call', {
              message: `Please check DJ Controls for more information.`,

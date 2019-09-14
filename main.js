@@ -610,6 +610,15 @@ ipcMain.on('peer-silence-incoming', (event, arg) => {
   }
 })
 
+ipcMain.on('main-log', (event, arg) => {
+  try {
+    console.log(`Main log ${arg}`)
+    mainWindow.webContents.send('main-log', arg)
+  } catch (e) {
+
+  }
+})
+
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 

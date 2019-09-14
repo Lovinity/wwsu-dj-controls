@@ -25,6 +25,8 @@ var audioMeter
 var encodedFunction = () => {
 }
 
+ipcRenderer.send('main-log', `Audio: Renderer is ready.`)
+
 // Set up recorder
 var recorder = new WebAudioRecorder(audioContext2, {
   workerDir: 'assets/js/workers/',
@@ -40,7 +42,7 @@ var recorder = new WebAudioRecorder(audioContext2, {
 recorder.onEncoderLoaded = function (recorder, encoding) {
   var startRecording = null
   var preText = ``
-  console.log(`Encoder Loaded.`)
+  ipcRenderer.send('main-log', `Audio: Rcording encoders are loaded.`)
   if (Meta.state === 'live_on' || Meta.state === `prerecord_on`) {
     startRecording = 'live'
     preText = `${sanitize(Meta.show)}${Meta.state === `prerecord_on` ? ` PRERECORDED` : ``}`
@@ -63,6 +65,7 @@ recorder.onEncoderLoaded = function (recorder, encoding) {
 
 recorder.onComplete = function (recorder, blob) {
   console.log(`Finished encoding. Saving to ${settings.get(`recorder.path`) || ``}/${recorderTitle2}`)
+  ipcRenderer.send('main-log', `Audio: Encoding finished. Saving file to ${settings.get(`recorder.path`) || ``}/${recorderTitle2}`)
   var arrayBuffer
   var fileReader = new FileReader()
   fileReader.onload = function () {
@@ -148,31 +151,32 @@ ipcRenderer.on('new-meta', (event, arg) => {
 })
 
 ipcRenderer.on('audio-change-input-device', (event, arg) => {
-  console.log(`Main wants us to change to audio input device ${arg}`)
+  ipcRenderer.send('main-log', `Audio: changing main input device to ${arg}`)
   getAudioMain(arg)
 })
 
 ipcRenderer.on('audio-should-record', (event, arg) => {
-  console.log(`Main wants us to record? ${arg}`)
+  ipcRenderer.send('main-log', `Audio: Recorder state set to ${arg}`)
   recordAudio = arg
   getAudioMain()
 })
 
 ipcRenderer.on('audio-file-saved', (event, arg) => {
-  console.log(`Main reports the file was saved.`)
+  ipcRenderer.send('main-log', `Audio: File was saved.`)
 })
 
 ipcRenderer.on('audio-shut-down', (event, arg) => {
-  console.log(`Main wants us to shut down.`)
+  ipcRenderer.send('main-log', `Audio: DJ Controls is shutting down. Save what we have.`)
   if (recorder && recorder.isRecording()) {
     stopRecording(true)
   } else {
     ipcRenderer.send(`audio-nothing-to-save`, null)
+    ipcRenderer.send('main-log', `Audio: There is nothing to save.`)
   }
 })
 
 ipcRenderer.on('audio-start-new-recording', (event, arg) => {
-  console.log(`Main wants us to start a new recording.`)
+  ipcRenderer.send('main-log', `Audio: New recording requested by another renderer.`)
   var startRecording = null
   var preText = ``
   if (Meta.state === 'live_on' || Meta.state === 'prerecord_on') {
@@ -240,10 +244,14 @@ function getAudioMain (device) {
             silenceTimer = setTimeout(function () {
               silenceState = 2
               ipcRenderer.send(`audio-silence`, true)
+              ipcRenderer.send('main-log', `Audio: Main input device has silence.`)
             }, settings.get(`silence.time`) || 10000)
           }
         } else {
-          if (silenceState === 2 || silenceState === -1) { ipcRenderer.send(`audio-silence`, false) }
+          if (silenceState === 2 || silenceState === -1) {
+            ipcRenderer.send(`audio-silence`, false)
+            ipcRenderer.send('main-log', `Audio: Main input device no longer has silence.`)
+          }
           silenceState = 0
           clearTimeout(silenceTimer)
         }
@@ -258,6 +266,7 @@ function getAudioMain (device) {
     .catch((err) => {
       console.error(err)
       ipcRenderer.send(`audio-device-input-error`, null)
+      ipcRenderer.send('main-log', `Audio: Error on main input device: ${err}`)
     })
 }
 
@@ -349,6 +358,7 @@ function newRecording (filename, forced = false) {
     }
     try {
       if (recorderTitle) {
+        ipcRenderer.send('main-log', `Audio: A new recording was started at ${recorderTitle}`)
         recorder.startRecording()
         console.log(`Started recording at ${recorderTitle}`)
       }
