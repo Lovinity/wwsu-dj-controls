@@ -181,7 +181,7 @@ ipcRenderer.on('peer-answer-call', (event, arg) => {
     audioReceiveEnabled: true
   })
   clearTimeout(callDropTimer)
-  if (Meta.state !== 'remote_on' && Meta.state !== 'sportsremote_on') {
+  if (!Meta.state.startsWith('remote_') && !Meta.state.startsWith('sportsremote_')) {
     console.log(`Checking for audio on stream`)
     incomingCallAudioTimer = setTimeout(() => {
       try {
@@ -203,7 +203,7 @@ ipcRenderer.on('peer-answer-call', (event, arg) => {
         incomingCloseIgnore = false
       }
       ipcRenderer.send('peer-finalize-incoming', false)
-    }, 1000)
+    }, 3000)
   } else {
     ipcRenderer.send('peer-finalize-incoming', true)
   }
@@ -584,7 +584,7 @@ function startCall (hostID, reconnect = false, bitrate = bitRate) {
       console.log(`NO AUDIO on device!`)
       pendingCall = undefined
       ipcRenderer.send(`peer-no-audio-outgoing`, null)
-    }, 1000)
+    }, 3000)
   } else {
     ipcRenderer.send(`peer-get-host-info`, pendingCall.hostID)
   }

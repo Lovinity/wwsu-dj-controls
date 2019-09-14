@@ -644,7 +644,7 @@ try {
       position: 'center',
       timeout: 10000,
       title: 'Audio Error',
-      message: `There was an error trying to load the input device for audio calling / remote broadcasting.`
+      message: `There was an error trying to load the input device for audio calling / remote broadcasting. Please try re-connecting the device (especially if Bluetooth) or restarting DJ Controls. Then, close / re-open this window.`
     })
   })
 
@@ -692,8 +692,8 @@ try {
       position: 'center',
       timeout: 10000,
       maxWidth: 480,
-      title: 'Remote Call Failed',
-      message: `The remote call was aborted; no audio was detected on your selected input device. Please check your device and try again.`
+      title: 'No Audio on Input Device',
+      message: `The remote call was aborted because there was no audio on the chosen input device. When beginning a broadcast, DJ Controls checks for audio on the input device to ensure it is working. Please speak or play something on the input device as you begin the broadcast. You can stop/mute what is playing once the audio call is started and a queue countdown is shown.`
     })
   })
 
@@ -721,8 +721,8 @@ try {
       position: 'center',
       timeout: 10000,
       maxWidth: 480,
-      title: 'Remote Call Failed',
-      message: `The remote call was aborted; the host you called was not receiving any audio from you. Please check your device and your network connection and try again.`
+      title: 'No Audio being Streamed',
+      message: `The remote call was aborted. Although this DJ Controls detected audio on your input device, the host you called was not receiving any audio from you. Please check your device and your network connection and try again.`
     })
   })
 
