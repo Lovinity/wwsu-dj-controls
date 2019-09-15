@@ -487,6 +487,14 @@ ipcMain.on('peer-audio-info-outgoing', (event, arg) => {
   }
 })
 
+ipcMain.on('peer-call-quality', (event, arg) => {
+  try {
+    mainWindow.webContents.send('peer-call-quality', arg)
+  } catch (e) {
+
+  }
+})
+
 ipcMain.on('audio-audio-info', (event, arg) => {
   try {
     mainWindow.webContents.send('audio-audio-info', arg)

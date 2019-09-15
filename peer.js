@@ -468,6 +468,13 @@ function onReceiveStream (stream) {
     audio.play()
   }
   window.peerError = 0
+  var quality = 100
+  if (bitRate <= 96 && bitRate > 64) {
+    quality -= 33
+  } else if (bitRate <= 64) {
+    quality -= 66
+  }
+  ipcRenderer.send(`peer-call-quality`, quality)
   incomingCallMeter = createAudioMeter(audioContext0)
   analyserStream0 = audioContext0.createMediaStreamSource(stream)
   analyserStream0.connect(incomingCallMeter)
@@ -559,6 +566,17 @@ function onReceiveStream (stream) {
                                 window.peerError = -1
                               }
                             }
+
+                            // Calculate call quality
+                            var quality = 100
+                            if (bitRate <= 96 && bitRate > 64) {
+                              quality -= 33
+                            } else if (bitRate <= 64) {
+                              quality -= 66
+                            }
+                            quality -= Math.floor(((30 - window.peerError) / 30) * 33)
+                            if (quality < 0) { quality = 0 }
+                            ipcRenderer.send(`peer-call-quality`, quality)
                           }
 
                           // Choppiness was detected in the last second
@@ -578,6 +596,9 @@ function onReceiveStream (stream) {
                             checkPeerError()
                             // Connection was good in the last second. Lower any error counters and also increase the good bitrate counter
                           } else {
+                            if (window.peerError > 0 && window.peerError <= 1) {
+                              checkPeerError()
+                            }
                             window.peerError -= 1
                             if (window.peerError < 0) { window.peerError = 0 }
                             window.peerErrorMajor -= 1

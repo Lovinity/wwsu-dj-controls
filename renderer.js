@@ -723,11 +723,21 @@ try {
     }
   })
 
+  ipcRenderer.on(`peer-call-quality`, (event, arg) => {
+    if (arg < 0) { arg = 0 }
+    if (arg > 100) { arg = 100 }
+    hostReq.request({ method: 'POST', url: '/call/quality', data: { quality: arg } }, function (body) { })
+  })
+
   ipcRenderer.on(`peer-audio-info-outgoing`, (event, arg) => {
     if (arg[4]) {
       callInProgressO = true
     } else {
       callInProgressO = false
+      var temp = document.querySelector('#call-quality')
+      if (temp !== null) {
+        temp.style.width = 0
+      }
     }
     addAnimation('peer-audio-info-outgoing', () => {
       window.requestAnimationFrame(() => {
@@ -781,6 +791,10 @@ try {
       callInProgressI = true
     } else {
       callInProgressI = false
+      var temp = document.querySelector('#call-quality')
+      if (temp !== null) {
+        temp.style.width = 0
+      }
     }
     addAnimation('peer-audio-info-incoming', () => {
       window.requestAnimationFrame(() => {
@@ -1200,6 +1214,31 @@ try {
   socket.on('finalize-call', function (success) {
     ipcRenderer.send('peer-finalize-call', success)
   })
+
+  socket.on('call-quality', function (quality) {
+    var temp = document.querySelector('#call-quality')
+    if (temp !== null) {
+      if (callInProgressI || callInProgressO) {
+        temp.style.width = Math.floor((quality / 100) * 0.7) * 100
+        if (quality === 100) {
+          temp.style.backgroundColor = '#00ff00'
+        } else if (quality >= 80) {
+          temp.style.backgroundColor = '#32ff00'
+        } else if (quality >= 60) {
+          temp.style.backgroundColor = '#78ff00'
+        } else if (quality >= 40) {
+          temp.style.backgroundColor = '#ffff00'
+        } else if (quality >= 20) {
+          temp.style.backgroundColor = '#ff7800'
+        } else {
+          temp.style.backgroundColor = '#ff0000'
+        }
+      } else {
+        temp.style.width = 0
+      }
+    }
+  })
+
   var messageFlash2
   setInterval(function () {
     var messaging = document.querySelector('#messaging')
