@@ -243,14 +243,14 @@ function getAudioMain (device) {
             silenceState = 1
             silenceTimer = setTimeout(function () {
               silenceState = 2
-              ipcRenderer.send(`audio-silence`, true)
               ipcRenderer.send('main-log', `Audio: Main input device has silence.`)
+              ipcRenderer.send(`audio-silence`, true)
             }, settings.get(`silence.time`) || 10000)
           }
         } else {
           if (silenceState === 2 || silenceState === -1) {
-            ipcRenderer.send(`audio-silence`, false)
             ipcRenderer.send('main-log', `Audio: Main input device no longer has silence.`)
+            ipcRenderer.send(`audio-silence`, false)
           }
           silenceState = 0
           clearTimeout(silenceTimer)
@@ -265,8 +265,8 @@ function getAudioMain (device) {
     })
     .catch((err) => {
       console.error(err)
-      ipcRenderer.send(`audio-device-input-error`, null)
       ipcRenderer.send('main-log', `Audio: Error on main input device: ${err}`)
+      ipcRenderer.send(`audio-device-input-error`, null)
     })
 }
 

@@ -55,9 +55,8 @@ var prevPLC = 0
 
 var tryingCall
 var waitingFor
-
-ipcRenderer.send('peer-ready', null)
 ipcRenderer.send('main-log', 'Peer renderer is ready.')
+ipcRenderer.send('peer-ready', null)
 sinkAudio()
 
 ipcRenderer.on('new-meta', (event, arg) => {
@@ -203,12 +202,12 @@ ipcRenderer.on('peer-answer-call', (event, arg) => {
       } catch (eee) {
         incomingCloseIgnore = false
       }
-      ipcRenderer.send('peer-finalize-incoming', false)
       ipcRenderer.send('main-log', 'Peer: Incoming call closed; no audio received.')
+      ipcRenderer.send('peer-finalize-incoming', false)
     }, 3000)
   } else {
-    ipcRenderer.send('peer-finalize-incoming', true)
     ipcRenderer.send('main-log', 'Peer: Audio detected on incoming call.')
+    ipcRenderer.send('peer-finalize-incoming', true)
   }
   incomingCall.on('stream', onReceiveStream)
   incomingCall.on(`close`, () => {
@@ -232,8 +231,8 @@ ipcRenderer.on('peer-answer-call', (event, arg) => {
           console.log(`Incoming call was re-established. Stopping the checks.`)
         } else if (!Meta.playing && (Meta.state === 'sportsremote_on' || Meta.state === 'remote_on')) {
           console.log(`Since nothing else is playing, sending system into break!`)
-          ipcRenderer.send('peer-bail-break', null)
           ipcRenderer.send('main-log', 'Peer: Incoming call prematurely terminated. Send system into break.')
+          ipcRenderer.send('peer-bail-break', null)
           window.peerError = -2
         } else if (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote' || Meta.state === 'sportsremote_returning' || Meta.state === 'remote_returning' || Meta.state === 'remote_break' || Meta.state === 'sportsremote_break') {
           console.log(`Something else is playing in RadioDJ, so ignore for now and check again in 10 seconds.`)
@@ -307,8 +306,8 @@ ipcRenderer.on('peer-very-bad-call', (event, arg) => {
       outgoingCloseIgnore = false
     }
 
-    ipcRenderer.send('peer-very-bad-call-notify', null)
     ipcRenderer.send('main-log', 'Peer: Outgoing audio call is too poor to continue. Bailed the call.')
+    ipcRenderer.send('peer-very-bad-call-notify', null)
 
     // Reset bitRate to 96kbps as a mid-point starter for when the broadcast resumes.
     bitRate = 96
@@ -330,8 +329,8 @@ ipcRenderer.on('peer-silent-call', (event, arg) => {
       outgoingCloseIgnore = false
     }
 
-    ipcRenderer.send('peer-silent-call-notify', null)
     ipcRenderer.send('main-log', 'Peer: No audio on input device. Aborting the call.')
+    ipcRenderer.send('peer-silent-call-notify', null)
   }
 })
 
@@ -350,12 +349,12 @@ ipcRenderer.on('peer-finalize-call', (event, arg) => {
       } catch (e) {
         outgoingCloseIgnore = false
       }
-      ipcRenderer.send('peer-no-audio-incoming-notify', false)
       ipcRenderer.send('main-log', 'Peer: Host receiving the audio call reported no audio. Bailing the call.')
+      ipcRenderer.send('peer-no-audio-incoming-notify', false)
     }
   } else {
-    ipcRenderer.send(`peer-connected-call`, null)
     ipcRenderer.send('main-log', 'Peer: Audio is good; the call was successfully established.')
+    ipcRenderer.send(`peer-connected-call`, null)
     clearInterval(callTimer)
     tryingCall = undefined
     window.peerError = 0
@@ -368,8 +367,8 @@ ipcRenderer.on('peer-resume-call', (event, arg) => {
     startCall(window.peerHost, false, bitRate)
   } else {
     console.log(`There are no calls on hold.`)
-    ipcRenderer.send('peer-no-calls', null)
     ipcRenderer.send('main-log', 'Peer: No pending calls to resume.')
+    ipcRenderer.send('peer-no-calls', null)
   }
 })
 
@@ -382,8 +381,8 @@ ipcRenderer.on('peer-host-info', (event, arg) => {
 ipcRenderer.on('peer-reregister', (event, arg) => {
   console.log(`Main wants the current peer ID to be reregistered.`)
   if (peer && peer.id && peer.open) {
-    ipcRenderer.send('peer-register', peer.id)
     ipcRenderer.send('main-log', `Peer: Re-register with the ID ${peer.id}`)
+    ipcRenderer.send('peer-register', peer.id)
   } else {
     setupPeer()
   }
@@ -405,15 +404,15 @@ function setupPeer () {
   peer.on('open', (id) => {
     console.log(`peer opened with id ${id}`)
     // Update database with the peer ID
-    ipcRenderer.send('peer-register', id)
     ipcRenderer.send('main-log', `Peer: Register with the ID ${id}`)
+    ipcRenderer.send('peer-register', id)
   })
 
   peer.on('error', (err) => {
     console.error(err)
     if (err.type === `peer-unavailable`) {
-      ipcRenderer.send('peer-unavailable', tryingCall)
       ipcRenderer.send('main-log', 'Peer: Call aborted; the host being called is unavailable.')
+      ipcRenderer.send('peer-unavailable', tryingCall)
       try {
         waitingFor = tryingCall
         clearInterval(callTimer)
@@ -442,8 +441,8 @@ function setupPeer () {
     console.log(`Peer destroyed.`)
     try {
       peer = undefined
-      ipcRenderer.send('peer-register', null)
       ipcRenderer.send('main-log', 'Peer: Peer was destroyed.')
+      ipcRenderer.send('peer-register', null)
     } catch (ee) {
 
     }
@@ -455,8 +454,8 @@ function setupPeer () {
   peer.on('call', (connection) => {
     console.log(`Incoming call from ${connection.peer}`)
     incomingCallPending = connection
-    ipcRenderer.send('peer-incoming-call', connection.peer)
     ipcRenderer.send('main-log', `Peer: Incoming call from ${connection.peer}`)
+    ipcRenderer.send('peer-incoming-call', connection.peer)
   })
 }
 
@@ -481,8 +480,8 @@ function onReceiveStream (stream) {
           silenceState0 = 1
           silenceTimer0 = setTimeout(function () {
             silenceState0 = 2
-            ipcRenderer.send(`peer-silence-incoming`, true)
             ipcRenderer.send('main-log', 'Peer: Silence detected on call for 15 seconds.')
+            ipcRenderer.send(`peer-silence-incoming`, true)
           }, 15000)
         }
       } else {
@@ -495,8 +494,8 @@ function onReceiveStream (stream) {
           console.log(`Audio detected.`)
           clearTimeout(incomingCallAudioTimer)
           incomingCallAudioTimer = undefined
-          ipcRenderer.send('peer-finalize-incoming', true)
           ipcRenderer.send('main-log', 'Peer: Audio detected on the call. Proceeding with the connection.')
+          ipcRenderer.send('peer-finalize-incoming', true)
         }
       }
 
@@ -531,8 +530,8 @@ function onReceiveStream (stream) {
                               if (window.peerErrorMajor >= 30 && (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on')) {
                                 window.peerErrorMajor = 0
                                 console.log(`Audio call remains choppy even on the lowest allowed bitrate of 64kbps. Giving up by sending the system into break.`)
-                                ipcRenderer.send(`peer-very-bad-call-send`, 96)
                                 ipcRenderer.send('main-log', 'Peer: Call is very poor. Asking outgoing host to bail to break.')
+                                ipcRenderer.send(`peer-very-bad-call-send`, 96)
                                 window.peerError = -2
                                 // Reset bitRate to 96kbps as a mid-point starter for when the broadcast resumes.
                                 bitRate = 96
@@ -554,8 +553,8 @@ function onReceiveStream (stream) {
                                 // Reset the good bitrate counter; we are not having a good connection.
                                 window.peerGoodBitrate = 0
 
-                                ipcRenderer.send(`peer-bad-call-send`, bitRate)
                                 ipcRenderer.send('main-log', `Peer: Call is poor. Asking outgoing host to restart the call with ${bitRate} kbps.`)
+                                ipcRenderer.send(`peer-bad-call-send`, bitRate)
 
                                 window.peerError = -1
                               }
@@ -567,7 +566,7 @@ function onReceiveStream (stream) {
                             // Increase error counters and decrease good bitrate counter. Generally, we want the system to trigger call restarts when packet loss averages 4%+.
                             window.peerError += (value - prevPLC) / 2
                             window.peerGoodBitrate -= (value - prevPLC) / 2
-                            ipcRenderer.send('main-log', `Peer: Choppy audio on call. Threshold to call restart: ${window.peerError}/30.`)
+                            ipcRenderer.send('main-log', `Peer: Choppy audio on call. Threshold to call restart: ${window.peerError}/30. Cool down: 1/second.`)
                             checkPeerError()
                             console.log(`Choppiness detected! Current threshold: ${window.peerError}/30`)
 
@@ -575,7 +574,7 @@ function onReceiveStream (stream) {
                           } else if (maxVolume < 0.001) {
                             window.peerError += 4
                             window.peerGoodBitrate -= 4
-                            ipcRenderer.send('main-log', `Peer: Dead silence on call. Threshold to call restart: ${window.peerError}/30.`)
+                            ipcRenderer.send('main-log', `Peer: Dead silence on call. Threshold to call restart: ${window.peerError}/30. Cool down: 1/second.`)
                             checkPeerError()
                             // Connection was good in the last second. Lower any error counters and also increase the good bitrate counter
                           } else {
@@ -605,19 +604,20 @@ function onReceiveStream (stream) {
 
 function startCall (hostID, reconnect = false, bitrate = bitRate) {
   pendingCall = { hostID: hostID, reconnect: reconnect, bitrate: bitrate }
+  ipcRenderer.send('main-log', `Peer: Connecting a call with ${hostID}.`)
   ipcRenderer.send(`peer-connecting-call`, null)
-  ipcRenderer.send('main-log', `Peer: Connecting the call...`)
   if (!reconnect) {
     console.log(`Checking for audio on device`)
+    ipcRenderer.send('main-log', `Peer: Checking for audio on input device.`)
     outgoingCallAudioMeter = setTimeout(() => {
       console.log(`NO AUDIO on device!`)
       pendingCall = undefined
-      ipcRenderer.send(`peer-no-audio-outgoing`, null)
       ipcRenderer.send('main-log', `Peer: No audio on input device. Aborting the call connection attempt.`)
+      ipcRenderer.send(`peer-no-audio-outgoing`, null)
     }, 3000)
   } else {
-    ipcRenderer.send(`peer-get-host-info`, pendingCall.hostID)
     ipcRenderer.send('main-log', `Peer: Requesting host info for ${pendingCall.hostID}`)
+    ipcRenderer.send(`peer-get-host-info`, pendingCall.hostID)
   }
 }
 
@@ -637,19 +637,18 @@ function _startCall (hostID, friendlyName, peerID, reconnect = false, bitrate = 
 
     if (!reconnect) {
       if (!keepTrying) {
-        ipcRenderer.send(`peer-no-answer`, friendlyName || hostID)
         ipcRenderer.send('main-log', `Peer: No answer from ${friendlyName || hostID}. Call aborted.`)
+        ipcRenderer.send(`peer-no-answer`, friendlyName || hostID)
       } else {
-        ipcRenderer.send(`peer-waiting-answer`, friendlyName || hostID)
         ipcRenderer.send('main-log', `Peer: No answer from ${friendlyName || hostID}. Waiting until they connect.`)
+        ipcRenderer.send(`peer-waiting-answer`, friendlyName || hostID)
         waitingFor = tryingCall
         clearInterval(callTimer)
       }
     } else {
       waitingFor = { host: hostID }
-
-      ipcRenderer.send(`peer-dropped-call`, null)
       ipcRenderer.send('main-log', `Peer: Aborted call.`)
+      ipcRenderer.send(`peer-dropped-call`, null)
     }
   }
 
@@ -785,8 +784,8 @@ function getAudio (device) {
             silenceState = 1
             silenceTimer = setTimeout(function () {
               silenceState = 2
-              ipcRenderer.send(`peer-silence-outgoing`, true)
               ipcRenderer.send('main-log', `Peer: Silence detected on the input device for 15 seconds. Going to break.`)
+              ipcRenderer.send(`peer-silence-outgoing`, true)
             }, 15000)
           }
         } else {
@@ -799,8 +798,8 @@ function getAudio (device) {
             console.log(`Audio detected.`)
             clearTimeout(outgoingCallAudioMeter)
             outgoingCallAudioMeter = undefined
-            ipcRenderer.send(`peer-get-host-info`, pendingCall.hostID)
             ipcRenderer.send('main-log', `Peer: Audio detected on input device. Getting host info for ${pendingCall.hostID}.`)
+            ipcRenderer.send(`peer-get-host-info`, pendingCall.hostID)
           }
         }
 
@@ -816,8 +815,8 @@ function getAudio (device) {
     })
     .catch((err) => {
       console.error(err)
-      ipcRenderer.send(`peer-device-input-error`, err)
       ipcRenderer.send('main-log', `Peer: Input device error. ${err}`)
+      ipcRenderer.send(`peer-device-input-error`, err)
     })
 }
 
@@ -830,14 +829,14 @@ function sinkAudio (device) {
           settings.set(`audio.output.call`, device)
         })
         .catch((err) => {
-          ipcRenderer.send(`peer-device-output-error`, err)
           ipcRenderer.send('main-log', `Peer: Output device error. ${err}`)
+          ipcRenderer.send(`peer-device-output-error`, err)
         })
     } else {
       temp.setSinkId(settings.get(`audio.output.call`))
         .catch((err) => {
-          ipcRenderer.send(`peer-device-output-error`, err)
           ipcRenderer.send('main-log', `Peer: Output device error. ${err}`)
+          ipcRenderer.send(`peer-device-output-error`, err)
         })
     }
   }

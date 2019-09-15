@@ -694,7 +694,6 @@ function checkCalendar (records, meta, cal) {
     isRunning = false
     var response = { events: html.events, title: html.title, clockwheel: clockwheel, cal: cal }
     ipcRenderer.send('processed-calendar', [response])
-    ipcRenderer.send('main-log', `Calendar/Darksky: Calendar events were processed.`)
   } catch (e) {
     isRunning = false
     console.error(e)
@@ -959,7 +958,6 @@ function processDarksky (db, time) {
       }
 
       ipcRenderer.send('processed-darksky', [currentWeather, weatherMessages])
-      ipcRenderer.send('main-log', `Calendar/Darksky: Darksky weather was processed.`)
     } catch (e) {
       console.error(e)
     }
