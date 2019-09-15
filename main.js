@@ -173,6 +173,15 @@ ipcMain.on('peer-answer-call', (event, arg) => {
   }
 })
 
+ipcMain.on('peer-check-better-bitrate', (event, arg) => {
+  try {
+    console.log(`Peer check better bitrate`)
+    peerWindow.webContents.send('peer-check-better-bitrate', null)
+  } catch (e) {
+
+  }
+})
+
 ipcMain.on('new-meta', (event, arg) => {
   var doSend = false
   for (var key in arg) {

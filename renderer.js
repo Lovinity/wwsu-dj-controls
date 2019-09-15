@@ -11599,6 +11599,10 @@ function goBreak (halftime = false, techissue = false) {
       })
       $('#wait-modal').iziModal('close')
       hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'djcontrols', logsubtype: Meta.show, loglevel: 'urgent', event: `DJ attempted to go to break, but an error was returned: ${JSON.stringify(response) || response}` } }, function (response) { })
+    } else {
+      if (!techissue && (Meta.state.startsWith('remote_') || Meta.state.startsWith('sportsremote_'))) {
+        ipcRenderer.send('peer-check-better-bitrate', null)
+      }
     }
     console.log(JSON.stringify(response))
   })

@@ -261,6 +261,14 @@ ipcRenderer.on('peer-start-call', (event, arg) => {
   startCall(arg[0], arg[1] || false, arg[2] || bitRate)
 })
 
+ipcRenderer.on('peer-check-better-bitrate', (event, arg) => {
+  console.log(`Main wants peer to check if it can increase the bitrate.`)
+  if (bitRate < 128 && window.peerGoodBitrate >= 300 && (Meta.state.startsWith('remote_') || Meta.state.startsWith('sportsremote_'))) {
+    window.peerGoodBitrate = 0
+    ipcRenderer.send(`peer-bad-call-send`, bitRate + 32)
+  }
+})
+
 ipcRenderer.on('peer-set-bitrate', (event, arg) => {
   console.log(`Main wants us to set the bitrate to ${arg} kbps.`)
   bitRate = arg
@@ -597,9 +605,11 @@ function onReceiveStream (stream) {
                             // Connection was good in the last second. Lower any error counters and also increase the good bitrate counter
                           } else {
                             if (window.peerError > 0 && window.peerError <= 1) {
+                              window.peerError -= 1
                               checkPeerError()
+                            } else {
+                              window.peerError -= 1
                             }
-                            window.peerError -= 1
                             if (window.peerError < 0) { window.peerError = 0 }
                             window.peerErrorMajor -= 1
                             if (window.peerErrorMajor < 0) { window.peerErrorMajor = 0 }
