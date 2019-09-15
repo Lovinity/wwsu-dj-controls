@@ -598,8 +598,8 @@ function onReceiveStream (stream) {
 
                           // Dead Silence because of networking issue
                           } else if (maxVolume < 0.001) {
-                            window.peerError += 4
-                            window.peerGoodBitrate -= 4
+                            window.peerError += 5
+                            window.peerGoodBitrate -= 5
                             ipcRenderer.send('main-log', `Peer: Dead silence on call. Threshold to call restart: ${window.peerError}/30. Cool down: 1/second.`)
                             checkPeerError()
                             // Connection was good in the last second. Lower any error counters and also increase the good bitrate counter
