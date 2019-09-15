@@ -1216,10 +1216,12 @@ try {
   })
 
   socket.on('call-quality', function (quality) {
+    console.log(`Quality: ${quality}`)
     var temp = document.querySelector('#call-quality')
     if (temp !== null) {
       if (callInProgressI || callInProgressO) {
-        temp.style.width = Math.floor((quality / 100) * 0.7) * 100
+        console.log(`Call in progress`)
+        temp.style.width = `${Math.floor(((quality / 100) * 0.7) * 100)}%`
         if (quality === 100) {
           temp.style.backgroundColor = '#00ff00'
         } else if (quality >= 80) {
@@ -1234,6 +1236,7 @@ try {
           temp.style.backgroundColor = '#ff0000'
         }
       } else {
+        console.log(`call NOT in progress`)
         temp.style.width = 0
       }
     }

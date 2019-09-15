@@ -574,7 +574,7 @@ function onReceiveStream (stream) {
                             } else if (bitRate <= 64) {
                               quality -= 66
                             }
-                            quality -= Math.floor(((30 - window.peerError) / 30) * 33)
+                            quality -= Math.floor((window.peerError / 30) * 33)
                             if (quality < 0) { quality = 0 }
                             ipcRenderer.send(`peer-call-quality`, quality)
                           }
