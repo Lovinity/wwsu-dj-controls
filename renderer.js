@@ -1079,7 +1079,6 @@ try {
   var metaTimer
   var isHost = false
   var hostAlias = ''
-  var bitRate = 128
 
   // Clock stuff
   var date = moment(Meta.time)
@@ -9984,80 +9983,86 @@ function doMeta (metan) {
     addAnimation('meta-queue', () => {
       var queueTime = document.querySelector('#queue-seconds')
       queueTime.innerHTML = queueUnknown ? `<i class="fas fa-hourglass-half"></i>` : moment.duration(queueLength, 'seconds').format('mm:ss')
+      // Flash the WWSU Operations box when queue time goes below 15 seconds.
+      if (queueLength < 15 && queueLength > 0 && document.querySelector('#queue').style.display !== 'none' && (Meta.state.startsWith('_returning') || Meta.state.startsWith('automation_'))) {
+        var operations = document.querySelector('#operations')
+        operations.className = 'card p-1 m-3 text-white'
+        operations.style.backgroundColor = '#ff6f00'
+        setTimeout(function () {
+          operations.className = 'card p-1 m-3 text-white bg-dark'
+          operations.style.backgroundColor = ''
+        }, 250)
+      }
+
+      if (Meta.queueMusic) {
+        document.querySelector('#queue-music').style.display = 'inline'
+      } else {
+        document.querySelector('#queue-music').style.display = 'none'
+      }
     })
-
-    // Flash the WWSU Operations box when queue time goes below 15 seconds.
-    if (queueLength < 15 && queueLength > 0 && document.querySelector('#queue').style.display !== 'none' && (Meta.state.startsWith('_returning') || Meta.state.startsWith('automation_'))) {
-      var operations = document.querySelector('#operations')
-      operations.className = 'card p-1 m-3 text-white'
-      operations.style.backgroundColor = '#ff6f00'
-      setTimeout(function () {
-        operations.className = 'card p-1 m-3 text-white bg-dark'
-        operations.style.backgroundColor = ''
-      }, 250)
-    }
-
-    if (Meta.queueMusic) {
-      document.querySelector('#queue-music').style.display = 'inline'
-    } else {
-      document.querySelector('#queue-music').style.display = 'none'
-    }
-
-    if (typeof metan.state !== `undefined` && (Meta.state === 'remote_break' || Meta.state === 'sportsremote_break') && window.peerGoodBitrate >= 180 && bitRate < 128 && typeof incomingCall !== `undefined`) {
-      window.peerGoodBitrate = 0
-      bitRate += 32
-      console.log(`Connection has been consistently good; requesting a bitrate bump to ${bitRate} kbps.`)
-      hostReq.request({ method: 'POST', url: '/call/bad', data: { bitRate: bitRate } }, function (body) { })
-    }
 
     // Do stuff if the state changed
     if (typeof metan.state !== 'undefined' || typeof metan.playing !== 'undefined') {
-      // Have the WWSU Operations box display buttons and operations depending on which state we are in
       var badge = document.querySelector('#operations-state')
-      badge.innerHTML = `<i class="chip-icon fas fa-question bg-secondary"></i>${Meta.state}`
-      var actionButtons = document.querySelectorAll('.btn-operation')
-      for (var i = 0; i < actionButtons.length; i++) {
-        actionButtons[i].style.display = 'none'
-      }
+      // Have the WWSU Operations box display buttons and operations depending on which state we are in
+      addAnimation('wwsu-operations', () => {
+        badge.innerHTML = `<i class="chip-icon fas fa-question bg-secondary"></i>${Meta.state}`
+        var actionButtons = document.querySelectorAll('.btn-operation')
+        for (var i = 0; i < actionButtons.length; i++) {
+          actionButtons[i].style.display = 'none'
+        }
+      })
       // document.querySelector('#queue').style.display = "none";
       if (Meta.state === 'automation_on' || Meta.state === 'automation_break') {
         isHost = false
-        badge.innerHTML = `<i class="chip-icon fas fa-microphone-alt-slash bg-info"></i>${Meta.state}`
-        document.querySelector('#btn-golive').style.display = 'inline'
-        document.querySelector('#btn-goremote').style.display = 'inline'
-        document.querySelector('#btn-gosports').style.display = 'inline'
-        document.querySelector('#btn-gosportsremote').style.display = 'inline'
+        addAnimation('wwsu-operations', () => {
+          badge.innerHTML = `<i class="chip-icon fas fa-microphone-alt-slash bg-info"></i>${Meta.state}`
+          document.querySelector('#btn-golive').style.display = 'inline'
+          document.querySelector('#btn-goremote').style.display = 'inline'
+          document.querySelector('#btn-gosports').style.display = 'inline'
+          document.querySelector('#btn-gosportsremote').style.display = 'inline'
+        })
       } else if (Meta.state === 'automation_playlist') {
         isHost = false
-        badge.innerHTML = `<i class="chip-icon fas fa-list bg-info"></i>${Meta.state}`
-        document.querySelector('#btn-golive').style.display = 'inline'
-        document.querySelector('#btn-goremote').style.display = 'inline'
-        document.querySelector('#btn-gosports').style.display = 'inline'
-        document.querySelector('#btn-gosportsremote').style.display = 'inline'
+        addAnimation('wwsu-operations', () => {
+          badge.innerHTML = `<i class="chip-icon fas fa-list bg-info"></i>${Meta.state}`
+          document.querySelector('#btn-golive').style.display = 'inline'
+          document.querySelector('#btn-goremote').style.display = 'inline'
+          document.querySelector('#btn-gosports').style.display = 'inline'
+          document.querySelector('#btn-gosportsremote').style.display = 'inline'
+        })
       } else if (Meta.state === 'automation_genre') {
         isHost = false
-        badge.innerHTML = `<i class="chip-icon fas fa-music bg-info"></i>${Meta.state}`
-        document.querySelector('#btn-golive').style.display = 'inline'
-        document.querySelector('#btn-goremote').style.display = 'inline'
-        document.querySelector('#btn-gosports').style.display = 'inline'
-        document.querySelector('#btn-gosportsremote').style.display = 'inline'
+        addAnimation('wwsu-operations', () => {
+          badge.innerHTML = `<i class="chip-icon fas fa-music bg-info"></i>${Meta.state}`
+          document.querySelector('#btn-golive').style.display = 'inline'
+          document.querySelector('#btn-goremote').style.display = 'inline'
+          document.querySelector('#btn-gosports').style.display = 'inline'
+          document.querySelector('#btn-gosportsremote').style.display = 'inline'
+        })
       } else if (Meta.state.startsWith('prerecord_') || Meta.state === 'automation_prerecord') {
         isHost = false
-        badge.innerHTML = `<i class="chip-icon fas fa-compact-disc bg-primary"></i>${Meta.state}`
-        document.querySelector('#btn-golive').style.display = 'inline'
-        document.querySelector('#btn-goremote').style.display = 'inline'
-        document.querySelector('#btn-gosports').style.display = 'inline'
-        document.querySelector('#btn-gosportsremote').style.display = 'inline'
+        addAnimation('wwsu-operations', () => {
+          badge.innerHTML = `<i class="chip-icon fas fa-compact-disc bg-primary"></i>${Meta.state}`
+          document.querySelector('#btn-golive').style.display = 'inline'
+          document.querySelector('#btn-goremote').style.display = 'inline'
+          document.querySelector('#btn-gosports').style.display = 'inline'
+          document.querySelector('#btn-gosportsremote').style.display = 'inline'
+        })
       } else if (Meta.state.startsWith('automation_') || (Meta.state.includes('_returning') && !Meta.state.startsWith('sports'))) {
-        badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`
-        // document.querySelector('#queue').style.display = "inline";
-        document.querySelector('#btn-psa15').style.display = 'inline'
-        document.querySelector('#btn-psa30').style.display = 'inline'
+        addAnimation('wwsu-operations', () => {
+          badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`
+          // document.querySelector('#queue').style.display = "inline";
+          document.querySelector('#btn-psa15').style.display = 'inline'
+          document.querySelector('#btn-psa30').style.display = 'inline'
+        })
       } else if (Meta.state.startsWith('sports') && Meta.state.includes('_returning')) {
-        badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`
-        // document.querySelector('#queue').style.display = "inline";
-        document.querySelector('#btn-psa15').style.display = 'inline'
-        document.querySelector('#btn-psa30').style.display = 'inline'
+        addAnimation('wwsu-operations', () => {
+          badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`
+          // document.querySelector('#queue').style.display = "inline";
+          document.querySelector('#btn-psa15').style.display = 'inline'
+          document.querySelector('#btn-psa30').style.display = 'inline'
+        })
         // If the system goes into disconnected mode, the host client should be notified of that!
       } else if ((Meta.state.includes('_break_disconnected') || Meta.state.includes('_halftime_disconnected')) && isHost) {
         badge.innerHTML = `<i class="chip-icon fas fa-wifi bg-danger"></i>${Meta.state}`
@@ -10096,10 +10101,12 @@ function doMeta (metan) {
         main.flashTaskbar()
         document.querySelector('#btn-resume').style.display = 'inline'
       } else if (Meta.state.includes('_break') || Meta.state.includes('_halftime')) {
-        badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`
-        document.querySelector('#btn-return').style.display = 'inline'
-        document.querySelector('#btn-endshow').style.display = 'inline'
-        document.querySelector('#btn-switchshow').style.display = 'inline'
+        addAnimation('wwsu-operations', () => {
+          badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`
+          document.querySelector('#btn-return').style.display = 'inline'
+          document.querySelector('#btn-endshow').style.display = 'inline'
+          document.querySelector('#btn-switchshow').style.display = 'inline'
+        })
       } else if (Meta.state.includes('live_')) {
         /*
                  if (trip)
@@ -10128,13 +10135,15 @@ function doMeta (metan) {
                  trip.start();
                  }
                  */
-        badge.innerHTML = `<i class="chip-icon fas fa-microphone-alt bg-primary"></i>${Meta.state}`
-        document.querySelector('#btn-endshow').style.display = 'inline'
-        document.querySelector('#btn-switchshow').style.display = 'inline'
-        document.querySelector('#btn-break').style.display = 'inline'
-        document.querySelector('#btn-topadd').style.display = 'inline'
-        document.querySelector('#btn-log').style.display = 'inline'
-        document.querySelector('#btn-view-log').style.display = 'inline'
+        addAnimation('wwsu-operations', () => {
+          badge.innerHTML = `<i class="chip-icon fas fa-microphone-alt bg-primary"></i>${Meta.state}`
+          document.querySelector('#btn-endshow').style.display = 'inline'
+          document.querySelector('#btn-switchshow').style.display = 'inline'
+          document.querySelector('#btn-break').style.display = 'inline'
+          document.querySelector('#btn-topadd').style.display = 'inline'
+          document.querySelector('#btn-log').style.display = 'inline'
+          document.querySelector('#btn-view-log').style.display = 'inline'
+        })
       } else if (Meta.state.includes('sports_') || Meta.state.includes('sportsremote_')) {
         /*
                  if (trip)
@@ -10162,12 +10171,14 @@ function doMeta (metan) {
                  trip.start();
                  }
                  */
-        badge.innerHTML = `<i class="chip-icon fas fa-trophy bg-success"></i>${Meta.state}`
-        document.querySelector('#btn-liner').style.display = 'inline'
-        document.querySelector('#btn-endshow').style.display = 'inline'
-        document.querySelector('#btn-break').style.display = 'inline'
-        document.querySelector('#btn-halftime').style.display = 'inline'
-        document.querySelector('#btn-view-log').style.display = 'inline'
+        addAnimation('wwsu-operations', () => {
+          badge.innerHTML = `<i class="chip-icon fas fa-trophy bg-success"></i>${Meta.state}`
+          document.querySelector('#btn-liner').style.display = 'inline'
+          document.querySelector('#btn-endshow').style.display = 'inline'
+          document.querySelector('#btn-break').style.display = 'inline'
+          document.querySelector('#btn-halftime').style.display = 'inline'
+          document.querySelector('#btn-view-log').style.display = 'inline'
+        })
       } else if (Meta.state.includes('remote_')) {
         /*
                  if (trip)
@@ -10195,12 +10206,14 @@ function doMeta (metan) {
                  trip.start();
                  }
                  */
-        badge.innerHTML = `<i class="chip-icon fas fa-broadcast-tower bg-purple"></i>${Meta.state}`
-        document.querySelector('#btn-topadd').style.display = 'inline'
-        document.querySelector('#btn-endshow').style.display = 'inline'
-        document.querySelector('#btn-break').style.display = 'inline'
-        document.querySelector('#btn-log').style.display = 'inline'
-        document.querySelector('#btn-view-log').style.display = 'inline'
+        addAnimation('wwsu-operations', () => {
+          badge.innerHTML = `<i class="chip-icon fas fa-broadcast-tower bg-purple"></i>${Meta.state}`
+          document.querySelector('#btn-topadd').style.display = 'inline'
+          document.querySelector('#btn-endshow').style.display = 'inline'
+          document.querySelector('#btn-break').style.display = 'inline'
+          document.querySelector('#btn-log').style.display = 'inline'
+          document.querySelector('#btn-view-log').style.display = 'inline'
+        })
       } else {
       }
     }
@@ -10253,11 +10266,6 @@ function pleaseWait () {
       message: 'Error occurred in the pleaseWait function.'
     })
   }
-}
-
-// Check the current announcements from the Status system or the emergency alerts system. Color the Announcements box depending on the level of the most critical announcement.
-function checkAnnouncementColor () {
-  // DEPRECATED
 }
 
 // Re-do the announcements shown in the announcements box
@@ -11978,7 +11986,6 @@ function processEas (data, replace = false) {
     }
 
     checkAnnouncements()
-    checkAnnouncementColor()
   } catch (e) {
     console.error(e)
     iziToast.show({
@@ -12134,8 +12141,6 @@ function processStatus (data, replace = false) {
       }
       checkAnnouncements()
     }
-
-    checkAnnouncementColor()
   } catch (e) {
     console.error(e)
     iziToast.show({
