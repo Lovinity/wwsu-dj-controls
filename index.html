@@ -596,7 +596,7 @@
                     <span aria-hidden="true" id="open-notifications-icon"><i class="fas fa-bell text-white"></i></span>
                 </button>
                 <button type="button" class="close p-2" id="audio-call" aria-label="Audio Call"
-                    title="Audio calling status. Click for settings." style="position: relative;">
+                    title="Audio calling status (speaker color) and call quality (progress bar below). Click for settings." style="position: relative;">
                     <span aria-hidden="true" id="audio-call-span"><i class="fas fa-volume-up"
                             style="color: rgb(16, 16, 16);" id="audio-call-icon"></i></span>
                             <div style="position: absolute; width: 70%; background-color: #000000; bottom: 0; left: 15%; height: 10%;"></div>
@@ -954,6 +954,9 @@
                     <div class="progress">
                         <div class="progress-bar bg-primary" id="remote-vu" role="progressbar" style="width: 0%"></div>
                     </div>
+                    <div class="bs-callout bs-callout-info shadow-4 text-white">
+                    After selecting an input device, make sure the VU meter under the dropdown is moving with your input audio. The target volume should be 75% of the bar. Be aware when you start a remote broadcast, DJ Controls will check for volume; if there is silence, the broadcast will not start.
+                    </div>
                 </div>
                 <div class="form-group" title="Choose which host to initiate the audio call to">
                     <label for="remote-host">Host to transmit remote audio to</label>
@@ -1067,6 +1070,9 @@
                     <div class="progress">
                         <div class="progress-bar bg-primary" id="sportsremote-vu" role="progressbar" style="width: 0%">
                         </div>
+                    </div>
+                    <div class="bs-callout bs-callout-info shadow-4 text-white">
+                    After selecting an input device, make sure the VU meter under the dropdown is moving with your input audio. The target volume should be 75% of the bar. Be aware when you start a remote broadcast, DJ Controls will check for volume; if there is silence, the broadcast will not start.
                     </div>
                 </div>
                 <div class="form-group" title="Choose which host to initiate the audio call to">

@@ -71,10 +71,13 @@ ipcRenderer.on('new-meta', (event, arg) => {
     // Disconnect outgoing calls on automation and halftime break
     if (Meta.state === 'sportsremote_halftime' || Meta.state === 'automation_on' || Meta.state === 'automation_break' || Meta.state === 'automation_genre' || Meta.state === 'automation_playlist' || Meta.state === 'automation_prerecord' || Meta.state.startsWith('live_') || Meta.state.startsWith('sports_') || Meta.state.startsWith('prerecord_')) {
       try {
-        outgoingCloseIgnore = true
         console.log(`Closing outgoing call via meta`)
-        outgoingCall.close()
-        outgoingCall = undefined
+        if (Meta.state !== 'sportsremote_halftime') { window.peerHost = undefined }
+        outgoingCloseIgnore = true
+        if (outgoingCall) {
+          outgoingCall.close()
+          outgoingCall = undefined
+        }
         outgoingCloseIgnore = false
       } catch (eee) {
         outgoingCloseIgnore = false
@@ -128,12 +131,25 @@ ipcRenderer.on('new-meta', (event, arg) => {
       }
     }
   }
+
+  // Just in case another DJ Controls resumes a remote broadcast, detect this and resume the outgoing audio call if it is disconnected
+  if (typeof arg.state !== 'undefined' && (arg.state === 'remote_returning' || arg.state === 'sportsremote_returning') && window.peerHost && typeof outgoingCall === 'undefined') {
+    startCall(window.peerHost, false, false, bitRate)
+  }
+
+  // Just in case another DJ Controls started a break, check for better bitrate.
+  if (typeof arg.state !== 'undefined' && (arg.state === 'remote_break' || arg.state === 'sportsremote_break') && window.peerHost) {
+    if (bitRate < 128 && window.peerGoodBitrate >= 300) {
+      window.peerGoodBitrate = 0
+      ipcRenderer.send(`peer-bad-call-send`, bitRate + 32)
+    }
+  }
 })
 
 ipcRenderer.on('peer-try-calls', (event, arg) => {
   console.log(`If trying a call, try again.`)
   if (tryingCall && tryingCall.host) {
-    startCall(tryingCall.host, false, bitRate)
+    startCall(tryingCall.host, false, false, bitRate)
   }
 })
 
@@ -258,7 +274,7 @@ ipcRenderer.on('peer-answer-call', (event, arg) => {
 ipcRenderer.on('peer-start-call', (event, arg) => {
   console.log(`Main wants to start a call with ${arg[0]}.`)
   console.dir(arg[1])
-  startCall(arg[0], arg[1] || false, arg[2] || bitRate)
+  startCall(arg[0], arg[1] || false, !arg[1] || true, arg[2] || bitRate)
 })
 
 ipcRenderer.on('peer-check-better-bitrate', (event, arg) => {
@@ -275,7 +291,7 @@ ipcRenderer.on('peer-set-bitrate', (event, arg) => {
 })
 
 ipcRenderer.on('peer-check-waiting', (event, arg) => {
-  if (waitingFor && waitingFor.host === arg[0].host && arg[0].peer !== null && (!arg[1] || arg[1] === null || typeof arg[1].host === `undefined` || arg[1].peer !== arg[0].peer)) { startCall(waitingFor.host, true, bitRate) }
+  if (waitingFor && waitingFor.host === arg[0].host && arg[0].peer !== null && (!arg[1] || arg[1] === null || typeof arg[1].host === `undefined` || arg[1].peer !== arg[0].peer)) { startCall(waitingFor.host, true, false, bitRate) }
 })
 
 ipcRenderer.on('peer-bad-call', (event, arg) => {
@@ -294,7 +310,7 @@ ipcRenderer.on('peer-bad-call', (event, arg) => {
     }
     if (typeof window.peerHost !== `undefined`) {
       window.peerError = -1
-      startCall(window.peerHost, true, arg)
+      startCall(window.peerHost, true, false, arg)
     }
   }
 })
@@ -372,7 +388,7 @@ ipcRenderer.on('peer-finalize-call', (event, arg) => {
 ipcRenderer.on('peer-resume-call', (event, arg) => {
   console.log(`Main wants us to resume any calls on hold.`)
   if (typeof window.peerHost !== `undefined` && typeof outgoingCall === `undefined`) {
-    startCall(window.peerHost, false, bitRate)
+    startCall(window.peerHost, false, false, bitRate)
   } else {
     console.log(`There are no calls on hold.`)
     ipcRenderer.send('main-log', 'Peer: No pending calls to resume.')
@@ -635,11 +651,11 @@ function onReceiveStream (stream) {
   })
 }
 
-function startCall (hostID, reconnect = false, bitrate = bitRate) {
+function startCall (hostID, reconnect = false, checkSilence = true, bitrate = bitRate) {
   pendingCall = { hostID: hostID, reconnect: reconnect, bitrate: bitrate }
   ipcRenderer.send('main-log', `Peer: Connecting a call with ${hostID}.`)
   ipcRenderer.send(`peer-connecting-call`, null)
-  if (!reconnect) {
+  if (checkSilence) {
     console.log(`Checking for audio on device`)
     ipcRenderer.send('main-log', `Peer: Checking for audio on input device.`)
     outgoingCallAudioMeter = setTimeout(() => {
@@ -722,7 +738,7 @@ function _startCall (hostID, friendlyName, peerID, reconnect = false, bitrate = 
       if (!Meta.state.includes('_halftime') && (Meta.state.startsWith(`remote_`) || Meta.state.startsWith(`sportsremote_`) || Meta.state === `automation_remote` || Meta.state === `automation_sportsremote`)) {
         window.peerError = -1
         console.log(`Trying to re-connect...`)
-        startCall(hostID, true, bitRate)
+        startCall(hostID, true, false, bitRate)
       } else {
         window.peerError = 0
         console.log(`NOT reconnecting; we are not supposed to be connected to the call at this time.`)

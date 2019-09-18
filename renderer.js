@@ -588,6 +588,31 @@ try {
     afterStartCall()
     afterStartCall = () => {
     }
+    var checker = setInterval(() => {
+      if ((Meta.state === 'remote_on' || Meta.state === 'sportsremote_on') && !callInProgressI) {
+        iziToast.show({
+          titleColor: '#000000',
+          messageColor: '#000000',
+          color: 'red',
+          close: true,
+          overlay: false,
+          overlayColor: 'rgba(0, 0, 0, 0.75)',
+          zindex: 100,
+          layout: 1,
+          imageWidth: 100,
+          image: ``,
+          progressBarColor: `rgba(255, 0, 0, 0.5)`,
+          closeOnClick: true,
+          position: 'center',
+          timeout: 30000,
+          title: 'No Incoming Audio Calls',
+          message: `DJ Controls expected another DJ Controls to re-connect an audio call for this broadcast. However, that did not happen. The system was sent back into break.`
+        })
+        goBreak(false, true)
+      } else if (callInProgressI || (!Meta.state.startsWith('remote_') && !Meta.state.startsWith('sportsremote_'))) {
+        clearInterval(checker)
+      }
+    }, 1000)
   })
 
   ipcRenderer.on(`peer-get-host-info`, (event, arg) => {
@@ -925,6 +950,31 @@ try {
   window.onbeforeunload = function (e) {
     if (refreshingPage) { return true }
     e = e || window.event
+
+    if (isHost && (Meta.state.startsWith('remote_') || Meta.state.startsWith('sportsremote_')) && !disconnected) {
+      main.flashTaskbar()
+      iziToast.show({
+        titleColor: '#000000',
+        messageColor: '#000000',
+        color: 'red',
+        close: false,
+        overlay: true,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        zindex: 99999,
+        layout: 1,
+        imageWidth: 100,
+        image: ``,
+        maxWidth: 480,
+        progressBarColor: `rgba(255, 0, 0, 0.5)`,
+        closeOnClick: false,
+        position: 'center',
+        timeout: false,
+        title: 'Remote Broadcast in progress',
+        message: `The current remote broadcast was started or operated by this DJ Controls. You must "End Show" before shutting down DJ Controls. If applicable, restart the broadcast after re-opening DJ Controls.`
+      })
+      e.returnValue = `The current remote broadcast was started or operated by this DJ Controls. You must "End Show" before shutting down DJ Controls. If applicable, restart the broadcast after re-opening DJ Controls.`
+      return false
+    }
 
     if ((client.emergencies || client.accountability) && !closeDialog) {
       closeDialog = true
@@ -11426,7 +11476,7 @@ function _goSportsRemote () {
   }
 }
 
-function promptIfNotHost (action, fn) {
+function promptIfNotHost (action, fn, noHost = false) {
   if (isHost) {
     fn()
   } else {
