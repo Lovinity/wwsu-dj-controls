@@ -948,10 +948,13 @@ try {
 
   // Define a function that finishes any recordings when DJ Controls is closed
   window.onbeforeunload = function (e) {
+    console.log(`Unload caught`)
     if (refreshingPage) { return true }
     e = e || window.event
+    console.log(`Not refreshing`)
 
     if (isHost && (Meta.state.startsWith('remote_') || Meta.state.startsWith('sportsremote_')) && !disconnected) {
+      console.log(`Unload: is host and in remote broadcast`)
       main.flashTaskbar()
       iziToast.show({
         titleColor: '#000000',
@@ -977,6 +980,7 @@ try {
     }
 
     if ((client.emergencies || client.accountability) && !closeDialog) {
+      console.log(`Unload: Notifications`)
       closeDialog = true
       main.flashTaskbar()
       iziToast.show({
@@ -1012,6 +1016,7 @@ try {
       e.returnValue = `Are you sure you want to close DJ Controls? You will no longer receive notifications when DJ Controls is closed.`
       return false
     } else if (!recorderDialog && (client.silenceDetection || client.recordAudio)) {
+      console.log(`Unload: Recording`)
       main.flashTaskbar()
       iziToast.show({
         titleColor: '#000000',
@@ -1047,6 +1052,7 @@ try {
       recorderDialog = true
       return false
     } else if (client.recordAudio) {
+      console.log(`Unload: Save recording`)
       $('#wait-modal').iziModal('open')
       document.querySelector('#wait-text').innerHTML = `Saving audio recording before closing...`
       ipcRenderer.send(`audio-shut-down`, true)
@@ -1054,7 +1060,7 @@ try {
       refreshingPage = true
       return false
     } else {
-      return true
+      console.log(`Unload: Nothing else`)
     }
   }
 
