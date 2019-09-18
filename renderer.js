@@ -38,6 +38,7 @@ try {
   var closeDialog = false
   var recorderDialog = false
   var darkskyTimer
+  var refreshingPage = false
 
   // Define constants
   var main = require('electron').remote.require('./main')
@@ -912,7 +913,7 @@ try {
 
       if (!disconnected) { goBreak(false, true) }
 
-      responsiveVoice.speak('Attention: Silence was detected on the input device. The broadcast was sent to break. Please check your device settings and resume the broadcast.')
+      responsiveVoice.speak('Attention: Silence was detected on the input device for over 13 seconds. The broadcast was sent to break. Please check your device settings and resume the broadcast.')
     }
   })
 
@@ -922,6 +923,7 @@ try {
 
   // Define a function that finishes any recordings when DJ Controls is closed
   window.onbeforeunload = function (e) {
+    if (refreshingPage) { return true }
     e = e || window.event
 
     if ((client.emergencies || client.accountability) && !closeDialog) {
@@ -943,7 +945,7 @@ try {
         closeOnClick: false,
         position: 'center',
         timeout: false,
-        title: 'Are you sure you want to close DJ Controls?',
+        title: 'Are you sure you want to close DJ Controls (notifications)?',
         message: `If you close DJ Controls, you will no longer receive notifications. When you re-open DJ Controls, notifications from the last 7 days will appear. You can also view issues from the last 7 days in the administration menu -> issues.`,
         buttons: [
           ['<button><b>Close DJ Controls</b></button>', function (instance, toast) {
@@ -953,18 +955,56 @@ try {
           ['<button><b>Cancel</b></button>', function (instance, toast) {
             instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
             closeDialog = false
+            recorderDialog = false
           }]
         ]
       })
       e.returnValue = `Are you sure you want to close DJ Controls? You will no longer receive notifications when DJ Controls is closed.`
       return false
-    } else if (!recorderDialog) {
+    } else if (!recorderDialog && (client.silenceDetection || client.recordAudio)) {
+      main.flashTaskbar()
+      iziToast.show({
+        titleColor: '#000000',
+        messageColor: '#000000',
+        color: 'yellow',
+        close: false,
+        overlay: true,
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        zindex: 99999,
+        layout: 1,
+        imageWidth: 100,
+        image: ``,
+        maxWidth: 480,
+        progressBarColor: `rgba(255, 0, 0, 0.5)`,
+        closeOnClick: false,
+        position: 'center',
+        timeout: false,
+        title: 'Are you sure you want to close DJ Controls (recordings)?',
+        message: `This DJ Controls is recording audio and/or monitoring for silence. These functionalities will no longer be available until you re-open DJ Controls.`,
+        buttons: [
+          ['<button><b>Close DJ Controls</b></button>', function (instance, toast) {
+            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
+            window.close()
+          }, true],
+          ['<button><b>Cancel</b></button>', function (instance, toast) {
+            instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
+            recorderDialog = false
+            closeDialog = false
+          }]
+        ]
+      })
+      e.returnValue = `Are you sure you want to close DJ Controls? This DJ Controls is recording audio and/or monitoring for silence.`
+      recorderDialog = true
+      return false
+    } else if (client.recordAudio) {
       $('#wait-modal').iziModal('open')
       document.querySelector('#wait-text').innerHTML = `Saving audio recording before closing...`
       ipcRenderer.send(`audio-shut-down`, true)
       e.returnValue = `Waiting`
-      recorderDialog = true
+      refreshingPage = true
       return false
+    } else {
+      return true
     }
   }
 
@@ -13322,6 +13362,7 @@ function processHosts (data, replace = false) {
               Hosts.insert(data[key])
               // Changes to this host should trigger a reload of the renderer thread.
               if (data[key].host === main.getMachineID()) {
+                refreshingPage = true
                 window.location.reload(true)
               }
               break
@@ -13329,13 +13370,17 @@ function processHosts (data, replace = false) {
               Hosts({ ID: data[key].ID }).update(data[key])
               // Changes to this host should trigger a reload of the renderer thread
               if (data[key].host === main.getMachineID()) {
+                refreshingPage = true
                 window.location.reload(true)
               }
               break
             case 'remove':
               Hosts({ ID: data[key] }).remove()
               // If this host no longer exists, refresh the renderer
-              if (!Hosts({ host: main.getMachineID() }).first()) { window.location.reload(true) }
+              if (!Hosts({ host: main.getMachineID() }).first()) {
+                refreshingPage = true
+                window.location.reload(true)
+              }
               break
           }
         }

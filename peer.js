@@ -494,10 +494,12 @@ function onReceiveStream (stream) {
         if (silenceState0 === 0 || silenceState0 === -1) {
           silenceState0 = 1
           silenceTimer0 = setTimeout(function () {
-            silenceState0 = 2
-            ipcRenderer.send('main-log', 'Peer: Silence detected on call for 15 seconds.')
-            ipcRenderer.send(`peer-silence-incoming`, true)
-          }, 15000)
+            if (typeof incomingCall !== 'undefined') {
+              silenceState0 = 2
+              ipcRenderer.send('main-log', 'Peer: Silence detected on call for 13 seconds.')
+              ipcRenderer.send(`peer-silence-incoming`, true)
+            }
+          }, 13000)
         }
       } else {
         silenceState0 = 0
@@ -814,10 +816,12 @@ function getAudio (device) {
           if (silenceState === 0 || silenceState === -1) {
             silenceState = 1
             silenceTimer = setTimeout(function () {
-              silenceState = 2
-              ipcRenderer.send('main-log', `Peer: Silence detected on the input device for 15 seconds. Going to break.`)
-              ipcRenderer.send(`peer-silence-outgoing`, true)
-            }, 15000)
+              if (typeof outgoingCall !== 'undefined') {
+                silenceState = 2
+                ipcRenderer.send('main-log', `Peer: Silence detected on the input device for 13 seconds. Going to break.`)
+                ipcRenderer.send(`peer-silence-outgoing`, true)
+              }
+            }, 13000)
           }
         } else {
           silenceState = 0
