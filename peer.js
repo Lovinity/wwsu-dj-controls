@@ -506,7 +506,7 @@ function onReceiveStream (stream) {
   incomingCallMeter.events.on(`volume-processed`, (volume, clipping, maxVolume) => {
     if (typeof incomingCall !== 'undefined') {
       // Silence detection
-      if (maxVolume < 0.02 && (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on')) {
+      if (maxVolume < 0.01 && (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on')) {
         if (silenceState0 === 0 || silenceState0 === -1) {
           silenceState0 = 1
           silenceTimer0 = setTimeout(function () {
@@ -522,7 +522,7 @@ function onReceiveStream (stream) {
         clearTimeout(silenceTimer0)
       }
 
-      if (maxVolume >= 0.02) {
+      if (maxVolume >= 0.01) {
         if (incomingCallAudioTimer) {
           console.log(`Audio detected.`)
           clearTimeout(incomingCallAudioTimer)
@@ -615,7 +615,7 @@ function onReceiveStream (stream) {
                             console.log(`Choppiness detected! Current threshold: ${window.peerError}/30`)
 
                           // Dead Silence because of networking issue
-                          } else if (maxVolume < 0.001) {
+                          } else if (maxVolume <= 0) {
                             window.peerError += 5
                             window.peerGoodBitrate -= 5
                             ipcRenderer.send('main-log', `Peer: Dead silence on call. Threshold to call restart: ${window.peerError}/30. Cool down: 1/second.`)
@@ -828,7 +828,7 @@ function getAudio (device) {
         // console.log(`Volume: ${maxVolume}, gain: ${gain.gain.value}`);
 
         // Silence detection
-        if (maxVolume < 0.02 && (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on')) {
+        if (maxVolume <= 0.01 && (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on')) {
           if (silenceState === 0 || silenceState === -1) {
             silenceState = 1
             silenceTimer = setTimeout(function () {
@@ -844,7 +844,7 @@ function getAudio (device) {
           clearTimeout(silenceTimer)
         }
 
-        if (maxVolume >= 0.02) {
+        if (maxVolume >= 0.01) {
           if (outgoingCallAudioMeter) {
             console.log(`Audio detected.`)
             clearTimeout(outgoingCallAudioMeter)
