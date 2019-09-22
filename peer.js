@@ -560,7 +560,7 @@ function onReceiveStream (stream) {
                             // When error exceeds a certain threshold, that is a problem!
                             if (window.peerError >= 30) {
                               // Send the system into break if we are in 64kbps and still having audio issues.
-                              if (window.peerErrorMajor >= 30 && (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on')) {
+                              if (window.peerErrorMajor >= 30 && (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on') && !Meta.playing) {
                                 window.peerErrorMajor = 0
                                 console.log(`Audio call remains choppy even on the lowest allowed bitrate of 64kbps. Giving up by sending the system into break.`)
                                 ipcRenderer.send('main-log', 'Peer: Call is very poor. Asking outgoing host to bail to break.')
@@ -614,8 +614,8 @@ function onReceiveStream (stream) {
                             checkPeerError()
                             console.log(`Choppiness detected! Current threshold: ${window.peerError}/30`)
 
-                          // Dead Silence because of networking issue
-                          } else if (maxVolume <= 0) {
+                          // Dead Silence because of networking issue (only count this against call quality if on the air)
+                          } else if (maxVolume <= 0 && (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on') && !Meta.playing) {
                             window.peerError += 5
                             window.peerGoodBitrate -= 5
                             ipcRenderer.send('main-log', `Peer: Dead silence on call. Threshold to call restart: ${window.peerError}/30. Cool down: 1/second.`)
