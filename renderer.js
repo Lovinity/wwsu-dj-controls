@@ -589,7 +589,7 @@ try {
     afterStartCall = () => {
     }
     var checker = setInterval(() => {
-      if ((Meta.state === 'remote_on' || Meta.state === 'sportsremote_on') && !callInProgressI) {
+      if ((Meta.state === 'remote_on' || Meta.state === 'sportsremote_on') && !callInProgressI && !callInProgressO) {
         iziToast.show({
           titleColor: '#000000',
           messageColor: '#000000',
@@ -609,7 +609,7 @@ try {
           message: `DJ Controls expected another DJ Controls to re-connect an audio call for this broadcast. However, that did not happen. The system was sent back into break.`
         })
         goBreak(false, true)
-      } else if (callInProgressI || (!Meta.state.startsWith('remote_') && !Meta.state.startsWith('sportsremote_'))) {
+      } else if (callInProgressI || callInProgressO || (!Meta.state.startsWith('remote_') && !Meta.state.startsWith('sportsremote_'))) {
         clearInterval(checker)
       }
     }, 1000)
