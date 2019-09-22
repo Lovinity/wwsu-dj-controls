@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) as of version 4.5.0.
 
 ## [Unreleased]
+### Changed
+ - Adjusted DJ Controls to utilize Meta.showCountdown and Meta.queueCalculating.
+
+## [6.0.0 BETA]
 ### Added
 - Support for new configuration system in the server via admin menu -> server configuration. [Issue 31](https://github.com/Lovinity/wwsu-dj-controls/issues/31)
 - Make direct API queries to the WWSU system from the admin menu.

@@ -14,22 +14,22 @@ try {
   var animations = {}
 
   setInterval(() => {
-    if (!document[hidden]) {
+    if (!document[ hidden ]) {
       for (var key in animations) {
         if (Object.prototype.hasOwnProperty.call(animations, key)) {
           console.log(`Resumed inactive animation ${name}`)
-          animations[key]()
-          delete animations[key]
+          animations[ key ]()
+          delete animations[ key ]
         }
       }
     }
   }, 1000)
 
   var addAnimation = (name, fn) => {
-    if (!document[hidden]) {
+    if (!document[ hidden ]) {
       fn()
     } else {
-      animations[name] = fn
+      animations[ name ] = fn
     }
   }
 
@@ -92,16 +92,16 @@ try {
   ipcRenderer.on('processed-darksky', (event, e) => {
     var temp = document.querySelector(`#current-weather`)
     if (temp !== null) {
-      temp.innerHTML = e[0]
+      temp.innerHTML = e[ 0 ]
     }
     temp = document.querySelector(`#weather-messages`)
     if (temp !== null) {
-      temp.innerHTML = e[1]
+      temp.innerHTML = e[ 1 ]
     }
   })
 
   ipcRenderer.on('processed-calendar', (event, e) => {
-    e = e[0]
+    e = e[ 0 ]
     cal = e.cal
 
     // Determine priority of what is currently on the air
@@ -141,10 +141,10 @@ try {
           image: `assets/images/sportsOff.png`,
           maxWidth: 480,
           buttons: [
-            ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+            [ '<button>End Show</button>', function (instance, toast, button, e, inputs) {
               endShow()
               instance.hide({}, toast, 'button')
-            }]
+            } ]
           ]
         })
       }
@@ -176,10 +176,10 @@ try {
           image: `assets/images/remoteOff.png`,
           maxWidth: 480,
           buttons: [
-            ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+            [ '<button>End Show</button>', function (instance, toast, button, e, inputs) {
               endShow()
               instance.hide({}, toast, 'button')
-            }]
+            } ]
           ]
         })
       }
@@ -211,14 +211,14 @@ try {
           image: `assets/images/showOff.png`,
           maxWidth: 480,
           buttons: [
-            ['<button>Switch Show</button>', function (instance, toast, button, e, inputs) {
+            [ '<button>Switch Show</button>', function (instance, toast, button, e, inputs) {
               switchShow()
               instance.hide({}, toast, 'button')
-            }],
-            ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+            } ],
+            [ '<button>End Show</button>', function (instance, toast, button, e, inputs) {
               endShow()
               instance.hide({}, toast, 'button')
-            }]
+            } ]
           ]
         })
       }
@@ -250,10 +250,10 @@ try {
           image: `assets/images/prerecordOff.png`,
           maxWidth: 480,
           buttons: [
-            ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+            [ '<button>End Show</button>', function (instance, toast, button, e, inputs) {
               endShow()
               instance.hide({}, toast, 'button')
-            }]
+            } ]
           ]
         })
       }
@@ -285,10 +285,10 @@ try {
           image: `assets/images/prerecordOff.png`,
           maxWidth: 480,
           buttons: [
-            ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+            [ '<button>End Show</button>', function (instance, toast, button, e, inputs) {
               endShow()
               instance.hide({}, toast, 'button')
-            }]
+            } ]
           ]
         })
       }
@@ -355,10 +355,10 @@ try {
       title: 'Error establishing audio call',
       message: `${arg.friendlyname} is not available at this time. I will wait for the host to report online and then start the broadcast. If you wish to cancel this, please click "cancel".`,
       buttons: [
-        ['<button><b>Cancel</b></button>', function (instance, toast) {
+        [ '<button><b>Cancel</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
           ipcRenderer.send('peer-stop-trying', null)
-        }]
+        } ]
       ]
     })
   })
@@ -413,14 +413,14 @@ try {
       title: 'Poor Audio Quality',
       message: `The host receiving audio repeatedly reported choppy audio despite multiple tries to restart the audio call. I sent you to a break. Please ensure you have a reliable network, and your audio device is receiving input by clicking the speaker icon. Then, click "Resume Broadcast". Or, you can close this window and change settings or end the broadcast.`,
       buttons: [
-        ['<button><b>Resume Broadcast</b></button>', function (instance, toast) {
+        [ '<button><b>Resume Broadcast</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
           returnBreak()
-        }],
-        ['<button><b>End Broadcast</b></button>', function (instance, toast) {
+        } ],
+        [ '<button><b>End Broadcast</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
           endShow()
-        }]
+        } ]
       ]
     })
 
@@ -456,14 +456,14 @@ try {
       title: 'Silence detected on other end',
       message: `The host receiving audio has reported silence for 15 seconds on the audio call. Your broadcast has been sent to break. Please check your audio device settings by clicking the speaker icon and ensuring you are receiving audio. Please also ensure you have a good network connection and restart it if necessary. Then, resume the broadcast. Or, you can end the broadcast instead.`,
       buttons: [
-        ['<button><b>Resume Broadcast</b></button>', function (instance, toast) {
+        [ '<button><b>Resume Broadcast</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
           returnBreak()
-        }],
-        ['<button><b>End Broadcast</b></button>', function (instance, toast) {
+        } ],
+        [ '<button><b>End Broadcast</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
           endShow()
-        }]
+        } ]
       ]
     })
 
@@ -515,11 +515,11 @@ try {
       title: 'Error establishing audio call',
       message: `${arg} is not available at this time. I will wait for the host to report online and then start/resume the broadcast. If you wish to cancel this, please click "cancel".`,
       buttons: [
-        ['<button><b>Cancel</b></button>', function (instance, toast) {
+        [ '<button><b>Cancel</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
           $('#connecting-modal').iziModal('close')
           ipcRenderer.send(`peer-stop-trying`, null)
-        }]
+        } ]
       ]
     })
   })
@@ -557,12 +557,12 @@ try {
       title: 'Lost Audio Call',
       message: `The audio call with ${arg} was dropped. I tried sending you to break. I will wait until both you and the other DJ Controls is back online, and then try the call again. Click "cancel" to abort; clicking cancel will end the broadcast.`,
       buttons: [
-        ['<button><b>Cancel</b></button>', function (instance, toast) {
+        [ '<button><b>Cancel</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
           ipcRenderer.send(`peer-stop-trying`, null)
           $('#connecting-modal').iziModal('close')
           endShow()
-        }]
+        } ]
       ]
     })
 
@@ -620,7 +620,7 @@ try {
     if (stuff && stuff !== null) {
       var peerID = stuff.peer
       var friendlyName = stuff.label
-      ipcRenderer.send(`peer-host-info`, [friendlyName, peerID])
+      ipcRenderer.send(`peer-host-info`, [ friendlyName, peerID ])
     } else {
       iziToast.show({
         titleColor: '#000000',
@@ -756,7 +756,7 @@ try {
   })
 
   ipcRenderer.on(`peer-audio-info-outgoing`, (event, arg) => {
-    if (arg[4]) {
+    if (arg[ 4 ]) {
       callInProgressO = true
     } else {
       callInProgressO = false
@@ -772,35 +772,35 @@ try {
         var temp3 = document.querySelector(`#call-vu`)
 
         if (temp5 !== null) {
-          temp5.style.width = `${arg[0] * 100}%`
+          temp5.style.width = `${arg[ 0 ] * 100}%`
 
           // check if we're currently clipping
-          if (arg[1]) { temp5.className = 'progress-bar bg-danger' } else { temp5.className = 'progress-bar bg-success' }
+          if (arg[ 1 ]) { temp5.className = 'progress-bar bg-danger' } else { temp5.className = 'progress-bar bg-success' }
         }
 
         if (temp6 !== null) {
-          temp6.style.width = `${arg[0] * 100}%`
+          temp6.style.width = `${arg[ 0 ] * 100}%`
 
           // check if we're currently clipping
-          if (arg[1]) { temp6.className = 'progress-bar bg-danger' } else { temp6.className = 'progress-bar bg-success' }
+          if (arg[ 1 ]) { temp6.className = 'progress-bar bg-danger' } else { temp6.className = 'progress-bar bg-success' }
         }
 
         if (temp3 !== null) {
-          temp3.style.width = `${arg[0] * 100}%`
+          temp3.style.width = `${arg[ 0 ] * 100}%`
 
           // check if we're currently clipping
-          if (arg[1]) { temp3.className = 'progress-bar bg-danger' } else { temp3.className = 'progress-bar bg-success' }
+          if (arg[ 1 ]) { temp3.className = 'progress-bar bg-danger' } else { temp3.className = 'progress-bar bg-success' }
         }
 
-        if (!arg[5]) {
+        if (!arg[ 5 ]) {
           var temp8
-          if (arg[4] && arg[2] >= 0) {
+          if (arg[ 4 ] && arg[ 2 ] >= 0) {
             temp8 = document.querySelector(`#audio-call-icon`)
-            if (temp8 !== null) { temp8.style.color = `rgb(0, ${(192 * arg[0]) + 63}, 0)` }
-          } else if (arg[2] === -2) {
+            if (temp8 !== null) { temp8.style.color = `rgb(0, ${(192 * arg[ 0 ]) + 63}, 0)` }
+          } else if (arg[ 2 ] === -2) {
             temp8 = document.querySelector(`#audio-call-icon`)
             if (temp8 !== null) { temp8.style.color = `rgb(255, 0, 0)` }
-          } else if (arg[2] === -1) {
+          } else if (arg[ 2 ] === -1) {
             temp8 = document.querySelector(`#audio-call-icon`)
             if (temp8 !== null) { temp8.style.color = `rgb(255, 255, 0)` }
           } else {
@@ -813,7 +813,7 @@ try {
   })
 
   ipcRenderer.on(`peer-audio-info-incoming`, (event, arg) => {
-    if (arg[5]) {
+    if (arg[ 5 ]) {
       callInProgressI = true
     } else {
       callInProgressI = false
@@ -824,15 +824,15 @@ try {
     }
     addAnimation('peer-audio-info-incoming', () => {
       window.requestAnimationFrame(() => {
-        if (!arg[4]) {
+        if (!arg[ 4 ]) {
           var temp8
-          if (arg[5] && arg[2] >= 0) {
+          if (arg[ 5 ] && arg[ 2 ] >= 0) {
             temp8 = document.querySelector(`#audio-call-icon`)
-            if (temp8 !== null) { temp8.style.color = `rgb(0, ${(192 * arg[0]) + 63}, ${(192 * arg[0]) + 63})` }
-          } else if (arg[2] === -2) {
+            if (temp8 !== null) { temp8.style.color = `rgb(0, ${(192 * arg[ 0 ]) + 63}, ${(192 * arg[ 0 ]) + 63})` }
+          } else if (arg[ 2 ] === -2) {
             temp8 = document.querySelector(`#audio-call-icon`)
             if (temp8 !== null) { temp8.style.color = `rgb(255, 0, 0)` }
-          } else if (arg[2] === -1) {
+          } else if (arg[ 2 ] === -1) {
             temp8 = document.querySelector(`#audio-call-icon`)
             if (temp8 !== null) { temp8.style.color = `rgb(255, 255, 0)` }
           } else {
@@ -849,17 +849,17 @@ try {
       window.requestAnimationFrame(() => {
         var temp4 = document.querySelector(`#main-vu`)
         if (temp4 !== null) {
-          temp4.style.width = `${arg[0] * 100}%`
+          temp4.style.width = `${arg[ 0 ] * 100}%`
 
           // check if we're currently clipping
-          if (arg[1]) { temp4.className = 'progress-bar bg-danger' } else { temp4.className = 'progress-bar bg-success' }
+          if (arg[ 1 ]) { temp4.className = 'progress-bar bg-danger' } else { temp4.className = 'progress-bar bg-success' }
         }
 
         var temp8 = document.querySelector(`#audio-call-icon`)
         if (temp8 !== null && !callInProgressI && !callInProgressO && client.silenceDetection) {
-          if (arg[2] === 2) { temp8.style.color = `rgb(128, 0, 0)` }
-          if (arg[2] === 1) { temp8.style.color = `rgb(128, 128, 0)` }
-          if (arg[2] === 0) { temp8.style.color = `rgb(16, 16, 16)` }
+          if (arg[ 2 ] === 2) { temp8.style.color = `rgb(128, 0, 0)` }
+          if (arg[ 2 ] === 1) { temp8.style.color = `rgb(128, 128, 0)` }
+          if (arg[ 2 ] === 0) { temp8.style.color = `rgb(16, 16, 16)` }
         }
       })
     })
@@ -1002,15 +1002,15 @@ try {
         title: 'Are you sure you want to close DJ Controls (notifications)?',
         message: `If you close DJ Controls, you will no longer receive notifications. When you re-open DJ Controls, notifications from the last 7 days will appear. You can also view issues from the last 7 days in the administration menu -> issues.`,
         buttons: [
-          ['<button><b>Close DJ Controls</b></button>', function (instance, toast) {
+          [ '<button><b>Close DJ Controls</b></button>', function (instance, toast) {
             instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
             window.close()
-          }, true],
-          ['<button><b>Cancel</b></button>', function (instance, toast) {
+          }, true ],
+          [ '<button><b>Cancel</b></button>', function (instance, toast) {
             instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
             closeDialog = false
             recorderDialog = false
-          }]
+          } ]
         ]
       })
       e.returnValue = `Are you sure you want to close DJ Controls? You will no longer receive notifications when DJ Controls is closed.`
@@ -1037,15 +1037,15 @@ try {
         title: 'Are you sure you want to close DJ Controls (recordings)?',
         message: `This DJ Controls is recording audio and/or monitoring for silence. These functionalities will no longer be available until you re-open DJ Controls.`,
         buttons: [
-          ['<button><b>Close DJ Controls</b></button>', function (instance, toast) {
+          [ '<button><b>Close DJ Controls</b></button>', function (instance, toast) {
             instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
             window.close()
-          }, true],
-          ['<button><b>Cancel</b></button>', function (instance, toast) {
+          }, true ],
+          [ '<button><b>Cancel</b></button>', function (instance, toast) {
             instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
             recorderDialog = false
             closeDialog = false
-          }]
+          } ]
         ]
       })
       e.returnValue = `Are you sure you want to close DJ Controls? This DJ Controls is recording audio and/or monitoring for silence.`
@@ -1102,8 +1102,8 @@ try {
       var containers = document.querySelectorAll('.hours-container')
       if (containers) {
         for (var i = 0; i < containers.length; i++) {
-          containers[i].style.webkitTransform = 'rotateZ(' + angle + 'deg)'
-          containers[i].style.transform = 'rotateZ(' + angle + 'deg)'
+          containers[ i ].style.webkitTransform = 'rotateZ(' + angle + 'deg)'
+          containers[ i ].style.transform = 'rotateZ(' + angle + 'deg)'
         }
       }
 
@@ -1112,8 +1112,8 @@ try {
       containers = document.querySelectorAll('.minutes-container')
       if (containers) {
         for (var i2 = 0; i2 < containers.length; i2++) {
-          containers[i2].style.webkitTransform = 'rotateZ(' + angle + 'deg)'
-          containers[i2].style.transform = 'rotateZ(' + angle + 'deg)'
+          containers[ i2 ].style.webkitTransform = 'rotateZ(' + angle + 'deg)'
+          containers[ i2 ].style.transform = 'rotateZ(' + angle + 'deg)'
         }
       }
 
@@ -1122,8 +1122,8 @@ try {
       containers = document.querySelectorAll('.seconds-container')
       if (containers) {
         for (var i3 = 0; i3 < containers.length; i3++) {
-          containers[i3].style.webkitTransform = 'rotateZ(' + angle + 'deg)'
-          containers[i3].style.transform = 'rotateZ(' + angle + 'deg)'
+          containers[ i3 ].style.webkitTransform = 'rotateZ(' + angle + 'deg)'
+          containers[ i3 ].style.transform = 'rotateZ(' + angle + 'deg)'
         }
       }
     })
@@ -1203,7 +1203,7 @@ try {
     try {
       for (var key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
-          Meta[key] = data[key]
+          Meta[ key ] = data[ key ]
         }
       }
       doMeta(data)
@@ -1893,16 +1893,16 @@ try {
   var quillGetHTML = function (inputDelta) {
     var tempCont = document.createElement('div');
     (new Quill(tempCont)).setContents(inputDelta)
-    return tempCont.getElementsByClassName('ql-editor')[0].innerHTML
+    return tempCont.getElementsByClassName('ql-editor')[ 0 ].innerHTML
   }
 
   // eslint-disable-next-line no-unused-vars
   var quill = new Quill('#themessage', {
     modules: {
       toolbar: [
-        ['bold', 'italic', 'underline', 'strike', { color: [] }],
-        ['link'],
-        ['clean']
+        [ 'bold', 'italic', 'underline', 'strike', { color: [] } ],
+        [ 'link' ],
+        [ 'clean' ]
       ],
       keyboard: {
         bindings: {
@@ -1961,9 +1961,9 @@ try {
   var quill2 = new Quill('#theannouncement', {
     modules: {
       toolbar: [
-        [{ size: ['small', false, 'large', 'huge'] }, 'bold', 'italic', 'underline', 'strike', { color: [] }],
-        ['link', { indent: '-1' }, { indent: '+1' }, { list: 'ordered' }, { list: 'bullet' }, { align: [] }],
-        ['image', 'clean']
+        [ { size: [ 'small', false, 'large', 'huge' ] }, 'bold', 'italic', 'underline', 'strike', { color: [] } ],
+        [ 'link', { indent: '-1' }, { indent: '+1' }, { list: 'ordered' }, { list: 'bullet' }, { align: [] } ],
+        [ 'image', 'clean' ]
       ]
     },
     theme: 'snow',
@@ -2086,8 +2086,8 @@ try {
         }
 
         for (var t in animations) {
-          if (el.style[t] !== undefined) {
-            return animations[t]
+          if (el.style[ t ] !== undefined) {
+            return animations[ t ]
           }
         }
       })(document.createElement('div'))
@@ -3964,7 +3964,7 @@ document.querySelector('#btn-options-config-breaks-clock').onclick = function ()
       }
 
       listNew = function () {
-        var categories = ['']
+        var categories = [ '' ]
         for (var key in Config.categories) {
           if (key !== `_doNotRemove` && Object.prototype.hasOwnProperty.call(Config.categories, key)) { categories.push(key) }
         }
@@ -3990,7 +3990,7 @@ document.querySelector('#btn-options-config-breaks-clock').onclick = function ()
                     type: 'string',
                     title: 'Break Task',
                     required: true,
-                    enum: ['[DELETE THIS ENTRY]', '', 'log', 'queueRequests', 'queue', 'queueDuplicates', 'queueUnderwritings'],
+                    enum: [ '[DELETE THIS ENTRY]', '', 'log', 'queueRequests', 'queue', 'queueDuplicates', 'queueUnderwritings' ],
                     description: `Choose the task. Delete this entry = choose this to ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates. queueUnderwritings = queue scheduled underwritings added via admin menu -> manage underwritings.`
                   },
                   event: {
@@ -4012,7 +4012,7 @@ document.querySelector('#btn-options-config-breaks-clock').onclick = function ()
                   rules: {
                     type: 'string',
                     title: 'Rotation Rules (queue tasks only)',
-                    enum: ['noRules', 'lenientRules', 'strictRules'],
+                    enum: [ 'noRules', 'lenientRules', 'strictRules' ],
                     description: 'For queue tasks: noRules = do not consider rotation rules. lenientRules = consider rotation rules until/unless there are no more tracks that can be queued, then queue randomly. strictRules = consider rotation rules and stop queuing when there are no more tracks that can be queued.'
                   }
                 }
@@ -4022,7 +4022,7 @@ document.querySelector('#btn-options-config-breaks-clock').onclick = function ()
           onSubmitValid: function (values) {
             console.dir(values)
             values.tasks.map((task, index) => {
-              if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
+              if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[ index ] }
             })
             directorReq.request({
               db: Directors(),
@@ -4248,7 +4248,7 @@ document.querySelector('#btn-options-config-breaks-automation').onclick = functi
   try {
     $('#options-modal-config-form-form').html(``)
     $('#options-modal-config-form-extra').html(``)
-    var categories = ['']
+    var categories = [ '' ]
     for (var key in Config.categories) {
       if (key !== `_doNotRemove` && Object.prototype.hasOwnProperty.call(Config.categories, key)) { categories.push(key) }
     }
@@ -4274,7 +4274,7 @@ document.querySelector('#btn-options-config-breaks-automation').onclick = functi
                 type: 'string',
                 title: 'Break Task',
                 required: true,
-                enum: ['[DELETE THIS ENTRY]', '', 'log', 'queueRequests', 'queue', 'queueDuplicates', 'queueUnderwritings'],
+                enum: [ '[DELETE THIS ENTRY]', '', 'log', 'queueRequests', 'queue', 'queueDuplicates', 'queueUnderwritings' ],
                 description: `Choose the task. Delete this entry = ignore this entry completely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates. queueUnderwritings = queue scheduled underwritings added via admin menu -> manage underwritings.`
               },
               event: {
@@ -4296,7 +4296,7 @@ document.querySelector('#btn-options-config-breaks-automation').onclick = functi
               rules: {
                 type: 'string',
                 title: 'Rotation Rules (queue tasks only)',
-                enum: ['noRules', 'lenientRules', 'strictRules'],
+                enum: [ 'noRules', 'lenientRules', 'strictRules' ],
                 description: 'For queue tasks: noRules = do not consider rotation rules. lenientRules = consider rotation rules until/unless there are no more tracks that can be queued, then queue randomly. strictRules = consider rotation rules and stop queuing when there are no more tracks that can be queued.'
               }
             }
@@ -4308,7 +4308,7 @@ document.querySelector('#btn-options-config-breaks-automation').onclick = functi
       },
       onSubmitValid: function (values) {
         values.tasks.map((task, index) => {
-          if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
+          if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[ index ] }
         })
         directorReq.request({
           db: Directors(),
@@ -4500,7 +4500,7 @@ document.querySelector('#btn-options-config-categories').onclick = function () {
                 <button type="button" id="config-categories-edit-${item}" class="close" aria-label="Edit category ${item}." title="Edit this category">
                 <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
                 </button>
-                ${Config.categories['_doNotRemove'].indexOf(item) === -1 ? `<button type="button" id="config-categories-remove-${item}" class="close" aria-label="Remove category ${item}" title="Remove this category">
+                ${Config.categories[ '_doNotRemove' ].indexOf(item) === -1 ? `<button type="button" id="config-categories-remove-${item}" class="close" aria-label="Remove category ${item}" title="Remove this category">
                 <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
                 </button>` : ``}
                             </div>
@@ -4512,11 +4512,11 @@ document.querySelector('#btn-options-config-categories').onclick = function () {
         hostReq.request({ method: 'post', url: nodeURL + '/config/categories/get-available', data: {} }, function serverResponded (body, JWR) {
           // console.log(body);
           try {
-            var categories = [`[DELETE THIS ENTRY]`]
+            var categories = [ `[DELETE THIS ENTRY]` ]
             for (var key in body) {
               if (Object.prototype.hasOwnProperty.call(body, key)) {
                 categories.push(`${key} >>> [All Subcategories]`)
-                body[key].map((item) => {
+                body[ key ].map((item) => {
                   categories.push(`${key} >>> ${item}`)
                 })
               }
@@ -4554,8 +4554,8 @@ document.querySelector('#btn-options-config-categories').onclick = function () {
                   values.categories.map((cat) => {
                     if (cat.category !== `[DELETE THIS ENTRY]`) {
                       var temp = cat.category.split(` >>> `)
-                      if (typeof config[temp[0]] === `undefined`) { config[temp[0]] = [] }
-                      if (temp[1] !== `[All Subcategories]`) { config[temp[0]].push(temp[1]) }
+                      if (typeof config[ temp[ 0 ] ] === `undefined`) { config[ temp[ 0 ] ] = [] }
+                      if (temp[ 1 ] !== `[All Subcategories]`) { config[ temp[ 0 ] ].push(temp[ 1 ]) }
                     }
                   })
                 }
@@ -4631,13 +4631,13 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
       console.log(e.target.id)
       if (e.target.id.startsWith(`config-breaks-edit-`)) {
         var item = e.target.id.replace(`config-breaks-edit-`, ``)
-        if (typeof Config.breaks[item] !== `undefined`) {
-          var categories = ['']
+        if (typeof Config.breaks[ item ] !== `undefined`) {
+          var categories = [ '' ]
           var values = []
           for (var key in Config.categories) {
             if (key !== `_doNotRemove` && Object.prototype.hasOwnProperty.call(Config.categories, key)) { categories.push(key) }
           }
-          Config.breaks[item].map((task) => {
+          Config.breaks[ item ].map((task) => {
             values.push({
               task: task.task || ``,
               event: task.event || ``,
@@ -4660,7 +4660,7 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
                       type: 'string',
                       title: 'Break Task',
                       required: true,
-                      enum: ['[DELETE THIS ENTRY]', '', 'log', 'queueRequests', 'queue', 'queueDuplicates', 'queueUnderwritings'],
+                      enum: [ '[DELETE THIS ENTRY]', '', 'log', 'queueRequests', 'queue', 'queueDuplicates', 'queueUnderwritings' ],
                       description: `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates. queueUnderwritings = queue scheduled underwritings added via admin menu -> manage underwritings.`
                     },
                     event: {
@@ -4682,7 +4682,7 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
                     rules: {
                       type: 'string',
                       title: 'Rotation Rules (queue tasks only)',
-                      enum: ['noRules', 'lenientRules', 'strictRules'],
+                      enum: [ 'noRules', 'lenientRules', 'strictRules' ],
                       description: 'For queue tasks: noRules = do not consider rotation rules. lenientRules = consider rotation rules until/unless there are no more tracks that can be queued, then queue randomly. strictRules = consider rotation rules and stop queuing when there are no more tracks that can be queued.'
                     }
                   }
@@ -4695,7 +4695,7 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             onSubmitValid: function (values) {
               console.dir(values)
               values.tasks.map((task, index) => {
-                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
+                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[ index ] }
               })
               directorReq.request({
                 db: Directors(),
@@ -4745,13 +4745,13 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
       }
       if (e.target.id.startsWith(`config-breaks-live-edit-`)) {
         item = e.target.id.replace(`config-breaks-live-edit-`, ``)
-        if (typeof Config.specialBreaks.live[item] !== `undefined`) {
-          categories = ['']
+        if (typeof Config.specialBreaks.live[ item ] !== `undefined`) {
+          categories = [ '' ]
           values = []
           for (var key2 in Config.categories) {
             if (key2 !== `_doNotRemove` && Object.prototype.hasOwnProperty.call(Config.categories, key2)) { categories.push(key2) }
           }
-          Config.specialBreaks.live[item].map((task) => {
+          Config.specialBreaks.live[ item ].map((task) => {
             values.push({
               task: task.task || ``,
               event: task.event || ``,
@@ -4774,7 +4774,7 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
                       type: 'string',
                       title: 'Break Task',
                       required: true,
-                      enum: ['[DELETE THIS ENTRY]', '', 'log', 'queueRequests', 'queue', 'queueDuplicates', 'queueUnderwritings'],
+                      enum: [ '[DELETE THIS ENTRY]', '', 'log', 'queueRequests', 'queue', 'queueDuplicates', 'queueUnderwritings' ],
                       description: `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates. queueUnderwritings = queue scheduled underwritings added via admin menu -> manage underwritings.`
                     },
                     event: {
@@ -4796,7 +4796,7 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
                     rules: {
                       type: 'string',
                       title: 'Rotation Rules (queue tasks only)',
-                      enum: ['noRules', 'lenientRules', 'strictRules'],
+                      enum: [ 'noRules', 'lenientRules', 'strictRules' ],
                       description: 'For queue tasks: noRules = do not consider rotation rules. lenientRules = consider rotation rules until/unless there are no more tracks that can be queued, then queue randomly. strictRules = consider rotation rules and stop queuing when there are no more tracks that can be queued.'
                     }
                   }
@@ -4809,10 +4809,10 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             onSubmitValid: function (values) {
               console.dir(values)
               values.tasks.map((task, index) => {
-                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
+                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[ index ] }
               })
               var theData = {}
-              theData[item] = values.tasks || []
+              theData[ item ] = values.tasks || []
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-live', data: theData }, function (response) {
                 console.dir(response)
                 if (response === 'OK') {
@@ -4853,13 +4853,13 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
       }
       if (e.target.id.startsWith(`config-breaks-remote-edit-`)) {
         item = e.target.id.replace(`config-breaks-remote-edit-`, ``)
-        if (typeof Config.specialBreaks.remote[item] !== `undefined`) {
-          categories = ['']
+        if (typeof Config.specialBreaks.remote[ item ] !== `undefined`) {
+          categories = [ '' ]
           values = []
           for (var key3 in Config.categories) {
             if (key3 !== `_doNotRemove` && Object.prototype.hasOwnProperty.call(Config.categories, key3)) { categories.push(key3) }
           }
-          Config.specialBreaks.remote[item].map((task) => {
+          Config.specialBreaks.remote[ item ].map((task) => {
             values.push({
               task: task.task || ``,
               event: task.event || ``,
@@ -4882,7 +4882,7 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
                       type: 'string',
                       title: 'Break Task',
                       required: true,
-                      enum: ['[DELETE THIS ENTRY]', '', 'log', 'queueRequests', 'queue', 'queueDuplicates', 'queueUnderwritings'],
+                      enum: [ '[DELETE THIS ENTRY]', '', 'log', 'queueRequests', 'queue', 'queueDuplicates', 'queueUnderwritings' ],
                       description: `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates. queueUnderwritings = queue scheduled underwritings added via admin menu -> manage underwritings.`
                     },
                     event: {
@@ -4904,7 +4904,7 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
                     rules: {
                       type: 'string',
                       title: 'Rotation Rules (queue tasks only)',
-                      enum: ['noRules', 'lenientRules', 'strictRules'],
+                      enum: [ 'noRules', 'lenientRules', 'strictRules' ],
                       description: 'For queue tasks: noRules = do not consider rotation rules. lenientRules = consider rotation rules until/unless there are no more tracks that can be queued, then queue randomly. strictRules = consider rotation rules and stop queuing when there are no more tracks that can be queued.'
                     }
                   }
@@ -4917,10 +4917,10 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             onSubmitValid: function (values) {
               console.dir(values)
               values.tasks.map((task, index) => {
-                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
+                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[ index ] }
               })
               var theData = {}
-              theData[item] = values.tasks || []
+              theData[ item ] = values.tasks || []
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-remote', data: theData }, function (response) {
                 console.dir(response)
                 if (response === 'OK') {
@@ -4961,13 +4961,13 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
       }
       if (e.target.id.startsWith(`config-breaks-sports-edit-`)) {
         item = e.target.id.replace(`config-breaks-sports-edit-`, ``)
-        if (typeof Config.specialBreaks.sports[item] !== `undefined`) {
-          categories = ['']
+        if (typeof Config.specialBreaks.sports[ item ] !== `undefined`) {
+          categories = [ '' ]
           values = []
           for (var key4 in Config.categories) {
             if (key4 !== `_doNotRemove` && Object.prototype.hasOwnProperty.call(Config.categories, key4)) { categories.push(key4) }
           }
-          Config.specialBreaks.sports[item].map((task) => {
+          Config.specialBreaks.sports[ item ].map((task) => {
             values.push({
               task: task.task || ``,
               event: task.event || ``,
@@ -4990,7 +4990,7 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
                       type: 'string',
                       title: 'Break Task',
                       required: true,
-                      enum: ['[DELETE THIS ENTRY]', '', 'log', 'queueRequests', 'queue', 'queueDuplicates', 'queueUnderwritings'],
+                      enum: [ '[DELETE THIS ENTRY]', '', 'log', 'queueRequests', 'queue', 'queueDuplicates', 'queueUnderwritings' ],
                       description: `Choose the task. Delete this entry = ignore this entry entirely. Log = save a log entry. queueRequests = queue requested tracks. queue = queue tracks from a chosen category. queueDuplicates = re-queue underwritings that were previously removed as duplicates. queueUnderwritings = queue scheduled underwritings added via admin menu -> manage underwritings.`
                     },
                     event: {
@@ -5012,7 +5012,7 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
                     rules: {
                       type: 'string',
                       title: 'Rotation Rules (queue tasks only)',
-                      enum: ['noRules', 'lenientRules', 'strictRules'],
+                      enum: [ 'noRules', 'lenientRules', 'strictRules' ],
                       description: 'For queue tasks: noRules = do not consider rotation rules. lenientRules = consider rotation rules until/unless there are no more tracks that can be queued, then queue randomly. strictRules = consider rotation rules and stop queuing when there are no more tracks that can be queued.'
                     }
                   }
@@ -5025,10 +5025,10 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             onSubmitValid: function (values) {
               console.dir(values)
               values.tasks.map((task, index) => {
-                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[index] }
+                if (task.task === `[DELETE THIS ENTRY]`) { delete values.tasks[ index ] }
               })
               var theData = {}
-              theData[item] = values.tasks || []
+              theData[ item ] = values.tasks || []
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-sports', data: theData }, function (response) {
                 console.dir(response)
                 if (response === 'OK') {
@@ -5069,7 +5069,7 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
       }
       if (e.target.id.startsWith(`config-breaks-remove-`)) {
         item = e.target.id.replace(`config-breaks-remove-`, ``)
-        if (typeof Config.breaks[item] !== `undefined`) {
+        if (typeof Config.breaks[ item ] !== `undefined`) {
           iziToast.show({
             timeout: 60000,
             overlay: true,
@@ -5086,7 +5086,7 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             drag: false,
             closeOnClick: false,
             buttons: [
-              ['<button><b>Remove</b></button>', function (instance, toast) {
+              [ '<button><b>Remove</b></button>', function (instance, toast) {
                 instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
                 directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/config/breaks/set-clock', data: { minute: parseInt(item), tasks: [] } }, function (response) {
                   if (response === 'OK') {
@@ -5119,36 +5119,36 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
                     })
                   }
                 })
-              }],
-              ['<button><b>Cancel</b></button>', function (instance, toast) {
+              } ],
+              [ '<button><b>Cancel</b></button>', function (instance, toast) {
                 instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-              }]
+              } ]
             ]
           })
         }
       }
       if (e.target.id.startsWith(`config-categories-edit-`)) {
         item = e.target.id.replace(`config-categories-edit-`, ``)
-        if (typeof Config.categories[item] !== `undefined`) {
+        if (typeof Config.categories[ item ] !== `undefined`) {
           hostReq.request({ method: 'post', url: nodeURL + '/config/categories/get-available', data: {} }, function serverResponded (body, JWR) {
             try {
-              var categories = ['[DELETE THIS ENTRY]']
+              var categories = [ '[DELETE THIS ENTRY]' ]
               for (var key in body) {
                 if (Object.prototype.hasOwnProperty.call(body, key)) {
                   categories.push(`${key} >>> [All Subcategories]`)
-                  body[key].map((item) => {
+                  body[ key ].map((item) => {
                     categories.push(`${key} >>> ${item}`)
                   })
                 }
               }
 
               var values = []
-              for (var key5 in Config.categories[item]) {
-                if (Object.prototype.hasOwnProperty.call(Config.categories[item], key5)) {
-                  if (Config.categories[item][key5].length === 0) {
+              for (var key5 in Config.categories[ item ]) {
+                if (Object.prototype.hasOwnProperty.call(Config.categories[ item ], key5)) {
+                  if (Config.categories[ item ][ key5 ].length === 0) {
                     values.push({ category: `${key5} >>> [All Subcategories]` })
                   } else {
-                    Config.categories[item][key5].map((item2) => {
+                    Config.categories[ item ][ key5 ].map((item2) => {
                       values.push({ category: `${key5} >>> ${item2}` })
                     })
                   }
@@ -5184,8 +5184,8 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
                     values.categories.map((cat) => {
                       if (cat.category !== `[DELETE THIS ENTRY]`) {
                         var temp = cat.category.split(` >>> `)
-                        if (typeof config[temp[0]] === `undefined`) { config[temp[0]] = [] }
-                        if (temp[1] !== `[All Subcategories]`) { config[temp[0]].push(temp[1]) }
+                        if (typeof config[ temp[ 0 ] ] === `undefined`) { config[ temp[ 0 ] ] = [] }
+                        if (temp[ 1 ] !== `[All Subcategories]`) { config[ temp[ 0 ] ].push(temp[ 1 ]) }
                       }
                     })
                   }
@@ -5245,7 +5245,7 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
       }
       if (e.target.id.startsWith(`config-categories-remove-`)) {
         item = e.target.id.replace(`config-categories-remove-`, ``)
-        if (typeof Config.categories[item] !== `undefined` && item !== `_doNotRemove`) {
+        if (typeof Config.categories[ item ] !== `undefined` && item !== `_doNotRemove`) {
           iziToast.show({
             timeout: 60000,
             overlay: true,
@@ -5262,7 +5262,7 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
             drag: false,
             closeOnClick: false,
             buttons: [
-              ['<button><b>Remove</b></button>', function (instance, toast) {
+              [ '<button><b>Remove</b></button>', function (instance, toast) {
                 instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
                 directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/config/categories/remove', data: { name: item } }, function (response) {
                   if (response === 'OK') {
@@ -5295,10 +5295,10 @@ document.querySelector('#options-modal-config-list-items').onclick = function (e
                     })
                   }
                 })
-              }],
-              ['<button><b>Cancel</b></button>', function (instance, toast) {
+              } ],
+              [ '<button><b>Cancel</b></button>', function (instance, toast) {
                 instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-              }]
+              } ]
             ]
           })
         }
@@ -5476,7 +5476,7 @@ document.querySelector('#modal-scheduler-unfinalize').onclick = function () {
     drag: false,
     closeOnClick: false,
     buttons: [
-      ['<button><b>Un-finalize</b></button>', function (instance, toast) {
+      [ '<button><b>Un-finalize</b></button>', function (instance, toast) {
         instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
         hostReq.request({ method: 'POST', url: nodeURL + '/planner/clear-all', data: {} }, function (response) {
           if (response === 'OK') {
@@ -5508,10 +5508,10 @@ document.querySelector('#modal-scheduler-unfinalize').onclick = function () {
             })
           }
         })
-      }],
-      ['<button><b>Cancel</b></button>', function (instance, toast) {
+      } ],
+      [ '<button><b>Cancel</b></button>', function (instance, toast) {
         instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-      }]
+      } ]
     ]
   })
 }
@@ -5533,7 +5533,7 @@ document.querySelector('#modal-scheduler-clear').onclick = function () {
     drag: false,
     closeOnClick: false,
     buttons: [
-      ['<button><b>Remove</b></button>', function (instance, toast) {
+      [ '<button><b>Remove</b></button>', function (instance, toast) {
         instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
         hostReq.request({ method: 'POST', url: nodeURL + '/planner/remove-all', data: {} }, function (response) {
           if (response === 'OK') {
@@ -5565,10 +5565,10 @@ document.querySelector('#modal-scheduler-clear').onclick = function () {
             })
           }
         })
-      }],
-      ['<button><b>Cancel</b></button>', function (instance, toast) {
+      } ],
+      [ '<button><b>Cancel</b></button>', function (instance, toast) {
         instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-      }]
+      } ]
     ]
   })
 }
@@ -5602,7 +5602,7 @@ document.querySelector('#modal-scheduler-new').onclick = function () {
         type: 'string',
         title: 'Scheduled Start Day',
         required: true,
-        enum: ['[GENERATE IT]', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        enum: [ '[GENERATE IT]', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' ],
         description: `What day of the week is this DJ's show officially scheduled to start? Select [GENERATE IT] to indicate the show has not yet been scheduled; the next time you generate a schedule, a time will be assigned based on the proposals specified in the proposals section. NOTE: there is no schedule conflict detection if you edit this!`
       },
       sActualStartTime: {
@@ -5613,7 +5613,7 @@ document.querySelector('#modal-scheduler-new').onclick = function () {
       sActualEndDay: {
         type: 'string',
         title: 'Scheduled End Day',
-        enum: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        enum: [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' ],
         description: `What day of the week is this DJ's show officially scheduled to end? Ignored if start day is set to generate it. NOTE: there is no schedule conflict detection if you edit this!`
       },
       sActualEndTime: {
@@ -5633,7 +5633,7 @@ document.querySelector('#modal-scheduler-new').onclick = function () {
               type: 'string',
               title: 'Show Start Day',
               required: true,
-              enum: ['[DELETE THIS ENTRY]', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+              enum: [ '[DELETE THIS ENTRY]', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' ],
               description: `What day of the week does the DJ want the show to start on? Choose [DELETE THIS ENTRY] to remove/ignore this show proposal.`
             },
             sStartTime: {
@@ -5646,7 +5646,7 @@ document.querySelector('#modal-scheduler-new').onclick = function () {
               type: 'string',
               title: 'Show Start Day',
               required: true,
-              enum: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+              enum: [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' ],
               description: `What day of the week does the DJ want the show to end on? <strong>NOTE:</strong> If the show ends midnight or later, you must choose the next day. For example, a show Saturdays 9PM-12AM should have an end day of Sunday and end time of 12am.`
             },
             sEndTime: {
@@ -5662,19 +5662,19 @@ document.querySelector('#modal-scheduler-new').onclick = function () {
     onSubmitValid: function (values) {
       console.dir(values)
       var proposals = []
-      if (typeof values.sProposal !== `undefined` && typeof values.sProposal[0] !== `undefined` && values.sProposal.length > 0) {
+      if (typeof values.sProposal !== `undefined` && typeof values.sProposal[ 0 ] !== `undefined` && values.sProposal.length > 0) {
         values.sProposal.map((proposal, index) => {
           if (proposal.sStartDay === `[DELETE THIS ENTRY]`) {
-            delete values.sProposal[index]
+            delete values.sProposal[ index ]
             return null
           }
           var temp = proposal.sStartTime.split(`:`)
-          var startHour = parseInt(temp[0])
-          var startMinute = parseInt(temp[1])
+          var startHour = parseInt(temp[ 0 ])
+          var startMinute = parseInt(temp[ 1 ])
 
           temp = proposal.sEndTime.split(`:`)
-          var endHour = parseInt(temp[0])
-          var endMinute = parseInt(temp[1])
+          var endHour = parseInt(temp[ 0 ])
+          var endMinute = parseInt(temp[ 1 ])
           proposals.push({ start: weekToInt(proposal.sStartDay, startHour, startMinute), end: weekToInt(proposal.sEndDay, endHour, endMinute) })
         })
       }
@@ -5683,12 +5683,12 @@ document.querySelector('#modal-scheduler-new').onclick = function () {
         var actual = {}
         if (values.sActualStartDay !== '[GENERATE IT]') {
           var temp2 = values.sActualStartTime.split(`:`)
-          var actualStartHour = parseInt(temp2[0])
-          var actualStartMinute = parseInt(temp2[1])
+          var actualStartHour = parseInt(temp2[ 0 ])
+          var actualStartMinute = parseInt(temp2[ 1 ])
 
           temp2 = values.sActualEndTime.split(`:`)
-          var actualEndHour = parseInt(temp2[0])
-          var actualEndMinute = parseInt(temp2[1])
+          var actualEndHour = parseInt(temp2[ 0 ])
+          var actualEndMinute = parseInt(temp2[ 1 ])
 
           actual.start = weekToInt(values.sActualStartDay, actualStartHour, actualStartMinute)
           actual.end = weekToInt(values.sActualEndDay, actualEndHour, actualEndMinute)
@@ -5783,7 +5783,7 @@ document.querySelector('#modal-scheduler-generate').onclick = function () {
         record.actual.start = intToWeek(record.actual.start)
         record.actual.end = intToWeek(record.actual.end)
 
-        formatted[record.actual.start.dayOfWeek].push(record)
+        formatted[ record.actual.start.dayOfWeek ].push(record)
       })
 
       for (var k in formatted) {
@@ -5819,8 +5819,8 @@ document.querySelector('#modal-scheduler-generate').onclick = function () {
                                 </div>
                             </div>`
 
-        if (formatted[k].length > 0) {
-          formatted[k].map(record => {
+        if (formatted[ k ].length > 0) {
+          formatted[ k ].map(record => {
             var start2 = record.actual.start
             var end2 = record.actual.end
 
@@ -5886,7 +5886,7 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
 
         if (record) {
           var proposals = []
-          if (record.proposal !== null && record.proposal.length > 0 && typeof record.proposal[0].start !== `undefined`) {
+          if (record.proposal !== null && record.proposal.length > 0 && typeof record.proposal[ 0 ].start !== `undefined`) {
             record.proposal.map((proposal) => {
               var start = intToWeek(proposal.start)
               var end = intToWeek(proposal.end)
@@ -5938,7 +5938,7 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
                 type: 'string',
                 title: 'Scheduled Start Day',
                 required: true,
-                enum: ['[GENERATE IT]', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                enum: [ '[GENERATE IT]', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' ],
                 description: `What day of the week is this DJ's show officially scheduled to start? Select [GENERATE IT] to indicate the show has not yet been scheduled; the next time you generate a schedule, a time will be assigned based on the proposals specified in the proposals section. NOTE: there is no schedule conflict detection if you edit this!`
               },
               sActualStartTime: {
@@ -5949,7 +5949,7 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
               sActualEndDay: {
                 type: 'string',
                 title: 'Scheduled End Day',
-                enum: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                enum: [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' ],
                 description: `What day of the week is this DJ's show officially scheduled to end? Ignored if start day is set to generate it. NOTE: there is no schedule conflict detection if you edit this!`
               },
               sActualEndTime: {
@@ -5969,7 +5969,7 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
                       type: 'string',
                       title: 'Show Start Day',
                       required: true,
-                      enum: ['[DELETE THIS ENTRY]', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                      enum: [ '[DELETE THIS ENTRY]', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' ],
                       description: `What day of the week does the DJ want the show to start on? Choose [DELETE THIS ENTRY] to remove/ignore this show proposal.`
                     },
                     sStartTime: {
@@ -5982,7 +5982,7 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
                       type: 'string',
                       title: 'Show Start Day',
                       required: true,
-                      enum: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                      enum: [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' ],
                       description: `What day of the week does the DJ want the show to end on? <strong>NOTE:</strong> If the show ends midnight or later, you must choose the next day. For example, a show Saturdays 9PM-12AM should have an end day of Sunday and end time of 12am.`
                     },
                     sEndTime: {
@@ -6008,19 +6008,19 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
             onSubmitValid: function (values) {
               console.dir(values)
               var proposals = []
-              if (typeof values.sProposal !== `undefined` && typeof values.sProposal[0] !== `undefined` && values.sProposal.length > 0) {
+              if (typeof values.sProposal !== `undefined` && typeof values.sProposal[ 0 ] !== `undefined` && values.sProposal.length > 0) {
                 values.sProposal.map((proposal, index) => {
                   if (proposal.sStartDay === `[DELETE THIS ENTRY]`) {
-                    delete values.sProposal[index]
+                    delete values.sProposal[ index ]
                     return null
                   }
                   var temp = proposal.sStartTime.split(`:`)
-                  var startHour = parseInt(temp[0])
-                  var startMinute = parseInt(temp[1])
+                  var startHour = parseInt(temp[ 0 ])
+                  var startMinute = parseInt(temp[ 1 ])
 
                   temp = proposal.sEndTime.split(`:`)
-                  var endHour = parseInt(temp[0])
-                  var endMinute = parseInt(temp[1])
+                  var endHour = parseInt(temp[ 0 ])
+                  var endMinute = parseInt(temp[ 1 ])
                   proposals.push({ start: weekToInt(proposal.sStartDay, startHour, startMinute), end: weekToInt(proposal.sEndDay, endHour, endMinute) })
                 })
               }
@@ -6029,12 +6029,12 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
                 var actual = {}
                 if (values.sActualStartDay !== '[GENERATE IT]') {
                   var temp2 = values.sActualStartTime.split(`:`)
-                  var actualStartHour = parseInt(temp2[0])
-                  var actualStartMinute = parseInt(temp2[1])
+                  var actualStartHour = parseInt(temp2[ 0 ])
+                  var actualStartMinute = parseInt(temp2[ 1 ])
 
                   temp2 = values.sActualEndTime.split(`:`)
-                  var actualEndHour = parseInt(temp2[0])
-                  var actualEndMinute = parseInt(temp2[1])
+                  var actualEndHour = parseInt(temp2[ 0 ])
+                  var actualEndMinute = parseInt(temp2[ 1 ])
 
                   actual.start = weekToInt(values.sActualStartDay, actualStartHour, actualStartMinute)
                   actual.end = weekToInt(values.sActualEndDay, actualEndHour, actualEndMinute)
@@ -6127,7 +6127,7 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
             drag: false,
             closeOnClick: false,
             buttons: [
-              ['<button><b>Remove</b></button>', function (instance, toast) {
+              [ '<button><b>Remove</b></button>', function (instance, toast) {
                 instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
                 hostReq.request({ method: 'POST', url: nodeURL + '/planner/remove', data: { ID: recordID } }, function (response) {
                   if (response === 'OK') {
@@ -6160,10 +6160,10 @@ document.querySelector(`#scheduler-list`).addEventListener('click', function (e)
                     })
                   }
                 })
-              }],
-              ['<button><b>Cancel</b></button>', function (instance, toast) {
+              } ],
+              [ '<button><b>Cancel</b></button>', function (instance, toast) {
                 instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-              }]
+              } ]
             ]
           })
         }
@@ -6199,8 +6199,8 @@ function filterGlobalLogs (date) {
             theDate = moment(record.scheduledStart)
           }
           var theClass = 'secondary'
-          if (typeof formatted[moment(theDate).format('MM/DD/YYYY')] === 'undefined') {
-            formatted[moment(theDate).format('MM/DD/YYYY')] = []
+          if (typeof formatted[ moment(theDate).format('MM/DD/YYYY') ] === 'undefined') {
+            formatted[ moment(theDate).format('MM/DD/YYYY') ] = []
           }
           if (record.event.startsWith('Show: ') || record.event.startsWith('Prerecord: ')) {
             theClass = 'danger'
@@ -6212,7 +6212,7 @@ function filterGlobalLogs (date) {
             theClass = 'info'
           }
           if (record.scheduledStart === null && record.happened === 1) {
-            formatted[moment(theDate).format('MM/DD/YYYY')].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+            formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
@@ -6227,7 +6227,7 @@ function filterGlobalLogs (date) {
                                         </div>
                             </div>`)
           } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)) && record.happened === 1) {
-            formatted[moment(theDate).format('MM/DD/YYYY')].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+            formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
@@ -6239,7 +6239,7 @@ function filterGlobalLogs (date) {
                                         </div>
                             </div>`)
           } else if (moment(record.scheduledStart).isAfter(moment(Meta.time))) {
-            formatted[moment(theDate).format('MM/DD/YYYY')].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+            formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
@@ -6252,7 +6252,7 @@ function filterGlobalLogs (date) {
                             </div>`)
           } else if (record.actualStart !== null && record.actualEnd !== null && record.happened === 1) {
             if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10) {
-              formatted[moment(theDate).format('MM/DD/YYYY')].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+              formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
@@ -6267,7 +6267,7 @@ function filterGlobalLogs (date) {
                                         </div>
                             </div>`)
             } else {
-              formatted[moment(theDate).format('MM/DD/YYYY')].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+              formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
@@ -6283,7 +6283,7 @@ function filterGlobalLogs (date) {
                             </div>`)
             }
           } else if (record.actualStart !== null && record.actualEnd === null) {
-            formatted[moment(theDate).format('MM/DD/YYYY')].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+            formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
@@ -6298,7 +6298,7 @@ function filterGlobalLogs (date) {
                                         </div>
                             </div>`)
           } else if (record.actualStart === null && record.actualEnd === null) {
-            formatted[moment(theDate).format('MM/DD/YYYY')].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+            formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
@@ -6310,7 +6310,7 @@ function filterGlobalLogs (date) {
                                         </div>
                             </div>`)
           } else if (record.actualStart !== null && record.actualEnd !== null) {
-            formatted[moment(theDate).format('MM/DD/YYYY')].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+            formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
@@ -6325,7 +6325,7 @@ function filterGlobalLogs (date) {
                                         </div>
                             </div>`)
           } else {
-            formatted[moment(theDate).format('MM/DD/YYYY')].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
+            formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-7 text-info">
                                     ${record.event}
                                 </div>
@@ -6352,7 +6352,7 @@ function filterGlobalLogs (date) {
                      </div>`;
                      */
 
-          if (formatted[k].length > 0) { formatted[k].map(record => { att.innerHTML += record }) }
+          if (formatted[ k ].length > 0) { formatted[ k ].map(record => { att.innerHTML += record }) }
         }
       }
     })
@@ -6377,10 +6377,10 @@ document.querySelector('#btn-options-issues').onclick = function () {
       response.reverse()
       var formatted = {}
       response.map(log => {
-        if (typeof formatted[moment(log.createdAt).format('MM/DD/YYYY')] === 'undefined') {
-          formatted[moment(log.createdAt).format('MM/DD/YYYY')] = []
+        if (typeof formatted[ moment(log.createdAt).format('MM/DD/YYYY') ] === 'undefined') {
+          formatted[ moment(log.createdAt).format('MM/DD/YYYY') ] = []
         }
-        formatted[moment(log.createdAt).format('MM/DD/YYYY')].push(`<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
+        formatted[ moment(log.createdAt).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
                                 <div class="col-3 text-primary">
                                     ${moment(log.createdAt).format('h:mm:ss A')}
                                 </div>
@@ -6400,7 +6400,7 @@ document.querySelector('#btn-options-issues').onclick = function () {
                                 </div>
                             </div>`
 
-        if (formatted[k].length > 0) { formatted[k].map(record => { logs.innerHTML += record }) }
+        if (formatted[ k ].length > 0) { formatted[ k ].map(record => { logs.innerHTML += record }) }
       }
     }
   })
@@ -6434,8 +6434,8 @@ document.querySelector('#btn-options-calendar').onclick = function () {
       var formatted = {}
       records.sort(compare)
       records.map(event => {
-        if (typeof formatted[moment(event.start).format('MM/DD/YYYY')] === 'undefined') {
-          formatted[moment(event.start).format('MM/DD/YYYY')] = []
+        if (typeof formatted[ moment(event.start).format('MM/DD/YYYY') ] === 'undefined') {
+          formatted[ moment(event.start).format('MM/DD/YYYY') ] = []
         }
         var theClass = `secondary`
         var theTitle = `This event does not have a recognized prefix. Please check the prefix if this event was meant to trigger something.`
@@ -6455,7 +6455,7 @@ document.querySelector('#btn-options-calendar').onclick = function () {
           theClass = `secondary`
           theTitle = `This event does not have a recognized prefix. Please check the prefix if this event was meant to trigger something.`
         }
-        formatted[moment(event.start).format('MM/DD/YYYY')].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;" title="${theTitle}">
+        formatted[ moment(event.start).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;" title="${theTitle}">
                                 <div class="col-3 text-primary">
                                     ${moment(event.start).format('h:mm A')} - ${moment(event.end).format('h:mm A')}
                                 </div>
@@ -6475,7 +6475,7 @@ document.querySelector('#btn-options-calendar').onclick = function () {
                                 </div>
                             </div>`
 
-        if (formatted[k].length > 0) { formatted[k].map(record => { calendardom.innerHTML += record }) }
+        if (formatted[ k ].length > 0) { formatted[ k ].map(record => { calendardom.innerHTML += record }) }
       }
     }
   } catch (err) {
@@ -6554,7 +6554,7 @@ document.querySelector('#btn-options-radiodj').onclick = function () {
       drag: false,
       closeOnClick: false,
       buttons: [
-        ['<button><b>Switch RadioDJ</b></button>', function (instance, toast) {
+        [ '<button><b>Switch RadioDJ</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
           $('#wait-modal').iziModal('open')
           document.querySelector('#wait-text').innerHTML = `Processing Request: Change RadioDJ`
@@ -6590,10 +6590,10 @@ document.querySelector('#btn-options-radiodj').onclick = function () {
               $('#wait-modal').iziModal('close')
             }
           })
-        }],
-        ['<button><b>Cancel</b></button>', function (instance, toast) {
+        } ],
+        [ '<button><b>Cancel</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-        }]
+        } ]
       ]
     })
   } catch (e) {
@@ -6643,15 +6643,15 @@ document.querySelector(`#options-modal-djs`).addEventListener('click', function 
             drag: false,
             closeOnClick: false,
             inputs: [
-              ['<input type="text" placeholder="DJ Name">', 'keyup', function (instance, toast, input, e) {
+              [ '<input type="text" placeholder="DJ Name">', 'keyup', function (instance, toast, input, e) {
                 inputData = input.value
-              }, true],
-              ['<input type="password">', 'keyup', function (instance, toast, input, e) {
+              }, true ],
+              [ '<input type="password">', 'keyup', function (instance, toast, input, e) {
                 inputData2 = input.value
-              }]
+              } ]
             ],
             buttons: [
-              ['<button><b>Submit</b></button>', function (instance, toast) {
+              [ '<button><b>Submit</b></button>', function (instance, toast) {
                 instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
                 directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/djs/add', data: { name: inputData, login: inputData2 === '' ? null : inputData2 } }, function (response) {
                   if (response === 'OK') {
@@ -6683,10 +6683,10 @@ document.querySelector(`#options-modal-djs`).addEventListener('click', function 
                     })
                   }
                 })
-              }],
-              ['<button><b>Cancel</b></button>', function (instance, toast) {
+              } ],
+              [ '<button><b>Cancel</b></button>', function (instance, toast) {
                 instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-              }]
+              } ]
             ]
           })
         }
@@ -6771,15 +6771,15 @@ document.querySelector(`#options-djs`).addEventListener('click', function (e) {
             drag: false,
             closeOnClick: false,
             inputs: [
-              ['<input type="text" placeholder="DJ Name">', 'keyup', function (instance, toast, input, e) {
+              [ '<input type="text" placeholder="DJ Name">', 'keyup', function (instance, toast, input, e) {
                 inputData = input.value
-              }, true],
-              ['<input type="password">', 'keyup', function (instance, toast, input, e) {
+              }, true ],
+              [ '<input type="password">', 'keyup', function (instance, toast, input, e) {
                 inputData2 = input.value
-              }]
+              } ]
             ],
             buttons: [
-              ['<button><b>Submit</b></button>', function (instance, toast) {
+              [ '<button><b>Submit</b></button>', function (instance, toast) {
                 instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
                 directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/djs/add', data: { name: inputData, login: inputData2 === '' ? null : inputData2 } }, function (response) {
                   if (response === 'OK') {
@@ -6811,10 +6811,10 @@ document.querySelector(`#options-djs`).addEventListener('click', function (e) {
                     })
                   }
                 })
-              }],
-              ['<button><b>Cancel</b></button>', function (instance, toast) {
+              } ],
+              [ '<button><b>Cancel</b></button>', function (instance, toast) {
                 instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-              }]
+              } ]
             ]
           })
         }
@@ -6871,7 +6871,7 @@ document.querySelector(`#options-timesheets-records`).addEventListener('click', 
                   title: 'Approved',
                   description: 'Is this record approved / counting towards weekly hours?',
                   type: 'string',
-                  enum: ['DELETE THIS ENTRY', 'Canceled Hours', 'Not Approved / Absent', 'Approved / Scheduled Hours', 'Changed Scheduled Hours']
+                  enum: [ 'DELETE THIS ENTRY', 'Canceled Hours', 'Not Approved / Absent', 'Approved / Scheduled Hours', 'Changed Scheduled Hours' ]
                 }
               },
               value: {
@@ -7006,7 +7006,7 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Yes</b></button>', function (instance, toast) {
+            [ '<button><b>Yes</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: recordID, ignore: 2 } }, function (response) {
                 if (response === 'OK') {
@@ -7038,10 +7038,10 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
                   })
                 }
               })
-            }],
-            ['<button><b>No</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>No</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       } else if (e.target.id.startsWith(`notification-unexcuse-`)) {
@@ -7062,7 +7062,7 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Yes</b></button>', function (instance, toast) {
+            [ '<button><b>Yes</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: recordID, ignore: 0 } }, function (response) {
                 if (response === 'OK') {
@@ -7094,10 +7094,10 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
                   })
                 }
               })
-            }],
-            ['<button><b>No</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>No</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       } else if (e.target.id.startsWith(`notification-cancel-`)) {
@@ -7118,7 +7118,7 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Yes</b></button>', function (instance, toast) {
+            [ '<button><b>Yes</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: recordID, happened: -1 } }, function (response) {
                 if (response === 'OK') {
@@ -7150,10 +7150,10 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
                   })
                 }
               })
-            }],
-            ['<button><b>No</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>No</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       } else if (e.target.id.startsWith(`notification-absent-`)) {
@@ -7174,7 +7174,7 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Yes</b></button>', function (instance, toast) {
+            [ '<button><b>Yes</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: recordID, happened: 0 } }, function (response) {
                 if (response === 'OK') {
@@ -7206,10 +7206,10 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
                   })
                 }
               })
-            }],
-            ['<button><b>No</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>No</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       } else if (e.target.id.startsWith(`notification-timesheet-`)) {
@@ -7251,7 +7251,7 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
                   title: 'Approved',
                   description: 'Is this record approved / counting towards weekly hours?',
                   type: 'string',
-                  enum: ['DELETE THIS ENTRY', 'Canceled Hours', 'Not Approved / Absent', 'Approved / Scheduled Hours', 'Changed Scheduled Hours']
+                  enum: [ 'DELETE THIS ENTRY', 'Canceled Hours', 'Not Approved / Absent', 'Approved / Scheduled Hours', 'Changed Scheduled Hours' ]
                 }
               },
               value: {
@@ -7350,7 +7350,7 @@ document.querySelector(`#options-modal-underwritings`).addEventListener('click',
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Remove</b></button>', function (instance, toast) {
+            [ '<button><b>Remove</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/underwritings/remove', data: { ID: parseInt(e.target.id.replace(`options-underwritings-remove-`, ``)) } }, function (response) {
                 if (response === 'OK') {
@@ -7382,10 +7382,10 @@ document.querySelector(`#options-modal-underwritings`).addEventListener('click',
                   })
                 }
               })
-            }],
-            ['<button><b>Cancel</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>Cancel</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       }
@@ -7416,7 +7416,7 @@ document.querySelector(`#options-modal-underwriting`).addEventListener('click', 
       if (e.target.id.startsWith(`modal-underwriting-edit-`)) {
         var ID = parseInt(e.target.id.replace(`modal-underwriting-edit-`, ``))
         var underwritingTracks = document.getElementById('modal-underwriting-track')
-        var selectedTrack = underwritingTracks.options[underwritingTracks.selectedIndex].value
+        var selectedTrack = underwritingTracks.options[ underwritingTracks.selectedIndex ].value
         var UnderwritingsSchedulesForced = []
         UnderwritingsSchedules = UnderwritingsSchedules.filter((schedule) => schedule !== null)
         UnderwritingsSchedules = UnderwritingsSchedules.filter((schedule, index) => {
@@ -7471,7 +7471,7 @@ document.querySelector(`#options-modal-underwriting`).addEventListener('click', 
       }
       if (e.target.id === `modal-underwriting-add`) {
         underwritingTracks = document.getElementById('modal-underwriting-track')
-        selectedTrack = underwritingTracks.options[underwritingTracks.selectedIndex].value
+        selectedTrack = underwritingTracks.options[ underwritingTracks.selectedIndex ].value
         UnderwritingsSchedulesForced = []
         UnderwritingsSchedules = UnderwritingsSchedules.filter((schedule) => schedule !== null)
         UnderwritingsSchedules = UnderwritingsSchedules.filter((schedule, index) => {
@@ -7563,10 +7563,10 @@ document.querySelector(`#modal-underwriting-schedule-list`).addEventListener('cl
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Remove</b></button>', function (instance, toast) {
+            [ '<button><b>Remove</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-              if (typeof UnderwritingsSchedules[ID] !== `undefined`) {
-                UnderwritingsSchedules[ID] = null
+              if (typeof UnderwritingsSchedules[ ID ] !== `undefined`) {
+                UnderwritingsSchedules[ ID ] = null
                 var temp = document.querySelector(`#options-underwriting-schedule-entry-${ID}`)
                 if (temp !== null) { temp.parentNode.removeChild(temp) }
                 var count = 0
@@ -7586,10 +7586,10 @@ document.querySelector(`#modal-underwriting-schedule-list`).addEventListener('cl
                 </div>`
                 }
               }
-            }],
-            ['<button><b>Cancel</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>Cancel</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       } else if (e.target.id.startsWith(`options-underwriting-schedule-show-edit-`)) {
@@ -7613,10 +7613,10 @@ document.querySelector(`#modal-underwriting-schedule-list`).addEventListener('cl
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Remove</b></button>', function (instance, toast) {
+            [ '<button><b>Remove</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-              if (typeof UnderwritingsShows[ID] !== `undefined`) {
-                UnderwritingsShows[ID] = null
+              if (typeof UnderwritingsShows[ ID ] !== `undefined`) {
+                UnderwritingsShows[ ID ] = null
                 var temp = document.querySelector(`#options-underwriting-schedule-show-entry-${ID}`)
                 if (temp !== null) { temp.parentNode.removeChild(temp) }
                 var count = 0
@@ -7636,10 +7636,10 @@ document.querySelector(`#modal-underwriting-schedule-list`).addEventListener('cl
                 </div>`
                 }
               }
-            }],
-            ['<button><b>Cancel</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>Cancel</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       }
@@ -7692,7 +7692,7 @@ document.querySelector(`#underwriting-schedule-buttons`).addEventListener('click
         for (var i4 = 0; i4 < 24; i4++) {
           if (document.querySelector(`#underwriting-schedule-h-${i4}`).checked) { schedule.h.push(i4) }
         }
-        UnderwritingsSchedules[index] = schedule
+        UnderwritingsSchedules[ index ] = schedule
         temp = document.querySelector(`#options-underwriting-schedule-entry-${index}`)
         if (temp !== null) {
           temp.innerHTML = `<div class="col-9 text-primary">
@@ -7746,7 +7746,7 @@ document.querySelector(`#underwriting-schedule-show-buttons`).addEventListener('
       if (e.target.id.startsWith(`modal-underwriting-schedule-show-f-edit-`)) {
         index = parseInt(e.target.id.replace(`modal-underwriting-schedule-show-f-edit-`, ``))
         theShow = document.querySelector(`#underwriting-schedule-show-input`).value
-        UnderwritingsShows[index] = theShow
+        UnderwritingsShows[ index ] = theShow
         temp = document.querySelector(`#options-underwriting-schedule-show-entry-${index}`)
         if (temp !== null) {
           temp.innerHTML = `<div class="col-9 text-primary">
@@ -7855,15 +7855,15 @@ document.querySelector(`#options-dj-buttons`).addEventListener('click', function
           drag: false,
           closeOnClick: false,
           inputs: [
-            ['<input type="text">', 'keyup', function (instance, toast, input, e) {
+            [ '<input type="text">', 'keyup', function (instance, toast, input, e) {
               inputData = input.value
-            }, true],
-            ['<input type="password">', 'keyup', function (instance, toast, input, e) {
+            }, true ],
+            [ '<input type="password">', 'keyup', function (instance, toast, input, e) {
               inputData2 = input.value
-            }]
+            } ]
           ],
           buttons: [
-            ['<button><b>Edit</b></button>', function (instance, toast) {
+            [ '<button><b>Edit</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               var data = { ID: e.target.dataset.dj, name: inputData }
               if (inputData2 !== '') { data.login = inputData2 }
@@ -7897,10 +7897,10 @@ document.querySelector(`#options-dj-buttons`).addEventListener('click', function
                   })
                 }
               })
-            }],
-            ['<button><b>Cancel</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>Cancel</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       } else if (e.target.id === 'btn-options-dj-remove') {
@@ -7920,7 +7920,7 @@ document.querySelector(`#options-dj-buttons`).addEventListener('click', function
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Remove</b></button>', function (instance, toast) {
+            [ '<button><b>Remove</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/djs/remove', data: { ID: e.target.dataset.dj } }, function (response) {
                 if (response === 'OK') {
@@ -7953,10 +7953,10 @@ document.querySelector(`#options-dj-buttons`).addEventListener('click', function
                   })
                 }
               })
-            }],
-            ['<button><b>Cancel</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>Cancel</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       } else if (e.target.id === 'btn-options-dj-xp') {
@@ -8025,7 +8025,7 @@ document.querySelector(`#dj-attendance`).addEventListener('click', function (e) 
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Yes</b></button>', function (instance, toast) {
+            [ '<button><b>Yes</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: record, ignore: 2 } }, function (response) {
                 if (response === 'OK') {
@@ -8058,10 +8058,10 @@ document.querySelector(`#dj-attendance`).addEventListener('click', function (e) 
                   })
                 }
               })
-            }],
-            ['<button><b>No</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>No</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       } else if (e.target.id.startsWith(`dj-show-logs-unignore-`)) {
@@ -8082,7 +8082,7 @@ document.querySelector(`#dj-attendance`).addEventListener('click', function (e) 
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Yes</b></button>', function (instance, toast) {
+            [ '<button><b>Yes</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: record, ignore: 0 } }, function (response) {
                 if (response === 'OK') {
@@ -8115,10 +8115,10 @@ document.querySelector(`#dj-attendance`).addEventListener('click', function (e) 
                   })
                 }
               })
-            }],
-            ['<button><b>No</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>No</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       } else if (e.target.id.startsWith(`dj-show-logs-absent-`)) {
@@ -8139,7 +8139,7 @@ document.querySelector(`#dj-attendance`).addEventListener('click', function (e) 
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Yes</b></button>', function (instance, toast) {
+            [ '<button><b>Yes</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: record, happened: 0 } }, function (response) {
                 if (response === 'OK') {
@@ -8172,10 +8172,10 @@ document.querySelector(`#dj-attendance`).addEventListener('click', function (e) 
                   })
                 }
               })
-            }],
-            ['<button><b>No</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>No</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       } else if (e.target.id.startsWith(`dj-show-logs-excused-`)) {
@@ -8196,7 +8196,7 @@ document.querySelector(`#dj-attendance`).addEventListener('click', function (e) 
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Yes</b></button>', function (instance, toast) {
+            [ '<button><b>Yes</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/attendance/edit', data: { ID: record, happened: -1 } }, function (response) {
                 if (response === 'OK') {
@@ -8229,10 +8229,10 @@ document.querySelector(`#dj-attendance`).addEventListener('click', function (e) 
                   })
                 }
               })
-            }],
-            ['<button><b>No</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>No</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       } else if (e.target.id.startsWith(`dj-show-logs-`)) {
@@ -8259,14 +8259,14 @@ document.querySelector(`#dj-attendance`).addEventListener('click', function (e) 
                             </div>`
             })
             logs.innerHTML = newLog
-            hostReq.request({ method: 'POST', url: nodeURL + '/analytics/listeners', data: { start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true) } }, function (response2) {
+            hostReq.request({ method: 'POST', url: nodeURL + '/analytics/listeners', data: { start: moment(response[ 0 ].createdAt).toISOString(true), end: moment(response[ response.length - 1 ].createdAt).toISOString(true) } }, function (response2) {
               if (response2.length > 1) {
                 var theData = []
                 response2.map(listener => {
-                  if (moment(listener.createdAt).isBefore(moment(response[0].createdAt))) { listener.createdAt = response[0].createdAt }
+                  if (moment(listener.createdAt).isBefore(moment(response[ 0 ].createdAt))) { listener.createdAt = response[ 0 ].createdAt }
                   theData.push({ x: moment(listener.createdAt).toISOString(true), y: listener.listeners })
                 })
-                theData.push({ x: moment(response[response.length - 1].createdAt).toISOString(true), y: response[response.length - 1].listeners })
+                theData.push({ x: moment(response[ response.length - 1 ].createdAt).toISOString(true), y: response[ response.length - 1 ].listeners })
                 new Taucharts.Chart({
                   data: theData,
                   type: 'line',
@@ -8353,14 +8353,14 @@ document.querySelector(`#global-logs`).addEventListener('click', function (e) {
             })
             logs.innerHTML = newLog
 
-            hostReq.request({ method: 'POST', url: nodeURL + '/analytics/listeners', data: { start: moment(response[0].createdAt).toISOString(true), end: moment(response[response.length - 1].createdAt).toISOString(true) } }, function (response2) {
+            hostReq.request({ method: 'POST', url: nodeURL + '/analytics/listeners', data: { start: moment(response[ 0 ].createdAt).toISOString(true), end: moment(response[ response.length - 1 ].createdAt).toISOString(true) } }, function (response2) {
               if (response2.length > 1) {
                 var theData = []
                 response2.map(listener => {
-                  if (moment(listener.createdAt).isBefore(moment(response[0].createdAt))) { listener.createdAt = response[0].createdAt }
+                  if (moment(listener.createdAt).isBefore(moment(response[ 0 ].createdAt))) { listener.createdAt = response[ 0 ].createdAt }
                   theData.push({ x: moment(listener.createdAt).toISOString(true), y: listener.listeners })
                 })
-                theData.push({ x: moment(response[response.length - 1].createdAt).toISOString(true), y: response[response.length - 1].listeners })
+                theData.push({ x: moment(response[ response.length - 1 ].createdAt).toISOString(true), y: response[ response.length - 1 ].listeners })
                 new Taucharts.Chart({
                   data: theData,
                   type: 'line',
@@ -8439,7 +8439,7 @@ document.querySelector(`#dj-xp-logs`).addEventListener('click', function (e) {
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Remove</b></button>', function (instance, toast) {
+            [ '<button><b>Remove</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/xp/remove', data: { ID: parseInt(e.target.id.replace(`dj-xp-remove-`, ``)) } }, function (response) {
                 if (response === 'OK') {
@@ -8471,10 +8471,10 @@ document.querySelector(`#dj-xp-logs`).addEventListener('click', function (e) {
                   })
                 }
               })
-            }],
-            ['<button><b>Cancel</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>Cancel</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       }
@@ -8618,7 +8618,7 @@ document.querySelector(`#options-announcements`).addEventListener('click', funct
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Remove</b></button>', function (instance, toast) {
+            [ '<button><b>Remove</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/announcements/remove', data: { ID: parseInt(e.target.id.replace(`options-announcements-remove-`, ``)) } }, function (response) {
                 if (response === 'OK') {
@@ -8651,10 +8651,10 @@ document.querySelector(`#options-announcements`).addEventListener('click', funct
                   })
                 }
               })
-            }],
-            ['<button><b>Cancel</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>Cancel</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       }
@@ -8702,7 +8702,7 @@ document.querySelector(`#options-djcontrols`).addEventListener('click', function
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Remove</b></button>', function (instance, toast) {
+            [ '<button><b>Remove</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/hosts/remove', data: { ID: parseInt(e.target.id.replace(`options-djcontrols-remove-`, ``)) } }, function (response) {
                 if (response === 'OK') {
@@ -8736,10 +8736,10 @@ document.querySelector(`#options-djcontrols`).addEventListener('click', function
                   })
                 }
               })
-            }],
-            ['<button><b>Cancel</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>Cancel</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       }
@@ -8833,7 +8833,7 @@ document.querySelector(`#options-discipline`).addEventListener('click', function
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Remove</b></button>', function (instance, toast) {
+            [ '<button><b>Remove</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/discipline/remove', data: { ID: parseInt(e.target.id.replace(`options-discipline-remove-`, ``)) } }, function (response) {
                 if (response === 'OK') {
@@ -8866,10 +8866,10 @@ document.querySelector(`#options-discipline`).addEventListener('click', function
                   })
                 }
               })
-            }],
-            ['<button><b>Cancel</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>Cancel</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       }
@@ -9083,7 +9083,7 @@ document.querySelector(`#options-host-button`).addEventListener('click', functio
     if (e.target) {
       console.log(e.target.id)
       if (e.target.id.startsWith('options-host-edit-')) {
-        var selectedOption = document.querySelector('#options-host-locktodj').options[document.querySelector('#options-host-locktodj').selectedIndex].value
+        var selectedOption = document.querySelector('#options-host-locktodj').options[ document.querySelector('#options-host-locktodj').selectedIndex ].value
         directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/hosts/edit', data: { ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector('#options-host-name').value, lockToDJ: selectedOption === '' ? null : parseInt(selectedOption), authorized: document.querySelector('#options-host-authorized').checked, admin: document.querySelector('#options-host-admin').checked, requests: document.querySelector('#options-host-requests').checked, emergencies: document.querySelector('#options-host-emergencies').checked, webmessages: document.querySelector('#options-host-webmessages').checked, makeCalls: document.querySelector('#options-host-makecalls').checked, answerCalls: document.querySelector('#options-host-answercalls').checked, silenceDetection: document.querySelector('#options-host-silence').checked, recordAudio: document.querySelector('#options-host-record').checked, accountability: document.querySelector('#options-host-accountability').checked } }, function (response) {
           if (response === 'OK') {
             $('#options-modal-host').iziModal('close')
@@ -9133,7 +9133,7 @@ document.querySelector(`#options-xp-button`).addEventListener('click', function 
       console.log(e.target.id)
       if (e.target.id.startsWith('options-xp-edit-')) {
         var types = document.querySelector('#options-xp-type').value.split('-')
-        directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/xp/edit', data: { ID: parseInt(e.target.id.replace(`options-xp-edit-`, ``)), type: types[0], subtype: types[1], description: document.querySelector('#options-xp-description').value, amount: parseFloat(document.querySelector('#options-xp-amount').value), date: moment(document.querySelector('#options-xp-date').value).toISOString(true) } }, function (response) {
+        directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/xp/edit', data: { ID: parseInt(e.target.id.replace(`options-xp-edit-`, ``)), type: types[ 0 ], subtype: types[ 1 ], description: document.querySelector('#options-xp-description').value, amount: parseFloat(document.querySelector('#options-xp-amount').value), date: moment(document.querySelector('#options-xp-date').value).toISOString(true) } }, function (response) {
           if (response === 'OK') {
             $('#options-modal-dj-xp-add').iziModal('close')
             iziToast.show({
@@ -9172,7 +9172,7 @@ document.querySelector(`#options-xp-button`).addEventListener('click', function 
           if (temp && temp.checked) { djs.push(dj.ID) }
         })
         types = document.querySelector('#options-xp-type').value.split('-')
-        directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/xp/add', data: { djs: djs, type: types[0], subtype: types[1], description: document.querySelector('#options-xp-description').value, amount: parseFloat(document.querySelector('#options-xp-amount').value), date: moment(document.querySelector('#options-xp-date').value).toISOString(true) } }, function (response) {
+        directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/xp/add', data: { djs: djs, type: types[ 0 ], subtype: types[ 1 ], description: document.querySelector('#options-xp-description').value, amount: parseFloat(document.querySelector('#options-xp-amount').value), date: moment(document.querySelector('#options-xp-date').value).toISOString(true) } }, function (response) {
           if (response === 'OK') {
             $('#options-modal-dj-xp-add').iziModal('close')
             iziToast.show({
@@ -9301,7 +9301,7 @@ document.querySelector(`#options-director-button`).addEventListener('click', fun
           drag: false,
           closeOnClick: false,
           buttons: [
-            ['<button><b>Remove</b></button>', function (instance, toast) {
+            [ '<button><b>Remove</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
               adminDirectorReq.request({ db: Directors({ admin: true }), method: 'POST', url: nodeURL + '/directors/remove', data: { ID: parseInt(e.target.id.replace(`options-director-remove-`, ``)) } }, function (response) {
                 if (response === 'OK') {
@@ -9334,10 +9334,10 @@ document.querySelector(`#options-director-button`).addEventListener('click', fun
                   })
                 }
               })
-            }],
-            ['<button><b>Cancel</b></button>', function (instance, toast) {
+            } ],
+            [ '<button><b>Cancel</b></button>', function (instance, toast) {
               instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-            }]
+            } ]
           ]
         })
       }
@@ -9863,18 +9863,14 @@ function doMeta (metan) {
       }
     }
 
-    if (typeof metan.state !== 'undefined') {
-      queueUnknown = true
-      if (isHost) {
-        if ((Meta.state === 'sports_break' || Meta.state === 'sports_halftime' || Meta.state === 'remote_break' || Meta.state === 'sportsremote_break' || Meta.state === 'sportsremote_halftime')) { responsiveVoice.speak(`On break`) }
-      }
-      setTimeout(() => {
-        queueUnknown = false
-        if (isHost) {
-          if ((Meta.state === 'sports_returning' || Meta.state === 'sportsremote_returning' || Meta.state === 'remote_returning')) { responsiveVoice.speak(`Returning in ${moment.duration(queueLength, 'seconds').format('m [minutes], s [seconds]')}`) }
-          if ((Meta.state === 'automation_sports' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote')) { responsiveVoice.speak(`Going on the air in ${moment.duration(queueLength, 'seconds').format('m [minutes], s [seconds]')}`) }
+    if (typeof metan.state !== 'undefined' && isHost) {
+      if ((Meta.state === 'sports_break' || Meta.state === 'sports_halftime' || Meta.state === 'remote_break' || Meta.state === 'sportsremote_break' || Meta.state === 'sportsremote_halftime')) { responsiveVoice.speak(`On break`) }
+      var returnAnnouncement = setInterval(() => {
+        if (!Meta.queueCalculating) {
+          responsiveVoice.speak(`Going on the air in ${moment.duration(queueLength, 'seconds').format('m [minutes], s [seconds]')}`)
+          clearInterval(returnAnnouncement)
         }
-      }, 4000)
+      }, 1000)
     }
 
     // reset ticker timer on change to queue time
@@ -9895,7 +9891,7 @@ function doMeta (metan) {
     queueLength = Meta.queueFinish !== null ? Math.round(moment(Meta.queueFinish).diff(moment(Meta.time), 'seconds')) : 0
     if (queueLength < 0) { queueLength = 0 }
 
-    if (queueLength > 0 && (Meta.state.includes('_returning') || (Meta.state.startsWith('automation_') && Meta.state !== `automation_on` && Meta.state !== `automation_playlist` && Meta.state !== `automation_genre` && Meta.state !== `automation_break`))) {
+    if (queueLength > 0 && Meta.showCountdown) {
       if (queueLength > 100) {
         main.setProgressBar(1)
       } else {
@@ -9905,15 +9901,9 @@ function doMeta (metan) {
       main.setProgressBar(-1)
     }
 
-    if (isHost && !queueUnknown) {
-      if (typeof metan.state !== 'undefined' && (metan.state === 'sports_break' || metan.state === 'sports_halftime' || metan.state === 'remote_break' || metan.state === 'sportsremote_break' || metan.state === 'sportsremote_halftime')) { responsiveVoice.speak(`On break`) }
-
-      if (typeof metan.state !== 'undefined' && (metan.state === 'sports_returning' || metan.state === 'sportsremote_returning' || metan.state === 'remote_returning')) { responsiveVoice.speak(`Returning in ${moment.duration(queueLength, 'seconds').format('m [minutes], s [seconds]')}`) }
-
-      if (typeof metan.state !== 'undefined' && (metan.state === 'automation_sports' || metan.state === 'automation_sportsremote' || metan.state === 'automation_remote')) { responsiveVoice.speak(`Going on the air in ${moment.duration(queueLength, 'seconds').format('m [minutes], s [seconds]')}`) }
-
-      if (typeof metan.state === 'undefined') {
-        if (Meta.state === 'sports_returning' || Meta.state === 'sportsremote_returning' || Meta.state === 'remote_returning' || Meta.state === 'automation_sports' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote') {
+    if (isHost) {
+      if (typeof metan.state === 'undefined' && Meta.showCountdown) {
+        if (Meta.state === 'sports_returning' || Meta.state === 'sportsremote_returning' || Meta.state === 'remote_returning' || Meta.state === 'automation_sports' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote' || Meta.state === 'sports_on' || Meta.state === 'sportsremote_on') {
           if (queueLength === 60) { responsiveVoice.speak('1 minute') }
           if (queueLength === 30) { responsiveVoice.speak('30 seconds') }
           if (queueLength === 15) { responsiveVoice.speak('15 seconds') }
@@ -9956,18 +9946,18 @@ function doMeta (metan) {
           image: `assets/images/TopOfHourBreak.png`,
           maxWidth: 480,
           buttons: [
-            ['<button>Take a Break</button>', function (instance, toast, button, e, inputs) {
+            [ '<button>Take a Break</button>', function (instance, toast, button, e, inputs) {
               goBreak(false)
               instance.hide({}, toast, 'button')
-            }],
-            ['<button>Switch Show</button>', function (instance, toast, button, e, inputs) {
+            } ],
+            [ '<button>Switch Show</button>', function (instance, toast, button, e, inputs) {
               switchShow()
               instance.hide({}, toast, 'button')
-            }],
-            ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+            } ],
+            [ '<button>End Show</button>', function (instance, toast, button, e, inputs) {
               endShow()
               instance.hide({}, toast, 'button')
-            }]
+            } ]
           ]
         })
       }
@@ -9982,7 +9972,7 @@ function doMeta (metan) {
     // Make queue timer show current queue length (when visible)
     addAnimation('meta-queue', () => {
       var queueTime = document.querySelector('#queue-seconds')
-      queueTime.innerHTML = queueUnknown ? `<i class="fas fa-hourglass-half"></i>` : moment.duration(queueLength, 'seconds').format('mm:ss')
+      queueTime.innerHTML = Meta.queueCalculating ? `<i class="fas fa-hourglass-half"></i>` : moment.duration(queueLength, 'seconds').format('mm:ss')
       // Flash the WWSU Operations box when queue time goes below 15 seconds.
       if (queueLength < 15 && queueLength > 0 && document.querySelector('#queue').style.display !== 'none' && (Meta.state.startsWith('_returning') || Meta.state.startsWith('automation_'))) {
         var operations = document.querySelector('#operations')
@@ -10009,7 +9999,7 @@ function doMeta (metan) {
         badge.innerHTML = `<i class="chip-icon fas fa-question bg-secondary"></i>${Meta.state}`
         var actionButtons = document.querySelectorAll('.btn-operation')
         for (var i = 0; i < actionButtons.length; i++) {
-          actionButtons[i].style.display = 'none'
+          actionButtons[ i ].style.display = 'none'
         }
       })
       // document.querySelector('#queue').style.display = "none";
@@ -10084,10 +10074,10 @@ function doMeta (metan) {
             image: `assets/images/noRemote.png`,
             maxWidth: 480,
             buttons: [
-              ['<button>Resume Show</button>', function (instance, toast, button, e, inputs) {
+              [ '<button>Resume Show</button>', function (instance, toast, button, e, inputs) {
                 returnBreak()
                 instance.hide({}, toast, 'button')
-              }]
+              } ]
             ]
           })
         }
@@ -10246,7 +10236,7 @@ function metaTick () {
     selectRecipient(activeRecipient)
   }
 
-  ipcRenderer.send('process-calendar', [Calendar().get(), Meta, cal])
+  ipcRenderer.send('process-calendar', [ Calendar().get(), Meta, cal ])
 }
 
 // Shows a please wait box.
@@ -10257,7 +10247,7 @@ function pleaseWait () {
     var temp = document.querySelector('#operations')
     var actionButtons = temp.querySelectorAll('#btn-float')
     for (var i = 0; i < actionButtons.length; i++) {
-      actionButtons[i].style.display = 'none'
+      actionButtons[ i ].style.display = 'none'
     }
   } catch (e) {
     console.error(e)
@@ -10435,13 +10425,13 @@ function checkAnnouncements () {
     // Remove announcements no longer valid from the announcements box
     var attn = document.querySelectorAll('.attn')
     for (var i = 0; i < attn.length; i++) {
-      if (prev.indexOf(attn[i].id) === -1) { attn[i].parentNode.removeChild(attn[i]) }
+      if (prev.indexOf(attn[ i ].id) === -1) { attn[ i ].parentNode.removeChild(attn[ i ]) }
     }
 
     // Remove statuses no longer valid from the announcements box
     attn = document.querySelectorAll('.attn-status')
     for (var i2 = 0; i2 < attn.length; i2++) {
-      if (prevStatus.indexOf(attn[i2].id) === -1) { attn[i2].parentNode.removeChild(attn[i2]) }
+      if (prevStatus.indexOf(attn[ i2 ].id) === -1) { attn[ i2 ].parentNode.removeChild(attn[ i2 ]) }
     }
 
     if (prevStatus.length <= 0) {
@@ -10452,7 +10442,7 @@ function checkAnnouncements () {
     // Remove eas alerts no longer valid from the announcements box
     attn = document.querySelectorAll('.attn-eas')
     for (var i3 = 0; i3 < attn.length; i3++) {
-      if (prevEas.indexOf(attn[i3].id) === -1) { attn[i3].parentNode.removeChild(attn[i3]) }
+      if (prevEas.indexOf(attn[ i3 ].id) === -1) { attn[ i3 ].parentNode.removeChild(attn[ i3 ]) }
     }
 
     if (prevEas.length <= 0) {
@@ -10517,12 +10507,12 @@ function checkRecipients () {
         // Skip system and display recipients; we do not want to use those in the messages system.
         if (recipient.group === 'system' || recipient.group === 'display') { return null }
 
-        if (typeof recipients[recipient.group] === 'undefined') {
-          recipients[recipient.group] = []
+        if (typeof recipients[ recipient.group ] === 'undefined') {
+          recipients[ recipient.group ] = []
           groupIDs.push(`users-g-${recipient.group}`)
         }
         recipientIDs.push(`users-u-${recipient.ID}`)
-        recipients[recipient.group].push(recipient)
+        recipients[ recipient.group ].push(recipient)
       })
 
       for (var key in recipients) {
@@ -10535,8 +10525,8 @@ function checkRecipients () {
                     </ul>
                     <div class="navdrawer-divider"></div>`
           }
-          if (recipients[key].length > 0) {
-            recipients[key].map(recipient => {
+          if (recipients[ key ].length > 0) {
+            recipients[ key ].map(recipient => {
               var temp = document.querySelector(`#users-u-${recipient.ID}`)
               var theClass = '<i class="chip-icon bg-dark">OFF</i>'
               // Online recipients in wwsu-red color, offline in dark color.
@@ -10579,7 +10569,7 @@ function checkRecipients () {
           // Remove recipients no longer valid
           var attn = document.querySelectorAll('.recipient')
           for (var i = 0; i < attn.length; i++) {
-            if (recipientIDs.indexOf(attn[i].id) === -1) { attn[i].parentNode.removeChild(attn[i]) }
+            if (recipientIDs.indexOf(attn[ i ].id) === -1) { attn[ i ].parentNode.removeChild(attn[ i ]) }
           }
         }
       }
@@ -10712,16 +10702,16 @@ function selectRecipient (recipient = null) {
       }
 
       // Get only the relevant messages to show in the "new messages" box
-      var query = [{ from: host, to: [client.host, 'DJ', 'DJ-private', hostAlias] }, { to: host }]
+      var query = [ { from: host, to: [ client.host, 'DJ', 'DJ-private', hostAlias ] }, { to: host } ]
       if (host === 'website') {
-        query = [{ to: ['DJ', 'website'] }]
+        query = [ { to: [ 'DJ', 'website' ] } ]
       }
 
       totalUnread = 0
       var recipientUnread = {}
       var records = Recipients().get()
 
-      if (records.length > 0) { records.map(recipient2 => { recipientUnread[recipient2.host] = 0 }) }
+      if (records.length > 0) { records.map(recipient2 => { recipientUnread[ recipient2.host ] = 0 }) }
 
       records = Messages().get().sort(compare)
       var unreadIDs = []
@@ -10741,8 +10731,8 @@ function selectRecipient (recipient = null) {
           // Do not continue if this message is not new
           if (!message.needsread) { return null }
           totalUnread++
-          if (typeof recipientUnread[message.from_real] === 'undefined') { recipientUnread[message.from_real] = 0 }
-          recipientUnread[message.from_real]++
+          if (typeof recipientUnread[ message.from_real ] === 'undefined') { recipientUnread[ message.from_real ] = 0 }
+          recipientUnread[ message.from_real ]++
           unreadIDs.push(`message-n-m-${message.ID}`)
 
           var temp = document.querySelector(`#message-n-m-${message.ID}`)
@@ -10765,12 +10755,12 @@ function selectRecipient (recipient = null) {
       // Remove new messages no longer valid
       var attn = document.querySelectorAll('.message-n')
       for (var i = 0; i < attn.length; i++) {
-        if (unreadIDs.indexOf(attn[i].id) === -1) { attn[i].parentNode.removeChild(attn[i]) }
+        if (unreadIDs.indexOf(attn[ i ].id) === -1) { attn[ i ].parentNode.removeChild(attn[ i ]) }
       }
 
       for (var key in recipientUnread) {
         if (Object.prototype.hasOwnProperty.call(recipientUnread, key)) {
-          Recipients({ host: key }).update({ unread: recipientUnread[key] })
+          Recipients({ host: key }).update({ unread: recipientUnread[ key ] })
         }
       }
 
@@ -10812,7 +10802,7 @@ function selectRecipient (recipient = null) {
       // Remove recipients no longer valid
       attn = document.querySelectorAll('.message')
       for (var i5 = 0; i5 < attn.length; i5++) {
-        if (messageIDs.indexOf(attn[i5].id) === -1) { attn[i5].parentNode.removeChild(attn[i5]) }
+        if (messageIDs.indexOf(attn[ i5 ].id) === -1) { attn[ i5 ].parentNode.removeChild(attn[ i5 ]) }
       }
     }
 
@@ -10912,18 +10902,18 @@ function prepareMute (recipient) {
       image: `assets/images/mute.png`,
       maxWidth: 480,
       inputs: [
-        ['<input type="text">', 'keyup', function (instance, toast, input, e) {
+        [ '<input type="text">', 'keyup', function (instance, toast, input, e) {
           inputData = input.value
-        }, true]
+        }, true ]
       ],
       buttons: [
-        ['<button>Mute</button>', function (instance, toast, button, e, inputs) {
+        [ '<button>Mute</button>', function (instance, toast, button, e, inputs) {
           finishMute(recipient, inputData)
           instance.hide({}, toast, 'button')
-        }],
-        ['<button>Cancel</button>', function (instance, toast, button, e, inputs) {
+        } ],
+        [ '<button>Cancel</button>', function (instance, toast, button, e, inputs) {
           instance.hide({}, toast, 'button')
-        }]
+        } ]
       ]
     })
   } catch (e) {
@@ -10955,18 +10945,18 @@ function prepareBan (recipient) {
       image: `assets/images/ban.png`,
       maxWidth: 480,
       inputs: [
-        ['<input type="text">', 'keyup', function (instance, toast, input, e) {
+        [ '<input type="text">', 'keyup', function (instance, toast, input, e) {
           inputData = input.value
-        }, true]
+        }, true ]
       ],
       buttons: [
-        ['<button>Ban</button>', function (instance, toast, button, e, inputs) {
+        [ '<button>Ban</button>', function (instance, toast, button, e, inputs) {
           finishBan(recipient, inputData)
           instance.hide({}, toast, 'button')
-        }],
-        ['<button>Cancel</button>', function (instance, toast, button, e, inputs) {
+        } ],
+        [ '<button>Cancel</button>', function (instance, toast, button, e, inputs) {
           instance.hide({}, toast, 'button')
-        }]
+        } ]
       ]
     })
   } catch (e) {
@@ -11147,13 +11137,13 @@ function goLive () {
       drag: false,
       closeOnClick: false,
       buttons: [
-        ['<button><b>Continue</b></button>', function (instance, toast) {
+        [ '<button><b>Continue</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
           _goLive()
-        }],
-        ['<button><b>Cancel</b></button>', function (instance, toast) {
+        } ],
+        [ '<button><b>Cancel</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-        }]
+        } ]
       ]
     })
   }
@@ -11260,13 +11250,13 @@ function goRemote () {
       drag: false,
       closeOnClick: false,
       buttons: [
-        ['<button><b>Continue</b></button>', function (instance, toast) {
+        [ '<button><b>Continue</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
           _goRemote()
-        }],
-        ['<button><b>Cancel</b></button>', function (instance, toast) {
+        } ],
+        [ '<button><b>Cancel</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-        }]
+        } ]
       ]
     })
   }
@@ -11274,9 +11264,9 @@ function goRemote () {
 
 function _goRemote () {
   var remoteOptions = document.getElementById('remote-host')
-  var selectedOption = remoteOptions.options[remoteOptions.selectedIndex].value
+  var selectedOption = remoteOptions.options[ remoteOptions.selectedIndex ].value
   ipcRenderer.send(`peer-set-bitrate`, 128)
-  ipcRenderer.send(`peer-start-call`, [selectedOption])
+  ipcRenderer.send(`peer-start-call`, [ selectedOption ])
   afterStartCall = () => {
     $('#wait-modal').iziModal('open')
     document.querySelector('#wait-text').innerHTML = `Processing Request: Go Remote`
@@ -11336,13 +11326,13 @@ function goSports () {
       drag: false,
       closeOnClick: false,
       buttons: [
-        ['<button><b>Continue</b></button>', function (instance, toast) {
+        [ '<button><b>Continue</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
           _goSports()
-        }],
-        ['<button><b>Cancel</b></button>', function (instance, toast) {
+        } ],
+        [ '<button><b>Cancel</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-        }]
+        } ]
       ]
     })
   }
@@ -11350,7 +11340,7 @@ function goSports () {
 
 function _goSports () {
   var sportsOptions = document.getElementById('sports-sport')
-  var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value
+  var selectedOption = sportsOptions.options[ sportsOptions.selectedIndex ].value
   $('#wait-modal').iziModal('open')
   document.querySelector('#wait-text').innerHTML = `Processing Request: Go Sports`
   hostReq.request({ method: 'POST', url: nodeURL + '/state/sports', data: { sport: selectedOption, topic: (document.querySelector('#sports-topic').value !== `` || cal.type !== `Sports`) ? document.querySelector('#sports-topic').value : cal.topic, webchat: document.querySelector('#sports-webchat').checked } }, function (response) {
@@ -11449,13 +11439,13 @@ function goSportsRemote () {
       drag: false,
       closeOnClick: false,
       buttons: [
-        ['<button><b>Continue</b></button>', function (instance, toast) {
+        [ '<button><b>Continue</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
           _goSportsRemote()
-        }],
-        ['<button><b>Cancel</b></button>', function (instance, toast) {
+        } ],
+        [ '<button><b>Cancel</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-        }]
+        } ]
       ]
     })
   }
@@ -11463,12 +11453,12 @@ function goSportsRemote () {
 
 function _goSportsRemote () {
   var remoteOptions = document.getElementById('sportsremote-host')
-  var selectedOption = remoteOptions.options[remoteOptions.selectedIndex].value
+  var selectedOption = remoteOptions.options[ remoteOptions.selectedIndex ].value
   ipcRenderer.send(`peer-set-bitrate`, 128)
-  ipcRenderer.send(`peer-start-call`, [selectedOption])
+  ipcRenderer.send(`peer-start-call`, [ selectedOption ])
   afterStartCall = () => {
     var sportsOptions = document.getElementById('sportsremote-sport')
-    var selectedOption = sportsOptions.options[sportsOptions.selectedIndex].value
+    var selectedOption = sportsOptions.options[ sportsOptions.selectedIndex ].value
     $('#wait-modal').iziModal('open')
     document.querySelector('#wait-text').innerHTML = `Processing Request: Go Sports Remote`
     hostReq.request({ method: 'POST', url: nodeURL + '/state/sports-remote', data: { sport: selectedOption, topic: (document.querySelector('#sportsremote-topic').value !== `` || cal.type !== `Sports`) ? document.querySelector('#sportsremote-topic').value : cal.topic, webchat: document.querySelector('#sportsremote-webchat').checked } }, function (response) {
@@ -11510,14 +11500,14 @@ function promptIfNotHost (action, fn, noHost = false) {
       drag: false,
       closeOnClick: false,
       buttons: [
-        ['<button><b>Yes</b></button>', function (instance, toast) {
+        [ '<button><b>Yes</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
           isHost = true
           fn()
-        }],
-        ['<button><b>No</b></button>', function (instance, toast) {
+        } ],
+        [ '<button><b>No</b></button>', function (instance, toast) {
           instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
-        }]
+        } ]
       ]
     })
   }
@@ -11562,14 +11552,14 @@ function saveLog () {
           closeOnClick: false,
           overlay: false,
           buttons: [
-            ['<button>Playing Another Track</button>', function (instance, toast, button, e, inputs) {
+            [ '<button>Playing Another Track</button>', function (instance, toast, button, e, inputs) {
               prepareLog()
               instance.hide({}, toast, 'button')
-            }],
-            ['<button>Playing No Tracks</button>', function (instance, toast, button, e, inputs) {
+            } ],
+            [ '<button>Playing No Tracks</button>', function (instance, toast, button, e, inputs) {
               hostReq.request({ method: 'POST', url: nodeURL + '/logs/add', data: { logtype: 'manual', logsubtype: Meta.show, loglevel: 'secondary', event: 'DJ/Producer finished playing music.', trackArtist: '', trackTitle: '', trackAlbum: '', trackLabel: '', date: moment().toISOString(true) } }, function (response) { })
               instance.hide({}, toast, 'button')
-            }]
+            } ]
           ]
         })
       }
@@ -11830,10 +11820,10 @@ function processEas (data, replace = false) {
                 image: `assets/images/extremeWeather.png`,
                 maxWidth: 640,
                 buttons: [
-                  ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+                  [ '<button>End Show</button>', function (instance, toast, button, e, inputs) {
                     endShow()
                     instance.hide({}, toast, 'button')
-                  }]
+                  } ]
                 ]
               })
             } else {
@@ -11886,12 +11876,12 @@ function processEas (data, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              Eas.insert(data[key])
-              if (document.querySelector(`#attn-eas-${data[key].ID}`) === null) {
+              Eas.insert(data[ key ])
+              if (document.querySelector(`#attn-eas-${data[ key ].ID}`) === null) {
                 // TODO EAS
               } else {
               }
-              if (data[key].severity === 'Extreme') {
+              if (data[ key ].severity === 'Extreme') {
                 if (!Meta.state.startsWith('automation_')) {
                   /*
                                      var notification = notifier.notify('Extreme Weather Alert in effect', {
@@ -11904,7 +11894,7 @@ function processEas (data, replace = false) {
                   iziToast.show({
                     class: 'flash-bg',
                     title: 'Extreme Weather Alert in Effect!',
-                    message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. You may wish to consider ending the show early and taking shelter. If so, click "End Show" when ready to end. Otherwise, close this notification.`,
+                    message: `A ${data[ key ].alert} is in effect for the counties of ${data[ key ].counties}. You may wish to consider ending the show early and taking shelter. If so, click "End Show" when ready to end. Otherwise, close this notification.`,
                     timeout: 900000,
                     close: true,
                     color: 'red',
@@ -11917,17 +11907,17 @@ function processEas (data, replace = false) {
                     image: `assets/images/extremeWeather.png`,
                     maxWidth: 640,
                     buttons: [
-                      ['<button>End Show</button>', function (instance, toast, button, e, inputs) {
+                      [ '<button>End Show</button>', function (instance, toast, button, e, inputs) {
                         endShow()
                         instance.hide({}, toast, 'button')
-                      }]
+                      } ]
                     ]
                   })
                 } else {
                   iziToast.show({
                     class: 'flash-bg',
                     title: 'Extreme weather alert in effect',
-                    message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. You may wish to decide against hosting any shows at this time and instead seeking shelter.`,
+                    message: `A ${data[ key ].alert} is in effect for the counties of ${data[ key ].counties}. You may wish to decide against hosting any shows at this time and instead seeking shelter.`,
                     timeout: 900000,
                     close: true,
                     color: 'red',
@@ -11941,7 +11931,7 @@ function processEas (data, replace = false) {
                     maxWidth: 640
                   })
                 }
-              } else if (data[key].severity === 'Severe') {
+              } else if (data[ key ].severity === 'Severe') {
                 /*
                                  var notification = notifier.notify('Severe Weather Alert in effect', {
                                  message: `Please keep an eye on the weather. See DJ Controls for more info.`,
@@ -11953,7 +11943,7 @@ function processEas (data, replace = false) {
                 iziToast.show({
                   class: 'iziToast-eas-severe',
                   title: 'Severe weather alert in effect',
-                  message: `A ${data[key].alert} is in effect for the counties of ${data[key].counties}. Please keep an eye on the weather.`,
+                  message: `A ${data[ key ].alert} is in effect for the counties of ${data[ key ].counties}. Please keep an eye on the weather.`,
                   timeout: 900000,
                   close: true,
                   color: 'yellow',
@@ -11969,15 +11959,15 @@ function processEas (data, replace = false) {
               }
               break
             case 'update':
-              Eas({ ID: data[key].ID }).update(data[key])
-              if (document.querySelector(`#attn-eas-${data[key].ID}`) === null) {
+              Eas({ ID: data[ key ].ID }).update(data[ key ])
+              if (document.querySelector(`#attn-eas-${data[ key ].ID}`) === null) {
                 // TODO EAS
               } else {
               }
               break
             case 'remove':
-              Eas({ ID: data[key] }).remove()
-              var easAttn = document.querySelector(`#attn-eas-${data[key]}`)
+              Eas({ ID: data[ key ] }).remove()
+              var easAttn = document.querySelector(`#attn-eas-${data[ key ]}`)
               if (easAttn !== null) { easAttn.parentNode.removeChild(easAttn) }
               break
           }
@@ -12052,9 +12042,9 @@ function processStatus (data, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              Status.insert(data[key])
-              if (document.querySelector(`#attn-status-${data[key].name}`) === null) {
-                if (client.emergencies && data[key].status < 3) {
+              Status.insert(data[ key ])
+              if (document.querySelector(`#attn-status-${data[ key ].name}`) === null) {
+                if (client.emergencies && data[ key ].status < 3) {
                   /*
                                      var notification = notifier.notify('System Problem', {
                                      message: `${data[key].label} reports a significant issue. Please see DJ Controls announcements.`,
@@ -12065,7 +12055,7 @@ function processStatus (data, replace = false) {
                   main.flashTaskbar()
                 }
               }
-              if (data[key].name === 'silence' && data[key].status <= 3 && (client.emergencies || isHost)) {
+              if (data[ key ].name === 'silence' && data[ key ].status <= 3 && (client.emergencies || isHost)) {
                 iziToast.show({
                   title: 'Silence / Low Audio detected!',
                   message: `Please check your audio levels and ensure they are good. Be aware silence detection may be delayed due to the delay system.`,
@@ -12093,9 +12083,9 @@ function processStatus (data, replace = false) {
               }
               break
             case 'update':
-              Status({ ID: data[key].ID }).update(data[key])
-              if (document.querySelector(`#attn-status-${data[key].name}`) === null) {
-                if (client.emergencies && data[key].status < 3) {
+              Status({ ID: data[ key ].ID }).update(data[ key ])
+              if (document.querySelector(`#attn-status-${data[ key ].name}`) === null) {
+                if (client.emergencies && data[ key ].status < 3) {
                   /*
                                      var notification = notifier.notify('System Problem', {
                                      message: `${data[key].label} reports a significant issue. Please see DJ Controls announcements.`,
@@ -12106,7 +12096,7 @@ function processStatus (data, replace = false) {
                   main.flashTaskbar()
                 }
               }
-              if (data[key].name === 'silence' && data[key].status <= 3 && (client.emergencies || isHost)) {
+              if (data[ key ].name === 'silence' && data[ key ].status <= 3 && (client.emergencies || isHost)) {
                 iziToast.show({
                   title: 'Silence / Low Audio detected!',
                   message: `Please check your audio levels and ensure they are good. Be aware silence detection may be delayed due to the delay system.`,
@@ -12134,7 +12124,7 @@ function processStatus (data, replace = false) {
               }
               break
             case 'remove':
-              Status({ ID: data[key] }).remove()
+              Status({ ID: data[ key ] }).remove()
               break
           }
         }
@@ -12163,13 +12153,13 @@ function processAnnouncements (data, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              Announcements.insert(data[key])
+              Announcements.insert(data[ key ])
               break
             case 'update':
-              Announcements({ ID: data[key].ID }).update(data[key])
+              Announcements({ ID: data[ key ].ID }).update(data[ key ])
               break
             case 'remove':
-              Announcements({ ID: data[key] }).remove()
+              Announcements({ ID: data[ key ] }).remove()
               break
           }
         }
@@ -12199,13 +12189,13 @@ function processCalendar (data, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              Calendar.insert(data[key])
+              Calendar.insert(data[ key ])
               break
             case 'update':
-              Calendar({ ID: data[key].ID }).update(data[key])
+              Calendar({ ID: data[ key ].ID }).update(data[ key ])
               break
             case 'remove':
-              Calendar({ ID: data[key] }).remove()
+              Calendar({ ID: data[ key ] }).remove()
               break
           }
         }
@@ -12233,13 +12223,13 @@ function processDarksky (data, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              Darksky.insert(data[key])
+              Darksky.insert(data[ key ])
               break
             case 'update':
-              Darksky({ ID: data[key].ID }).update(data[key])
+              Darksky({ ID: data[ key ].ID }).update(data[ key ])
               break
             case 'remove':
-              Darksky({ ID: data[key] }).remove()
+              Darksky({ ID: data[ key ] }).remove()
               break
           }
         }
@@ -12249,7 +12239,7 @@ function processDarksky (data, replace = false) {
     clearTimeout(darkskyTimer)
 
     darkskyTimer = setTimeout(() => {
-      ipcRenderer.send('process-darksky', [Darksky().get(), Meta.time])
+      ipcRenderer.send('process-darksky', [ Darksky().get(), Meta.time ])
     }, 5000)
   } catch (e) {
     console.error(e)
@@ -12273,13 +12263,13 @@ function processPlanner (data, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              Planner.insert(data[key])
+              Planner.insert(data[ key ])
               break
             case 'update':
-              Planner({ ID: data[key].ID }).update(data[key])
+              Planner({ ID: data[ key ].ID }).update(data[ key ])
               break
             case 'remove':
-              Planner({ ID: data[key] }).remove()
+              Planner({ ID: data[ key ] }).remove()
               break
           }
         }
@@ -12325,10 +12315,10 @@ function processRecipients (data, replace = false) {
     if (replace) {
       if (data.length > 0) {
         data.map((datum, index) => {
-          data[index].unread = 0
+          data[ index ].unread = 0
 
           var temp = Recipients({ ID: datum.ID }).first()
-          ipcRenderer.send('peer-check-waiting', [datum, temp])
+          ipcRenderer.send('peer-check-waiting', [ datum, temp ])
         })
       }
 
@@ -12339,18 +12329,18 @@ function processRecipients (data, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              data[key].unread = 0
-              Recipients.insert(data[key])
-              ipcRenderer.send('peer-check-waiting', [data[key], null])
+              data[ key ].unread = 0
+              Recipients.insert(data[ key ])
+              ipcRenderer.send('peer-check-waiting', [ data[ key ], null ])
               break
             case 'update':
-              data[key].unread = 0
-              var temp = Recipients({ ID: data[key].ID }).first()
-              ipcRenderer.send('peer-check-waiting', [data[key], temp])
-              Recipients({ ID: data[key].ID }).update(data[key])
+              data[ key ].unread = 0
+              var temp = Recipients({ ID: data[ key ].ID }).first()
+              ipcRenderer.send('peer-check-waiting', [ data[ key ], temp ])
+              Recipients({ ID: data[ key ].ID }).update(data[ key ])
               break
             case 'remove':
-              Recipients({ ID: data[key] }).remove()
+              Recipients({ ID: data[ key ] }).remove()
               break
           }
         }
@@ -12382,14 +12372,14 @@ function processMessages (data, replace = false) {
         Messages.insert(data)
 
         data.map((datum, index) => {
-          data[index].needsread = false
-          data[index].from_real = datum.from
-          if (datum.to === `DJ`) { data[index].from_real = `website` }
+          data[ index ].needsread = false
+          data[ index ].from_real = datum.from
+          if (datum.to === `DJ`) { data[ index ].from_real = `website` }
           if (prev.indexOf(datum.ID) === -1) {
-            switch (data[index].to) {
+            switch (data[ index ].to) {
               case 'emergency':
                 if (client.emergencies) {
-                  data[index].needsread = true
+                  data[ index ].needsread = true
                   addNotification(`reported-problem`, `attn-${datum.ID}`, `danger`, datum.updatedAt, datum.message, `Reported Problems`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-attn-edit-${datum.ID}">Edit Announcements</button>`)
                 }
                 break
@@ -12418,14 +12408,14 @@ function processMessages (data, replace = false) {
                   image: `assets/images/messageAll.png`,
                   maxWidth: 480,
                   buttons: [
-                    ['<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
+                    [ '<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
                       $('#messages-modal').iziModal('open')
                       selectRecipient(Recipients({ host: datum.from }).first().ID || null)
                       instance.hide({}, toast, 'button')
-                    }]
+                    } ]
                   ]
                 })
-                data[index].needsread = true
+                data[ index ].needsread = true
                 break
               case 'DJ':
               case 'DJ-private':
@@ -12452,15 +12442,15 @@ function processMessages (data, replace = false) {
                     image: `assets/images/messageWeb.png`,
                     maxWidth: 480,
                     buttons: [
-                      ['<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
+                      [ '<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
                         $('#messages-modal').iziModal('open')
                         var host = (datum.to === 'DJ' ? 'website' : datum.from)
                         selectRecipient(Recipients({ host: host }).first().ID || null)
                         instance.hide({}, toast, 'button')
-                      }]
+                      } ]
                     ]
                   })
-                  data[index].needsread = true
+                  data[ index ].needsread = true
                 }
                 break
               default:
@@ -12476,14 +12466,14 @@ function processMessages (data, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              data[key].needsread = false
-              data[key].from_real = data[key].from
-              if (data[key].to === `DJ`) { data[key].from_real = `website` }
-              switch (data[key].to) {
+              data[ key ].needsread = false
+              data[ key ].from_real = data[ key ].from
+              if (data[ key ].to === `DJ`) { data[ key ].from_real = `website` }
+              switch (data[ key ].to) {
                 case 'emergency':
                   if (client.emergencies) {
-                    data[key].needsread = true
-                    addNotification(`reported-problem`, `attn-${data[key].ID}`, `danger`, data[key].updatedAt, data[key].announcement, `Reported Problems`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-attn-edit-${data[key].ID}">Edit Announcements</button>`)
+                    data[ key ].needsread = true
+                    addNotification(`reported-problem`, `attn-${data[ key ].ID}`, `danger`, data[ key ].updatedAt, data[ key ].announcement, `Reported Problems`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-attn-edit-${data[ key ].ID}">Edit Announcements</button>`)
                   }
                   break
                 case client.host:
@@ -12498,8 +12488,8 @@ function processMessages (data, replace = false) {
                                      */
                   main.flashTaskbar()
                   iziToast.show({
-                    title: `Message from ${data[key].fromFriendly}`,
-                    message: `${data[key].message}`,
+                    title: `Message from ${data[ key ].fromFriendly}`,
+                    message: `${data[ key ].message}`,
                     timeout: 30000,
                     close: true,
                     color: 'blue',
@@ -12511,14 +12501,14 @@ function processMessages (data, replace = false) {
                     image: `assets/images/messageAll.png`,
                     maxWidth: 480,
                     buttons: [
-                      ['<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
+                      [ '<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
                         $('#messages-modal').iziModal('open')
-                        selectRecipient(Recipients({ host: data[key].from }).first().ID || null)
+                        selectRecipient(Recipients({ host: data[ key ].from }).first().ID || null)
                         instance.hide({}, toast, 'button')
-                      }]
+                      } ]
                     ]
                   })
-                  data[key].needsread = true
+                  data[ key ].needsread = true
                   break
                 case 'DJ':
                 case 'DJ-private':
@@ -12532,8 +12522,8 @@ function processMessages (data, replace = false) {
                                          */
                     main.flashTaskbar()
                     iziToast.show({
-                      title: `Web message from ${data[key].fromFriendly}`,
-                      message: `${data[key].message}`,
+                      title: `Web message from ${data[ key ].fromFriendly}`,
+                      message: `${data[ key ].message}`,
                       timeout: 30000,
                       close: true,
                       color: 'blue',
@@ -12545,31 +12535,31 @@ function processMessages (data, replace = false) {
                       image: `assets/images/messageWeb.png`,
                       maxWidth: 480,
                       buttons: [
-                        ['<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
+                        [ '<button>View / Reply</button>', function (instance, toast, button, e, inputs) {
                           $('#messages-modal').iziModal('open')
-                          var host = (data[key].to === 'DJ' ? 'website' : data[key].from)
+                          var host = (data[ key ].to === 'DJ' ? 'website' : data[ key ].from)
                           selectRecipient(Recipients({ host: host }).first().ID || null)
                           instance.hide({}, toast, 'button')
-                        }]
+                        } ]
                       ]
                     })
-                    data[key].needsread = true
+                    data[ key ].needsread = true
                   }
                   break
                 default:
                   break
               }
-              Messages.insert(data[key])
+              Messages.insert(data[ key ])
               selectRecipient(activeRecipient)
               break
             case 'update':
-              data[key].from_real = data[key].from
-              if (data[key].to === `DJ`) { data[key].from_real = `website` }
-              Messages({ ID: data[key].ID }).update(data[key])
+              data[ key ].from_real = data[ key ].from
+              if (data[ key ].to === `DJ`) { data[ key ].from_real = `website` }
+              Messages({ ID: data[ key ].ID }).update(data[ key ])
               selectRecipient(activeRecipient)
               break
             case 'remove':
-              Messages({ ID: data[key] }).remove()
+              Messages({ ID: data[ key ] }).remove()
               selectRecipient(activeRecipient)
               break
           }
@@ -12618,51 +12608,51 @@ function processAttendance (data, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              Attendance.insert(data[key])
+              Attendance.insert(data[ key ])
               // Absences
-              if (data[key].happened === 0 && data[key].dj !== null) {
-                addNotification(`absent-broadcast`, `attendance-${data[key].ID}`, `urgent`, data[key].updatedAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledEnd).format('hh:mm A')}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[key].ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${data[key].ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`)
+              if (data[ key ].happened === 0 && data[ key ].dj !== null) {
+                addNotification(`absent-broadcast`, `attendance-${data[ key ].ID}`, `urgent`, data[ key ].updatedAt, `${data[ key ].event}<br />Scheduled Time: ${moment(data[ key ].scheduledStart).format('MM/DD/YYYY hh:mm A')} - ${moment(data[ key ].scheduledEnd).format('hh:mm A')}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[ key ].ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${data[ key ].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[ key ].ID}" title="Excuse this show from the DJ's reputation. Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${data[ key ].ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`)
               }
 
               // Unscheduled broadcasts
-              if (data[key].happened === 1 && data[key].scheduledStart === null && data[key].scheduledEnd === null && data[key].dj !== null) {
-                addNotification(`unauthorized-broadcast`, `attendance-${data[key].ID}`, `warning`, data[key].updatedAt, `${data[key].event}<br />On-Air Time: ${moment(data[key].actualStart).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].actualEnd).format('hh:mm A')}`, `Unauthorized / Unscheduled Broadcasts`)
+              if (data[ key ].happened === 1 && data[ key ].scheduledStart === null && data[ key ].scheduledEnd === null && data[ key ].dj !== null) {
+                addNotification(`unauthorized-broadcast`, `attendance-${data[ key ].ID}`, `warning`, data[ key ].updatedAt, `${data[ key ].event}<br />On-Air Time: ${moment(data[ key ].actualStart).format('MM/DD/YYYY hh:mm A')} - ${moment(data[ key ].actualEnd).format('hh:mm A')}`, `Unauthorized / Unscheduled Broadcasts`)
               }
 
               // Canceled broadcasts
-              if (data[key].happened === -1 && data[key].dj !== null) {
-                addNotification(`canceled-broadcast`, `attendance-${data[key].ID}`, `info`, data[key].updatedAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledEnd).format('hh:mm A')}<br />Reason: ${data[key].happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[key].ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${data[key].ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`)
+              if (data[ key ].happened === -1 && data[ key ].dj !== null) {
+                addNotification(`canceled-broadcast`, `attendance-${data[ key ].ID}`, `info`, data[ key ].updatedAt, `${data[ key ].event}<br />Scheduled Time: ${moment(data[ key ].scheduledStart).format('MM/DD/YYYY hh:mm A')} - ${moment(data[ key ].scheduledEnd).format('hh:mm A')}<br />Reason: ${data[ key ].happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[ key ].ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${data[ key ].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[ key ].ID}" title="Excuse this show from the DJ's reputation. Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${data[ key ].ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`)
               }
               break
             case 'update':
-              Attendance({ ID: data[key].ID }).update(data[key])
+              Attendance({ ID: data[ key ].ID }).update(data[ key ])
               // Absences
-              if (data[key].happened === 0 && data[key].dj !== null) {
-                addNotification(`absent-broadcast`, `attendance-${data[key].ID}`, `urgent`, data[key].updatedAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledEnd).format('hh:mm A')}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[key].ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${data[key].ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`)
-              } else if (data[key].happened === 1 && data[key].scheduledStart === null && data[key].scheduledEnd === null && data[key].dj !== null) {
-                addNotification(`unauthorized-broadcast`, `attendance-${data[key].ID}`, `warning`, data[key].updatedAt, `${data[key].event}<br />On-Air Time: ${moment(data[key].actualStart).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].actualEnd).format('hh:mm A')}`, `Unauthorized / Unscheduled Broadcasts`)
-              } else if (data[key].happened === -1 && data[key].dj !== null) {
-                addNotification(`canceled-broadcast`, `attendance-${data[key].ID}`, `info`, data[key].updatedAt, `${data[key].event}<br />Scheduled Time: ${moment(data[key].scheduledStart).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledEnd).format('hh:mm A')}<br />Reason: ${data[key].happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[key].ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${data[key].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[key].ID}" title="Excuse this show from the DJ's reputation. Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${data[key].ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`)
+              if (data[ key ].happened === 0 && data[ key ].dj !== null) {
+                addNotification(`absent-broadcast`, `attendance-${data[ key ].ID}`, `urgent`, data[ key ].updatedAt, `${data[ key ].event}<br />Scheduled Time: ${moment(data[ key ].scheduledStart).format('MM/DD/YYYY hh:mm A')} - ${moment(data[ key ].scheduledEnd).format('hh:mm A')}`, `Non-canceled Absences`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-cancel-${data[ key ].ID}" title="Click if this unexcused absence was actually canceled prior to scheduled show time.">Was Canceled Prior</button>${data[ key ].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[ key ].ID}" title="Excuse this show from the DJ's reputation. Click if this absence was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${data[ key ].ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`)
+              } else if (data[ key ].happened === 1 && data[ key ].scheduledStart === null && data[ key ].scheduledEnd === null && data[ key ].dj !== null) {
+                addNotification(`unauthorized-broadcast`, `attendance-${data[ key ].ID}`, `warning`, data[ key ].updatedAt, `${data[ key ].event}<br />On-Air Time: ${moment(data[ key ].actualStart).format('MM/DD/YYYY hh:mm A')} - ${moment(data[ key ].actualEnd).format('hh:mm A')}`, `Unauthorized / Unscheduled Broadcasts`)
+              } else if (data[ key ].happened === -1 && data[ key ].dj !== null) {
+                addNotification(`canceled-broadcast`, `attendance-${data[ key ].ID}`, `info`, data[ key ].updatedAt, `${data[ key ].event}<br />Scheduled Time: ${moment(data[ key ].scheduledStart).format('MM/DD/YYYY hh:mm A')} - ${moment(data[ key ].scheduledEnd).format('hh:mm A')}<br />Reason: ${data[ key ].happenedReason}`, `Canceled Broadcasts`, `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-absent-${data[ key ].ID}" title="Click if this cancellation should be considered an un-canceled / unexcused absence.">Unexcused Absence</button>${data[ key ].ignore === 0 ? `<button type="button" class="btn btn-success btn-sm" style="font-size: 0.66em;" id="notification-excuse-${data[ key ].ID}" title="Excuse this show from the DJ's reputation. Click if this cancellation was during an optional shows period, or was the fault of WWSU (eg. maintenance or sports broadcast interfering).">Mark Excused</button>` : `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-unexcuse-${data[ key ].ID}" title="This show is currently being excused from DJ's reputation. Click to un-excuse this show.">Mark Un-excused</button>`}`)
               } else {
-                addNotification(`broadcast-good`, `attendance-${data[key].ID}`)
+                addNotification(`broadcast-good`, `attendance-${data[ key ].ID}`)
               }
               break
             case 'remove':
-              Attendance({ ID: data[key] }).remove()
+              Attendance({ ID: data[ key ] }).remove()
 
               // Absent broadcasts
-              if (data[key].happened === 0 && data[key].dj !== null) {
-                addNotification(`absent-broadcast`, `attendance-${data[key].ID}`)
+              if (data[ key ].happened === 0 && data[ key ].dj !== null) {
+                addNotification(`absent-broadcast`, `attendance-${data[ key ].ID}`)
               }
 
               // Unscheduled broadcasts
-              if (data[key].happened === 1 && data[key].scheduledStart === null && data[key].scheduledEnd === null && data[key].dj !== null) {
-                addNotification(`unauthorized-broadcast`, `attendance-${data[key].ID}`)
+              if (data[ key ].happened === 1 && data[ key ].scheduledStart === null && data[ key ].scheduledEnd === null && data[ key ].dj !== null) {
+                addNotification(`unauthorized-broadcast`, `attendance-${data[ key ].ID}`)
               }
 
               // Canceled broadcasts
-              if (data[key].happened === -1 && data[key].dj !== null) {
-                addNotification(`canceled-broadcast`, `attendance-${data[key].ID}`)
+              if (data[ key ].happened === -1 && data[ key ].dj !== null) {
+                addNotification(`canceled-broadcast`, `attendance-${data[ key ].ID}`)
               }
               break
           }
@@ -12712,63 +12702,63 @@ function processTimesheet (data, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              Timesheet.insert(data[key])
+              Timesheet.insert(data[ key ])
               // Cancelled hours
-              if (data[key].approved === -1) {
-                addNotification(`timesheet-cancelled`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />Canceled time: ${moment(data[key].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledOut).format('hh:mm A')}`, `Canceled Director Hours`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+              if (data[ key ].approved === -1) {
+                addNotification(`timesheet-cancelled`, `timesheet-${data[ key ].ID}`, `info`, data[ key ].updatedAt, `Director: ${data[ key ].name}<br />Canceled time: ${moment(data[ key ].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[ key ].scheduledOut).format('hh:mm A')}`, `Canceled Director Hours`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[ key ].ID}" title="Click to edit this record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
               }
 
               // Unapproved timesheet records
-              if (data[key].approved === 0 && data[key].timeIn !== null && data[key].timeOut !== null) {
-                addNotification(`timesheet-needs-approved`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />Time in: ${moment(data[key].timeIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].timeOut).format('hh:mm A')}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+              if (data[ key ].approved === 0 && data[ key ].timeIn !== null && data[ key ].timeOut !== null) {
+                addNotification(`timesheet-needs-approved`, `timesheet-${data[ key ].ID}`, `info`, data[ key ].updatedAt, `Director: ${data[ key ].name}<br />Time in: ${moment(data[ key ].timeIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[ key ].timeOut).format('hh:mm A')}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[ key ].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
               }
 
               // Absent Records
-              if (data[key].approved === 0 && data[key].timeIn === null && data[key].timeOut === null) {
-                addNotification(`timesheet-absent`, `timesheet-${data[key].ID}`, `urgent`, data[key].updatedAt, `Director: ${data[key].name}<br />Scheduled time: ${moment(data[key].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledOut).format('hh:mm A')}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+              if (data[ key ].approved === 0 && data[ key ].timeIn === null && data[ key ].timeOut === null) {
+                addNotification(`timesheet-absent`, `timesheet-${data[ key ].ID}`, `urgent`, data[ key ].updatedAt, `Director: ${data[ key ].name}<br />Scheduled time: ${moment(data[ key ].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[ key ].scheduledOut).format('hh:mm A')}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[ key ].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
               }
 
               // Unapproved timesheet records
-              if (data[key].approved === 2) {
-                addNotification(`timesheet-changed`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />New Hours: ${moment(data[key].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledOut).format('hh:mm A')}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+              if (data[ key ].approved === 2) {
+                addNotification(`timesheet-changed`, `timesheet-${data[ key ].ID}`, `info`, data[ key ].updatedAt, `Director: ${data[ key ].name}<br />New Hours: ${moment(data[ key ].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[ key ].scheduledOut).format('hh:mm A')}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[ key ].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
               }
 
               break
             case 'update':
-              Timesheet({ ID: data[key].ID }).update(data[key])
+              Timesheet({ ID: data[ key ].ID }).update(data[ key ])
               // Cancelled hours
-              if (data[key].approved === -1) {
-                addNotification(`timesheet-cancelled`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />Canceled time: ${moment(data[key].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledOut).format('hh:mm A')}`, `Canceled Director Hours`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
-              } else if (data[key].approved === 0 && data[key].timeIn !== null && data[key].timeOut !== null) {
-                addNotification(`timesheet-needs-approved`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />Time in: ${moment(data[key].timeIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].timeOut).format('hh:mm A')}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
-              } else if (data[key].approved === 0 && data[key].timeIn === null && data[key].timeOut === null) {
-                addNotification(`timesheet-absent`, `timesheet-${data[key].ID}`, `urgent`, data[key].updatedAt, `Director: ${data[key].name}<br />Scheduled time: ${moment(data[key].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledOut).format('hh:mm A')}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
-              } else if (data[key].approved === 2) {
-                addNotification(`timesheet-changed`, `timesheet-${data[key].ID}`, `info`, data[key].updatedAt, `Director: ${data[key].name}<br />New Hours: ${moment(data[key].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[key].scheduledOut).format('hh:mm A')}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[key].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+              if (data[ key ].approved === -1) {
+                addNotification(`timesheet-cancelled`, `timesheet-${data[ key ].ID}`, `info`, data[ key ].updatedAt, `Director: ${data[ key ].name}<br />Canceled time: ${moment(data[ key ].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[ key ].scheduledOut).format('hh:mm A')}`, `Canceled Director Hours`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[ key ].ID}" title="Click to edit this record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+              } else if (data[ key ].approved === 0 && data[ key ].timeIn !== null && data[ key ].timeOut !== null) {
+                addNotification(`timesheet-needs-approved`, `timesheet-${data[ key ].ID}`, `info`, data[ key ].updatedAt, `Director: ${data[ key ].name}<br />Time in: ${moment(data[ key ].timeIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[ key ].timeOut).format('hh:mm A')}`, `Timesheets Need Approved`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[ key ].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+              } else if (data[ key ].approved === 0 && data[ key ].timeIn === null && data[ key ].timeOut === null) {
+                addNotification(`timesheet-absent`, `timesheet-${data[ key ].ID}`, `urgent`, data[ key ].updatedAt, `Director: ${data[ key ].name}<br />Scheduled time: ${moment(data[ key ].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[ key ].scheduledOut).format('hh:mm A')}`, `Absent Directors`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[ key ].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
+              } else if (data[ key ].approved === 2) {
+                addNotification(`timesheet-changed`, `timesheet-${data[ key ].ID}`, `info`, data[ key ].updatedAt, `Director: ${data[ key ].name}<br />New Hours: ${moment(data[ key ].scheduledIn).format('MM/DD/YYYY hh:mm A')} - ${moment(data[ key ].scheduledOut).format('hh:mm A')}`, `Director Hours Changed`, `<button type="button" class="btn btn-urgent btn-sm" style="font-size: 0.66em;" id="notification-timesheet-${data[ key ].ID}" title="Click to edit this timesheet record">Edit Timesheet</button><button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.66em;" id="notification-timesheets" title="Click to edit this timesheet record">View Timesheets</button>`)
               } else {
-                addNotification(`timesheet-good`, `timesheet-${data[key].ID}`)
+                addNotification(`timesheet-good`, `timesheet-${data[ key ].ID}`)
               }
               break
             case 'remove':
-              Timesheet({ ID: data[key] }).remove()
+              Timesheet({ ID: data[ key ] }).remove()
               // Cancelled hours
-              if (data[key].approved === -1) {
-                addNotification(`timesheet-cancelled`, `timesheet-${data[key].ID}`)
+              if (data[ key ].approved === -1) {
+                addNotification(`timesheet-cancelled`, `timesheet-${data[ key ].ID}`)
               }
 
               // Unapproved timesheet records
-              if (data[key].approved === 0 && data[key].timeIn !== null && data[key].timeOut !== null) {
-                addNotification(`timesheet-needs-approved`, `timesheet-${data[key].ID}`)
+              if (data[ key ].approved === 0 && data[ key ].timeIn !== null && data[ key ].timeOut !== null) {
+                addNotification(`timesheet-needs-approved`, `timesheet-${data[ key ].ID}`)
               }
 
               // Absent Records
-              if (data[key].approved === 0 && data[key].timeIn === null && data[key].timeOut === null) {
-                addNotification(`timesheet-absent`, `timesheet-${data[key].ID}`)
+              if (data[ key ].approved === 0 && data[ key ].timeIn === null && data[ key ].timeOut === null) {
+                addNotification(`timesheet-absent`, `timesheet-${data[ key ].ID}`)
               }
 
               // Unapproved timesheet records
-              if (data[key].approved === 2) {
-                addNotification(`timesheet-changed`, `timesheet-${data[key].ID}`)
+              if (data[ key ].approved === 2) {
+                addNotification(`timesheet-changed`, `timesheet-${data[ key ].ID}`)
               }
               break
           }
@@ -12796,10 +12786,10 @@ function processRequests (data, replace = false) {
 
       // Notify on new requests
       data.map((datum, index) => {
-        data[index].needsread = false
+        data[ index ].needsread = false
         if (prev.indexOf(datum.ID === -1)) {
           if (typeof Meta.state !== 'undefined' && ((Meta.state.includes('automation_') && client.requests) || (!Meta.state.includes('automation_') && isHost))) {
-            data[index].needsread = true
+            data[ index ].needsread = true
             /*
                          var notification = notifier.notify('Track Requested', {
                          message: `A track was requested (see DJ Controls). Playing requests are optional.`,
@@ -12810,7 +12800,7 @@ function processRequests (data, replace = false) {
             main.flashTaskbar()
             iziToast.show({
               title: `Track Requested`,
-              message: `${data[key].trackname}`,
+              message: `${data[ key ].trackname}`,
               timeout: 30000,
               close: true,
               color: 'blue',
@@ -12822,10 +12812,10 @@ function processRequests (data, replace = false) {
               image: `assets/images/trackRequest.png`,
               maxWidth: 480,
               buttons: [
-                ['<button>View Requests</button>', function (instance, toast, button, e, inputs) {
+                [ '<button>View Requests</button>', function (instance, toast, button, e, inputs) {
                   $('#requests-modal').iziModal('open')
                   instance.hide({}, toast, 'button')
-                }]
+                } ]
               ]
             })
           }
@@ -12840,9 +12830,9 @@ function processRequests (data, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              data[key].needsread = false
+              data[ key ].needsread = false
               if (typeof Meta.state !== 'undefined' && ((Meta.state.includes('automation_') && client.requests) || (!Meta.state.includes('automation_') && isHost))) {
-                data[key].needsread = true
+                data[ key ].needsread = true
                 /*
                                  var notification = notifier.notify('Track Requested', {
                                  message: `A track was requested (see DJ Controls). Playing requests are optional.`,
@@ -12853,7 +12843,7 @@ function processRequests (data, replace = false) {
                 main.flashTaskbar()
                 iziToast.show({
                   title: `Track Requested`,
-                  message: `${data[key].trackname}`,
+                  message: `${data[ key ].trackname}`,
                   timeout: 30000,
                   close: true,
                   color: 'blue',
@@ -12865,20 +12855,20 @@ function processRequests (data, replace = false) {
                   image: `assets/images/trackRequest.png`,
                   maxWidth: 480,
                   buttons: [
-                    ['<button>View Requests</button>', function (instance, toast, button, e, inputs) {
+                    [ '<button>View Requests</button>', function (instance, toast, button, e, inputs) {
                       $('#requests-modal').iziModal('open')
                       instance.hide({}, toast, 'button')
-                    }]
+                    } ]
                   ]
                 })
               }
-              Requests.insert(data[key])
+              Requests.insert(data[ key ])
               break
             case 'update':
-              Requests({ ID: data[key].ID }).update(data[key])
+              Requests({ ID: data[ key ].ID }).update(data[ key ])
               break
             case 'remove':
-              Requests({ ID: data[key] }).remove()
+              Requests({ ID: data[ key ] }).remove()
               break
           }
         }
@@ -12923,7 +12913,7 @@ function processRequests (data, replace = false) {
     // Remove requests no longer valid
     var attn = document.querySelectorAll('.request')
     for (var i = 0; i < attn.length; i++) {
-      if (prev.indexOf(attn[i].id) === -1) { attn[i].parentNode.removeChild(attn[i]) }
+      if (prev.indexOf(attn[ i ].id) === -1) { attn[ i ].parentNode.removeChild(attn[ i ]) }
     }
 
     var temp = document.querySelector(`#badge-track-requests`)
@@ -13266,13 +13256,13 @@ function processDjs (data = {}, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              Djs.insert(data[key])
+              Djs.insert(data[ key ])
               break
             case 'update':
-              Djs({ ID: data[key].ID }).update(data[key])
+              Djs({ ID: data[ key ].ID }).update(data[ key ])
               break
             case 'remove':
-              Djs({ ID: data[key] }).remove()
+              Djs({ ID: data[ key ] }).remove()
               break
           }
         }
@@ -13327,13 +13317,13 @@ function processDirectors (data, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              Directors.insert(data[key])
+              Directors.insert(data[ key ])
               break
             case 'update':
-              Directors({ ID: data[key].ID }).update(data[key])
+              Directors({ ID: data[ key ].ID }).update(data[ key ])
               break
             case 'remove':
-              Directors({ ID: data[key] }).remove()
+              Directors({ ID: data[ key ] }).remove()
               break
           }
         }
@@ -13369,13 +13359,13 @@ function processUnderwritings (data, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              Underwritings.insert(data[key])
+              Underwritings.insert(data[ key ])
               break
             case 'update':
-              Underwritings({ ID: data[key].ID }).update(data[key])
+              Underwritings({ ID: data[ key ].ID }).update(data[ key ])
               break
             case 'remove':
-              Underwritings({ ID: data[key] }).remove()
+              Underwritings({ ID: data[ key ] }).remove()
               break
           }
         }
@@ -13420,23 +13410,23 @@ function processHosts (data, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              Hosts.insert(data[key])
+              Hosts.insert(data[ key ])
               // Changes to this host should trigger a reload of the renderer thread.
-              if (data[key].host === main.getMachineID()) {
+              if (data[ key ].host === main.getMachineID()) {
                 refreshingPage = true
                 window.location.reload(true)
               }
               break
             case 'update':
-              Hosts({ ID: data[key].ID }).update(data[key])
+              Hosts({ ID: data[ key ].ID }).update(data[ key ])
               // Changes to this host should trigger a reload of the renderer thread
-              if (data[key].host === main.getMachineID()) {
+              if (data[ key ].host === main.getMachineID()) {
                 refreshingPage = true
                 window.location.reload(true)
               }
               break
             case 'remove':
-              Hosts({ ID: data[key] }).remove()
+              Hosts({ ID: data[ key ] }).remove()
               // If this host no longer exists, refresh the renderer
               if (!Hosts({ host: main.getMachineID() }).first()) {
                 refreshingPage = true
@@ -13491,24 +13481,24 @@ function processXp (data) {
     if (Object.prototype.hasOwnProperty.call(data, key)) {
       switch (key) {
         case 'insert':
-          if (data[key].dj === parseInt(DJData.DJ)) {
-            DJData.XP.push(data[key])
+          if (data[ key ].dj === parseInt(DJData.DJ)) {
+            DJData.XP.push(data[ key ])
             loadDJ(DJData.DJ, false)
           }
           break
         case 'update':
-          if (data[key].dj === parseInt(DJData.DJ)) {
+          if (data[ key ].dj === parseInt(DJData.DJ)) {
             DJData.XP
-              .filter(record => record.ID === data[key].ID)
-              .map((record, index) => { DJData.XP[index] = data[key] })
+              .filter(record => record.ID === data[ key ].ID)
+              .map((record, index) => { DJData.XP[ index ] = data[ key ] })
             loadDJ(DJData.DJ, false)
           }
           break
         case 'remove':
           DJData.XP
-            .filter(record => record.ID === data[key])
+            .filter(record => record.ID === data[ key ])
             .map((record, index) => {
-              delete DJData.XP[index]
+              delete DJData.XP[ index ]
               loadDJ(DJData.DJ, false)
             })
           break
@@ -13528,13 +13518,13 @@ function processDiscipline (data, replace = false) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
-              Discipline.insert(data[key])
+              Discipline.insert(data[ key ])
               break
             case 'update':
-              Discipline({ ID: data[key].ID }).update(data[key])
+              Discipline({ ID: data[ key ].ID }).update(data[ key ])
               break
             case 'remove':
-              Discipline({ ID: data[key] }).remove()
+              Discipline({ ID: data[ key ] }).remove()
               break
           }
         }
@@ -13853,7 +13843,7 @@ function loadTimesheets (date) {
                     </div>
                     </div>
                     `
-          hours[record.name] = moment.duration()
+          hours[ record.name ] = moment.duration()
         }
 
         // Prepare clock moments
@@ -13887,7 +13877,7 @@ function loadTimesheets (date) {
 
         if (clockin !== null && clockout === null) {
           status = `purple`
-          hours[record.name].add(clocknow.diff(clockin))
+          hours[ record.name ].add(clocknow.diff(clockin))
           if (scheduledin !== null && scheduledout !== null) {
             if (moment(scheduledin).isBefore(moment(scheduledout).startOf('week'))) {
               sInT = moment(scheduledin).format(`YYYY-MM-DD h:mm A`)
@@ -13920,7 +13910,7 @@ function loadTimesheets (date) {
         } else {
           if (clockin !== null && clockout !== null && scheduledin !== null && scheduledout !== null && record.approved === 1) {
             status = `success`
-            hours[record.name].add(clockout.diff(clockin))
+            hours[ record.name ].add(clockout.diff(clockin))
             if (moment(clockin).isBefore(moment(clockout).startOf('week'))) {
               inT = moment(clockin).format(`YYYY-MM-DD h:mm A`)
               left = 0
@@ -13953,7 +13943,7 @@ function loadTimesheets (date) {
             timeline += `<div id="timesheet-t-${record.ID}" title="Actual Hours (approved): ${inT} - ${outT}" class="bg-${status}" style="position: absolute; left: 20%; width: 75%; top: ${left}%; height: ${width}%;"></div>`
           } else if (clockin !== null && clockout !== null && (scheduledin === null || scheduledout === null) && record.approved === 1) {
             status = `success`
-            hours[record.name].add(clockout.diff(clockin))
+            hours[ record.name ].add(clockout.diff(clockin))
             if (moment(clockin).isBefore(moment(clockout).startOf('week'))) {
               inT = moment(clockin).format(`YYYY-MM-DD h:mm A`)
               left = 0
@@ -14098,7 +14088,7 @@ function loadTimesheets (date) {
           if (Object.prototype.hasOwnProperty.call(hours, key)) {
             cell = document.getElementById(`options-timesheets-director-cell-h-${key.replace(/\W/g, '')}`)
             if (cell) {
-              cell.innerHTML = `${hours[key].format('h', 1)}`
+              cell.innerHTML = `${hours[ key ].format('h', 1)}`
             }
           }
         }
@@ -14120,7 +14110,7 @@ function formatInt (number) {
 function processConfig (data) {
   for (var key in data) {
     if (Object.prototype.hasOwnProperty.call(data, key)) {
-      Config[key] = data[key]
+      Config[ key ] = data[ key ]
     }
   }
 }
@@ -14373,7 +14363,7 @@ function loadUnderwriting (ID = null) {
                 </button>
             </div>
                 </div>`
-              UnderwritingsSchedules[index] = schedule
+              UnderwritingsSchedules[ index ] = schedule
             })
           }
           if (underwriting.mode.show !== `undefined` && underwriting.mode.show.length > 0) {
@@ -14391,7 +14381,7 @@ function loadUnderwriting (ID = null) {
             </button>
         </div>
             </div>`
-              UnderwritingsShows[index] = show
+              UnderwritingsShows[ index ] = show
             })
           }
           if ((underwriting.mode.show === `undefined` || underwriting.mode.show.length === 0) && schedules.length === 0) {
@@ -14426,20 +14416,20 @@ function loadSchedule (ID = null) {
   for (var i2 = 0; i2 < 24; i2++) {
     document.querySelector(`#underwriting-schedule-h-${i2}`).checked = false
   }
-  if (ID !== null && typeof UnderwritingsSchedules[ID] !== `undefined`) {
-    for (var key in UnderwritingsSchedules[ID]) {
-      if (Object.prototype.hasOwnProperty.call(UnderwritingsSchedules[ID], key)) {
+  if (ID !== null && typeof UnderwritingsSchedules[ ID ] !== `undefined`) {
+    for (var key in UnderwritingsSchedules[ ID ]) {
+      if (Object.prototype.hasOwnProperty.call(UnderwritingsSchedules[ ID ], key)) {
         switch (key) {
           case 'dw':
-            if (UnderwritingsSchedules[ID][key].length > 0) {
-              UnderwritingsSchedules[ID][key].map((day, index) => {
+            if (UnderwritingsSchedules[ ID ][ key ].length > 0) {
+              UnderwritingsSchedules[ ID ][ key ].map((day, index) => {
                 document.querySelector(`#underwriting-schedule-dw-${day}`).checked = true
               })
             }
             break
           case 'h':
-            if (UnderwritingsSchedules[ID][key].length > 0) {
-              UnderwritingsSchedules[ID][key].map((hour, index) => {
+            if (UnderwritingsSchedules[ ID ][ key ].length > 0) {
+              UnderwritingsSchedules[ ID ][ key ].map((hour, index) => {
                 document.querySelector(`#underwriting-schedule-h-${hour}`).checked = true
               })
             }
@@ -14451,7 +14441,7 @@ function loadSchedule (ID = null) {
   if (ID !== null) {
     document.querySelector(`#underwriting-schedule-buttons`).innerHTML = `<button type="button" class="btn btn-urgent btn" id="modal-underwriting-schedule-f-edit-${ID}"
             title="Edit this schedule">Edit Schedule</button>`
-    document.querySelector(`#underwriting-schedule-forced`).checked = UnderwritingsSchedules[ID].forced
+    document.querySelector(`#underwriting-schedule-forced`).checked = UnderwritingsSchedules[ ID ].forced
   } else {
     document.querySelector(`#underwriting-schedule-buttons`).innerHTML = `<button type="button" class="btn btn-success btn" id="modal-underwriting-schedule-f-add"
             title="Add this Schedule">Add Schedule</button>`
@@ -14461,7 +14451,7 @@ function loadSchedule (ID = null) {
 }
 
 function loadShow (ID = null) {
-  document.querySelector(`#underwriting-schedule-show-input`).value = ID !== null && typeof UnderwritingsShows[ID] !== `undefined` ? UnderwritingsShows[ID] : ``
+  document.querySelector(`#underwriting-schedule-show-input`).value = ID !== null && typeof UnderwritingsShows[ ID ] !== `undefined` ? UnderwritingsShows[ ID ] : ``
   if (ID !== null) {
     document.querySelector(`#underwriting-schedule-show-buttons`).innerHTML = `<button type="button" class="btn btn-urgent btn" id="modal-underwriting-schedule-show-f-edit-${ID}"
             title="Edit this show filter">Edit Show Filter</button>`
@@ -14535,36 +14525,36 @@ function loadTrackInfo (trackID) {
       // WORK ON THIS: HTML table of song information
       if (document.querySelector('#trackModal')) {
         $('#trackModal').iziModal('open')
-        $('#track-info-ID').html(response[0].ID)
-        $('#track-info-status').html(response[0].enabled === 1 ? 'Enabled' : 'Disabled')
-        document.getElementById('track-info-status').className = `table-${response[0].enabled === 1 ? 'success' : 'dark'}`
-        $('#track-info-artist').html(response[0].artist)
-        $('#track-info-title').html(response[0].title)
-        $('#track-info-album').html(response[0].album)
-        $('#track-info-genre').html(response[0].genre)
-        $('#track-info-duration').html(moment.duration(response[0].duration, 'seconds').format('HH:mm:ss'))
-        $('#track-info-lastplayed').html(moment(response[0].date_played).isAfter('2002-01-01 00:00:01') ? moment(response[0].date_played).format('LLLL') : 'Unknown')
+        $('#track-info-ID').html(response[ 0 ].ID)
+        $('#track-info-status').html(response[ 0 ].enabled === 1 ? 'Enabled' : 'Disabled')
+        document.getElementById('track-info-status').className = `table-${response[ 0 ].enabled === 1 ? 'success' : 'dark'}`
+        $('#track-info-artist').html(response[ 0 ].artist)
+        $('#track-info-title').html(response[ 0 ].title)
+        $('#track-info-album').html(response[ 0 ].album)
+        $('#track-info-genre').html(response[ 0 ].genre)
+        $('#track-info-duration').html(moment.duration(response[ 0 ].duration, 'seconds').format('HH:mm:ss'))
+        $('#track-info-lastplayed').html(moment(response[ 0 ].date_played).isAfter('2002-01-01 00:00:01') ? moment(response[ 0 ].date_played).format('LLLL') : 'Unknown')
         $('#track-info-limits').html(`<ul>
-            ${response[0].play_limit > 0 ? `<li>Track is limited to ${response[0].play_limit} spins (automation only)</li>` : ``}
-            ${moment(response[0].start_date).isAfter('2002-01-01 00:00:01') ? `<li>Track begins on ${moment(response[0].start_date).format('LLLL')}</li>` : ``}
-            ${moment(response[0].end_date).isAfter('2002-01-01 00:00:01') ? `<li>Track expires on ${moment(response[0].end_date).format('LLLL')}</li>` : ``}
+            ${response[ 0 ].play_limit > 0 ? `<li>Track is limited to ${response[ 0 ].play_limit} spins (automation only)</li>` : ``}
+            ${moment(response[ 0 ].start_date).isAfter('2002-01-01 00:00:01') ? `<li>Track begins on ${moment(response[ 0 ].start_date).format('LLLL')}</li>` : ``}
+            ${moment(response[ 0 ].end_date).isAfter('2002-01-01 00:00:01') ? `<li>Track expires on ${moment(response[ 0 ].end_date).format('LLLL')}</li>` : ``}
             </ul>`)
-        $('#track-info-spins7').html(`last 7 days: ${response[0].spins['7']}`)
-        $('#track-info-spins30').html(`last 30 days: ${response[0].spins['30']}`)
-        $('#track-info-spinsytd').html(`since January 1: ${response[0].spins['YTD']}`)
-        $('#track-info-spinsyear').html(`last 365 days: ${response[0].spins['365']}`)
+        $('#track-info-spins7').html(`last 7 days: ${response[ 0 ].spins[ '7' ]}`)
+        $('#track-info-spins30').html(`last 30 days: ${response[ 0 ].spins[ '30' ]}`)
+        $('#track-info-spinsytd').html(`since January 1: ${response[ 0 ].spins[ 'YTD' ]}`)
+        $('#track-info-spinsyear').html(`last 365 days: ${response[ 0 ].spins[ '365' ]}`)
         $('#track-spins-list').html(``)
 
-        if (response[0].spins.automation.length > 0) {
-          response[0].spins.automation.map((spin) => {
+        if (response[ 0 ].spins.automation.length > 0) {
+          response[ 0 ].spins.automation.map((spin) => {
             document.querySelector('#track-spins-list').innerHTML += `<div class="col-12 text-primary">
                         Automation: ${spin}
                     </div>`
           })
         }
 
-        if (response[0].spins.logged.length > 0) {
-          response[0].spins.logged.map((spin) => {
+        if (response[ 0 ].spins.logged.length > 0) {
+          response[ 0 ].spins.logged.map((spin) => {
             document.querySelector('#track-spins-list').innerHTML += `<div class="col-12 text-primary">
                         Manually Logged: ${spin}
                     </div>`
@@ -14572,7 +14562,7 @@ function loadTrackInfo (trackID) {
         }
       }
     } catch (e) {
-      console.dir(response[0])
+      console.dir(response[ 0 ])
       console.error(e)
     }
   })
