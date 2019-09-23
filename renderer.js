@@ -9995,64 +9995,50 @@ function doMeta (metan) {
     if (typeof metan.state !== 'undefined' || typeof metan.playing !== 'undefined') {
       var badge = document.querySelector('#operations-state')
       // Have the WWSU Operations box display buttons and operations depending on which state we are in
-      addAnimation('wwsu-operations', () => {
-        badge.innerHTML = `<i class="chip-icon fas fa-question bg-secondary"></i>${Meta.state}`
-        var actionButtons = document.querySelectorAll('.btn-operation')
-        for (var i = 0; i < actionButtons.length; i++) {
-          actionButtons[ i ].style.display = 'none'
-        }
-      })
+      badge.innerHTML = `<i class="chip-icon fas fa-question bg-secondary"></i>${Meta.state}`
+      var actionButtons = document.querySelectorAll('.btn-operation')
+      for (var i = 0; i < actionButtons.length; i++) {
+        actionButtons[ i ].style.display = 'none'
+      }
       // document.querySelector('#queue').style.display = "none";
       if (Meta.state === 'automation_on' || Meta.state === 'automation_break') {
         isHost = false
-        addAnimation('wwsu-operations', () => {
-          badge.innerHTML = `<i class="chip-icon fas fa-microphone-alt-slash bg-info"></i>${Meta.state}`
-          document.querySelector('#btn-golive').style.display = 'inline'
-          document.querySelector('#btn-goremote').style.display = 'inline'
-          document.querySelector('#btn-gosports').style.display = 'inline'
-          document.querySelector('#btn-gosportsremote').style.display = 'inline'
-        })
+        badge.innerHTML = `<i class="chip-icon fas fa-microphone-alt-slash bg-info"></i>${Meta.state}`
+        document.querySelector('#btn-golive').style.display = 'inline'
+        document.querySelector('#btn-goremote').style.display = 'inline'
+        document.querySelector('#btn-gosports').style.display = 'inline'
+        document.querySelector('#btn-gosportsremote').style.display = 'inline'
       } else if (Meta.state === 'automation_playlist') {
         isHost = false
-        addAnimation('wwsu-operations', () => {
-          badge.innerHTML = `<i class="chip-icon fas fa-list bg-info"></i>${Meta.state}`
-          document.querySelector('#btn-golive').style.display = 'inline'
-          document.querySelector('#btn-goremote').style.display = 'inline'
-          document.querySelector('#btn-gosports').style.display = 'inline'
-          document.querySelector('#btn-gosportsremote').style.display = 'inline'
-        })
+        badge.innerHTML = `<i class="chip-icon fas fa-list bg-info"></i>${Meta.state}`
+        document.querySelector('#btn-golive').style.display = 'inline'
+        document.querySelector('#btn-goremote').style.display = 'inline'
+        document.querySelector('#btn-gosports').style.display = 'inline'
+        document.querySelector('#btn-gosportsremote').style.display = 'inline'
       } else if (Meta.state === 'automation_genre') {
         isHost = false
-        addAnimation('wwsu-operations', () => {
-          badge.innerHTML = `<i class="chip-icon fas fa-music bg-info"></i>${Meta.state}`
-          document.querySelector('#btn-golive').style.display = 'inline'
-          document.querySelector('#btn-goremote').style.display = 'inline'
-          document.querySelector('#btn-gosports').style.display = 'inline'
-          document.querySelector('#btn-gosportsremote').style.display = 'inline'
-        })
+        badge.innerHTML = `<i class="chip-icon fas fa-music bg-info"></i>${Meta.state}`
+        document.querySelector('#btn-golive').style.display = 'inline'
+        document.querySelector('#btn-goremote').style.display = 'inline'
+        document.querySelector('#btn-gosports').style.display = 'inline'
+        document.querySelector('#btn-gosportsremote').style.display = 'inline'
       } else if (Meta.state.startsWith('prerecord_') || Meta.state === 'automation_prerecord') {
         isHost = false
-        addAnimation('wwsu-operations', () => {
-          badge.innerHTML = `<i class="chip-icon fas fa-compact-disc bg-primary"></i>${Meta.state}`
-          document.querySelector('#btn-golive').style.display = 'inline'
-          document.querySelector('#btn-goremote').style.display = 'inline'
-          document.querySelector('#btn-gosports').style.display = 'inline'
-          document.querySelector('#btn-gosportsremote').style.display = 'inline'
-        })
+        badge.innerHTML = `<i class="chip-icon fas fa-compact-disc bg-primary"></i>${Meta.state}`
+        document.querySelector('#btn-golive').style.display = 'inline'
+        document.querySelector('#btn-goremote').style.display = 'inline'
+        document.querySelector('#btn-gosports').style.display = 'inline'
+        document.querySelector('#btn-gosportsremote').style.display = 'inline'
       } else if (Meta.state.startsWith('automation_') || (Meta.state.includes('_returning') && !Meta.state.startsWith('sports'))) {
-        addAnimation('wwsu-operations', () => {
-          badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`
-          // document.querySelector('#queue').style.display = "inline";
-          document.querySelector('#btn-psa15').style.display = 'inline'
-          document.querySelector('#btn-psa30').style.display = 'inline'
-        })
+        badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`
+        // document.querySelector('#queue').style.display = "inline";
+        document.querySelector('#btn-psa15').style.display = 'inline'
+        document.querySelector('#btn-psa30').style.display = 'inline'
       } else if (Meta.state.startsWith('sports') && Meta.state.includes('_returning')) {
-        addAnimation('wwsu-operations', () => {
-          badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`
-          // document.querySelector('#queue').style.display = "inline";
-          document.querySelector('#btn-psa15').style.display = 'inline'
-          document.querySelector('#btn-psa30').style.display = 'inline'
-        })
+        badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`
+        // document.querySelector('#queue').style.display = "inline";
+        document.querySelector('#btn-psa15').style.display = 'inline'
+        document.querySelector('#btn-psa30').style.display = 'inline'
         // If the system goes into disconnected mode, the host client should be notified of that!
       } else if ((Meta.state.includes('_break_disconnected') || Meta.state.includes('_halftime_disconnected')) && isHost) {
         badge.innerHTML = `<i class="chip-icon fas fa-wifi bg-danger"></i>${Meta.state}`
@@ -10091,12 +10077,10 @@ function doMeta (metan) {
         main.flashTaskbar()
         document.querySelector('#btn-resume').style.display = 'inline'
       } else if (Meta.state.includes('_break') || Meta.state.includes('_halftime')) {
-        addAnimation('wwsu-operations', () => {
-          badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`
-          document.querySelector('#btn-return').style.display = 'inline'
-          document.querySelector('#btn-endshow').style.display = 'inline'
-          document.querySelector('#btn-switchshow').style.display = 'inline'
-        })
+        badge.innerHTML = `<i class="chip-icon fas fa-coffee bg-warning"></i>${Meta.state}`
+        document.querySelector('#btn-return').style.display = 'inline'
+        document.querySelector('#btn-endshow').style.display = 'inline'
+        document.querySelector('#btn-switchshow').style.display = 'inline'
       } else if (Meta.state.includes('live_')) {
         /*
                  if (trip)
@@ -10125,15 +10109,13 @@ function doMeta (metan) {
                  trip.start();
                  }
                  */
-        addAnimation('wwsu-operations', () => {
-          badge.innerHTML = `<i class="chip-icon fas fa-microphone-alt bg-primary"></i>${Meta.state}`
-          document.querySelector('#btn-endshow').style.display = 'inline'
-          document.querySelector('#btn-switchshow').style.display = 'inline'
-          document.querySelector('#btn-break').style.display = 'inline'
-          document.querySelector('#btn-topadd').style.display = 'inline'
-          document.querySelector('#btn-log').style.display = 'inline'
-          document.querySelector('#btn-view-log').style.display = 'inline'
-        })
+        badge.innerHTML = `<i class="chip-icon fas fa-microphone-alt bg-primary"></i>${Meta.state}`
+        document.querySelector('#btn-endshow').style.display = 'inline'
+        document.querySelector('#btn-switchshow').style.display = 'inline'
+        document.querySelector('#btn-break').style.display = 'inline'
+        document.querySelector('#btn-topadd').style.display = 'inline'
+        document.querySelector('#btn-log').style.display = 'inline'
+        document.querySelector('#btn-view-log').style.display = 'inline'
       } else if (Meta.state.includes('sports_') || Meta.state.includes('sportsremote_')) {
         /*
                  if (trip)
@@ -10161,14 +10143,12 @@ function doMeta (metan) {
                  trip.start();
                  }
                  */
-        addAnimation('wwsu-operations', () => {
-          badge.innerHTML = `<i class="chip-icon fas fa-trophy bg-success"></i>${Meta.state}`
-          document.querySelector('#btn-liner').style.display = 'inline'
-          document.querySelector('#btn-endshow').style.display = 'inline'
-          document.querySelector('#btn-break').style.display = 'inline'
-          document.querySelector('#btn-halftime').style.display = 'inline'
-          document.querySelector('#btn-view-log').style.display = 'inline'
-        })
+        badge.innerHTML = `<i class="chip-icon fas fa-trophy bg-success"></i>${Meta.state}`
+        document.querySelector('#btn-liner').style.display = 'inline'
+        document.querySelector('#btn-endshow').style.display = 'inline'
+        document.querySelector('#btn-break').style.display = 'inline'
+        document.querySelector('#btn-halftime').style.display = 'inline'
+        document.querySelector('#btn-view-log').style.display = 'inline'
       } else if (Meta.state.includes('remote_')) {
         /*
                  if (trip)
@@ -10196,14 +10176,12 @@ function doMeta (metan) {
                  trip.start();
                  }
                  */
-        addAnimation('wwsu-operations', () => {
-          badge.innerHTML = `<i class="chip-icon fas fa-broadcast-tower bg-purple"></i>${Meta.state}`
-          document.querySelector('#btn-topadd').style.display = 'inline'
-          document.querySelector('#btn-endshow').style.display = 'inline'
-          document.querySelector('#btn-break').style.display = 'inline'
-          document.querySelector('#btn-log').style.display = 'inline'
-          document.querySelector('#btn-view-log').style.display = 'inline'
-        })
+        badge.innerHTML = `<i class="chip-icon fas fa-broadcast-tower bg-purple"></i>${Meta.state}`
+        document.querySelector('#btn-topadd').style.display = 'inline'
+        document.querySelector('#btn-endshow').style.display = 'inline'
+        document.querySelector('#btn-break').style.display = 'inline'
+        document.querySelector('#btn-log').style.display = 'inline'
+        document.querySelector('#btn-view-log').style.display = 'inline'
       } else {
       }
     }
