@@ -758,3 +758,7 @@ exports.restartDelay = () => {
     mainWindow.webContents.send('main-log', `Delay System: Empty device selected. No ports opened.`)
   }
 }
+
+exports.restartEAS = () => {
+  
+}
