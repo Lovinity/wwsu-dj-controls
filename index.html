@@ -595,12 +595,20 @@
                         style="font-size: 0.5em; display: none;">0</span>
                     <span aria-hidden="true" id="open-notifications-icon"><i class="fas fa-bell text-white"></i></span>
                 </button>
+                <button type="button" class="close p-2" id="settings-serial" aria-label="serial"
+                    title="Access/modify settings pertaining to serial port connections to the delay system and EAS.">
+                    <span aria-hidden="true" id="options-icon"><i class="fas fa-stream text-white"></i></span>
+                </button>
                 <button type="button" class="close p-2" id="audio-call" aria-label="Audio Call"
-                    title="Audio calling status (speaker color) and call quality (progress bar below). Click for settings." style="position: relative;">
+                    title="Audio calling status (speaker color) and call quality (progress bar below). Click for settings."
+                    style="position: relative;">
                     <span aria-hidden="true" id="audio-call-span"><i class="fas fa-volume-up"
                             style="color: rgb(16, 16, 16);" id="audio-call-icon"></i></span>
-                            <div style="position: absolute; width: 70%; background-color: #000000; bottom: 0; left: 15%; height: 10%;"></div>
-                            <div style="position: absolute; width: 0%; background-color: #000000; bottom: 0; left: 15%; height: 10%;" id="call-quality"></div>
+                    <div
+                        style="position: absolute; width: 70%; background-color: #000000; bottom: 0; left: 15%; height: 10%;">
+                    </div>
+                    <div style="position: absolute; width: 0%; background-color: #000000; bottom: 0; left: 15%; height: 10%;"
+                        id="call-quality"></div>
                 </button>
             </div>
             <div class="card-body" id="operations-body" style="overflow: auto;">
@@ -955,7 +963,9 @@
                         <div class="progress-bar bg-primary" id="remote-vu" role="progressbar" style="width: 0%"></div>
                     </div>
                     <div class="bs-callout bs-callout-info shadow-4 text-white">
-                    After selecting an input device, make sure the VU meter under the dropdown is moving with your input audio. The target volume should be 75% of the bar. Be aware when you start a remote broadcast, DJ Controls will check for volume; if there is silence, the broadcast will not start.
+                        After selecting an input device, make sure the VU meter under the dropdown is moving with your
+                        input audio. The target volume should be 75% of the bar. Be aware when you start a remote
+                        broadcast, DJ Controls will check for volume; if there is silence, the broadcast will not start.
                     </div>
                 </div>
                 <div class="form-group" title="Choose which host to initiate the audio call to">
@@ -1072,7 +1082,9 @@
                         </div>
                     </div>
                     <div class="bs-callout bs-callout-info shadow-4 text-white">
-                    After selecting an input device, make sure the VU meter under the dropdown is moving with your input audio. The target volume should be 75% of the bar. Be aware when you start a remote broadcast, DJ Controls will check for volume; if there is silence, the broadcast will not start.
+                        After selecting an input device, make sure the VU meter under the dropdown is moving with your
+                        input audio. The target volume should be 75% of the bar. Be aware when you start a remote
+                        broadcast, DJ Controls will check for volume; if there is silence, the broadcast will not start.
                     </div>
                 </div>
                 <div class="form-group" title="Choose which host to initiate the audio call to">
@@ -1134,7 +1146,8 @@
 
                 <div class="form-group"
                     title="If there is a delay between when someone clicks a button in WWSU Operations on DJ Controls and when this host will receive the audio through its input device (such as a delay system), specify it here in milliseconds.">
-                    <label for="recorder-delay">Delay between state changes and audio being received (hover for more information)</label>
+                    <label for="recorder-delay">Delay between state changes and audio being received (hover for more
+                        information)</label>
                     <input type="number" class="form-control" id="recorder-delay" placeholder="0" min="0">
                 </div>
 
@@ -1150,7 +1163,8 @@
                     </div>
                 </div>
 
-                <div class="form-group" title="Choose or change the input device used for audio calls. You can change the device in the middle of a broadcast if necessary.">
+                <div class="form-group"
+                    title="Choose or change the input device used for audio calls. You can change the device in the middle of a broadcast if necessary.">
                     <label for="call-input">Audio Call Input Device</label>
                     <select class="form-control" id="call-input">
                         <option value="">Choose an input device...</option>
@@ -1160,11 +1174,53 @@
                     </div>
                 </div>
 
-                <div class="form-group" title="Choose the output device which audio calls will play through if this host is chosen to receive and broadcast a remote broadcast. This device is also used for audible count downs when doing remote broadcasts. The two will never be used at the same time because a host cannot call itself.">
+                <div class="form-group"
+                    title="Choose the output device which audio calls will play through if this host is chosen to receive and broadcast a remote broadcast. This device is also used for audible count downs when doing remote broadcasts. The two will never be used at the same time because a host cannot call itself.">
                     <label for="call-output">Audio Call and Countdown Output Device</label>
                     <select class="form-control" id="call-output">
                         <option value="">Choose an output device...</option>
                     </select>
+                </div>
+            </div>
+            <div class="modal-footer bg-light-1">
+                <span class="text-secondary">Settings are saved as you change them</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-settings-serial" tabindex="-1" role="dialog">
+        <div class="modal-content text-dark bg-light-1">
+            <header class="navbar navbar-full bg-secondary doc-navbar-default">
+                <span class="navbar-brand mr-auto text-white">Serial Port Settings</span>
+                <div class="iziModal-header-buttons"><a href="javascript:void(0)"
+                        class="iziModal-button iziModal-button-close" data-izimodal-close=""
+                        title="Close this window"></a></div>
+            </header>
+            <div class="modal-body">
+                <div class="form-group" title="If this computer has the delay system connected via a serial port, specify the port which the delay system is connected.">
+                    <label for="serial-delay">Serial Port for Delay System</label>
+                    <div class="input-group mb-3">
+                        <select class="form-control" id="serial-delay">
+                            <option value="">None</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            This DJ Controls is not set in Manage Hosts as the responsible DJ Controls for the delay system. However, this setting will be used in the event someone changes the responsible
+                            DJ Controls in options / Manage Hosts.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" title="If this computer has the emergency alert system (EAS) connected via a serial port, specify the port which the emergency alert system is connected.">
+                    <label for="serial-eas">Serial Port for Emergency Alert System (EAS)</label>
+                    <div class="input-group mb-3">
+                        <select class="form-control" id="serial-eas">
+                            <option value="">None</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            This DJ Controls is not set in Manage Hosts as the responsible DJ Controls for the EAS (Emergency Alert System). However, this setting will be used in the event someone changes the responsible
+                            DJ Controls in options / Manage Hosts.
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer bg-light-1">
@@ -2458,10 +2514,13 @@
                         <label for="options-host-name">Friendly Name</label>
                         <input type="text" id="options-host-name" class="form-control" placeholder="">
                     </div>
-                    <div class="form-group" title="If this host is a DJ Controls running on a non-WWSU computer, it is wise to lock it to a specific DJ. That way, they cannot interfere with other shows nor start any un-scheduled broadcasts from their computer.">
-                        <label for="options-host-locktodj">Lock this host to a specific DJ to prevent the user from interfering with other shows (DJ Controls Only)</label>
+                    <div class="form-group"
+                        title="If this host is a DJ Controls running on a non-WWSU computer, it is wise to lock it to a specific DJ. That way, they cannot interfere with other shows nor start any un-scheduled broadcasts from their computer.">
+                        <label for="options-host-locktodj">Lock this host to a specific DJ to prevent the user from
+                            interfering with other shows (DJ Controls Only)</label>
                         <select class="form-control" id="options-host-locktodj">
-                            <option value="">Do not lock (can start any kind of broadcast at any time from this host)</option>
+                            <option value="">Do not lock (can start any kind of broadcast at any time from this host)
+                            </option>
                             <option value="0">No DJs (prevents starting any shows/broadcasts from this host)</option>
                         </select>
                     </div>
@@ -2510,7 +2569,9 @@
                             <span class="custom-control-track"></span>
                             <label class="custom-control-label"
                                 for="options-host-answercalls"><strong>answerCalls:</strong> Host can answer / play
-                                audio calls during a remote broadcast. Only hosts which can transmit received audio over the air through its set output device should have this enabled. (DJ Controls only)</label>
+                                audio calls during a remote broadcast. Only hosts which can transmit received audio over
+                                the air through its set output device should have this enabled. (DJ Controls
+                                only)</label>
                         </div>
                     </div>
                     <div class="form-group"
@@ -2520,7 +2581,9 @@
                             <span class="custom-control-track"></span>
                             <label class="custom-control-label"
                                 for="options-host-silence"><strong>silenceDetection:</strong> Host is responsible for
-                                monitoring and reporting silence. Only a host which receives audio directly from the radio station on its set input device should have this enabled. (DJ Controls only)</label>
+                                monitoring and reporting silence. Only a host which receives audio directly from the
+                                radio station on its set input device should have this enabled. (DJ Controls
+                                only)</label>
                             <div class="invalid-feedback">
                                 Forcefully disabled: Another host is currently responsible for this. Please disable this
                                 setting on the other host if you want to enable this.
@@ -2533,7 +2596,9 @@
                             <input class="custom-control-input" id="options-host-record" type="checkbox">
                             <span class="custom-control-track"></span>
                             <label class="custom-control-label" for="options-host-record"><strong>recordAudio:</strong>
-                                Host is responsible for recording and saving radio shows via its input device. Only a host which receives audio directly from the radio station on its set input device should have this enabled. (DJ
+                                Host is responsible for recording and saving radio shows via its input device. Only a
+                                host which receives audio directly from the radio station on its set input device should
+                                have this enabled. (DJ
                                 Controls only)</label>
                             <div class="invalid-feedback">
                                 Forcefully disabled: Another host is currently responsible for this. Please disable this
@@ -2547,7 +2612,8 @@
                             <input class="custom-control-input" id="options-host-requests" type="checkbox">
                             <span class="custom-control-track"></span>
                             <label class="custom-control-label" for="options-host-requests"><strong>requests: </strong>
-                                Host should always notify of new track requests even if the host did not start the current broadcast. (DJ Controls only)</label>
+                                Host should always notify of new track requests even if the host did not start the
+                                current broadcast. (DJ Controls only)</label>
                         </div>
                     </div>
                     <div class="form-group"
@@ -2578,8 +2644,10 @@
                             <input class="custom-control-input" id="options-host-webmessages" type="checkbox">
                             <span class="custom-control-track"></span>
                             <label class="custom-control-label"
-                                for="options-host-webmessages"><strong>webmessages:</strong> Host should always notify of
-                                new messages from web/mobile visitors even if it did not start the current broadcast. (DJ Controls only)</label>
+                                for="options-host-webmessages"><strong>webmessages:</strong> Host should always notify
+                                of
+                                new messages from web/mobile visitors even if it did not start the current broadcast.
+                                (DJ Controls only)</label>
                         </div>
                     </div>
                 </div>

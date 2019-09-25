@@ -1,7 +1,9 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, dialog, session, ipcMain } = require('electron')
 const { machineIdSync } = require('node-machine-id')
+const serialport = require('serialport')
 const fs = require('fs')
+const settings = require('electron-settings')
 
 /*
  const electronInstaller = require('electron-winstaller');
@@ -22,6 +24,12 @@ let mainWindow
 let calendarWindow
 let peerWindow
 let audioWindow
+let delaySerial
+let delayData = ``
+let delayTimer
+let easSerial
+let easData = ``
+let easTimer
 const Meta = {}
 
 function createWindow () {
@@ -685,5 +693,59 @@ function createAudioWindow () {
 
   audioWindow.on('closed', function () {
     if (mainWindow !== null) { createAudioWindow() }
+  })
+}
+
+exports.getSerialPorts = () => {
+  serialport.list((err, ports) => {
+    if (err) { 
+      console.error(err) 
+      return []
+    } else {
+      return ports
+    }
+  })
+}
+
+exports.restartDelay() = () => {
+  console.log('Restarting Delay Serial connection')
+  mainWindow.webContents.send('main-log', `Restarting Delay System serial, device ${settings.get('serial.delay')}`)
+  try {
+    delaySerial.close()
+  } catch (e) {
+  }
+
+  delaySerial = undefined
+
+  delaySerial = new serialport(settings.get('serial.delay'))
+
+  delaySerial.on('error', (err) => {
+    console.error(err)
+    mainWindow.webContents.send('main-log', `Error on Delay System serial: ${err.message}`)
+    if (err.disconnected) {
+      mainWindow.webContents.send('main-log', `Delay System serial disconnected. Reconnecting in 10 seconds.`)
+      setTimeout(() => {
+        exports.restartDelay()
+      }, 10000)
+    }
+  })
+
+  delaySerial.on('data', (data) => {
+    delayData += data.toString('hex')
+    clearTimeout(delayTimer)
+    delayTimer = setTimeout(() => {
+
+      // Delay status
+      if (delayData.includes('000c')) {
+        console.log('Received delay system status')
+        var index = delayData.indexOf('000c')
+        var seconds = parseInt(delayData.substring(index + 6, index + 8), 16) / 10
+        var bypass = parseInt(delayData.substring(index + 16, index + 18), 16)
+        bypass = bypass >= 16
+        mainWindow.webContents.send('main-log', `Delay System status: ${seconds} seconds, bypass = ${bypass}`)
+        mainWindow.webContents.send('main-delay', [seconds, bypass])
+      }
+
+    }, 3000)
   })
 }

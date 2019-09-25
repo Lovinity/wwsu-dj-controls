@@ -384,6 +384,10 @@ try {
     goBreak(false, true)
   })
 
+  ipcRenderer.on(`main-delay`, (event, arg) => {
+    hostReq.request({ method: 'POST', url: '/delay/status', data: { seconds: arg[0], bypass: arg[1] } }, function (body) { })
+  })
+
   ipcRenderer.on(`peer-very-bad-call-notify`, (event, arg) => {
     /*
          var notification = notifier.notify('Poor Audio Connection', {
@@ -1456,6 +1460,21 @@ try {
     zindex: 50
   })
 
+  $('#modal-settings-serial').iziModal({
+    width: 640,
+    focusInput: true,
+    arrowKeys: false,
+    navigateCaption: false,
+    navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+    overlayClose: false,
+    overlayColor: 'rgba(0, 0, 0, 0.75)',
+    timeout: false,
+    timeoutProgressbar: true,
+    pauseOnHover: true,
+    timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+    zindex: 50
+  })
+
   $('#log-modal').iziModal({
     width: 640,
     focusInput: true,
@@ -2311,6 +2330,40 @@ document.querySelector('#options').onclick = function () {
 
 document.querySelector('#open-notifications').onclick = function () {
   $('#modal-notifications').iziModal('open')
+}
+
+document.querySelector('#settings-serial').onclick = function () {
+
+  var ports = main.getSerialPorts()
+  var temp = document.querySelector('#serial-delay')
+  var temp2 = document.querySelector('#serial-eas')
+  temp.innerHTML = `<option value="">None</option>`
+  ports.map((port) => {
+    if (temp !== null) { temp.innerHTML += `<option value="${port.comName}">${port.comName}</option>` }
+    if (temp2 !== null) { temp.innerHTML += `<option value="${port.comName}">${port.comName}</option>` }
+  })
+
+  if (temp2 !== null) { temp2.value = settings.get('serial.eas') || `` }
+
+  if (temp !== null) {
+    temp.className = `form-control${client.delaySystem ? `` : ` is-invalid`}`
+    temp.value = settings.get('serial.delay') || `` 
+    temp.onchange = () => {
+      settings.set(`serial.delay`, temp.value)
+      if (client.delaySystem) { main.restartDelay() }
+    }
+  }
+
+  if (temp2 !== null) {
+    temp2.className = `form-control${client.delaySystem ? `` : ` is-invalid`}`
+    temp2.value = settings.get('serial.eas') || `` 
+    temp2.onchange = () => {
+      settings.set(`serial.eas`, temp2.value)
+      if (client.EAS) { main.restartEAS() }
+    }
+  }
+
+  $('#modal-settings-serial').iziModal('open')
 }
 
 document.querySelector('#audio-call').onclick = () => {
@@ -9581,6 +9634,9 @@ function hostSocket (cb = function (token) { }) {
               temp = document.querySelector(`#badge-notifications`)
               if (temp) { temp.style.display = 'none' }
             }
+
+            if (client.delaySystem) { main.restartDelay() }
+            if (client.EAS) { main.restartEAS() }
 
             if (client.admin) {
               temp = document.querySelector(`#options`)
