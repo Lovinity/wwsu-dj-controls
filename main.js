@@ -722,6 +722,9 @@ exports.restartDelay = () => {
   clearTimeout(delayTimer)
   clearInterval(delayStatusTimer)
 
+
+  // Delay opening the port by 5 seconds to allow for the closing of previously opened ports.
+  setTimeout(() => {
   var device = settings.get('serial.delay')
 
   if (device && device !== null && device !== ``) {
@@ -730,11 +733,11 @@ exports.restartDelay = () => {
     delaySerial.on('error', (err) => {
       console.error(err)
       mainWindow.webContents.send('main-log', `Error on Delay System serial: ${err.message}`)
-      if (err.disconnected) {
-        mainWindow.webContents.send('main-log', `Delay System serial disconnected. Reconnecting in 10 seconds.`)
+      if (err.disconnected || !delaySerial.isOpen) {
+        mainWindow.webContents.send('main-log', `Delay System serial is disconnected. Trying again in 15 seconds.`)
         setTimeout(() => {
           exports.restartDelay()
-        }, 10000)
+        }, 15000)
       }
     })
 
@@ -754,7 +757,7 @@ exports.restartDelay = () => {
           mainWindow.webContents.send('main-delay', [ seconds, bypass ])
         }
 
-      }, 3000)
+      }, 1000)
     })
 
     delaySerial.on('open', () => {
@@ -775,6 +778,7 @@ exports.restartDelay = () => {
   } else {
     mainWindow.webContents.send('main-log', `Delay System: Empty device selected. No ports opened.`)
   }
+}, 10000)
 }
 
 exports.restartEAS = () => {
