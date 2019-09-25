@@ -27,6 +27,7 @@ let audioWindow
 let delaySerial
 let delayData = ``
 let delayTimer
+let delayStatusTimer
 let easSerial
 let easData = ``
 let easTimer
@@ -719,6 +720,7 @@ exports.restartDelay = () => {
   delaySerial = undefined
   delayData = ``
   clearTimeout(delayTimer)
+  clearInterval(delayStatusTimer)
 
   var device = settings.get('serial.delay')
 
@@ -754,11 +756,27 @@ exports.restartDelay = () => {
 
       }, 3000)
     })
+
+    delaySerial.on('open', () => {
+      mainWindow.webContents.send('main-log', `Delay System: port opened.`)
+
+      delayStatusTimer = setInterval(() => {
+        var buffer = new Buffer(6)
+        buffer[ 0 ] = 0xFB
+        buffer[ 1 ] = 0xFF
+        buffer[ 2 ] = 0x00
+        buffer[ 3 ] = 0x02
+        buffer[ 4 ] = 0x11
+        buffer[ 5 ] = 0xED
+        delaySerial.write(buffer)
+      }, 15000)
+    })
+
   } else {
     mainWindow.webContents.send('main-log', `Delay System: Empty device selected. No ports opened.`)
   }
 }
 
 exports.restartEAS = () => {
-  
+
 }
