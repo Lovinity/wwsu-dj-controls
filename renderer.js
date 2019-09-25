@@ -385,7 +385,7 @@ try {
   })
 
   ipcRenderer.on(`main-delay`, (event, arg) => {
-    hostReq.request({ method: 'POST', url: '/delay/status', data: { seconds: arg[0], bypass: arg[1] } }, function (body) { })
+    hostReq.request({ method: 'POST', url: '/delay/status', data: { seconds: arg[ 0 ], bypass: arg[ 1 ] } }, function (body) { })
   })
 
   ipcRenderer.on(`peer-very-bad-call-notify`, (event, arg) => {
@@ -2334,36 +2334,38 @@ document.querySelector('#open-notifications').onclick = function () {
 
 document.querySelector('#settings-serial').onclick = function () {
 
-  var ports = main.getSerialPorts()
-  var temp = document.querySelector('#serial-delay')
-  var temp2 = document.querySelector('#serial-eas')
-  temp.innerHTML = `<option value="">None</option>`
-  ports.map((port) => {
-    if (temp !== null) { temp.innerHTML += `<option value="${port.comName}">${port.comName}</option>` }
-    if (temp2 !== null) { temp.innerHTML += `<option value="${port.comName}">${port.comName}</option>` }
+  main.getSerialPorts((ports) => {
+    var temp = document.querySelector('#serial-delay')
+    var temp2 = document.querySelector('#serial-eas')
+    temp.innerHTML = `<option value="">None</option>`
+    temp2.innerHTML = `<option value="">None</option>`
+    ports.map((port) => {
+      if (temp !== null) { temp.innerHTML += `<option value="${port.comName}">${port.comName}</option>` }
+      if (temp2 !== null) { temp2.innerHTML += `<option value="${port.comName}">${port.comName}</option>` }
+    })
+
+    if (temp2 !== null) { temp2.value = settings.get('serial.eas') || `` }
+
+    if (temp !== null) {
+      temp.className = `form-control${client.delaySystem ? `` : ` is-invalid`}`
+      temp.value = settings.get('serial.delay') || ``
+      temp.onchange = () => {
+        settings.set(`serial.delay`, temp.value)
+        if (client.delaySystem) { main.restartDelay() }
+      }
+    }
+
+    if (temp2 !== null) {
+      temp2.className = `form-control${client.delaySystem ? `` : ` is-invalid`}`
+      temp2.value = settings.get('serial.eas') || ``
+      temp2.onchange = () => {
+        settings.set(`serial.eas`, temp2.value)
+        if (client.EAS) { main.restartEAS() }
+      }
+    }
+
+    $('#modal-settings-serial').iziModal('open')
   })
-
-  if (temp2 !== null) { temp2.value = settings.get('serial.eas') || `` }
-
-  if (temp !== null) {
-    temp.className = `form-control${client.delaySystem ? `` : ` is-invalid`}`
-    temp.value = settings.get('serial.delay') || `` 
-    temp.onchange = () => {
-      settings.set(`serial.delay`, temp.value)
-      if (client.delaySystem) { main.restartDelay() }
-    }
-  }
-
-  if (temp2 !== null) {
-    temp2.className = `form-control${client.delaySystem ? `` : ` is-invalid`}`
-    temp2.value = settings.get('serial.eas') || `` 
-    temp2.onchange = () => {
-      settings.set(`serial.eas`, temp2.value)
-      if (client.EAS) { main.restartEAS() }
-    }
-  }
-
-  $('#modal-settings-serial').iziModal('open')
 }
 
 document.querySelector('#audio-call').onclick = () => {

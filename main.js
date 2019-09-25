@@ -72,8 +72,8 @@ function createWindow () {
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
   // Set custom headers
-  session.defaultSession.webRequest.onBeforeSendHeaders({ urls: ['*'] }, (details, callback) => {
-    details.requestHeaders['Origin'] = 'https://server.wwsu1069.org'
+  session.defaultSession.webRequest.onBeforeSendHeaders({ urls: [ '*' ] }, (details, callback) => {
+    details.requestHeaders[ 'Origin' ] = 'https://server.wwsu1069.org'
     // eslint-disable-next-line standard/no-callback-literal
     callback({ requestHeaders: details.requestHeaders })
   })
@@ -194,7 +194,7 @@ ipcMain.on('new-meta', (event, arg) => {
   var doSend = false
   for (var key in arg) {
     if (Object.prototype.hasOwnProperty.call(arg, key)) {
-      Meta[key] = arg[key]
+      Meta[ key ] = arg[ key ]
       doSend = true
     }
   }
@@ -567,13 +567,13 @@ ipcMain.on('audio-should-record', (event, arg) => {
 
 ipcMain.on('audio-save-file', (event, arg) => {
   try {
-    console.log(`audio save file ${arg[0]}`)
-    fs.writeFile(arg[0], arg[1], function (err) {
+    console.log(`audio save file ${arg[ 0 ]}`)
+    fs.writeFile(arg[ 0 ], arg[ 1 ], function (err) {
       if (err) {
         console.log('err', err)
       } else {
-        audioWindow.webContents.send(`audio-file-saved`, arg[0])
-        mainWindow.webContents.send(`audio-file-saved`, arg[0])
+        audioWindow.webContents.send(`audio-file-saved`, arg[ 0 ])
+        mainWindow.webContents.send(`audio-file-saved`, arg[ 0 ])
       }
     })
   } catch (e) {
@@ -661,7 +661,7 @@ exports.getMachineID = () => {
 
 exports.directoryBrowse = () => {
   return dialog.showOpenDialog({
-    properties: ['openDirectory']
+    properties: [ 'openDirectory' ]
   })
 }
 
@@ -696,18 +696,19 @@ function createAudioWindow () {
   })
 }
 
-exports.getSerialPorts = () => {
+exports.getSerialPorts = (cb) => {
   serialport.list((err, ports) => {
-    if (err) { 
-      console.error(err) 
-      return []
+    console.log('Serial port devices')
+    if (err) {
+      console.error(err)
+      cb([])
     } else {
-      return ports
+      cb(ports)
     }
   })
 }
 
-exports.restartDelay() = () => {
+exports.restartDelay = () => {
   console.log('Restarting Delay Serial connection')
   mainWindow.webContents.send('main-log', `Restarting Delay System serial, device ${settings.get('serial.delay')}`)
   try {
@@ -716,36 +717,44 @@ exports.restartDelay() = () => {
   }
 
   delaySerial = undefined
+  delayData = ``
+  clearTimeout(delayTimer)
 
-  delaySerial = new serialport(settings.get('serial.delay'))
+  var device = settings.get('serial.delay')
 
-  delaySerial.on('error', (err) => {
-    console.error(err)
-    mainWindow.webContents.send('main-log', `Error on Delay System serial: ${err.message}`)
-    if (err.disconnected) {
-      mainWindow.webContents.send('main-log', `Delay System serial disconnected. Reconnecting in 10 seconds.`)
-      setTimeout(() => {
-        exports.restartDelay()
-      }, 10000)
-    }
-  })
+  if (device && device !== null && device !== ``) {
+    delaySerial = new serialport(settings.get('serial.delay'))
 
-  delaySerial.on('data', (data) => {
-    delayData += data.toString('hex')
-    clearTimeout(delayTimer)
-    delayTimer = setTimeout(() => {
-
-      // Delay status
-      if (delayData.includes('000c')) {
-        console.log('Received delay system status')
-        var index = delayData.indexOf('000c')
-        var seconds = parseInt(delayData.substring(index + 6, index + 8), 16) / 10
-        var bypass = parseInt(delayData.substring(index + 16, index + 18), 16)
-        bypass = bypass >= 16
-        mainWindow.webContents.send('main-log', `Delay System status: ${seconds} seconds, bypass = ${bypass}`)
-        mainWindow.webContents.send('main-delay', [seconds, bypass])
+    delaySerial.on('error', (err) => {
+      console.error(err)
+      mainWindow.webContents.send('main-log', `Error on Delay System serial: ${err.message}`)
+      if (err.disconnected) {
+        mainWindow.webContents.send('main-log', `Delay System serial disconnected. Reconnecting in 10 seconds.`)
+        setTimeout(() => {
+          exports.restartDelay()
+        }, 10000)
       }
+    })
 
-    }, 3000)
-  })
+    delaySerial.on('data', (data) => {
+      delayData += data.toString('hex')
+      clearTimeout(delayTimer)
+      delayTimer = setTimeout(() => {
+
+        // Delay status
+        if (delayData.includes('000c')) {
+          console.log('Received delay system status')
+          var index = delayData.indexOf('000c')
+          var seconds = parseInt(delayData.substring(index + 6, index + 8), 16) / 10
+          var bypass = parseInt(delayData.substring(index + 16, index + 18), 16)
+          bypass = bypass >= 16
+          mainWindow.webContents.send('main-log', `Delay System status: ${seconds} seconds, bypass = ${bypass}`)
+          mainWindow.webContents.send('main-delay', [ seconds, bypass ])
+        }
+
+      }, 3000)
+    })
+  } else {
+    mainWindow.webContents.send('main-log', `Delay System: Empty device selected. No ports opened.`)
+  }
 }
