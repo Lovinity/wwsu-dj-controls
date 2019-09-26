@@ -1315,6 +1315,17 @@ try {
     ipcRenderer.send('peer-finalize-call', success)
   })
 
+  socket.on('delay-system-dump', function (success) {
+    if (client.delaySystem) { main.dump() }
+  })
+
+  socket.on('delay-system-status', function (data) {
+    var temp = document.querySelector('#btn-dump-label')
+    if (temp !== null) {
+      temp.innerHTML = `${data.bypass ? `Dump (BYPASSED)` : `Dump (${data.seconds} sec)`}`
+    }
+  })
+
   socket.on('call-quality', function (quality) {
     console.log(`Quality: ${quality}`)
     var temp = document.querySelector('#call-quality')
@@ -2140,6 +2151,23 @@ try {
 }
 
 // OnClick handlers
+
+document.querySelector('#btn-dump').onclick = function () {
+  hostReq.request({ method: 'POST', url: '/delay/dump', data: {}}, function (body) {
+    iziToast.show({
+      title: `Sent dump button signal`,
+      message: `If the dump was successful, the dump seconds value under the dump button would have dropped to around 0 seconds.`,
+      timeout: 10000,
+      close: true,
+      color: 'green',
+      drag: false,
+      position: 'center',
+      closeOnClick: true,
+      overlay: false,
+      zindex: 1000
+    })
+  })
+}
 
 document.querySelector('#btn-return-b').onclick = function () {
   errorIfLockDJ('return from break', () => {
@@ -10208,6 +10236,7 @@ function doMeta (metan) {
         document.querySelector('#btn-break').style.display = 'inline'
         document.querySelector('#btn-halftime').style.display = 'inline'
         document.querySelector('#btn-view-log').style.display = 'inline'
+        document.querySelector('#btn-dump').style.display = 'inline'
       } else if (Meta.state.includes('remote_')) {
         /*
                  if (trip)
@@ -10241,6 +10270,7 @@ function doMeta (metan) {
         document.querySelector('#btn-break').style.display = 'inline'
         document.querySelector('#btn-log').style.display = 'inline'
         document.querySelector('#btn-view-log').style.display = 'inline'
+        document.querySelector('#btn-dump').style.display = 'inline'
       } else {
       }
     }

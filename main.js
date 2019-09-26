@@ -725,7 +725,9 @@ exports.restartDelay = () => {
   var device = settings.get('serial.delay')
 
   if (device && device !== null && device !== ``) {
-    delaySerial = new serialport(settings.get('serial.delay'))
+    delaySerial = new serialport(settings.get('serial.delay'), {
+      baudRate: 38400
+    })
 
     delaySerial.on('error', (err) => {
       console.error(err)
@@ -739,6 +741,7 @@ exports.restartDelay = () => {
     })
 
     delaySerial.on('data', (data) => {
+      mainWindow.webContents.send('main-log', `Delay System: data received: ${data.toString('hex')}`)
       delayData += data.toString('hex')
       clearTimeout(delayTimer)
       delayTimer = setTimeout(() => {
@@ -748,19 +751,31 @@ exports.restartDelay = () => {
           console.log('Received delay system status')
           var index = delayData.indexOf('000c')
           var seconds = parseInt(delayData.substring(index + 6, index + 8), 16) / 10
-          var bypass = parseInt(delayData.substring(index + 16, index + 18), 16)
-          bypass = bypass >= 16
+          var bypass = hex2bin(delayData.substring(index + 16, index + 18))
+          bypass = parseInt(bypass.substring(7, 8)) === 1
           mainWindow.webContents.send('main-log', `Delay System status: ${seconds} seconds, bypass = ${bypass}`)
           mainWindow.webContents.send('main-delay', [ seconds, bypass ])
         }
 
+        delayData = ``
       }, 3000)
     })
 
     delaySerial.on('open', () => {
       mainWindow.webContents.send('main-log', `Delay System: port opened.`)
 
+      // Request status after opening
+      var buffer = new Buffer(6)
+      buffer[ 0 ] = 0xFB
+      buffer[ 1 ] = 0xFF
+      buffer[ 2 ] = 0x00
+      buffer[ 3 ] = 0x02
+      buffer[ 4 ] = 0x11
+      buffer[ 5 ] = 0xED
+      delaySerial.write(buffer)
+
       delayStatusTimer = setInterval(() => {
+        mainWindow.webContents.send('main-log', `Delay System: Querying status`)
         var buffer = new Buffer(6)
         buffer[ 0 ] = 0xFB
         buffer[ 1 ] = 0xFF
@@ -777,6 +792,44 @@ exports.restartDelay = () => {
   }
 }
 
+exports.dump = () => {
+  if (delaySerial) {
+    var buffer = new Buffer(7)
+    buffer[ 0 ] = 0xFB
+    buffer[ 1 ] = 0xFF
+    buffer[ 2 ] = 0x00
+    buffer[ 3 ] = 0x03
+    buffer[ 4 ] = 0x90
+    buffer[ 5 ] = 0x08
+    buffer[ 6 ] = 0x65
+    delaySerial.write(buffer)
+
+    var buffer = new Buffer(7)
+    buffer[ 0 ] = 0xFB
+    buffer[ 1 ] = 0xFF
+    buffer[ 2 ] = 0x00
+    buffer[ 3 ] = 0x03
+    buffer[ 4 ] = 0x90
+    buffer[ 5 ] = 0x07
+    buffer[ 6 ] = 0x66
+    delaySerial.write(buffer)
+
+    // Request status after dumping
+    var buffer = new Buffer(6)
+    buffer[ 0 ] = 0xFB
+    buffer[ 1 ] = 0xFF
+    buffer[ 2 ] = 0x00
+    buffer[ 3 ] = 0x02
+    buffer[ 4 ] = 0x11
+    buffer[ 5 ] = 0xED
+    delaySerial.write(buffer)
+  }
+}
+
 exports.restartEAS = () => {
 
+}
+
+function hex2bin (hex) {
+  return (parseInt(hex, 16).toString(2)).padStart(8, '0');
 }
