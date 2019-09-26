@@ -1175,7 +1175,7 @@ try {
                  duration: 60000
                  });
                  */
-        if (Meta.state.startsWith('sports_') || Meta.state.startsWith('sportsremote_') || Meta.state.startsWith('remote_')) { responsiveVoice.speak(`DJ Controls connection has been lost`) }
+        if (Meta.state.startsWith('sportsremote_') || Meta.state.startsWith('remote_') && isHost) { responsiveVoice.speak(`DJ Controls connection has been lost`) }
       }
     } catch (e) {
       iziToast.show({
@@ -1192,7 +1192,7 @@ try {
         var noConnection = document.getElementById('no-connection')
         noConnection.style.display = 'none'
         disconnected = false
-        if (Meta.state.startsWith('sports_') || Meta.state.startsWith('sportsremote_') || Meta.state.startsWith('remote_')) { responsiveVoice.speak(`DJ Controls connection was re-established`) }
+        if (Meta.state.startsWith('sportsremote_') || Meta.state.startsWith('remote_') && isHost) { responsiveVoice.speak(`DJ Controls connection was re-established`) }
       }
       doSockets()
     } catch (e) {
@@ -2146,7 +2146,7 @@ try {
 // OnClick handlers
 
 document.querySelector('#btn-dump').onclick = function () {
-  hostReq.request({ method: 'POST', url: '/delay/dump', data: {}}, function (body) {
+  hostReq.request({ method: 'POST', url: '/delay/dump', data: {} }, function (body) {
     iziToast.show({
       title: `Sent dump button signal`,
       message: `If the dump was successful, the dump seconds value under the dump button would have dropped to around 0 seconds.`,
@@ -9943,10 +9943,10 @@ function doMeta (metan) {
       }
     }
 
-    if (typeof metan.state !== 'undefined' && isHost) {
-      if ((Meta.state === 'sports_break' || Meta.state === 'sports_halftime' || Meta.state === 'remote_break' || Meta.state === 'sportsremote_break' || Meta.state === 'sportsremote_halftime')) { responsiveVoice.speak(`On break`) }
+    if (typeof metan.state !== 'undefined' && isHost && (Meta.state === 'sports_break' || Meta.state === 'sports_halftime' || Meta.state === 'remote_break' || Meta.state === 'sportsremote_break' || Meta.state === 'sportsremote_halftime')) {
+      responsiveVoice.speak(`On break`)
       var returnAnnouncement = setInterval(() => {
-        if (!Meta.queueCalculating) {
+        if (!Meta.queueCalculating && Meta.showCountdown) {
           responsiveVoice.speak(`Going on the air in ${moment.duration(queueLength, 'seconds').format('m [minutes], s [seconds]')}`)
           clearInterval(returnAnnouncement)
         }
@@ -9990,7 +9990,7 @@ function doMeta (metan) {
     }
 
     if (isHost) {
-      if (typeof metan.state === 'undefined' && Meta.showCountdown) {
+      if (Meta.showCountdown) {
         if (Meta.state === 'sports_returning' || Meta.state === 'sportsremote_returning' || Meta.state === 'remote_returning' || Meta.state === 'automation_sports' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote' || Meta.state === 'sports_on' || Meta.state === 'sportsremote_on') {
           if (queueLength === 60) { responsiveVoice.speak('1 minute') }
           if (queueLength === 30) { responsiveVoice.speak('30 seconds') }
@@ -12100,7 +12100,7 @@ function processStatus (data, replace = false) {
                          });
                          */
             main.flashTaskbar()
-            if (Meta.state.startsWith('sports_') || Meta.state.startsWith('sportsremote_') || Meta.state.startsWith('remote_')) { responsiveVoice.speak(`Silence detected. Please check your audio connection.`) }
+            if (Meta.state.startsWith('sportsremote_') || Meta.state.startsWith('remote_') && isHost) { responsiveVoice.speak(`Silence detected. Please check your audio connection.`) }
           }
         })
       }
@@ -12147,7 +12147,7 @@ function processStatus (data, replace = false) {
                                  });
                                  */
                 main.flashTaskbar()
-                if (Meta.state.startsWith('sports_') || Meta.state.startsWith('sportsremote_') || Meta.state.startsWith('remote_')) { responsiveVoice.speak(`Silence detected. Please check your audio connection.`) }
+                if (Meta.state.startsWith('sportsremote_') || Meta.state.startsWith('remote_') && isHost) { responsiveVoice.speak(`Silence detected. Please check your audio connection.`) }
               }
               break
             case 'update':
@@ -12188,7 +12188,7 @@ function processStatus (data, replace = false) {
                                  });
                                  */
                 main.flashTaskbar()
-                if (Meta.state.startsWith('sports_') || Meta.state.startsWith('sportsremote_') || Meta.state.startsWith('remote_')) { responsiveVoice.speak(`Silence detected. Please check your audio connection.`) }
+                if (Meta.state.startsWith('sportsremote_') || Meta.state.startsWith('remote_') && isHost) { responsiveVoice.speak(`Silence detected. Please check your audio connection.`) }
               }
               break
             case 'remove':
