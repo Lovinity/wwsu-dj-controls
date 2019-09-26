@@ -722,60 +722,51 @@ exports.restartDelay = () => {
   clearTimeout(delayTimer)
   clearInterval(delayStatusTimer)
 
-  var device = settings.get('serial.delay')
+  // Delay connecting to port 5 seconds to accommodate close method
+  setTimeout(() => {
+    var device = settings.get('serial.delay')
 
-  if (device && device !== null && device !== ``) {
-    delaySerial = new serialport(settings.get('serial.delay'), {
-      baudRate: 38400
-    })
+    if (device && device !== null && device !== ``) {
+      delaySerial = new serialport(settings.get('serial.delay'), {
+        baudRate: 38400
+      })
 
-    delaySerial.on('error', (err) => {
-      console.error(err)
-      mainWindow.webContents.send('main-log', `Error on Delay System serial: ${err.message}`)
-      if (err.disconnected) {
-        mainWindow.webContents.send('main-log', `Delay System serial disconnected. Reconnecting in 10 seconds.`)
-        setTimeout(() => {
-          exports.restartDelay()
-        }, 10000)
-      }
-    })
-
-    delaySerial.on('data', (data) => {
-      mainWindow.webContents.send('main-log', `Delay System: data received: ${data.toString('hex')}`)
-      delayData += data.toString('hex')
-      clearTimeout(delayTimer)
-      delayTimer = setTimeout(() => {
-
-        // Delay status
-        if (delayData.includes('000c')) {
-          console.log('Received delay system status')
-          var index = delayData.indexOf('000c')
-          var seconds = parseInt(delayData.substring(index + 6, index + 8), 16) / 10
-          var bypass = hex2bin(delayData.substring(index + 16, index + 18))
-          bypass = parseInt(bypass.substring(7, 8)) === 1
-          mainWindow.webContents.send('main-log', `Delay System status: ${seconds} seconds, bypass = ${bypass}`)
-          mainWindow.webContents.send('main-delay', [ seconds, bypass ])
+      delaySerial.on('error', (err) => {
+        console.error(err)
+        mainWindow.webContents.send('main-log', `Error on Delay System serial: ${err.message}`)
+        if (err.disconnected || !delaySerial.isOpen) {
+          mainWindow.webContents.send('main-log', `Delay System serial is disconnected. Reconnecting in 15 seconds.`)
+          setTimeout(() => {
+            exports.restartDelay()
+          }, 15000)
         }
+      })
 
-        delayData = ``
-      }, 3000)
-    })
+      delaySerial.on('data', (data) => {
+        mainWindow.webContents.send('main-log', `Delay System: data received: ${data.toString('hex')}`)
+        delayData += data.toString('hex')
+        clearTimeout(delayTimer)
+        delayTimer = setTimeout(() => {
 
-    delaySerial.on('open', () => {
-      mainWindow.webContents.send('main-log', `Delay System: port opened.`)
+          // Delay status
+          if (delayData.includes('000c')) {
+            console.log('Received delay system status')
+            var index = delayData.indexOf('000c')
+            var seconds = parseInt(delayData.substring(index + 6, index + 8), 16) / 10
+            var bypass = hex2bin(delayData.substring(index + 16, index + 18))
+            bypass = parseInt(bypass.substring(7, 8)) === 1
+            mainWindow.webContents.send('main-log', `Delay System status: ${seconds} seconds, bypass = ${bypass}`)
+            mainWindow.webContents.send('main-delay', [ seconds, bypass ])
+          }
 
-      // Request status after opening
-      var buffer = new Buffer(6)
-      buffer[ 0 ] = 0xFB
-      buffer[ 1 ] = 0xFF
-      buffer[ 2 ] = 0x00
-      buffer[ 3 ] = 0x02
-      buffer[ 4 ] = 0x11
-      buffer[ 5 ] = 0xED
-      delaySerial.write(buffer)
+          delayData = ``
+        }, 1000)
+      })
 
-      delayStatusTimer = setInterval(() => {
-        mainWindow.webContents.send('main-log', `Delay System: Querying status`)
+      delaySerial.on('open', () => {
+        mainWindow.webContents.send('main-log', `Delay System: port opened.`)
+
+        // Request status after opening
         var buffer = new Buffer(6)
         buffer[ 0 ] = 0xFB
         buffer[ 1 ] = 0xFF
@@ -784,12 +775,23 @@ exports.restartDelay = () => {
         buffer[ 4 ] = 0x11
         buffer[ 5 ] = 0xED
         delaySerial.write(buffer)
-      }, 15000)
-    })
 
-  } else {
-    mainWindow.webContents.send('main-log', `Delay System: Empty device selected. No ports opened.`)
-  }
+        delayStatusTimer = setInterval(() => {
+          mainWindow.webContents.send('main-log', `Delay System: Querying status`)
+          var buffer = new Buffer(6)
+          buffer[ 0 ] = 0xFB
+          buffer[ 1 ] = 0xFF
+          buffer[ 2 ] = 0x00
+          buffer[ 3 ] = 0x02
+          buffer[ 4 ] = 0x11
+          buffer[ 5 ] = 0xED
+          delaySerial.write(buffer)
+        }, 15000)
+      })
+    } else {
+      mainWindow.webContents.send('main-log', `Delay System: Empty device selected. No ports opened.`)
+    }
+  }, 5000)
 }
 
 exports.dump = () => {
