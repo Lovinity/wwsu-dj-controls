@@ -794,6 +794,19 @@ exports.restartDelay = () => {
 
 exports.dump = () => {
   if (delaySerial) {
+
+    // Deactivate bypass
+    var buffer = new Buffer(7)
+    buffer[ 0 ] = 0xFB
+    buffer[ 1 ] = 0xFF
+    buffer[ 2 ] = 0x00
+    buffer[ 3 ] = 0x03
+    buffer[ 4 ] = 0x91
+    buffer[ 5 ] = 0x00
+    buffer[ 6 ] = 0x6C
+    delaySerial.write(buffer)
+
+    // Activate Delay
     var buffer = new Buffer(7)
     buffer[ 0 ] = 0xFB
     buffer[ 1 ] = 0xFF
@@ -804,14 +817,15 @@ exports.dump = () => {
     buffer[ 6 ] = 0x65
     delaySerial.write(buffer)
 
+    // Deactivate delay
     var buffer = new Buffer(7)
     buffer[ 0 ] = 0xFB
     buffer[ 1 ] = 0xFF
     buffer[ 2 ] = 0x00
     buffer[ 3 ] = 0x03
     buffer[ 4 ] = 0x90
-    buffer[ 5 ] = 0x07
-    buffer[ 6 ] = 0x66
+    buffer[ 5 ] = 0x00
+    buffer[ 6 ] = 0x6D
     delaySerial.write(buffer)
 
     // Request status after dumping

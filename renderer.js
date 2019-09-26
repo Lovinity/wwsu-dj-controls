@@ -1319,13 +1319,6 @@ try {
     if (client.delaySystem) { main.dump() }
   })
 
-  socket.on('delay-system-status', function (data) {
-    var temp = document.querySelector('#btn-dump-label')
-    if (temp !== null) {
-      temp.innerHTML = `${data.bypass ? `Dump (BYPASSED)` : `Dump (${data.seconds} sec)`}`
-    }
-  })
-
   socket.on('call-quality', function (quality) {
     console.log(`Quality: ${quality}`)
     var temp = document.querySelector('#call-quality')
@@ -9958,6 +9951,14 @@ function doMeta (metan) {
           clearInterval(returnAnnouncement)
         }
       }, 1000)
+    }
+
+    // Update dump button
+    if (typeof metan.delaySystem !== 'undefined') {
+      var temp = document.querySelector('#btn-dump-label')
+      if (temp !== null) {
+        temp.innerHTML = `${metan.delaySystem === null ? `Activate Delay System` : `Dump (${metan.delaySystem} sec)`}`
+      }
     }
 
     // reset ticker timer on change to queue time
