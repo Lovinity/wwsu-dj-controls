@@ -9,7 +9,7 @@ try {
     hidden = 'webkitHidden'
   }
 
-  var development = false
+  var development = true
   // These variables and functions deal with managing the UI when the window is not in focus
   var animations = {}
 
@@ -1914,6 +1914,72 @@ try {
     zindex: 70
   })
 
+  // Data tables
+
+  var djsTable = jQuery('#options-djs').DataTable({
+    data: [],
+    columns: [
+      { title: "" },
+      { title: "DJ Name" },
+      { title: "Last Seen" },
+      { title: "View / Edit" },
+    ],
+    "order": [ [ 1, "asc" ] ],
+    pageLength: 25
+  })
+
+  var directorsTable = jQuery('#options-directors').DataTable({
+    data: [],
+    columns: [
+      { title: "Red = out, green = in" },
+      { title: "Director Name" },
+      { title: "Clocked In/Out at" },
+      { title: "Edit" },
+    ],
+    "order": [ [ 1, "asc" ] ],
+    pageLength: 25
+  })
+
+  var djAttendanceTable = jQuery('#dj-attendance').DataTable({
+    data: [],
+    columns: [
+      { title: "" },
+      { title: "Date" },
+      { title: "Event" },
+      { title: "Scheduled" },
+      { title: "Actual" },
+      { title: "Missed IDs"},
+      { title: "Actions" },
+    ],
+    "order": [ [ 1, "desc" ] ],
+    pageLength: 25,
+    responsive: true
+  })
+
+  var logsTable = jQuery('#dj-show-logs').DataTable({
+    data: [],
+    columns: [
+      { title: "" },
+      { title: "Time" },
+      { title: "Event" }
+    ],
+    pageLength: 50
+  })
+
+  var announcementsTable = jQuery('#options-announcements').DataTable({
+    data: [],
+    columns: [
+      { title: "Priority" },
+      { title: "Start" },
+      { title: "End" },
+      { title: "Type" },
+      { title: "Title" },
+      { title: "Actions" },
+    ],
+    "order": [ [ 1, "asc" ] ],
+    pageLength: 25
+  })
+
   var quillGetHTML = function (inputDelta) {
     var tempCont = document.createElement('div');
     (new Quill(tempCont)).setContents(inputDelta)
@@ -2270,29 +2336,24 @@ document.querySelector('#btn-log-b').onclick = function () {
 
 document.querySelector('#btn-view-log-b').onclick = function () {
   document.querySelector('#dj-logs-listeners').innerHTML = ''
-  document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`
+  logsTable.clear()
   $('#options-modal-dj-logs').iziModal('open')
   hostReq.request({ method: 'POST', url: nodeURL + '/logs/get', data: { attendanceID: Meta.attendanceID } }, function (response) {
-    var logs = document.querySelector('#dj-show-logs')
-    logs.scrollTop = 0
 
     if (response.length > 0) {
       var newLog = ``
       response.map(log => {
-        newLog += `<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
-                                <div class="col-3 text-primary">
-                                    ${moment(log.createdAt).format('h:mm:ss A')}
-                                </div>
-                                <div class="col-9 text-secondary">
-                                ${log.event}
-                                ${log.trackArtist !== null && log.trackArtist !== '' ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== '' ? ` - ${log.trackTitle}` : ``}
-                                ${log.trackAlbum !== null && log.trackAlbum !== '' ? `<br />Album: ${log.trackAlbum}` : ``}
-                                ${log.trackLabel !== null && log.trackLabel !== '' ? `<br />Label: ${log.trackLabel}` : ``}
-                                </div>
-                            </div>`
+        logsTable.rows.add([[
+          `<span class="text-${log.loglevel}"><i class="fas fa-dot-circle"></i></span>`,
+          moment(log.createdAt).format('h:mm:ss A'),
+          `${log.event}
+          ${log.trackArtist !== null && log.trackArtist !== '' ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== '' ? ` - ${log.trackTitle}` : ``}
+          ${log.trackAlbum !== null && log.trackAlbum !== '' ? `<br />Album: ${log.trackAlbum}` : ``}
+          ${log.trackLabel !== null && log.trackLabel !== '' ? `<br />Label: ${log.trackLabel}` : ``}`
+        ]])
       })
 
-      logs.innerHTML = newLog
+      logsTable.draw()
     }
   })
 }
@@ -6443,43 +6504,25 @@ function filterGlobalLogs (date) {
 }
 
 document.querySelector('#btn-options-issues').onclick = function () {
-  document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`
   document.querySelector('#dj-logs-listeners').innerHTML = ''
   $('#options-modal-dj-logs').iziModal('open')
+  logsTable.clear()
   hostReq.request({ method: 'POST', url: nodeURL + '/logs/get', data: { subtype: 'ISSUES', start: moment().subtract(7, 'days').toISOString(true), end: moment().toISOString(true) } }, function (response) {
-    var logs = document.querySelector('#dj-show-logs')
-    logs.innerHTML = ``
-    logs.scrollTop = 0
     if (response.length > 0) {
       response.reverse()
-      var formatted = {}
       response.map(log => {
-        if (typeof formatted[ moment(log.createdAt).format('MM/DD/YYYY') ] === 'undefined') {
-          formatted[ moment(log.createdAt).format('MM/DD/YYYY') ] = []
-        }
-        formatted[ moment(log.createdAt).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
-                                <div class="col-3 text-primary">
-                                    ${moment(log.createdAt).format('h:mm:ss A')}
-                                </div>
-                                <div class="col-9 text-secondary">
-                                ${log.event}
-                                ${log.trackArtist !== null && log.trackArtist !== '' ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== '' ? ` - ${log.trackTitle}` : ``}
-                                ${log.trackAlbum !== null && log.trackAlbum !== '' ? `<br />Album: ${log.trackAlbum}` : ``}
-                                ${log.trackLabel !== null && log.trackLabel !== '' ? `<br />Label: ${log.trackLabel}` : ``}
-                                </div>
-                            </div>`)
+        logsTable.rows.add([[
+          `<span class="text-${log.loglevel}"><i class="fas fa-dot-circle"></i></span>`,
+          moment(log.createdAt).format('YYYY/MM/DD h:mm:ss A'),
+          `${log.event}
+          ${log.trackArtist !== null && log.trackArtist !== '' ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== '' ? ` - ${log.trackTitle}` : ``}
+          ${log.trackAlbum !== null && log.trackAlbum !== '' ? `<br />Album: ${log.trackAlbum}` : ``}
+          ${log.trackLabel !== null && log.trackLabel !== '' ? `<br />Label: ${log.trackLabel}` : ``}`
+        ]])
       })
-
-      for (var k in formatted) {
-        logs.innerHTML += `<div class="row bg-info m-1">
-                                <div class="col-12 text-light" style="text-align: center;">
-                                ${k}
-                                </div>
-                            </div>`
-
-        if (formatted[ k ].length > 0) { formatted[ k ].map(record => { logs.innerHTML += record }) }
-      }
     }
+
+    logsTable.draw()
   })
 }
 
@@ -6566,7 +6609,7 @@ document.querySelector('#btn-options-calendar').onclick = function () {
 
 document.querySelector('#btn-options-announcements').onclick = function () {
   try {
-    document.querySelector('#options-announcements').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`
+    announcementsTable.clear()
     checkAnnouncements()
     $('#options-modal-announcements').iziModal('open')
   } catch (e) {
@@ -6813,9 +6856,9 @@ document.querySelector(`#options-djs`).addEventListener('click', function (e) {
           document.querySelector('#dj-offends').innerHTML = `???`
           document.querySelector('#dj-offendsL').innerHTML = `???`
           document.querySelector('#options-dj-buttons').innerHTML = ``
-          document.querySelector('#dj-attendance').innerHTML = ``
+          djAttendanceTable.clear()
           $('#options-modal-dj').iziModal('open')
-          loadDJ(e.target.dataset.dj)
+          loadDJ(parseInt(e.target.id.replace('options-dj-', '')))
         } else if (e.target.id === 'options-dj-mass-xp') {
           document.querySelector('#options-xp-date').value = moment(Meta.time).format('YYYY-MM-DDTHH:mm')
           document.querySelector('#options-xp-type').value = 'undefined-undefined'
@@ -7062,7 +7105,7 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
           })
       } else if (e.target.id.startsWith(`notification-attn-edit-`)) {
         var recordID = parseInt(e.target.id.replace(`notification-attn-edit-`, ``))
-        document.querySelector('#options-announcements').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`
+        announcementsTable.clear()
         checkAnnouncements()
         $('#options-modal-announcements').iziModal('open')
       } else if (e.target.id.startsWith(`notification-excuse-`)) {
@@ -8313,29 +8356,22 @@ document.querySelector(`#dj-attendance`).addEventListener('click', function (e) 
           ]
         })
       } else if (e.target.id.startsWith(`dj-show-logs-`)) {
-        document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`
         document.querySelector('#dj-logs-listeners').innerHTML = ''
         $('#options-modal-dj-logs').iziModal('open')
+        logsTable.clear()
         hostReq.request({ method: 'POST', url: nodeURL + '/logs/get', data: { attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``)) } }, function (response) {
-          var logs = document.querySelector('#dj-show-logs')
-          logs.scrollTop = 0
-
-          var newLog = ``
           if (response.length > 0) {
             response.map(log => {
-              newLog += `<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
-                                <div class="col-3 text-primary">
-                                    ${moment(log.createdAt).format('h:mm:ss A')}
-                                </div>
-                                <div class="col-9 text-secondary">
-                                ${log.event}
-                                ${log.trackArtist !== null && log.trackArtist !== '' ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== '' ? ` - ${log.trackTitle}` : ``}
-                                ${log.trackAlbum !== null && log.trackAlbum !== '' ? `<br />Album: ${log.trackAlbum}` : ``}
-                                ${log.trackLabel !== null && log.trackLabel !== '' ? `<br />Label: ${log.trackLabel}` : ``}
-                                </div>
-                            </div>`
+              logsTable.rows.add([[
+                `<span class="text-${log.loglevel}"><i class="fas fa-dot-circle"></i></span>`,
+                moment(log.createdAt).format('h:mm:ss A'),
+                `${log.event}
+                ${log.trackArtist !== null && log.trackArtist !== '' ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== '' ? ` - ${log.trackTitle}` : ``}
+                ${log.trackAlbum !== null && log.trackAlbum !== '' ? `<br />Album: ${log.trackAlbum}` : ``}
+                ${log.trackLabel !== null && log.trackLabel !== '' ? `<br />Label: ${log.trackLabel}` : ``}`
+              ]])
             })
-            logs.innerHTML = newLog
+            logsTable.draw()
             hostReq.request({ method: 'POST', url: nodeURL + '/analytics/listeners', data: { start: moment(response[ 0 ].createdAt).toISOString(true), end: moment(response[ response.length - 1 ].createdAt).toISOString(true) } }, function (response2) {
               if (response2.length > 1) {
                 var theData = []
@@ -8406,29 +8442,22 @@ document.querySelector(`#global-logs`).addEventListener('click', function (e) {
     console.log(e.target.id)
     if (e.target) {
       if (e.target.id.startsWith(`dj-show-logs-`)) {
-        document.querySelector('#dj-show-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`
         document.querySelector('#dj-logs-listeners').innerHTML = ''
         $('#options-modal-dj-logs').iziModal('open')
+        logsTable.clear()
         hostReq.request({ method: 'POST', url: nodeURL + '/logs/get', data: { attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``)) } }, function (response) {
-          var logs = document.querySelector('#dj-show-logs')
-          logs.scrollTop = 0
-
-          var newLog = ``
           if (response.length > 0) {
             response.map(log => {
-              newLog += `<div class="row m-1 bg-light-1 border-left border-${log.loglevel} shadow-2" style="border-left-width: 5px !important;">
-                                <div class="col-3 text-primary">
-                                    ${moment(log.createdAt).format('h:mm:ss A')}
-                                </div>
-                                <div class="col-9 text-secondary">
-                                ${log.event}
-                                ${log.trackArtist !== null && log.trackArtist !== '' ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== '' ? ` - ${log.trackTitle}` : ``}
-                                ${log.trackAlbum !== null && log.trackAlbum !== '' ? `<br />Album: ${log.trackAlbum}` : ``}
-                                ${log.trackLabel !== null && log.trackLabel !== '' ? `<br />Label: ${log.trackLabel}` : ``}
-                                </div>
-                            </div>`
+              logsTable.rows.add([[
+                `<span class="text-${log.loglevel}"><i class="fas fa-dot-circle"></i></span>`,
+                moment(log.createdAt).format('h:mm:ss A'),
+                `${log.event}
+                ${log.trackArtist !== null && log.trackArtist !== '' ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== '' ? ` - ${log.trackTitle}` : ``}
+                ${log.trackAlbum !== null && log.trackAlbum !== '' ? `<br />Album: ${log.trackAlbum}` : ``}
+                ${log.trackLabel !== null && log.trackLabel !== '' ? `<br />Label: ${log.trackLabel}` : ``}`
+              ]])
             })
-            logs.innerHTML = newLog
+            logsTable.draw()
 
             hostReq.request({ method: 'POST', url: nodeURL + '/analytics/listeners', data: { start: moment(response[ 0 ].createdAt).toISOString(true), end: moment(response[ response.length - 1 ].createdAt).toISOString(true) } }, function (response2) {
               if (response2.length > 1) {
@@ -10520,8 +10549,8 @@ function checkAnnouncements () {
 
     // Process all announcements for the announcements menu, if applicable
     if (client.admin) {
-      var announcements = document.querySelector('#options-announcements')
-      announcements.innerHTML = ``
+
+      announcementsTable.clear()
 
       var compare = function (a, b) {
         try {
@@ -10537,28 +10566,22 @@ function checkAnnouncements () {
         }
       }
       Announcements().get().sort(compare).map(announcement => {
-        announcements.innerHTML += `<div class="row m-1 bg-light-1 border-left border-${announcement.level} shadow-2" style="border-left-width: 5px !important;">
-                    <div class="col-4 text-primary">
-                        ${moment(announcement.starts).format('MM/DD/YYYY h:mm A')}<br />
-                        - ${moment(announcement.expires).format('MM/DD/YYYY h:mm A')}
-                    </div>
-                    <div class="col-2 text-secondary">
-                        ${announcement.type}
-                    </div>
-                    <div class="col-4 text-dark">
-                        ${announcement.title}
-                    </div>
-                    <div class="col-2 text-dark">
-                <button type="button" id="options-announcements-edit-${announcement.ID}" class="close" aria-label="Edit Announcement" title="Edit this announcement">
-                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
-                </button>
-                <button type="button" id="options-announcements-remove-${announcement.ID}" class="close" aria-label="Remove Announcement" title="Remove this announcement">
-                <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
-                </button>
-                    </div>
-                </div>
-                `
+        announcementsTable.rows.add([[
+          `<span class="text-${announcement.level}"><i class="fas fa-dot-circle"></i></span>`,
+          moment(announcement.starts).format('YYYY/MM/DD h:mm A'),
+          moment(announcement.expires).format('YYYY/MM/DD h:mm A'),
+          announcement.type,
+          announcement.title,
+          `<button type="button" id="options-announcements-edit-${announcement.ID}" class="close" aria-label="Edit Announcement" title="Edit this announcement">
+          <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+          </button>
+          <button type="button" id="options-announcements-remove-${announcement.ID}" class="close" aria-label="Remove Announcement" title="Remove this announcement">
+          <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
+          </button>`
+        ]])
       })
+
+      announcementsTable.draw()
     }
   })
 }
@@ -13071,10 +13094,6 @@ function loadDJ (dj = null, reset = true) {
       document.querySelector('#dj-remotecredits').innerHTML = formatInt(DJData.stats.semester.remoteCredits || 0)
       document.querySelector('#dj-remotecreditsL').innerHTML = formatInt(DJData.stats.overall.remoteCredits || 0)
 
-      var att = document.querySelector('#dj-attendance')
-      att.scrollTop = 0
-
-      var newAtt = ``
       if (DJData.attendance.length > 0) {
         compare = function (a, b) {
           try {
@@ -13097,170 +13116,105 @@ function loadDJ (dj = null, reset = true) {
         DJData.attendance.map(record => {
           var theDate = record.actualStart !== null ? record.actualStart : record.scheduledStart
           if (record.scheduledStart === null) {
-            newAtt += `<div class="row m-1 bg-light-1 border-left border-urgent shadow-2" style="border-left-width: 5px !important;" title="The DJ went on the air when they were not scheduled to be on.">
-                            <div class="col-2 text-danger">
-                                ${moment(theDate).format('MM/DD/YYYY')}
-                            </div>
-                            <div class="col-4 text-info">
-                                ${record.event}
-                            </div>
-                            <div class="col-4">
-                                <span class="text-secondary">UN-SCHEDULED</span><br />
-                                <span class="text-primary">${moment(record.actualStart).format('h:mm A')} - ${record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`}</span>
-                                ${record.missedIDs > 0 ? `<br /><span class="text-primary">⚠Missed IDs: ${record.missedIDs}</span>` : ``}
-                            </div>
-                            <div class="col-2">
-                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
-                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
-                </button>
-                ${record.missedIDs > 0 ? `${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}` : ``}
-                            </div>
-                        </div>`
+            djAttendanceTable.rows.add([ [
+              `<span class="text-urgent"><i class="fas fa-dot-circle"></i></span>`,
+              moment(theDate).format('YYYY/MM/DD'),
+              record.event,
+              'UNSCHEDULED',
+              `${moment(record.actualStart).format('h:mm A')} - ${record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`}`,
+              record.missedIDs,
+              `<button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show"><span aria-hidden="true"><i class="fas fa-file text-dark"></i></span></button>${record.missedIDs > 0 ? `${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}` : ``}`
+            ] ])
           } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)) && record.happened === 1) {
-            newAtt += `<div class="row m-1 bg-light-1 border-left border-secondary shadow-2" style="border-left-width: 5px !important;" title="This scheduled show has not aired yet.">
-                            <div class="col-2 text-danger">
-                                ${moment(theDate).format('MM/DD/YYYY')}
-                            </div>
-                            <div class="col-4 text-info">
-                                ${record.event}
-                            </div>
-                            <div class="col-4">
-                                <span class="text-secondary">${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}</span><br />
-                                <span class="text-primary">FUTURE EVENT</span>
-                            </div>
-                            <div class="col-2">
-                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
-                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
-                </button>
-                            </div>
-                        </div>`
+            djAttendanceTable.rows.add([ [
+              `<span class="text-secondary"><i class="fas fa-dot-circle"></i></span>`,
+              moment(theDate).format('YYYY/MM/DD'),
+              record.event,
+              `${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}`,
+              `FUTURE EVENT`,
+              0,
+              ``
+            ] ])
           } else if (record.actualStart !== null && record.actualEnd !== null) {
+            var tempStart = moment(record.scheduledStart).format('h:mm A')
+            var tempEnd = record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`
             if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10) {
-              var tempStart = moment(record.actualStart).format('h:mm A')
-              var tempEnd = record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`
               if (moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes') >= 10) {
-                tempStart = `⚠️${moment(record.actualStart).format('h:mm A')}`
+                tempStart = `⚠` + tempStart
               }
               if (moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes') <= -10) {
-                tempStart = `${moment(record.actualStart).format('h:mm A')}⚠️`
+                tempStart += `⚠`
               }
               if (moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes') >= 10) {
-                tempEnd = `⚠️${record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`}`
+                tempEnd = `⚠` + tempEnd
               }
               if (moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes') <= -10) {
-                tempEnd = `${record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`}⚠️`
+                tempEnd += `⚠`
               }
-              newAtt += `<div class="row m-1 bg-light-1 border-left border-warning shadow-2" style="border-left-width: 5px !important;" title="The DJ signed on or off 10 or more minutes before or after scheduled time.">
-                            <div class="col-2 text-danger">
-                                ${moment(theDate).format('MM/DD/YYYY')}
-                            </div>
-                            <div class="col-4 text-info">
-                                ${record.event}
-                            </div>
-                            <div class="col-4">
-                                <span class="text-secondary">${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}</span><br />
-                                <span class="text-primary">${tempStart} - ${tempEnd}</span>
-                                ${record.missedIDs > 0 ? `<br /><span class="text-primary">⚠Missed IDs: ${record.missedIDs}</span>` : ``}
-                            </div>
-                            <div class="col-2">
-                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
-                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
-                </button>
-                            ${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}
-                            </div>
-                        </div>`
+              djAttendanceTable.rows.add([ [
+                `<span class="text-warning"><i class="fas fa-dot-circle"></i></span>`,
+                moment(theDate).format('YYYY/MM/DD'),
+                record.event,
+                `${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}`,
+                `${tempStart} - ${tempEnd}`,
+                record.missedIDs,
+                `<button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show"><span aria-hidden="true"><i class="fas fa-file text-dark"></i></span></button>${record.missedIDs > 0 ? `${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}` : ``}`
+              ] ])
             } else {
-              newAtt += `<div class="row m-1 bg-light-1 border-left border-success shadow-2" style="border-left-width: 5px !important;" title="This show was scheduled and on time.">
-                            <div class="col-2 text-danger">
-                                ${moment(theDate).format('MM/DD/YYYY')}
-                            </div>
-                            <div class="col-4 text-info">
-                                ${record.event}
-                            </div>
-                            <div class="col-4">
-                                <span class="text-secondary">${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}</span><br />
-                                <span class="text-primary">${moment(record.actualStart).format('h:mm A')} - ${record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`}</span>
-                                ${record.missedIDs > 0 ? `<br /><span class="text-primary">⚠Missed IDs: ${record.missedIDs}</span>` : ``}
-                            </div>
-                            <div class="col-2">
-                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
-                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
-                </button>
-                ${record.missedIDs > 0 ? `${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}` : ``}
-                            </div>
-                        </div>`
+              djAttendanceTable.rows.add([ [
+                `<span class="text-success"><i class="fas fa-dot-circle"></i></span>`,
+                moment(theDate).format('YYYY/MM/DD'),
+                record.event,
+                `${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}`,
+                `${moment(record.actualStart).format('h:mm A')} - ${record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`}`,
+                record.missedIDs,
+                `<button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show"><span aria-hidden="true"><i class="fas fa-file text-dark"></i></span></button>${record.missedIDs > 0 ? `${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}` : ``}`
+              ] ])
             }
           } else if (record.actualStart !== null && record.actualEnd === null) {
-            newAtt += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;" title="This show is still ongoing.">
-                            <div class="col-2 text-danger">
-                                ${moment(theDate).format('MM/DD/YYYY')}
-                            </div>
-                            <div class="col-4 text-info">
-                                ${record.event}
-                            </div>
-                            <div class="col-4">
-                                <span class="text-secondary">${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}</span><br />
-                                <span class="text-primary">${moment(record.actualStart).format('h:mm A')} - ${record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`}</span>
-                                ${record.missedIDs > 0 ? `<br /><span class="text-primary">⚠Missed IDs: ${record.missedIDs}</span>` : ``}
-                            </div>
-                            <div class="col-2">
-                                <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show">
-                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
-                </button>
-                ${record.missedIDs > 0 ? `${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}` : ``}
-                            </div>
-                        </div>`
+            djAttendanceTable.rows.add([ [
+              `<span class="text-info"><i class="fas fa-dot-circle"></i></span>`,
+              moment(theDate).format('YYYY/MM/DD'),
+              record.event,
+              `${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}`,
+              `${moment(record.actualStart).format('h:mm A')} - ${record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`}`,
+              0,
+              `<button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the logs for this show"><span aria-hidden="true"><i class="fas fa-file text-dark"></i></span></button>${record.missedIDs > 0 ? `${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}` : ``}`
+            ] ])
           } else if (record.happened === 0) {
-            newAtt += `<div class="row m-1 bg-light-1 border-left border-danger shadow-2" style="border-left-width: 5px !important;" title="This show was scheduled, but the DJ did not go on the air.">
-                            <div class="col-2 text-danger">
-                                ${moment(theDate).format('MM/DD/YYYY')}
-                            </div>
-                            <div class="col-4 text-info">
-                                ${record.event}
-                            </div>
-                            <div class="col-4">
-                                <span class="text-secondary">${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}</span><br />
-                                <span class="text-primary">ABSENT</span>
-                            </div>
-                            <div class="col-2">
-                        <button type="button" id="dj-show-logs-excused-${record.ID}" class="close" aria-label="Marked Excused" title="Mark this show as having been canceled ahead of time."><span aria-hidden="true"><i class="fas fa-calendar-check text-dark"></i></span></button>
-                        ${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}                            </div>
-                        </div>`
+            djAttendanceTable.rows.add([ [
+              `<span class="text-danger"><i class="fas fa-dot-circle"></i></span>`,
+              moment(theDate).format('YYYY/MM/DD'),
+              record.event,
+              `${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}`,
+              `ABSENT / NO-SHOW`,
+              0,
+              `<button type="button" id="dj-show-logs-excused-${record.ID}" class="close" aria-label="Marked Excused" title="Mark this show as having been canceled ahead of time."><span aria-hidden="true"><i class="fas fa-calendar-check text-dark"></i></span></button>${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}`
+            ] ])
           } else if (record.happened === -1) {
-            newAtt += `<div class="row m-1 bg-light-1 border-left border-secondary shadow-2" style="border-left-width: 5px !important;" title="This show was canceled / an excused absence.">
-                            <div class="col-2 text-danger">
-                                ${moment(theDate).format('MM/DD/YYYY')}
-                            </div>
-                            <div class="col-4 text-info">
-                                ${record.event}
-                            </div>
-                            <div class="col-4">
-                                <span class="text-secondary">${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}</span><br />
-                                <span class="text-primary">CANCELED</span>
-                            </div>
-                            <div class="col-2">
-                        <button type="button" id="dj-show-logs-absent-${record.ID}" class="close" aria-label="Marked Absent" title="Mark this show as a non-canceled / unexcused absence."><span aria-hidden="true"><i class="fas fa-calendar-times text-dark"></i></span></button>
-                        ${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}                            </div>
-                        </div>`
+            djAttendanceTable.rows.add([ [
+              `<span class="text-secondary"><i class="fas fa-dot-circle"></i></span>`,
+              moment(theDate).format('YYYY/MM/DD'),
+              record.event,
+              `${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}`,
+              `CANCELED`,
+              0,
+              `<button type="button" id="dj-show-logs-absent-${record.ID}" class="close" aria-label="Marked Absent" title="Mark this show as a non-canceled / unexcused absence."><span aria-hidden="true"><i class="fas fa-calendar-times text-dark"></i></span></button>${record.ignore === 0 ? `<button type="button" id="dj-show-logs-ignore-${record.ID}" class="close" aria-label="Ignore Reputation" title="Excuse reputation: Click if this show should not count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-minus text-dark"></i></span>` : `<button type="button" id="dj-show-logs-unignore-${record.ID}" class="close" aria-label="Un-excuse Reputation" title="Un-excuse reputation: Click if any issues for this show should count against the DJ's reputation."><span aria-hidden="true"><i class="fas fa-calendar-plus text-dark"></i></span>`}`
+            ] ])
           } else {
-            newAtt += `<div class="row m-1 bg-light-1 border-left border-info shadow-2" style="border-left-width: 5px !important;" title="This show is scheduled, but has not begun yet.">
-                            <div class="col-2 text-danger">
-                                ${moment(theDate).format('MM/DD/YYYY')}
-                            </div>
-                            <div class="col-4 text-info">
-                                ${record.event}
-                            </div>
-                            <div class="col-4">
-                                <span class="text-secondary">${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}</span><br />
-                                <span class="text-primary">NOT YET STARTED</span>
-                            </div>
-                            <div class="col-2">
-                            </div>
-                        </div>`
+            djAttendanceTable.rows.add([ [
+              `<span class="text-secondary"><i class="fas fa-dot-circle"></i></span>`,
+              moment(theDate).format('YYYY/MM/DD'),
+              record.event,
+              `${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}`,
+              `SCHEDULED, NOT STARTED`,
+              0,
+              ``
+            ] ])
           }
         })
 
-        att.innerHTML = newAtt
+        djAttendanceTable.draw()
 
         document.querySelector('#dj-showtime').innerHTML = formatInt(Math.floor(DJData.stats.semester.showtime / 6) / 10)
         document.querySelector('#dj-showtimeL').innerHTML = formatInt(Math.floor(DJData.stats.overall.showtime / 6) / 10)
@@ -13338,25 +13292,25 @@ function processDjs (data = {}, replace = false) {
     }
 
     document.querySelector('#options-xp-djs').innerHTML = ``
-    document.querySelector('#options-djs').innerHTML = ``
     document.querySelector('#options-host-locktodj').innerHTML = `<option value="">Do not lock (can start any kind of broadcast at any time from this host)</option><option value="0">No DJs (prevents starting any shows/broadcasts from this host)</option>`
+    djsTable.clear()
 
     Djs().each(function (dj, index) {
       var djClass = `danger`
-      var djTitle = `${dj.name} has not done a show in over 30 days (${moment(dj.lastSeen).format('LL')}).`
       if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30)) {
         djClass = `warning`
-        djTitle = `${dj.name} has not done a show for between 7 and 30 days (${moment(dj.lastSeen).format('LL')}).`
       }
       if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 7)) {
         djClass = `success`
-        djTitle = `${dj.name} did a show in the last 7 days (${moment(dj.lastSeen).format('LL')}).`
       }
 
-      document.querySelector('#options-djs').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${djTitle}">
-                        <button type="button" id="options-dj-${dj.ID}" class="btn btn-${djClass} btn-float" style="position: relative;" data-dj="${dj.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`DJ ${dj.name}`, 48)}</div></button>
-                        <div style="text-align: center; font-size: 1em;">${dj.name}</div>
-                    </div>`
+      djsTable.rows.add([ [
+        `<span class="text-${djClass}"><i class="fas fa-dot-circle"></i></span>`,
+        dj.name,
+        moment(dj.lastSeen).format('LLL'),
+        `<button type="button" id="options-dj-${dj.ID}" class="close" aria-label="View / Edit DJ" title="View more information about, or edit, this DJ."><i class="fas fa-eye text-dark"></i></button>`
+      ] ])
+
       document.querySelector('#options-xp-djs').innerHTML += `<div class="custom-control custom-switch">
   <input class="custom-control-input" id="options-xp-djs-i-${dj.ID}" type="checkbox">
   <span class="custom-control-track"></span>
@@ -13364,6 +13318,8 @@ function processDjs (data = {}, replace = false) {
 </div>`
       document.querySelector('#options-host-locktodj').innerHTML += `<option value="${dj.ID}">${dj.name}</option>`
     })
+
+    djsTable.draw()
   } catch (e) {
     console.error(e)
     iziToast.show({
@@ -13397,15 +13353,16 @@ function processDirectors (data, replace = false) {
         }
       }
     }
-
-    document.querySelector('#options-directors').innerHTML = ``
-
+    directorsTable.clear()
     Directors().each(function (director, index) {
-      document.querySelector('#options-directors').innerHTML += `<div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;" title="${director.name} is currently ${director.present ? 'clocked IN' : 'clocked OUT'} as of ${moment(director.since).format('LLL')}">
-                        <button type="button" id="options-director-${director.ID}" class="btn ${director.present ? 'btn-success' : 'btn-danger'} btn-float" style="position: relative;" data-director="${director.ID}"><div style="position: absolute; top: 4px; left: 4px;">${jdenticon.toSvg(`Director ${director.name}`, 48)}</div></button>
-                        <div style="text-align: center; font-size: 1em;">${director.name}</div>
-                    </div>`
+      directorsTable.rows.add([[
+        `<span class="text-${director.present ? `success` : `danger`}><i class="fas fa-dot-circle"></i></span>`,
+        director.name,
+        moment(director.since).format('LLL'),
+        `<button type="button" id="options-director-${director.ID}" class="close"><i class="fas fa-edit"></i></button>`
+      ]])
     })
+    directorsTable.draw()
   } catch (e) {
     console.error(e)
     iziToast.show({

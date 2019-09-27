@@ -796,8 +796,10 @@ exports.restartDelay = () => {
 
 exports.dump = () => {
   if (delaySerial) {
+    mainWindow.webContents.send('main-log', `Delay System: Recveived dump request.`)
 
     // Deactivate bypass
+    mainWindow.webContents.send('main-log', `Delay System: Deactivate bypass.`)
     var buffer = new Buffer(7)
     buffer[ 0 ] = 0xFB
     buffer[ 1 ] = 0xFF
@@ -809,6 +811,7 @@ exports.dump = () => {
     delaySerial.write(buffer)
 
     // Activate Delay
+    mainWindow.webContents.send('main-log', `Delay System: Activate dump.`)
     var buffer = new Buffer(7)
     buffer[ 0 ] = 0xFB
     buffer[ 1 ] = 0xFF
@@ -820,6 +823,7 @@ exports.dump = () => {
     delaySerial.write(buffer)
 
     // Deactivate delay
+    mainWindow.webContents.send('main-log', `Delay System: Deactivate dump.`)
     var buffer = new Buffer(7)
     buffer[ 0 ] = 0xFB
     buffer[ 1 ] = 0xFF
@@ -831,6 +835,7 @@ exports.dump = () => {
     delaySerial.write(buffer)
 
     // Request status after dumping
+    mainWindow.webContents.send('main-log', `Delay System: Query for new status.`)
     var buffer = new Buffer(6)
     buffer[ 0 ] = 0xFB
     buffer[ 1 ] = 0xFF
