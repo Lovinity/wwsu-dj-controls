@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) as of version 4.5.0.
 
 ## [Unreleased]
+### Added
+ - "ON AIR" badge that becomes visible under the queue, especially useful for remote broadcasts to let the producer know their input device is going on the air.
+
 ### Changed
  - Adjusted DJ Controls to utilize Meta.showCountdown and Meta.queueCalculating.
+ - Utilized datatable.js for many of the menus.
 
 ## [6.0.0 BETA]
 ### Added
