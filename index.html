@@ -737,7 +737,8 @@
                                 <div class="p-1 m-1 btn-operation" id="btn-dump"
                                     style="width: 96px; text-align: center;">
                                     <button type="button" id="btn-view-log-b" class="btn btn-secondary btn-float"
-                                        title="Remotely activate the dump button and dump the specified seconds of audio."><i class="fas fa-eject"></i></button>
+                                        title="Remotely activate the dump button and dump the specified seconds of audio."><i
+                                            class="fas fa-eject"></i></button>
                                     <div style="text-align: center; font-size: 1em;" id="btn-dump-label">Dump</div>
                                 </div>
                                 <div class="p-1 m-1 btn-operation" id="btn-view-log"
@@ -785,7 +786,7 @@
                             class="iziModal-button iziModal-button-close" data-izimodal-close=""
                             title="Close window"></a></div>
                 </header>
-                <div class="modal-body">
+                <div class="modal-body" style="max-height: 640px; overflow: scroll;">
                     <div class="container p-1 m-1" id="announcement-view-body">
                     </div>
                 </div>
@@ -1124,7 +1125,7 @@
                         class="iziModal-button iziModal-button-close" data-izimodal-close=""
                         title="Close this window"></a></div>
             </header>
-            <div class="modal-body">
+            <div class="modal-body" style="max-height: 640px; overflow: scroll;">
                 <div class="form-group" title="Choose the main input device for silence detection and audio recording">
                     <label for="main-input">Main Input Device (silence detection and audio recording)</label>
                     <select class="form-control" id="main-input">
@@ -1204,28 +1205,33 @@
                         class="iziModal-button iziModal-button-close" data-izimodal-close=""
                         title="Close this window"></a></div>
             </header>
-            <div class="modal-body">
-                <div class="form-group" title="If this computer has the delay system connected via a serial port, specify the port which the delay system is connected.">
+            <div class="modal-body" style="max-height: 640px; overflow: scroll;">
+                <div class="form-group"
+                    title="If this computer has the delay system connected via a serial port, specify the port which the delay system is connected.">
                     <label for="serial-delay">Serial Port for Delay System</label>
                     <div class="input-group mb-3">
                         <select class="form-control" id="serial-delay">
                             <option value="">None</option>
                         </select>
                         <div class="invalid-feedback">
-                            This DJ Controls is not set in Manage Hosts as the responsible DJ Controls for the delay system. However, this setting will be used in the event someone changes the responsible
+                            This DJ Controls is not set in Manage Hosts as the responsible DJ Controls for the delay
+                            system. However, this setting will be used in the event someone changes the responsible
                             DJ Controls in options / Manage Hosts.
                         </div>
                     </div>
                 </div>
 
-                <div class="form-group" title="If this computer has the emergency alert system (EAS) connected via a serial port, specify the port which the emergency alert system is connected.">
+                <div class="form-group"
+                    title="If this computer has the emergency alert system (EAS) connected via a serial port, specify the port which the emergency alert system is connected.">
                     <label for="serial-eas">Serial Port for Emergency Alert System (EAS)</label>
                     <div class="input-group mb-3">
                         <select class="form-control" id="serial-eas">
                             <option value="">None</option>
                         </select>
                         <div class="invalid-feedback">
-                            This DJ Controls is not set in Manage Hosts as the responsible DJ Controls for the EAS (Emergency Alert System). However, this setting will be used in the event someone changes the responsible
+                            This DJ Controls is not set in Manage Hosts as the responsible DJ Controls for the EAS
+                            (Emergency Alert System). However, this setting will be used in the event someone changes
+                            the responsible
                             DJ Controls in options / Manage Hosts.
                         </div>
                     </div>
@@ -1245,7 +1251,7 @@
                         class="iziModal-button iziModal-button-close" data-izimodal-close=""
                         title="Close this window"></a></div>
             </header>
-            <div class="modal-body">
+            <div class="modal-body" style="max-height: 640px; overflow: scroll;">
                 <div class="bs-callout bs-callout-info shadow-4 text-white">
                     You do not need to log anything played in RadioDJ; those are logged automatically.
                 </div>
@@ -1469,7 +1475,7 @@
                         class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a>
                 </div>
             </header>
-            <div class="modal-body">
+            <div class="modal-body" style="max-height: 640px; overflow: scroll;">
                 <div class="d-flex justify-content-start flex-wrap">
                     <div class="p-1 m-1" style="width: 96px; text-align: center; position: relative;">
                         <button type="button" id="btn-options-djs" class="btn btn-purple btn-float"
@@ -1568,7 +1574,7 @@
                         class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a>
                 </div>
             </header>
-            <div class="modal-body">
+            <div class="modal-body" style="max-height: 640px; overflow: scroll;">
                 <table class="table table-bordered" id="options-djs" width="100%" cellspacing="0">
                 </table>
                 <div class="bs-callout bs-callout-info shadow-4 text-white">
@@ -1592,7 +1598,7 @@
                         class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a>
                 </div>
             </header>
-            <div class="modal-body">
+            <div class="modal-body" style="max-height: 640px; overflow: scroll;">
                 <table class="table table-bordered" id="options-directors" width="100%" cellspacing="0">
                 </table>
                 <div class="bs-callout bs-callout-info shadow-4 text-white">
@@ -2030,24 +2036,8 @@
                 </div>
             </header>
             <div class="modal-body" style="max-height: 640px; overflow: scroll;">
-                <div class="container m-1">
-                    <div class="row m-1 bg-light-1 shadow-2">
-                        <div class="col-3 text-primary">
-                            Date / Time
-                        </div>
-                        <div class="col-2 text-success">
-                            Amount
-                        </div>
-                        <div class="col-5 text-secondary">
-                            Description
-                        </div>
-                        <div class="col-2 text-dark">
-                            Action
-                        </div>
-                    </div>
-                </div>
-                <div class="container m-1" id="dj-xp-logs">
-                </div>
+                <table class="table table-bordered" id="dj-xp-logs" width="100%" cellspacing="0">
+                </table>
             </div>
             <div class="modal-footer bg-light-1" id="dj-xp-add-div">
             </div>
@@ -2062,7 +2052,7 @@
                         class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a>
                 </div>
             </header>
-            <div class="modal-body">
+            <div class="modal-body" style="max-height: 640px; overflow: scroll;">
                 <div class="form-group" title="Full name of the director">
                     <label for="options-director-name">Director's Full Name</label>
                     <input class="form-control m-1" id="options-director-name" type="text">
@@ -2350,7 +2340,7 @@
                         class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a>
                 </div>
             </header>
-            <div class="modal-body">
+            <div class="modal-body" style="max-height: 640px; overflow: scroll;">
                 <div class="p-1 m-1">
                     <div class="form-group" title="Start date for this announcement">
                         <label for="options-announcement-starts">Starts</label>
@@ -2410,7 +2400,7 @@
                         class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a>
                 </div>
             </header>
-            <div class="modal-body">
+            <div class="modal-body" style="max-height: 640px; overflow: scroll;">
                 <div class="p-1 m-1">
                     <div class="form-group" title="Choose entry type">
                         <label for="options-xp-type">Entry Category</label>
@@ -2475,7 +2465,7 @@
                         class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a>
                 </div>
             </header>
-            <div class="modal-body">
+            <div class="modal-body" style="max-height: 640px; overflow: scroll;">
                 <div class="p-1 m-1">
                     <div class="form-group" title="Friendly name / label for this host">
                         <label for="options-host-name">Friendly Name</label>
@@ -2549,8 +2539,8 @@
                             <label class="custom-control-label"
                                 for="options-host-silence"><strong>silenceDetection:</strong> Host is responsible for
                                 monitoring and reporting silence. Only a host which receives audio directly from the
-                                radio station on its set input device should have this enabled. (DJ Controls
-                                only)</label>
+                                radio station on its set input device should have this enabled. Be sure "Main Input
+                                Device" is configured in the audio settings on this host. (DJ Controls only)</label>
                             <div class="invalid-feedback">
                                 Forcefully disabled: Another host is currently responsible for this. Please disable this
                                 setting on the other host if you want to enable this.
@@ -2565,8 +2555,38 @@
                             <label class="custom-control-label" for="options-host-record"><strong>recordAudio:</strong>
                                 Host is responsible for recording and saving radio shows via its input device. Only a
                                 host which receives audio directly from the radio station on its set input device should
-                                have this enabled. (DJ
-                                Controls only)</label>
+                                have this enabled. Be sure "Main Input Device" is configured in the audio settings on
+                                this host. (DJ Controls only)</label>
+                            <div class="invalid-feedback">
+                                Forcefully disabled: Another host is currently responsible for this. Please disable this
+                                setting on the other host if you want to enable this.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group" title="Is the delay system connected to the computer this host runs on?">
+                        <div class="custom-control custom-switch">
+                            <input class="custom-control-input" id="options-host-delay" type="checkbox">
+                            <span class="custom-control-track"></span>
+                            <label class="custom-control-label" for="options-host-delay"><strong>delaySystem: </strong>
+                                Host is responsible for reporting the status of the delay system to the server, and
+                                activating the delay system when someone clicks the dump button in DJ Controls. Make
+                                sure this host has the correct serial port configured for the delay system. (DJ Controls
+                                Only)</label>
+                            <div class="invalid-feedback">
+                                Forcefully disabled: Another host is currently responsible for this. Please disable this
+                                setting on the other host if you want to enable this.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group"
+                        title="Is the emergency alert system connected to the computer this host runs on?">
+                        <div class="custom-control custom-switch">
+                            <input class="custom-control-input" id="options-host-eas" type="checkbox">
+                            <span class="custom-control-track"></span>
+                            <label class="custom-control-label" for="options-host-eas"><strong>EAS: </strong>
+                                Host is responsible for reporting the status of the emergency alert system to the
+                                server, and calling eas/send whenever the emergency alert system transmits an alert. Be
+                                sure this host has the correct serial port configured. (DJ Controls Only)</label>
                             <div class="invalid-feedback">
                                 Forcefully disabled: Another host is currently responsible for this. Please disable this
                                 setting on the other host if you want to enable this.

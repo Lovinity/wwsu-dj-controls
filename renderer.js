@@ -1980,6 +1980,18 @@ try {
     pageLength: 25
   })
 
+  var xpTable = jQuery('#dj-xp-logs').DataTable({
+    data: [],
+    columns: [
+      { title: "" },
+      { title: "Date/Time" },
+      { title: "Amount" },
+      { title: "Description" },
+      { title: "Actions" },
+    ],
+    pageLength: 50
+  })
+
   var quillGetHTML = function (inputDelta) {
     var tempCont = document.createElement('div');
     (new Quill(tempCont)).setContents(inputDelta)
@@ -8870,6 +8882,8 @@ document.querySelector(`#options-djcontrols`).addEventListener('click', function
         document.querySelector('#options-host-answercalls').checked = host.answerCalls
         document.querySelector('#options-host-record').checked = host.recordAudio
         document.querySelector('#options-host-silence').checked = host.silenceDetection
+        document.querySelector('#options-host-delay').checked = host.delaySystem
+        document.querySelector('#options-host-eas').checked = host.EAS
         document.querySelector('#options-host-requests').checked = host.requests
         document.querySelector('#options-host-emergencies').checked = host.emergencies
         document.querySelector('#options-host-accountability').checked = host.accountability
@@ -8902,6 +8916,22 @@ document.querySelector(`#options-djcontrols`).addEventListener('click', function
         } else {
           document.querySelector('#options-host-record').disabled = false
           document.querySelector('#options-host-record').classList.remove('is-invalid')
+        }
+
+        if (Hosts({ delaySystem: true }).get().length >= 1 && !host.delaySystem) {
+          document.querySelector('#options-host-delay').disabled = true
+          document.querySelector('#options-host-delay').classList.add('is-invalid')
+        } else {
+          document.querySelector('#options-host-delay').disabled = false
+          document.querySelector('#options-host-delay').classList.remove('is-invalid')
+        }
+
+        if (Hosts({ EAS: true }).get().length >= 1 && !host.EAS) {
+          document.querySelector('#options-host-eas').disabled = true
+          document.querySelector('#options-host-eas').classList.add('is-invalid')
+        } else {
+          document.querySelector('#options-host-eas').disabled = false
+          document.querySelector('#options-host-eas').classList.remove('is-invalid')
         }
 
         document.querySelector('#options-host-button').innerHTML = `<button type="button" class="btn btn-urgent btn-large" id="options-host-edit-${host.ID}" title="Edit host">Edit</button>`
@@ -9190,7 +9220,7 @@ document.querySelector(`#options-host-button`).addEventListener('click', functio
       console.log(e.target.id)
       if (e.target.id.startsWith('options-host-edit-')) {
         var selectedOption = document.querySelector('#options-host-locktodj').options[ document.querySelector('#options-host-locktodj').selectedIndex ].value
-        directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/hosts/edit', data: { ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector('#options-host-name').value, lockToDJ: selectedOption === '' ? null : parseInt(selectedOption), authorized: document.querySelector('#options-host-authorized').checked, admin: document.querySelector('#options-host-admin').checked, requests: document.querySelector('#options-host-requests').checked, emergencies: document.querySelector('#options-host-emergencies').checked, webmessages: document.querySelector('#options-host-webmessages').checked, makeCalls: document.querySelector('#options-host-makecalls').checked, answerCalls: document.querySelector('#options-host-answercalls').checked, silenceDetection: document.querySelector('#options-host-silence').checked, recordAudio: document.querySelector('#options-host-record').checked, accountability: document.querySelector('#options-host-accountability').checked } }, function (response) {
+        directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/hosts/edit', data: { ID: parseInt(e.target.id.replace(`options-host-edit-`, ``)), friendlyname: document.querySelector('#options-host-name').value, lockToDJ: selectedOption === '' ? null : parseInt(selectedOption), authorized: document.querySelector('#options-host-authorized').checked, admin: document.querySelector('#options-host-admin').checked, requests: document.querySelector('#options-host-requests').checked, emergencies: document.querySelector('#options-host-emergencies').checked, webmessages: document.querySelector('#options-host-webmessages').checked, makeCalls: document.querySelector('#options-host-makecalls').checked, answerCalls: document.querySelector('#options-host-answercalls').checked, silenceDetection: document.querySelector('#options-host-silence').checked, recordAudio: document.querySelector('#options-host-record').checked, delaySystem: document.querySelector('#options-host-delay').checked, EAS: document.querySelector('#options-host-eas').checked, accountability: document.querySelector('#options-host-accountability').checked } }, function (response) {
           if (response === 'OK') {
             $('#options-modal-host').iziModal('close')
             iziToast.show({
@@ -13026,8 +13056,7 @@ function loadDJ (dj = null, reset = true) {
             <button type="button" class="btn btn-danger btn-lg" id="btn-options-dj-remove" data-dj="${DJData.DJ}" title="Remove this DJ">Remove</button>
             <button type="button" class="btn btn-purple btn-lg" id="btn-options-dj-xp" data-dj="${DJData.DJ}" title="View/Edit/Add/Remove the notes / remote credits / XP of this DJ">Notes/Remotes/XP</button>`
       if (DJData.XP.length > 0) {
-        var xpLogs = document.querySelector(`#dj-xp-logs`)
-        xpLogs.scrollTop = 0
+        xpTable.clear()
 
         var compare = function (a, b) {
           try {
@@ -13049,7 +13078,6 @@ function loadDJ (dj = null, reset = true) {
           }
         }
 
-        var newXPLogs = ``
         DJData.XP.sort(compare)
         DJData.XP.map(record => {
           var theClass = `secondary`
@@ -13065,29 +13093,21 @@ function loadDJ (dj = null, reset = true) {
             theTitle = `This is a remote credit entry.`
           }
 
-          newXPLogs += `<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;" title="${theTitle}">
-                    <div class="col-3 text-primary">
-                        ${moment(record.createdAt).format('YYYY-MM-DD h:mm A')}
-                    </div>
-                    <div class="col-2 text-success">
-                        ${record.amount}
-                    </div>
-                    <div class="col-5 text-secondary">
-                        ${record.type}-${record.subtype}${record.description !== null && record.description !== '' ? `: ${record.description}` : ``}
-                    </div>
-                    <div class="col-2 text-dark">
-                        <button type="button" id="dj-xp-edit-${record.ID}" class="close dj-xp-edit" aria-label="Edit XP/Remote" title="Edit this record">
-                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
-                </button>
-                        <button type="button" id="dj-xp-remove-${record.ID}" class="close dj-xp-remove" aria-label="Remove XP/Remote" title="Remove this record">
-                <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
-                </button>
-                    </div>
-                </div>
-`
+          xpTable.rows.add([[
+            `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
+            moment(record.createdAt).format('YYYY-MM-DD h:mm A'),
+            record.amount,
+            `${record.type}-${record.subtype}${record.description !== null && record.description !== '' ? `: ${record.description}` : ``}`,
+            `<button type="button" id="dj-xp-edit-${record.ID}" class="close dj-xp-edit" aria-label="Edit XP/Remote" title="Edit this record">
+            <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+            </button>
+                    <button type="button" id="dj-xp-remove-${record.ID}" class="close dj-xp-remove" aria-label="Remove XP/Remote" title="Remove this record">
+            <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
+            </button>`
+          ]])
         })
 
-        xpLogs.innerHTML = newXPLogs
+        xpTable.draw()
       }
       document.querySelector('#dj-xp').innerHTML = formatInt(DJData.stats.semester.xp || 0)
       document.querySelector('#dj-xpL').innerHTML = formatInt(DJData.stats.overall.xp || 0)
@@ -13468,7 +13488,7 @@ function processHosts (data, replace = false) {
     Hosts().each(function (host, index) {
       document.querySelector('#options-djcontrols').innerHTML += `<div class="row m-1">
                     <div class="col-6">
-                        ${host.friendlyname} <span class="m-2">${host.silenceDetection ? `<i class="fas fa-microphone-slash text-dark" title="${host.friendlyname} is responsible for reporting silence to WWSU."></i>` : ''}${host.recordAudio ? `<i class="fas fa-circle text-dark" title="${host.friendlyname} is responsible for recording and saving radio programming."></i>` : ''}</span>
+                        ${host.friendlyname} <span class="m-2">${host.silenceDetection ? `<i class="fas fa-microphone-slash text-dark" title="${host.friendlyname} is responsible for reporting silence to WWSU."></i>` : ''}${host.recordAudio ? `<i class="fas fa-circle text-dark" title="${host.friendlyname} is responsible for recording and saving radio programming."></i>` : ''}${host.delaySystem ? `<i class="fas fa-eject text-dark" title="${host.friendlyname} is responsible for reporting delay system status and activating the delay system when requested by the server."></i>` : ''}${host.EAS ? `<i class="fas fa-bolt text-dark" title="${host.friendlyname} is responsible for reporting emergency alert system status and transmitted weather alerts to the server."></i>` : ''}</span>
                     </div>
                     <div class="col-1" title="${host.authorized ? `${host.friendlyname} is authorized to connect to WWSU.` : `${host.friendlyname} is NOT authorized to connect to WWSU.`}">
                         ${host.authorized ? '<i class="fas fa-check-circle text-dark"></i>' : ''}
