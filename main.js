@@ -822,28 +822,30 @@ exports.dump = () => {
     buffer[ 6 ] = 0x65
     delaySerial.write(buffer)
 
-    // Deactivate delay
-    mainWindow.webContents.send('main-log', `Delay System: Deactivate dump.`)
-    var buffer = new Buffer(7)
-    buffer[ 0 ] = 0xFB
-    buffer[ 1 ] = 0xFF
-    buffer[ 2 ] = 0x00
-    buffer[ 3 ] = 0x03
-    buffer[ 4 ] = 0x90
-    buffer[ 5 ] = 0x00
-    buffer[ 6 ] = 0x6D
-    delaySerial.write(buffer)
+    setTimeout(() => {
+      // Deactivate delay
+      mainWindow.webContents.send('main-log', `Delay System: Deactivate dump.`)
+      var buffer = new Buffer(7)
+      buffer[ 0 ] = 0xFB
+      buffer[ 1 ] = 0xFF
+      buffer[ 2 ] = 0x00
+      buffer[ 3 ] = 0x03
+      buffer[ 4 ] = 0x90
+      buffer[ 5 ] = 0x00
+      buffer[ 6 ] = 0x6D
+      delaySerial.write(buffer)
 
-    // Request status after dumping
-    mainWindow.webContents.send('main-log', `Delay System: Query for new status.`)
-    var buffer = new Buffer(6)
-    buffer[ 0 ] = 0xFB
-    buffer[ 1 ] = 0xFF
-    buffer[ 2 ] = 0x00
-    buffer[ 3 ] = 0x02
-    buffer[ 4 ] = 0x11
-    buffer[ 5 ] = 0xED
-    delaySerial.write(buffer)
+      // Request status after dumping
+      mainWindow.webContents.send('main-log', `Delay System: Query for new status.`)
+      var buffer = new Buffer(6)
+      buffer[ 0 ] = 0xFB
+      buffer[ 1 ] = 0xFF
+      buffer[ 2 ] = 0x00
+      buffer[ 3 ] = 0x02
+      buffer[ 4 ] = 0x11
+      buffer[ 5 ] = 0xED
+      delaySerial.write(buffer)
+    }, 1000)
   }
 }
 

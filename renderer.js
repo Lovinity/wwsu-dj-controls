@@ -9,7 +9,7 @@ try {
     hidden = 'webkitHidden'
   }
 
-  var development = true
+  var development = false
   // These variables and functions deal with managing the UI when the window is not in focus
   var animations = {}
 
