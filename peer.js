@@ -388,7 +388,7 @@ ipcRenderer.on('peer-finalize-call', (event, arg) => {
 ipcRenderer.on('peer-resume-call', (event, arg) => {
   console.log(`Main wants us to resume any calls on hold.`)
   if (typeof window.peerHost !== `undefined` && typeof outgoingCall === `undefined`) {
-    startCall(window.peerHost, false, false, bitRate)
+    startCall(window.peerHost, false, true, bitRate)
   } else {
     console.log(`There are no calls on hold.`)
     ipcRenderer.send('main-log', 'Peer: No pending calls to resume.')
@@ -514,6 +514,24 @@ function onReceiveStream (stream) {
               silenceState0 = 2
               ipcRenderer.send('main-log', 'Peer: Silence detected on call for 13 seconds.')
               ipcRenderer.send(`peer-silence-incoming`, true)
+              try {
+                incomingCloseIgnore = true
+                console.log(`Closing incoming call via meta`)
+                if (incomingCall) {
+                  incomingCall.close()
+                  incomingCall = undefined
+                }
+                if (incomingCallMeter) {
+                  incomingCallMeter.shutdown()
+                  incomingCallMeter = undefined
+                }
+                var audio = document.querySelector('#remoteAudio')
+                audio.srcObject = undefined
+                audio.pause()
+                incomingCloseIgnore = false
+              } catch (eee) {
+                incomingCloseIgnore = false
+              }
             }
           }, 13000)
         }
@@ -836,6 +854,17 @@ function getAudio (device) {
                 silenceState = 2
                 ipcRenderer.send('main-log', `Peer: Silence detected on the input device for 13 seconds. Going to break.`)
                 ipcRenderer.send(`peer-silence-outgoing`, true)
+                try {
+                  window.peerError = -2
+                  outgoingCloseIgnore = true
+                  if (outgoingCall) {
+                    outgoingCall.close()
+                    outgoingCall = undefined
+                  }
+                  outgoingCloseIgnore = false
+                } catch (e) {
+                  outgoingCloseIgnore = false
+                }
               }
             }, 13000)
           }
