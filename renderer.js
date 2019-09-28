@@ -9,7 +9,7 @@ try {
     hidden = 'webkitHidden'
   }
 
-  var development = false
+  var development = true
   // These variables and functions deal with managing the UI when the window is not in focus
   var animations = {}
 
@@ -941,6 +941,8 @@ try {
       })
 
       if (!disconnected) { goBreak(false, true) }
+
+      $('#audio-call-modal').iziModal('open')
 
       responsiveVoice.speak('Attention: Silence was detected on the input device for over 13 seconds. The broadcast was sent to break. Please check your device settings and resume the broadcast.')
     }
@@ -10135,6 +10137,13 @@ function doMeta (metan) {
         document.querySelector('#queue-music').style.display = 'inline'
       } else {
         document.querySelector('#queue-music').style.display = 'none'
+      }
+
+      if (!Meta.playing && (Meta.state === 'live_on' || Meta.state === 'remote_on' || Meta.state === 'sports_on' || Meta.state === 'sportsremote_on'))
+      {
+        document.querySelector('#queue-on').style.display = 'inline'
+      } else {
+        document.querySelector('#queue-on').style.display = 'none'
       }
     })
 

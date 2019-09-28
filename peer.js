@@ -106,7 +106,7 @@ ipcRenderer.on('new-meta', (event, arg) => {
     var temp = document.querySelector(`#remoteAudio`)
     // Mute incoming audio if something is playing
     if (Meta.state.startsWith('remote_') || Meta.state.startsWith('sportsremote_')) {
-      if (!Meta.playing) {
+      if (!Meta.playing && (Meta.state === 'remote_on' || Meta.state === 'sportsremote_on')) {
         if (temp !== null) {
           temp.muted = false
           console.log(`UNMUTED remote audio`)
@@ -388,6 +388,7 @@ ipcRenderer.on('peer-finalize-call', (event, arg) => {
 ipcRenderer.on('peer-resume-call', (event, arg) => {
   console.log(`Main wants us to resume any calls on hold.`)
   if (typeof window.peerHost !== `undefined` && typeof outgoingCall === `undefined`) {
+    if (window.peerDevice) { getAudio(window.peerDevice) }
     startCall(window.peerHost, false, true, bitRate)
   } else {
     console.log(`There are no calls on hold.`)
