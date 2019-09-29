@@ -2225,7 +2225,7 @@ try {
 
 // OnClick handlers
 
-document.querySelector('#btn-dump').onclick = function () {
+document.querySelector('#btn-dump-b').onclick = function () {
   hostReq.request({ method: 'POST', url: '/delay/dump', data: {} }, function (body) {
     iziToast.show({
       title: `Sent dump button signal`,
