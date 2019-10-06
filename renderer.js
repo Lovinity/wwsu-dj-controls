@@ -9,7 +9,7 @@ try {
     hidden = 'webkitHidden'
   }
 
-  var development = false
+  var development = true
   // These variables and functions deal with managing the UI when the window is not in focus
   var animations = {}
 
@@ -1941,7 +1941,7 @@ try {
   var directorsTable = jQuery('#options-directors').DataTable({
     data: [],
     columns: [
-      { title: "Red = out, green = in" },
+      { title: "Red = OUT<br />Green = IN" },
       { title: "Director Name" },
       { title: "Clocked In/Out at" },
       { title: "Edit" },
@@ -2000,6 +2000,42 @@ try {
       { title: "Actions" },
     ],
     pageLength: 50
+  })
+
+  var disciplineTable = jQuery('#options-discipline').DataTable({
+    data: [],
+    columns: [
+      { title: "" },
+      { title: "ID" },
+      { title: "Date / Time" },
+      { title: "Host / IP" },
+      { title: "Ban Type" },
+      { title: "Actions" },
+    ],
+    pageLength: 25
+  })
+
+  var underwritingsTable = jQuery('#underwritings-list').DataTable({
+    data: [],
+    columns: [
+      { title: "Underwriting" },
+      { title: "Actions" },
+    ],
+    pageLength: 25
+  })
+
+  var globalLogsTable = jQuery('#global-logs').DataTable({
+    data: [],
+    columns: [
+      { title: "" },
+      { title: "Event" },
+      { title: "Scheduled Start" },
+      { title: "Scheduled End" },
+      { title: "Actual Start" },
+      { title: "Actual End" },
+      { title: "Log" },
+    ],
+    pageLength: 25
   })
 
   var quillGetHTML = function (inputDelta) {
@@ -5592,8 +5628,8 @@ document.querySelector('#options-announcements-add').onclick = function () {
 }
 
 document.querySelector('#btn-options-logs').onclick = function () {
-  var att = document.querySelector('#global-logs')
-  att.innerHTML = ``
+  globalLogsTable.clear()
+  globalLogsTable.draw()
   $('#options-modal-global-logs').iziModal('open')
   $('#options-modal-global-logs').animateCss('flash slower', function () { })
 }
@@ -6344,13 +6380,9 @@ document.querySelector('#filter-global-logs').onclick = function () {
 
 function filterGlobalLogs (date) {
   try {
-    document.querySelector('#global-logs').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`
+    globalLogsTable.clear()
     hostReq.request({ method: 'POST', url: nodeURL + '/attendance/get', data: { date: moment(date).toISOString(true) } }, function (response) {
-      var att = document.querySelector('#global-logs')
-      att.innerHTML = ``
-      att.scrollTop = 0
       if (response.length > 0) {
-        var formatted = {}
         response.map(record => {
           var theDate
           if (record.actualStart !== null) {
@@ -6359,9 +6391,6 @@ function filterGlobalLogs (date) {
             theDate = moment(record.scheduledStart)
           }
           var theClass = 'secondary'
-          if (typeof formatted[ moment(theDate).format('MM/DD/YYYY') ] === 'undefined') {
-            formatted[ moment(theDate).format('MM/DD/YYYY') ] = []
-          }
           if (record.event.startsWith('Show: ') || record.event.startsWith('Prerecord: ')) {
             theClass = 'danger'
           } else if (record.event.startsWith('Sports: ')) {
@@ -6372,148 +6401,96 @@ function filterGlobalLogs (date) {
             theClass = 'info'
           }
           if (record.scheduledStart === null && record.happened === 1) {
-            formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
-                                <div class="col-7 text-info">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4">
-                        <span class="text-secondary">UNSCHEDULED</span><br />
-                        <span class="text-primary">${moment(record.actualStart).format('h:mm A')} - ${record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`}</span>
-                                </div>
-                                    <div class="col-1">
-                                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
-                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
-                </button>
-                                        </div>
-                            </div>`)
+            globalLogsTable.rows.add([[
+              `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
+              record.event,
+              `UNSCHEDULED`,
+              `UNSCHEDULED`,
+              moment(record.actualStart).format('h:mm A'),
+              record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`,
+              `<button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
+              <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
+              </button>`
+            ]])
           } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)) && record.happened === 1) {
-            formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
-                                <div class="col-7 text-info">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4">
-                        <span class="text-secondary">${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}</span><br />
-                        <span class="text-primary">FUTURE EVENT</span>
-                                </div>
-                                    <div class="col-1">
-                                        </div>
-                            </div>`)
+            globalLogsTable.rows.add([[
+              `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
+              record.event,
+              moment(record.scheduledStart).format('h:mm A'),
+              moment(record.scheduledEnd).format('h:mm A'),
+              `FUTURE EVENT`,
+              `FUTURE EVENT`,
+              ``
+            ]])
           } else if (moment(record.scheduledStart).isAfter(moment(Meta.time))) {
-            formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
-                                <div class="col-7 text-info">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4">
-                        <span class="text-secondary">${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}</span><br />
-                        <span class="text-primary">${record.happened === 0 ? `DID NOT AIR` : `CANCELED`}</span>
-                                </div>
-                                    <div class="col-1">
-                                        </div>
-                            </div>`)
+            globalLogsTable.rows.add([[
+              `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
+              record.event,
+              moment(record.scheduledStart).format('h:mm A'),
+              moment(record.scheduledEnd).format('h:mm A'),
+              record.happened === 0 ? `DID NOT AIR` : `CANCELED`,
+              record.happened === 0 ? `DID NOT AIR` : `CANCELED`,
+              ``
+            ]])
           } else if (record.actualStart !== null && record.actualEnd !== null && record.happened === 1) {
-            if (Math.abs(moment(record.scheduledStart).diff(moment(record.actualStart), 'minutes')) >= 10 || Math.abs(moment(record.scheduledEnd).diff(moment(record.actualEnd), 'minutes')) >= 10) {
-              formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
-                                <div class="col-7 text-info">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4">
-                        <span class="text-secondary">${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}</span><br />
-                        <span class="text-primary">${moment(record.actualStart).format('h:mm A')} - ${record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`}</span>
-                                </div>
-                                    <div class="col-1">
-                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
-                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
-                </button>
-                                        </div>
-                            </div>`)
-            } else {
-              formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
-                                <div class="col-7 text-info">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4">
-                        <span class="text-secondary">${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}</span><br />
-                        <span class="text-primary">${moment(record.actualStart).format('h:mm A')} - ${record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`}</span>
-                                </div>
-                                    <div class="col-1">
-                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
-                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
-                </button>
-                                        </div>
-                            </div>`)
-            }
+            globalLogsTable.rows.add([[
+              `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
+              record.event,
+              moment(record.scheduledStart).format('h:mm A'),
+              moment(record.scheduledEnd).format('h:mm A'),
+              moment(record.actualStart).format('h:mm A'),
+              record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`,
+              `<button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
+              <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
+              </button>`
+            ]])
           } else if (record.actualStart !== null && record.actualEnd === null) {
-            formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
-                                <div class="col-7 text-info">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4">
-                        <span class="text-secondary">${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}</span><br />
-                        <span class="text-primary">${moment(record.actualStart).format('h:mm A')} - ${record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`}</span>
-                                </div>
-                                    <div class="col-1">
-                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
-                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
-                </button>
-                                        </div>
-                            </div>`)
+            globalLogsTable.rows.add([[
+              `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
+              record.event,
+              moment(record.scheduledStart).format('h:mm A'),
+              moment(record.scheduledEnd).format('h:mm A'),
+              moment(record.actualStart).format('h:mm A'),
+              `ONGOING`,
+              `<button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
+              <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
+              </button>`
+            ]])
           } else if (record.actualStart === null && record.actualEnd === null) {
-            formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
-                                <div class="col-7 text-info">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4">
-                        <span class="text-secondary">${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}</span><br />
-                        <span class="text-primary">${record.happened === 0 ? `DID NOT AIR` : `CANCELED`}</span>
-                                </div>
-                                    <div class="col-1">
-                                        </div>
-                            </div>`)
+            globalLogsTable.rows.add([[
+              `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
+              record.event,
+              moment(record.scheduledStart).format('h:mm A'),
+              moment(record.scheduledEnd).format('h:mm A'),
+              record.happened === 0 ? `DID NOT AIR` : `CANCELED`,
+              record.happened === 0 ? `DID NOT AIR` : `CANCELED`,
+              ``
+            ]])
           } else if (record.actualStart !== null && record.actualEnd !== null) {
-            formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
-                                <div class="col-7 text-info">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4">
-                        <span class="text-secondary">${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}</span><br />
-                        <span class="text-primary">${moment(record.actualStart).format('h:mm A')} - ${record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`}</span>
-                                </div>
-                                    <div class="col-1">
-                        <button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
-                <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
-                </button>
-                                        </div>
-                            </div>`)
+            globalLogsTable.rows.add([[
+              `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
+              record.event,
+              moment(record.scheduledStart).format('h:mm A'),
+              moment(record.scheduledEnd).format('h:mm A'),
+              moment(record.actualStart).format('h:mm A'),
+              record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`,
+              `<button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
+              <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
+              </button>`
+            ]])
           } else {
-            formatted[ moment(theDate).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;">
-                                <div class="col-7 text-info">
-                                    ${record.event}
-                                </div>
-                                <div class="col-4">
-                        <span class="text-secondary">${moment(record.scheduledStart).format('h:mm A')} - ${moment(record.scheduledEnd).format('h:mm A')}</span><br />
-                        <span class="text-primary">NOT YET STARTED</span>
-                                </div>
-                                    <div class="col-1">
-                                        </div>
-                            </div>`)
+            globalLogsTable.rows.add([[
+              `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
+              record.event,
+              moment(record.scheduledStart).format('h:mm A'),
+              moment(record.scheduledEnd).format('h:mm A'),
+              `NOT YET STARTED`,
+              `NOT YET STARTED`,
+              ``
+            ]])
           }
         })
-
-        for (var k in formatted) {
-          /*
-                     att.innerHTML += `<div class="row bg-primary-dark m-1">
-                     <div class="col-3 text-primary-light">
-                     </div>
-                     <div class="col-4 text-warning-light">
-                     ${k}
-                     </div>
-                     <div class="col-4 text-success-light">
-                     </div>
-                     </div>`;
-                     */
-
-          if (formatted[ k ].length > 0) { formatted[ k ].map(record => { att.innerHTML += record }) }
-        }
+        globalLogsTable.draw()
       }
     })
   } catch (e) {
@@ -13397,7 +13374,7 @@ function processDirectors (data, replace = false) {
     directorsTable.clear()
     Directors().each(function (director, index) {
       directorsTable.rows.add([[
-        `<span class="text-${director.present ? `success` : `danger`}><i class="fas fa-dot-circle"></i></span>`,
+        `<span class="text-${director.present ? `success` : `danger`}"><i class="fas fa-dot-circle"></i></span>`,
         director.name,
         moment(director.since).format('LLL'),
         `<button type="button" id="options-director-${director.ID}" class="close"><i class="fas fa-edit"></i></button>`
@@ -13438,23 +13415,21 @@ function processUnderwritings (data, replace = false) {
       }
     }
 
-    document.querySelector('#underwritings-list').innerHTML = ``
+    underwritingsTable.clear()
 
     Underwritings().each(function (underwriting, index) {
-      document.querySelector('#underwritings-list').innerHTML += `<div class="row m-1">
-                    <div class="col-9 text-primary">
-                        ${underwriting.name}
-                    </div>
-            <div class="col-3 text-success">
-            <button type="button" id="options-underwritings-edit-${underwriting.ID}" class="close" aria-label="Edit Underwriting" title="Edit ${underwriting.name}">
-                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
-                </button>
-                <button type="button" id="options-underwritings-remove-${underwriting.ID}" class="close" aria-label="Remove Underwriting" title="Remove ${underwriting.name}">
-                <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
-                </button>
-            </div>
-                </div>`
+      underwritingsTable.rows.add([[
+        underwriting.name,
+        `<button type="button" id="options-underwritings-edit-${underwriting.ID}" class="close" aria-label="Edit Underwriting" title="Edit ${underwriting.name}">
+        <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+        </button>
+        <button type="button" id="options-underwritings-remove-${underwriting.ID}" class="close" aria-label="Remove Underwriting" title="Remove ${underwriting.name}">
+        <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
+        </button>`
+      ]])
     })
+
+    underwritingsTable.draw()
   } catch (e) {
     console.error(e)
     iziToast.show({
@@ -13597,42 +13572,24 @@ function processDiscipline (data, replace = false) {
       }
     }
 
-    var temp = document.querySelector('#options-discipline')
-    var temp2 = ``
-
-    if (temp !== null) {
-      temp.innerHTML = ``
+      disciplineTable.clear()
       Discipline().each((discipline, index) => {
-        temp2 += `<div class="row m-1 bg-light-1 border-left border-${discipline.active ? `success` : `secondary`} shadow-2" style="border-left-width: 5px !important;" title="This discipline is ${discipline.active ? `` : `NOT `}active.">
-                <div class="container m-1">
-                        <div class="row bg-light-1">
-                            <div class="col-1 text-danger">
-                                ${discipline.ID}
-                            </div>
-                            <div class="col-3 text-primary">
-                                ${moment(discipline.createdAt).format('LLL')}
-                            </div>
-                            <div class="col-4">
-                                ${discipline.IP}
-                            </div>
-                            <div class="col-2 text-info">
-                                ${discipline.action}
-                            </div>
-                            <div class="col-2">
-                                <button type="button" id="options-discipline-edit-${discipline.ID}" class="close" aria-label="Edit Discipline" title="Edit discipline ${discipline.ID}">
-                <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
-                </button>
-                <button type="button" id="options-discipline-remove-${discipline.ID}" class="close" aria-label="Remove Discipline" title="Remove discipline ${discipline.ID}">
-                <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
-                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>`
+        disciplineTable.rows.add([[
+          `<span class="text-${discipline.active ? `success` : `secondary`}"><i class="fas fa-dot-circle"></i></span>`,
+          discipline.ID,
+          moment(discipline.createdAt).format('LLL'),
+          discipline.IP,
+          discipline.action,
+          `<button type="button" id="options-discipline-edit-${discipline.ID}" class="close" aria-label="Edit Discipline" title="Edit discipline ${discipline.ID}">
+          <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
+          </button>
+          <button type="button" id="options-discipline-remove-${discipline.ID}" class="close" aria-label="Remove Discipline" title="Remove discipline ${discipline.ID}">
+          <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
+          </button>`
+        ]])
       })
+      disciplineTable.draw()
 
-      temp.innerHTML = temp2
-    }
   } catch (e) {
     console.error(e)
     iziToast.show({

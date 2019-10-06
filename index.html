@@ -39,7 +39,7 @@
     <link rel="stylesheet" type="text/css" href="assets/styles/taucharts.min.css">
     <style>
         ::-webkit-scrollbar {
-            width: 10px;
+            width: 15px;
         }
 
         ::-webkit-scrollbar-track {
@@ -2139,22 +2139,8 @@
                     <input type='date' id='global-log-filter' />
                     <input type="submit" class="btn btn-primary" id="filter-global-logs" value="Filter">
                 </div>
-                <div class="container m-1">
-                    <div class="row m-1 bg-light-1 shadow-2">
-                        <div class="col-7 text-info">
-                            Event
-                        </div>
-                        <div class="col-4">
-                            <span class="text-secondary">Scheduled Time</span><br />
-                            <span class="text-primary">Actual Time</span>
-                        </div>
-                        <div class="col-1">
-                            Log
-                        </div>
-                    </div>
-                </div>
-                <div class="container m-1" id="global-logs">
-                </div>
+                <table class="table table-bordered" id="global-logs" width="100%" cellspacing="0">
+                </table>
             </div>
             <div class="modal-footer bg-light-1">
             </div>
@@ -2212,27 +2198,8 @@
                 </div>
             </header>
             <div class="modal-body" style="max-height: 640px; overflow: scroll;">
-                <div class="container m-1">
-                    <div class="row bg-light-1 m-1 shadow-4">
-                        <div class="col-1 text-danger">
-                            ID
-                        </div>
-                        <div class="col-3 text-primary">
-                            Date/time
-                        </div>
-                        <div class="col-4">
-                            Host ID / IP Address
-                        </div>
-                        <div class="col-2 text-info">
-                            Type
-                        </div>
-                        <div class="col-2">
-                            Action
-                        </div>
-                    </div>
-                </div>
-                <div class="container m-1" id="options-discipline">
-                </div>
+                <table class="table table-bordered" id="options-discipline" width="100%" cellspacing="0">
+                </table>
             </div>
             <div class="modal-footer bg-light-1">
                 <button type="button" class="btn btn-success btn-lg" id="options-discipline-add"
@@ -2963,16 +2930,8 @@
                 </div>
             </header>
             <div class="modal-body" style="max-height: 640px; overflow: scroll;">
-                <div class="row m-1 bg-light-1 shadow-2">
-                    <div class="col-9 text-primary">
-                        Underwriting
-                    </div>
-                    <div class="col-3 text-success">
-                        Actions
-                    </div>
-                </div>
-                <div class="container" id="underwritings-list">
-                </div>
+                <table class="table table-bordered" id="underwritings-list" width="100%" cellspacing="0">
+                </table>
             </div>
             <div class="modal-footer bg-light-1">
                 <button type="button" class="btn btn-success btn-lg" id="options-underwritings-new"
@@ -3211,6 +3170,9 @@
                                 limit is set on the underwriting track.</strong></small>
                     </div>
                 </div>
+                <div class="bs-callout bs-callout-warning shadow-4 text-white">
+                    New or changed date/time filters do NOT get saved until you click "Add Underwriting" or "Edit Underwriting"!
+                </div>
             </div>
             <div class="modal-footer bg-light-1" id="underwriting-schedule-buttons">
             </div>
@@ -3236,6 +3198,9 @@
                     *Shows / Remotes: Use the format "DJ / Host Handle - Show Name" (eg. "DJ Music - The Music Show"
                     without the quotes).<br />
                     *Sports: Specify the name of the sport, (eg. "Men's Basketball" without the quotes).
+                </div>
+                <div class="bs-callout bs-callout-warning shadow-4 text-white">
+                    New or changed show filters do NOT get saved until you click "Add Underwriting" or "Edit Underwriting"!
                 </div>
             </div>
             <div class="modal-footer bg-light-1" id="underwriting-schedule-show-buttons">
