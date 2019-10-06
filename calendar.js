@@ -874,7 +874,7 @@ function processDarksky (db, time) {
   db.map((item) => {
     try {
       var precipStart = 61
-      var precipEnd = -1
+      var precipEnd = 61
       var precipType = `precipitation`
 
       var currentWeather = ``
@@ -892,7 +892,8 @@ function processDarksky (db, time) {
             precipStart = index
             precipType = data.precipType
           }
-          if (precipEnd < index) { precipEnd = index }
+        } else {
+          if (precipEnd > index) { precipEnd = index }
         }
       })
 
