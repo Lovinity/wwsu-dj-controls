@@ -10071,7 +10071,7 @@ function doMeta (metan) {
     }
 
     addAnimation('meta-nowplaying', () => {
-      document.querySelector('#nowplaying').innerHTML = `<div class="text-warning" style="position: absolute; top: -16px; left: 0px;">${Meta.trackFinish !== null ? moment.duration(moment(Meta.trackFinish).diff(moment(Meta.time), 'seconds'), 'seconds').format() : ''}</div>${Meta.line1}<br />${Meta.line2}`
+      document.querySelector('#nowplaying').innerHTML = `<div class="text-warning" style="position: absolute; top: -16px; left: 0px;">${Meta.trackFinish !== null ? moment.duration(moment(Meta.trackFinish).diff(moment(Meta.time), 'seconds'), 'seconds').format() : ''}</div>${Meta.line1}<br />${Meta.line2}<br /><span class="text-info">Online Listeners: ${Meta.listeners}</span>`
     })
 
     // Notify the DJ of a mandatory top of the hour break if they need to take one
