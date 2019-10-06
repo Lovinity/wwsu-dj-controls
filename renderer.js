@@ -1354,10 +1354,18 @@ try {
     if (totalUnread > 0 || totalRequests > 0) {
       if (messaging) { messaging.className = 'card p-1 m-3 text-white bg-info' }
       messageFlash2 = setTimeout(function () {
-        if (messaging) { messaging.className = 'card p-1 m-3 text-white bg-dark' }
-      }, 500)
+        if (messaging) { 
+          // messaging.className = 'card p-1 m-3 text-white bg-dark' 
+          // Halloween
+          messaging.className = 'card p-1 m-3 text-white'
+        }
+      }, 2500)
     } else {
-      if (messaging) { messaging.className = 'card p-1 m-3 text-white bg-dark' }
+      if (messaging) { 
+        // messaging.className = 'card p-1 m-3 text-white bg-dark' 
+        // Halloween
+        messaging.className = 'card p-1 m-3 text-white' 
+      }
       clearTimeout(messageFlash2)
     }
 
@@ -10128,8 +10136,12 @@ function doMeta (metan) {
         operations.className = 'card p-1 m-3 text-white'
         operations.style.backgroundColor = '#ff6f00'
         setTimeout(function () {
-          operations.className = 'card p-1 m-3 text-white bg-dark'
-          operations.style.backgroundColor = ''
+          // operations.className = 'card p-1 m-3 text-white bg-dark'
+          // Halloween
+          operations.className = 'card p-1 m-3 text-white'
+          // operations.style.backgroundColor = ''
+          // Halloween
+          operations.style.backgroundColor = '#753011'
         }, 250)
       }
 
