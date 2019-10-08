@@ -12,6 +12,7 @@ try {
   var development = true
   // These variables and functions deal with managing the UI when the window is not in focus
   var animations = {}
+  var spider
 
   setInterval(() => {
     if (!document[ hidden ]) {
@@ -22,6 +23,14 @@ try {
           delete animations[ key ]
         }
       }
+    }
+
+    // Random spiders
+    if (!spider && (Math.random() * (60 * 60)) >= 3599) {
+      spider = new SpiderController({ minBugs: 1, maxBugs: 1, canDie: false, mouseOver: 'nothing' })
+    } else if ((Math.random() * (5 * 60)) >= 299) {
+      spider.end()
+      spider = undefined
     }
   }, 1000)
 
@@ -1354,17 +1363,17 @@ try {
     if (totalUnread > 0 || totalRequests > 0) {
       if (messaging) { messaging.className = 'card p-1 m-3 text-white bg-info' }
       messageFlash2 = setTimeout(function () {
-        if (messaging) { 
+        if (messaging) {
           // messaging.className = 'card p-1 m-3 text-white bg-dark' 
           // Halloween
           messaging.className = 'card p-1 m-3 text-white'
         }
       }, 2500)
     } else {
-      if (messaging) { 
+      if (messaging) {
         // messaging.className = 'card p-1 m-3 text-white bg-dark' 
         // Halloween
-        messaging.className = 'card p-1 m-3 text-white' 
+        messaging.className = 'card p-1 m-3 text-white'
       }
       clearTimeout(messageFlash2)
     }
@@ -1958,7 +1967,7 @@ try {
       { title: "Event" },
       { title: "Scheduled" },
       { title: "Actual" },
-      { title: "Missed IDs"},
+      { title: "Missed IDs" },
       { title: "Actions" },
     ],
     "order": [ [ 1, "desc" ] ],
@@ -2401,14 +2410,14 @@ document.querySelector('#btn-view-log-b').onclick = function () {
     if (response.length > 0) {
       var newLog = ``
       response.map(log => {
-        logsTable.rows.add([[
+        logsTable.rows.add([ [
           `<span class="text-${log.loglevel}"><i class="fas fa-dot-circle"></i></span>`,
           moment(log.createdAt).format('h:mm:ss A'),
           `${log.event}
           ${log.trackArtist !== null && log.trackArtist !== '' ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== '' ? ` - ${log.trackTitle}` : ``}
           ${log.trackAlbum !== null && log.trackAlbum !== '' ? `<br />Album: ${log.trackAlbum}` : ``}
           ${log.trackLabel !== null && log.trackLabel !== '' ? `<br />Label: ${log.trackLabel}` : ``}`
-        ]])
+        ] ])
       })
 
       logsTable.draw()
@@ -6401,7 +6410,7 @@ function filterGlobalLogs (date) {
             theClass = 'info'
           }
           if (record.scheduledStart === null && record.happened === 1) {
-            globalLogsTable.rows.add([[
+            globalLogsTable.rows.add([ [
               `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
               record.event,
               `UNSCHEDULED`,
@@ -6411,9 +6420,9 @@ function filterGlobalLogs (date) {
               `<button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
               <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
               </button>`
-            ]])
+            ] ])
           } else if (moment(record.scheduledStart).isAfter(moment(Meta.time)) && record.happened === 1) {
-            globalLogsTable.rows.add([[
+            globalLogsTable.rows.add([ [
               `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
               record.event,
               moment(record.scheduledStart).format('h:mm A'),
@@ -6421,9 +6430,9 @@ function filterGlobalLogs (date) {
               `FUTURE EVENT`,
               `FUTURE EVENT`,
               ``
-            ]])
+            ] ])
           } else if (moment(record.scheduledStart).isAfter(moment(Meta.time))) {
-            globalLogsTable.rows.add([[
+            globalLogsTable.rows.add([ [
               `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
               record.event,
               moment(record.scheduledStart).format('h:mm A'),
@@ -6431,9 +6440,9 @@ function filterGlobalLogs (date) {
               record.happened === 0 ? `DID NOT AIR` : `CANCELED`,
               record.happened === 0 ? `DID NOT AIR` : `CANCELED`,
               ``
-            ]])
+            ] ])
           } else if (record.actualStart !== null && record.actualEnd !== null && record.happened === 1) {
-            globalLogsTable.rows.add([[
+            globalLogsTable.rows.add([ [
               `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
               record.event,
               moment(record.scheduledStart).format('h:mm A'),
@@ -6443,9 +6452,9 @@ function filterGlobalLogs (date) {
               `<button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
               <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
               </button>`
-            ]])
+            ] ])
           } else if (record.actualStart !== null && record.actualEnd === null) {
-            globalLogsTable.rows.add([[
+            globalLogsTable.rows.add([ [
               `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
               record.event,
               moment(record.scheduledStart).format('h:mm A'),
@@ -6455,9 +6464,9 @@ function filterGlobalLogs (date) {
               `<button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
               <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
               </button>`
-            ]])
+            ] ])
           } else if (record.actualStart === null && record.actualEnd === null) {
-            globalLogsTable.rows.add([[
+            globalLogsTable.rows.add([ [
               `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
               record.event,
               moment(record.scheduledStart).format('h:mm A'),
@@ -6465,9 +6474,9 @@ function filterGlobalLogs (date) {
               record.happened === 0 ? `DID NOT AIR` : `CANCELED`,
               record.happened === 0 ? `DID NOT AIR` : `CANCELED`,
               ``
-            ]])
+            ] ])
           } else if (record.actualStart !== null && record.actualEnd !== null) {
-            globalLogsTable.rows.add([[
+            globalLogsTable.rows.add([ [
               `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
               record.event,
               moment(record.scheduledStart).format('h:mm A'),
@@ -6477,9 +6486,9 @@ function filterGlobalLogs (date) {
               `<button type="button" id="dj-show-logs-${record.ID}" class="close dj-show-logs" aria-label="Show Log" title="View the log for this program.">
               <span aria-hidden="true"><i class="fas fa-file text-dark"></i></span>
               </button>`
-            ]])
+            ] ])
           } else {
-            globalLogsTable.rows.add([[
+            globalLogsTable.rows.add([ [
               `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
               record.event,
               moment(record.scheduledStart).format('h:mm A'),
@@ -6487,7 +6496,7 @@ function filterGlobalLogs (date) {
               `NOT YET STARTED`,
               `NOT YET STARTED`,
               ``
-            ]])
+            ] ])
           }
         })
         globalLogsTable.draw()
@@ -6510,14 +6519,14 @@ document.querySelector('#btn-options-issues').onclick = function () {
     if (response.length > 0) {
       response.reverse()
       response.map(log => {
-        logsTable.rows.add([[
+        logsTable.rows.add([ [
           `<span class="text-${log.loglevel}"><i class="fas fa-dot-circle"></i></span>`,
           moment(log.createdAt).format('YYYY/MM/DD h:mm:ss A'),
           `${log.event}
           ${log.trackArtist !== null && log.trackArtist !== '' ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== '' ? ` - ${log.trackTitle}` : ``}
           ${log.trackAlbum !== null && log.trackAlbum !== '' ? `<br />Album: ${log.trackAlbum}` : ``}
           ${log.trackLabel !== null && log.trackLabel !== '' ? `<br />Label: ${log.trackLabel}` : ``}`
-        ]])
+        ] ])
       })
     }
 
@@ -8361,14 +8370,14 @@ document.querySelector(`#dj-attendance`).addEventListener('click', function (e) 
         hostReq.request({ method: 'POST', url: nodeURL + '/logs/get', data: { attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``)) } }, function (response) {
           if (response.length > 0) {
             response.map(log => {
-              logsTable.rows.add([[
+              logsTable.rows.add([ [
                 `<span class="text-${log.loglevel}"><i class="fas fa-dot-circle"></i></span>`,
                 moment(log.createdAt).format('h:mm:ss A'),
                 `${log.event}
                 ${log.trackArtist !== null && log.trackArtist !== '' ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== '' ? ` - ${log.trackTitle}` : ``}
                 ${log.trackAlbum !== null && log.trackAlbum !== '' ? `<br />Album: ${log.trackAlbum}` : ``}
                 ${log.trackLabel !== null && log.trackLabel !== '' ? `<br />Label: ${log.trackLabel}` : ``}`
-              ]])
+              ] ])
             })
             logsTable.draw()
             hostReq.request({ method: 'POST', url: nodeURL + '/analytics/listeners', data: { start: moment(response[ 0 ].createdAt).toISOString(true), end: moment(response[ response.length - 1 ].createdAt).toISOString(true) } }, function (response2) {
@@ -8447,14 +8456,14 @@ document.querySelector(`#global-logs`).addEventListener('click', function (e) {
         hostReq.request({ method: 'POST', url: nodeURL + '/logs/get', data: { attendanceID: parseInt(e.target.id.replace(`dj-show-logs-`, ``)) } }, function (response) {
           if (response.length > 0) {
             response.map(log => {
-              logsTable.rows.add([[
+              logsTable.rows.add([ [
                 `<span class="text-${log.loglevel}"><i class="fas fa-dot-circle"></i></span>`,
                 moment(log.createdAt).format('h:mm:ss A'),
                 `${log.event}
                 ${log.trackArtist !== null && log.trackArtist !== '' ? `<br />Track: ${log.trackArtist}` : ``}${log.trackTitle !== null && log.trackTitle !== '' ? ` - ${log.trackTitle}` : ``}
                 ${log.trackAlbum !== null && log.trackAlbum !== '' ? `<br />Album: ${log.trackAlbum}` : ``}
                 ${log.trackLabel !== null && log.trackLabel !== '' ? `<br />Label: ${log.trackLabel}` : ``}`
-              ]])
+              ] ])
             })
             logsTable.draw()
 
@@ -10128,8 +10137,7 @@ function doMeta (metan) {
         document.querySelector('#queue-music').style.display = 'none'
       }
 
-      if (!Meta.playing && (Meta.state === 'live_on' || Meta.state === 'remote_on' || Meta.state === 'sports_on' || Meta.state === 'sportsremote_on'))
-      {
+      if (!Meta.playing && (Meta.state === 'live_on' || Meta.state === 'remote_on' || Meta.state === 'sports_on' || Meta.state === 'sportsremote_on')) {
         document.querySelector('#queue-on').style.display = 'inline'
       } else {
         document.querySelector('#queue-on').style.display = 'none'
@@ -10594,7 +10602,7 @@ function checkAnnouncements () {
         }
       }
       Announcements().get().sort(compare).map(announcement => {
-        announcementsTable.rows.add([[
+        announcementsTable.rows.add([ [
           `<span class="text-${announcement.level}"><i class="fas fa-dot-circle"></i></span>`,
           moment(announcement.starts).format('YYYY/MM/DD h:mm A'),
           moment(announcement.expires).format('YYYY/MM/DD h:mm A'),
@@ -10606,7 +10614,7 @@ function checkAnnouncements () {
           <button type="button" id="options-announcements-remove-${announcement.ID}" class="close" aria-label="Remove Announcement" title="Remove this announcement">
           <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
           </button>`
-        ]])
+        ] ])
       })
 
       announcementsTable.draw()
@@ -13091,7 +13099,7 @@ function loadDJ (dj = null, reset = true) {
             theTitle = `This is a remote credit entry.`
           }
 
-          xpTable.rows.add([[
+          xpTable.rows.add([ [
             `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
             moment(record.createdAt).format('YYYY-MM-DD h:mm A'),
             record.amount,
@@ -13102,7 +13110,7 @@ function loadDJ (dj = null, reset = true) {
                     <button type="button" id="dj-xp-remove-${record.ID}" class="close dj-xp-remove" aria-label="Remove XP/Remote" title="Remove this record">
             <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
             </button>`
-          ]])
+          ] ])
         })
 
         xpTable.draw()
@@ -13373,12 +13381,12 @@ function processDirectors (data, replace = false) {
     }
     directorsTable.clear()
     Directors().each(function (director, index) {
-      directorsTable.rows.add([[
+      directorsTable.rows.add([ [
         `<span class="text-${director.present ? `success` : `danger`}"><i class="fas fa-dot-circle"></i></span>`,
         director.name,
         moment(director.since).format('LLL'),
         `<button type="button" id="options-director-${director.ID}" class="close"><i class="fas fa-edit"></i></button>`
-      ]])
+      ] ])
     })
     directorsTable.draw()
   } catch (e) {
@@ -13418,7 +13426,7 @@ function processUnderwritings (data, replace = false) {
     underwritingsTable.clear()
 
     Underwritings().each(function (underwriting, index) {
-      underwritingsTable.rows.add([[
+      underwritingsTable.rows.add([ [
         underwriting.name,
         `<button type="button" id="options-underwritings-edit-${underwriting.ID}" class="close" aria-label="Edit Underwriting" title="Edit ${underwriting.name}">
         <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
@@ -13426,7 +13434,7 @@ function processUnderwritings (data, replace = false) {
         <button type="button" id="options-underwritings-remove-${underwriting.ID}" class="close" aria-label="Remove Underwriting" title="Remove ${underwriting.name}">
         <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
         </button>`
-      ]])
+      ] ])
     })
 
     underwritingsTable.draw()
@@ -13572,23 +13580,23 @@ function processDiscipline (data, replace = false) {
       }
     }
 
-      disciplineTable.clear()
-      Discipline().each((discipline, index) => {
-        disciplineTable.rows.add([[
-          `<span class="text-${discipline.active ? `success` : `secondary`}"><i class="fas fa-dot-circle"></i></span>`,
-          discipline.ID,
-          moment(discipline.createdAt).format('LLL'),
-          discipline.IP,
-          discipline.action,
-          `<button type="button" id="options-discipline-edit-${discipline.ID}" class="close" aria-label="Edit Discipline" title="Edit discipline ${discipline.ID}">
+    disciplineTable.clear()
+    Discipline().each((discipline, index) => {
+      disciplineTable.rows.add([ [
+        `<span class="text-${discipline.active ? `success` : `secondary`}"><i class="fas fa-dot-circle"></i></span>`,
+        discipline.ID,
+        moment(discipline.createdAt).format('LLL'),
+        discipline.IP,
+        discipline.action,
+        `<button type="button" id="options-discipline-edit-${discipline.ID}" class="close" aria-label="Edit Discipline" title="Edit discipline ${discipline.ID}">
           <span aria-hidden="true"><i class="fas fa-edit text-dark"></i></span>
           </button>
           <button type="button" id="options-discipline-remove-${discipline.ID}" class="close" aria-label="Remove Discipline" title="Remove discipline ${discipline.ID}">
           <span aria-hidden="true"><i class="fas fa-trash text-dark"></i></span>
           </button>`
-        ]])
-      })
-      disciplineTable.draw()
+      ] ])
+    })
+    disciplineTable.draw()
 
   } catch (e) {
     console.error(e)
