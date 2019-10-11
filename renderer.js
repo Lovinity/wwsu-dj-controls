@@ -9,7 +9,7 @@ try {
     hidden = 'webkitHidden'
   }
 
-  var development = true
+  var development = false
   // These variables and functions deal with managing the UI when the window is not in focus
   var animations = {}
   var spider
@@ -1158,6 +1158,8 @@ try {
   var noReq = new WWSUreq(socket, main.getMachineID())
 
   socket.on('connect_error', function () {
+    socket._raw.io._reconnection = true
+    socket._raw.io._reconnectionAttempts = Infinity
     var noConnection = document.getElementById('no-connection')
     noConnection.style.display = 'inline'
     noConnection.innerHTML = `<div class="text container-fluid" style="text-align: center;">
