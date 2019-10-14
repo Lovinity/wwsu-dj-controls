@@ -11806,6 +11806,59 @@ function afterEndShow (response, show) {
     document.querySelector(`#stat-semesterShowTime`).innerHTML = typeof response.semester.showtime !== 'undefined' ? formatInt(parseInt(response.semester.showtime / 6) / 10) : `-`
     document.querySelector(`#stat-totalListeners`).innerHTML = typeof response.overall.listeners !== 'undefined' ? formatInt(parseInt(response.overall.listeners / 6) / 10) : `-`
     document.querySelector(`#stat-semesterListeners`).innerHTML = typeof response.semester.listeners !== 'undefined' ? formatInt(parseInt(response.semester.listeners / 6) / 10) : `-`
+
+    document.querySelector('#dj-show-listeners').innerHTML = ''
+
+    if (response.listeners.length > 1) {
+      var theData = []
+      response.listeners.map(listener => {
+        if (moment(listener.createdAt).isBefore(moment(response[ 0 ].createdAt))) { listener.createdAt = response[ 0 ].createdAt }
+        theData.push({ x: moment(listener.createdAt).toISOString(true), y: listener.listeners })
+      })
+      theData.push({ x: moment(response[ response.length - 1 ].createdAt).toISOString(true), y: response[ response.length - 1 ].listeners })
+      new Taucharts.Chart({
+        data: theData,
+        type: 'line',
+        x: 'x',
+        y: 'y',
+        color: 'wwsu-red',
+        guide: {
+          y: { label: { text: 'Online Listeners' }, autoScale: true, nice: true },
+          x: { label: { text: 'Time' }, autoScale: true, nice: false },
+          interpolate: 'step-after',
+          showGridLines: 'xy'
+        },
+        dimensions: {
+          x: {
+            type: 'measure',
+            scale: 'time'
+          },
+          y: {
+            type: 'measure',
+            scale: 'linear'
+          }
+        },
+        plugins: [
+          Taucharts.api.plugins.get('tooltip')({
+            formatters: {
+              x: {
+                label: 'Time',
+                format: function (n) {
+                  return moment(n).format('LT')
+                }
+              },
+              y: {
+                label: 'Online Listeners',
+                format: function (n) {
+                  return n
+                }
+              }
+
+            }
+          })
+        ]
+      }).renderTo('#dj-show-listeners')
+    }
   }
   console.log(JSON.stringify(response))
 }

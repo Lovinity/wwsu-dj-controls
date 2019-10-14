@@ -1,6 +1,6 @@
 {
   "name": "wwsu-dj-controls",
-  "version": "6.1.0-alpha.7",
+  "version": "6.1.0-alpha.10",
   "description": "A WWSU management application for DJs and Directors",
   "main": "main.js",
   "scripts": {
