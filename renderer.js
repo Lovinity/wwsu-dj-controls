@@ -71,6 +71,7 @@ try {
   var Djs = TAFFY()
   var Hosts = TAFFY()
   var Underwritings = TAFFY()
+  var analytics = []
   var UnderwritingsSchedules = []
   var UnderwritingsShows = []
   var Config = {}
@@ -1698,6 +1699,20 @@ try {
   })
 
   $('#options-modal-dj-logs').iziModal({
+    width: 800,
+    focusInput: true,
+    arrowKeys: false,
+    navigateCaption: false,
+    navigateArrows: false, // Boolean, 'closeToModal', 'closeScreenEdge'
+    overlayClose: false,
+    overlayColor: 'rgba(0, 0, 0, 0.75)',
+    timeout: false,
+    pauseOnHover: true,
+    timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
+    zindex: 63
+  })
+
+  $('#options-modal-dj-analytics').iziModal({
     width: 800,
     focusInput: true,
     arrowKeys: false,
@@ -5965,6 +5980,40 @@ document.querySelector('#modal-scheduler-new').onclick = function () {
   $('#options-modal-config-form').iziModal('open')
 }
 
+document.querySelector('#options-dj-analytics').onclick = function () {
+  $('#options-modal-dj-analytics').iziModal('open')
+  var graph = document.querySelector('#dj-analytics-graph')
+  if (graph !== null) {
+    graph.innerHTML = ''
+  }
+  hostReq.request({ method: 'POST', url: nodeURL + '/analytics/showtime', data: {} }, function (response) {
+    analytics = response
+    try {
+      delete analytics[ 0 ]
+      analytics.sort(function (a, b) {
+        if (a.name < b.name) { return -1; }
+        if (a.name > b.name) { return 1; }
+        return 0;
+      })
+    } catch (unusedE) {
+
+    }
+    var temp = document.querySelector('#dj-analytics-select')
+    if (temp !== null) {
+      temp.value = ''
+    }
+    var temp = document.querySelector('#dj-analytics-select2')
+    if (temp !== null) {
+      temp.innerHTML = '<option value="">Choose a DJ to view analytics...</option>'
+      analytics.map((analytic, index) => {
+        temp.innerHTML += `<option value="${index}">${analytic.name}</option>`
+      })
+      temp.value = ''
+    }
+  })
+
+}
+
 document.querySelector('#modal-scheduler-generate').onclick = function () {
   hostReq.request({ method: 'POST', url: nodeURL + '/planner/schedule', data: {} }, function (response) {
     if (typeof response.schedule !== `undefined`) {
@@ -9608,6 +9657,139 @@ document.querySelector('#modal-underwriting-track').addEventListener('change', f
   loadUnderwritingTrackInfo(parseInt(document.querySelector('#modal-underwriting-track').value))
 })
 
+document.querySelector('#dj-analytics-select').addEventListener('change', function () {
+  var graph = document.querySelector('#dj-analytics-graph')
+  if (graph !== null) {
+    graph.innerHTML = ''
+    var temp = document.querySelector('#dj-analytics-select2')
+    if (temp !== null) { temp.value = "" }
+    var selection = document.querySelector('#dj-analytics-select')
+    if (selection !== null) {
+      var selectedOption = selection.options[ selection.selectedIndex ].value
+      if (selectedOption === "") { return null }
+      selectedOption = selectedOption.split('-')
+
+      try {
+        var data = []
+        analytics.map((analytic) => {
+          console.log(analytic[ selectedOption[ 0 ] ][ selectedOption[ 1 ] ])
+          data.push({ value: analytic[ selectedOption[ 0 ] ][ selectedOption[ 1 ] ], DJ: analytic.name })
+        })
+        var chart = new Taucharts.Chart({
+          data: data,
+          type: 'horizontalBar',
+          x: 'value',
+          y: 'DJ',
+          plugins: [
+            Taucharts.api.plugins.get('tooltip')({
+              fields: [ 'DJ', 'value' ]
+            })
+          ]
+        })
+        chart.renderTo('#dj-analytics-graph')
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  }
+})
+
+document.querySelector('#dj-analytics-select2').addEventListener('change', function () {
+  var graph = document.querySelector('#dj-analytics-graph')
+  if (graph !== null) {
+    graph.innerHTML = ''
+    var temp = document.querySelector('#dj-analytics-select')
+    if (temp !== null) { temp.value = "" }
+    var selection = document.querySelector('#dj-analytics-select2')
+    if (selection !== null) {
+      var selectedOption = selection.options[ selection.selectedIndex ].value
+      if (selectedOption === "") { return null }
+
+      try {
+        var data = []
+        var djStuff = analytics[ selectedOption ]
+        var maxValues = { semester: {}, overall: {} }
+        analytics.map((analytic) => {
+          for (var key in analytic.semester) {
+            if (key.includes("Array") || key === 'reputationScore') {
+              continue
+            }
+            if (Object.prototype.hasOwnProperty.call(analytic.semester, key)) {
+              if (key === 'reputationPercent') {
+                maxValues.semester.reputationPercent = 100
+              } else {
+                if (typeof maxValues.semester[ key ] === 'undefined' || analytic.semester[ key ] > maxValues.semester[ key ]) {
+                  maxValues.semester[ key ] = analytic.semester[ key ]
+                }
+              }
+            }
+          }
+          for (var key in analytic.overall) {
+            if (key.includes("Array") || key === 'reputationScore') {
+              continue
+            }
+            if (Object.prototype.hasOwnProperty.call(analytic.overall, key)) {
+              if (key === 'reputationPercent') {
+                maxValues.overall.reputationPercent = 100
+              } else {
+                if (typeof maxValues.overall[ key ] === 'undefined' || analytic.overall[ key ] > maxValues.overall[ key ]) {
+                  maxValues.overall[ key ] = analytic.overall[ key ]
+                }
+              }
+            }
+          }
+        })
+        for (var key in analytics[ selectedOption ].semester) {
+          if (key.includes("Array") || key === 'reputationScore') {
+            continue
+          }
+          if (Object.prototype.hasOwnProperty.call(analytics[ selectedOption ].semester, key)) {
+            var analyticName = getAnalyticName(key)
+            data.push({
+              period: 'semester',
+              analytic: analyticName,
+              value: analytics[ selectedOption ].semester[ key ],
+              valuePercent: maxValues.semester[ key ] > 0 ? analytics[ selectedOption ].semester[ key ] / maxValues.semester[ key ] : 0,
+              max: maxValues.semester[ key ]
+            })
+          }
+        }
+        for (var key in analytics[ selectedOption ].overall) {
+          if (key.includes("Array") || key === 'reputationScore') {
+            continue
+          }
+          if (Object.prototype.hasOwnProperty.call(analytics[ selectedOption ].overall, key)) {
+            var analyticName = getAnalyticName(key)
+            data.push({
+              period: 'overall',
+              analytic: analyticName,
+              value: analytics[ selectedOption ].overall[ key ],
+              valuePercent: maxValues.overall[ key ] > 0 ? analytics[ selectedOption ].overall[ key ] / maxValues.overall[ key ] : 0,
+              max: maxValues.overall[ key ]
+            })
+          }
+        }
+        var chart = new Taucharts.Chart({
+          data: data,
+          type: 'horizontalBar',
+          x: 'valuePercent',
+          y: 'analytic',
+          color: 'period',
+          plugins: [
+            Taucharts.api.plugins.get('tooltip')({
+              fields: [ 'analytic', 'value', 'max' ]
+            }),
+            Taucharts.api.plugins.get('legend')()
+          ]
+        })
+        chart.renderTo('#dj-analytics-graph')
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  }
+})
+
 document.querySelector(`#track-requests`).addEventListener('click', function (e) {
   try {
     console.log(e.target.id)
@@ -9654,7 +9836,7 @@ function hostSocket (cb = function (token) { }) {
 
       if (client.otherHosts) { processHosts(client.otherHosts, true) }
 
-      ipcRenderer.send(`audio-should-record`, client.recordAudio && client.authorized)
+      ipcRenderer.send(`audio-should-record`, client.recordAudio && client.authorized && !development)
       // authtoken = client.token;
       if (!client.authorized) {
         var noConnection = document.getElementById('no-connection')
@@ -14743,5 +14925,44 @@ function errorIfLockDJ (action, cb) {
       drag: false,
       closeOnClick: true
     })
+  }
+}
+
+function getAnalyticName (key) {
+  switch (key) {
+    case 'showtime':
+      return 'On-Air Time (minutes)'
+    case 'tuneins':
+      return 'Online Listener Tune-ins'
+    case 'listeners':
+      return 'Online Listener Time (minutes)'
+    case 'ratio':
+      return 'Online Listener time to On-Air time Ratio'
+    case 'messages':
+      return 'Web/mobile visitor messages'
+    case 'xp':
+      return 'Experience Points (XP)'
+    case 'remoteCredits':
+      return 'Remote Credits'
+    case 'shows':
+      return '# of Live Shows'
+    case 'prerecords':
+      return '# of Prerecorded Shows'
+    case 'remotes':
+      return '# of Remote Broadcasts'
+    case 'offStart':
+      return '# of early/late show starts'
+    case 'offEnd':
+      return '# of early/late sign-offs'
+    case 'absences':
+      return '# of unexcused absences'
+    case 'cancellations':
+      return '# of cancellations'
+    case 'missedIDs':
+      return '# of missed Top-of-hour ID breaks'
+    case 'reputationPercent':
+      return 'DJ Reputation Score'
+    default:
+      return 'Unknown Analytic'
   }
 }

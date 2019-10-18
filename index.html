@@ -1613,6 +1613,8 @@
                     title="Add a new DJ into the system">New DJ</button>
                 <button type="button" class="btn btn-purple btn-lg" id="options-dj-mass-xp"
                     title="Mass-add notes, remote credits, or XP to multiple DJs.">Add Note/Remote/XP</button>
+                <button type="button" class="btn btn-secondary btn-lg" id="options-dj-analytics"
+                    title="Open a window to see graphs of various DJ analytics.">Analytics Graphs</button>
             </div>
         </div>
     </div>
@@ -3306,6 +3308,62 @@
                 <div class="container text-dark bg-light-1" id="track-spins-list"
                     style="max-height: 240px; overflow-y: scroll;">
                 </div>
+            </div>
+            <div class="modal-footer bg-light-1">
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="options-modal-dj-analytics" tabindex="-1" role="dialog">
+        <div class="modal-content text-dark bg-light-3">
+            <header class="navbar navbar-full bg-secondary doc-navbar-default">
+                <span class="navbar-brand mr-auto text-white">DJ Analytics Graphs</span>
+                <div class="iziModal-header-buttons"><a href="javascript:void(0)"
+                        class="iziModal-button iziModal-button-close" data-izimodal-close="" title="Close window"></a>
+                </div>
+            </header>
+            <div class="modal-body" style="max-height: 640px; overflow: scroll;">
+                <label for="dj-analytics-select">Choose an analytic to see how all DJs perform</label>
+                <select class="form-control" id="dj-analytics-select">
+                    <option value="">Choose an analytic to view...</option>
+                    <option value="semester-shows"># of live shows (semester)</option>
+                    <option value="overall-shows"># of live shows (lifetime)</option>
+                    <option value="semester-prerecords"># of prerecorded shows (semester)</option>
+                    <option value="overall-prerecords"># of prerecorded shows (overall)</option>
+                    <option value="semester-remotes"># of remote broadcasts (semester)</option>
+                    <option value="overall-remotes"># of remote broadcasts (overall)</option>
+                    <option value="semester-showtime">Time on the air [minutes] (semester)</option>
+                    <option value="overall-showtime">Time on the air [minutes] (overall)</option>
+                    <option value="semester-tuneins"># of online listener tune-ins (semester)</option>
+                    <option value="overall-tuneins"># of online listener tune-ins (overall)</option>
+                    <option value="semester-listeners">Online listener time [minutes] (semester)</option>
+                    <option value="overall-listeners">Online listener time [minutes] (overall)</option>
+                    <option value="semester-ratio">Online listener time to on-air time ratio (semester)</option>
+                    <option value="overall-ratio">Online listener time to on-air time ratio (overall)</option>
+                    <option value="semester-messages">Web/mobile messages sent / received (semester)</option>
+                    <option value="overall-messages">Web/mobile messages sent / received (overall)</option>
+                    <option value="semester-remoteCredits">Remote Credits (semester)</option>
+                    <option value="overall-remoteCredits">Remote Credits (overall)</option>
+                    <option value="semester-xp">Experience Points [XP] (semester)</option>
+                    <option value="overall-xp">Experience Points [XP] (overall)</option>
+                    <option value="semester-reputationPercent">Reputation Score (semester)</option>
+                    <option value="overall-reputationPercent">Reputation Score (overall)</option>
+                    <option value="semester-absences">Absences (semester)</option>
+                    <option value="overall-absences">Absences (overall)</option>
+                    <option value="semester-cancellations">Cancellations (semester)</option>
+                    <option value="overall-cancellations">Cancellations (overall)</option>
+                    <option value="semester-missedIDs">Missed Top-of-hour IDs (semester)</option>
+                    <option value="overall-missedIDs">Missed Top-of-hour IDs (overall)</option>
+                    <option value="semester-offStart">Early/Late starts (semester)</option>
+                    <option value="overall-offStart">Early/Late starts (overall)</option>
+                    <option value="semester-offEnd">Early/Late sign-offs (semester)</option>
+                    <option value="overall-offEnd">Early/Late sign-offs (overall)</option>
+                </select>
+                <label for="dj-analytics-select2">Choose a DJ to view all analytics for that DJ...</label>
+                <select class="form-control" id="dj-analytics-select2">
+                    <option value="">Choose a DJ to view analytics...</option>
+                </select>
+                <div class="container m-1" id="dj-analytics-graph"></div>
             </div>
             <div class="modal-footer bg-light-1">
             </div>

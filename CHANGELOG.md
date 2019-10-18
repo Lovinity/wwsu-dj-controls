@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
  - "ON AIR" badge that becomes visible under the queue, especially useful for remote broadcasts to let the producer know their input device is going on the air.
+ - Under Manage DJs, there is an option to open analytic graphs and see a wide variety of analytics for DJs.
 
 ### Changed
  - Adjusted DJ Controls to utilize Meta.showCountdown and Meta.queueCalculating.
