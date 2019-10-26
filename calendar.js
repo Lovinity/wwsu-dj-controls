@@ -941,20 +941,20 @@ function processDarksky (db, time) {
       }
 
       // Apparent temperature, cold
-      if (item.currently.apparentTemperature <= -48) {
+      if (item.currently.apparentTemperature <= -35) {
         weatherMessages += `<i style="font-size: 16px;"class="fas fa-temperature-low"></i> <strong>Dangerous Wind Chill!</strong> ${item.currently.apparentTemperature}°F<br />`
-      } else if (item.currently.apparentTemperature <= -32) {
+      } else if (item.currently.apparentTemperature <= -20) {
         weatherMessages += `<i style="font-size: 16px;"class="fas fa-temperature-low"></i> <strong>Very Low Wind Chill!</strong> ${item.currently.apparentTemperature}°F<br />`
-      } else if (item.currently.apparentTemperature <= -18) {
+      } else if (item.currently.apparentTemperature <= -5) {
         weatherMessages += `<i style="font-size: 16px;"class="fas fa-temperature-low"></i> Low Wind Chill. ${item.currently.apparentTemperature}°F<br />`
       }
 
       // Apparent temperature, hot
-      if (item.currently.apparentTemperature >= 115) {
+      if (item.currently.apparentTemperature >= 120) {
         weatherMessages += `<i style="font-size: 16px;"class="fas fa-temperature-high"></i> <strong>Dangerous Heat Index!</strong> ${item.currently.apparentTemperature}°F<br />`
-      } else if (item.currently.apparentTemperature >= 103) {
+      } else if (item.currently.apparentTemperature >= 110) {
         weatherMessages += `<i style="font-size: 16px;"class="fas fa-temperature-high"></i> <strong>Very High Index!</strong> ${item.currently.apparentTemperature}°F<br />`
-      } else if (item.currently.apparentTemperature >= 91) {
+      } else if (item.currently.apparentTemperature >= 100) {
         weatherMessages += `<i style="font-size: 16px;"class="fas fa-temperature-high"></i> High Heat Index. ${item.currently.apparentTemperature}°F<br />`
       }
 
