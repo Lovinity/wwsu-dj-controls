@@ -3,6 +3,7 @@ const { app, BrowserWindow, dialog, session, ipcMain } = require('electron')
 const { machineIdSync } = require('node-machine-id')
 const serialport = require('serialport')
 const fs = require('fs')
+const path = require('path')
 const settings = require('electron-settings')
 
 /*
@@ -568,6 +569,11 @@ ipcMain.on('audio-should-record', (event, arg) => {
 
 ipcMain.on('audio-save-file', (event, arg) => {
   try {
+
+    if (!fs.existsSync(path.dirname(arg[ 0 ]))) {
+      fs.mkdirSync(path.dirname(arg[ 0 ]))
+    }
+
     console.log(`audio save file ${arg[ 0 ]}`)
     fs.writeFile(arg[ 0 ], arg[ 1 ], function (err) {
       if (err) {
@@ -661,7 +667,7 @@ exports.getMachineID = () => {
 }
 
 exports.directoryBrowse = () => {
-  return dialog.showOpenDialog({
+  return dialog.showOpenDialogSync({
     properties: [ 'openDirectory' ]
   })
 }

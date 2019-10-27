@@ -41,24 +41,32 @@ var recorder = new WebAudioRecorder(audioContext2, {
 })
 recorder.onEncoderLoaded = function (recorder, encoding) {
   var startRecording = null
+  var temp = ``
   var preText = ``
+  var preText2 = ``
   ipcRenderer.send('main-log', `Audio: Rcording encoders are loaded.`)
   if (Meta.state === 'live_on' || Meta.state === `prerecord_on`) {
     startRecording = 'live'
-    preText = `${sanitize(Meta.show)}${Meta.state === `prerecord_on` ? ` PRERECORDED` : ``}`
+    temp = Meta.show.split(' - ')
+    preText = sanitize(temp[ 0 ])
+    preText2 = `${sanitize(temp[ 1 ])}${Meta.state === `prerecord_on` ? ` PRERECORDED` : ``}`
   } else if (Meta.state === 'remote_on') {
     startRecording = 'remote'
-    preText = sanitize(Meta.show)
+    temp = Meta.show.split(' - ')
+    preText = sanitize(temp[ 0 ])
+    preText2 = sanitize(temp[ 1 ])
   } else if (Meta.state === 'sports_on' || Meta.state === 'sportsremote_on') {
     startRecording = 'sports'
     preText = sanitize(Meta.show)
+    preText2 = sanitize(Meta.show)
   } else if (Meta.state.startsWith('automation_') && (!Meta.state.includes('_break') && !Meta.state.includes('_returning') && !Meta.state.includes('_halftime'))) {
     startRecording = 'automation'
     preText = sanitize(Meta.genre)
+    preText2 = sanitize(Meta.genre)
   }
   if (startRecording !== null) {
     if (recordAudio) {
-      newRecording(`${startRecording}/${preText} (${moment().format('YYYY_MM_DD HH_mm_ss')}).mp3`, true)
+      newRecording(`${startRecording}/${preText}/${preText} - ${preText2} (${moment().format('YYYY_MM_DD HH_mm_ss')}).mp3`, true)
     }
   }
 }
@@ -70,7 +78,7 @@ recorder.onComplete = function (recorder, blob) {
   var fileReader = new FileReader()
   fileReader.onload = function () {
     arrayBuffer = Buffer.from(new Uint8Array(this.result))
-    ipcRenderer.send(`audio-save-file`, [`${settings.get(`recorder.path`) || ``}/${recorderTitle2}`, arrayBuffer])
+    ipcRenderer.send(`audio-save-file`, [ `${settings.get(`recorder.path`) || ``}/${recorderTitle2}`, arrayBuffer ])
   }
   fileReader.readAsArrayBuffer(blob)
   encodedFunction()
@@ -82,18 +90,25 @@ recorder.onTimeout = function () {
   console.log(`Recording timed out.`)
   var startRecording = null
   var preText = ``
-  if (Meta.state === 'live_on' || Meta.state === 'prerecord_on') {
+
+  if (Meta.state === 'live_on' || Meta.state === `prerecord_on`) {
     startRecording = 'live'
-    preText = `${sanitize(Meta.show)}${Meta.state === 'prerecord_on' ? ` PRERECORDED` : ``}`
+    temp = Meta.show.split(' - ')
+    preText = sanitize(temp[ 0 ])
+    preText2 = `${sanitize(temp[ 1 ])}${Meta.state === `prerecord_on` ? ` PRERECORDED` : ``}`
   } else if (Meta.state === 'remote_on') {
     startRecording = 'remote'
-    preText = sanitize(Meta.show)
+    temp = Meta.show.split(' - ')
+    preText = sanitize(temp[ 0 ])
+    preText2 = `${sanitize(temp[ 1 ])}${Meta.state === `prerecord_on` ? ` PRERECORDED` : ``}`
   } else if (Meta.state === 'sports_on' || Meta.state === 'sportsremote_on') {
     startRecording = 'sports'
     preText = sanitize(Meta.show)
+    preText2 = sanitize(Meta.show)
   } else if (Meta.state === `automation_on` || Meta.state === `automation_genre` || Meta.state === `automation_playlist`) {
     startRecording = 'automation'
     preText = sanitize(Meta.genre)
+    preText2 = sanitize(Meta.genre)
   } else if (Meta.state.includes('_break') || Meta.state.includes('_returning') || Meta.state.includes('_halftime')) {
     if (recordAudio) {
       stopRecording()
@@ -101,10 +116,11 @@ recorder.onTimeout = function () {
   } else {
     startRecording = 'automation'
     preText = sanitize(Meta.genre)
+    preText2 = sanitize(Meta.genre)
   }
   if (startRecording !== null) {
     if (recordAudio) {
-      newRecording(`${startRecording}/${preText} (${moment().format('YYYY_MM_DD HH_mm_ss')}).mp3`, true)
+      newRecording(`${startRecording}/${preText}/${preText} - ${preText2} (${moment().format('YYYY_MM_DD HH_mm_ss')}).mp3`, true)
     }
   }
 }
@@ -113,31 +129,39 @@ ipcRenderer.send('audio-ready', null)
 
 ipcRenderer.on('new-meta', (event, arg) => {
   var startRecording = null
+  var temp
   var preText = ``
+  var preText2 = ``
   for (var key in arg) {
     if (Object.prototype.hasOwnProperty.call(arg, key)) {
-      if (key === 'state' && arg[key] !== Meta[key]) {
+      if (key === 'state' && arg[ key ] !== Meta[ key ]) {
         console.log(Meta.state)
-        console.log(arg[key])
-        if (arg[key] === 'live_on' || arg[key] === 'prerecord_on') {
+        console.log(arg[ key ])
+        if (arg[ key ] === 'live_on' || arg[ key ] === 'prerecord_on') {
           startRecording = 'live'
-          preText = `${sanitize(Meta.show)}${arg[key] === 'prerecord_on' ? ` PRERECORDED` : ``}`
-        } else if (arg[key] === 'remote_on') {
+          temp = Meta.show.split(' - ')
+          preText = sanitize(temp[ 0 ])
+          preText2 = `${sanitize(temp[ 1 ])}${Meta.state === `prerecord_on` ? ` PRERECORDED` : ``}`
+        } else if (arg[ key ] === 'remote_on') {
           startRecording = 'remote'
-          preText = sanitize(Meta.show)
-        } else if (arg[key] === 'sports_on' || arg[key] === 'sportsremote_on') {
+          temp = Meta.show.split(' - ')
+          preText = sanitize(temp[ 0 ])
+          preText2 = sanitize(temp[ 1 ])
+        } else if (arg[ key ] === 'sports_on' || arg[ key ] === 'sportsremote_on') {
           startRecording = 'sports'
           preText = sanitize(Meta.show)
-        } else if (arg[key] === `automation_on` || arg[key] === `automation_genre` || arg[key] === `automation_playlist`) {
+          preText2 = sanitize(Meta.show)
+        } else if (arg[ key ] === `automation_on` || arg[ key ] === `automation_genre` || arg[ key ] === `automation_playlist`) {
           startRecording = 'automation'
           preText = sanitize(Meta.genre)
-        } else if (arg[key].includes('_break') || arg[key].includes('_returning') || arg[key].includes('_halftime')) {
+          preText2 = sanitize(Meta.genre)
+        } else if (arg[ key ].includes('_break') || arg[ key ].includes('_returning') || arg[ key ].includes('_halftime')) {
           if (recordAudio) {
             stopRecording()
           }
         }
       }
-      Meta[key] = arg[key]
+      Meta[ key ] = arg[ key ]
     }
   }
   console.log(preText)
@@ -145,7 +169,7 @@ ipcRenderer.on('new-meta', (event, arg) => {
   console.log(recordAudio)
   if (startRecording !== null) {
     if (recordAudio) {
-      newRecording(`${startRecording}/${preText} (${moment().format('YYYY_MM_DD HH_mm_ss')}).mp3`)
+      newRecording(`${startRecording}/${preText}/${preText} - ${preText2} (${moment().format('YYYY_MM_DD HH_mm_ss')}).mp3`)
     }
   }
 })
@@ -178,19 +202,24 @@ ipcRenderer.on('audio-shut-down', (event, arg) => {
 ipcRenderer.on('audio-start-new-recording', (event, arg) => {
   ipcRenderer.send('main-log', `Audio: New recording requested by another renderer.`)
   var startRecording = null
-  var preText = ``
-  if (Meta.state === 'live_on' || Meta.state === 'prerecord_on') {
+  if (Meta.state === 'live_on' || Meta.state === `prerecord_on`) {
     startRecording = 'live'
-    preText = `${sanitize(Meta.show)}${Meta.state === 'prerecord_on' ? ` PRERECORDED` : ``}`
+    temp = Meta.show.split(' - ')
+    preText = sanitize(temp[ 0 ])
+    preText2 = `${sanitize(temp[ 1 ])}${Meta.state === `prerecord_on` ? ` PRERECORDED` : ``}`
   } else if (Meta.state === 'remote_on') {
     startRecording = 'remote'
-    preText = sanitize(Meta.show)
+    temp = Meta.show.split(' - ')
+    preText = sanitize(temp[ 0 ])
+    preText2 = `${sanitize(temp[ 1 ])}${Meta.state === `prerecord_on` ? ` PRERECORDED` : ``}`
   } else if (Meta.state === 'sports_on' || Meta.state === 'sportsremote_on') {
     startRecording = 'sports'
     preText = sanitize(Meta.show)
+    preText2 = sanitize(Meta.show)
   } else if (Meta.state === `automation_on` || Meta.state === `automation_genre` || Meta.state === `automation_playlist`) {
     startRecording = 'automation'
     preText = sanitize(Meta.genre)
+    preText2 = sanitize(Meta.genre)
   } else if (Meta.state.includes('_break') || Meta.state.includes('_returning') || Meta.state.includes('_halftime')) {
     if (recordAudio) {
       stopRecording()
@@ -198,10 +227,11 @@ ipcRenderer.on('audio-start-new-recording', (event, arg) => {
   } else {
     startRecording = 'automation'
     preText = sanitize(Meta.genre)
+    preText2 = sanitize(Meta.genre)
   }
   if (startRecording !== null) {
     if (recordAudio) {
-      newRecording(`${startRecording}/${preText} (${moment().format('YYYY_MM_DD HH_mm_ss')}).mp3`)
+      newRecording(`${startRecording}/${preText}/${preText} - ${preText2} (${moment().format('YYYY_MM_DD HH_mm_ss')}).mp3`, true)
     }
   }
 })
@@ -256,7 +286,7 @@ function getAudioMain (device) {
           clearTimeout(silenceTimer)
         }
 
-        ipcRenderer.send(`audio-audio-info`, [maxVolume, clipping, silenceState])
+        ipcRenderer.send(`audio-audio-info`, [ maxVolume, clipping, silenceState ])
       })
 
       recorder.setNode(analyserStream2)
@@ -287,17 +317,17 @@ function createAudioMeter (audioContext, clipLevel, averaging, clipLag) {
   processor.connect(audioContext.destination)
 
   processor.checkClipping =
-            function () {
-              if (!this.clipping) { return false }
-              if ((this.lastClip + this.clipLag) < window.performance.now()) { this.clipping = false }
-              return this.clipping
-            }
+    function () {
+      if (!this.clipping) { return false }
+      if ((this.lastClip + this.clipLag) < window.performance.now()) { this.clipping = false }
+      return this.clipping
+    }
 
   processor.shutdown =
-            function () {
-              this.disconnect()
-              this.onaudioprocess = null
-            }
+    function () {
+      this.disconnect()
+      this.onaudioprocess = null
+    }
 
   return processor
 }
@@ -312,7 +342,7 @@ function volumeAudioProcess (event) {
 
   // Do a root-mean-square on the samples: sum up the squares...
   for (var i = 0; i < bufLength; i++) {
-    x = buf[i]
+    x = buf[ i ]
     if (Math.abs(x) > maxVolume) { maxVolume = Math.abs(x) }
     if (Math.abs(x) >= this.clipLevel) {
       this.clipping = true
