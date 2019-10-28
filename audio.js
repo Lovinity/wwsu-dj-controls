@@ -391,10 +391,10 @@ function newRecording (filename, forced = false) {
     }
     try {
       if (pendingTitle) {
-        ipcRenderer.send('main-log', `Audio: A new recording was started at ${recorderTitle}`)
+        ipcRenderer.send('main-log', `Audio: A new recording was started at ${pendingTitle}`)
         currentTitle = pendingTitle
         recorder.startRecording()
-        console.log(`Started recording at ${recorderTitle}`)
+        console.log(`Started recording at ${pendingTitle}`)
       }
     } catch (eee) {
       console.error(eee)
