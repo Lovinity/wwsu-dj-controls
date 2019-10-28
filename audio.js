@@ -386,6 +386,7 @@ function newRecording (filename, forced = false) {
         console.log(`Finished recording`)
       }
     } catch (eee) {
+      console.log(eee)
       console.log(`No recorder.`)
     }
     try {
@@ -396,6 +397,7 @@ function newRecording (filename, forced = false) {
         console.log(`Started recording at ${recorderTitle}`)
       }
     } catch (eee) {
+      console.error(eee)
       console.log(`No recorder 2`)
     }
   }
