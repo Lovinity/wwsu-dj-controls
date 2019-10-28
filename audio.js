@@ -6,7 +6,7 @@ var settings = require('electron-settings')
 var Sanitize = require('sanitize-filename')
 const EventEmitter = require('events')
 
-var Meta = { state: 'unknown', playing: false }
+var Meta = { state: 'unknown', playing: false, show: 'Unknown - Unknown' }
 
 window.mainStream = undefined
 window.mainDevice = undefined
@@ -162,12 +162,6 @@ ipcRenderer.on('new-meta', (event, arg) => {
           }
         }
       }
-    }
-  }
-
-  // Now, go through every arg again and update Meta.
-  for (var key in arg) {
-    if (Object.prototype.hasOwnProperty.call(arg, key)) {
       Meta[ key ] = arg[ key ]
     }
   }
