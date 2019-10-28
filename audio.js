@@ -13,8 +13,9 @@ window.mainDevice = undefined
 window.mainVolume = -100
 
 var analyserStream2
-var recorderTitle
-var recorderTitle2
+var pendingTitle
+var currentTitle
+var encodingTitle
 var silenceTimer
 var silenceState = 0
 var recorderPending = false
@@ -72,13 +73,13 @@ recorder.onEncoderLoaded = function (recorder, encoding) {
 }
 
 recorder.onComplete = function (recorder, blob) {
-  console.log(`Finished encoding. Saving to ${settings.get(`recorder.path`) || ``}/${recorderTitle2}`)
-  ipcRenderer.send('main-log', `Audio: Encoding finished. Saving file to ${settings.get(`recorder.path`) || ``}/${recorderTitle2}`)
+  console.log(`Finished encoding. Saving to ${settings.get(`recorder.path`) || ``}/${encodingTitle}`)
+  ipcRenderer.send('main-log', `Audio: Encoding finished. Saving file to ${settings.get(`recorder.path`) || ``}/${encodingTitle}`)
   var arrayBuffer
   var fileReader = new FileReader()
   fileReader.onload = function () {
     arrayBuffer = Buffer.from(new Uint8Array(this.result))
-    ipcRenderer.send(`audio-save-file`, [ `${settings.get(`recorder.path`) || ``}/${recorderTitle2}`, arrayBuffer ])
+    ipcRenderer.send(`audio-save-file`, [ `${settings.get(`recorder.path`) || ``}/${encodingTitle}`, arrayBuffer ])
   }
   fileReader.readAsArrayBuffer(blob)
   encodedFunction()
@@ -161,9 +162,16 @@ ipcRenderer.on('new-meta', (event, arg) => {
           }
         }
       }
+    }
+  }
+
+  // Now, go through every arg again and update Meta.
+  for (var key in arg) {
+    if (Object.prototype.hasOwnProperty.call(arg, key)) {
       Meta[ key ] = arg[ key ]
     }
   }
+
   console.log(preText)
   console.log(startRecording)
   console.log(recordAudio)
@@ -377,9 +385,9 @@ function sanitize (str) {
 
 function newRecording (filename, forced = false) {
   var _newRecording = () => {
-    recorderTitle = filename
     try {
       if (recorder.isRecording()) {
+        encodingTitle = currentTitle
         recorder.finishRecording()
         console.log(`Finished recording`)
       }
@@ -387,8 +395,9 @@ function newRecording (filename, forced = false) {
       console.log(`No recorder.`)
     }
     try {
-      if (recorderTitle) {
+      if (pendingTitle) {
         ipcRenderer.send('main-log', `Audio: A new recording was started at ${recorderTitle}`)
+        currentTitle = pendingTitle
         recorder.startRecording()
         console.log(`Started recording at ${recorderTitle}`)
       }
@@ -397,7 +406,7 @@ function newRecording (filename, forced = false) {
     }
   }
 
-  recorderTitle2 = recorderTitle
+  pendingTitle = filename
   if (forced) {
     _newRecording()
   } else if (!recorderPending) {
@@ -408,9 +417,6 @@ function newRecording (filename, forced = false) {
       recorderPending = false
     }, settings.get(`recorder.delay`) || 1)
   } else {
-    setTimeout(function () {
-      recorderTitle = filename
-    }, settings.get(`recorder.delay`) || 1)
     console.log(`No new recording; pending to start one already.`)
   }
 }
@@ -418,7 +424,8 @@ function newRecording (filename, forced = false) {
 function stopRecording (forced = false) {
   var _stopRecording = () => {
     try {
-      if (recorder.isRecording()) {
+      if (recorder.isRecording() && (!recorderPending || forced)) {
+        encodingTitle = currentTitle
         recorder.finishRecording()
         console.log(`Finished recording`)
       }
@@ -427,7 +434,6 @@ function stopRecording (forced = false) {
     }
   }
 
-  recorderTitle2 = recorderTitle
   if (forced) {
     _stopRecording()
   } else {
