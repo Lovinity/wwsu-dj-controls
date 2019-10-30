@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
  - Adjusted DJ Controls to utilize Meta.showCountdown and Meta.queueCalculating.
  - Utilized datatable.js for many of the menus.
+ - Updated Manage Underwritings to utilize moficiations to underwriting schedules.
 
 ## [6.0.0 BETA]
 ### Added

@@ -14603,20 +14603,20 @@ function loadUnderwriting (ID = null) {
           } else {
             document.querySelector('#modal-underwriting-listeners').checked = false
           }
-          var schedules = []
-          if (underwriting.mode.schedule !== `undefined` && typeof underwriting.mode.schedule.schedules !== `undefined` && underwriting.mode.schedule.schedules.length > 0) {
+          var schedules = underwriting.mode.schedule.schedules !== null || underwriting.mode.scheduleForced.schedules !== null ? [] : null
+          if (underwriting.mode.schedule !== `undefined` && typeof underwriting.mode.schedule.schedules !== `undefined` && underwriting.mode.schedule.schedules !== null && underwriting.mode.schedule.schedules.length > 0) {
             underwriting.mode.schedule.schedules.map((schedule, index) => {
               schedule.forced = false
               schedules.push(schedule)
             })
           }
-          if (underwriting.mode.scheduleForced !== `undefined` && typeof underwriting.mode.scheduleForced.schedules !== `undefined` && underwriting.mode.scheduleForced.schedules.length > 0) {
+          if (underwriting.mode.scheduleForced !== `undefined` && typeof underwriting.mode.scheduleForced.schedules !== `undefined` && underwriting.mode.scheduleForced.schedules !== null && underwriting.mode.scheduleForced.schedules.length > 0) {
             underwriting.mode.scheduleForced.schedules.map((schedule, index) => {
               schedule.forced = true
               schedules.push(schedule)
             })
           }
-          if (schedules.length > 0) {
+          if (schedules !== null && schedules.length > 0) {
             schedules.map((schedule, index) => {
               temp9.innerHTML += `<div class="row m-1" id="options-underwriting-schedule-entry-${index}">
                     <div class="col-9 text-primary">
@@ -14837,6 +14837,9 @@ function loadTrackInfo (trackID) {
 }
 
 function parseSchedule (schedule) {
+  if (schedule === null) {
+    return `It will not air.`
+  }
   var string = `It could air `
   if (schedule.forced) { string = `It will air once per hour ` }
   if (typeof schedule.dw === `undefined` || schedule.dw.length === 0) {
