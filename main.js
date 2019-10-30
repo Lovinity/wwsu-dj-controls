@@ -740,7 +740,7 @@ exports.restartDelay = () => {
       delaySerial.on('error', (err) => {
         console.error(err)
         mainWindow.webContents.send('main-log', `Error on Delay System serial: ${err.message}`)
-        if (err.disconnected || !delaySerial.isOpen) {
+        if (err.disconnected || typeof delaySerial.isOpen === 'undefined' || !delaySerial.isOpen) {
           mainWindow.webContents.send('main-log', `Delay System serial is disconnected. Reconnecting in 15 seconds.`)
           setTimeout(() => {
             exports.restartDelay()
