@@ -24,7 +24,6 @@
     <script src="assets/js/jdenticon.min.js"></script>
     <script src="assets/js/sails.io.js" autoConnect="false"></script>
     <script src="assets/js/quill.js"></script>
-    <script src="assets/js/bug.js"></script>
     <script src="assets/js/datatables.min.js"></script>
     <script src="assets/js/d3.min.js" charset="utf-8"></script>
     <script src="assets/js/taucharts.min.js" type="text/javascript"></script>
@@ -566,7 +565,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
-<body class="text-light" style="background: #461d0a;">
+<body class="text-light" style="background: #000000;">
 
     <div id="no-connection" class="overlay">
         <div class="text container-fluid" style="text-align: center;">
@@ -576,11 +575,13 @@
     </div>
 
     <div class="d-flex justify-content-center flex-wrap p-3 m-3">
-        <div class="card p-1 m-3 text-white" id="operations"
-            style="width: 640px; height: 360px; background: #753011; position: relative;">
+        <div class="card p-1 m-3 text-white bg-dark" id="operations"
+            style="width: 640px; height: 360px; position: relative;">
+            <!--
             <img src="assets/images/halloween/cat.png"
                 style="position: absolute; max-height: 96px; top: -32px; left: -32px;"
                 title="Wouldn't it be a *cat*astrophe if someone played a trick on you?">
+            -->
             <div id="connecting-modal" class="bg-warning text-dark" style="font-size: 2em; text-align: center;">
                 Establishing an audio call...
             </div>
@@ -759,27 +760,29 @@
                     </div>
                 </div>
             </div>
-            <div class="card-footer shadow-1"
-                style="color: #FFFFFF; text-align: center; height: 64px; background: #461d0a;"
+            <div class="card-footer shadow-1 bg-dark-1"
+                style="color: #FFFFFF; text-align: center; height: 64px;"
                 title="This is what website and display sign visitors see is currently playing on WWSU.">
                 <div id="nowplaying-seek" style="height: 4px; opacity: 0.5;"></div>
                 <div style="color: #FFFFFF; font-size: 0.8em; position: relative;" id="nowplaying"></div>
             </div>
         </div>
 
-        <div class="card p-1 m-3 text-white" id="announcements"
-            style="position: relative; width: 640px; height: 360px; background: #753011;">
+        <div class="card p-1 m-3 text-white bg-dark" id="announcements"
+            style="position: relative; width: 640px; height: 360px;">
+            <!--
             <img src="assets/images/halloween/spider.png"
                 style="position: absolute; max-height: 96px; top: 0x; right: 0px;"
                 title="If you want to live, follow the instructions found *on the web*.">
+            -->
             <div class="card-header text-center" style="font-size: 1.5em;">Announcements<br /><span
                     style="font-size: 0.5em;">Click for more information</span></div>
             <div class="card-body" style="overflow: auto;">
                 <div class="list-group text-white" id="announcements-body">
                 </div>
             </div>
-            <div class="card-footer shadow-1"
-                style="position: relative; color: #FFFFFF; height: 64px; background: #461d0a;"
+            <div class="card-footer shadow-1 bg-dark-1"
+                style="position: relative; color: #FFFFFF; height: 64px;"
                 title="Current weather information at WWSU Radio.">
                 <div style="color: #FFFFFF; font-size: 0.8em; position: absolute; top: 0; width: 95%; height: 64px;">
                     <div class="d-flex">
@@ -808,13 +811,15 @@
             </div>
         </div>
 
-        <div class="card p-1 m-3 text-white" id="messaging"
-            style="position: relative; width: 640px; height: 360px; background: #753011;">
+        <div class="card p-1 m-3 text-white bg-dark" id="messaging"
+            style="position: relative; width: 640px; height: 360px;">
+            <!--
             <img src="assets/images/halloween/witch.png"
                 style="position: absolute; max-height: 96px; top: -24px; left: -24px;"
                 title="If a spell is cast on you, use some *witch* hazel to undo it.">
             <img src="assets/images/halloween/happy.png"
                 style="position: absolute; max-height: 96px; top: -24px; right: 0px;" title="Happy Halloween!">
+            -->
             <div class="card-header text-center" style="font-size: 1.5em;">Messaging</div>
             <div class="card-body">
                 <div class="container">
@@ -864,11 +869,13 @@
             </div>
         </div>
 
-        <div class="card p-1 m-3 text-white" id="calendar"
-            style="position: relative; width: 640px; height: 360px; background: #753011;">
+        <div class="card p-1 m-3 text-white bg-dark" id="calendar"
+            style="position: relative; width: 640px; height: 360px;">
+            <!--
             <img src="assets/images/halloween/pumpkin.png"
                 style="position: absolute; max-height: 96px; top: -24px; right: -24px;"
                 title="Are my *pun-kins* too much for you?">
+            -->
             <div class="card-header text-center" id="calendar-title" style="font-size: 1.5em;">Calendar (next 12 hours)
             </div>
             <div class="card-body">

@@ -26,12 +26,14 @@ try {
     }
 
     // Random spiders
+    /*
     if (!spider && (Math.random() * (60 * 60)) >= 3599) {
       spider = new SpiderController({ minBugs: 1, maxBugs: 1, canDie: false, mouseOver: 'nothing' })
     } else if ((Math.random() * (5 * 60)) >= 299) {
       spider.end()
       spider = undefined
     }
+    */
   }, 1000)
 
   var addAnimation = (name, fn) => {
@@ -146,6 +148,7 @@ try {
           position: 'center',
           closeOnClick: false,
           overlay: true,
+          overlayColor: 'rgba(255, 255, 0, 0.33)',
           zindex: 501,
           layout: 2,
           image: `assets/images/sportsOff.png`,
@@ -181,6 +184,7 @@ try {
           position: 'center',
           closeOnClick: false,
           overlay: true,
+          overlayColor: 'rgba(255, 255, 0, 0.33)',
           zindex: 501,
           layout: 2,
           image: `assets/images/remoteOff.png`,
@@ -216,6 +220,7 @@ try {
           position: 'center',
           closeOnClick: false,
           overlay: true,
+          overlayColor: 'rgba(255, 0, 0, 0.33)',
           zindex: 501,
           layout: 2,
           image: `assets/images/showOff.png`,
@@ -255,6 +260,7 @@ try {
           position: 'center',
           closeOnClick: false,
           overlay: true,
+          overlayColor: 'rgba(255, 0, 0, 0.33)',
           zindex: 501,
           layout: 2,
           image: `assets/images/prerecordOff.png`,
@@ -290,6 +296,7 @@ try {
           position: 'center',
           closeOnClick: false,
           overlay: true,
+          overlayColor: 'rgba(255, 0, 0, 0.33)',
           zindex: 501,
           layout: 2,
           image: `assets/images/prerecordOff.png`,
@@ -1367,16 +1374,16 @@ try {
       if (messaging) { messaging.className = 'card p-1 m-3 text-white bg-info' }
       messageFlash2 = setTimeout(function () {
         if (messaging) {
-          // messaging.className = 'card p-1 m-3 text-white bg-dark' 
+          messaging.className = 'card p-1 m-3 text-white bg-dark' 
           // Halloween
-          messaging.className = 'card p-1 m-3 text-white'
+          //messaging.className = 'card p-1 m-3 text-white'
         }
       }, 2500)
     } else {
       if (messaging) {
-        // messaging.className = 'card p-1 m-3 text-white bg-dark' 
+        messaging.className = 'card p-1 m-3 text-white bg-dark' 
         // Halloween
-        messaging.className = 'card p-1 m-3 text-white'
+        //messaging.className = 'card p-1 m-3 text-white'
       }
       clearTimeout(messageFlash2)
     }
@@ -1386,9 +1393,9 @@ try {
       document.querySelector('body').style.backgroundColor = '#ffffff'
       setTimeout(function () {
         document.querySelector('body').style.backgroundColor = '#000000'
-      }, 500)
+      }, 250)
     }
-  }, 3000)
+  }, 2000)
 
   // Define default settings for iziToast (overlaying messages)
   iziToast.settings({
@@ -1555,7 +1562,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 61
+    zindex: 70
   })
 
   $('#options-modal-directors').iziModal({
@@ -1569,7 +1576,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 61
+    zindex: 70
   })
 
   $('#options-modal-timesheets').iziModal({
@@ -1583,7 +1590,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 61
+    zindex: 80
   })
 
   $('#options-modal-announcements').iziModal({
@@ -1597,7 +1604,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 61
+    zindex: 70
   })
 
   $('#options-modal-dj').iziModal({
@@ -1611,7 +1618,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 62
+    zindex: 80
   })
 
   $('#options-modal-director').iziModal({
@@ -1625,7 +1632,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 62
+    zindex: 80
   })
 
   $('#options-modal-host').iziModal({
@@ -1639,7 +1646,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 62
+    zindex: 80
   })
 
   $('#options-modal-djcontrols').iziModal({
@@ -1653,7 +1660,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 61
+    zindex: 70
   })
 
   $('#options-modal-discipline').iziModal({
@@ -1667,7 +1674,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 61
+    zindex: 70
   })
 
   $('#options-modal-underwritings').iziModal({
@@ -1681,7 +1688,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 61
+    zindex: 70
   })
 
   $('#options-modal-underwriting').iziModal({
@@ -1695,7 +1702,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 62
+    zindex: 80
   })
 
   $('#options-modal-dj-logs').iziModal({
@@ -1709,7 +1716,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 63
+    zindex: 90
   })
 
   $('#options-modal-dj-analytics').iziModal({
@@ -1723,7 +1730,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 63
+    zindex: 90
   })
 
   $('#options-modal-discipline-record').iziModal({
@@ -1737,7 +1744,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 63
+    zindex: 90
   })
 
   $('#options-modal-dj-xp').iziModal({
@@ -1751,7 +1758,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 63
+    zindex: 90
   })
 
   $('#options-modal-dj-xp-add').iziModal({
@@ -1765,11 +1772,11 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 63
+    zindex: 90
   })
 
   $('#options-modal-global-logs').iziModal({
-    width: 800,
+    width: 960,
     focusInput: true,
     arrowKeys: false,
     navigateCaption: false,
@@ -1779,7 +1786,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 61
+    zindex: 70
   })
 
   $('#options-modal-calendar').iziModal({
@@ -1793,7 +1800,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 61
+    zindex: 70
   })
 
   $('#options-modal-underwriting-schedule').iziModal({
@@ -1807,7 +1814,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 62
+    zindex: 90
   })
 
   $('#options-modal-underwriting-schedule-show').iziModal({
@@ -1821,7 +1828,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 62
+    zindex: 90
   })
 
   $('#announcement-view-modal').iziModal({
@@ -1835,7 +1842,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 61
+    zindex: 70
   })
 
   $('#options-modal-announcement').iziModal({
@@ -1849,7 +1856,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 62
+    zindex: 80
   })
 
   $('#options-modal-config').iziModal({
@@ -1863,7 +1870,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 61
+    zindex: 70
   })
 
   $('#options-modal-config-list').iziModal({
@@ -1877,7 +1884,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 62
+    zindex: 80
   })
 
   $('#options-modal-config-form').iziModal({
@@ -1891,7 +1898,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 63
+    zindex: 90
   })
 
   $('#modal-notifications').iziModal({
@@ -1919,7 +1926,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 61
+    zindex: 70
   })
 
   $('#modal-scheduler-generated').iziModal({
@@ -1933,7 +1940,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 62
+    zindex: 80
   })
 
   $('#trackModal').iziModal({
@@ -1947,7 +1954,7 @@ try {
     timeout: false,
     pauseOnHover: true,
     timeoutProgressbarColor: 'rgba(255,255,255,0.5)',
-    zindex: 70
+    zindex: 90
   })
 
   // Data tables
@@ -10268,6 +10275,7 @@ function doMeta (metan) {
           position: 'center',
           closeOnClick: false,
           overlay: true,
+          overlayColor: 'rgba(255, 255, 0, 0.33)',
           zindex: 250,
           layout: 2,
           image: `assets/images/TopOfHourBreak.png`,
@@ -10306,12 +10314,12 @@ function doMeta (metan) {
         operations.className = 'card p-1 m-3 text-white'
         operations.style.backgroundColor = '#ff6f00'
         setTimeout(function () {
-          // operations.className = 'card p-1 m-3 text-white bg-dark'
+          operations.className = 'card p-1 m-3 text-white bg-dark'
           // Halloween
-          operations.className = 'card p-1 m-3 text-white'
-          // operations.style.backgroundColor = ''
+          //operations.className = 'card p-1 m-3 text-white'
+          operations.style.backgroundColor = ''
           // Halloween
-          operations.style.backgroundColor = '#753011'
+          //operations.style.backgroundColor = '#753011'
         }, 250)
       }
 
@@ -10392,6 +10400,7 @@ function doMeta (metan) {
             position: 'Center',
             closeOnClick: false,
             overlay: true,
+            overlayColor: 'rgba(255, 0, 0, 0.33)',
             zindex: 250,
             layout: 2,
             image: `assets/images/noRemote.png`,
@@ -12179,6 +12188,7 @@ function processEas (data, replace = false) {
                 position: 'center',
                 closeOnClick: false,
                 overlay: true,
+                overlayColor: 'rgba(255, 0, 0, 0.33)',
                 zindex: 500,
                 layout: 2,
                 image: `assets/images/extremeWeather.png`,
@@ -12266,6 +12276,7 @@ function processEas (data, replace = false) {
                     position: 'center',
                     closeOnClick: false,
                     overlay: true,
+                    overlayColor: 'rgba(255, 0, 0, 0.33)',
                     zindex: 500,
                     layout: 2,
                     image: `assets/images/extremeWeather.png`,
@@ -12289,6 +12300,7 @@ function processEas (data, replace = false) {
                     position: 'center',
                     closeOnClick: true,
                     overlay: true,
+                    overlayColor: 'rgba(255, 0, 0, 0.33)',
                     zindex: 500,
                     layout: 2,
                     image: `assets/images/extremeWeather.png`,
