@@ -1374,14 +1374,14 @@ try {
       if (messaging) { messaging.className = 'card p-1 m-3 text-white bg-info' }
       messageFlash2 = setTimeout(function () {
         if (messaging) {
-          messaging.className = 'card p-1 m-3 text-white bg-dark' 
+          messaging.className = 'card p-1 m-3 text-white bg-dark'
           // Halloween
           //messaging.className = 'card p-1 m-3 text-white'
         }
       }, 2500)
     } else {
       if (messaging) {
-        messaging.className = 'card p-1 m-3 text-white bg-dark' 
+        messaging.className = 'card p-1 m-3 text-white bg-dark'
         // Halloween
         //messaging.className = 'card p-1 m-3 text-white'
       }
@@ -7510,7 +7510,7 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
       } else if (e.target.id === 'notification-options-dj-edit') {
         var inputData = ''
         var inputData2 = ''
-        var DJName = Djs({ID: parseInt(e.target.dataset.dj)}).first().name
+        var DJName = Djs({ ID: parseInt(e.target.dataset.dj) }).first().name
         iziToast.show({
           timeout: 180000,
           overlay: true,
@@ -8093,7 +8093,7 @@ document.querySelector(`#options-dj-buttons`).addEventListener('click', function
       if (e.target.id === 'btn-options-dj-edit') {
         var inputData = ''
         var inputData2 = ''
-        var DJName = Djs({ID: parseInt(e.target.dataset.dj)}).first().name
+        var DJName = Djs({ ID: parseInt(e.target.dataset.dj) }).first().name
         iziToast.show({
           timeout: 180000,
           overlay: true,
@@ -13617,12 +13617,20 @@ function processDjs (data = {}, replace = false) {
     if (replace) {
       Djs = TAFFY()
       Djs.insert(data)
+      data.map((dj) => {
+        if (!dj.login) {
+          addNotification('dj-no-login', dj.ID, 'warning', dj.updatedAt, `DJ: ${dj.name}`, 'DJs Need Password to Use Web DJ Panel', `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-options-dj-edit" data-dj="${dj.ID}" title="Edit this DJ">Edit DJ</button>`)
+        }
+      })
     } else {
       for (var key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           switch (key) {
             case 'insert':
               Djs.insert(data[ key ])
+              if (!data[ key ].login) {
+                addNotification('dj-no-login', data[ key ].ID, 'warning', data[ key ].updatedAt, `DJ: ${data[ key ].name}`, 'DJs Need Password to Use Web DJ Panel', `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-options-dj-edit" data-dj="${data[ key ].ID}" title="Edit this DJ">Edit DJ</button>`)
+              }
               break
             case 'update':
               Djs({ ID: data[ key ].ID }).update(data[ key ])
@@ -13640,11 +13648,6 @@ function processDjs (data = {}, replace = false) {
     djsTable.clear()
 
     Djs().each(function (dj, index) {
-
-      if (!dj.login) {
-        addNotification ('dj-no-login', dj.ID, 'warning', dj.updatedAt, `DJ: ${dj.name}`, 'DJs Need Password to Use Web DJ Panel', `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-options-dj-edit" data-dj="${dj.ID}" title="Edit this DJ">Edit DJ</button>`)
-      }
-
       var djClass = `danger`
       if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30)) {
         djClass = `warning`
