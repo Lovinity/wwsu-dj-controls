@@ -13615,10 +13615,11 @@ function processDjs (data = {}, replace = false) {
   // Data processing
   try {
     if (replace) {
+      var prev = Djs().select('ID')
       Djs = TAFFY()
       Djs.insert(data)
       data.map((dj) => {
-        if (!dj.login) {
+        if (prev.indexOf(dj.ID) === -1 && !dj.login) {
           addNotification('dj-no-login', dj.ID, 'warning', dj.updatedAt, `DJ: ${dj.name}`, 'DJs Need Password to Use Web DJ Panel', `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-options-dj-edit" data-dj="${dj.ID}" title="Edit this DJ">Edit DJ</button>`)
         }
       })
