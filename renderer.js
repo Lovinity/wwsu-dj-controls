@@ -1100,6 +1100,7 @@ try {
   var totalRequests = 0
   var breakNotified = false
   var queueLength = 0
+  var countDown = 0
   var metaTimer
   var isHost = false
   var hostAlias = ''
@@ -10261,7 +10262,7 @@ function doMeta (metan) {
     if (typeof metan.state !== 'undefined' && isHost && (Meta.state === 'sports_break' || Meta.state === 'sports_halftime' || Meta.state === 'remote_break' || Meta.state === 'sportsremote_break' || Meta.state === 'sportsremote_halftime')) {
       responsiveVoice.speak(`On break`)
       var returnAnnouncement = setInterval(() => {
-        if (!Meta.queueCalculating && Meta.showCountdown) {
+        if (!Meta.queueCalculating && countDown > 0) {
           responsiveVoice.speak(`Going on the air in ${moment.duration(queueLength, 'seconds').format('m [minutes], s [seconds]')}`)
           clearInterval(returnAnnouncement)
         }
@@ -10292,27 +10293,27 @@ function doMeta (metan) {
 
     // Manage queueLength
     queueLength = Meta.queueFinish !== null ? Math.round(moment(Meta.queueFinish).diff(moment(Meta.time), 'seconds')) : 0
+    countDown = Meta.countdown !== null ? Math.round(moment(Meta.countdown).diff(moment(Meta.time), 'seconds')) : 0
     if (queueLength < 0) { queueLength = 0 }
+    if (countDown < 0) { countDown = 0 }
 
-    if (queueLength > 0 && Meta.showCountdown) {
-      if (queueLength > 100) {
+    if (queueLength > 0 && countDown > 0) {
+      if (countDown > 100) {
         main.setProgressBar(1)
       } else {
-        main.setProgressBar(queueLength / 100)
+        main.setProgressBar(countDown / 100)
       }
     } else {
       main.setProgressBar(-1)
     }
 
     if (isHost) {
-      if (Meta.showCountdown) {
-        if (Meta.state === 'sports_returning' || Meta.state === 'sportsremote_returning' || Meta.state === 'remote_returning' || Meta.state === 'automation_sports' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote' || Meta.state === 'sports_on' || Meta.state === 'sportsremote_on') {
-          if (queueLength === 60) { responsiveVoice.speak('1 minute') }
-          if (queueLength === 30) { responsiveVoice.speak('30 seconds') }
-          if (queueLength === 15) { responsiveVoice.speak('15 seconds') }
-          if (queueLength === 5) { responsiveVoice.speak('5 seconds') }
-          if (queueLength === 1) { responsiveVoice.speak('1 second') }
-        }
+      if (Meta.state === 'sports_returning' || Meta.state === 'sportsremote_returning' || Meta.state === 'remote_returning' || Meta.state === 'automation_sports' || Meta.state === 'automation_sportsremote' || Meta.state === 'automation_remote' || Meta.state === 'sports_on' || Meta.state === 'sportsremote_on') {
+        if (queueLength === 60) { responsiveVoice.speak('1 minute') }
+        if (queueLength === 30) { responsiveVoice.speak('30 seconds') }
+        if (queueLength === 15) { responsiveVoice.speak('15 seconds') }
+        if (queueLength === 5) { responsiveVoice.speak('5 seconds') }
+        if (queueLength === 1) { responsiveVoice.speak('1 second') }
       }
     }
 
@@ -10377,6 +10378,8 @@ function doMeta (metan) {
     addAnimation('meta-queue', () => {
       var queueTime = document.querySelector('#queue-seconds')
       queueTime.innerHTML = Meta.queueCalculating ? `<i class="fas fa-hourglass-half"></i>` : moment.duration(queueLength, 'seconds').format('mm:ss')
+      var queueTime2 = document.querySelector('#queue-music')
+      queueTime2.innerHTML = Meta.queueCalculating || Meta.countdown === null ? `<i class="fas fa-hourglass-half"></i>` : moment.duration(countDown, 'seconds').format('mm:ss')
       // Flash the WWSU Operations box when queue time goes below 15 seconds.
       if (queueLength < 15 && queueLength > 0 && document.querySelector('#queue').style.display !== 'none' && (Meta.state.startsWith('_returning') || Meta.state.startsWith('automation_'))) {
         var operations = document.querySelector('#operations')
