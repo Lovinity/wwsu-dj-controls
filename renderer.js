@@ -10379,7 +10379,7 @@ function doMeta (metan) {
       var queueTime = document.querySelector('#queue-seconds')
       queueTime.innerHTML = Meta.queueCalculating ? `<i class="fas fa-hourglass-half"></i>` : moment.duration(queueLength, 'seconds').format('mm:ss')
       var queueTime2 = document.querySelector('#queue-music')
-      queueTime2.innerHTML = Meta.queueCalculating || Meta.countdown === null ? `<i class="fas fa-hourglass-half"></i>` : moment.duration(countDown, 'seconds').format('mm:ss')
+      queueTime2.innerHTML = Meta.queueCalculating || Meta.countdown === null ? `First track: <i class="fas fa-hourglass-half"></i>` : `First track: ${moment.duration(countDown, 'seconds').format('mm:ss')}`
       // Flash the WWSU Operations box when queue time goes below 15 seconds.
       if (queueLength < 15 && queueLength > 0 && document.querySelector('#queue').style.display !== 'none' && (Meta.state.startsWith('_returning') || Meta.state.startsWith('automation_'))) {
         var operations = document.querySelector('#operations')
