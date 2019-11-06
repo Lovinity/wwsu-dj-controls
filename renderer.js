@@ -6824,7 +6824,7 @@ document.querySelector(`#options-modal-djs`).addEventListener('click', function 
             image: `assets/images/renameDJ.png`,
             maxWidth: 480,
             title: 'Case-sensitive DJ Name and Password',
-            message: 'In the left box, type the name of the DJ case sensitive (as it is used on Google Calendar, if applicable). In the box on the right, provide a password that this DJ will use to access their DJ Web panel (such as their door code).',
+            message: 'In the top box, type the name of the DJ case sensitive (as it is used on Google Calendar, if applicable). In the bottom box, provide a password that this DJ will use to access their DJ Web panel (such as their door code).',
             position: 'center',
             drag: false,
             closeOnClick: false,
@@ -6952,7 +6952,7 @@ document.querySelector(`#options-djs`).addEventListener('click', function (e) {
             image: `assets/images/renameDJ.png`,
             maxWidth: 480,
             title: 'Case-sensitive DJ Name and Password',
-            message: 'In the left box, type the name of the DJ case sensitive (as it is used on Google Calendar, if applicable). In the box on the right, provide a password that this DJ will use to access their DJ Web panel (such as their door code).',
+            message: 'In the top box, type the name of the DJ case sensitive (as it is used on Google Calendar, if applicable). In the bottom box, provide a password that this DJ will use to access their DJ Web panel (such as their door code).',
             position: 'center',
             drag: false,
             closeOnClick: false,
@@ -7507,6 +7507,74 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
         document.querySelector('#options-timesheets-records').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`
         $('#options-modal-timesheets').iziModal('open')
         loadTimesheets(moment(Meta.time).startOf('week'))
+      } else if (e.target.id === 'notification-options-dj-edit') {
+        var inputData = ''
+        var inputData2 = ''
+        var DJName = Djs({ID: parseInt(e.target.dataset.dj)}).first().name
+        iziToast.show({
+          timeout: 180000,
+          overlay: true,
+          displayMode: 'once',
+          color: 'yellow',
+          id: 'inputs',
+          zindex: 999,
+          layout: 2,
+          image: `assets/images/renameDJ.png`,
+          maxWidth: 480,
+          title: 'Case-Sensitive DJ Name and password',
+          message: 'In the top box, type the new name for the DJ case sensitive (as it is used on Google Calendar, if applicable). If you provide the name of a DJ that exists, this DJ and their logs/stats will be merged into the DJ you typed. In the bottom box, if you want to change the password the DJ will use for the DJ Web Panel, type their new password in.',
+          position: 'center',
+          drag: false,
+          closeOnClick: false,
+          inputs: [
+            [ `<input type="text" value="${DJName}">`, 'keyup', function (instance, toast, input, e) {
+              inputData = input.value
+            }, true ],
+            [ '<input type="password">', 'keyup', function (instance, toast, input, e) {
+              inputData2 = input.value
+            } ]
+          ],
+          buttons: [
+            [ '<button><b>Edit</b></button>', function (instance, toast) {
+              instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
+              var data = { ID: e.target.dataset.dj, name: inputData }
+              if (inputData2 !== '') { data.login = inputData2 }
+              directorReq.request({ db: Directors(), method: 'POST', url: nodeURL + '/djs/edit', data: data }, function (response) {
+                if (response === 'OK') {
+                  iziToast.show({
+                    title: `DJ Edited!`,
+                    message: `DJ was edited!`,
+                    timeout: 15000,
+                    close: true,
+                    color: 'green',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: true,
+                    overlay: false,
+                    zindex: 1000
+                  })
+                } else {
+                  console.dir(response)
+                  iziToast.show({
+                    title: `Failed to edit DJ!`,
+                    message: `There was an error trying to edit the DJ.`,
+                    timeout: 10000,
+                    close: true,
+                    color: 'red',
+                    drag: false,
+                    position: 'center',
+                    closeOnClick: true,
+                    overlay: false,
+                    zindex: 1000
+                  })
+                }
+              })
+            } ],
+            [ '<button><b>Cancel</b></button>', function (instance, toast) {
+              instance.hide({ transitionOut: 'fadeOut' }, toast, 'button')
+            } ]
+          ]
+        })
       }
     }
   } catch (err) {
@@ -8025,6 +8093,7 @@ document.querySelector(`#options-dj-buttons`).addEventListener('click', function
       if (e.target.id === 'btn-options-dj-edit') {
         var inputData = ''
         var inputData2 = ''
+        var DJName = Djs({ID: parseInt(e.target.dataset.dj)}).first().name
         iziToast.show({
           timeout: 180000,
           overlay: true,
@@ -8036,12 +8105,12 @@ document.querySelector(`#options-dj-buttons`).addEventListener('click', function
           image: `assets/images/renameDJ.png`,
           maxWidth: 480,
           title: 'Case-Sensitive DJ Name and password',
-          message: 'In the left box, type the new name for the DJ case sensitive (as it is used on Google Calendar, if applicable). If you provide the name of a DJ that exists, this DJ and their logs/stats will be merged into the DJ you typed. In the right box, if you want to change the password the DJ will use for the DJ Web Panel, type their new password in.',
+          message: 'In the top box, type the new name for the DJ case sensitive (as it is used on Google Calendar, if applicable). If you provide the name of a DJ that exists, this DJ and their logs/stats will be merged into the DJ you typed. In the bottom box, if you want to change the password the DJ will use for the DJ Web Panel, type their new password in.',
           position: 'center',
           drag: false,
           closeOnClick: false,
           inputs: [
-            [ '<input type="text">', 'keyup', function (instance, toast, input, e) {
+            [ `<input type="text" value="${DJName}">`, 'keyup', function (instance, toast, input, e) {
               inputData = input.value
             }, true ],
             [ '<input type="password">', 'keyup', function (instance, toast, input, e) {
@@ -13571,6 +13640,11 @@ function processDjs (data = {}, replace = false) {
     djsTable.clear()
 
     Djs().each(function (dj, index) {
+
+      if (!dj.login) {
+        addNotification ('dj-no-login', dj.ID, 'warning', dj.updatedAt, `DJ: ${dj.name}`, 'DJs Need Password to Use Web DJ Panel', `<button type="button" class="btn btn-warning btn-sm" style="font-size: 0.66em;" id="notification-options-dj-edit" data-dj="${dj.ID}" title="Edit this DJ">Edit DJ</button>`)
+      }
+
       var djClass = `danger`
       if (moment(Meta.time).diff(moment(dj.lastSeen), 'hours') <= (24 * 30)) {
         djClass = `warning`

@@ -401,7 +401,7 @@ function checkCalendar (records, meta, cal) {
           }
           // If we are doing a show, do a 1-hour clockwheel
         } else {
-          if (event.title.startsWith('Show: ') || event.title.startsWith('Remote: ') || event.title.startsWith('Sports: ')) {
+          if ((event.title.startsWith('Show: ') || event.title.startsWith('Remote: ') || event.title.startsWith('Sports: ')) && event.active > 0) {
             var stripped = event.title.replace('Show: ', '')
             stripped = stripped.replace('Remote: ', '')
             stripped = stripped.replace('Sports: ', '')
