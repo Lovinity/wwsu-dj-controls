@@ -59,7 +59,6 @@ try {
   // Define data variables
   var Meta = { time: moment().toISOString(), lastID: moment().toISOString(), state: 'unknown', line1: '', line2: '', queueFinish: null, trackFinish: null }
   var Attendance = TAFFY()
-  var Calendar = TAFFY()
   var Darksky = TAFFY()
   var Discipline = TAFFY()
   var Status = TAFFY()
@@ -114,6 +113,7 @@ try {
 
   ipcRenderer.on('processed-calendar', (event, e) => {
     e = e[ 0 ]
+    console.dir(e[ 1 ])
     cal = e.cal
 
     // Determine priority of what is currently on the air
@@ -1258,6 +1258,10 @@ try {
 
   socket.on('calendar', function (data) {
     processCalendar(data)
+  })
+
+  socket.on('calendarexceptions', function (data) {
+    processCalendarExceptions(data)
   })
 
   socket.on('darksky', function (data) {
@@ -6598,73 +6602,8 @@ document.querySelector('#btn-options-calendar').onclick = function () {
     document.querySelector('#calendar-verify').innerHTML = `<h2 class="text-warning" style="text-align: center;">PLEASE WAIT...</h4>`
     $('#options-modal-calendar').iziModal('open')
     var calendardom = document.querySelector('#calendar-verify')
-    calendardom.innerHTML = ``
+    calendardom.innerHTML = `This feature has been deprecated as we are no longer using Google Calendar. It will be removed in a later version.`
     calendardom.scrollTop = 0
-
-    // Define a comparison function that will order calendar events by start time when we run the iteration
-    var compare = function (a, b) {
-      try {
-        if (moment(a.start).valueOf() < moment(b.start).valueOf()) { return -1 }
-        if (moment(a.start).valueOf() > moment(b.start).valueOf()) { return 1 }
-        return 0
-      } catch (e) {
-        console.error(e)
-        iziToast.show({
-          title: 'An error occurred - Please check the logs',
-          message: `Error occurred in the compare function of Calendar.sort in the #btn-options-calendar call.`
-        })
-      }
-    }
-    var records = Calendar().get()
-    if (records.length > 0) { records = records.filter((event) => moment(event.start).isBefore(moment(Meta.time).startOf('day').add(8, 'days'))) }
-    if (records.length > 0) {
-      var formatted = {}
-      records.sort(compare)
-      records.map(event => {
-        if (typeof formatted[ moment(event.start).format('MM/DD/YYYY') ] === 'undefined') {
-          formatted[ moment(event.start).format('MM/DD/YYYY') ] = []
-        }
-        var theClass = `secondary`
-        var theTitle = `This event does not have a recognized prefix. Please check the prefix if this event was meant to trigger something.`
-        if (event.active === -1) {
-          theClass = `secondary`
-          theTitle = `This event is canceled.`
-        } else if (event.verify === 'Valid') {
-          theClass = `success`
-          theTitle = `This event is good.`
-        } else if (event.verify === 'Invalid') {
-          theClass = `danger`
-          theTitle = `This event will not trigger due to critical issues.`
-        } else if (event.verify === 'Check') {
-          theClass = `warning`
-          theTitle = `This event is good, but has minor issues.`
-        } else {
-          theClass = `secondary`
-          theTitle = `This event does not have a recognized prefix. Please check the prefix if this event was meant to trigger something.`
-        }
-        formatted[ moment(event.start).format('MM/DD/YYYY') ].push(`<div class="row m-1 bg-light-1 border-left border-${theClass} shadow-2" style="border-left-width: 5px !important;" title="${theTitle}">
-                                <div class="col-3 text-primary">
-                                    ${moment(event.start).format('h:mm A')} - ${moment(event.end).format('h:mm A')}
-                                </div>
-                                <div class="col-3 text-secondary">
-                                    ${event.verifyTitleHTML}
-                                </div>
-                                    <div class="col-6 text-info">
-                                        ${event.verifyMessage}
-                                        </div>
-                            </div>`)
-      })
-
-      for (var k in formatted) {
-        calendardom.innerHTML += `<div class="row m-1 bg-info">
-                                <div class="col-12 text-light" style="text-align: center;">
-                                    ${k}
-                                </div>
-                            </div>`
-
-        if (formatted[ k ].length > 0) { formatted[ k ].map(record => { calendardom.innerHTML += record }) }
-      }
-    }
   } catch (err) {
     console.error(err)
     iziToast.show({
@@ -6825,7 +6764,7 @@ document.querySelector(`#options-modal-djs`).addEventListener('click', function 
             image: `assets/images/renameDJ.png`,
             maxWidth: 480,
             title: 'Case-sensitive DJ Name and Password',
-            message: 'In the top box, type the name of the DJ case sensitive (as it is used on Google Calendar, if applicable). In the bottom box, provide a password that this DJ will use to access their DJ Web panel (such as their door code).',
+            message: 'In the top box, type the name of the DJ case sensitive. In the bottom box, provide a password that this DJ will use to access their DJ Web panel (such as their door code).',
             position: 'center',
             drag: false,
             closeOnClick: false,
@@ -6953,7 +6892,7 @@ document.querySelector(`#options-djs`).addEventListener('click', function (e) {
             image: `assets/images/renameDJ.png`,
             maxWidth: 480,
             title: 'Case-sensitive DJ Name and Password',
-            message: 'In the top box, type the name of the DJ case sensitive (as it is used on Google Calendar, if applicable). In the bottom box, provide a password that this DJ will use to access their DJ Web panel (such as their door code).',
+            message: 'In the top box, type the name of the DJ case sensitive. In the bottom box, provide a password that this DJ will use to access their DJ Web panel (such as their door code).',
             position: 'center',
             drag: false,
             closeOnClick: false,
@@ -7523,7 +7462,7 @@ document.querySelector(`#modal-notifications`).addEventListener('click', functio
           image: `assets/images/renameDJ.png`,
           maxWidth: 480,
           title: 'Case-Sensitive DJ Name and password',
-          message: 'In the top box, type the new name for the DJ case sensitive (as it is used on Google Calendar, if applicable). If you provide the name of a DJ that exists, this DJ and their logs/stats will be merged into the DJ you typed. In the bottom box, if you want to change the password the DJ will use for the DJ Web Panel, type their new password in.',
+          message: 'In the top box, type the new name for the DJ case sensitive. If you provide the name of a DJ that exists, this DJ and their logs/stats will be merged into the DJ you typed. In the bottom box, if you want to change the password the DJ will use for the DJ Web Panel, type their new password in.',
           position: 'center',
           drag: false,
           closeOnClick: false,
@@ -8106,7 +8045,7 @@ document.querySelector(`#options-dj-buttons`).addEventListener('click', function
           image: `assets/images/renameDJ.png`,
           maxWidth: 480,
           title: 'Case-Sensitive DJ Name and password',
-          message: 'In the top box, type the new name for the DJ case sensitive (as it is used on Google Calendar, if applicable). If you provide the name of a DJ that exists, this DJ and their logs/stats will be merged into the DJ you typed. In the bottom box, if you want to change the password the DJ will use for the DJ Web Panel, type their new password in.',
+          message: 'In the top box, type the new name for the DJ case sensitive. If you provide the name of a DJ that exists, this DJ and their logs/stats will be merged into the DJ you typed. In the bottom box, if you want to change the password the DJ will use for the DJ Web Panel, type their new password in.',
           position: 'center',
           drag: false,
           closeOnClick: false,
@@ -9896,6 +9835,7 @@ function doSockets () {
       easSocket()
       statusSocket()
       calendarSocket()
+      calendarExceptionsSocket()
       messagesSocket()
       recipientsSocket()
       darkskySocket()
@@ -10165,6 +10105,20 @@ function calendarSocket () {
     } catch (e) {
       console.error(e)
       console.log('FAILED Calendar CONNECTION')
+      setTimeout(calendarSocket, 10000)
+    }
+  })
+}
+
+function calendarExceptionsSocket () {
+  console.log('attempting calendar exceptions socket')
+  noReq.request({ method: 'POST', url: '/calendar/get-exceptions', data: {} }, function (body) {
+    // console.log(body);
+    try {
+      processCalendarExceptions(body, true)
+    } catch (e) {
+      console.error(e)
+      console.log('FAILED CalendarExceptions CONNECTION')
       setTimeout(calendarSocket, 10000)
     }
   })
@@ -10634,7 +10588,7 @@ function metaTick () {
     selectRecipient(activeRecipient)
   }
 
-  ipcRenderer.send('process-calendar', [ Calendar().get(), Meta, cal ])
+  ipcRenderer.send('process-calendar', [ 'update', null, false, Meta, cal ]);
 }
 
 // Shows a please wait box.
@@ -12626,36 +12580,12 @@ function processAnnouncements (data, replace = false) {
 
 // Update announcements as they come in
 function processCalendar (data, replace = false) {
-  // Data processing
-  try {
-    if (replace) {
-      // Replace with the new data
-      Calendar = TAFFY()
-      Calendar.insert(data)
-    } else {
-      for (var key in data) {
-        if (Object.prototype.hasOwnProperty.call(data, key)) {
-          switch (key) {
-            case 'insert':
-              Calendar.insert(data[ key ])
-              break
-            case 'update':
-              Calendar({ ID: data[ key ].ID }).update(data[ key ])
-              break
-            case 'remove':
-              Calendar({ ID: data[ key ] }).remove()
-              break
-          }
-        }
-      }
-    }
-  } catch (e) {
-    console.error(e)
-    iziToast.show({
-      title: 'An error occurred - Please check the logs',
-      message: 'Error occurred during the processCalendar function.'
-    })
-  }
+  ipcRenderer.send('process-calendar', [ 'calendar', data, replace, Meta, cal ]);
+}
+
+// Update announcements as they come in
+function processCalendarExceptions (data, replace = false) {
+  ipcRenderer.send('process-calendar', [ 'calendarexceptions', data, replace, Meta, cal ]);
 }
 
 // Update darksky weather
