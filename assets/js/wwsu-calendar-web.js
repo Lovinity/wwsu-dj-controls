@@ -1,5 +1,5 @@
 if (typeof TAFFY === 'undefined' || typeof WWSUdb === 'undefined' || typeof later === 'undefined' || typeof moment === 'undefined') {
-    throw new Error('wwsu-calendar requires TAFFY, WWSUdb, later, and moment.');
+    console.error(new Error('wwsu-calendar requires TAFFY, WWSUdb, later, and moment. However, neither node.js require() nor JQuery were available to require the scripts.'));
 }
 
 // Use local time instead of UTC for scheduling
@@ -102,7 +102,12 @@ class CalendarDb {
                         }
 
                         var tempCal = Object.assign({}, calendar);
-                        Object.assign(tempCal, cal);
+                        for (var stuff in cal) {
+                            if (Object.prototype.hasOwnProperty.call(cal, stuff)) {
+                                if (cal[ stuff ] !== null)
+                                    tempCal[ stuff ] = cal[ stuff ];
+                            }
+                        }
                         Object.assign(tempCal, {
                             ID: calendar.ID,
                             start: calendar.start || calendar.createdAt,
@@ -199,7 +204,12 @@ class CalendarDb {
                         }
 
                         var tempCal = Object.assign({}, calendar);
-                        Object.assign(tempCal, cal);
+                        for (var stuff in cal) {
+                            if (Object.prototype.hasOwnProperty.call(cal, stuff)) {
+                                if (cal[ stuff ] !== null)
+                                    tempCal[ stuff ] = cal[ stuff ];
+                            }
+                        }
                         Object.assign(tempCal, {
                             ID: calendar.ID,
                             start: eventStart,
@@ -273,7 +283,12 @@ class CalendarDb {
                         }
 
                         var tempCal = Object.assign({}, calendar);
-                        Object.assign(tempCal, cal);
+                        for (var stuff in cal) {
+                            if (Object.prototype.hasOwnProperty.call(cal, stuff)) {
+                                if (cal[ stuff ] !== null)
+                                    tempCal[ stuff ] = cal[ stuff ];
+                            }
+                        }
                         Object.assign(tempCal, {
                             ID: calendar.ID,
                             start: calendar.schedule.oneTime,
@@ -315,11 +330,14 @@ class CalendarDb {
         return events.sort(compare);
     }
 
+    // Return an array of programming that is allowed to be on the air right now
     whatShouldBePlaying (automationOnly = false) {
         var events = this.getEvents(undefined, undefined, { active: true });
         if (events.length > 0) {
             var compare = function (a, b) {
                 try {
+                    if (a.priority > b.priority) { return -1 };
+                    if (a.priority < b.priority) { return 1 };
                     if (moment(a.start).valueOf() < moment(b.start).valueOf()) { return -1 }
                     if (moment(a.start).valueOf() > moment(b.start).valueOf()) { return 1 }
                     if (a.ID < b.ID) { return -1 }
@@ -331,25 +349,28 @@ class CalendarDb {
             }
             events = events.sort(compare);
 
-            var returnData
-            events = events
+            var returnData = [];
+
+            events
                 .filter((event) => {
 
                     if (event.exceptionType === 'canceled' || event.exceptionType === 'canceled-system') return false;
 
                     if (automationOnly) {
-                        return (event.type === 'prerecord' || event.type === 'genre' || event.type === 'playlist') && moment().isSameOrAfter(moment(event.start)) && moment().isBefore(moment(event.end)) && event.active;
+                        return (event.type === 'prerecord' || event.type === 'genre' || event.type === 'playlist');
                     } else {
                         // Allow 5 minutes early for non-automation shows.
-                        return ((event.type === 'prerecord' || event.type === 'genre' || event.type === 'playlist') && moment().isSameOrAfter(moment(event.start)) && moment().isBefore(moment(event.end))) || ((event.type === 'show' || event.type === 'sports' || event.type === 'remote') && moment().add(5, 'minutes').isSameOrAfter(moment(event.start))) && moment().add(5, 'minutes').isBefore(moment(event.end)) && event.active;
+                        return (((event.type === 'prerecord' || event.type === 'genre' || event.type === 'playlist') && moment().isSameOrAfter(moment(event.start)) && moment().isBefore(moment(event.end))) || ((event.type === 'show' || event.type === 'sports' || event.type === 'remote') && moment().add(5, 'minutes').isSameOrAfter(moment(event.start)) && moment().add(5, 'minutes').isBefore(moment(event.end)))) && event.active;
                     }
                 })
                 .map((event) => {
-                    if ((!returnData || returnData.priority < event.priority))
-                        returnData = event;
-                });
+                    if (event && event.unique)
+                        returnData.push(event);
+                })
 
             return returnData;
+        } else {
+            return [];
         }
     }
 
@@ -362,9 +383,18 @@ class CalendarDb {
         // No conflict check necessary of schedule is null and newTime is not provided
         if ((!event.schedule || event.schedule === null) && !event.newTime) return { overridden: [], overriding: [] };
 
-        var eventPriority = event.priority && event.priority !== null ? event.priority : this.getDefaultPriority(event)
+        if (event.calendarID) {
+            var calendar = this.calendar.db({ ID: event.calendarID }).first();
+            if (!calendar)
+                return false;
+            var _event = this.processRecord(calendar, event, event.newTime !== null ? event.newTime : event.exceptionTime);
+        } else {
+            var _event = this.processRecord(event, { calendarID: null }, moment().toISOString(true));
+        }
+
+        var eventPriority = _event.priority;
         var error;
-        var end = event.end && event.end !== null ? moment(event.end).toISOString(true) : moment(event.newTime || (event.schedule && event.schedule.oneTime ? event.schedule.oneTime : undefined) || event.start).add(event.duration, 'minutes').toISOString(true);
+        var end = event.end && event.end !== null ? moment(event.end).toISOString(true) : moment(event.newTime || (event.schedule && event.schedule.oneTime ? event.schedule.oneTime : undefined) || event.start).add(_event.duration, 'minutes').toISOString(true);
 
         // No conflict check if the priority is less than 0.
         if (eventPriority < 0) return { overridden: [], overriding: [] };
@@ -404,7 +434,7 @@ class CalendarDb {
             return false;
         }
 
-        var events = this.getEvents(moment(event.newTime || event.schedule.oneTime || event.start).toISOString(true), end, { active: true });
+        var events = this.getEvents(moment(event.newTime || event.exceptionTime || event.schedule.oneTime || event.start).subtract(1, 'days').toISOString(true), end, { active: true });
 
         // Start with events that will get overridden by this event
         var eventsOverridden = events
@@ -416,18 +446,19 @@ class CalendarDb {
                 if ((event.exceptionType === 'updated' || event.exceptionType === 'updated-system') && event.calendarID === eventb.calendarID && moment(event.exceptionTime).isSame(eventb.start, 'minute')) return false;
 
                 var eventbPriority = eventb.priority !== null ? eventb.priority : this.getDefaultPriority(eventb);
-                if (eventbPriority < 0) return false;
-                if (eventPriority === 0 && eventbPriority === 0) return true;
-                if (eventbPriority > 0 && eventbPriority < eventPriority) return true;
+
+                if (eventbPriority < 0) return false; // Will not get overridden if other event priority is less than 0
+                if (eventPriority === 0) return false; // Will not get overridden if this event's priority is 0.
+                if (eventbPriority > 0 && eventbPriority < eventPriority) return true; // WILL get overridden if other event's priority is less than this one.
                 return false;
             });
 
         if (event.newTime || event.schedule.oneTime) {
             var startb = moment(event.newTime || event.schedule.oneTime);
-            var endb = moment(event.newTime || event.schedule.oneTime).add(event.duration, 'minutes');
+            var endb = moment(event.newTime || event.schedule.oneTime).add(_event.duration, 'minutes');
 
             eventsOverridden = eventsOverridden
-                .filter((eventb) => moment(eventb.end).isAfter(moment(startb)) && moment(eventb.end).isSameOrBefore(moment(endb))) || (moment(eventb.start).isSameOrAfter(startb) && moment(eventb.start).isBefore(endb)) || (moment(eventb.start).isBefore(startb) && moment(eventb.end).isAfter(endb));
+                .filter((eventb) => (moment(eventb.end).isAfter(moment(startb)) && moment(eventb.end).isSameOrBefore(moment(endb))) || (moment(eventb.start).isSameOrAfter(startb) && moment(eventb.start).isBefore(endb)) || (moment(eventb.start).isBefore(startb) && moment(eventb.end).isAfter(endb)));
         } else if (event.schedule.schedules) {
             var startb = moment(event.start);
 
@@ -462,9 +493,11 @@ class CalendarDb {
                 if ((event.exceptionType === 'updated' || event.exceptionType === 'updated-system') && event.calendarID === eventb.calendarID && moment(event.exceptionTime).isSame(eventb.start, 'minute')) return false;
 
                 var eventbPriority = eventb.priority !== null ? eventb.priority : this.getDefaultPriority(eventb);
-                if (eventbPriority < 0) return false;
-                if (eventPriority === 0 && eventbPriority === 0) return false;
-                if (eventbPriority > 0 && eventbPriority >= eventPriority) return true;
+
+                if (eventbPriority < 0) return false; // Will not override if the other event's priority is less than 0.
+                if (eventPriority === 0 && eventbPriority === 0) return true; // WILL override if both this event and the other event's priority is 0.
+                if (eventPriority === 0 && eventbPriority !== 0) return false // Will NOT override if this event's priority is 0 but the other event is not priority 0.
+                if (eventbPriority > 0 && eventbPriority >= eventPriority) return true; // WILL override if the other event's priority is greater than or equal to this one.
                 return false;
             });
 
@@ -473,11 +506,11 @@ class CalendarDb {
             var endb = moment(event.newTime || event.schedule.oneTime).add(event.duration, 'minutes');
 
             eventsOverriding = eventsOverriding
-                .filter((eventb) => moment(eventb.end).isAfter(moment(startb)) && moment(eventb.end).isSameOrBefore(moment(endb))) || (moment(eventb.start).isSameOrAfter(startb) && moment(eventb.start).isBefore(endb)) || (moment(eventb.start).isBefore(startb) && moment(eventb.end).isAfter(endb))
-                    .map((eventb) => {
-                        eventb.overrideTime = moment(startb).toISOString(true);
-                        return eventb;
-                    })
+                .filter((eventb) => (moment(eventb.end).isAfter(moment(startb)) && moment(eventb.end).isSameOrBefore(moment(endb))) || (moment(eventb.start).isSameOrAfter(startb) && moment(eventb.start).isBefore(endb)) || (moment(eventb.start).isBefore(startb) && moment(eventb.end).isAfter(endb)))
+                .map((eventb) => {
+                    eventb.overrideTime = moment(startb).toISOString(true);
+                    return eventb;
+                })
         } else if (event.schedule.schedules) {
             var startb = moment(event.start);
 
@@ -531,6 +564,8 @@ class CalendarDb {
                 });
 
             return events;
+        } else {
+            return [];
         }
     }
 
@@ -648,14 +683,14 @@ class CalendarDb {
         // If the host DJ for the exception is set, use the entire set of DJ hosts for the exception. Otherwise, use the set from the main calendar event.
         if (exception.hostDJ !== null) {
             criteria.hostDJ = exception.hostDJ;
-            criteria.cohostDJ1 = exception.cohostDJ1;
-            criteria.cohostDJ2 = exception.cohostDJ2;
-            criteria.cohostDJ3 = exception.cohostDJ3;
+            criteria.cohostDJ1 = exception.cohostDJ1 || null;
+            criteria.cohostDJ2 = exception.cohostDJ2 || null;
+            criteria.cohostDJ3 = exception.cohostDJ3 || null;
         } else {
-            criteria.hostDJ = calendar.hostDJ;
-            criteria.cohostDJ1 = calendar.cohostDJ1;
-            criteria.cohostDJ2 = calendar.cohostDJ2;
-            criteria.cohostDJ3 = calendar.cohostDJ3;
+            criteria.hostDJ = calendar.hostDJ || null;
+            criteria.cohostDJ1 = calendar.cohostDJ1 || null;
+            criteria.cohostDJ2 = calendar.cohostDJ2 || null;
+            criteria.cohostDJ3 = calendar.cohostDJ3 || null;
         }
 
         // Calculate end time after forming the object because we must refer to criteria.start

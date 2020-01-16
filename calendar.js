@@ -57,7 +57,7 @@ function checkCalendar (meta, cal) {
         .map(event => {
           try {
 
-            if ((meta.show === `${event.hosts} - ${event.name}` || (event.type === 'sports' && meta.show.startsWith(event.name))) && moment(event.end).isAfter(moment(meta.time))) { cal.now = event }
+            if ((meta.show === `${event.hosts} - ${event.name}` || (event.type === 'sports' && meta.show.startsWith(event.name))) && moment(event.end).isAfter(moment(meta.time))) { cal.now = `${event.hosts} - ${event.name}` }
 
             // Does this event start within the next 12 hours, and has not yet ended? Add it to our formatted array.
             if (moment(meta.time).add(12, 'hours').isAfter(moment(event.start)) && moment(meta.time).isBefore(moment(event.end))) {
