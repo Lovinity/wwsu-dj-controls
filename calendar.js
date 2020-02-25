@@ -53,7 +53,7 @@ function checkCalendar (meta, cal) {
     if (events.length > 0) {
       cal.now = null
       events
-        .filter(event => [ 'genre', 'playlist', 'onair-booking', 'prod-booking', 'office-hours' ].indexOf(event.type) === -1 && moment(event.end).isAfter(moment()))
+        .filter(event => [ 'genre', 'playlist', 'onair-booking', 'prod-booking', 'office-hours', 'task' ].indexOf(event.type) === -1 && moment(event.end).isAfter(moment()))
         .map(event => {
           try {
 
@@ -65,7 +65,7 @@ function checkCalendar (meta, cal) {
             }
 
             // Sports broadcasts. Check for broadcasts scheduled to start within the next 5 minutes. Skip any scheduled to end in 10 minutes.
-            if ([ 'canceled', 'canceled-system' ].indexOf(event.exceptionType) === -1 && event.type === 'sports' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
+            if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1 && event.type === 'sports' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
               calPriorityN = event.priority
               calTypeN = 'Sports'
               calHostN = event.hosts
@@ -76,7 +76,7 @@ function checkCalendar (meta, cal) {
             }
 
             // Remote broadcasts. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 10 minutes.
-            if ([ 'canceled', 'canceled-system' ].indexOf(event.exceptionType) === -1 && event.type === 'remote' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
+            if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1 && event.type === 'remote' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
 
               calPriorityN = event.priority
               calTypeN = 'Remote'
@@ -87,7 +87,7 @@ function checkCalendar (meta, cal) {
             }
 
             // Radio shows. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 10 minutes.
-            if ([ 'canceled', 'canceled-system' ].indexOf(event.exceptionType) === -1 && event.type === 'show' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
+            if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1 && event.type === 'show' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
 
               calPriorityN = event.priority
               calTypeN = 'Show'
@@ -98,7 +98,7 @@ function checkCalendar (meta, cal) {
             }
 
             // Prerecords. Check for broadcasts scheduled to start within the next 5 minutes. Skip any scheduled to end in 10 minutes.
-            if ([ 'canceled', 'canceled-system' ].indexOf(event.exceptionType) === -1 && event.type === 'prerecord' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
+            if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1 && event.type === 'prerecord' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
 
               calPriorityN = event.priority
               calTypeN = 'Prerecord'
@@ -109,7 +109,7 @@ function checkCalendar (meta, cal) {
             }
 
             // OnAir Studio Prerecord Bookings.
-            if ([ 'canceled', 'canceled-system' ].indexOf(event.exceptionType) === -1 && event.type === 'onair-bookings' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).isAfter(moment(meta.time)) && calPriorityN < -1) {
+            if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1 && event.type === 'onair-bookings' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).isAfter(moment(meta.time)) && calPriorityN < -1) {
               calPriorityN = -1
               calTypeN = 'Booking'
               calHostN = event.hosts
@@ -284,7 +284,7 @@ function checkCalendar (meta, cal) {
         // If we are not doing a show, proceed with a 12-hour clockwheel and events list
         if (meta.state.startsWith('automation_') || meta.state.startsWith('prerecord_')) {
           var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878')
-          if ([ 'canceled', 'canceled-system' ].indexOf(event.exceptionType) !== -1) { finalColor = hexRgb('#161616') }
+          if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) !== -1) { finalColor = hexRgb('#161616') }
           finalColor.red = Math.round(finalColor.red)
           finalColor.green = Math.round(finalColor.green)
           finalColor.blue = Math.round(finalColor.blue)
@@ -296,12 +296,12 @@ function checkCalendar (meta, cal) {
                                             </div>
                                             <div class="col-8">
                                                 ${event.hosts} - ${event.name}
-                                                ${[ 'canceled', 'canceled-system' ].indexOf(event.exceptionType) !== -1 ? `<br /><strong>CANCELED</strong>` : ``}
+                                                ${[ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) !== -1 ? `<br /><strong>CANCELED</strong>` : ``}
                                             </div>
                                         </div>
                                     </div></div>`
           // Add upcoming shows to the clockwheel shading
-          if ([ 'canceled', 'canceled-system' ].indexOf(event.exceptionType) === -1) {
+          if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1) {
             if ([ 'show', 'sports', 'prerecord', 'remote' ].indexOf(event.type) !== -1) {
               if (moment.utc(event.end).diff(moment.utc(meta.time), 'seconds') < (12 * 60 * 60)) {
                 if (moment(event.start).isAfter(moment(meta.time))) {
@@ -376,7 +376,7 @@ function checkCalendar (meta, cal) {
           }
           // If we are doing a show, do a 1-hour clockwheel
         } else {
-          if ([ 'show', 'sports', 'remote' ].indexOf(event.type) !== -1 && [ 'canceled', 'canceled-system' ].indexOf(event.exceptionType) === -1) {
+          if ([ 'show', 'sports', 'remote' ].indexOf(event.type) !== -1 && [ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1) {
             var stripped = `${event.hosts} - ${event.name}`;
             if (event.type === 'sports') { stripped = event.name.split(' vs.')[ 0 ] }
             // If the event we are processing is what is on the air right now, and the event has not yet ended...
@@ -447,7 +447,7 @@ function checkCalendar (meta, cal) {
           // Add the event to the list on the right of the clock
           if (moment(meta.time).add(1, 'hours').isAfter(moment(event.start)) && moment(meta.time).isBefore(moment(event.end))) {
             finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878')
-            if ([ 'canceled', 'canceled-system' ].indexOf(event.exceptionType) !== -1) { finalColor = hexRgb('#161616') }
+            if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) !== -1) { finalColor = hexRgb('#161616') }
             finalColor.red = Math.round(finalColor.red)
             finalColor.green = Math.round(finalColor.green)
             finalColor.blue = Math.round(finalColor.blue)
@@ -462,7 +462,7 @@ function checkCalendar (meta, cal) {
                                             </div>
                                             <div class="col-8">
                                                 ${event.hosts} - ${event.name}
-                                                ${[ 'canceled', 'canceled-system' ].indexOf(event.exceptionType) !== -1 ? `<strong>CANCELED</strong>` : ``}
+                                                ${[ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) !== -1 ? `<strong>CANCELED</strong>` : ``}
                                             </div>
                                         </div>
                                     </div></div>`
@@ -820,12 +820,9 @@ function hexRgb (hex, options = {}) {
 }
 
 ipcRenderer.on('process-calendar', (event, arg) => {
-  if (arg[ 0 ] === 'calendar' || arg[ 0 ] === 'calendarexceptions')
+  if (arg[ 0 ] === 'calendar' || arg[ 0 ] === 'schedule')
     calendardb.query(arg[ 0 ], arg[ 1 ], arg[ 2 ])
-
-  if (!isRunning) {
-    checkCalendar(arg[ 3 ], arg[ 4 ])
-  }
+  checkCalendar(arg[ 3 ], arg[ 4 ])
 })
 
 ipcRenderer.on('process-darksky', (event, arg) => {

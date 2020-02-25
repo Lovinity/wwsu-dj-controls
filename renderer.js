@@ -1260,8 +1260,8 @@ try {
     processCalendar(data)
   })
 
-  socket.on('calendarexceptions', function (data) {
-    processCalendarExceptions(data)
+  socket.on('schedule', function (data) {
+    processSchedule(data)
   })
 
   socket.on('darksky', function (data) {
@@ -9835,7 +9835,7 @@ function doSockets () {
       easSocket()
       statusSocket()
       calendarSocket()
-      calendarExceptionsSocket()
+      scheduleSocket()
       messagesSocket()
       recipientsSocket()
       darkskySocket()
@@ -10110,16 +10110,16 @@ function calendarSocket () {
   })
 }
 
-function calendarExceptionsSocket () {
-  console.log('attempting calendar exceptions socket')
-  noReq.request({ method: 'POST', url: '/calendar/get-exceptions', data: {} }, function (body) {
+function scheduleSocket () {
+  console.log('attempting schedule socket')
+  noReq.request({ method: 'POST', url: '/calendar/get-schedule', data: {} }, function (body) {
     // console.log(body);
     try {
-      processCalendarExceptions(body, true)
+      processSchedule(body, true)
     } catch (e) {
       console.error(e)
-      console.log('FAILED CalendarExceptions CONNECTION')
-      setTimeout(calendarSocket, 10000)
+      console.log('FAILED schedule CONNECTION')
+      setTimeout(scheduleSocket, 10000)
     }
   })
 }
@@ -12584,8 +12584,8 @@ function processCalendar (data, replace = false) {
 }
 
 // Update announcements as they come in
-function processCalendarExceptions (data, replace = false) {
-  ipcRenderer.send('process-calendar', [ 'calendarexceptions', data, replace, Meta, cal ]);
+function processSchedule (data, replace = false) {
+  ipcRenderer.send('process-calendar', [ 'schedule', data, replace, Meta, cal ]);
 }
 
 // Update darksky weather
