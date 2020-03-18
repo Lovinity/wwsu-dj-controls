@@ -829,8 +829,8 @@ exports.dump = () => {
     delaySerial.write(buffer)
 
     setTimeout(() => {
-      // Deactivate delay
-      mainWindow.webContents.send('main-log', `Delay System: Deactivate dump.`)
+      // Push the start button
+      mainWindow.webContents.send('main-log', `Delay System: Push start button.`)
       var buffer = new Buffer(7)
       buffer[ 0 ] = 0xFB
       buffer[ 1 ] = 0xFF
@@ -838,6 +838,18 @@ exports.dump = () => {
       buffer[ 3 ] = 0x03
       buffer[ 4 ] = 0x90
       buffer[ 5 ] = 0x02
+      buffer[ 6 ] = 0x6B
+      delaySerial.write(buffer)
+
+      // Deactivate buttons
+      mainWindow.webContents.send('main-log', `Delay System: Deactivate dump.`)
+      var buffer = new Buffer(7)
+      buffer[ 0 ] = 0xFB
+      buffer[ 1 ] = 0xFF
+      buffer[ 2 ] = 0x00
+      buffer[ 3 ] = 0x03
+      buffer[ 4 ] = 0x90
+      buffer[ 5 ] = 0x00
       buffer[ 6 ] = 0x6D
       delaySerial.write(buffer)
 
