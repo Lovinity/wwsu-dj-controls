@@ -781,7 +781,8 @@ exports.restartDelay = () => {
         buffer[ 4 ] = 0x11
         buffer[ 5 ] = 0xED
         delaySerial.write(buffer)
-
+        
+        clearInterval(delayStatusTimer)
         delayStatusTimer = setInterval(() => {
           mainWindow.webContents.send('main-log', `Delay System: Querying status`)
           var buffer = new Buffer(6)
