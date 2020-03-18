@@ -81,7 +81,7 @@ function checkCalendar (meta, cal) {
               calPriorityN = event.priority
               calTypeN = 'Remote'
               calHostN = event.hosts
-              calShowN = event.show
+              calShowN = event.name
               calTopicN = truncateText(event.description, 256, `...`)
               calStartsN = event.start
             }
@@ -103,7 +103,7 @@ function checkCalendar (meta, cal) {
               calPriorityN = event.priority
               calTypeN = 'Prerecord'
               calHostN = event.hosts
-              calShowN = event.show
+              calShowN = event.name
               calTopicN = truncateText(event.description, 256, `...`)
               calStartsN = event.start
             }

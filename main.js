@@ -837,7 +837,7 @@ exports.dump = () => {
       buffer[ 2 ] = 0x00
       buffer[ 3 ] = 0x03
       buffer[ 4 ] = 0x90
-      buffer[ 5 ] = 0x00
+      buffer[ 5 ] = 0x02
       buffer[ 6 ] = 0x6D
       delaySerial.write(buffer)
 
@@ -851,7 +851,7 @@ exports.dump = () => {
       buffer[ 4 ] = 0x11
       buffer[ 5 ] = 0xED
       delaySerial.write(buffer)
-    }, 1000)
+    }, 200)
   }
 }
 
