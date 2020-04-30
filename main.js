@@ -1,6 +1,6 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, dialog, session, ipcMain } = require('electron')
-const { machineIdSync } = require('node-machine-id')
+const { machineIdSync } = require('./assets/js/wwsu-host-id')
 const serialport = require('serialport')
 const fs = require('fs')
 const path = require('path')
@@ -73,13 +73,6 @@ function createWindow () {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
-  // Set custom headers
-  session.defaultSession.webRequest.onBeforeSendHeaders({ urls: [ '*' ] }, (details, callback) => {
-    details.requestHeaders[ 'Origin' ] = 'https://server.wwsu1069.org'
-    // eslint-disable-next-line standard/no-callback-literal
-    callback({ requestHeaders: details.requestHeaders })
-  })
-
   createWindow()
   createPeerWindow()
   createAudioWindow()
