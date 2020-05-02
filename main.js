@@ -73,6 +73,21 @@ function createWindow () {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
+
+  // Set headers for SkywayJS only
+  // SkywayJS needs this Origin for the API key, but using it for WWSU's API bypasses DJ Controls host authorization on socket level.
+  session.defaultSession.webRequest.onBeforeSendHeaders({ urls: [ '*' ] }, (details, callback) => {
+    console.dir(details);
+    if (details.url.includes('webrtc.ecl.ntt.com')) {
+      details.requestHeaders[ 'Origin' ] = 'https://server.wwsu1069.org'
+    } else {
+      details.requestHeaders[ 'Origin' ] = 'file://'
+      details.requestHeaders[ 'User-Agent' ] = 'WWSUDJControls'
+    }
+    // eslint-disable-next-line standard/no-callback-literal
+    callback({ requestHeaders: details.requestHeaders })
+  })
+
   createWindow()
   createPeerWindow()
   createAudioWindow()
@@ -774,7 +789,7 @@ exports.restartDelay = () => {
         buffer[ 4 ] = 0x11
         buffer[ 5 ] = 0xED
         delaySerial.write(buffer)
-        
+
         clearInterval(delayStatusTimer)
         delayStatusTimer = setInterval(() => {
           mainWindow.webContents.send('main-log', `Delay System: Querying status`)

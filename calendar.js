@@ -45,250 +45,250 @@ function checkCalendar (meta, cal) {
     var calTopicN = ``
     var calStartsN = null
 
-    var events = calendardb.getEvents();
+    calendardb.getEvents((events) => {
 
-    calendar = []
+      calendar = []
 
-    // Run through every event in memory, sorted by the comparison function, and add appropriate ones into our formatted calendar variable.
-    if (events.length > 0) {
-      cal.now = null
-      events
-        .filter(event => [ 'genre', 'playlist', 'onair-booking', 'prod-booking', 'office-hours', 'task' ].indexOf(event.type) === -1 && moment(event.end).isAfter(moment()))
-        .map(event => {
-          try {
+      // Run through every event in memory, sorted by the comparison function, and add appropriate ones into our formatted calendar variable.
+      if (events.length > 0) {
+        cal.now = null
+        events
+          .filter(event => [ 'genre', 'playlist', 'onair-booking', 'prod-booking', 'office-hours', 'task' ].indexOf(event.type) === -1 && moment(event.end).isAfter(moment()))
+          .map(event => {
+            try {
 
-            if ((meta.show === `${event.hosts} - ${event.name}` || (event.type === 'sports' && meta.show.startsWith(event.name))) && moment(event.end).isAfter(moment(meta.time))) { cal.now = `${event.hosts} - ${event.name}` }
+              if ((meta.show === `${event.hosts} - ${event.name}` || (event.type === 'sports' && meta.show.startsWith(event.name))) && moment(event.end).isAfter(moment(meta.time))) { cal.now = `${event.hosts} - ${event.name}` }
 
-            // Does this event start within the next 12 hours, and has not yet ended? Add it to our formatted array.
-            if (moment(meta.time).add(12, 'hours').isAfter(moment(event.start)) && moment(meta.time).isBefore(moment(event.end))) {
-              calendar.push(event)
+              // Does this event start within the next 12 hours, and has not yet ended? Add it to our formatted array.
+              if (moment(meta.time).add(12, 'hours').isAfter(moment(event.start)) && moment(meta.time).isBefore(moment(event.end))) {
+                calendar.push(event)
+              }
+
+              // Sports broadcasts. Check for broadcasts scheduled to start within the next 5 minutes. Skip any scheduled to end in 10 minutes.
+              if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1 && event.type === 'sports' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
+                calPriorityN = event.priority
+                calTypeN = 'Sports'
+                calHostN = event.hosts
+                calShowN = event.name
+                calShowN = calShowN.split(' vs.')[ 0 ]
+                calTopicN = truncateText(event.description, 256, `...`)
+                calStartsN = event.start
+              }
+
+              // Remote broadcasts. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 10 minutes.
+              if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1 && event.type === 'remote' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
+
+                calPriorityN = event.priority
+                calTypeN = 'Remote'
+                calHostN = event.hosts
+                calShowN = event.name
+                calTopicN = truncateText(event.description, 256, `...`)
+                calStartsN = event.start
+              }
+
+              // Radio shows. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 10 minutes.
+              if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1 && event.type === 'show' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
+
+                calPriorityN = event.priority
+                calTypeN = 'Show'
+                calHostN = event.hosts
+                calShowN = event.name
+                calTopicN = truncateText(event.description, 256, `...`)
+                calStartsN = event.start
+              }
+
+              // Prerecords. Check for broadcasts scheduled to start within the next 5 minutes. Skip any scheduled to end in 10 minutes.
+              if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1 && event.type === 'prerecord' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
+
+                calPriorityN = event.priority
+                calTypeN = 'Prerecord'
+                calHostN = event.hosts
+                calShowN = event.name
+                calTopicN = truncateText(event.description, 256, `...`)
+                calStartsN = event.start
+              }
+
+              // OnAir Studio Prerecord Bookings.
+              if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1 && event.type === 'onair-bookings' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).isAfter(moment(meta.time)) && calPriorityN < -1) {
+                calPriorityN = -1
+                calTypeN = 'Booking'
+                calHostN = event.hosts
+                calShowN = event.name
+                calStartsN = event.start
+              }
+            } catch (e) {
+              isRunning = false
+              console.error(e)
             }
+          })
+      }
 
-            // Sports broadcasts. Check for broadcasts scheduled to start within the next 5 minutes. Skip any scheduled to end in 10 minutes.
-            if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1 && event.type === 'sports' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
-              calPriorityN = event.priority
-              calTypeN = 'Sports'
-              calHostN = event.hosts
-              calShowN = event.name
-              calShowN = calShowN.split(' vs.')[ 0 ]
-              calTopicN = truncateText(event.description, 256, `...`)
-              calStartsN = event.start
-            }
+      // Check for changes in determined upcoming scheduled event compared to what is stored in memory
+      if (calTypeN !== cal.type || calHostN !== cal.host || calShowN !== cal.show || calStartsN !== cal.starts || calPriorityN !== cal.priority) {
+        cal.notified = false
+        cal.type = calTypeN
+        cal.host = calHostN
+        cal.show = calShowN
+        cal.topic = calTopicN
+        cal.starts = calStartsN
+        cal.priority = calPriorityN
+        cal.hint = false
+        // Cancel any active tutorials
+        /*
+              if (trip)
+              {
+                  trip.stop();
+                  trip = null;
+              }
+              */
+      }
 
-            // Remote broadcasts. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 10 minutes.
-            if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1 && event.type === 'remote' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
+      // Display tutorials when shows are upcoming
+      if ((meta.state.startsWith('automation_') || meta.state.startsWith('prerecord_')) && !cal.hint) {
+        cal.hint = true
+        /*
+               if (calType === "Show")
+               {
+               setTimeout(function () {
+               trip = new Trip([
+               {
+               sel: $("#btn-golive"),
+               content: `Welcome, ${calHost}! To begin your show, click "Live". To skip the tutorial, click the x on this window.`,
+               expose: true,
+               position: "e",
+               nextClickSelector: $("#btn-golive")
+               },
+               {
+               sel: $("#go-live-modal"),
+               content: `I filled in your DJ and show names automatically.<br />
+               Write a show topic if you like, which will display on the website and display signs. <br />
+               If desired, uncheck "enable website chat" to prevent others from messaging you.<br />
+               <strong>Click "Go Live" when ready.</strong> This will start a countdown until you're live.`,
+               expose: true,
+               position: "n",
+               nextClickSelector: $("#live-go")
+               },
+               {
+               sel: $("#operations"),
+               content: `This box will now show how much time until you are live (click anywhere inside to continue the tutorial, or x to stop the tutorial).<br />
+               If you need more time, click +15-second PSA or +30-second PSA.<br />
+               <strong>Show intros and other music queued after the IDs do not count in the queue countdown.</strong>`,
+               expose: true,
+               position: "s",
+               nextClickSelector: $("#operations")
+               }
+               ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
+               trip = null;
+               console.log("trip closed");
+               }});
+               trip.start();
+               }, 5000);
+               }
+  
+               // Remote broadcasts
+               if (calType === "Remote")
+               {
+               setTimeout(function () {
+               trip = new Trip([
+               {
+               sel: $("#btn-goremote"),
+               content: `Hello! To begin the scheduled remote broadcast ${calHost} - ${calShow}, click "Remote". To skip the tutorial, click the x on this window.`,
+               expose: true,
+               position: "e",
+               nextClickSelector: $("#btn-goremote")
+               },
+               {
+               sel: $("#go-remote-modal"),
+               content: `I filled in your host and show names automatically.<br />
+               Write a topic if you like, which will display on the website and display signs.<br />
+               If desired, uncheck "enable website chat" to prevent others from messaging you.<br />
+               Ensure your remote encoder is connected and streaming audio to the remote server, and then <strong>Click "Go Remote" when ready.</strong> This will start a countdown until you're live.`,
+               expose: true,
+               position: "n",
+               nextClickSelector: $("#remote-go")
+               },
+               {
+               sel: $("#operations"),
+               content: `This box will now show how much time until your remote broadcast starts (click anywhere inside to continue the tutorial, or x to stop the tutorial).<br />
+               If you need more time, click +15-second PSA or +30-second PSA.<br />
+               <strong>Intros and other music queued after the IDs do not count in the queue countdown.</strong> A separate countdown will start after this one finishes so you know how much time is left in the intros / music.`,
+               expose: true,
+               position: "s",
+               nextClickSelector: $("#operations")
+               }
+               ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
+               trip = null;
+               console.log("trip closed");
+               }});
+               trip.start();
+               }, 5000);
+               }
+  
+               // Sports broadcasts
+               if (calType === "Sports")
+               {
+               setTimeout(function () {
+               trip = new Trip([
+               {
+               sel: $("#btn-gosports"),
+               content: `Hello! To begin the scheduled sports broadcast ${calShow}, click "Sports". To skip the tutorial, click the x on this window.`,
+               expose: true,
+               position: "e",
+               nextClickSelector: $("#btn-gosports")
+               },
+               {
+               sel: $("#go-sports-modal"),
+               content: `I selected the scheduled sport automatically.<br />
+               If desired, uncheck "enable website chat" to prevent others from messaging you.<br />
+               If this broadcast is being done remotely (no OnAir Studio producer), check "Remote Sports Broadcast" and ensure you are streaming audio to the remote stream on the encoder before clicking Go Sports.<br />
+               <strong>Click "Go Sports" when ready.</strong> This will start a countdown until you're live.`,
+               expose: true,
+               position: "n",
+               nextClickSelector: $("#sports-go")
+               },
+               {
+               sel: $("#operations"),
+               content: `This box will now show how much time until your sports broadcast starts (click anywhere inside to continue the tutorial, or x to stop the tutorial).<br />
+               If you need more time, click +15-second PSA or +30-second PSA.<br />
+               <strong>Intros and other music queued after the IDs do not count in the queue countdown.</strong> A separate countdown will start after this one finishes so you know how much time is left in the intros / music.`,
+               expose: true,
+               position: "s",
+               nextClickSelector: $("#operations")
+               }
+               ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
+               trip = null;
+               console.log("trip closed");
+               }});
+               trip.start();
+               }, 5000);
+               }
+               */
+      }
 
-              calPriorityN = event.priority
-              calTypeN = 'Remote'
-              calHostN = event.hosts
-              calShowN = event.name
-              calTopicN = truncateText(event.description, 256, `...`)
-              calStartsN = event.start
-            }
+      // Clear current list of events
+      // TODO: Make renderer handle this via a message sent from this worker
+      // document.querySelector('#calendar-events').innerHTML = '';
 
-            // Radio shows. Check for broadcasts scheduled to start within the next 10 minutes. Skip any scheduled to end in 10 minutes.
-            if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1 && event.type === 'show' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
+      // Prepare some variables
+      var timeLeft = 1000000
+      var timeLeft2 = 1000000
+      var doLabel = null
+      var doColor = 0
+      var currentStart = moment()
+      var currentEnd = moment()
+      var html = { events: ``, title: `` }
 
-              calPriorityN = event.priority
-              calTypeN = 'Show'
-              calHostN = event.hosts
-              calShowN = event.name
-              calTopicN = truncateText(event.description, 256, `...`)
-              calStartsN = event.start
-            }
-
-            // Prerecords. Check for broadcasts scheduled to start within the next 5 minutes. Skip any scheduled to end in 10 minutes.
-            if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1 && event.type === 'prerecord' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).subtract(10, 'minutes').isAfter(moment(meta.time)) && calPriorityN < event.priority) {
-
-              calPriorityN = event.priority
-              calTypeN = 'Prerecord'
-              calHostN = event.hosts
-              calShowN = event.name
-              calTopicN = truncateText(event.description, 256, `...`)
-              calStartsN = event.start
-            }
-
-            // OnAir Studio Prerecord Bookings.
-            if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1 && event.type === 'onair-bookings' && moment(meta.time).add(5, 'minutes').isAfter(moment(event.start)) && moment(event.end).isAfter(moment(meta.time)) && calPriorityN < -1) {
-              calPriorityN = -1
-              calTypeN = 'Booking'
-              calHostN = event.hosts
-              calShowN = event.name
-              calStartsN = event.start
-            }
-          } catch (e) {
-            isRunning = false
-            console.error(e)
-          }
-        })
-    }
-
-    // Check for changes in determined upcoming scheduled event compared to what is stored in memory
-    if (calTypeN !== cal.type || calHostN !== cal.host || calShowN !== cal.show || calStartsN !== cal.starts || calPriorityN !== cal.priority) {
-      cal.notified = false
-      cal.type = calTypeN
-      cal.host = calHostN
-      cal.show = calShowN
-      cal.topic = calTopicN
-      cal.starts = calStartsN
-      cal.priority = calPriorityN
-      cal.hint = false
-      // Cancel any active tutorials
-      /*
-            if (trip)
-            {
-                trip.stop();
-                trip = null;
-            }
-            */
-    }
-
-    // Display tutorials when shows are upcoming
-    if ((meta.state.startsWith('automation_') || meta.state.startsWith('prerecord_')) && !cal.hint) {
-      cal.hint = true
-      /*
-             if (calType === "Show")
-             {
-             setTimeout(function () {
-             trip = new Trip([
-             {
-             sel: $("#btn-golive"),
-             content: `Welcome, ${calHost}! To begin your show, click "Live". To skip the tutorial, click the x on this window.`,
-             expose: true,
-             position: "e",
-             nextClickSelector: $("#btn-golive")
-             },
-             {
-             sel: $("#go-live-modal"),
-             content: `I filled in your DJ and show names automatically.<br />
-             Write a show topic if you like, which will display on the website and display signs. <br />
-             If desired, uncheck "enable website chat" to prevent others from messaging you.<br />
-             <strong>Click "Go Live" when ready.</strong> This will start a countdown until you're live.`,
-             expose: true,
-             position: "n",
-             nextClickSelector: $("#live-go")
-             },
-             {
-             sel: $("#operations"),
-             content: `This box will now show how much time until you are live (click anywhere inside to continue the tutorial, or x to stop the tutorial).<br />
-             If you need more time, click +15-second PSA or +30-second PSA.<br />
-             <strong>Show intros and other music queued after the IDs do not count in the queue countdown.</strong>`,
-             expose: true,
-             position: "s",
-             nextClickSelector: $("#operations")
-             }
-             ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
-             trip = null;
-             console.log("trip closed");
-             }});
-             trip.start();
-             }, 5000);
-             }
-
-             // Remote broadcasts
-             if (calType === "Remote")
-             {
-             setTimeout(function () {
-             trip = new Trip([
-             {
-             sel: $("#btn-goremote"),
-             content: `Hello! To begin the scheduled remote broadcast ${calHost} - ${calShow}, click "Remote". To skip the tutorial, click the x on this window.`,
-             expose: true,
-             position: "e",
-             nextClickSelector: $("#btn-goremote")
-             },
-             {
-             sel: $("#go-remote-modal"),
-             content: `I filled in your host and show names automatically.<br />
-             Write a topic if you like, which will display on the website and display signs.<br />
-             If desired, uncheck "enable website chat" to prevent others from messaging you.<br />
-             Ensure your remote encoder is connected and streaming audio to the remote server, and then <strong>Click "Go Remote" when ready.</strong> This will start a countdown until you're live.`,
-             expose: true,
-             position: "n",
-             nextClickSelector: $("#remote-go")
-             },
-             {
-             sel: $("#operations"),
-             content: `This box will now show how much time until your remote broadcast starts (click anywhere inside to continue the tutorial, or x to stop the tutorial).<br />
-             If you need more time, click +15-second PSA or +30-second PSA.<br />
-             <strong>Intros and other music queued after the IDs do not count in the queue countdown.</strong> A separate countdown will start after this one finishes so you know how much time is left in the intros / music.`,
-             expose: true,
-             position: "s",
-             nextClickSelector: $("#operations")
-             }
-             ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
-             trip = null;
-             console.log("trip closed");
-             }});
-             trip.start();
-             }, 5000);
-             }
-
-             // Sports broadcasts
-             if (calType === "Sports")
-             {
-             setTimeout(function () {
-             trip = new Trip([
-             {
-             sel: $("#btn-gosports"),
-             content: `Hello! To begin the scheduled sports broadcast ${calShow}, click "Sports". To skip the tutorial, click the x on this window.`,
-             expose: true,
-             position: "e",
-             nextClickSelector: $("#btn-gosports")
-             },
-             {
-             sel: $("#go-sports-modal"),
-             content: `I selected the scheduled sport automatically.<br />
-             If desired, uncheck "enable website chat" to prevent others from messaging you.<br />
-             If this broadcast is being done remotely (no OnAir Studio producer), check "Remote Sports Broadcast" and ensure you are streaming audio to the remote stream on the encoder before clicking Go Sports.<br />
-             <strong>Click "Go Sports" when ready.</strong> This will start a countdown until you're live.`,
-             expose: true,
-             position: "n",
-             nextClickSelector: $("#sports-go")
-             },
-             {
-             sel: $("#operations"),
-             content: `This box will now show how much time until your sports broadcast starts (click anywhere inside to continue the tutorial, or x to stop the tutorial).<br />
-             If you need more time, click +15-second PSA or +30-second PSA.<br />
-             <strong>Intros and other music queued after the IDs do not count in the queue countdown.</strong> A separate countdown will start after this one finishes so you know how much time is left in the intros / music.`,
-             expose: true,
-             position: "s",
-             nextClickSelector: $("#operations")
-             }
-             ], {delay: -1, showCloseBox: true, onTripClose: (tripIndex, tripObject) => {
-             trip = null;
-             console.log("trip closed");
-             }});
-             trip.start();
-             }, 5000);
-             }
-             */
-    }
-
-    // Clear current list of events
-    // TODO: Make renderer handle this via a message sent from this worker
-    // document.querySelector('#calendar-events').innerHTML = '';
-
-    // Prepare some variables
-    var timeLeft = 1000000
-    var timeLeft2 = 1000000
-    var doLabel = null
-    var doColor = 0
-    var currentStart = moment()
-    var currentEnd = moment()
-    var html = { events: ``, title: `` }
-
-    // Add in our new list, and include in clockwheel
-    if (calendar.length > 0) {
-      calendar.map(event => {
-        // If we are not doing a show, proceed with a 12-hour clockwheel and events list
-        if (meta.state.startsWith('automation_') || meta.state.startsWith('prerecord_')) {
-          var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878')
-          if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) !== -1) { finalColor = hexRgb('#161616') }
-          finalColor.red = Math.round(finalColor.red)
-          finalColor.green = Math.round(finalColor.green)
-          finalColor.blue = Math.round(finalColor.blue)
-          html.events += ` <div class="m-1 bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
+      // Add in our new list, and include in clockwheel
+      if (calendar.length > 0) {
+        calendar.map(event => {
+          // If we are not doing a show, proceed with a 12-hour clockwheel and events list
+          if (meta.state.startsWith('automation_') || meta.state.startsWith('prerecord_')) {
+            var finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878')
+            if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) !== -1) { finalColor = hexRgb('#161616') }
+            finalColor.red = Math.round(finalColor.red)
+            finalColor.green = Math.round(finalColor.green)
+            finalColor.blue = Math.round(finalColor.blue)
+            html.events += ` <div class="m-1 bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -300,161 +300,161 @@ function checkCalendar (meta, cal) {
                                             </div>
                                         </div>
                                     </div></div>`
-          // Add upcoming shows to the clockwheel shading
-          if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1) {
-            if ([ 'show', 'sports', 'prerecord', 'remote' ].indexOf(event.type) !== -1) {
-              if (moment.utc(event.end).diff(moment.utc(meta.time), 'seconds') < (12 * 60 * 60)) {
-                if (moment(event.start).isAfter(moment(meta.time))) {
-                  clockwheel.sectors.push({
-                    label: `${event.hosts} - ${event.name}`,
-                    start: ((moment.utc(event.start).diff(moment.utc(meta.time), 'seconds') / (12 * 60 * 60)) * 360) + 0.5,
-                    size: ((moment.utc(event.end).diff(moment.utc(event.start), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
-                    color: event.color || '#787878'
-                  })
-                } else {
-                  clockwheel.sectors.push({
-                    label: `${event.hosts} - ${event.name}`,
-                    start: 0.5,
-                    size: ((moment.utc(event.end).diff(moment.utc(meta.time), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
-                    color: event.color || '#787878'
-                  })
-                }
-              } else if (moment.utc(event.start).diff(moment.utc(meta.time), 'seconds') < (12 * 60 * 60)) {
-                if (moment(event.start).isAfter(moment(meta.time))) {
-                  var start = ((moment.utc(event.start).diff(moment.utc(meta.time), 'seconds') / (12 * 60 * 60)) * 360)
-                  clockwheel.sectors.push({
-                    label: `${event.hosts} - ${event.name}`,
-                    start: start + 0.5,
-                    size: 360 - start,
-                    color: event.color || '#787878'
-                  })
-                } else {
-                  clockwheel.sectors.push({
-                    label: `${event.hosts} - ${event.name}`,
-                    start: 0,
-                    size: 360,
-                    color: event.color || '#787878'
-                  })
-                }
-              }
-            } else {
-              if (moment.utc(event.end).diff(moment.utc(meta.time), 'seconds') < (12 * 60 * 60)) {
-                if (moment(event.start).isAfter(moment(meta.time))) {
-                  clockwheel.smallSectors.push({
-                    label: `${event.hosts} - ${event.name}`,
-                    start: ((moment.utc(event.start).diff(moment.utc(meta.time), 'seconds') / (12 * 60 * 60)) * 360) + 0.5,
-                    size: ((moment.utc(event.end).diff(moment.utc(event.start), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
-                    color: event.color || '#787878'
-                  })
-                } else {
-                  clockwheel.smallSectors.push({
-                    label: `${event.hosts} - ${event.name}`,
-                    start: 0.5,
-                    size: ((moment.utc(event.end).diff(moment.utc(meta.time), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
-                    color: event.color || '#787878'
-                  })
-                }
-              } else if (moment.utc(event.start).diff(moment.utc(meta.time), 'seconds') < (12 * 60 * 60)) {
-                if (moment(event.start).isAfter(moment(meta.time))) {
-                  start = ((moment.utc(event.start).diff(moment.utc(meta.time), 'seconds') / (12 * 60 * 60)) * 360)
-                  clockwheel.smallSectors.push({
-                    label: `${event.hosts} - ${event.name}`,
-                    start: start + 0.5,
-                    size: 360 - start,
-                    color: event.color || '#787878'
-                  })
-                } else {
-                  clockwheel.smallSectors.push({
-                    label: `${event.hosts} - ${event.name}`,
-                    start: 0,
-                    size: 360,
-                    color: event.color || '#787878'
-                  })
-                }
-              }
-            }
-          }
-          // If we are doing a show, do a 1-hour clockwheel
-        } else {
-          if ([ 'show', 'sports', 'remote' ].indexOf(event.type) !== -1 && [ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1) {
-            var stripped = `${event.hosts} - ${event.name}`;
-            if (event.type === 'sports') { stripped = event.name.split(' vs.')[ 0 ] }
-            // If the event we are processing is what is on the air right now, and the event has not yet ended...
-            if (meta.show === stripped && moment(event.end).isAfter(moment(meta.time))) {
-              // Calculate base remaining time
-              timeLeft = moment.utc(event.end).diff(moment.utc(meta.time), 'minutes')
-              // If there is less than 1 hour remaining in the show, only shade the clock for the portion of the hour remaining in the show
-              if (moment.utc(event.end).diff(moment.utc(meta.time), 'minutes') < 60) {
-                if (moment(event.start).isAfter(moment(meta.time))) {
-                  doLabel = `${event.hosts} - ${event.name}`
-                  doColor = event.color || '#787878'
-                  currentStart = moment(event.start)
-                  currentEnd = moment(event.end)
-                } else {
-                  var theSize = ((moment.utc(event.end).diff(moment.utc(meta.time), 'seconds') / (60 * 60)) * 360)
-                  doLabel = `${event.hosts} - ${event.name}`
-                  doColor = event.color || '#787878'
-                  currentStart = moment(event.start)
-                  currentEnd = moment(event.end)
-                }
-                // Otherwise, shade the entire hour, if the event has already started via the scheduled start time
-              } else if (moment(event.start).isBefore(moment(meta.time))) {
-                doLabel = `${event.hosts} - ${event.name}`
-                doColor = event.color || '#787878'
-                currentStart = moment(event.start)
-                currentEnd = moment(event.end)
-              }
-              // If the event being process is not what is live, but the end time is after the current time...
-            } else if (moment(event.end).isAfter(moment(meta.time))) {
-              // Do a check to see if this event will intercept the currently live event
-              timeLeft2 = moment.utc(event.start).diff(moment.utc(meta.time), 'minutes')
-              if (timeLeft2 < 0) { timeLeft2 = 0 }
-              // If timeLeft2 is less than timeleft, that means the currently live show needs to end earlier than the scheduled time.
-              if (timeLeft2 < timeLeft) {
-                timeLeft = timeLeft2
-                currentEnd = moment(event.start)
-                if (moment(currentEnd).isBefore(moment(meta.time))) {
-                  currentEnd = moment(meta.time)
-                  timeLeft = 0
-                }
-              }
-              if (timeLeft < 0) { timeLeft = 0 }
-              // If the event being processed starts in less than 1 hour, add it to the hour clockwheel as a black shaded event
-              if (event.active > 0) {
-                if (moment.utc(event.start).diff(moment.utc(meta.time), 'minutes') < 60) {
+            // Add upcoming shows to the clockwheel shading
+            if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1) {
+              if ([ 'show', 'sports', 'prerecord', 'remote' ].indexOf(event.type) !== -1) {
+                if (moment.utc(event.end).diff(moment.utc(meta.time), 'seconds') < (12 * 60 * 60)) {
                   if (moment(event.start).isAfter(moment(meta.time))) {
-                    var theStart = ((moment.utc(event.start).diff(moment.utc(meta.time), 'seconds') / (60 * 60)) * 360)
-                    theSize = ((moment.utc(event.end).diff(moment.utc(event.start), 'seconds') / (60 * 60)) * 360)
-                    if ((theSize + theStart) > 360) { theSize = 360 - theStart }
                     clockwheel.sectors.push({
                       label: `${event.hosts} - ${event.name}`,
-                      start: theStart,
-                      size: theSize,
-                      color: '#000000'
+                      start: ((moment.utc(event.start).diff(moment.utc(meta.time), 'seconds') / (12 * 60 * 60)) * 360) + 0.5,
+                      size: ((moment.utc(event.end).diff(moment.utc(event.start), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
+                      color: event.color || '#787878'
+                    })
+                  } else {
+                    clockwheel.sectors.push({
+                      label: `${event.hosts} - ${event.name}`,
+                      start: 0.5,
+                      size: ((moment.utc(event.end).diff(moment.utc(meta.time), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
+                      color: event.color || '#787878'
+                    })
+                  }
+                } else if (moment.utc(event.start).diff(moment.utc(meta.time), 'seconds') < (12 * 60 * 60)) {
+                  if (moment(event.start).isAfter(moment(meta.time))) {
+                    var start = ((moment.utc(event.start).diff(moment.utc(meta.time), 'seconds') / (12 * 60 * 60)) * 360)
+                    clockwheel.sectors.push({
+                      label: `${event.hosts} - ${event.name}`,
+                      start: start + 0.5,
+                      size: 360 - start,
+                      color: event.color || '#787878'
                     })
                   } else {
                     clockwheel.sectors.push({
                       label: `${event.hosts} - ${event.name}`,
                       start: 0,
-                      size: ((moment.utc(event.end).diff(moment.utc(meta.time), 'seconds') / (60 * 60)) * 360),
-                      color: '#000000'
+                      size: 360,
+                      color: event.color || '#787878'
+                    })
+                  }
+                }
+              } else {
+                if (moment.utc(event.end).diff(moment.utc(meta.time), 'seconds') < (12 * 60 * 60)) {
+                  if (moment(event.start).isAfter(moment(meta.time))) {
+                    clockwheel.smallSectors.push({
+                      label: `${event.hosts} - ${event.name}`,
+                      start: ((moment.utc(event.start).diff(moment.utc(meta.time), 'seconds') / (12 * 60 * 60)) * 360) + 0.5,
+                      size: ((moment.utc(event.end).diff(moment.utc(event.start), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
+                      color: event.color || '#787878'
+                    })
+                  } else {
+                    clockwheel.smallSectors.push({
+                      label: `${event.hosts} - ${event.name}`,
+                      start: 0.5,
+                      size: ((moment.utc(event.end).diff(moment.utc(meta.time), 'seconds') / (12 * 60 * 60)) * 360) - 0.5,
+                      color: event.color || '#787878'
+                    })
+                  }
+                } else if (moment.utc(event.start).diff(moment.utc(meta.time), 'seconds') < (12 * 60 * 60)) {
+                  if (moment(event.start).isAfter(moment(meta.time))) {
+                    start = ((moment.utc(event.start).diff(moment.utc(meta.time), 'seconds') / (12 * 60 * 60)) * 360)
+                    clockwheel.smallSectors.push({
+                      label: `${event.hosts} - ${event.name}`,
+                      start: start + 0.5,
+                      size: 360 - start,
+                      color: event.color || '#787878'
+                    })
+                  } else {
+                    clockwheel.smallSectors.push({
+                      label: `${event.hosts} - ${event.name}`,
+                      start: 0,
+                      size: 360,
+                      color: event.color || '#787878'
                     })
                   }
                 }
               }
             }
-          }
-          // Add the event to the list on the right of the clock
-          if (moment(meta.time).add(1, 'hours').isAfter(moment(event.start)) && moment(meta.time).isBefore(moment(event.end))) {
-            finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878')
-            if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) !== -1) { finalColor = hexRgb('#161616') }
-            finalColor.red = Math.round(finalColor.red)
-            finalColor.green = Math.round(finalColor.green)
-            finalColor.blue = Math.round(finalColor.blue)
-            stripped = `${event.hosts} - ${event.name}`
-            if (event.type === 'sports') { stripped = event.name.split(" vs.")[ 0 ] }
-            if (meta.show !== stripped) {
-              html.events += `  <div class="m-1 bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
+            // If we are doing a show, do a 1-hour clockwheel
+          } else {
+            if ([ 'show', 'sports', 'remote' ].indexOf(event.type) !== -1 && [ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) === -1) {
+              var stripped = `${event.hosts} - ${event.name}`;
+              if (event.type === 'sports') { stripped = event.name.split(' vs.')[ 0 ] }
+              // If the event we are processing is what is on the air right now, and the event has not yet ended...
+              if (meta.show === stripped && moment(event.end).isAfter(moment(meta.time))) {
+                // Calculate base remaining time
+                timeLeft = moment.utc(event.end).diff(moment.utc(meta.time), 'minutes')
+                // If there is less than 1 hour remaining in the show, only shade the clock for the portion of the hour remaining in the show
+                if (moment.utc(event.end).diff(moment.utc(meta.time), 'minutes') < 60) {
+                  if (moment(event.start).isAfter(moment(meta.time))) {
+                    doLabel = `${event.hosts} - ${event.name}`
+                    doColor = event.color || '#787878'
+                    currentStart = moment(event.start)
+                    currentEnd = moment(event.end)
+                  } else {
+                    var theSize = ((moment.utc(event.end).diff(moment.utc(meta.time), 'seconds') / (60 * 60)) * 360)
+                    doLabel = `${event.hosts} - ${event.name}`
+                    doColor = event.color || '#787878'
+                    currentStart = moment(event.start)
+                    currentEnd = moment(event.end)
+                  }
+                  // Otherwise, shade the entire hour, if the event has already started via the scheduled start time
+                } else if (moment(event.start).isBefore(moment(meta.time))) {
+                  doLabel = `${event.hosts} - ${event.name}`
+                  doColor = event.color || '#787878'
+                  currentStart = moment(event.start)
+                  currentEnd = moment(event.end)
+                }
+                // If the event being process is not what is live, but the end time is after the current time...
+              } else if (moment(event.end).isAfter(moment(meta.time))) {
+                // Do a check to see if this event will intercept the currently live event
+                timeLeft2 = moment.utc(event.start).diff(moment.utc(meta.time), 'minutes')
+                if (timeLeft2 < 0) { timeLeft2 = 0 }
+                // If timeLeft2 is less than timeleft, that means the currently live show needs to end earlier than the scheduled time.
+                if (timeLeft2 < timeLeft) {
+                  timeLeft = timeLeft2
+                  currentEnd = moment(event.start)
+                  if (moment(currentEnd).isBefore(moment(meta.time))) {
+                    currentEnd = moment(meta.time)
+                    timeLeft = 0
+                  }
+                }
+                if (timeLeft < 0) { timeLeft = 0 }
+                // If the event being processed starts in less than 1 hour, add it to the hour clockwheel as a black shaded event
+                if (event.active > 0) {
+                  if (moment.utc(event.start).diff(moment.utc(meta.time), 'minutes') < 60) {
+                    if (moment(event.start).isAfter(moment(meta.time))) {
+                      var theStart = ((moment.utc(event.start).diff(moment.utc(meta.time), 'seconds') / (60 * 60)) * 360)
+                      theSize = ((moment.utc(event.end).diff(moment.utc(event.start), 'seconds') / (60 * 60)) * 360)
+                      if ((theSize + theStart) > 360) { theSize = 360 - theStart }
+                      clockwheel.sectors.push({
+                        label: `${event.hosts} - ${event.name}`,
+                        start: theStart,
+                        size: theSize,
+                        color: '#000000'
+                      })
+                    } else {
+                      clockwheel.sectors.push({
+                        label: `${event.hosts} - ${event.name}`,
+                        start: 0,
+                        size: ((moment.utc(event.end).diff(moment.utc(meta.time), 'seconds') / (60 * 60)) * 360),
+                        color: '#000000'
+                      })
+                    }
+                  }
+                }
+              }
+            }
+            // Add the event to the list on the right of the clock
+            if (moment(meta.time).add(1, 'hours').isAfter(moment(event.start)) && moment(meta.time).isBefore(moment(event.end))) {
+              finalColor = (typeof event.color !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(event.color)) ? hexRgb(event.color) : hexRgb('#787878')
+              if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) !== -1) { finalColor = hexRgb('#161616') }
+              finalColor.red = Math.round(finalColor.red)
+              finalColor.green = Math.round(finalColor.green)
+              finalColor.blue = Math.round(finalColor.blue)
+              stripped = `${event.hosts} - ${event.name}`
+              if (event.type === 'sports') { stripped = event.name.split(" vs.")[ 0 ] }
+              if (meta.show !== stripped) {
+                html.events += `  <div class="m-1 bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -466,37 +466,37 @@ function checkCalendar (meta, cal) {
                                             </div>
                                         </div>
                                     </div></div>`
+              }
             }
           }
-        }
-      })
-    }
+        })
+      }
 
-    // In automation, shade the clock in 12-hour format for upcoming shows
-    if (meta.state.startsWith('automation_') || meta.state.startsWith('prerecord_')) {
-      html.title = 'Clockwheel (next 12 hours)'
-      var start = moment(meta.time).startOf('day')
-      if (moment(meta.time).hour() >= 12) { start.add(12, 'hours') }
-      var diff = moment.utc(meta.time).diff(moment.utc(start), 'seconds')
-      clockwheel.start = (360 / 12 / 60 / 60) * diff
+      // In automation, shade the clock in 12-hour format for upcoming shows
+      if (meta.state.startsWith('automation_') || meta.state.startsWith('prerecord_')) {
+        html.title = 'Clockwheel (next 12 hours)'
+        var start = moment(meta.time).startOf('day')
+        if (moment(meta.time).hour() >= 12) { start.add(12, 'hours') }
+        var diff = moment.utc(meta.time).diff(moment.utc(start), 'seconds')
+        clockwheel.start = (360 / 12 / 60 / 60) * diff
 
-      // Show an indicator on the clock for the current hour (extra visual to show 12-hour clock mode)
-      clockwheel.sectors.push({
-        label: 'current hour',
-        start: -1,
-        size: 2,
-        color: '#000000'
-      })
+        // Show an indicator on the clock for the current hour (extra visual to show 12-hour clock mode)
+        clockwheel.sectors.push({
+          label: 'current hour',
+          start: -1,
+          size: 2,
+          color: '#000000'
+        })
 
-      // During shows, use a 1-hour clockwheel
-    } else {
-      html.title = 'Clockwheel (next hour)'
-      start = moment(meta.time).startOf('hour')
-      diff = moment.utc(meta.time).diff(moment.utc(start), 'seconds')
-      clockwheel.start = (360 / 60 / 60) * diff
+        // During shows, use a 1-hour clockwheel
+      } else {
+        html.title = 'Clockwheel (next hour)'
+        start = moment(meta.time).startOf('hour')
+        diff = moment.utc(meta.time).diff(moment.utc(start), 'seconds')
+        clockwheel.start = (360 / 60 / 60) * diff
 
-      if (meta.queueFinish !== null) {
-        html.events = `  <div class="m-1 bs-callout bs-callout-default shadow-2">
+        if (meta.queueFinish !== null) {
+          html.events = `  <div class="m-1 bs-callout bs-callout-default shadow-2">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -507,53 +507,53 @@ function checkCalendar (meta, cal) {
                                             </div>
                                         </div>
                                     </div></div>` + html.events
-      }
-
-      if (doLabel !== null) {
-        var doTopOfHour = false
-        if (!moment(meta.lastID).add(10, 'minutes').startOf('hour').isSame(moment(meta.time).startOf('hour')) && moment(meta.time).diff(moment(meta.time).startOf('hour'), 'minutes') < 10) {
-          var topOfHour = moment(meta.time).startOf('hour')
-          // This happens when the DJ has not yet taken their top of the hour break; keep the time in the events list the same until they take the break.
-          if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour))) {
-            doTopOfHour = true
-            html.events = `  <div class="m-1 bs-callout bs-callout-warning shadow-2">
-                                    <div class="container">
-                                        <div class="row">
-                                            <div class="col-4">
-                                                ${moment(topOfHour).format('hh:mm A')}
-                                            </div>
-                                            <div class="col-8">
-                                                Mandatory Top-of-Hour Break
-                                            </div>
-                                        </div>
-                                    </div></div>` + html.events
-          }
-        } else {
-          topOfHour = moment(meta.time).add(1, 'hours').startOf('hour')
-          // If the DJ is expected to do a top of the hour break at the next top of hour, show so on the clock and in the events list
-          if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour))) {
-            doTopOfHour = true
-            html.events = `  <div class="m-1 bs-callout bs-callout-warning shadow-2">
-                                    <div class="container">
-                                        <div class="row">
-                                            <div class="col-4">
-                                                ${moment(topOfHour).format('hh:mm A')}
-                                            </div>
-                                            <div class="col-8">
-                                                Mandatory Top-of-Hour Break
-                                            </div>
-                                        </div>
-                                    </div></div>` + html.events
-          }
         }
 
-        // First in the list of events, show the current show and how much time remains based on the schedule and whether or not something else will mandate this show
-        // ends early.
-        var finalColor = (typeof doColor !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(doColor)) ? hexRgb(doColor) : hexRgb('#787878')
-        finalColor.red = Math.round(finalColor.red)
-        finalColor.green = Math.round(finalColor.green)
-        finalColor.blue = Math.round(finalColor.blue)
-        html.events = `  <div class="m-1 bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
+        if (doLabel !== null) {
+          var doTopOfHour = false
+          if (!moment(meta.lastID).add(10, 'minutes').startOf('hour').isSame(moment(meta.time).startOf('hour')) && moment(meta.time).diff(moment(meta.time).startOf('hour'), 'minutes') < 10) {
+            var topOfHour = moment(meta.time).startOf('hour')
+            // This happens when the DJ has not yet taken their top of the hour break; keep the time in the events list the same until they take the break.
+            if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour))) {
+              doTopOfHour = true
+              html.events = `  <div class="m-1 bs-callout bs-callout-warning shadow-2">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-4">
+                                                ${moment(topOfHour).format('hh:mm A')}
+                                            </div>
+                                            <div class="col-8">
+                                                Mandatory Top-of-Hour Break
+                                            </div>
+                                        </div>
+                                    </div></div>` + html.events
+            }
+          } else {
+            topOfHour = moment(meta.time).add(1, 'hours').startOf('hour')
+            // If the DJ is expected to do a top of the hour break at the next top of hour, show so on the clock and in the events list
+            if (moment(currentEnd).subtract(10, 'minutes').isAfter(moment(topOfHour))) {
+              doTopOfHour = true
+              html.events = `  <div class="m-1 bs-callout bs-callout-warning shadow-2">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-4">
+                                                ${moment(topOfHour).format('hh:mm A')}
+                                            </div>
+                                            <div class="col-8">
+                                                Mandatory Top-of-Hour Break
+                                            </div>
+                                        </div>
+                                    </div></div>` + html.events
+            }
+          }
+
+          // First in the list of events, show the current show and how much time remains based on the schedule and whether or not something else will mandate this show
+          // ends early.
+          var finalColor = (typeof doColor !== 'undefined' && /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(doColor)) ? hexRgb(doColor) : hexRgb('#787878')
+          finalColor.red = Math.round(finalColor.red)
+          finalColor.green = Math.round(finalColor.green)
+          finalColor.blue = Math.round(finalColor.blue)
+          html.events = `  <div class="m-1 bs-callout bs-callout-default shadow-2" style="border-color: rgb(${finalColor.red}, ${finalColor.green}, ${finalColor.blue}); background: rgb(${parseInt(finalColor.red / 2)}, ${parseInt(finalColor.green / 2)}, ${parseInt(finalColor.blue / 2)});">
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-4">
@@ -564,103 +564,104 @@ function checkCalendar (meta, cal) {
                                             </div>
                                         </div>
                                     </div></div>` + html.events
-        if (moment.utc(currentEnd).diff(moment.utc(meta.time), 'minutes') < 60) {
-          if (moment(currentStart).isAfter(moment(meta.time))) {
-            var theStart = ((moment.utc(currentStart).diff(moment.utc(meta.time), 'seconds') / (60 * 60)) * 360)
-            var theSize = ((moment.utc(currentEnd).diff(moment.utc(currentStart), 'seconds') / (60 * 60)) * 360)
-            clockwheel.sectors.push({
-              label: doLabel,
-              start: theStart,
-              size: theSize,
-              color: doColor
-            })
-          } else {
-            theSize = ((moment.utc(currentEnd).diff(moment.utc(meta.time), 'seconds') / (60 * 60)) * 360)
+          if (moment.utc(currentEnd).diff(moment.utc(meta.time), 'minutes') < 60) {
+            if (moment(currentStart).isAfter(moment(meta.time))) {
+              var theStart = ((moment.utc(currentStart).diff(moment.utc(meta.time), 'seconds') / (60 * 60)) * 360)
+              var theSize = ((moment.utc(currentEnd).diff(moment.utc(currentStart), 'seconds') / (60 * 60)) * 360)
+              clockwheel.sectors.push({
+                label: doLabel,
+                start: theStart,
+                size: theSize,
+                color: doColor
+              })
+            } else {
+              theSize = ((moment.utc(currentEnd).diff(moment.utc(meta.time), 'seconds') / (60 * 60)) * 360)
+              clockwheel.sectors.push({
+                label: doLabel,
+                start: 0,
+                size: theSize,
+                color: doColor
+              })
+            }
+          } else if (moment.utc(currentStart).isBefore(moment.utc(meta.time))) {
             clockwheel.sectors.push({
               label: doLabel,
               start: 0,
-              size: theSize,
+              size: 360,
               color: doColor
-            })
-          }
-        } else if (moment.utc(currentStart).isBefore(moment.utc(meta.time))) {
-          clockwheel.sectors.push({
-            label: doLabel,
-            start: 0,
-            size: 360,
-            color: doColor
-          })
-        } else {
-          theStart = ((moment.utc(currentStart).diff(moment.utc(meta.time), 'seconds') / (60 * 60)) * 360)
-          if (theStart < 360) {
-            clockwheel.sectors.push({
-              label: doLabel,
-              start: theStart,
-              size: 360 - theStart,
-              color: doColor
-            })
-          }
-        }
-
-        // Then, shade the top of hour ID break on the clock if required
-        if (doTopOfHour) {
-          if (moment(meta.lastID).add(10, 'minutes').startOf('hour') !== moment(meta.time).startOf('hour') && moment.utc(meta.time).diff(moment.utc(meta.time).startOf('hour'), 'minutes') < 5) {
-            start = moment(meta.time).startOf('hour').subtract(5, 'minutes')
-            diff = moment.utc(meta.time).diff(moment.utc(start), 'seconds')
-            clockwheel.sectors.push({
-              label: 'current minute',
-              start: 360 - (diff * (360 / 60 / 60)),
-              size: 60,
-              color: '#FFEB3B'
             })
           } else {
-            start = moment(meta.time).add(1, 'hours').startOf('hour').subtract(5, 'minutes')
-            diff = moment.utc(start).diff(moment.utc(meta.time), 'seconds')
+            theStart = ((moment.utc(currentStart).diff(moment.utc(meta.time), 'seconds') / (60 * 60)) * 360)
+            if (theStart < 360) {
+              clockwheel.sectors.push({
+                label: doLabel,
+                start: theStart,
+                size: 360 - theStart,
+                color: doColor
+              })
+            }
+          }
+
+          // Then, shade the top of hour ID break on the clock if required
+          if (doTopOfHour) {
+            if (moment(meta.lastID).add(10, 'minutes').startOf('hour') !== moment(meta.time).startOf('hour') && moment.utc(meta.time).diff(moment.utc(meta.time).startOf('hour'), 'minutes') < 5) {
+              start = moment(meta.time).startOf('hour').subtract(5, 'minutes')
+              diff = moment.utc(meta.time).diff(moment.utc(start), 'seconds')
+              clockwheel.sectors.push({
+                label: 'current minute',
+                start: 360 - (diff * (360 / 60 / 60)),
+                size: 60,
+                color: '#FFEB3B'
+              })
+            } else {
+              start = moment(meta.time).add(1, 'hours').startOf('hour').subtract(5, 'minutes')
+              diff = moment.utc(start).diff(moment.utc(meta.time), 'seconds')
+              clockwheel.sectors.push({
+                label: 'current minute',
+                start: ((360 / 60 / 60) * diff),
+                size: 60,
+                color: '#FFEB3B'
+              })
+            }
+          }
+        }
+
+        // Finally, show an indicator on the clock for the current minute (extra visual to show 1-hour clock mode)
+        clockwheel.sectors.push({
+          label: 'current minute',
+          start: 0,
+          size: 2,
+          color: '#000000'
+        })
+
+        // Shade in queue time on the clockwheel
+        if (meta.queueFinish !== null) {
+          diff = moment(meta.queueFinish).diff(moment(meta.time), 'seconds')
+
+          if (diff < (60 * 60)) {
             clockwheel.sectors.push({
-              label: 'current minute',
-              start: ((360 / 60 / 60) * diff),
-              size: 60,
-              color: '#FFEB3B'
+              label: 'queue time',
+              start: 0,
+              size: diff * 0.1,
+              color: '#0000ff'
+            })
+          } else {
+            clockwheel.sectors.push({
+              label: 'queue time',
+              start: 0,
+              size: 360,
+              color: '#0000ff'
             })
           }
         }
       }
 
-      // Finally, show an indicator on the clock for the current minute (extra visual to show 1-hour clock mode)
-      clockwheel.sectors.push({
-        label: 'current minute',
-        start: 0,
-        size: 2,
-        color: '#000000'
-      })
+      clockwheel.processed = calculateSectors(clockwheel)
 
-      // Shade in queue time on the clockwheel
-      if (meta.queueFinish !== null) {
-        diff = moment(meta.queueFinish).diff(moment(meta.time), 'seconds')
-
-        if (diff < (60 * 60)) {
-          clockwheel.sectors.push({
-            label: 'queue time',
-            start: 0,
-            size: diff * 0.1,
-            color: '#0000ff'
-          })
-        } else {
-          clockwheel.sectors.push({
-            label: 'queue time',
-            start: 0,
-            size: 360,
-            color: '#0000ff'
-          })
-        }
-      }
-    }
-
-    clockwheel.processed = calculateSectors(clockwheel)
-
-    isRunning = false
-    var response = { events: html.events, title: html.title, clockwheel: clockwheel, cal: cal }
-    ipcRenderer.send('processed-calendar', [ response, events ])
+      isRunning = false
+      var response = { events: html.events, title: html.title, clockwheel: clockwheel, cal: cal }
+      ipcRenderer.send('processed-calendar', [ response, events ])
+    });
   } catch (e) {
     isRunning = false
     console.error(e)
