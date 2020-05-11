@@ -1,40 +1,24 @@
 {
   "name": "wwsu-dj-controls",
-  "version": "6.1.0-alpha.21",
+  "version": "8.0.0-alpha.1",
   "description": "A WWSU management application for DJs and Directors",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "dist": "electron-packager .",
-    "build": "electron-builder .",
-    "postinstall": "electron-builder install-app-deps"
+    "start": "electron ."
   },
   "repository": "https://github.com/Lovinity/wwsu-dj-controls",
   "author": "Patrick Schmalstig",
   "devDependencies": {
-    "electron": "^6.0.0",
-    "electron-builder": "^21.2.0",
-    "electron-devtools-installer": "^2.2.4",
-    "electron-squirrel-startup": "^1.0.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "standard": "^14.3.1"
+    "electron": "^8.2.5"
   },
   "dependencies": {
-    "electron-is": "^3.0.0",
-    "electron-prompt": "^1.3.1",
-    "electron-settings": "^3.2.0",
-    "move-js": "^0.5.0",
-    "quill": "^1.3.6",
-    "sails.io.js": "^1.2.1",
-    "sanitize-filename": "^1.6.2",
-    "serialport": "^7.1.5",
-    "socket.io-client": "^2.2.0",
-    "taucharts": "^2.7.4"
+    "node-machine-id": "^1.1.12",
+    "serialport": "^9.0.0"
   },
   "build": {
     "appId": "com.electron.wwsu-dj-controls",
     "productName": "WWSU DJ Controls",
-    "copyright": "Copyright © 2018-2019 WWSU 106.9 FM",
+    "copyright": "Copyright © 2018-2020 WWSU 106.9 FM",
     "mac": {
       "category": "public.app-category.business"
     }
