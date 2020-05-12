@@ -5,11 +5,12 @@ let mainWindow;
 let calendarWindow;
 
 function enforceCORS () {
-  // Enforce CORS and Origin
+  // Enforce CORS and Origin; skywayJS needs origin set to our server address, but everything else needs file origin.
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({
       responseHeaders: {
         ...details.responseHeaders,
+        // Does not work yet; need to modify this to allow devTools to work
         // 'Content-Security-Policy': [ `script-src 'self' https://server.wwsu1069.org https://webrtc.ecl.ntt.com` ],
         'Origin': details.url.includes('webrtc.ecl.ntt.com') ? "https://server.wwsu1069.org" : "file://"
       }

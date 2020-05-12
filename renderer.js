@@ -3,23 +3,12 @@ var development = true;
 window.addEventListener('DOMContentLoaded', () => {
 
     try {
-
-        // Hidden window detection
-        var hidden
-        if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
-            hidden = 'hidden'
-        } else if (typeof document.msHidden !== 'undefined') {
-            hidden = 'msHidden'
-        } else if (typeof document.webkitHidden !== 'undefined') {
-            hidden = 'webkitHidden'
-        }
-
         // Machine ID
         var machineID = window.ipcRenderer.sendSync('get-machine-id');
         $('.connecting-id').html(machineID);
 
         // Animation queue
-        var animations = {}
+        var animations = new WWSUanimations();
 
         // Connection
         io.sails.url = "https://server.wwsu1069.org";
@@ -47,6 +36,7 @@ window.addEventListener('DOMContentLoaded', () => {
         var subscriptions = new WWSUsubscriptions(socket, noReq);
         var meta = new WWSUMeta(socket, noReq);
         var logs = new WWSUlogs(socket, noReq, hostReq, directorReq);
+        var api = new WWSUapi(noReq, hostReq, djReq, directorReq, adminDirectorReq);
 
         var disciplineModal;
 
@@ -75,9 +65,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
         navigation.addItem('#nav-notifications', '#section-notifications', 'Notifications / Todo - WWSU DJ Controls', '/notifications', false);
         navigation.addItem('#nav-announcements', '#section-announcements', 'Manage Announcements - WWSU DJ Controls', '/announcements', false);
+        navigation.addItem('#nav-api', '#section-api', 'Make API Query - WWSU DJ Controls', '/api', false);
         navigation.addItem('#nav-calendar', '#section-calendar', 'Manage Calendar - WWSU DJ Controls', '/calendar', false, () => {
             fullCalendar.updateSize();
         });
+        navigation.addItem('#nav-logs', '#section-logs', 'Operation Logs - WWSU DJ Controls', '/logs', false);
+
 
         // Click events
         $('.status-more').click(() => {
@@ -89,9 +82,15 @@ window.addEventListener('DOMContentLoaded', () => {
         $('.btn-manage-events').click(() => {
             calendar.showSimpleEvents();
         });
+        $('#section-logs-date-browse').click(() => {
+            logs.showAttendance($('#section-logs-date').val());
+        });
 
-        // Initialize report form
+        // Initialize stuff
         status.initReportForm(`DJ Controls`, `#section-report-form`);
+        logs.initAttendanceTable(`#section-logs-table-div`);
+        logs.initDashboardLogs(`#section-dashboard-logs`);
+        api.initApiForm('#section-api-form');
 
 
         // CLOCKWHEEL
@@ -294,53 +293,6 @@ window.addEventListener('DOMContentLoaded', () => {
             body: 'There was an error initializing DJ Controls. Please report this to the engineer.',
             icon: 'fas fa-skull-crossbones fa-lg',
         });
-    }
-
-
-
-
-
-    /*
-      ANIMATION MANAGEMENT
-    */
-
-
-
-
-    // Process queued animations every second
-    setInterval(() => {
-        if (!document[ hidden ]) {
-            for (var key in animations) {
-                if (Object.prototype.hasOwnProperty.call(animations, key)) {
-                    animations[ key ]()
-                    delete animations[ key ]
-                }
-            }
-        }
-
-        // Random spiders
-        /*
-        if (!spider && (Math.random() * (60 * 60)) >= 3599) {
-          spider = new SpiderController({ minBugs: 1, maxBugs: 1, canDie: false, mouseOver: 'nothing' })
-        } else if ((Math.random() * (5 * 60)) >= 299) {
-          spider.end()
-          spider = undefined
-        }
-        */
-    }, 1000)
-
-    /**
-     * Add an animation to the queue, which either processes immediately if window is active or is queued if not active.
-     * 
-     * @param {string} name Animation name; if an animation with the same name is already queued, it is replaced.
-     * @param {function} fn Function called when it is time to process the animation.
-     */
-    function addAnimation (name, fn) {
-        if (!document[ hidden ]) {
-            fn()
-        } else {
-            animations[ name ] = fn
-        }
     }
 
 
@@ -622,6 +574,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            if (typeof updated.attendanceID !== 'undefined') {
+                logs.setAttendanceID(updated.attendanceID);
+            }
+
             // Update dump button seconds
             if (typeof updated.delaySystem !== 'undefined') {
                 $('.operation-dump-time').html(`${updated.delaySystem === null ? `Turn On` : `${updated.delaySystem} sec`}`);
@@ -634,26 +590,26 @@ window.addEventListener('DOMContentLoaded', () => {
 
             // Update now playing info
             if (typeof updated.line1 !== 'undefined') {
-                addAnimation('meta-line1', () => {
+                animations.add('meta-line1', () => {
                     $('.meta-line1').html(updated.line1);
                 })
             }
             if (typeof updated.line2 !== 'undefined') {
-                addAnimation('meta-line2', () => {
+                animations.add('meta-line2', () => {
                     $('.meta-line2').html(updated.line2);
                 })
             }
 
             // Update online listeners
             if (typeof updated.listeners !== 'undefined') {
-                addAnimation('meta-listeners', () => {
+                animations.add('meta-listeners', () => {
                     $('.meta-listeners').html(updated.listeners);
                 })
             }
 
             // Determine which operation buttons should be visible depending on system state
             if (typeof updated.state !== 'undefined') {
-                addAnimation('meta-state', () => {
+                animations.add('meta-state', () => {
                     $('.operation-button').addClass('d-none');
                     switch (updated.state) {
                         case 'automation_on':
@@ -756,18 +712,18 @@ window.addEventListener('DOMContentLoaded', () => {
             }
 
             // Update station time
-            addAnimation('meta-time', () => {
+            animations.add('meta-time', () => {
                 $('.meta-time').html(moment(fullMeta.time).format("llll"));
             })
 
             // Update trackFinish
-            addAnimation('meta-trackFinish', () => {
+            animations.add('meta-trackFinish', () => {
                 $('.meta-trackFinish').html(fullMeta.trackFinish !== null ? moment.duration(moment(fullMeta.trackFinish).diff(moment(fullMeta.time), 'seconds'), 'seconds').format("HH:mm:ss") : '');
             })
 
             // Make queue timer show current queue length (when visible)
             // Also flash operations bar when about to go on the air
-            addAnimation('meta-queue', () => {
+            animations.add('meta-queue', () => {
                 // Queue length and first track
                 $('.meta-queueLength').html(fullMeta.queueCalculating ? `<i class="fas fa-hourglass-half"></i>` : moment.duration(queueLength, 'seconds').format('HH:mm:ss'))
                 $('.meta-firstTrack').html(fullMeta.queueCalculating || fullMeta.countdown === null ? `<i class="fas fa-hourglass-half"></i>` : moment.duration(countDown, 'seconds').format('HH:mm:ss'));
@@ -798,7 +754,7 @@ window.addEventListener('DOMContentLoaded', () => {
             });
 
             // Time remaining
-            addAnimation('meta-remaining', () => {
+            animations.add('meta-remaining', () => {
                 if (fullMeta.scheduledEnd) {
                     $('.meta-remaining').html(moment.duration(moment(fullMeta.scheduledEnd).diff(moment(fullMeta.time), 'minutes'), 'minutes').format("H [hrs] m [mins]"))
                     if (fullMeta.scheduledStart && moment().isSameOrAfter(moment(fullMeta.scheduledStart))) {
@@ -827,7 +783,7 @@ window.addEventListener('DOMContentLoaded', () => {
             });
 
             // Tick clockwheel clock
-            addAnimation('clockwheel-clock', () => {
+            animations.add('clockwheel-clock', () => {
                 computeTimePositions($h, $m, $s);
                 setSize($('#clockwheel-donut').width(), $('#clockwheel-donut').height());
             });
@@ -850,7 +806,7 @@ window.addEventListener('DOMContentLoaded', () => {
             }
 
             // Flash icons
-            addAnimation('nav-icons-flash', () => {
+            animations.add('nav-icons-flash', () => {
                 $('.nav-icon-flash-danger').addClass('text-danger');
                 $('.nav-icon-flash-warning').addClass('text-warning');
                 $('.nav-icon-flash-primary').addClass('text-primary');
@@ -973,12 +929,12 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         html += `</ul>`;
 
-        addAnimation('status-model', () => {
+        animations.add('status-model', () => {
             status.statusModal.body = html;
         });
 
         // Process global status indications
-        addAnimation('status-global', () => {
+        animations.add('status-global', () => {
             $('.status-global-color').removeClass('bg-danger');
             $('.status-global-color').removeClass('bg-orange');
             $('.status-global-color').removeClass('bg-warning');
@@ -1078,12 +1034,12 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         html += `</ul>`;
 
-        addAnimation('eas-model', () => {
+        animations.add('eas-model', () => {
             eas.easModal.body = html;
         });
 
         // Process global status indications
-        addAnimation('eas-global', () => {
+        animations.add('eas-global', () => {
             $('.eas-global-color').removeClass('bg-danger');
             $('.eas-global-color').removeClass('bg-orange');
             $('.eas-global-color').removeClass('bg-warning');
@@ -1144,7 +1100,7 @@ window.addEventListener('DOMContentLoaded', () => {
     * @param {array} db Array of announcements
     */
     function processAnnouncements (db) {
-        addAnimation('announcements', () => {
+        animations.add('announcements', () => {
             // First, process djcontrols announcements for the dashboard
             var html = ``;
             db
@@ -1204,7 +1160,7 @@ window.addEventListener('DOMContentLoaded', () => {
      * @var {object} arg[0] New data object for the clockwheel Chart.js
      */
     window.ipcRenderer.on('update-clockwheel', (event, arg) => {
-        addAnimation('update-clockwheel', () => {
+        animations.add('update-clockwheel', () => {
             var clockwheelDonutData = arg[ 0 ];
             clockwheelDonut.data = clockwheelDonutData;
             clockwheelDonut.update();

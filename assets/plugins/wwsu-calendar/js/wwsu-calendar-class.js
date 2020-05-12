@@ -156,7 +156,6 @@ class WWSUcalendar extends CalendarDb {
             css: { border: '3px solid #a00' },
             onBlock: () => {
                 var table = $(`#modal-${this.eventsModal.id}-table`).DataTable({
-                    scrollCollapse: true,
                     paging: false,
                     data: [],
                     columns: [
@@ -165,7 +164,34 @@ class WWSUcalendar extends CalendarDb {
                         { title: "Actions" },
                     ],
                     "order": [ [ 0, "asc" ], [ 1, "asc" ] ],
-                    pageLength: 10
+                    pageLength: 25,
+                    drawCallback: () => {
+                        // Action button click events
+                        $('.btn-event-edit').unbind('click');
+                        $('.btn-event-editschedule').unbind('click');
+                        $('.btn-event-delete').unbind('click');
+
+                        $('.btn-event-edit').click((e) => {
+                            var event = this.calendar.db().get().find((event) => event.ID === parseInt($(e.currentTarget).data('calendarid')));
+                            this.showEventForm(event);
+                        });
+
+                        $('.btn-event-editschedule').click((e) => {
+                            this.showSchedules(parseInt($(e.currentTarget).data('calendarid')));
+                        });
+
+                        $('.btn-event-delete').click((e) => {
+                            var util = new WWSUutil();
+                            var event = this.calendar.db().get().find((event) => event.ID === parseInt($(e.currentTarget).data('calendarid')));
+                            util.confirmDialog(`<p>Are you sure you want to <b>permanently</b> remove ${event.type}: ${event.name}?</p><ul><li><strong>Do not permanently remove events until/unless</strong> you know the event will no longer occur/air (virtually ever again) and you no longer need its analytics in the "analytics" page of DJ Controls.</li><li>Removes the event</li><li>Removes all schedules of the event from the calendar</li><li>Notifies all notification subscribers the event has been discontinued</li><li>Removes all notification subscriptions</li><li>Does not remove logs; they can still be accessed from the "logs" page of DJ Controls.</li><li>Does not remove analytics, but they can only be accessed in raw form from logs; cannot be accessed anymore from the "analytics" page of DJ Controls.</li></ul>`, event.name, () => {
+                                this.removeCalendar(this.eventsModal, { ID: parseInt($(e.currentTarget).data('calendarid')) }, (success) => {
+                                    this.eventsModal.body = `<div class="alert alert-warning">
+                                Event changes take several seconds to reflect in the system. Please close and re-open this window.
+                                </div>`;
+                                });
+                            });
+                        });
+                    }
                 });
                 var drawRows = () => {
                     this.calendar.db().each((calendar) => {
@@ -177,31 +203,6 @@ class WWSUcalendar extends CalendarDb {
                     });
                     table.draw();
 
-                    // Action button click events
-                    $('.btn-event-edit').unbind('click');
-                    $('.btn-event-editschedule').unbind('click');
-                    $('.btn-event-delete').unbind('click');
-
-                    $('.btn-event-edit').click((e) => {
-                        var event = this.calendar.db().get().find((event) => event.ID === parseInt($(e.currentTarget).data('calendarid')));
-                        this.showEventForm(event);
-                    });
-
-                    $('.btn-event-editschedule').click((e) => {
-                        this.showSchedules(parseInt($(e.currentTarget).data('calendarid')));
-                    });
-
-                    $('.btn-event-delete').click((e) => {
-                        var util = new WWSUutil();
-                        var event = this.calendar.db().get().find((event) => event.ID === parseInt($(e.currentTarget).data('calendarid')));
-                        util.confirmDialog(`<p>Are you sure you want to <b>permanently</b> remove ${event.type}: ${event.name}?</p><ul><li><strong>Do not permanently remove events until/unless</strong> you know the event will no longer occur/air (virtually ever again) and you no longer need its analytics in the "analytics" page of DJ Controls.</li><li>Removes the event</li><li>Removes all schedules of the event from the calendar</li><li>Notifies all notification subscribers the event has been discontinued</li><li>Removes all notification subscriptions</li><li>Does not remove logs; they can still be accessed from the "logs" page of DJ Controls.</li><li>Does not remove analytics, but they can only be accessed in raw form from logs; cannot be accessed anymore from the "analytics" page of DJ Controls.</li></ul>`, event.name, () => {
-                            this.removeCalendar(this.eventsModal, { ID: parseInt($(e.currentTarget).data('calendarid')) }, (success) => {
-                                this.eventsModal.body = `<div class="alert alert-warning">
-                                Event changes take several seconds to reflect in the system. Please close and re-open this window.
-                                </div>`;
-                            });
-                        });
-                    });
                     $(`#modal-${this.eventsModal.id}`).unblock();
                 };
 
@@ -231,7 +232,36 @@ class WWSUcalendar extends CalendarDb {
                         { title: "Schedule" },
                         { title: "Actions" },
                     ],
-                    pageLength: 10
+                    pageLength: 10,
+                    drawCallback: () => {
+                        // Action button click events
+                        $('.btn-schedule-edit').unbind('click');
+                        $('.btn-schedule-delete').unbind('click');
+
+                        $('.btn-schedule-edit').click((e) => {
+                            var schedule = this.schedule.db({ ID: parseInt($(e.currentTarget).data('scheduleid')) }).first();
+                            var calendarID = parseInt($(e.currentTarget).data('calendarid'));
+                            this.showScheduleForm(schedule, calendarID);
+                        });
+                        $('.btn-schedule-delete').click((e) => {
+                            var util = new WWSUutil();
+                            util.confirmDialog(`<p>Are you sure you want to delete that schedule?</p>
+                        <ul>
+                            <li>Please <strong>do not</strong> delete schedules to cancel a specific date/time; click the occurrence on the calendar and elect to cancel it.</li>
+                            <li>Will not notify subscribers.</li>
+                            <li>A conflict check will run, and you will be notified of occurrence changes that will be made to avoid conflicts</li>
+                        </ul>`, null, () => {
+                                var scheduleID = parseInt($(e.currentTarget).data('scheduleid'));
+                                this.removeSchedule(this.schedulesModal, { ID: scheduleID }, (success) => {
+                                    if (success) {
+                                        this.schedulesModal.body = `<div class="alert alert-warning">
+                                    Schedule changes take several seconds to reflect in the system. Please close and re-open this window.
+                                    </div>`;
+                                    }
+                                });
+                            });
+                        });
+                    }
                 });
                 var drawRows = () => {
                     this.schedule.db({ calendarID: calendarID }).each((schedule) => {
@@ -247,34 +277,6 @@ class WWSUcalendar extends CalendarDb {
                     });
                     table.draw();
                     $(`#modal-${this.schedulesModal.id}`).unblock();
-
-                    // Action button click events
-                    $('.btn-schedule-edit').unbind('click');
-                    $('.btn-schedule-delete').unbind('click');
-
-                    $('.btn-schedule-edit').click((e) => {
-                        var schedule = this.schedule.db({ ID: parseInt($(e.currentTarget).data('scheduleid')) }).first();
-                        var calendarID = parseInt($(e.currentTarget).data('calendarid'));
-                        this.showScheduleForm(schedule, calendarID);
-                    });
-                    $('.btn-schedule-delete').click((e) => {
-                        var util = new WWSUutil();
-                        util.confirmDialog(`<p>Are you sure you want to delete that schedule?</p>
-                        <ul>
-                            <li>Please <strong>do not</strong> delete schedules to cancel a specific date/time; click the occurrence on the calendar and elect to cancel it.</li>
-                            <li>Will not notify subscribers.</li>
-                            <li>A conflict check will run, and you will be notified of occurrence changes that will be made to avoid conflicts</li>
-                        </ul>`, null, () => {
-                            var scheduleID = parseInt($(e.currentTarget).data('scheduleid'));
-                            this.removeSchedule(this.schedulesModal, { ID: scheduleID }, (success) => {
-                                if (success) {
-                                    this.schedulesModal.body = `<div class="alert alert-warning">
-                                    Schedule changes take several seconds to reflect in the system. Please close and re-open this window.
-                                    </div>`;
-                                }
-                            });
-                        });
-                    });
                 };
 
                 drawRows();

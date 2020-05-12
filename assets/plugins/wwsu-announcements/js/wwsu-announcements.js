@@ -36,6 +36,8 @@ class WWSUannouncements extends WWSUdb {
             headerColor: '',
             zindex: 1100
         });
+
+        this.animations = new WWSUanimations();
     }
 
     // Initialize the connection and get initial data; should be called on socket connect event.
@@ -49,40 +51,61 @@ class WWSUannouncements extends WWSUdb {
      * @param {string} table DOM query string of the div container which to place the table and "add announcement" button
      */
     initTable (table) {
-        var util = new WWSUutil();
 
-        // Init html
-        $(table).html(`<table id="section-announcements-table" class="table table-striped display responsive" style="width: 100%;"></table>
+        this.animations.add('announcements-init-table', () => {
+            var util = new WWSUutil();
+
+            // Init html
+            $(table).html(`<table id="section-announcements-table" class="table table-striped display responsive" style="width: 100%;"></table>
         <button type="button" class="btn btn-block btn-success btn-announcement-new">New Announcement</button>`);
 
-        util.waitForElement(`#section-announcements-table`, () => {
+            util.waitForElement(`#section-announcements-table`, () => {
 
-            // Generate table
-            this.table = $(`#section-announcements-table`).DataTable({
-                paging: false,
-                data: [],
-                columns: [
-                    { title: "Title" },
-                    { title: "Type" },
-                    { title: "Start" },
-                    { title: "End" },
-                    { title: "Priority" },
-                    { title: "Actions" },
-                ],
-                columnDefs: [
-                    { responsivePriority: 1, targets: 5 },
-                ],
-                "order": [ [ 3, "asc" ], [ 2, "asc" ] ],
-                pageLength: 10
-            });
+                // Generate table
+                this.table = $(`#section-announcements-table`).DataTable({
+                    paging: true,
+                    data: [],
+                    columns: [
+                        { title: "Title" },
+                        { title: "Type" },
+                        { title: "Start" },
+                        { title: "End" },
+                        { title: "Priority" },
+                        { title: "Actions" },
+                    ],
+                    columnDefs: [
+                        { responsivePriority: 1, targets: 5 },
+                    ],
+                    "order": [ [ 3, "asc" ], [ 2, "asc" ] ],
+                    pageLength: 10,
+                    drawCallback: () => {
+                        // Action button click events
+                        $('.btn-announcement-edit').unbind('click');
+                        $('.btn-announcement-delete').unbind('click');
 
-            // Update with information
-            this.updateTable();
+                        $('.btn-announcement-edit').click((e) => {
+                            var announcement = this.db().get().find((announcement) => announcement.ID === parseInt($(e.currentTarget).data('id')));
+                            this.showForm(announcement);
+                        });
 
-            // Add click event for new announcement button
-            $('.btn-announcement-new').unbind('click');
-            $('.btn-announcement-new').click(() => {
-                this.showForm();
+                        $('.btn-announcement-delete').click((e) => {
+                            var util = new WWSUutil();
+                            var announcement = this.db().get().find((announcement) => announcement.ID === parseInt($(e.currentTarget).data('id')));
+                            util.confirmDialog(`Are you sure you want to <strong>permanently</strong> remove the ${announcement.type} announcement "${announcement.title}"?`, null, () => {
+                                this.remove({ ID: announcement.ID });
+                            });
+                        });
+                    }
+                });
+
+                // Add click event for new announcement button
+                $('.btn-announcement-new').unbind('click');
+                $('.btn-announcement-new').click(() => {
+                    this.showForm();
+                });
+
+                // Update with information
+                this.updateTable();
             });
         });
     }
@@ -229,37 +252,22 @@ class WWSUannouncements extends WWSUdb {
      * Update the announcement management table if it exists
      */
     updateTable () {
-        if (this.table) {
-            this.table.clear();
-            this.db().each((announcement) => {
-                this.table.row.add([
-                    announcement.title,
-                    announcement.type,
-                    moment(announcement.starts).format("llll"),
-                    moment(announcement.expires).format("llll"),
-                    `<span class="text-${announcement.level}"><i class="fas fa-dot-circle"></i></span>`,
-                    `<div class="btn-group"><button class="btn btn-sm btn-warning btn-announcement-edit" data-id="${announcement.ID}" title="Edit Announcement"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-announcement-delete" data-id="${announcement.ID}" title="Delete Announcement"><i class="fas fa-trash"></i></button></div>`
-                ])
-            });
-            this.table.draw();
-
-            // Action button click events
-            $('.btn-announcement-edit').unbind('click');
-            $('.btn-announcement-delete').unbind('click');
-
-            $('.btn-announcement-edit').click((e) => {
-                var announcement = this.db().get().find((announcement) => announcement.ID === parseInt($(e.currentTarget).data('id')));
-                this.showForm(announcement);
-            });
-
-            $('.btn-announcement-delete').click((e) => {
-                var util = new WWSUutil();
-                var announcement = this.db().get().find((announcement) => announcement.ID === parseInt($(e.currentTarget).data('id')));
-                util.confirmDialog(`Are you sure you want to <strong>permanently</strong> remove the ${announcement.type} announcement "${announcement.title}"?`, null, () => {
-                    this.remove({ ID: announcement.ID });
+        this.animations.add('announcements-update-table', () => {
+            if (this.table) {
+                this.table.clear();
+                this.db().each((announcement) => {
+                    this.table.row.add([
+                        announcement.title,
+                        announcement.type,
+                        moment(announcement.starts).format("llll"),
+                        moment(announcement.expires).format("llll"),
+                        `<span class="text-${announcement.level}"><i class="fas fa-dot-circle"></i></span>`,
+                        `<div class="btn-group"><button class="btn btn-sm btn-warning btn-announcement-edit" data-id="${announcement.ID}" title="Edit Announcement"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-announcement-delete" data-id="${announcement.ID}" title="Delete Announcement"><i class="fas fa-trash"></i></button></div>`
+                    ])
                 });
-            });
-        }
+                this.table.draw();
+            }
+        });
     }
 
     /**
@@ -344,7 +352,7 @@ class WWSUannouncements extends WWSUdb {
                         "type": "tinymce",
                         "options": {
                             "toolbar": 'undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | fullscreen preview | image link | ltr rtl',
-                            "plugins": 'autoresize preview paste importcss searchreplace autolink autosave save directionality visualblocks visualchars fullscreen image link table hr pagebreak nonbreaking toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help quickbars',                            
+                            "plugins": 'autoresize preview paste importcss searchreplace autolink autosave save directionality visualblocks visualchars fullscreen image link table hr pagebreak nonbreaking toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help quickbars',
                             "menubar": 'file edit view insert format tools table help'
                         },
                         "helper": "For display signs, content will be auto-scaled to fit the screen. Avoid using large images when also using text for display sign announcements; the text will become very small when scaled."

@@ -710,7 +710,7 @@ class WWSUmodal {
               <span aria-hidden="true">×</span>
           </button>` : ``}
           </div>
-          <div class="modal-body" id="modal-${this.id}-body" style="max-height: 75vh; overflow-x: scroll;">
+          <div class="modal-body" id="modal-${this.id}-body">
               ${body}
           </div>
           <div class="modal-footer justify-content-between" id="modal-${this.id}-footer">
@@ -754,6 +754,50 @@ class WWSUmodal {
   }
 }
 
+// Class for managing DOM updates / animations
+class WWSUanimations {
+  constructor() {
+
+    // Hidden window detection
+    this.hidden
+    if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
+      this.hidden = 'hidden'
+    } else if (typeof document.msHidden !== 'undefined') {
+      this.hidden = 'msHidden'
+    } else if (typeof document.webkitHidden !== 'undefined') {
+      this.hidden = 'webkitHidden'
+    }
+
+    this.animations = {};
+
+    // Process queued animations every second
+    setInterval(() => {
+      if (!document[ this.hidden ]) {
+        for (var key in this.animations) {
+          if (Object.prototype.hasOwnProperty.call(this.animations, key)) {
+            this.animations[ key ]()
+            delete this.animations[ key ]
+          }
+        }
+      }
+    }, 1000)
+  }
+
+  /**
+    * Add an animation to the queue, which either processes immediately if window is active or is queued if not active.
+    * 
+    * @param {string} name Animation name; if an animation with the same name is already queued, it is replaced.
+    * @param {function} fn Function called when it is time to process the animation.
+  */
+  add (name, fn) {
+    if (!document[ this.hidden ]) {
+      fn()
+    } else {
+      this.animations[ name ] = fn
+    }
+  }
+}
+
 if (typeof require !== 'undefined') {
   exports.WWSUdb = WWSUdb;
   exports.WWSUreq = WWSUreq;
@@ -761,4 +805,5 @@ if (typeof require !== 'undefined') {
   exports.WWSUutil = WWSUutil;
   exports.WWSUqueue = WWSUqueue;
   exports.WWSUmodal = WWSUmodal;
+  exports.WWSUanimations = WWSUanimations;
 }

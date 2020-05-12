@@ -219,6 +219,7 @@
   <script src="assets/plugins/sails.io/sails.io.js" autoConnect="false" environment="production"
     reconnection="true"></script>
   <script src="assets/plugins/wwsu-sails/js/wwsu.js"></script>
+  <script src="assets/plugins/wwsu-api/js/wwsu-api.js"></script>
   <script src="assets/plugins/wwsu-navigation/js/wwsu-navigation.js"></script>
   <script src="assets/plugins/wwsu-directors/js/wwsu-directors.js"></script>
   <script src="assets/plugins/wwsu-djs/js/wwsu-djs.js"></script>
@@ -517,6 +518,14 @@
               </a>
             </li>
             <li class="nav-item nav-admin d-none">
+              <a href="#" class="nav-link" id="nav-api" title="Make a raw API query to WWSU.">
+                <i class="nav-icon fas fa-terminal"></i>
+                <p>
+                  API Query
+                </p>
+              </a>
+            </li>
+            <li class="nav-item nav-admin d-none">
               <a href="#" class="nav-link" id="nav-calendar" title="Manage events / broadcasts and their schedules.">
                 <i class="nav-icon fas fa-calendar"></i>
                 <p>
@@ -673,7 +682,7 @@
           </div>
 
           <div class="row">
-            <div class="col-md-6 col-12">
+            <div class="col-md-5 col-12">
               <div class="card card-primary elevation-2">
                 <div class="card-header">
                   <h3 class="card-title">Clockwheel</h3>
@@ -690,7 +699,7 @@
                   </div>
                   <div style="position: relative;">
                     <canvas id="clockwheel-donut"
-                      style="min-height: 350px; height: 350px; max-height: 350px; max-width: 100%;">
+                      style="min-height: 350px; height: 350px; max-height: 66vh; max-width: 100%;">
                     </canvas>
                     <div class="clock">
                       <div id="clock">
@@ -703,12 +712,27 @@
                   </div>
                 </div>
                 <div class="card-footer p-0">
-                  Hover over any colored segment to see what it is and its length in minutes. <br />
-                  Outer ring is show segments (1-hour wheel); inner ring is schedule (12-hour wheel).
+                  Hover over any colored segment to see what it is. <br />
+                  Outer ring: show segments (1-hour wheel)<br />
+                  Inner ring: schedule (12-hour wheel).
                 </div>
               </div>
             </div>
             <!-- /.card-body -->
+
+            <div class="col-md-7 col-12">
+              <div class="card card-info elevation-2">
+                <div class="card-header">
+                  <h3 class="card-title">Logs</h3>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body">
+                  <div class="timeline" id="section-dashboard-logs" style="max-height: 500px; overflow-y: scroll;">
+
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -792,6 +816,33 @@
           <div class="card elevation-2">
             <div class="card-body" id="section-announcements-content">
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- API Query -->
+    <section id="section-api">
+      <div class="content-wrapper" style="padding-top: 8em;">
+        <!-- Content Header (Page header) -->
+        <div class="content-header">
+          <div class="container-fluid">
+            <div class="row mb-2">
+              <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Make API Query</h1>
+              </div><!-- /.col -->
+            </div><!-- /.row -->
+          </div><!-- /.container-fluid -->
+        </div>
+        <!-- /.content-header -->
+
+        <!-- Main content -->
+        <div class="content">
+          <div class="card elevation-2">
+            <!-- /.card-header -->
+            <div class="card-body" id="section-api-form">
+            </div>
+            <!-- /.card-body -->
           </div>
         </div>
       </div>
@@ -954,6 +1005,49 @@
               </div>
             </div>
           </div><!-- /.container-fluid -->
+        </div>
+      </div>
+    </section>
+
+    <!--- Logs -->
+    <section id="section-logs">
+      <div class="content-wrapper" style="padding-top: 8em;">
+        <div class="content-header">
+          <div class="container-fluid">
+            <div class="row mb-2">
+              <div class="col-12">
+                <h1 class="m-0 text-dark">Operation / Program Logs</h1>
+              </div><!-- /.col -->
+            </div><!-- /.row -->
+          </div><!-- /.container-fluid -->
+        </div>
+
+        <div class="content">
+
+          <div class="card card-primary elevation-2">
+            <div class="card-header">
+              <h3 class="card-title">Date Selection</h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+              <div class="form-group" title="View logs of the specified day.">
+                <label for="options-timesheets-date">Choose a day</label>
+                <input type='date' id='section-logs-date' />
+                <input type="submit" class="btn btn-primary" id="section-logs-date-browse" value="Browse">
+              </div>
+            </div>
+            <!-- /.card-body -->
+          </div>
+
+          <div class="card card-info elevation-2">
+            <div class="card-header">
+              <h3 class="card-title">Logs</h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body" id="section-logs-table-div">
+            </div>
+            <!-- /.card-body -->
+          </div>
         </div>
       </div>
     </section>
