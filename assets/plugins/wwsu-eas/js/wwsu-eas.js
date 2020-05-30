@@ -28,6 +28,8 @@ class WWSUeas extends WWSUdb {
         };
         this.events = new EventEmitter();
 
+        this.displayed = [];
+
         this.assignSocketEvent('eas', socket);
 
         this.easModal = new WWSUmodal(`Active Emergency Alerts`, null, ``, true, {
@@ -37,6 +39,46 @@ class WWSUeas extends WWSUdb {
             timeout: 180000,
             timeoutProgressbar: true,
         });
+
+        this.easSevereAlert = new WWSUmodal(
+            `Severe Alert Active`,
+            `bg-orange`,
+            `<div style="text-align: center;">
+                <i class="text-white fas fa-bolt" style="font-size: 25vw;"></i>
+            </div>
+            <h3>A severe alert is in effect.</h3>
+            Alert: <strong class="eas-severe-alert-alert"></strong><br />
+            From <strong class="eas-severe-alert-starts"></strong> to <strong class="eas-severe-alert-expires"></strong>.<br />
+            Counties: <strong class="eas-severe-alert-counties"></strong><br />`,
+            true,
+            {
+                headerColor: '',
+                overlayClose: false,
+                zindex: 4000,
+                timeout: (1000 * 60 * 30),
+                timeoutProgressbar: true,
+            }
+        );
+
+        this.easExtremeAlert = new WWSUmodal(
+            `Extreme Alert Active`,
+            `bg-danger`,
+            `<div style="text-align: center;">
+                <i class="text-white fas fa-bolt" style="font-size: 25vw;"></i>
+            </div>
+            <h3>An extreme alert is in effect.</h3> <strong>Please consider ending your show and evacuating / taking shelter now!</strong>
+            Alert: <strong class="eas-extreme-alert-alert"></strong><br />
+            From <strong class="eas-extreme-alert-starts"></strong> to <strong class="eas-extreme-alert-expires"></strong>.<br />
+            Counties: <strong class="eas-extreme-alert-counties"></strong><br />`,
+            true,
+            {
+                headerColor: '',
+                overlayClose: false,
+                zindex: 4010,
+                timeout: (1000 * 60 * 30),
+                timeoutProgressbar: true,
+            }
+        );
     }
 
     // Start the connection. Call this in socket connect event.
@@ -129,5 +171,34 @@ class WWSUeas extends WWSUdb {
             console.error(e);
             cb(false);
         }
+    }
+
+    /**
+     * Display activated alerts.
+     * 
+     * @param {object} record The ID of the EAS alert record from WWSU to display (accessed from WWSUdb).
+     */
+    displayAlerts () {
+        this.db().each((record) => {
+            if (this.displayed.indexOf(record.ID) === -1) {
+                if (record.severity === 'Severe') {
+                    this.easSevereAlert.iziModal('close');
+                    $('.eas-severe-alert-alert').html(record.alert);
+                    $('.eas-severe-alert-starts').html(moment(record.starts).format("lll"));
+                    $('.eas-severe-alert-expires').html(moment(record.expires).format("lll"));
+                    $('.eas-severe-alert-counties').html(record.counties);
+                    this.easSevereAlert.iziModal('open');
+                    this.displayed.push(record.ID);
+                } else if (record.severity === 'Extreme') {
+                    this.easExtremeAlert.iziModal('close');
+                    $('.eas-extreme-alert-alert').html(record.alert);
+                    $('.eas-extreme-alert-starts').html(moment(record.starts).format("lll"));
+                    $('.eas-extreme-alert-expires').html(moment(record.expires).format("lll"));
+                    $('.eas-extreme-alert-counties').html(record.counties);
+                    this.easExtremeAlert.iziModal('open');
+                    this.displayed.push(record.ID);
+                }
+            }
+        });
     }
 }

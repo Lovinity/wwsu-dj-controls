@@ -1,6 +1,6 @@
 /* global TAFFY */
 
-// This class manages logs and attendance
+// This class manages logs, analytics, and attendance
 
 // NOTE: unlike most other WWSU models, this does not use traditional WWSUdb extends. Otherwise, memory can be quickly eaten up by logs.
 class WWSUlogs {
@@ -18,7 +18,8 @@ class WWSUlogs {
             edit: '/logs/edit',
             get: '/logs/get',
             getAttendance: '/attendance/get',
-            getListeners: '/analytics/listeners'
+            getListeners: '/analytics/listeners',
+            getShowtime: '/analytics/showtime'
         };
         this.requests = {
             no: noReq,
@@ -33,7 +34,7 @@ class WWSUlogs {
         this.models = {
             viewLog: new WWSUmodal(`Logs`, null, ``, true, {
                 headerColor: '',
-                zindex: 1100,
+                zindex: 1200,
                 width: 800
             })
         }
@@ -155,9 +156,9 @@ class WWSUlogs {
      * @param {object} data Data to pass to WWSU 
      * @param {function} cb Callback function with results as parameter. Does not fire if API fails.
      */
-    getAttendance (data, cb) {
+    getAttendance (dom, data, cb) {
         try {
-            this.requests.host.request({ dom: `#section-logs-table`, method: 'post', url: this.endpoints.getAttendance, data }, (response) => {
+            this.requests.host.request({ dom: dom, method: 'post', url: this.endpoints.getAttendance, data }, (response) => {
                 if (!response) {
                     $(document).Toasts('create', {
                         class: 'bg-danger',
@@ -473,7 +474,7 @@ class WWSUlogs {
      * @param {string} date moment() date of the logs to get. 
      */
     showAttendance (date) {
-        this.getAttendance({ date, duration: 1 }, (records) => {
+        this.getAttendance(`#section-logs-table`, { date, duration: 1 }, (records) => {
             this.tables.attendance.clear();
             records.map((record) => {
                 var theDate
@@ -515,8 +516,8 @@ class WWSUlogs {
                         record.ID,
                         `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
                         record.event,
-                        `CANCELED`,
-                        `CANCELED`,
+                        `CANCELED (${moment(record.scheduledStart).format('h:mm A')})`,
+                        `CANCELED (${moment(record.scheduledEnd).format('h:mm A')})`,
                         ``
                     ] ])
                 } else if (record.happened === 0) {
@@ -524,8 +525,8 @@ class WWSUlogs {
                         record.ID,
                         `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
                         record.event,
-                        `DID NOT AIR`,
-                        `DID NOT AIR`,
+                        `ABSENT (${moment(record.scheduledStart).format('h:mm A')})`,
+                        `ABSENT (${moment(record.scheduledEnd).format('h:mm A')})`,
                         ``
                     ] ])
                 } else if (record.actualStart !== null && record.actualEnd !== null) {
@@ -542,8 +543,8 @@ class WWSUlogs {
                         record.ID,
                         `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
                         record.event,
-                        `NOT YET STARTED`,
-                        `NOT YET STARTED`,
+                        `SCHEDULED (${moment(record.scheduledStart).format('h:mm A')})`,
+                        `SCHEDULED (${moment(record.scheduledEnd).format('h:mm A')})`,
                         ``
                     ] ])
                 }
@@ -563,7 +564,7 @@ class WWSUlogs {
         var util = new WWSUutil();
         this.models.viewLog.body = `<canvas id="modal-${this.models.viewLog.id}-body-listeners" style="min-height: 200px; height: 200px; max-height: 350px; max-width: 100%;"></canvas><div id="modal-${this.models.viewLog.id}-body-info"></div><table id="modal-${this.models.viewLog.id}-body-log" class="table table-striped display responsive" style="width: 100%;"></table>`
         this.models.viewLog.iziModal('open');
-        this.getAttendance({ ID: id }, (attendance) => {
+        this.getAttendance(`#section-logs-table`, { ID: id }, (attendance) => {
             util.waitForElement(`#modal-${this.models.viewLog.id}-body-listeners`, () => {
                 this.getListeners(`#modal-${this.models.viewLog.id}-body-listeners`, { start: moment(attendance.actualStart).toISOString(true), end: moment(attendance.actualEnd ? attendance.actualEnd : moment(attendance.actualStart).add(1, 'days')).toISOString(true) }, (listeners) => {
                     var data = [];
@@ -611,6 +612,9 @@ class WWSUlogs {
                                     scaleLabel: {
                                         display: true,
                                         labelString: 'value'
+                                    },
+                                    ticks: {
+                                        min: 0
                                     }
                                 } ]
                             }
@@ -728,5 +732,39 @@ class WWSUlogs {
                     })
             }
         });
+    }
+
+    /**
+     * Get show analytics
+     * 
+     * @param {Object} data The data to send in the request to the API
+     * @param {function} cb Callback called after the request is complete. Parameter is returned data, or false if failed.
+     */
+    getShowtime (dom, data, cb) {
+        try {
+            this.requests.host.request({ dom: dom, method: 'post', url: this.endpoints.getShowtime, data: data }, (response) => {
+                if (response[ 0 ] && response[ 1 ]) {
+                    cb(response);
+                } else {
+                    $(document).Toasts('create', {
+                        class: 'bg-danger',
+                        title: 'Error getting analytics',
+                        body: 'There was an error getting analytics. Please report this to engineer@wwsu1069.org.',
+                        icon: 'fas fa-skull-crossbones fa-lg',
+                    });
+                    console.error(e);
+                    cb(false);
+                }
+            });
+        } catch (e) {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Error getting analytics',
+                body: 'There was an error getting analytics. Please report this to engineer@wwsu1069.org.',
+                icon: 'fas fa-skull-crossbones fa-lg',
+            });
+            console.error(e);
+            cb(false);
+        }
     }
 }

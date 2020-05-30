@@ -234,6 +234,7 @@
   <script src="assets/plugins/wwsu-likedtracks/js/wwsu-likedtracks.js"></script>
   <script src="assets/plugins/wwsu-announcements/js/wwsu-announcements.js"></script>
   <script src="assets/plugins/wwsu-logs/js/wwsu-logs.js"></script>
+  <script src="assets/plugins/wwsu-requests/js/wwsu-requests.js"></script>
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -401,7 +402,7 @@
     <!-- /.navbar -->
 
     <!-- Main Sidebar Menu -->
-    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <aside class="main-sidebar sidebar-dark-maroon elevation-4">
       <!-- Logo -->
       <a href="#" class="brand-link">
         <img src="assets/images/logo_round.png" alt="WWSU logo" class="brand-image img-circle elevation-3"
@@ -438,7 +439,7 @@
             <li class="nav-item">
               <a href="#" class="nav-link" id="nav-messages"
                 title="Send and receive messages between other DJ Controls and those tuned in to WWSU online.">
-                <i class="nav-icon nav-icon-messages fas fa-comments"></i>
+                <i class="nav-icon nav-icon-messages fas fa-comments text-danger"></i>
                 <p>
                   Messages / Chat <span class="badge badge-secondary right messages-new-all">0</span>
                 </p>
@@ -464,7 +465,7 @@
             <li class="nav-item">
               <a href="#" class="nav-link" id="nav-audio"
                 title="Edit audio recording and streaming settings for this DJ Controls">
-                <i class="nav-icon fas fa-volume-up"></i>
+                <i class="nav-icon fas fa-volume-up text-danger"></i>
                 <p>
                   Audio Settings
                 </p>
@@ -473,7 +474,7 @@
             <li class="nav-item">
               <a href="#" class="nav-link" id="nav-serial"
                 title="Configure serial ports for station equipment, such as the Delay System and Emergency Alert System.">
-                <i class="nav-icon fas fa-stream"></i>
+                <i class="nav-icon fas fa-stream text-danger"></i>
                 <p>
                   Serial Port Settings
                 </p>
@@ -503,7 +504,7 @@
             <li class="nav-item nav-admin d-none">
               <a href="#" class="nav-link" id="nav-analytics"
                 title="Browse various analytic charts for broadcasts and DJs.">
-                <i class="nav-icon fas fa-chart-line"></i>
+                <i class="nav-icon fas fa-chart-line text-danger"></i>
                 <p>
                   Analytics
                 </p>
@@ -526,6 +527,14 @@
               </a>
             </li>
             <li class="nav-item nav-admin d-none">
+              <a href="#" class="nav-link" id="nav-bans" title="Manage bans / disciplinary action on web visitors and those who use the WWSU API.">
+                <i class="nav-icon fas fa-ban text-danger"></i>
+                <p>
+                  Bans
+                </p>
+              </a>
+            </li>
+            <li class="nav-item nav-admin d-none">
               <a href="#" class="nav-link" id="nav-calendar" title="Manage events / broadcasts and their schedules.">
                 <i class="nav-icon fas fa-calendar"></i>
                 <p>
@@ -534,10 +543,58 @@
               </a>
             </li>
             <li class="nav-item nav-admin d-none">
+              <a href="#" class="nav-link" id="nav-configuration" title="Manage system-wide configuration for WWSU.">
+                <i class="nav-icon fas fa-cogs text-danger"></i>
+                <p>
+                  Configuration
+                </p>
+              </a>
+            </li>
+            <li class="nav-item nav-admin d-none">
+              <a href="#" class="nav-link" id="nav-directors" title="Manage directors / assistant directors in the system, and view / edit their timesheets. Directors should always be kept up to date or unauthorized [ex]-directors could make changes to the system.">
+                <i class="nav-icon fas fa-user-tie text-danger"></i>
+                <p>
+                  Directors / Timesheets
+                </p>
+              </a>
+            </li>
+            <li class="nav-item nav-admin d-none">
+              <a href="#" class="nav-link" id="nav-djs" title="Manage the DJs (on-air talents) in the system.">
+                <i class="nav-icon fas fa-user"></i>
+                <p>
+                  DJs
+                </p>
+              </a>
+            </li>
+            <li class="nav-item nav-admin d-none">
+              <a href="#" class="nav-link" id="nav-hosts" title="Manage the devices / DJ Controls allowed to connect to WWSU and their privileges.">
+                <i class="nav-icon fas fa-laptop text-danger"></i>
+                <p>
+                  Hosts
+                </p>
+              </a>
+            </li>
+            <li class="nav-item nav-admin d-none">
               <a href="#" class="nav-link" id="nav-logs" title="Browse operation and broadcast logs.">
                 <i class="nav-icon fas fa-file-alt"></i>
                 <p>
                   Logs
+                </p>
+              </a>
+            </li>
+            <li class="nav-item nav-admin d-none">
+              <a href="#" class="nav-link" id="nav-maintenance" title="Perform actions / maintenance on the system.">
+                <i class="nav-icon fas fa-cog text-danger"></i>
+                <p>
+                  Maintenance
+                </p>
+              </a>
+            </li>
+            <li class="nav-item nav-admin d-none">
+              <a href="#" class="nav-link" id="nav-underwritings" title="Manage the underwritings (commercials) in the system and when they should air.">
+                <i class="nav-icon fas fa-hand-holding-usd text-danger"></i>
+                <p>
+                  Underwritings
                 </p>
               </a>
             </li>
@@ -740,6 +797,45 @@
       </div>
     </section>
 
+    <!-- Track Requests-->
+    <section id="section-requests">
+      <div class="content-wrapper" style="padding-top: 8em;">
+        <!-- Content Header (Page header) -->
+        <div class="content-header">
+          <div class="container-fluid">
+            <div class="row mb-2">
+              <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Track Requests</h1>
+              </div><!-- /.col -->
+            </div><!-- /.row -->
+          </div><!-- /.container-fluid -->
+        </div>
+        <!-- /.content-header -->
+
+        <!-- Main content -->
+        <div class="content">
+          <div class="card elevation-2">
+            <!-- /.card-header -->
+            <div class="card-body" id="section-requests-table-div">
+            </div>
+            <div class="card-footer p-1">
+              <div class="callout callout-info">
+                <h5>Playing Requests are Optional</h5>
+
+                <p>You do not have to play track requests during your show. Requests you ignore will play during automation.</p>
+              </div>
+              <div class="callout callout-info">
+                <h5>Requests Stay Until Played</h5>
+
+                <p>Track requests will remain in this list, even when they are queued, until they are played in RadioDJ.</p>
+              </div>
+            </div>
+            <!-- /.card-body -->
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Report a problem page -->
     <section id="section-report">
       <div class="content-wrapper" style="padding-top: 8em;">
@@ -781,15 +877,26 @@
         </div>
 
         <div class="content">
+          <div class="card card-danger elevation-2">
+            <div class="card-header">
+              <h3 class="card-title">System Problems that Need Resolved</h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body system-status">
+            </div>
+            <!-- /.card-body -->
+          </div>
+
           <div class="card card-warning elevation-2">
             <div class="card-header">
-              <h3 class="card-title">Issues / Accountability</h3>
+              <h3 class="card-title">Accountability / Issues Logged</h3>
             </div>
             <!-- /.card-header -->
             <div class="card-body" id="section-notifications-issues">
             </div>
             <!-- /.card-body -->
           </div>
+
         </div>
 
       </div>
@@ -1005,6 +1112,31 @@
               </div>
             </div>
           </div><!-- /.container-fluid -->
+        </div>
+      </div>
+    </section>
+
+    <!-- DJ management -->
+    <section id="section-djs">
+      <div class="content-wrapper" style="padding-top: 8em;">
+        <!-- Content Header (Page header) -->
+        <div class="content-header">
+          <div class="container-fluid">
+            <div class="row mb-2">
+              <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Manage DJs</h1>
+              </div><!-- /.col -->
+            </div><!-- /.row -->
+          </div><!-- /.container-fluid -->
+        </div>
+        <!-- /.content-header -->
+
+        <!-- Main content -->
+        <div class="content">
+          <div class="card elevation-2">
+            <div class="card-body" id="section-djs-content">
+            </div>
+          </div>
         </div>
       </div>
     </section>

@@ -57,6 +57,7 @@ $(document).ready(function () {
         $('#calendar').block({
             message: '<h1>Loading...</h1>',
             css: { border: '3px solid #a00' },
+            timeout: 30000,
             onBlock: () => {
                 calendar.refetchEvents();
                 calendar.updateSize();
@@ -149,6 +150,7 @@ $(document).ready(function () {
                 $('#calendar').block({
                     message: '<h1>Loading...</h1>',
                     css: { border: '3px solid #a00' },
+                    timeout: 30000,
                     onBlock: () => {
                         calendar.refetchEvents();
                     }
@@ -160,7 +162,8 @@ $(document).ready(function () {
     // Block UI elements
     $('.btn-manage-djs').block({
         message: 'Loading...',
-        css: { border: '3px solid #a00' }
+        css: { border: '3px solid #a00' },
+        timeout: 30000,
     });
 
     // Add click events
@@ -177,6 +180,7 @@ calendardb.on('calendarUpdated', () => {
     $('#calendar').block({
         message: '<h1>Loading...</h1>',
         css: { border: '3px solid #a00' },
+        timeout: 30000,
         onBlock: () => {
             calendar.refetchEvents();
         }

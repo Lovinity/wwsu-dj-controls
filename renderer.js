@@ -25,7 +25,8 @@ window.addEventListener('DOMContentLoaded', () => {
         var hostReq = new WWSUreq(socket, machineID, null, null, 'host', '/auth/host', 'Host');
         var directors = new WWSUdirectors(socket, noReq);
         var directorReq = new WWSUreq(socket, machineID, directors, null, 'name', '/auth/director', 'Director');
-        var djs = new WWSUdjs(socket, noReq, directorReq);
+        var logs = new WWSUlogs(socket, noReq, hostReq, directorReq);
+        var djs = new WWSUdjs(socket, noReq, directorReq, hostReq, logs);
         var djReq = new WWSUreq(socket, machineID, djs, null, 'name', '/auth/dj', 'DJ');
         var adminDirectorReq = new WWSUreq(socket, machineID, directors, (record) => record.admin, 'name', '/auth/admin-director', 'Administrator Director');
         var status = new WWSUstatus(socket, noReq);
@@ -35,8 +36,8 @@ window.addEventListener('DOMContentLoaded', () => {
         var calendar = new WWSUcalendar(socket, noReq, directorReq, djReq);
         var subscriptions = new WWSUsubscriptions(socket, noReq);
         var meta = new WWSUMeta(socket, noReq);
-        var logs = new WWSUlogs(socket, noReq, hostReq, directorReq);
         var api = new WWSUapi(noReq, hostReq, djReq, directorReq, adminDirectorReq);
+        var requests = new WWSUrequests(socket, hostReq);
 
         var disciplineModal;
 
@@ -57,10 +58,41 @@ window.addEventListener('DOMContentLoaded', () => {
         var client = {};
         var connectedBefore = false;
         var isHost = false;
+        var todos = {
+            status: {
+                danger: 0,
+                orange: 0,
+                warning: 0,
+                info: 0,
+                primary: 0
+            },
+            accountability: {
+                danger: 0,
+                orange: 0,
+                warning: 0,
+                info: 0,
+                primary: 0
+            },
+            timesheets: {
+                danger: 0,
+                orange: 0,
+                warning: 0,
+                info: 0,
+                primary: 0
+            },
+            DJs: {
+                danger: 0,
+                orange: 0,
+                warning: 0,
+                info: 0,
+                primary: 0
+            }
+        }
 
         // Navigation
         var navigation = new WWSUNavigation();
         navigation.addItem('#nav-dashboard', '#section-dashboard', 'Dashboard - WWSU DJ Controls', '/', true);
+        navigation.addItem('#nav-requests', '#section-requests', 'Track requests - WWSU DJ Controls', '/requests', false);
         navigation.addItem('#nav-report', '#section-report', 'Report a Problem - WWSU DJ Controls', '/report', false);
 
         navigation.addItem('#nav-notifications', '#section-notifications', 'Notifications / Todo - WWSU DJ Controls', '/notifications', false);
@@ -69,6 +101,7 @@ window.addEventListener('DOMContentLoaded', () => {
         navigation.addItem('#nav-calendar', '#section-calendar', 'Manage Calendar - WWSU DJ Controls', '/calendar', false, () => {
             fullCalendar.updateSize();
         });
+        navigation.addItem('#nav-djs', '#section-djs', 'Manage DJs - WWSU DJ Controls', '/djs', false);
         navigation.addItem('#nav-logs', '#section-logs', 'Operation Logs - WWSU DJ Controls', '/logs', false);
 
 
@@ -91,6 +124,7 @@ window.addEventListener('DOMContentLoaded', () => {
         logs.initAttendanceTable(`#section-logs-table-div`);
         logs.initDashboardLogs(`#section-dashboard-logs`);
         api.initApiForm('#section-api-form');
+        requests.initTable('#section-requests-table-div', '.nav-icon-requests', '.track-requests');
 
 
         // CLOCKWHEEL
@@ -216,6 +250,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 $('#calendar').block({
                     message: '<h1>Loading...</h1>',
                     css: { border: '3px solid #a00' },
+                    timeout: 30000,
                     onBlock: () => {
                         calendar.getEvents((events) => {
                             events = events.map((event) => {
@@ -323,8 +358,10 @@ window.addEventListener('DOMContentLoaded', () => {
                     status.init();
                     eas.init();
                     announcements.init();
+                    requests.init();
                     if (client.admin) {
                         announcements.initTable('#section-announcements-content');
+                        djs.initTable('#section-djs-content');
                         logs.initIssues();
                         logs.initIssuesTable('#section-notifications-issues');
                     }
@@ -568,6 +605,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     $('.operations').block({
                         message: `<h4>${updated.changingState}</h4>`,
                         css: { border: '3px solid #a00' },
+                        timeout: 60000,
                     });
                 } else {
                     $('.operations').unblock();
@@ -897,6 +935,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
         // Process each status and generate content
         var html = `<ul>`;
+        todos.status = {
+            danger: 0,
+            orange: 0,
+            warning: 0,
+            info: 0,
+            primary: 0
+        };
+        recountTodos();
         db
             .filter((record) => record.status <= 4)
             .sort((a, b) => a.status - b.status)
@@ -908,29 +954,35 @@ window.addEventListener('DOMContentLoaded', () => {
                     case 1:
                         html += `<li>
                         <span class="badge badge-danger">CRITICAL</span> <strong>${record.label}</strong>: ${record.data}
-                        </li>`
+                        </li>`;
+                        todos.status.danger++;
                         break;
                     case 2:
                         html += `<li>
                         <span class="badge bg-orange text-white">Major</span> <strong>${record.label}</strong>: ${record.data}
                         </li>`
+                        todos.status.orange++;
                         break;
                     case 3:
                         html += `<li>
                         <span class="badge badge-warning">Minor</span> <strong>${record.label}</strong>: ${record.data}
                         </li>`
+                        todos.status.warning++;
                         break;
                     case 4:
                         html += `<li>
                         <span class="badge badge-info">Info</span> <strong>${record.label}</strong>: ${record.data}
                         </li>`
+                        todos.status.info++;
                         break;
                 }
             });
         html += `</ul>`;
+        recountTodos();
 
         animations.add('status-model', () => {
             status.statusModal.body = html;
+            $('.system-status').html(html);
         });
 
         // Process global status indications
@@ -995,6 +1047,9 @@ window.addEventListener('DOMContentLoaded', () => {
      * @param {array} db Array of active EAS alerts
      */
     function processEas (db) {
+        if (isHost)
+            eas.displayAlerts();
+
         var globalEas = 5;
 
         // Process each status and generate content
@@ -1118,6 +1173,7 @@ window.addEventListener('DOMContentLoaded', () => {
             // Then, if admin, process announcements for the announcements options menu.
             if (client.admin) {
                 announcements.updateTable();
+                djs.updateTable();
             }
         });
     }
@@ -1189,27 +1245,96 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Count event throws number of issues that need reviewed.
     logs.on('count', (danger, orange, warning, info) => {
-        $('.notifications-danger').html(danger);
-        $('.notifications-orange').html(orange);
-        $('.notifications-warning').html(warning);
-        $('.notifications-info').html(info);
+        todos.accountability = {
+            danger,
+            orange,
+            warning,
+            info,
+            primary: 0
+        };
+        recountTodos();
+    })
 
-        $('.nav-icon-notifications').removeClass('nav-icon-flash-danger');
-        $('.nav-icon-notifications').removeClass('text-danger');
-        $('.nav-icon-notifications').removeClass('nav-icon-flash-warning');
-        $('.nav-icon-notifications').removeClass('text-warning');
-        $('.nav-icon-notifications').removeClass('nav-icon-flash-info');
-        $('.nav-icon-notifications').removeClass('text-info');
+    function recountTodos () {
+        animations.add('recount-todos', () => {
+            var danger = todos.status.danger + todos.accountability.danger + todos.timesheets.danger + todos.DJs.danger;
+            var orange = todos.status.orange + todos.accountability.orange + todos.timesheets.orange + todos.DJs.orange;
+            var warning = todos.status.warning + todos.accountability.warning + todos.timesheets.warning + todos.DJs.warning;
+            var info = todos.status.info + todos.accountability.info + todos.timesheets.info + todos.DJs.info;
+            var primary = todos.status.primary + todos.accountability.primary + todos.timesheets.primary + todos.DJs.primary;
 
-        if (danger > 0) {
-            $('.nav-icon-notifications').addClass('nav-icon-flash-danger');
-        } else if (orange > 0) {
-            $('.nav-icon-notifications').addClass('nav-icon-flash-warning');
-        } else if (warning > 0) {
-            $('.nav-icon-notifications').addClass('nav-icon-flash-warning');
-        } else if (info > 0) {
-            $('.nav-icon-notifications').addClass('nav-icon-flash-info');
-        }
+            $('.notifications-danger').html(danger);
+            $('.notifications-orange').html(orange);
+            $('.notifications-warning').html(warning);
+            $('.notifications-info').html(info);
+            $('.notifications-primary').html(primary);
+
+            $('.nav-icon-notifications').removeClass('nav-icon-flash-danger');
+            $('.nav-icon-notifications').removeClass('text-danger');
+            $('.nav-icon-notifications').removeClass('nav-icon-flash-warning');
+            $('.nav-icon-notifications').removeClass('text-warning');
+            $('.nav-icon-notifications').removeClass('nav-icon-flash-info');
+            $('.nav-icon-notifications').removeClass('text-info');
+
+            if (danger > 0) {
+                $('.nav-icon-notifications').addClass('nav-icon-flash-danger');
+            } else if (orange > 0) {
+                $('.nav-icon-notifications').addClass('nav-icon-flash-warning');
+            } else if (warning > 0) {
+                $('.nav-icon-notifications').addClass('nav-icon-flash-warning');
+            } else if (info > 0) {
+                $('.nav-icon-notifications').addClass('nav-icon-flash-info');
+            } else if (primary > 0) {
+                $('.nav-icon-notifications').addClass('nav-icon-flash-primary');
+            }
+        });
+    }
+
+
+
+
+    /*
+        TRACK REQUESTS FUNCTIONS
+    */
+
+
+
+
+
+    requests.on('replace', (db) => {
+        requests.updateTable();
+    })
+    requests.on('insert', (query, db) => {
+        requests.updateTable();
+    })
+    requests.on('update', (query, db) => {
+        requests.updateTable();
+    })
+    requests.on('remove', (query, db) => {
+        requests.updateTable();
+    })
+
+
+
+
+    /*
+        DJ FUNCTIONS
+    */
+
+
+
+
+    djs.on('replace', (db) => {
+        djs.updateTable();
+    })
+    djs.on('insert', (query, db) => {
+        djs.updateTable();
+    })
+    djs.on('update', (query, db) => {
+        djs.updateTable();
+    })
+    djs.on('remove', (query, db) => {
+        djs.updateTable();
     })
 
 });

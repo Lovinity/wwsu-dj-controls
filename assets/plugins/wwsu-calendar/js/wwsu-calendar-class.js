@@ -154,6 +154,7 @@ class WWSUcalendar extends CalendarDb {
         $(`#modal-${this.eventsModal.id}`).block({
             message: '<h1>Loading...</h1>',
             css: { border: '3px solid #a00' },
+            timeout: 30000,
             onBlock: () => {
                 var table = $(`#modal-${this.eventsModal.id}-table`).DataTable({
                     paging: false,
@@ -223,6 +224,7 @@ class WWSUcalendar extends CalendarDb {
         $(`#modal-${this.schedulesModal.id}`).block({
             message: '<h1>Loading...</h1>',
             css: { border: '3px solid #a00' },
+            timeout: 30000,
             onBlock: () => {
                 var table = $(`#modal-${this.schedulesModal.id}-table`).DataTable({
                     scrollCollapse: true,
@@ -1918,6 +1920,7 @@ class WWSUcalendar extends CalendarDb {
         $(`#modal-${modal.id}`).block({
             message: `<h1>Checking conflicts...</h1><p class="conflict-check-progress"></p>`,
             css: { border: '3px solid #a00' },
+            timeout: 180000,
             onBlock: () => {
                 event = this.verify(event);
                 if (!event.event) {

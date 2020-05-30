@@ -300,6 +300,7 @@ class WWSUreq {
         $(opts.dom).block({
           message: '<h1>Processing...</h1>',
           css: { border: '3px solid #a00' },
+          timeout: 120000,
           onBlock: () => {
             doRequest(() => {
               $(opts.dom).unblock();
