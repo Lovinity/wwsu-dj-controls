@@ -45,9 +45,15 @@ class WWSUdjs extends WWSUdb {
         this.djModal = new WWSUmodal(``, null, ``, true, {
             headerColor: '',
             overlayClose: false,
+            zindex: 1100,
+        });
+
+        this.djInfoModal = new WWSUmodal(``, null, ``, true, {
+            headerColor: '',
             width: 800,
             zindex: 1100,
         });
+
 
         this.newDjModal = new WWSUmodal(`New DJ`, null, ``, true, {
             headerColor: '',
@@ -121,6 +127,9 @@ class WWSUdjs extends WWSUdb {
                 "title": data ? "Edit DJ" : "New DJ",
                 "type": "object",
                 "properties": {
+                    "ID": {
+                        "type": "number",
+                    },
                     "name": {
                         "type": "string",
                         "required": true,
@@ -129,21 +138,18 @@ class WWSUdjs extends WWSUdb {
                     },
                     "realName": {
                         "type": "string",
-                        "required": true,
                         "title": "Real full name of person",
                         "maxLength": 255
                     },
                     "email": {
                         "type": "string",
                         "format": "email",
-                        "required": true,
                         "title": "Campus email of the DJ",
                         "maxLength": 255
                     },
                     "login": {
                         "type": "string",
                         "format": "password",
-                        "required": true,
                         "title": "Login Password",
                         "maxLength": 255
                     },
@@ -151,6 +157,9 @@ class WWSUdjs extends WWSUdb {
             },
             "options": {
                 "fields": {
+                    "ID": {
+                        "type": "hidden"
+                    },
                     "name": {
                         "helper": "This is the name that appears publicly on shows, the website, etc. You may not use the same DJ name twice.",
                         "validator": function (callback) {
@@ -159,6 +168,13 @@ class WWSUdjs extends WWSUdb {
                                 callback({
                                     "status": false,
                                     "message": "A DJ by this name already exists in the system. This is not allowed."
+                                });
+                                return;
+                            }
+                            if (value.includes(" - ") || value.includes("; ")) {
+                                callback({
+                                    "status": false,
+                                    "message": `DJ names may not contain " - " or semicolons. These are used by the system as separators. If you are adding multiple DJs, please add each one by one.`
                                 });
                                 return;
                             }
@@ -171,7 +187,7 @@ class WWSUdjs extends WWSUdb {
                         "helper": "Used for directors to help easily identify who this person is."
                     },
                     "email": {
-                        "helper": "Plans are in the future, DJs will be emailed automatically of show changes / cancellations, analytics, and anything else pertaining to their show or WWSU."
+                        "helper": "If provided, the DJ will be emailed of show changes / cancellations and analytics. This is highly recommended. Please provide their campus email address if possible."
                     },
                     "login": {
                         "helper": "DJs will use this to log in to their online DJ panel. In the future, this may be used to log in to prod / onair computers during schedule shows or bookings. You might choose to use their door PIN."
@@ -266,6 +282,8 @@ class WWSUdjs extends WWSUdb {
                         body: 'There was an error editing the DJ. Please make sure you filled all fields correctly.',
                         delay: 10000,
                     });
+                    console.log(response);
+                    if (typeof cb === 'function')
                     cb(false);
                 } else {
                     $(document).Toasts('create', {
@@ -275,6 +293,7 @@ class WWSUdjs extends WWSUdb {
                         delay: 10000,
                         body: `DJ has been edited`,
                     })
+                    if (typeof cb === 'function')
                     cb(true);
                 }
             })
@@ -286,6 +305,7 @@ class WWSUdjs extends WWSUdb {
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             console.error(e);
+            if (typeof cb === 'function')
             cb(false);
         }
     }
@@ -306,7 +326,8 @@ class WWSUdjs extends WWSUdb {
                         body: 'There was an error removing the DJ. Please report this to engineer@wwsu1069.org.',
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
-                    cb(false);
+                    if (typeof cb === 'function')
+                        cb(false);
                 } else {
                     $(document).Toasts('create', {
                         class: 'bg-success',
@@ -315,7 +336,8 @@ class WWSUdjs extends WWSUdb {
                         delay: 10000,
                         body: `DJ has been removed`,
                     })
-                    cb(true);
+                    if (typeof cb === 'function')
+                        cb(true);
                 }
             })
         } catch (e) {
@@ -326,7 +348,8 @@ class WWSUdjs extends WWSUdb {
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             console.error(e);
-            cb(false);
+            if (typeof cb === 'function')
+                cb(false);
         }
     }
 
@@ -442,11 +465,11 @@ class WWSUdjs extends WWSUdb {
      * @param {object} dj The DJ record to get analytics
      */
     showDJAnalytics (dj) {
-        this.djModal.title = `Analytics for ${dj.name} (${dj.realName || `Unknown Person`})`;
-        this.djModal.body = ``;
-        this.djModal.iziModal('open');
+        this.djInfoModal.title = `Analytics for ${dj.name} (${dj.realName || `Unknown Person`})`;
+        this.djInfoModal.body = ``;
+        this.djInfoModal.iziModal('open');
 
-        this.logs.getShowtime(`#modal-${this.djModal.id}`, { djs: [ dj.ID ], start: moment().subtract(1, 'years').toISOString(true), end: moment().toISOString(true) }, (analytics) => {
+        this.logs.getShowtime(`#modal-${this.djInfoModal.id}`, { djs: [ dj.ID ], start: moment().subtract(1, 'years').toISOString(true), end: moment().toISOString(true) }, (analytics) => {
             if (!analytics) return;
             var analytic = analytics[ 0 ][ dj.ID ];
             var html = `<div class="card card-widget widget-user-2 p-1">
@@ -647,7 +670,7 @@ class WWSUdjs extends WWSUdb {
                     }
                 }
             }
-            this.djModal.body = html;
+            this.djInfoModal.body = html;
         });
     }
 
@@ -659,12 +682,12 @@ class WWSUdjs extends WWSUdb {
     showDJLogs (dj) {
         var util = new WWSUutil();
 
-        this.djModal.title = `Attendance Logs for ${dj.name} (${dj.realName || `Unknown Person`})`;
-        this.djModal.body = `<table id="section-djs-table-logs" class="table table-striped display responsive" style="width: 100%;"></table>`;
-        this.djModal.iziModal('open');
+        this.djInfoModal.title = `Attendance Logs for ${dj.name} (${dj.realName || `Unknown Person`})`;
+        this.djInfoModal.body = `<table id="section-djs-table-logs" class="table table-striped display responsive" style="width: 100%;"></table>`;
+        this.djInfoModal.iziModal('open');
 
         util.waitForElement(`#section-djs-table-logs`, () => {
-            this.logs.getAttendance(`#modal-${this.djModal.id}`, { dj: dj.ID }, (logs) => {
+            this.logs.getAttendance(`#modal-${this.djInfoModal.id}`, { dj: dj.ID }, (logs) => {
                 this.tables.attendance = $(`#section-djs-table-logs`).DataTable({
                     paging: true,
                     data: logs.map((record) => {

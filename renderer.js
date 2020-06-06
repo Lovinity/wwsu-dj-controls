@@ -112,6 +112,12 @@ window.addEventListener('DOMContentLoaded', () => {
         $('.eas-more').click(() => {
             eas.easModal.iziModal('open');
         });
+        $('.btn-calendar-definitions').click(() => {
+            calendar.definitionsModal.iziModal('open');
+        });
+        $('.btn-calendar-prerequisites').click(() => {
+            calendar.prerequisitesModal.iziModal('open');
+        });
         $('.btn-manage-events').click(() => {
             calendar.showSimpleEvents();
         });
@@ -235,7 +241,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek,timeGridDay'
             },
-            defaultView: 'timeGridDay',
+            defaultView: 'timeGridWeek',
             navLinks: true, // can click day/week names to navigate views
             selectable: false,
             selectMirror: true,

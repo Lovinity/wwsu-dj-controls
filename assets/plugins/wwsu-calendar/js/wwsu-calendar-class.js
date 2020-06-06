@@ -99,6 +99,7 @@ class WWSUcalendar extends CalendarDb {
         this.occurrenceActionModal = new WWSUmodal(``, null, ``, true, {
             headerColor: '',
             zindex: 1110,
+            overlayClose: false,
             // openFullscreen: true,
         });
         this.eventsModal = new WWSUmodal(`Events`, null, ``, true, {
@@ -114,11 +115,46 @@ class WWSUcalendar extends CalendarDb {
         this.scheduleModal = new WWSUmodal(`Schedules`, null, ``, true, {
             headerColor: '',
             zindex: 1120,
+            overlayClose: false,
             // openFullscreen: true,
         });
         this.eventModal = new WWSUmodal(`New Event`, null, ``, true, {
             headerColor: '',
             zindex: 1120,
+            overlayClose: false,
+            // openFullscreen: true,
+        });
+        this.definitionsModal = new WWSUmodal(`Calendar Definitions`, null, `<p><strong>Event</strong>: Something that can be scheduled on the calendar.
+        (Example: "DJ test - The test show")</p>
+      <p><strong>Schedule</strong>: Collection of dates/times and/or recurrence
+        rules defining when the event takes place on the calendar. (Example:
+        "Tuesdays and Thursdays 9 - 10PM")</p>
+      <p><strong>Occurrence</strong>: A specific/single date/time the event takes
+        place. (Example: "February 30, 2000, 9 - 10PM")</p>`, true, {
+            headerColor: '',
+            zindex: 1100,
+            // openFullscreen: true,
+        });
+
+        this.prerequisitesModal = new WWSUmodal(`Calendar Prerequisites`, null, `<p><span class="badge bg-pink">Prerecord</span> and <span
+        class="badge badge-info">Playlist</span>:
+      Ensure audio files are
+      split in such a way the top-of-hour ID break will air on time. Import
+      tracks into RadioDJ, and then create and save a playlist in the playlist
+      builder. Note the playlist name you save as.</p>
+    <p><span class="badge badge-primary">Genre</span>: In RadioDJ, make a track
+      rotation and create a Manual Event that triggers the rotation. Note the
+      event name you save as.</p>
+    <p><span class="badge badge-danger">Show</span>, <span class="badge bg-pink">Prerecord</span>, or
+      <span class="badge bg-indigo">Remote</span>: Be sure to add all DJs hosting the broadcast via
+      the
+      "DJs" administration menu before adding the event.
+    </p>
+    <p><span class="badge badge-warning">Office Hours</span> and <span
+        class="badge bg-orange">Tasks</span>: Add the director in the system
+      via "Directors" administration menu if they have not already been added.</p>`, true, {
+            headerColor: '',
+            zindex: 1100,
             // openFullscreen: true,
         });
     }
@@ -184,7 +220,15 @@ class WWSUcalendar extends CalendarDb {
                         $('.btn-event-delete').click((e) => {
                             var util = new WWSUutil();
                             var event = this.calendar.db().get().find((event) => event.ID === parseInt($(e.currentTarget).data('calendarid')));
-                            util.confirmDialog(`<p>Are you sure you want to <b>permanently</b> remove ${event.type}: ${event.name}?</p><ul><li><strong>Do not permanently remove events until/unless</strong> you know the event will no longer occur/air (virtually ever again) and you no longer need its analytics in the "analytics" page of DJ Controls.</li><li>Removes the event</li><li>Removes all schedules of the event from the calendar</li><li>Notifies all notification subscribers the event has been discontinued</li><li>Removes all notification subscriptions</li><li>Does not remove logs; they can still be accessed from the "logs" page of DJ Controls.</li><li>Does not remove analytics, but they can only be accessed in raw form from logs; cannot be accessed anymore from the "analytics" page of DJ Controls.</li></ul>`, event.name, () => {
+                            util.confirmDialog(`<p>Are you sure you want to <b>permanently</b> remove ${event.type}: ${event.name}?</p>
+                            <ul>
+                                <li><strong>Do not permanently remove events until/unless</strong> you know the event will no longer occur/air (virtually ever again) and you no longer need its analytics in the "analytics" page of DJ Controls.</li>
+                                <li>Removes the event</li>
+                                <li>Removes all schedules of the event from the calendar</li>
+                                ${[ 'show', 'sports', 'remote', 'prerecord', 'genre', 'playlist' ].indexOf(event.type) !== -1 ? `<li>Notifies all notification subscribers the event has been discontinued</li><li>Removes all notification subscriptions</li>` : ``}
+                                ${[ 'show', 'sports', 'remote', 'prerecord', 'playlist' ].indexOf(event.type) !== -1 ? `<li>Does NOT email DJs; you will need to notify them of the broadcast being discontinued.</li>` : ``}
+                                ${[ 'show', 'sports', 'remote', 'prerecord', 'genre', 'playlist' ].indexOf(event.type) !== -1 ? `<li>Does not remove logs; they can still be accessed from the "logs" page of DJ Controls.</li><li>Does not remove analytics, but cannot be accessed anymore from the "analytics" nor "DJs" pages of DJ Controls.</li>` : ``}
+                            </ul>`, event.name, () => {
                                 this.removeCalendar(this.eventsModal, { ID: parseInt($(e.currentTarget).data('calendarid')) }, (success) => {
                                     this.eventsModal.body = `<div class="alert alert-warning">
                                 Event changes take several seconds to reflect in the system. Please close and re-open this window.
@@ -250,7 +294,8 @@ class WWSUcalendar extends CalendarDb {
                             util.confirmDialog(`<p>Are you sure you want to delete that schedule?</p>
                         <ul>
                             <li>Please <strong>do not</strong> delete schedules to cancel a specific date/time; click the occurrence on the calendar and elect to cancel it.</li>
-                            <li>Will not notify subscribers.</li>
+                            ${[ 'show', 'sports', 'remote', 'prerecord', 'genre', 'playlist' ].indexOf(event.type) !== -1 ? `<li>Does NOT notify subscribers.</li>` : ``}
+                            ${[ 'show', 'sports', 'remote', 'prerecord', 'playlist' ].indexOf(event.type) !== -1 ? `<li>Does NOT email DJs; you will need to let them know of the change.</li>` : ``}
                             <li>A conflict check will run, and you will be notified of occurrence changes that will be made to avoid conflicts</li>
                         </ul>`, null, () => {
                                 var scheduleID = parseInt($(e.currentTarget).data('scheduleid'));
@@ -671,8 +716,9 @@ class WWSUcalendar extends CalendarDb {
                                         <ul>
                                             <li>Discards updates applied to this date/time</li>
                                             <li>Reverts this back to event's regular scheduled time and options if changed</li>
+                                            ${value.newTime && value.newTime !== '' && [ 'show', 'sports', 'remote', 'prerecord', 'genre', 'playlist' ].indexOf(event.type) !== -1 ? `<li>Notifies subscribers that the broadcast will air at its original date/time.</li>` : ``}
+                                            ${value.newTime && value.newTime !== '' && [ 'show', 'sports', 'remote', 'prerecord', 'playlist' ].indexOf(event.type) !== -1 ? `<li>Emails DJs to let them know the broadcast is to air at its original date/time.</li>` : ``}
                                             <li>A conflict check will run, and you will be notified of occurrence changes that will be made to avoid conflicts</li>
-                                            ${[ 'show', 'sports', 'remote', 'prerecord', 'genre', 'playlist' ].indexOf(event.type) !== -1 && event.timeChanged ? `<li>Notifies subscribers the event will air at the regularly-scheduled date/time</li>` : ``}
                                         </ul>`, null, () => {
                                             this.removeSchedule(this.occurrenceModal, { ID: event.scheduleID }, (success) => {
                                                 if (success) {
@@ -687,8 +733,9 @@ class WWSUcalendar extends CalendarDb {
                                         util.confirmDialog(`<p>Are you sure you want to reverse the cancellation of ${event.type}: ${event.name} on ${moment(event.start).format('LLLL')}?</p>
                                         <ul>
                                             <li>Occurrence will be on the schedule again</li>
+                                            ${value.newTime && value.newTime !== '' && [ 'show', 'sports', 'remote', 'prerecord', 'genre', 'playlist' ].indexOf(event.type) !== -1 ? `<li>Notifies subscribers that the broadcast will air at its original date/time.</li>` : ``}
+                                            ${value.newTime && value.newTime !== '' && [ 'show', 'sports', 'remote', 'prerecord', 'playlist' ].indexOf(event.type) !== -1 ? `<li>Emails DJs to let them know the broadcast is to air at its original date/time.</li>` : ``}
                                             <li>A conflict check will run, and you will be notified of occurrence changes that will be made to avoid conflicts</li>
-                                            ${[ 'show', 'sports', 'remote', 'prerecord', 'genre', 'playlist' ].indexOf(event.type) !== -1 ? `<li>Notifies subscribers the cancellation was reversed</li>` : ``}
                                         </ul>`, null, () => {
                                             this.removeSchedule(this.occurrenceModal, { ID: event.scheduleID }, (success) => {
                                                 if (success) {
@@ -702,12 +749,12 @@ class WWSUcalendar extends CalendarDb {
                                     case `Event: Delete (and all schedules)`:
                                         util.confirmDialog(`<p>Are you sure you want to <b>permanently</b> remove ${event.type}: ${event.name}?</p>
                                         <ul>
-                                            <li>Removes the event</li>
-                                            <li>Removes all schedules of the event from the calendar</li>
-                                            <li>Notifies all notification subscribers the event has been discontinued</li>
-                                            <li>Removes all notification subscriptions</li>
-                                            <li>Does not remove broadcast logs nor timesheet records</li>
-                                            <li>Broadcasts: does not remove analytics, but disassociates them from the event</li>
+                                        <li><strong>Do not permanently remove events until/unless</strong> you know the event will no longer occur/air (virtually ever again) and you no longer need its analytics in the "analytics" page of DJ Controls.</li>
+                                        <li>Removes the event</li>
+                                        <li>Removes all schedules of the event from the calendar</li>
+                                        ${[ 'show', 'sports', 'remote', 'prerecord', 'genre', 'playlist' ].indexOf(event.type) !== -1 ? `<li>Notifies all notification subscribers the event has been discontinued</li><li>Removes all notification subscriptions</li>` : ``}
+                                        ${[ 'show', 'sports', 'remote', 'prerecord', 'playlist' ].indexOf(event.type) !== -1 ? `<li>Does NOT email DJs; you will need to notify them of the broadcast being discontinued.</li>` : ``}
+                                        ${[ 'show', 'sports', 'remote', 'prerecord', 'genre', 'playlist' ].indexOf(event.type) !== -1 ? `<li>Does not remove logs; they can still be accessed from the "logs" page of DJ Controls.</li><li>Does not remove analytics, but cannot be accessed anymore from the "analytics" nor "DJs" pages of DJ Controls.</li>` : ``}
                                         </ul>`, event.name, () => {
                                             this.removeCalendar(this.occurrenceModal, { ID: event.calendarID }, (success) => {
                                                 if (success) {
@@ -848,6 +895,7 @@ class WWSUcalendar extends CalendarDb {
                                             ${[ 'prerecord', 'playlist' ].indexOf(event.type) !== -1 ? `<li>This prerecord or playlist will not be aired by the system on this date/time.</li>` : ``}
                                             ${[ 'genre' ].indexOf(event.type) !== -1 ? `<li>This genre rotation will not start on this date/time; if no other genres are scheduled, the system will go to default rotation.</li>` : ``}
                                             ${[ 'show', 'sports', 'remote', 'prerecord', 'genre', 'playlist' ].indexOf(event.type) !== -1 ? `<li>Subscribers will be notified the event was canceled on this date/time.</li>` : ``}
+                                            ${[ 'show', 'sports', 'remote', 'prerecord', 'playlist' ].indexOf(event.type) !== -1 ? `<li>DJs will be emailed informing them their broadcast was canceled on this date/time.</li>` : ``}
                                             <li>Any event occurrences canceled or changed via priorities because of this occurrence will have their cancellations / updates reversed; they will be back on the schedule with their original dates/times. Subscribers will be notified of this as well.</li>
                                         </ul>`, null, () => {
                                     this.addSchedule(this.occurrenceActionModal, {
@@ -1399,7 +1447,8 @@ class WWSUcalendar extends CalendarDb {
                                         <ul>
                                             <li>Changes will only apply to the event's original occurrence of ${moment(event.start).format("LLLL")}.</li>
                                             <li>A conflict check will run, and you will be notified of occurrence changes that will be made to avoid conflicts</li>
-                                            ${value.newTime && value.newTime !== '' ? `<li>Subscribers will be notified of the change in date/time.</li>` : ``}
+                                            ${value.newTime && value.newTime !== '' && [ 'show', 'sports', 'remote', 'prerecord', 'genre', 'playlist' ].indexOf(event.type) !== -1 ? `<li>Subscribers will be notified of the change in date/time.</li>` : ``}
+                                            ${value.newTime && value.newTime !== '' && [ 'show', 'sports', 'remote', 'prerecord', 'playlist' ].indexOf(event.type) !== -1 ? `<li>DJs will be emailed informing them of the change in date/time.</li>` : ``}
                                             <li>Properties which you did not set a value via the edit form will use the default value from the event. Properties which you had set on the form will use the value you set, even if the default value for the event is edited later.</li>
                                         </ul>`, null, () => {
                                         this.addSchedule(this.occurrenceActionModal, value, (success) => {
@@ -1979,7 +2028,10 @@ class WWSUcalendar extends CalendarDb {
                     this.conflictModal.body = `<p>The following changes will be made to resolve event conflicts if you continue:</p>
                     <div id="modal-${this.conflictModal.id}-conflicts"></div>`;
                     $(`#modal-${this.conflictModal.id}-conflicts`).html(`<ul>${actions.join("")}</ul>`);
-                    this.conflictModal.footer = `<button type="button" data-izimodal-close="" class="btn btn-success" id="modal-${this.conflictModal.id}-continue">Continue</button>
+                    this.conflictModal.footer = `<div class="alert alert-primary">
+                    <p>DJs will be emailed and subscribers notified of cancellations / changes or their reversals.</p>
+                  </div>
+                    <button type="button" data-izimodal-close="" class="btn btn-success" id="modal-${this.conflictModal.id}-continue">Continue</button>
         <button type="button" data-izimodal-close="" class="btn btn-danger">Cancel</button>`;
 
                     this.conflictModal.iziModal('open');

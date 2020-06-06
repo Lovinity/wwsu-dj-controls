@@ -2953,15 +2953,17 @@ this["HandlebarsPrecompiled"]["bootstrap-display"]["control"] = Handlebars.templ
     + "\n    </div>\n\n</script>";
 },"useData":true});
 this["HandlebarsPrecompiled"]["bootstrap-display"]["message"] = Handlebars.template({"compiler":[8,">= 4.3.0"],"main":function(container,depth0,helpers,partials,data) {
-    var stack1, helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+    var stack1, helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), alias2=container.hooks.helperMissing, alias3="function", lookupProperty = container.lookupProperty || function(parent, propertyName) {
         if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
           return parent[propertyName];
         }
         return undefined
     };
 
-  return "<script type=\"text/x-handlebars-template\">\n	\n	<div class=\"help-block alert alert-danger\">\n    "
-    + ((stack1 = ((helper = (helper = lookupProperty(helpers,"message") || (depth0 != null ? lookupProperty(depth0,"message") : depth0)) != null ? helper : container.hooks.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"message","hash":{},"data":data,"loc":{"start":{"line":4,"column":4},"end":{"line":4,"column":17}}}) : helper))) != null ? stack1 : "")
+  return "<script type=\"text/x-handlebars-template\">\n	\n	<div class=\"help-block alert "
+    + ((stack1 = ((helper = (helper = lookupProperty(helpers,"messageclass") || (depth0 != null ? lookupProperty(depth0,"messageclass") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"messageclass","hash":{},"data":data,"loc":{"start":{"line":3,"column":30},"end":{"line":3,"column":48}}}) : helper))) != null ? stack1 : "")
+    + "\">\n    "
+    + ((stack1 = ((helper = (helper = lookupProperty(helpers,"message") || (depth0 != null ? lookupProperty(depth0,"message") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"message","hash":{},"data":data,"loc":{"start":{"line":4,"column":4},"end":{"line":4,"column":17}}}) : helper))) != null ? stack1 : "")
     + "\n    </div>\n\n</script>";
 },"useData":true});
 this["HandlebarsPrecompiled"]["bootstrap-edit"] = this["HandlebarsPrecompiled"]["bootstrap-edit"] || {};
@@ -3875,7 +3877,9 @@ this["HandlebarsPrecompiled"]["bootstrap-edit"]["message"] = Handlebars.template
 
   return "<script type=\"text/x-handlebars-template\">\n	\n	<div class=\"help-block alpaca-message alpaca-message-"
     + ((stack1 = ((helper = (helper = lookupProperty(helpers,"id") || (depth0 != null ? lookupProperty(depth0,"id") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"id","hash":{},"data":data,"loc":{"start":{"line":3,"column":54},"end":{"line":3,"column":62}}}) : helper))) != null ? stack1 : "")
-    + " alert alert-danger\">\n    "
+    + " alert "
+    + ((stack1 = ((helper = (helper = lookupProperty(helpers,"messageclass") || (depth0 != null ? lookupProperty(depth0,"messageclass") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"messageclass","hash":{},"data":data,"loc":{"start":{"line":3,"column":69},"end":{"line":3,"column":87}}}) : helper))) != null ? stack1 : "")
+    + "\">\n    "
     + ((stack1 = ((helper = (helper = lookupProperty(helpers,"message") || (depth0 != null ? lookupProperty(depth0,"message") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"message","hash":{},"data":data,"loc":{"start":{"line":4,"column":4},"end":{"line":4,"column":17}}}) : helper))) != null ? stack1 : "")
     + "\n    </div>\n\n</script>";
 },"useData":true});
@@ -7730,14 +7734,15 @@ this["HandlebarsPrecompiled"]["bootstrap-edit"]["message"] = Handlebars.template
                             {
                                 messages.push({
                                     "id": messageId,
-                                    "message": field.validation[messageId]["message"]
+                                    "message": field.validation[messageId]["message"],
                                 });
                             }
                             else if (field.validation[messageId]["status"] && field.validation[messageId]["message"])
                             {
                                 messages.push({
                                     "id": messageId,
-                                    "message": field.validation[messageId]["message"]
+                                    "message": field.validation[messageId]["message"],
+                                    "warning": true
                                 });
                             }
                         }
@@ -16031,7 +16036,7 @@ this["HandlebarsPrecompiled"]["bootstrap-edit"]["message"] = Handlebars.template
             {
                 messages = [{
                     "id": "custom",
-                    "message": messages
+                    "message": messages,
                 }];
             }
 
@@ -16066,7 +16071,8 @@ this["HandlebarsPrecompiled"]["bootstrap-edit"]["message"] = Handlebars.template
                         var messageElement = Alpaca.tmpl(messageTemplateDescriptor, {
                             "id": messageObject.id,
                             "message": messageObject.message,
-                            "view": self.view
+                            "view": self.view,
+                            "messageclass": messageObject.warning ? `alert-warning` : `alert-danger`
                         });
                         messageElement.addClass("alpaca-message");
                         if (hidden)
