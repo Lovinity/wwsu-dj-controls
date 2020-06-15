@@ -1,5 +1,3 @@
-var development = true;
-
 window.addEventListener('DOMContentLoaded', () => {
 
     try {
@@ -37,7 +35,9 @@ window.addEventListener('DOMContentLoaded', () => {
         var subscriptions = new WWSUsubscriptions(socket, noReq);
         var meta = new WWSUMeta(socket, noReq);
         var api = new WWSUapi(noReq, hostReq, djReq, directorReq, adminDirectorReq);
-        var requests = new WWSUrequests(socket, hostReq);
+        var hosts = new WWSUhosts(socket, meta, machineID, window.ipcRenderer.sendSync('get-app-version'), hostReq, directorReq);
+        var requests = new WWSUrequests(socket, hosts, hostReq);
+        var state = new WWSUstate(socket, hosts, calendar, hostReq);
 
         var disciplineModal;
 
@@ -55,9 +55,6 @@ window.addEventListener('DOMContentLoaded', () => {
         // Variables
         var queueLength = 0;
         var countDown = 0;
-        var client = {};
-        var connectedBefore = false;
-        var isHost = false;
         var todos = {
             status: {
                 danger: 0,
@@ -92,6 +89,7 @@ window.addEventListener('DOMContentLoaded', () => {
         // Navigation
         var navigation = new WWSUNavigation();
         navigation.addItem('#nav-dashboard', '#section-dashboard', 'Dashboard - WWSU DJ Controls', '/', true);
+        navigation.addItem('#nav-announcements-view', '#section-announcements-view', 'View Announcements - WWSU DJ Controls', '/announcements-view', false);
         navigation.addItem('#nav-requests', '#section-requests', 'Track requests - WWSU DJ Controls', '/requests', false);
         navigation.addItem('#nav-report', '#section-report', 'Report a Problem - WWSU DJ Controls', '/report', false);
 
@@ -124,6 +122,41 @@ window.addEventListener('DOMContentLoaded', () => {
         $('#section-logs-date-browse').click(() => {
             logs.showAttendance($('#section-logs-date').val());
         });
+
+        // Operation click events
+        $('.btn-operation-resume').click(() => {
+            state.return({});
+        })
+        $('.btn-operation-15-psa').click(() => {
+            state.queuePSA({ duration: 15 });
+        })
+        $('.btn-operation-30-psa').click(() => {
+            state.queuePSA({ duration: 30 });
+        })
+        $('.btn-operation-automation').click(() => {
+            state.automation({ transition: false });
+        })
+        $('.btn-operation-switch').click(() => {
+            state.automation({ transition: true });
+        })
+        $('.btn-operation-break').click(() => {
+            state.break({ halftime: false, problem: false });
+        })
+        $('.btn-operation-extended-break').click(() => {
+            state.break({ halftime: true, problem: false });
+        })
+        $('.btn-operation-top-add').click(() => {
+            state.queueTopAdd({});
+        })
+        $('.btn-operation-liner').click(() => {
+            state.queueLiner({});
+        })
+        $('.btn-operation-dump').click(() => {
+            state.dump({});
+        })
+        $('.btn-operation-live').click(() => {
+            state.showLiveForm();
+        })
 
         // Initialize stuff
         status.initReportForm(`DJ Controls`, `#section-report-form`);
@@ -355,8 +388,8 @@ window.addEventListener('DOMContentLoaded', () => {
         socket._raw.io._reconnectionAttempts = Infinity;
 
         checkDiscipline(() => {
-            hostSocket((success) => {
-                if (success) {
+            hosts.get((success) => {
+                if (success === 1) {
                     directors.init();
                     djs.init();
                     calendar.init();
@@ -365,12 +398,19 @@ window.addEventListener('DOMContentLoaded', () => {
                     eas.init();
                     announcements.init();
                     requests.init();
-                    if (client.admin) {
+                    if (hosts.client.admin) {
+                        $('.nav-admin').removeClass('d-none');
                         announcements.initTable('#section-announcements-content');
                         djs.initTable('#section-djs-content');
                         logs.initIssues();
                         logs.initIssuesTable('#section-notifications-issues');
                     }
+                } else if (success === -1) {
+                    $('#content').addClass('d-none');
+                    $('#already-connected').removeClass('d-none');
+                } else if (success === 0) {
+                    $('#content').addClass('d-none');
+                    $('#unauthorized').removeClass('d-none');
                 }
             });
         })
@@ -393,199 +433,13 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('error', () => {
-        if (!connectedBefore) {
+        if (!hosts.connectedBefore) {
             $('#unauthorized').removeClass('d-none');
             $('#connecting').addClass('d-none');
             $('#reconnecting').addClass('d-none');
             $('#content').addClass('d-none');
         }
     })
-
-    /**
-     * Initialize the host
-     * 
-     * @param {function} cb Callback after retrieving host info; boolean parameter indicates if this host is authorized to use WWSU.
-     */
-    function hostSocket (cb = function (authorized) { }) {
-        hostReq.request({ method: 'POST', url: '/hosts/get', data: { host: machineID } }, function (body) {
-            // console.log(body);
-            try {
-                client = body
-                // eslint-disable-next-line no-unused-vars
-                var restarter
-
-                // if (client.otherHosts) { processHosts(client.otherHosts, true) }
-
-                // ipcRenderer.send(`audio-should-record`, client.recordAudio && client.authorized && !development)
-                if (!client.authorized) {
-                    // TODO
-                    cb(false)
-                } else {
-                    hostReq.request({ method: 'post', url: io.sails.url + '/recipients/add-computers', data: { host: client.host } }, function (response2) {
-                        if (connectedBefore || (typeof response2.alreadyConnected !== 'undefined' && !response2.alreadyConnected) || development) {
-                            connectedBefore = true
-                            // hostAlias = response2.host
-                            // ipcRenderer.send(`peer-reregister`, null)
-
-                            // Sink main audio devices
-                            // ipcRenderer.send(`audio-change-input-device`, settings.get(`audio.input.main`) || undefined)
-                            if (client.accountability) {
-                                /*
-                                // Subscribe to Attendance socket to get attendance updates
-                                // TODO: Move to separate function
-                                hostReq.request({ method: 'post', url: io.sails.url + '/attendance/get', data: { duration: 7 } }, function serverResponded (body, JWR) {
-                                    // console.log(body);
-                                    try {
-                                        // processAttendance(body, true)
-                                    } catch (e) {
-                                        console.error(e)
-                                        console.log('FAILED attendance CONNECTION')
-                                        clearTimeout(restarter)
-                                        restarter = setTimeout(hostSocket, 10000)
-                                    }
-                                })
-
-                                // Subscribe to Attendance socket to get attendance updates
-                                // TODO: Move to separate socket
-                                hostReq.request({ method: 'post', url: io.sails.url + '/timesheet/get', data: { fourteenDays: true } }, function serverResponded (body, JWR) {
-                                    // console.log(body);
-                                    try {
-                                        // processTimesheet(body, true)
-                                    } catch (e) {
-                                        console.error(e)
-                                        console.log('FAILED timesheet CONNECTION')
-                                        clearTimeout(restarter)
-                                        restarter = setTimeout(hostSocket, 10000)
-                                    }
-                                })
-                                */
-                            }
-
-                            // if (client.delaySystem) { main.restartDelay() }
-                            // if (client.EAS) { main.restartEAS() }
-
-                            if (client.admin) {
-                                // Display administration options menu items
-                                $('.nav-admin').removeClass('d-none');
-
-                                /*
-                                // Get djs and subscribe to the dj socket
-                                // TODO: Move to separate function
-                                noReq.request({ method: 'post', url: io.sails.url + '/djs/get', data: {} }, function serverResponded (body, JWR) {
-                                    // console.log(body);
-                                    try {
-                                        // processDjs(body, true)
-                                    } catch (e) {
-                                        console.error(e)
-                                        console.log('FAILED DJs CONNECTION')
-                                        clearTimeout(restarter)
-                                        restarter = setTimeout(hostSocket, 10000)
-                                    }
-                                })
-
-                                // Get directors and subscribe to the directors socket
-                                // TODO: Move to separate function
-                                noReq.request({ method: 'post', url: io.sails.url + '/directors/get', data: {} }, function serverResponded (body, JWR) {
-                                    // console.log(body);
-                                    try {
-                                        // processDirectors(body, true)
-                                    } catch (e) {
-                                        console.error(e)
-                                        console.log('FAILED directors CONNECTION')
-                                        clearTimeout(restarter)
-                                        restarter = setTimeout(hostSocket, 10000)
-                                    }
-                                })
-
-                                // Subscribe to the timesheet socket
-                                // TODO: Move to separate function
-                                noReq.request({ method: 'post', url: io.sails.url + '/timesheet/get', data: {} }, function serverResponded (body, JWR) {
-                                    // console.log(body);
-                                    try {
-                                    } catch (e) {
-                                        console.error(e)
-                                        console.log('FAILED TIMESHEET CONNECTION')
-                                        clearTimeout(restarter)
-                                        restarter = setTimeout(hostSocket, 10000)
-                                    }
-                                })
-
-                                // Subscribe to the discipline socket
-                                // TODO: Move to separate function
-                                hostReq.request({ method: 'POST', url: '/discipline/get', data: {} }, function (body) {
-                                    // console.log(body);
-                                    try {
-                                        // processDiscipline(body, true)
-                                    } catch (e) {
-                                        console.error(e)
-                                        console.log('FAILED discipline CONNECTION')
-                                        clearTimeout(restarter)
-                                        restarter = setTimeout(hostSocket, 10000)
-                                    }
-                                })
-
-                                // Subscribe to the config socket
-                                // TODO: Move to separate function
-                                hostReq.request({ method: 'POST', url: '/config/get', data: {} }, function (body) {
-                                    // console.log(body);
-                                    try {
-                                        // processConfig(body)
-                                    } catch (e) {
-                                        console.error(e)
-                                        console.log('FAILED config CONNECTION')
-                                        clearTimeout(restarter)
-                                        restarter = setTimeout(hostSocket, 10000)
-                                    }
-                                })
-
-                                // Subscribe to the planner socket
-                                // TODO: Move to separate function
-                                hostReq.request({ method: 'post', url: io.sails.url + '/planner/get', data: {} }, function serverResponded (body, JWR) {
-                                    // console.log(body);
-                                    try {
-                                        // processPlanner(body, true)
-                                    } catch (e) {
-                                        console.error(e)
-                                        console.log('FAILED PLANNER CONNECTION')
-                                        clearTimeout(restarter)
-                                        restarter = setTimeout(hostSocket, 10000)
-                                    }
-                                })
-
-                                // Subscribe to the underwritings socket
-                                // TODO: Move to separate function
-                                noReq.request({ method: 'post', url: io.sails.url + '/underwritings/get', data: {} }, function serverResponded (body, JWR) {
-                                    // console.log(body);
-                                    try {
-                                        // processUnderwritings(body, true)
-                                    } catch (e) {
-                                        console.error(e)
-                                        console.log('FAILED Underwritings CONNECTION')
-                                        clearTimeout(restarter)
-                                        restarter = setTimeout(hostSocket, 10000)
-                                    }
-                                })
-                                */
-                            }
-                            // eslint-disable-next-line standard/no-callback-literal
-                            cb(true)
-                        } else {
-                            $('#content').addClass('d-none');
-                            $('#already-connected').removeClass('d-none');
-                            // eslint-disable-next-line standard/no-callback-literal
-                            cb(false)
-                        }
-                    })
-                }
-            } catch (e) {
-                // eslint-disable-next-line standard/no-callback-literal
-                cb(false)
-                console.error(e)
-                console.log('FAILED HOST CONNECTION')
-                restarter = setTimeout(hostSocket, 10000)
-            }
-        })
-    }
 
 
 
@@ -600,10 +454,6 @@ window.addEventListener('DOMContentLoaded', () => {
     // New meta information
     meta.on('newMeta', (updated, fullMeta) => {
         try {
-            // Check if this host is the one who activated the current broadcast
-            if (typeof updated.host !== 'undefined') {
-                isHost = client.id === updated.host;
-            }
 
             // handle changingState blocking operations buttons
             if (typeof updated.changingState !== 'undefined') {
@@ -628,7 +478,7 @@ window.addEventListener('DOMContentLoaded', () => {
             }
 
             // On break voice queue
-            if (typeof updated.state !== 'undefined' && isHost && (fullMeta.state === 'sports_break' || fullMeta.state === 'sports_halftime' || fullMeta.state === 'remote_break' || fullMeta.state === 'sportsremote_break' || fullMeta.state === 'sportsremote_halftime')) {
+            if (typeof updated.state !== 'undefined' && hosts.isHost && (fullMeta.state === 'sports_break' || fullMeta.state === 'sports_halftime' || fullMeta.state === 'remote_break' || fullMeta.state === 'sportsremote_break' || fullMeta.state === 'sportsremote_halftime')) {
                 sounds.onBreak.play();
             }
 
@@ -778,13 +628,13 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Flash the WWSU Operations box when queue time goes below 15 seconds.
-                if (queueLength < 15 && queueLength > 0 && isHost && (fullMeta.state.startsWith('_returning') || fullMeta.state.startsWith('automation_'))) {
+                if (queueLength < 15 && queueLength > 0 && hosts.isHost && (fullMeta.state.endsWith('_returning') || fullMeta.state.startsWith('automation_'))) {
                     $('.operations-bar').removeClass('navbar-gray-dark');
-                    $('.operations-bar').addClass('navbar-warning');
+                    $('.operations-bar').addClass('navbar-fuchsia');
                     setTimeout(function () {
-                        $('.operations-bar').removeClass('navbar-warning');
+                        $('.operations-bar').removeClass('navbar-fuchsia');
                         $('.operations-bar').addClass('navbar-gray-dark');
-                    }, 250)
+                    }, 500)
                 }
 
                 // Display queue time or "ON AIR" badge?
@@ -833,7 +683,7 @@ window.addEventListener('DOMContentLoaded', () => {
             });
 
             // Countdown voice queues
-            if (isHost) {
+            if (hosts.isHost) {
                 if (fullMeta.state === 'sports_returning' || fullMeta.state === 'sportsremote_returning' || fullMeta.state === 'remote_returning' || fullMeta.state === 'automation_sports' || fullMeta.state === 'automation_sportsremote' || fullMeta.state === 'automation_remote' || fullMeta.state === 'sports_on' || fullMeta.state === 'sportsremote_on') {
                     if (queueLength === 60) { sounds.oneMinute.play() }
                     if (queueLength === 30) { sounds.thirtySeconds.play() }
@@ -1053,7 +903,7 @@ window.addEventListener('DOMContentLoaded', () => {
      * @param {array} db Array of active EAS alerts
      */
     function processEas (db) {
-        if (isHost)
+        //if (hosts.isHost)
             eas.displayAlerts();
 
         var globalEas = 5;
@@ -1177,7 +1027,7 @@ window.addEventListener('DOMContentLoaded', () => {
             $('.announcements').html(html);
 
             // Then, if admin, process announcements for the announcements options menu.
-            if (client.admin) {
+            if (hosts.client.admin) {
                 announcements.updateTable();
                 djs.updateTable();
             }

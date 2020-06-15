@@ -235,6 +235,8 @@
   <script src="assets/plugins/wwsu-announcements/js/wwsu-announcements.js"></script>
   <script src="assets/plugins/wwsu-logs/js/wwsu-logs.js"></script>
   <script src="assets/plugins/wwsu-requests/js/wwsu-requests.js"></script>
+  <script src="assets/plugins/wwsu-state/js/wwsu-state.js"></script>
+  <script src="assets/plugins/wwsu-hosts/js/wwsu-hosts.js"></script>
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -304,25 +306,25 @@
           <div class="text-info meta-firstTrack" style="font-size: 2em;">??:??</div>
         </li>
         <li class="nav-item operation-button operation-resume d-none">
-          <button class="btn btn-app bg-success" style="height: 6em; font-size: 1em;"
+          <button class="btn btn-app bg-success btn-operation-resume" style="height: 6em; font-size: 1em;"
             title="End the break and resume the broadcast">
             <i class="fas fa-check"></i> Resume
           </button>
         </li>
         <li class="nav-item operation-button operation-15-psa d-none">
-          <button class="btn btn-app bg-indigo" style="height: 6em; font-size: 1em;"
+          <button class="btn btn-app bg-indigo btn-operation-15-psa" style="height: 6em; font-size: 1em;"
             title="Add a 15-second PSA to the queue">
             <i class="fas fa-plus"></i> +15-sec PSA
           </button>
         </li>
         <li class="nav-item operation-button operation-30-psa d-none">
-          <button class="btn btn-app bg-indigo" style="height: 6em; font-size: 1em;"
+          <button class="btn btn-app bg-indigo btn-operation-30-psa" style="height: 6em; font-size: 1em;"
             title="Add a 30-second PSA to the queue">
             <i class="fas fa-plus"></i> +30-sec PSA
           </button>
         </li>
         <li class="nav-item operation-button operation-live d-none">
-          <button class="btn btn-app bg-danger" style="height: 6em; font-size: 1em;"
+          <button class="btn btn-app bg-danger btn-operation-live" style="height: 6em; font-size: 1em;"
             title="Start a live show produced in the WWSU studio">
             <i class="fas fa-microphone"></i> Live
           </button>
@@ -346,37 +348,38 @@
           </button>
         </li>
         <li class="nav-item operation-button operation-automation d-none">
-          <button class="btn btn-app bg-primary" style="height: 6em; font-size: 1em;"
+          <button class="btn btn-app bg-primary btn-operation-automation" style="height: 6em; font-size: 1em;"
             title="End the broadcast and go to automation">
             <i class="fas fa-microphone-slash"></i> Automation
           </button>
         </li>
         <li class="nav-item operation-button operation-switch d-none">
-          <button class="btn btn-app bg-danger" style="height: 6em; font-size: 1em;"
+          <button class="btn btn-app bg-danger btn-operation-switch" style="height: 6em; font-size: 1em;"
             title="End the broadcast and go to break for the next DJ">
             <i class="fas fa-microphone-slash"></i> Next Show
           </button>
         </li>
         <li class="nav-item operation-button operation-break d-none">
-          <button class="btn btn-app bg-warning" style="height: 6em; font-size: 1em;"
+          <button class="btn btn-app bg-warning btn-operation-break" style="height: 6em; font-size: 1em;"
             title="Play underwritings and PSAs until you resume the broadcast">
             <i class="fas fa-coffee"></i> Take a Break
           </button>
         </li>
         <li class="nav-item operation-button operation-extended-break d-none">
-          <button class="btn btn-app bg-orange" style="height: 6em; font-size: 1em;"
+          <button class="btn btn-app bg-orange btn-operation-extended-break" style="height: 6em; font-size: 1em;"
             title="Play music and suspend audio streaming until you resume the broadcast">
             <i class="fas fa-hourglass"></i> Extended Break
           </button>
         </li>
         <li class="nav-item operation-button operation-top-add d-none">
-          <button class="btn btn-app bg-purple" style="height: 6em; font-size: 1em;"
+          <button class="btn btn-app bg-purple btn-operation-top-add" style="height: 6em; font-size: 1em;"
             title="Play a random top add music track immediately">
             <i class="fas fa-headphones"></i> Play Top Add
           </button>
         </li>
         <li class="nav-item operation-button operation-liner d-none">
-          <button class="btn btn-app bg-purple" style="height: 6em; font-size: 1em;" title="Play a short station liner">
+          <button class="btn btn-app bg-purple btn-operation-liner" style="height: 6em; font-size: 1em;"
+            title="Play a short station liner">
             <i class="fas fa-angle-double-right"></i> Play Liner
           </button>
         </li>
@@ -387,7 +390,7 @@
           </button>
         </li>
         <li class="nav-item operation-button operation-dump d-none">
-          <button class="btn btn-app bg-fuchsia" style="height: 6em; font-size: 1em;"
+          <button class="btn btn-app bg-fuchsia btn-operation-dump" style="height: 6em; font-size: 1em;"
             title="Remotely trigger the dump on the delay system if something inappropriate was said.">
             <i class="fas fa-eject"></i> Dump <br />
             (<span class="operation-dump-time">??? Secs</span>)
@@ -433,6 +436,14 @@
                 <i class="nav-icon nav-icon-dashboard fas fa-newspaper"></i>
                 <p>
                   Dashboard
+                </p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" id="nav-announcements-view" title="View announcements and important info for DJs.">
+                <i class="nav-icon fas fa-bullhorn"></i>
+                <p>
+                  Announcements
                 </p>
               </a>
             </li>
@@ -628,21 +639,6 @@
         <!-- Main content -->
         <div class="content">
 
-          <!-- Now Playing -->
-          <div class="row">
-            <div class="col-12">
-              <div class="card card-warning elevation-2">
-                <div class="card-header">
-                  <h3 class="card-title">Announcements</h3>
-                </div>
-                <!-- /.card-header -->
-                <div class="card-body announcements">
-                </div>
-                <!-- /.card-body -->
-              </div>
-            </div>
-          </div>
-
           <div class="card card-info elevation-2">
             <div class="card-header">
               <h3 class="card-title">Status</h3>
@@ -800,6 +796,27 @@
         <!-- /.content -->
       </div>
     </section>
+
+        <!-- Announcements (view) -->
+        <section id="section-announcements-view">
+          <div class="content-wrapper" style="padding-top: 8em;">
+            <!-- Content Header (Page header) -->
+            <div class="content-header">
+              <div class="container-fluid">
+                <div class="row mb-2">
+                  <div class="col-sm-6">
+                    <h1 class="m-0 text-dark">Announcements (View)</h1>
+                  </div><!-- /.col -->
+                </div><!-- /.row -->
+              </div><!-- /.container-fluid -->
+            </div>
+            <!-- /.content-header -->
+    
+            <!-- Main content -->
+            <div class="content announcements">
+            </div>
+          </div>
+        </section>
 
     <!-- Track Requests-->
     <section id="section-requests">
@@ -987,15 +1004,16 @@
                     <div class="container-fluid">
                       <div class="row">
                         <div class="col-12 col-md-6 col-lg-4">
-                          <button type="button"
-                            class="btn btn-block btn-info btn-sm btn-calendar-definitions">Definitions</button>
+                          <button type="button" class="btn btn-block btn-info btn-sm btn-calendar-definitions"
+                            title="Open a pop-up explaining what an event, schedule, and occurrence is.">Definitions</button>
                         </div>
                         <div class="col-12 col-md-6 col-lg-4">
-                          <button type="button"
-                            class="btn btn-block btn-info btn-sm btn-calendar-prerequisites">Prerequisites</button>
+                          <button type="button" class="btn btn-block btn-info btn-sm btn-calendar-prerequisites"
+                            title="Open a pop-up explaining what must be done for different types of events before adding them to the calendar.">Prerequisites</button>
                         </div>
                         <div class="col-12 col-md-6 col-lg-4">
-                          <button type="button" class="btn btn-block btn-warning btn-sm btn-manage-events">Manage
+                          <button type="button" class="btn btn-block btn-warning btn-sm btn-manage-events"
+                            title="Add, edit, and remove events and their schedules (for occurrences, use the calendar).">Manage
                             Events / Schedules</button>
                         </div>
                       </div>
@@ -1008,52 +1026,63 @@
                   </div>
                   <div class="card-body container-fluid">
                     <div class="row p-2">
-                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-danger">
+                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-danger"
+                        title="Show live shows on calendar?">
                         <input type="checkbox" class="custom-control-input" id="filter-show" checked>
                         <label class="custom-control-label" for="filter-show">Live Shows</label>
                       </div>
-                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-success">
+                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-success"
+                        title="Show sports broadcasts on calendar?">
                         <input type="checkbox" class="custom-control-input" id="filter-sports" checked>
                         <label class="custom-control-label" for="filter-sports">Sports</label>
                       </div>
-                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-indigo">
+                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-indigo"
+                        title="Show remote broadcasts on calendar?">
                         <input type="checkbox" class="custom-control-input" id="filter-remote" checked>
                         <label class="custom-control-label" for="filter-remote">Remote
                           Broadcasts</label>
                       </div>
-                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-pink">
+                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-pink"
+                        title="Show prerecords on calendar?">
                         <input type="checkbox" class="custom-control-input" id="filter-prerecord" checked>
                         <label class="custom-control-label" for="filter-prerecord">Prerecords</label>
                       </div>
-                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-info">
+                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-info"
+                        title="Show playlists on calendar?">
                         <input type="checkbox" class="custom-control-input" id="filter-playlist" checked>
                         <label class="custom-control-label" for="filter-playlist">Playlists</label>
                       </div>
-                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-primary">
+                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-primary"
+                        title="Show genre rotations on calendar?">
                         <input type="checkbox" class="custom-control-input" id="filter-genre">
                         <label class="custom-control-label" for="filter-genre">Genres</label>
                       </div>
-                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-gray">
+                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-gray"
+                        title="Show manual events on calendar?">
                         <input type="checkbox" class="custom-control-input" id="filter-event">
                         <label class="custom-control-label" for="filter-event">Manual
                           Events</label>
                       </div>
-                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-warning">
+                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-warning"
+                        title="Show office hours on calendar?">
                         <input type="checkbox" class="custom-control-input" id="filter-office-hours">
                         <label class="custom-control-label" for="filter-office-hours">Director
                           Office Hours</label>
                       </div>
-                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-orange">
+                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-orange"
+                        title="Show tasks on calendar?">
                         <input type="checkbox" class="custom-control-input" id="filter-task">
                         <label class="custom-control-label" for="filter-task">Director
                           Tasks</label>
                       </div>
-                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-teal">
+                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-teal"
+                        title="Show reservations for the on-air studio on calendar?">
                         <input type="checkbox" class="custom-control-input" id="filter-onair-booking">
                         <label class="custom-control-label" for="filter-onair-booking">On-Air
                           Bookings</label>
                       </div>
-                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-teal">
+                      <div class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-teal"
+                        title="Show reservations for the production studio on calendar?">
                         <input type="checkbox" class="custom-control-input" id="filter-prod-booking">
                         <label class="custom-control-label" for="filter-prod-booking">Production
                           Studio Bookings</label>

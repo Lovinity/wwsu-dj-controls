@@ -7,9 +7,10 @@ class WWSUrequests extends WWSUdb {
      * Create the announcements class.
      * 
      * @param {sails.io} socket Socket connection to WWSU
+     * @param {WWSUhosts} hosts An instance of WWSUhosts to check for DJ locking and prompt if not a host.
      * @param {WWSUreq} hostReq Request class with host authorization
      */
-    constructor(socket, hostReq) {
+    constructor(socket, hosts, hostReq) {
         super(); // Create the db
 
         this.endpoints = {
@@ -22,6 +23,7 @@ class WWSUrequests extends WWSUdb {
         this.requests = {
             host: hostReq
         };
+        this.hosts = hosts;
 
         this.table = undefined;
         this.icon = undefined;
@@ -100,30 +102,34 @@ class WWSUrequests extends WWSUdb {
      */
     queue (dom, data, cb) {
         try {
-            this.requests.host.request({ dom: dom, method: 'post', url: this.endpoints.queue, data }, (response) => {
-                if (response !== 'OK') {
-                    $(document).Toasts('create', {
-                        class: 'bg-danger',
-                        title: 'Error queuing request',
-                        body: 'There was an error queuing the request. Please report this to the engineer.',
-                        icon: 'fas fa-skull-crossbones fa-lg',
-                    });
-                    if (typeof cb === 'function') {
-                        cb(false);
-                    }
-                } else {
-                    $(document).Toasts('create', {
-                        class: 'bg-success',
-                        title: 'Request queued',
-                        autohide: true,
-                        delay: 15000,
-                        body: `The request was queued. It will not disappear from track requests until it is played.`,
+            this.hosts.checkDJLocked(`queue a requested track`, () => {
+                this.hosts.promptIfNotHost(`queue a requested track`, () => {
+                    this.requests.host.request({ dom: dom, method: 'post', url: this.endpoints.queue, data }, (response) => {
+                        if (response !== 'OK') {
+                            $(document).Toasts('create', {
+                                class: 'bg-danger',
+                                title: 'Error queuing request',
+                                body: 'There was an error queuing the request. Please report this to the engineer.',
+                                icon: 'fas fa-skull-crossbones fa-lg',
+                            });
+                            if (typeof cb === 'function') {
+                                cb(false);
+                            }
+                        } else {
+                            $(document).Toasts('create', {
+                                class: 'bg-success',
+                                title: 'Request queued',
+                                autohide: true,
+                                delay: 15000,
+                                body: `The request was queued. It will not disappear from track requests until it is played.`,
+                            })
+                            if (typeof cb === 'function') {
+                                cb(true);
+                            }
+                        }
                     })
-                    if (typeof cb === 'function') {
-                        cb(true);
-                    }
-                }
-            })
+                });
+            });
         } catch (e) {
             $(document).Toasts('create', {
                 class: 'bg-danger',

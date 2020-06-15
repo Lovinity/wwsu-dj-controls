@@ -171,7 +171,7 @@ class WWSUdjs extends WWSUdb {
                                 });
                                 return;
                             }
-                            if (value.includes(" - ") || value.includes("; ")) {
+                            if (value.includes(" -") || value.includes("; ")) {
                                 callback({
                                     "status": false,
                                     "message": `DJ names may not contain " - " or semicolons. These are used by the system as separators. If you are adding multiple DJs, please add each one by one.`
@@ -688,9 +688,9 @@ class WWSUdjs extends WWSUdb {
 
         util.waitForElement(`#section-djs-table-logs`, () => {
             this.logs.getAttendance(`#modal-${this.djInfoModal.id}`, { dj: dj.ID }, (logs) => {
-                this.tables.attendance = $(`#section-djs-table-logs`).DataTable({
+                $(`#section-djs-table-logs`).DataTable({
                     paging: true,
-                    data: logs.map((record) => {
+                    data: !logs || typeof logs.map !== 'function' ? [] : logs.map((record) => {
                         var theDate
                         if (record.actualStart !== null) {
                             theDate = moment(record.actualStart)

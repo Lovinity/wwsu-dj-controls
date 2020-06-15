@@ -66,7 +66,7 @@ class WWSUeas extends WWSUdb {
             `<div style="text-align: center;">
                 <i class="text-white fas fa-bolt" style="font-size: 25vw;"></i>
             </div>
-            <h3>An extreme alert is in effect.</h3> <strong>Please consider ending your show and evacuating / taking shelter now!</strong>
+            <h3>An extreme alert is in effect.</h3> <strong>Please consider ending your show and evacuating / taking shelter now, if applicable!</strong>
             Alert: <strong class="eas-extreme-alert-alert"></strong><br />
             From <strong class="eas-extreme-alert-starts"></strong> to <strong class="eas-extreme-alert-expires"></strong>.<br />
             Counties: <strong class="eas-extreme-alert-counties"></strong><br />`,

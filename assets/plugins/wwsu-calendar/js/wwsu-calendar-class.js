@@ -889,7 +889,7 @@ class WWSUcalendar extends CalendarDb {
                                 util.confirmDialog(`<p>Are you sure you want to cancel ${event.type}: ${event.hosts} - ${event.name} on ${moment(event.start).format("LLLL")}?</p>
                                         <ul>
                                             <li>Please <strong>do not</strong> cancel occurrences to make room to schedule other events; scheduling the other event will automatically make adjustments as necessary and reverse the changes should the other event get canceled.</li>
-                                            <li>Marks this occurrence as canceled on calendar</li>
+                                            <li>Marks this occurrence as canceled on calendar. <strong>After cancelling, go to an admin DJ Controls, and under "To-do", mark the cancellation as either excused (WWSU-prompted) or unexcused (DJ-prompted).</strong></li>
                                             ${[ 'show', 'sports', 'remote' ].indexOf(event.type) !== -1 ? `<li>If the DJ tries to broadcast on this date/time, it will be flagged as an unauthorized / unscheduled broadcast.</li>` : ``}
                                             ${[ 'remote' ].indexOf(event.type) !== -1 ? `<li>DJ Controls will deny the DJ's ability to start a remote broadcast on this date/time if their DJ Controls is DJ-locked.</li>` : ``}
                                             ${[ 'prerecord', 'playlist' ].indexOf(event.type) !== -1 ? `<li>This prerecord or playlist will not be aired by the system on this date/time.</li>` : ``}
@@ -1005,6 +1005,13 @@ class WWSUcalendar extends CalendarDb {
                             "helper": "Event may not share the name of another event",
                             "validator": function (callback) {
                                 var value = this.getValue();
+                                if (value.includes(" -")) {
+                                    callback({
+                                        "status": false,
+                                        "message": `Invalid; event names may not contain " - " as this is a separation used by the system.`
+                                    });
+                                    return;
+                                }
                                 if (calendarEvents.indexOf(value) !== -1 && (!event || !event.name || event.name !== value)) {
                                     callback({
                                         "status": false,
@@ -1318,6 +1325,13 @@ class WWSUcalendar extends CalendarDb {
                             "helper": `If changing the name of this occurrence, specify it here. The current name is <strong>${event.name}</strong>. This field is ignored for bookings and office-hours.`,
                             "validator": function (callback) {
                                 var value = this.getValue();
+                                if (value.includes(" -")) {
+                                    callback({
+                                        "status": false,
+                                        "message": `Invalid; event names may not contain " - " as this is a separation used by the system.`
+                                    });
+                                    return;
+                                }
                                 value = value.split(" vs.")[ 0 ];
                                 var type = this.getParent().childrenByPropertyId[ "type" ].getValue();
                                 if ((((!type || type === '') && event.type === 'sports') || type === 'sports') && sportsEvents.indexOf(value) === -1) {
@@ -1791,6 +1805,13 @@ class WWSUcalendar extends CalendarDb {
                             "helper": `Specify an event name that should be used for this schedule if different from the event default of <strong>${event.name}</strong>. This field is ignored for bookings and office-hours.`,
                             "validator": function (callback) {
                                 var value = this.getValue();
+                                if (value.includes(" -")) {
+                                    callback({
+                                        "status": false,
+                                        "message": `Invalid; event names may not contain " - " as this is a separation used by the system.`
+                                    });
+                                    return;
+                                }
                                 value = value.split(" vs.")[ 0 ];
                                 var type = this.getParent().childrenByPropertyId[ "type" ].getValue();
                                 if ((((!type || type === '') && event.type === 'sports') || type === 'sports') && sportsEvents.indexOf(event.name) === -1 && sportsEvents.indexOf(value) === -1) {

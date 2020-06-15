@@ -61,6 +61,7 @@ class WWSUlogs {
             for (var key in data) {
                 if (key === 'remove') {
                     this.events.emitEvent(`issues-remove`, [ data[ key ] ]);
+                    this.issues.query({ remove: data[ key ].ID }, false);
                     this.updateIssuesTable();
                     continue;
                 }
@@ -97,16 +98,13 @@ class WWSUlogs {
                         if (this.issues.db({ ID: data[ key ].ID }).get().length > 0) {
                             this.issues.query(data, false);
                             this.events.emitEvent(`issues-${key}`, [ data[ key ] ]);
-                            console.log(`issues-${key}`);
                         } else {
                             this.issues.query({ insert: data[ key ] }, false);
                             this.events.emitEvent(`issues-insert`, [ data[ key ] ]);
-                            console.log(`issues-insert`);
                         }
                     } else {
                         this.events.emitEvent(`issues-remove`, [ data[ key ].ID ]);
                         this.issues.query({ remove: data[ key ].ID }, false);
-                        console.log(`issues-remove`);
                     }
                     this.updateIssuesTable();
                 }
@@ -518,7 +516,7 @@ class WWSUlogs {
                         record.event,
                         `CANCELED (${moment(record.scheduledStart).format('h:mm A')})`,
                         `CANCELED (${moment(record.scheduledEnd).format('h:mm A')})`,
-                        ``
+                        `<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`
                     ] ])
                 } else if (record.happened === 0) {
                     this.tables.attendance.rows.add([ [
@@ -527,7 +525,7 @@ class WWSUlogs {
                         record.event,
                         `ABSENT (${moment(record.scheduledStart).format('h:mm A')})`,
                         `ABSENT (${moment(record.scheduledEnd).format('h:mm A')})`,
-                        ``
+                        `<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`
                     ] ])
                 } else if (record.actualStart !== null && record.actualEnd !== null) {
                     this.tables.attendance.rows.add([ [
@@ -545,7 +543,7 @@ class WWSUlogs {
                         record.event,
                         `SCHEDULED (${moment(record.scheduledStart).format('h:mm A')})`,
                         `SCHEDULED (${moment(record.scheduledEnd).format('h:mm A')})`,
-                        ``
+                        `<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`
                     ] ])
                 }
             });

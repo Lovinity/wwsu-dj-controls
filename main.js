@@ -114,6 +114,12 @@ ipcMain.on('get-machine-id', (event) => {
   event.returnValue = machineIdSync();
 })
 
+// Get app and version info
+const pkg = require('./package.json');
+ipcMain.on('get-app-version', (event) => {
+  event.returnValue = `${pkg.name} v${pkg.version}`;
+})
+
 // IPC
 // Args should be an array pair: [command string, [array of additional parameters] ]
 
