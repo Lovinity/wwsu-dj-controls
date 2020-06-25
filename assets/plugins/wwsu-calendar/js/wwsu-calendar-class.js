@@ -349,7 +349,9 @@ class WWSUcalendar extends CalendarDb {
                     $(document).Toasts('create', {
                         class: 'bg-danger',
                         title: 'Error loading events and playlists',
-                        body: 'There was an error loading events and playlists. Please report this to engineer@wwsu1069.org.',
+                        body: 'There was an error loading events and playlists. Please report this to the engineer.',
+                        autoHide: true,
+                        delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                     cb([], []);
@@ -361,7 +363,9 @@ class WWSUcalendar extends CalendarDb {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error loading events and playlists',
-                body: 'There was an error loading events and playlists. Please report this to engineer@wwsu1069.org.',
+                body: 'There was an error loading events and playlists. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             cb([], []);
@@ -384,7 +388,9 @@ class WWSUcalendar extends CalendarDb {
                         $(document).Toasts('create', {
                             class: 'bg-danger',
                             title: 'Error adding schedule',
-                            body: 'There was an error adding the schedule. Please report this to engineer@wwsu1069.org.',
+                            body: 'There was an error adding the schedule. Please report this to the engineer.',
+                            autoHide: true,
+                            delay: 10000,
                             icon: 'fas fa-skull-crossbones fa-lg',
                         });
                         cb(false);
@@ -403,7 +409,9 @@ class WWSUcalendar extends CalendarDb {
                 $(document).Toasts('create', {
                     class: 'bg-danger',
                     title: 'Error adding schedule',
-                    body: 'There was an error adding the schedule. Please report this to engineer@wwsu1069.org.',
+                    body: 'There was an error adding the schedule. Please report this to the engineer.',
+                    autoHide: true,
+                    delay: 10000,
                     icon: 'fas fa-skull-crossbones fa-lg',
                 });
                 console.error(e);
@@ -427,7 +435,9 @@ class WWSUcalendar extends CalendarDb {
                         $(document).Toasts('create', {
                             class: 'bg-danger',
                             title: 'Error editing schedule',
-                            body: 'There was an error editing the schedule. Please report this to engineer@wwsu1069.org.',
+                            body: 'There was an error editing the schedule. Please report this to the engineer.',
+                            autoHide: true,
+                            delay: 10000,
                             icon: 'fas fa-skull-crossbones fa-lg',
                         });
                         cb(false);
@@ -446,7 +456,9 @@ class WWSUcalendar extends CalendarDb {
                 $(document).Toasts('create', {
                     class: 'bg-danger',
                     title: 'Error editing schedule',
-                    body: 'There was an error editing the schedule. Please report this to engineer@wwsu1069.org.',
+                    body: 'There was an error editing the schedule. Please report this to the engineer.',
+                    autoHide: true,
+                    delay: 10000,
                     icon: 'fas fa-skull-crossbones fa-lg',
                 });
                 console.error(e);
@@ -472,7 +484,9 @@ class WWSUcalendar extends CalendarDb {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error removing/reversing schedule',
-                body: 'There was an error removing/reversing the schedule. Please report this to engineer@wwsu1069.org.',
+                body: 'There was an error removing/reversing the schedule. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             cb(false);
@@ -485,7 +499,9 @@ class WWSUcalendar extends CalendarDb {
                         $(document).Toasts('create', {
                             class: 'bg-danger',
                             title: 'Error removing/reversing schedule',
-                            body: 'There was an error removing/reversing the schedule. Please report this to engineer@wwsu1069.org.',
+                            body: 'There was an error removing/reversing the schedule. Please report this to the engineer.',
+                            autoHide: true,
+                            delay: 10000,
                             icon: 'fas fa-skull-crossbones fa-lg',
                         });
                         cb(false);
@@ -504,7 +520,9 @@ class WWSUcalendar extends CalendarDb {
                 $(document).Toasts('create', {
                     class: 'bg-danger',
                     title: 'Error removing/reversing schedule',
-                    body: 'There was an error removing/reversing the schedule. Please report this to engineer@wwsu1069.org.',
+                    body: 'There was an error removing/reversing the schedule. Please report this to the engineer.',
+                    autoHide: true,
+                    delay: 10000,
                     icon: 'fas fa-skull-crossbones fa-lg',
                 });
                 console.error(e);
@@ -528,7 +546,9 @@ class WWSUcalendar extends CalendarDb {
                     $(document).Toasts('create', {
                         class: 'bg-danger',
                         title: 'Error adding event',
-                        body: 'There was an error adding the event. Please report this to engineer@wwsu1069.org.',
+                        body: 'There was an error adding the event. Please report this to the engineer.',
+                        autoHide: true,
+                        delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                     cb(false);
@@ -547,7 +567,9 @@ class WWSUcalendar extends CalendarDb {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error adding event',
-                body: 'There was an error adding the event. Please report this to engineer@wwsu1069.org.',
+                body: 'There was an error adding the event. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             console.error(e);
@@ -571,7 +593,9 @@ class WWSUcalendar extends CalendarDb {
                         $(document).Toasts('create', {
                             class: 'bg-danger',
                             title: 'Error editing event',
-                            body: 'There was an error editing the event. Please report this to engineer@wwsu1069.org.',
+                            body: 'There was an error editing the event. Please report this to the engineer.',
+                            autoHide: true,
+                            delay: 10000,
                             icon: 'fas fa-skull-crossbones fa-lg',
                         });
                         cb(false);
@@ -590,7 +614,9 @@ class WWSUcalendar extends CalendarDb {
                 $(document).Toasts('create', {
                     class: 'bg-danger',
                     title: 'Error editing event',
-                    body: 'There was an error editing the event. Please report this to engineer@wwsu1069.org.',
+                    body: 'There was an error editing the event. Please report this to the engineer.',
+                    autoHide: true,
+                    delay: 10000,
                     icon: 'fas fa-skull-crossbones fa-lg',
                 });
                 console.error(e);
@@ -616,7 +642,9 @@ class WWSUcalendar extends CalendarDb {
                         $(document).Toasts('create', {
                             class: 'bg-danger',
                             title: 'Error removing event',
-                            body: 'There was an error removing the event. Please report this to engineer@wwsu1069.org.',
+                            body: 'There was an error removing the event. Please report this to the engineer.',
+                            autoHide: true,
+                            delay: 10000,
                             icon: 'fas fa-skull-crossbones fa-lg',
                         });
                         cb(false);
@@ -635,7 +663,9 @@ class WWSUcalendar extends CalendarDb {
                 $(document).Toasts('create', {
                     class: 'bg-danger',
                     title: 'Error removing event',
-                    body: 'There was an error removing the event. Please report this to engineer@wwsu1069.org.',
+                    body: 'There was an error removing the event. Please report this to the engineer.',
+                    autoHide: true,
+                    delay: 10000,
                     icon: 'fas fa-skull-crossbones fa-lg',
                 });
                 console.error(e);
@@ -711,7 +741,6 @@ class WWSUcalendar extends CalendarDb {
                                 switch (value.action) {
 
                                     case `Occurrence: Reverse / discard changes`:
-                                        // TODO: Conflict checks (make sure WWSU API does this too)
                                         util.confirmDialog(`<p>Are you sure you want to reverse updates made for ${event.type}: ${event.name} on ${moment(event.start).format('LLLL')}?</p>
                                         <ul>
                                             <li>Discards updates applied to this date/time</li>
@@ -729,7 +758,6 @@ class WWSUcalendar extends CalendarDb {
                                         break;
 
                                     case `Occurrence: Un-cancel`:
-                                        // TODO: Conflict checks (make sure WWSU API does this too)
                                         util.confirmDialog(`<p>Are you sure you want to reverse the cancellation of ${event.type}: ${event.name} on ${moment(event.start).format('LLLL')}?</p>
                                         <ul>
                                             <li>Occurrence will be on the schedule again</li>
@@ -1999,6 +2027,8 @@ class WWSUcalendar extends CalendarDb {
                         class: 'bg-danger',
                         title: 'Error resolving schedule conflicts',
                         body: `Event is invalid: ${event}`,
+                        autoHide: true,
+                        delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                     return;

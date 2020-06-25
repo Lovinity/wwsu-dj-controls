@@ -53,7 +53,9 @@ class WWSUstatus extends WWSUdb {
                     $(document).Toasts('create', {
                         class: 'bg-danger',
                         title: 'Error reporting problem',
-                        body: 'There was an error reporting a problem. Please report this to the engineer via email.',
+                        body: 'There was an error reporting a problem. Please report this to the engineer.',
+                        autoHide: true,
+                        delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                     if (typeof cb === 'function') {
@@ -76,7 +78,9 @@ class WWSUstatus extends WWSUdb {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error reporting problem',
-                body: 'There was an error reporting a problem. Please report this to the engineer via email.',
+                body: 'There was an error reporting a problem. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             if (typeof cb === 'function') {
@@ -131,14 +135,14 @@ class WWSUstatus extends WWSUdb {
                                     return;
                                 }
                                 var value = form.getValue();
-                                    this.report(dom, {
-                                        location: value.location,
-                                        information: value.information
-                                    }, (success) => {
-                                        if (success) {
-                                            form.clear();
-                                        }
-                                    });
+                                this.report(dom, {
+                                    location: value.location,
+                                    information: value.information
+                                }, (success) => {
+                                    if (success) {
+                                        form.clear();
+                                    }
+                                });
                             }
                         }
                     }

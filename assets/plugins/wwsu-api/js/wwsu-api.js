@@ -45,6 +45,8 @@ class WWSUapi {
                 class: 'bg-danger',
                 title: 'Error making API query',
                 body: 'There was an error making the API query. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             console.error(e);

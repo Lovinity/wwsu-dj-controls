@@ -106,26 +106,6 @@ class WWSUhosts extends WWSUdb {
     }
 
     /**
-     * Check if this DJ Controls is DJ-locked.
-     * 
-     * @param {string} action Description of the action being performed.
-     * @param {function} cb Function executed if we are not locked to a DJ (allowed to perform action).
-     */
-    checkDJLocked (action, cb) {
-        if (this.client.lockToDJ === null || this.client.lockToDJ === this.meta.meta.dj || this.client.lockToDJ === this.meta.meta.cohostDJ1 || this.client.lockToDJ === this.meta.meta.cohostDJ2 || this.client.lockToDJ === this.meta.meta.cohostDJ3 || this.isHost) {
-            cb()
-        } else {
-            $(document).Toasts('create', {
-                class: 'bg-warning',
-                title: 'Action not allowed',
-                delay: 20000,
-                autohide: true,
-                body: `You are not allowed to ${action} at this time. Your host is locked to a specific DJ that is not on the air. If you are trying to start a broadcast, wait until no more than 5 minutes before scheduled show time, and no one else is on the air, before starting.`,
-            });
-        }
-    }
-
-    /**
      * If another host started the current broadcast, display a confirmation prompt to prevent accidental interference with another broadcast.
      * 
      * @param {string} action Description of the action being taken

@@ -213,6 +213,8 @@ class WWSUreq {
             class: 'bg-danger',
             title: 'Error Authorizing',
             body: 'There was an error authorizing. Did you type your password in correctly?',
+            autoHide: true,
+            delay: 10000,
             icon: 'fas fa-skull-crossbones fa-lg',
           });
         } else if (typeof token.errToken !== `undefined` || typeof token.token === 'undefined') {
@@ -220,6 +222,8 @@ class WWSUreq {
             class: 'bg-danger',
             title: 'Error Authorizing',
             body: `${typeof token.errToken !== `undefined` ? `Failed to authenticate; please try again. ${token.errToken}` : `Failed to authenticate; unknown error.`}`,
+            autoHide: true,
+            delay: 10000,
             icon: 'fas fa-skull-crossbones fa-lg',
           });
         } else {
@@ -367,6 +371,8 @@ class WWSUreq {
         class: 'bg-danger',
         title: 'Authorization error',
         body: `There is no ${this.authName} available to authorize. Please report this to the engineer.`,
+        autoHide: true,
+        delay: 10000,
         icon: 'fas fa-skull-crossbones fa-lg',
       });
       return null;
@@ -377,6 +383,8 @@ class WWSUreq {
         class: 'bg-danger',
         title: 'Authorization error',
         body: `A username field was not specified for ${this.authName} authorization. Please report this to the engineer.`,
+        autoHide: true,
+        delay: 10000,
         icon: 'fas fa-skull-crossbones fa-lg',
       });
       return null;
@@ -489,7 +497,9 @@ class WWSUutil {
       $(document).Toasts('create', {
         class: 'bg-danger',
         title: 'Error in getUrlParameter function',
-        body: 'There was an error in the getUrlParameter function. Please report this to engineer@wwsu1069.org.',
+        body: 'There was an error in the getUrlParameter function. Please report this to the engineer.',
+        autoHide: true,
+        delay: 10000,
         icon: 'fas fa-skull-crossbones fa-lg',
       });
     }
@@ -546,7 +556,9 @@ class WWSUutil {
       $(document).Toasts('create', {
         class: 'bg-danger',
         title: 'hexrgb error',
-        body: 'There was an error in the hexrgb function. Please report this to engineer@wwsu1069.org.',
+        body: 'There was an error in the hexrgb function. Please report this to the engineer.',
+        autoHide: true,
+        delay: 10000,
         icon: 'fas fa-skull-crossbones fa-lg',
       });
     }
@@ -704,6 +716,7 @@ class WWSUmodal {
     util.waitForElement('body', () => {
       this.id = util.createUUID();
 
+      // Append the model
       $('body').append(`<div class="modal" id="modal-${this.id}" aria-hidden="true" aria-labelledby="modal-${this.id}-title">
       <div class="modal-content${bgClass ? ` ${bgClass}` : ``}">
           <div class="modal-header">
@@ -721,6 +734,7 @@ class WWSUmodal {
       <!-- /.modal-content -->
   </div>`);
 
+      // Initialize the model once loaded in the DOM
       util.waitForElement(`#modal-${this.id}`, () => {
         this.izi = $(`#modal-${this.id}`).iziModal(modalOptions);
       });
@@ -756,7 +770,13 @@ class WWSUmodal {
   }
 }
 
-// Class for managing DOM updates / animations
+/**
+ *  Class for managing DOM animations
+ *  Note: We use this instead of requestAnimationFrame because requestAnimationFrame calls not run due to
+ *  background throttling are all called once no longer throttled. This is not ideal because not only does
+ *  it freeze the UI momentarily, but it is unnecessary; we only need to process the most recently queued
+ *  frame of each animation, which is what this class does.
+ */
 class WWSUanimations {
   constructor() {
 
@@ -770,6 +790,7 @@ class WWSUanimations {
       this.hidden = 'webkitHidden'
     }
 
+    // Animation queue object: key is animation id, value is function to process the animation.
     this.animations = {};
 
     // Process queued animations every second
@@ -795,6 +816,7 @@ class WWSUanimations {
     if (!document[ this.hidden ]) {
       fn()
     } else {
+      // If a function for the same name is already queued, it is overwritten; we only need to process the most recent frame.
       this.animations[ name ] = fn
     }
   }

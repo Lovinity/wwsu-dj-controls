@@ -140,3 +140,13 @@ ipcMain.on('calendar', (event, arg) => {
     console.error(e);
   }
 })
+
+// Flash the icon in the taskbar
+ipcMain.on('flashMain', (event, arg) => {
+    mainWindow.flashFrame(true)
+});
+
+// Set the progress bar on the taskbar icon (arg is the percent).
+ipcMain.on('progressMain', (event, arg) => {
+    mainWindow.setProgressBar(arg)
+});

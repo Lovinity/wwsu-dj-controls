@@ -57,32 +57,34 @@ class WWSUstate {
      */
     return (data, cb) {
         try {
-            this.hosts.checkDJLocked(`return from break`, () => {
-                this.hosts.promptIfNotHost(`return from break`, () => {
-                    this.requests.host.request({ method: 'post', url: this.endpoints.return, data }, (response) => {
-                        if (response !== 'OK') {
-                            $(document).Toasts('create', {
-                                class: 'bg-danger',
-                                title: 'Error returning',
-                                body: 'There was an error returning from break. Please report this to the engineer.',
-                                icon: 'fas fa-skull-crossbones fa-lg',
-                            });
-                            if (typeof cb === 'function') {
-                                cb(false);
-                            }
-                        } else {
-                            if (typeof cb === 'function') {
-                                cb(true);
-                            }
+            this.hosts.promptIfNotHost(`return from break`, () => {
+                this.requests.host.request({ method: 'post', url: this.endpoints.return, data }, (response) => {
+                    if (response !== 'OK') {
+                        $(document).Toasts('create', {
+                            class: 'bg-danger',
+                            title: 'Error returning',
+                            body: 'There was an error returning from break. Either you are not in a break, or your DJ controls prevents you from returning when you are not on the air. If neither of these are true, please contact the engineer.',
+                            autoHide: true,
+                            delay: 15000,
+                            icon: 'fas fa-skull-crossbones fa-lg',
+                        });
+                        if (typeof cb === 'function') {
+                            cb(false);
                         }
-                    })
-                });
+                    } else {
+                        if (typeof cb === 'function') {
+                            cb(true);
+                        }
+                    }
+                })
             });
         } catch (e) {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error returning',
                 body: 'There was an error returning from break. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             if (typeof cb === 'function') {
@@ -100,39 +102,41 @@ class WWSUstate {
      */
     queuePSA (data, cb) {
         try {
-            this.hosts.checkDJLocked(`queue a ${data && data.duration ? `${data.duration}-second` : ``} PSA`, () => {
-                this.hosts.promptIfNotHost(`queue a ${data && data.duration ? `${data.duration}-second` : ``} PSA`, () => {
-                    this.requests.host.request({ method: 'post', url: this.endpoints.queuePSA, data }, (response) => {
-                        if (response !== 'OK') {
-                            $(document).Toasts('create', {
-                                class: 'bg-danger',
-                                title: 'Error adding PSA',
-                                body: 'There was an error adding the PSA. Please report this to the engineer.',
-                                icon: 'fas fa-skull-crossbones fa-lg',
-                            });
-                            if (typeof cb === 'function') {
-                                cb(false);
-                            }
-                        } else {
-                            $(document).Toasts('create', {
-                                class: 'bg-success',
-                                title: 'PSA Added',
-                                autohide: true,
-                                delay: 5000,
-                                body: `PSA was added to the queue`,
-                            })
-                            if (typeof cb === 'function') {
-                                cb(true);
-                            }
+            this.hosts.promptIfNotHost(`queue a ${data && data.duration ? `${data.duration}-second` : ``} PSA`, () => {
+                this.requests.host.request({ method: 'post', url: this.endpoints.queuePSA, data }, (response) => {
+                    if (response !== 'OK') {
+                        $(document).Toasts('create', {
+                            class: 'bg-danger',
+                            title: 'Error adding PSA',
+                            body: 'There was an error adding the PSA. Your DJ Controls might not allow you to do this when you are not on the air. If this is not the case, please contact the engineer.',
+                            autoHide: true,
+                            delay: 15000,
+                            icon: 'fas fa-skull-crossbones fa-lg',
+                        });
+                        if (typeof cb === 'function') {
+                            cb(false);
                         }
-                    })
-                });
+                    } else {
+                        $(document).Toasts('create', {
+                            class: 'bg-success',
+                            title: 'PSA Added',
+                            autohide: true,
+                            delay: 5000,
+                            body: `PSA was added to the queue`,
+                        })
+                        if (typeof cb === 'function') {
+                            cb(true);
+                        }
+                    }
+                })
             });
         } catch (e) {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error adding PSA',
                 body: 'There was an error adding the PSA. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             if (typeof cb === 'function') {
@@ -150,32 +154,34 @@ class WWSUstate {
      */
     automation (data, cb) {
         try {
-            this.hosts.checkDJLocked(`go to ${data && data.transition ? `break for next show` : `automation`}`, () => {
-                this.hosts.promptIfNotHost(`go to ${data && data.transition ? `break for next show` : `automation`}`, () => {
-                    this.requests.host.request({ method: 'post', url: this.endpoints.automation, data }, (response) => {
-                        if (typeof response !== 'object' || !response.listeners) {
-                            $(document).Toasts('create', {
-                                class: 'bg-danger',
-                                title: 'Error ending broadcast',
-                                body: 'There was an error ending the broadcast. Please report this to the engineer.',
-                                icon: 'fas fa-skull-crossbones fa-lg',
-                            });
-                            if (typeof cb === 'function') {
-                                cb(false);
-                            }
-                        } else {
-                            if (typeof cb === 'function') {
-                                cb(response);
-                            }
+            this.hosts.promptIfNotHost(`go to ${data && data.transition ? `break for next show` : `automation`}`, () => {
+                this.requests.host.request({ method: 'post', url: this.endpoints.automation, data }, (response) => {
+                    if (response !== 'OK') {
+                        $(document).Toasts('create', {
+                            class: 'bg-danger',
+                            title: 'Error ending broadcast',
+                            body: 'There was an error ending the broadcast. Your DJ Controls might not allow you to end broadcasts you did not start. If this is not the case, please contact the engineer.',
+                            autoHide: true,
+                            delay: 15000,
+                            icon: 'fas fa-skull-crossbones fa-lg',
+                        });
+                        if (typeof cb === 'function') {
+                            cb(false);
                         }
-                    })
-                });
+                    } else {
+                        if (typeof cb === 'function') {
+                            cb(response);
+                        }
+                    }
+                })
             });
         } catch (e) {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error ending broadcast',
                 body: 'There was an error ending the broadcast. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             if (typeof cb === 'function') {
@@ -193,32 +199,34 @@ class WWSUstate {
      */
     break (data, cb) {
         try {
-            this.hosts.checkDJLocked(`go to ${data && data.halftime ? `extended ` : ``}break`, () => {
-                this.hosts.promptIfNotHost(`go to ${data && data.halftime ? `extended ` : ``}break`, () => {
-                    this.requests.host.request({ method: 'post', url: this.endpoints.break, data }, (response) => {
-                        if (response !== 'OK') {
-                            $(document).Toasts('create', {
-                                class: 'bg-danger',
-                                title: 'Error going to break',
-                                body: 'There was an error going to break. Please report this to the engineer.',
-                                icon: 'fas fa-skull-crossbones fa-lg',
-                            });
-                            if (typeof cb === 'function') {
-                                cb(false);
-                            }
-                        } else {
-                            if (typeof cb === 'function') {
-                                cb(true);
-                            }
+            this.hosts.promptIfNotHost(`go to ${data && data.halftime ? `extended ` : ``}break`, () => {
+                this.requests.host.request({ method: 'post', url: this.endpoints.break, data }, (response) => {
+                    if (response !== 'OK') {
+                        $(document).Toasts('create', {
+                            class: 'bg-danger',
+                            title: 'Error going to break',
+                            body: 'There was an error going to break. Your DJ Controls might not allow you to go to break when you are not on the air. If this is not the case, please contact the engineer.',
+                            autoHide: true,
+                            delay: 15000,
+                            icon: 'fas fa-skull-crossbones fa-lg',
+                        });
+                        if (typeof cb === 'function') {
+                            cb(false);
                         }
-                    })
-                });
+                    } else {
+                        if (typeof cb === 'function') {
+                            cb(true);
+                        }
+                    }
+                })
             });
         } catch (e) {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error going to break',
                 body: 'There was an error going to break. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             if (typeof cb === 'function') {
@@ -236,39 +244,41 @@ class WWSUstate {
      */
     queueTopAdd (data, cb) {
         try {
-            this.hosts.checkDJLocked(`play a Top Add`, () => {
-                this.hosts.promptIfNotHost(`play a Top Add`, () => {
-                    this.requests.host.request({ method: 'post', url: this.endpoints.topAdd, data }, (response) => {
-                        if (response !== 'OK') {
-                            $(document).Toasts('create', {
-                                class: 'bg-danger',
-                                title: 'Error queuing Top Add',
-                                body: 'There was an error queuing a Top Add. Please report this to the engineer.',
-                                icon: 'fas fa-skull-crossbones fa-lg',
-                            });
-                            if (typeof cb === 'function') {
-                                cb(false);
-                            }
-                        } else {
-                            $(document).Toasts('create', {
-                                class: 'bg-success',
-                                title: 'Top Add Queued',
-                                autohide: true,
-                                delay: 5000,
-                                body: `Top Add was added to the queue`,
-                            })
-                            if (typeof cb === 'function') {
-                                cb(true);
-                            }
+            this.hosts.promptIfNotHost(`play a Top Add`, () => {
+                this.requests.host.request({ method: 'post', url: this.endpoints.topAdd, data }, (response) => {
+                    if (response !== 'OK') {
+                        $(document).Toasts('create', {
+                            class: 'bg-danger',
+                            title: 'Error queuing Top Add',
+                            body: 'There was an error queuing a Top Add. Your DJ Controls might not allow you to do this when you are not on the air. If this is not the case, please contact the engineer.',
+                            autoHide: true,
+                            delay: 15000,
+                            icon: 'fas fa-skull-crossbones fa-lg',
+                        });
+                        if (typeof cb === 'function') {
+                            cb(false);
                         }
-                    })
-                });
+                    } else {
+                        $(document).Toasts('create', {
+                            class: 'bg-success',
+                            title: 'Top Add Queued',
+                            autohide: true,
+                            delay: 5000,
+                            body: `Top Add was added to the queue`,
+                        })
+                        if (typeof cb === 'function') {
+                            cb(true);
+                        }
+                    }
+                })
             });
         } catch (e) {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error queuing Top Add',
                 body: 'There was an error queuing a Top Add. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             if (typeof cb === 'function') {
@@ -286,39 +296,41 @@ class WWSUstate {
      */
     queueLiner (data, cb) {
         try {
-            this.hosts.checkDJLocked(`play a liner`, () => {
-                this.hosts.promptIfNotHost(`play a liner`, () => {
-                    this.requests.host.request({ method: 'post', url: this.endpoints.liner, data }, (response) => {
-                        if (response !== 'OK') {
-                            $(document).Toasts('create', {
-                                class: 'bg-danger',
-                                title: 'Error queuing liner',
-                                body: 'There was an error queuing a liner. Please report this to the engineer.',
-                                icon: 'fas fa-skull-crossbones fa-lg',
-                            });
-                            if (typeof cb === 'function') {
-                                cb(false);
-                            }
-                        } else {
-                            $(document).Toasts('create', {
-                                class: 'bg-success',
-                                title: 'Liner Queued',
-                                autohide: true,
-                                delay: 5000,
-                                body: `Liner was added to the queue`,
-                            })
-                            if (typeof cb === 'function') {
-                                cb(true);
-                            }
+            this.hosts.promptIfNotHost(`play a liner`, () => {
+                this.requests.host.request({ method: 'post', url: this.endpoints.liner, data }, (response) => {
+                    if (response !== 'OK') {
+                        $(document).Toasts('create', {
+                            class: 'bg-danger',
+                            title: 'Error queuing liner',
+                            body: 'There was an error queuing a liner. Your DJ Controls might not allow you to do this when you are not on the air. If this is not the case, please contact the engineer.',
+                            autoHide: true,
+                            delay: 15000,
+                            icon: 'fas fa-skull-crossbones fa-lg',
+                        });
+                        if (typeof cb === 'function') {
+                            cb(false);
                         }
-                    })
-                });
+                    } else {
+                        $(document).Toasts('create', {
+                            class: 'bg-success',
+                            title: 'Liner Queued',
+                            autohide: true,
+                            delay: 5000,
+                            body: `Liner was added to the queue`,
+                        })
+                        if (typeof cb === 'function') {
+                            cb(true);
+                        }
+                    }
+                })
             });
         } catch (e) {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error queuing liner',
                 body: 'There was an error queuing a liner. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             if (typeof cb === 'function') {
@@ -336,39 +348,41 @@ class WWSUstate {
      */
     dump (data, cb) {
         try {
-            this.hosts.checkDJLocked(`dump audio on the delay system`, () => {
-                this.hosts.promptIfNotHost(`dump audio on the delay system`, () => {
-                    this.requests.host.request({ method: 'post', url: this.endpoints.dump, data }, (response) => {
-                        if (response !== 'OK') {
-                            $(document).Toasts('create', {
-                                class: 'bg-danger',
-                                title: 'Error dumping',
-                                body: 'There was an error triggering the dump on the delay system. Please report this to the engineer.',
-                                icon: 'fas fa-skull-crossbones fa-lg',
-                            });
-                            if (typeof cb === 'function') {
-                                cb(false);
-                            }
-                        } else {
-                            $(document).Toasts('create', {
-                                class: 'bg-success',
-                                title: 'Dump command sent',
-                                autohide: true,
-                                delay: 10000,
-                                body: `Dump command was sent to the delay system. If successful, the number of seconds on the dump button will go down shortly.`,
-                            })
-                            if (typeof cb === 'function') {
-                                cb(true);
-                            }
+            this.hosts.promptIfNotHost(`dump audio on the delay system`, () => {
+                this.requests.host.request({ method: 'post', url: this.endpoints.dump, data }, (response) => {
+                    if (response !== 'OK') {
+                        $(document).Toasts('create', {
+                            class: 'bg-danger',
+                            title: 'Error dumping',
+                            body: 'There was an error triggering the dump on the delay system. Your DJ Controls might not allow you to do this when you are not on the air. If this is not the case, please contact the engineer.',
+                            autoHide: true,
+                            delay: 15000,
+                            icon: 'fas fa-skull-crossbones fa-lg',
+                        });
+                        if (typeof cb === 'function') {
+                            cb(false);
                         }
-                    })
-                });
+                    } else {
+                        $(document).Toasts('create', {
+                            class: 'bg-success',
+                            title: 'Dump command sent',
+                            autohide: true,
+                            delay: 10000,
+                            body: `Dump command was sent to the delay system. If successful, the number of seconds on the dump button will go down shortly.`,
+                        })
+                        if (typeof cb === 'function') {
+                            cb(true);
+                        }
+                    }
+                })
             });
         } catch (e) {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error dumping',
                 body: 'There was an error triggering the dump on the delay system. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             if (typeof cb === 'function') {
@@ -422,7 +436,7 @@ class WWSUstate {
                     "topic": {
                         "type": "string",
                         "title": "Episode Topic / Description",
-                        "maxLength": 256
+                        "maxLength": 255
                     },
                     "webchat": {
                         "type": "boolean",
@@ -432,7 +446,7 @@ class WWSUstate {
                     "acknowledge": {
                         "type": 'boolean',
                         "default": false,
-                        "title": "I read the Announcements on the Dashboard"
+                        "title": "I read the announcements"
                     }
                 }
             },
@@ -494,13 +508,13 @@ class WWSUstate {
                     },
                     "acknowledge": {
                         "rightLabel": "Yes",
-                        "helper": "Please check this box to indicate you read the announcements on the Dashboard tab of DJ Controls.",
+                        "helper": "Please check this box to indicate you read the announcements on the announcements tab of DJ Controls.",
                         "validator": function (callback) {
                             var value = this.getValue();
                             if (!value) {
                                 callback({
                                     "status": false,
-                                    "message": `You must acknowledge that you read the announcements on the Dashboard tab of DJ Controls before doing a broadcast.`
+                                    "message": `You must acknowledge that you read the announcements on the announcements tab of DJ Controls before doing a broadcast.`
                                 });
                                 return;
                             }
@@ -549,23 +563,15 @@ class WWSUstate {
      */
     goLive (data, cb) {
         try {
-            if (this.hosts.client.lockToDJ !== null) {
-                $(document).Toasts('create', {
-                    class: 'bg-warning',
-                    title: 'Action not allowed',
-                    delay: 20000,
-                    autohide: true,
-                    body: `You are not allowed to start a live (in-studio) broadcast from this host. Please contact a director if you think this is an error.`,
-                });
-                return;
-            }
             this.hosts.promptIfNotHost(`start a live in-studio broadcast`, () => {
                 this.requests.host.request({ method: 'post', url: this.endpoints.live, data }, (response) => {
                     if (response !== 'OK') {
                         $(document).Toasts('create', {
                             class: 'bg-danger',
                             title: 'Error starting live broadcast',
-                            body: 'There was an error starting the live broadcast. Please report this to the engineer.',
+                            body: 'There was an error starting the live broadcast. Live broadcasts may only be started from the WWSU studio (otherwise, you must do a remote broadcast). If you are in the WWSU studio, please contact the engineer.',
+                            autoHide: true,
+                            delay: 15000,
                             icon: 'fas fa-skull-crossbones fa-lg',
                         });
                         if (typeof cb === 'function') {
@@ -583,6 +589,8 @@ class WWSUstate {
                 class: 'bg-danger',
                 title: 'Error starting live broadcast',
                 body: 'There was an error starting the live broadcast. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             if (typeof cb === 'function') {

@@ -124,6 +124,8 @@ class WWSUannouncements extends WWSUdb {
                         class: 'bg-danger',
                         title: 'Error adding announcement',
                         body: 'There was an error adding the announcement. Please report this to the engineer.',
+                        autoHide: true,
+                        delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                     if (typeof cb === 'function') {
@@ -147,6 +149,8 @@ class WWSUannouncements extends WWSUdb {
                 class: 'bg-danger',
                 title: 'Error adding announcement',
                 body: 'There was an error adding the announcement. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             if (typeof cb === 'function') {
@@ -170,6 +174,8 @@ class WWSUannouncements extends WWSUdb {
                         class: 'bg-danger',
                         title: 'Error editing announcement',
                         body: 'There was an error editing the announcement. Please report this to the engineer.',
+                        autoHide: true,
+                        delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                     if (typeof cb === 'function') {
@@ -193,6 +199,8 @@ class WWSUannouncements extends WWSUdb {
                 class: 'bg-danger',
                 title: 'Error editing announcement',
                 body: 'There was an error editing the announcement. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             if (typeof cb === 'function') {
@@ -216,6 +224,8 @@ class WWSUannouncements extends WWSUdb {
                         class: 'bg-danger',
                         title: 'Error removing announcement',
                         body: 'There was an error removing the announcement. Please report this to the engineer.',
+                        autoHide: true,
+                        delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                     if (typeof cb === 'function') {
@@ -239,6 +249,8 @@ class WWSUannouncements extends WWSUdb {
                 class: 'bg-danger',
                 title: 'Error removing announcement',
                 body: 'There was an error removing the announcement. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             if (typeof cb === 'function') {

@@ -102,39 +102,41 @@ class WWSUrequests extends WWSUdb {
      */
     queue (dom, data, cb) {
         try {
-            this.hosts.checkDJLocked(`queue a requested track`, () => {
-                this.hosts.promptIfNotHost(`queue a requested track`, () => {
-                    this.requests.host.request({ dom: dom, method: 'post', url: this.endpoints.queue, data }, (response) => {
-                        if (response !== 'OK') {
-                            $(document).Toasts('create', {
-                                class: 'bg-danger',
-                                title: 'Error queuing request',
-                                body: 'There was an error queuing the request. Please report this to the engineer.',
-                                icon: 'fas fa-skull-crossbones fa-lg',
-                            });
-                            if (typeof cb === 'function') {
-                                cb(false);
-                            }
-                        } else {
-                            $(document).Toasts('create', {
-                                class: 'bg-success',
-                                title: 'Request queued',
-                                autohide: true,
-                                delay: 15000,
-                                body: `The request was queued. It will not disappear from track requests until it is played.`,
-                            })
-                            if (typeof cb === 'function') {
-                                cb(true);
-                            }
+            this.hosts.promptIfNotHost(`queue a requested track`, () => {
+                this.requests.host.request({ dom: dom, method: 'post', url: this.endpoints.queue, data }, (response) => {
+                    if (response !== 'OK') {
+                        $(document).Toasts('create', {
+                            class: 'bg-danger',
+                            title: 'Error queuing request',
+                            body: `There was an error queuing the request. Your DJ Controls might not be allowed to do this when you are not on the air. Or, this request was already queued.`,
+                            autoHide: true,
+                            delay: 10000,
+                            icon: 'fas fa-skull-crossbones fa-lg',
+                        });
+                        if (typeof cb === 'function') {
+                            cb(false);
                         }
-                    })
-                });
+                    } else {
+                        $(document).Toasts('create', {
+                            class: 'bg-success',
+                            title: 'Request queued',
+                            autohide: true,
+                            delay: 15000,
+                            body: `The request was queued. It will not disappear from track requests until it is played.`,
+                        })
+                        if (typeof cb === 'function') {
+                            cb(true);
+                        }
+                    }
+                })
             });
         } catch (e) {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error queuing request',
                 body: 'There was an error queuing the request. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             if (typeof cb === 'function') {

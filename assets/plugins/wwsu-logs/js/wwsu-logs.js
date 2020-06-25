@@ -92,7 +92,8 @@ class WWSUlogs {
                     'sign-on-early',
                     'sign-on-late',
                     'sign-off-early',
-                    'sign-off-late'
+                    'sign-off-late',
+                    'sign-off-problem'
                 ].indexOf(data[ key ].logtype) !== -1) {
                     if (!data[ key ].acknowledged) {
                         if (this.issues.db({ ID: data[ key ].ID }).get().length > 0) {
@@ -162,6 +163,8 @@ class WWSUlogs {
                         class: 'bg-danger',
                         title: 'Error getting attendance records',
                         body: 'There was an error getting attendance records. Please report this to the engineer.',
+                        autoHide: true,
+                        delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                 } else {
@@ -175,6 +178,8 @@ class WWSUlogs {
                 class: 'bg-danger',
                 title: 'Error getting attendance records',
                 body: 'There was an error getting attendance records. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             console.error(e);
@@ -196,6 +201,8 @@ class WWSUlogs {
                         class: 'bg-danger',
                         title: 'Error getting listener analytics',
                         body: 'There was an error getting listener analytics. Please report this to the engineer.',
+                        autoHide: true,
+                        delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                 } else {
@@ -209,6 +216,8 @@ class WWSUlogs {
                 class: 'bg-danger',
                 title: 'Error getting listener analytics',
                 body: 'There was an error getting listener analytics. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             console.error(e);
@@ -229,6 +238,8 @@ class WWSUlogs {
                         class: 'bg-danger',
                         title: 'Error getting logs',
                         body: 'There was an error getting logs. Please report this to the engineer.',
+                        autoHide: true,
+                        delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                 } else {
@@ -242,6 +253,8 @@ class WWSUlogs {
                 class: 'bg-danger',
                 title: 'Error getting logs',
                 body: 'There was an error getting logs. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             console.error(e);
@@ -262,6 +275,8 @@ class WWSUlogs {
                         class: 'bg-danger',
                         title: 'Error editing log',
                         body: 'There was an error editing the log. Please report this to the engineer.',
+                        autoHide: true,
+                        delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                     if (typeof cb === 'function') {
@@ -285,6 +300,8 @@ class WWSUlogs {
                 class: 'bg-danger',
                 title: 'Error editing log',
                 body: 'There was an error editing the log. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             if (typeof cb === 'function') {
@@ -747,7 +764,9 @@ class WWSUlogs {
                     $(document).Toasts('create', {
                         class: 'bg-danger',
                         title: 'Error getting analytics',
-                        body: 'There was an error getting analytics. Please report this to engineer@wwsu1069.org.',
+                        body: 'There was an error getting analytics. Please report this to the engineer.',
+                        autoHide: true,
+                        delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                     console.error(e);
@@ -758,7 +777,9 @@ class WWSUlogs {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error getting analytics',
-                body: 'There was an error getting analytics. Please report this to engineer@wwsu1069.org.',
+                body: 'There was an error getting analytics. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             console.error(e);

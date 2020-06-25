@@ -580,6 +580,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 class: 'bg-danger',
                 title: 'Error newMeta',
                 body: 'There was an error in meta.newMeta. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
         }
@@ -594,15 +596,14 @@ window.addEventListener('DOMContentLoaded', () => {
             if (queueLength < 0) { queueLength = 0 }
             if (countDown < 0) { countDown = 0 }
 
-            // TODO update taskbar progress with countdown time
             if (queueLength > 0 && countDown > 0) {
                 if (countDown > 100) {
-                    // main.setProgressBar(1)
+                    window.ipcRenderer.send('progressMain', 1);
                 } else {
-                    // main.setProgressBar(countDown / 100)
+                    window.ipcRenderer.send('progressMain', countDown / 100);
                 }
             } else {
-                // main.setProgressBar(-1)
+                window.ipcRenderer.send('progressMain', -1);
             }
 
             // Update station time
@@ -721,6 +722,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 class: 'bg-danger',
                 title: 'Error metaTick',
                 body: 'There was an error in meta.metaTick. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
         }
@@ -765,7 +768,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 $(document).Toasts('create', {
                     class: 'bg-danger',
                     title: 'Error checking discipline',
-                    body: 'There was an error checking to see if you are allowed to access WWSU. Please try again later, or contact engineer@wwsu1069.org if this problem continues.',
+                    body: 'There was an error checking to see if you are allowed to access WWSU. Please try again later, or contact the engineer if this problem continues.',
+                    autoHide: true,
+                    delay: 10000,
                     icon: 'fas fa-skull-crossbones fa-lg',
                 })
             }

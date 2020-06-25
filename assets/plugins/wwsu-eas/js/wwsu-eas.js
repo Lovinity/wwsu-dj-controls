@@ -107,6 +107,8 @@ class WWSUeas extends WWSUdb {
                         class: 'bg-danger',
                         title: 'Error sending alert',
                         body: 'There was an error sending the alert. Please report this to the engineer.',
+                        autoHide: true,
+                        delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                     cb(false);
@@ -126,6 +128,8 @@ class WWSUeas extends WWSUdb {
                 class: 'bg-danger',
                 title: 'Error sending alert',
                 body: 'There was an error sending the alert. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             console.error(e);
@@ -147,6 +151,8 @@ class WWSUeas extends WWSUdb {
                         class: 'bg-danger',
                         title: 'Error sending test alert',
                         body: 'There was an error sending the test alert. Please report this to the engineer.',
+                        autoHide: true,
+                        delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                     cb(false);
@@ -166,6 +172,8 @@ class WWSUeas extends WWSUdb {
                 class: 'bg-danger',
                 title: 'Error sending test alert',
                 body: 'There was an error sending the test alert. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             console.error(e);

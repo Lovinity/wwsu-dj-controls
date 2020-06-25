@@ -258,7 +258,9 @@ class WWSUdjs extends WWSUdb {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error adding DJ',
-                body: 'There was an error adding a new DJ. Please report this to engineer@wwsu1069.org.',
+                body: 'There was an error adding a new DJ. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             console.error(e);
@@ -284,7 +286,7 @@ class WWSUdjs extends WWSUdb {
                     });
                     console.log(response);
                     if (typeof cb === 'function')
-                    cb(false);
+                        cb(false);
                 } else {
                     $(document).Toasts('create', {
                         class: 'bg-success',
@@ -294,19 +296,21 @@ class WWSUdjs extends WWSUdb {
                         body: `DJ has been edited`,
                     })
                     if (typeof cb === 'function')
-                    cb(true);
+                        cb(true);
                 }
             })
         } catch (e) {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error adding DJ',
-                body: 'There was an error editing the DJ. Please report this to engineer@wwsu1069.org.',
+                body: 'There was an error editing the DJ. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             console.error(e);
             if (typeof cb === 'function')
-            cb(false);
+                cb(false);
         }
     }
 
@@ -323,7 +327,9 @@ class WWSUdjs extends WWSUdb {
                     $(document).Toasts('create', {
                         class: 'bg-danger',
                         title: 'Error removing DJ',
-                        body: 'There was an error removing the DJ. Please report this to engineer@wwsu1069.org.',
+                        body: 'There was an error removing the DJ. Please report this to the engineer.',
+                        autoHide: true,
+                        delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                     if (typeof cb === 'function')
@@ -344,7 +350,9 @@ class WWSUdjs extends WWSUdb {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error removing DJ',
-                body: 'There was an error removing the DJ. Please report this to engineer@wwsu1069.org.',
+                body: 'There was an error removing the DJ. Please report this to the engineer.',
+                autoHide: true,
+                delay: 10000,
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             console.error(e);
