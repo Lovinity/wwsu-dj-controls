@@ -90,7 +90,6 @@ class WWSUeas extends WWSUdb {
      * Send an alert out through the internal Node.js EAS (but NOT the on-air EAS)
      * 
      * @param {string} dom DOM query string of the element to block while processing
-     * @param {WWSUdb} directors WWSUdb of directors that can authorize this request
      * @param {string} counties Comma separated list of counties for which this alert is in effect
      * @param {string} alert The name of the alert
      * @param {string} severity The severity of the alert. Must be Minor, Moderate, Severe, or Extreme.
@@ -99,9 +98,9 @@ class WWSUeas extends WWSUdb {
      * @param {?string} expires ISO timestamp when this alert expires (undefined = 1 hour from now)
      * @param {string} starts ISO timestamp when this alert starts (undefined = now)
      */
-    send (dom, directors, counties, alert, severity, color, information, expires = moment().add(1, 'hour').toISOString(true), starts = moment().toISOString(true)) {
+    send (dom, counties, alert, severity, color, information, expires = moment().add(1, 'hour').toISOString(true), starts = moment().toISOString(true)) {
         try {
-            this.requests.director.request({ dom, db: directors.db(), method: 'post', url: this.endpoints.send, data: { counties, alert, severity, color, information, expires, starts } }, (response) => {
+            this.requests.director.request({ dom, method: 'post', url: this.endpoints.send, data: { counties, alert, severity, color, information, expires, starts } }, (response) => {
                 if (response !== 'OK') {
                     $(document).Toasts('create', {
                         class: 'bg-danger',
@@ -141,11 +140,10 @@ class WWSUeas extends WWSUdb {
      * Send a test alert through the internal EAS (but NOT the on-air EAS)
      * 
      * @param {string} dom DOM query string of the element to block while processing
-     * @param {WWSUdb} directors WWSUdb of directors that can authorize this request
      */
-    test (dom, directors) {
+    test (dom) {
         try {
-            this.requests.director.request({ dom, db: directors.db(), method: 'post', url: this.endpoints.test, data: {} }, (response) => {
+            this.requests.director.request({ dom, method: 'post', url: this.endpoints.test, data: {} }, (response) => {
                 if (response !== 'OK') {
                     $(document).Toasts('create', {
                         class: 'bg-danger',
@@ -187,7 +185,7 @@ class WWSUeas extends WWSUdb {
      * @param {object} record The ID of the EAS alert record from WWSU to display (accessed from WWSUdb).
      */
     displayAlerts () {
-        this.db().each((record) => {
+        this.find().forEach((record) => {
             if (this.displayed.indexOf(record.ID) === -1) {
                 if (record.severity === 'Severe') {
                     this.easSevereAlert.iziModal('close');

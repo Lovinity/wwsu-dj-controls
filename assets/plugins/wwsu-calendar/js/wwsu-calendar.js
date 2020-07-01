@@ -47,9 +47,9 @@ class CalendarDb {
         this.calendar = new WWSUdb(TAFFY());
         this.schedule = new WWSUdb(TAFFY());
         this.clockwheels = new WWSUdb(TAFFY());
-        this.calendar.db.insert(calendar);
-        this.schedule.db.insert(schedule);
-        this.clockwheels.db.insert(clockwheels);
+        this.calendar.query(calendar, true);
+        this.schedule.query(schedule, true);
+        this.clockwheels.query(clockwheels, true);
 
         this.queue = new WWSUqueue();
     }
@@ -167,9 +167,9 @@ class CalendarDb {
                     var scheduleIDs = [];
                     try {
                         // Get schedule overrides if they exist
-                        var scheduleOverrides = scheduledb.db(function () {
+                        var scheduleOverrides = scheduledb.find(function () {
                             return this.calendarID === calendar.ID && this.scheduleID === schedule.ID && this.scheduleType && this.scheduleType !== 'unscheduled' && this.originalTime && moment(this.originalTime).isSame(moment(oneTime), 'minute');
-                        }).get() || [];
+                        }) || [];
                         if (scheduleOverrides.length > 0) {
                             scheduleOverrides.map((exc) => {
                                 scheduleIDs.push(exc.ID);
@@ -253,9 +253,9 @@ class CalendarDb {
 
                     // Get schedule overrides if they exist
                     try {
-                        var scheduleOverrides = scheduledb.db(function () {
+                        var scheduleOverrides = scheduledb.find(function () {
                             return this.calendarID === calendar.ID && this.scheduleID === schedule.ID && this.scheduleType && this.scheduleType !== 'unscheduled' && this.originalTime && moment(this.originalTime).isSame(moment(eventStart), 'minute');
-                        }).get() || [];
+                        }) || [];
                         if (scheduleOverrides.length > 0) {
                             scheduleOverrides.map((exc) => {
                                 scheduleIDs.push(exc.ID);
@@ -295,7 +295,7 @@ class CalendarDb {
         // Calendar function
         var processCalendarEntry = (calendar) => {
             // Get regular and unscheduled events
-            var regularEvents = scheduledb.db({ calendarID: calendar.ID, scheduleType: [ null, 'unscheduled', undefined ] }).get();
+            var regularEvents = scheduledb.find({ calendarID: calendar.ID, scheduleType: [ null, 'unscheduled', undefined ] });
             regularEvents.map((schedule) => {
                 // Add to task queue
                 tasks++;
@@ -311,7 +311,7 @@ class CalendarDb {
         }
 
         // Get all calendar events and process their schedules
-        var results = calendardb.db(query).get();
+        var results = calendardb.find(query);
         results.map((calendar) => {
             // Add to task queue
             tasks++;
@@ -399,12 +399,12 @@ class CalendarDb {
      * Check for conflicts that would arise if we performed the provided schedule queries. Do this BEFORE adding/editing/deleting records!
      * 
      * @param {?function} callback If provided, will run in queue and function fired when all tasks completed. Otherwise, will return conflicts.
-     * @param {array} queries Array of WWSUdb queries we want to perform on schedule; (insert, update, remove, updateCalendar, or removeCalendar).
+     * @param {array} _queries Array of WWSUdb queries we want to perform on schedule; (insert, update, remove, updateCalendar, or removeCalendar).
      * @param {function} progressCallback Function fired on every task completion. Contains a single parameter with a descriptive string explaining the progress.
      * @returns {?object} If callback not provided, returns conflicts object {additions: [schedule records that should also be added], removals: [schedule records that should also be removed], errors: [strings of error messages for queries that cannot be performed]}
      */
-    checkConflicts (callback = null, queries = [], progressCallback = () => { }) {
-        queries = _.cloneDeep(queries);
+    checkConflicts (callback = null, _queries = [], progressCallback = () => { }) {
+        var queries = _.cloneDeep(_queries);
         console.log(`deep cloned queries`);
         console.dir(queries);
         var tasks = 0;
@@ -412,11 +412,11 @@ class CalendarDb {
 
         // Prepare a copy of the current calendar
         var vcalendar = new WWSUdb(TAFFY());
-        vcalendar.query(_.cloneDeep(this.calendar.db().get()), true);
+        vcalendar.query(this.calendar.find(), true);
 
         // Prepare a copy of the current schedule
         var vschedule = new WWSUdb(TAFFY());
-        vschedule.query(_.cloneDeep(this.schedule.db().get()), true);
+        vschedule.query(this.schedule.find(), true);
 
         // prepare start and end detection
         var start = null;
@@ -556,7 +556,7 @@ class CalendarDb {
 
         var processQuery = (query) => {
             if (typeof query.remove !== 'undefined') {
-                query.remove = vschedule.db({ ID: query.remove }).first();
+                query.remove = vschedule.find({ ID: query.remove }, true);
                 vschedule.query({ remove: query.remove.ID });
             } else {
                 vschedule.query(query);
@@ -698,7 +698,7 @@ class CalendarDb {
 
                         // Now, we need to remove updateCalendar from the query and replace it with all of its schedules as update queries.
                         // That way, we can check all of its schedules for changes in conflicts resulting from changes in calendar defaults.
-                        var schedules = vschedule.db({ calendarID: query.updateCalendar.ID }).get();
+                        var schedules = vschedule.find({ calendarID: query.updateCalendar.ID });
                         queries.splice(index, 1);
                         schedules.map((schedule) => {
                             queries.push({ update: schedule });
@@ -709,7 +709,7 @@ class CalendarDb {
 
                         // Remove the original removeCalendar query as we do not want to process it beyond this map.
                         // We need to add all of the calendar's schedule records as remove queries since they will get removed too.
-                        var schedules = vschedule.db({ calendarID: query.removeCalendar }).get();
+                        var schedules = vschedule.find({ calendarID: query.removeCalendar });
                         queries.splice(index, 1);
                         schedules.map((schedule) => {
                             queries.push({ remove: schedule.ID });
@@ -903,7 +903,7 @@ class CalendarDb {
 
         // If calendarID is provided, we expect it to be a valid calendar ID, otherwise the event is invalid.
         if (event.calendarID) {
-            var calendar = this.calendar.db({ ID: event.calendarID }).first();
+            var calendar = this.calendar.find({ ID: event.calendarID }, true);
             if (!calendar) {
                 return 'The provided calendarID does not exist.';
             } else { // polyfill information
@@ -918,7 +918,7 @@ class CalendarDb {
 
         // If scheduleID is provided, we expect it to be a valid schedule ID, otherwise the event is invalid.
         if (event.scheduleID) {
-            var schedule = this.schedule.db({ ID: event.scheduleID }).first();
+            var schedule = this.schedule.find({ ID: event.scheduleID }, true);
             if (!schedule) {
                 return 'The provided scheduleID does not exist.';
             } else { // polyfill information
@@ -1105,12 +1105,14 @@ class CalendarDb {
     /**
      * Combine a base calendar or schedule record with a modifying schedule record.
      * 
-     * @param {object} calendar The base event or schedule
-     * @param {object} schedule The schedule making modifications to calendar
+     * @param {object} _calendar The base event or schedule
+     * @param {object} _schedule The schedule making modifications to calendar
      * @param {string} eventStart ISO String of the start or original time for the event
      * @returns {object} Modified event
      */
-    processRecord (calendar, schedule, eventStart) {
+    processRecord (_calendar, _schedule, eventStart) {
+        var calendar = _.cloneDeep(_calendar);
+        var schedule = _.cloneDeep(_schedule);
         var criteria = {
             calendarID: schedule.calendarID || calendar.ID, // ID of the main calendar event
             scheduleID: schedule.ID || null, // ID of the schedule record to process
@@ -1168,7 +1170,7 @@ class CalendarDb {
         }
 
         // Attach array of clockwheel segments for this event if there are any
-        criteria.clockwheels = this.clockwheels.db({ unique: criteria.unique }).get();
+        criteria.clockwheels = this.clockwheels.find({ unique: criteria.unique });
 
         // Calculate end time after forming the object because we must refer to criteria.start
         criteria.end = schedule.duration || calendar.duration ? moment(criteria.start).add(schedule.duration || calendar.duration, 'minutes').toISOString(true) : moment(criteria.start).startOf('minute').toISOString(true);
@@ -1370,19 +1372,20 @@ class CalendarDb {
     /**
      * Polyfill missing information in a schedule record from its scheduleID (if applicable) and the calendar event's default properties.
      * 
-     * @param {object} record The schedule database record
+     * @param {object} _record The schedule database record
      * @param {WWSUdb} calendardb If provided, will use this database of calendar events instead of the CalendarDb one.
      * @param {WWSUdb} scheduledb If provided, will use this database of schedules instead of the CalendarDb one.
      * @returns {object} Event, as structured in processRecord.
      */
-    scheduleToEvent (record, calendardb = this.calendar, scheduledb = this.schedule) {
+    scheduleToEvent (_record, calendardb = this.calendar, scheduledb = this.schedule) {
         var tempCal = {};
         var event;
+        var record = _.cloneDeep(_record);
         if (record.calendarID) {
-            var calendar = calendardb.db({ ID: record.calendarID }).first();
+            var calendar = calendardb.find({ ID: record.calendarID }, true);
             tempCal = calendar || {};
             if (record.scheduleID) {
-                var schedule = scheduledb.db({ ID: record.scheduleID }).first();
+                var schedule = scheduledb.find({ ID: record.scheduleID }, true);
             }
             if (schedule) {
                 for (var stuff in schedule) {

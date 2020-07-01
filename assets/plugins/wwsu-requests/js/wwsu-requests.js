@@ -155,7 +155,7 @@ class WWSUrequests extends WWSUdb {
             if (this.table) {
                 this.table.clear();
                 var numRequests = 0;
-                this.db().each((request) => {
+                this.find().forEach((request) => {
                     numRequests++;
                     this.table.row.add([
                         request.ID,

@@ -84,13 +84,13 @@ class WWSUannouncements extends WWSUdb {
                         $('.btn-announcement-delete').unbind('click');
 
                         $('.btn-announcement-edit').click((e) => {
-                            var announcement = this.db().get().find((announcement) => announcement.ID === parseInt($(e.currentTarget).data('id')));
+                            var announcement = this.find().find((announcement) => announcement.ID === parseInt($(e.currentTarget).data('id')));
                             this.showForm(announcement);
                         });
 
                         $('.btn-announcement-delete').click((e) => {
                             var util = new WWSUutil();
-                            var announcement = this.db().get().find((announcement) => announcement.ID === parseInt($(e.currentTarget).data('id')));
+                            var announcement = this.find().find((announcement) => announcement.ID === parseInt($(e.currentTarget).data('id')));
                             util.confirmDialog(`Are you sure you want to <strong>permanently</strong> remove the ${announcement.type} announcement "${announcement.title}"?`, null, () => {
                                 this.remove({ ID: announcement.ID });
                             });
@@ -267,7 +267,7 @@ class WWSUannouncements extends WWSUdb {
         this.animations.add('announcements-update-table', () => {
             if (this.table) {
                 this.table.clear();
-                this.db().each((announcement) => {
+                this.find().forEach((announcement) => {
                     this.table.row.add([
                         announcement.title,
                         announcement.type,

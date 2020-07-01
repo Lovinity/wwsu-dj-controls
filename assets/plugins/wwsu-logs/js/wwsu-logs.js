@@ -96,7 +96,7 @@ class WWSUlogs {
                     'sign-off-problem'
                 ].indexOf(data[ key ].logtype) !== -1) {
                     if (!data[ key ].acknowledged) {
-                        if (this.issues.db({ ID: data[ key ].ID }).get().length > 0) {
+                        if (this.issues.find({ ID: data[ key ].ID }).length > 0) {
                             this.issues.query(data, false);
                             this.events.emitEvent(`issues-${key}`, [ data[ key ] ]);
                         } else {
@@ -420,7 +420,7 @@ class WWSUlogs {
 
             if (this.tables.issues) {
                 this.tables.issues.clear();
-                this.issues.db().each((log) => {
+                this.issues.find().forEach((log) => {
                     this.tables.issues.row.add([
                         log.ID,
                         `<i class="${log.logIcon !== '' ? log.logIcon : `fas fa-dot-circle`} bg-${log.loglevel}" style="border-radius: 50%; font-size: 15px; height: 30px; line-height: 30px; text-align: center; width: 30px;"></i>`,
@@ -432,10 +432,10 @@ class WWSUlogs {
                 this.tables.issues.draw();
 
                 // Notification counters
-                var danger = this.issues.db({ loglevel: 'danger' }).get().length;
-                var orange = this.issues.db({ loglevel: 'orange' }).get().length;
-                var warning = this.issues.db({ loglevel: 'warning' }).get().length;
-                var info = this.issues.db({ loglevel: 'info' }).get().length;
+                var danger = this.issues.find({ loglevel: 'danger' }).length;
+                var orange = this.issues.find({ loglevel: 'orange' }).length;
+                var warning = this.issues.find({ loglevel: 'warning' }).length;
+                var info = this.issues.find({ loglevel: 'info' }).length;
                 this.events.emitEvent(`count`, [ danger, orange, warning, info ]);
             }
         });
@@ -731,7 +731,7 @@ class WWSUlogs {
         this.animations.add('logs-update-dashboard-logs', () => {
             if (this.dashboardLogs) {
                 $(this.dashboardLogs).html('')
-                this.dashboard.db().get()
+                this.dashboard.find()
                     .sort((a, b) => moment(a.createdAt).valueOf() - moment(b.createdAt).valueOf())
                     .map((log) => {
                         $(this.dashboardLogs).prepend(`<div>

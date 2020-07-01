@@ -12,7 +12,9 @@ window.addEventListener('DOMContentLoaded', () => {
         io.sails.url = "https://server.wwsu1069.org";
         io.sails.query = `host=${machineID}`;
         io.sails.reconnectionAttempts = 3;
-        var socket = io.sails.connect()
+        var socket = io.sails.connect();
+        $('#connecting').removeClass('d-none');
+        $('#loading').addClass('d-none');
 
         // WWSU Plugins
         var wwsuutil = new WWSUutil();
@@ -38,6 +40,8 @@ window.addEventListener('DOMContentLoaded', () => {
         var hosts = new WWSUhosts(socket, meta, machineID, window.ipcRenderer.sendSync('get-app-version'), hostReq, directorReq);
         var requests = new WWSUrequests(socket, hosts, hostReq);
         var state = new WWSUstate(socket, hosts, calendar, hostReq);
+        var recipients = new WWSUrecipients(socket, meta, hostReq);
+        var messages = new WWSUmessages(socket, recipients, meta, hosts, null, hostReq);
 
         var disciplineModal;
 
@@ -90,6 +94,7 @@ window.addEventListener('DOMContentLoaded', () => {
         var navigation = new WWSUNavigation();
         navigation.addItem('#nav-dashboard', '#section-dashboard', 'Dashboard - WWSU DJ Controls', '/', true);
         navigation.addItem('#nav-announcements-view', '#section-announcements-view', 'View Announcements - WWSU DJ Controls', '/announcements-view', false);
+        navigation.addItem('#nav-chat', '#section-chat', 'Messages / Chat - WWSU DJ Controls', '/chat', false);
         navigation.addItem('#nav-requests', '#section-requests', 'Track requests - WWSU DJ Controls', '/requests', false);
         navigation.addItem('#nav-report', '#section-report', 'Report a Problem - WWSU DJ Controls', '/report', false);
 
@@ -121,6 +126,9 @@ window.addEventListener('DOMContentLoaded', () => {
         });
         $('#section-logs-date-browse').click(() => {
             logs.showAttendance($('#section-logs-date').val());
+        });
+        $('.chat-recipients').click(() => {
+            recipients.openRecipients();
         });
 
         // Operation click events
@@ -164,6 +172,7 @@ window.addEventListener('DOMContentLoaded', () => {
         logs.initDashboardLogs(`#section-dashboard-logs`);
         api.initApiForm('#section-api-form');
         requests.initTable('#section-requests-table-div', '.nav-icon-requests', '.track-requests');
+        messages.initComponents('.chat-active-recipient', '.chat-status', '.chat-messages', '.chat-form', '.chat-mute', '.chat-ban', '.messages-new-all', '.nav-icon-messages');
 
 
         // CLOCKWHEEL
@@ -398,6 +407,8 @@ window.addEventListener('DOMContentLoaded', () => {
                     eas.init();
                     announcements.init();
                     requests.init();
+                    recipients.init();
+                    messages.init();
                     if (hosts.client.admin) {
                         $('.nav-admin').removeClass('d-none');
                         announcements.initTable('#section-announcements-content');
@@ -909,7 +920,7 @@ window.addEventListener('DOMContentLoaded', () => {
      */
     function processEas (db) {
         //if (hosts.isHost)
-            eas.displayAlerts();
+        eas.displayAlerts();
 
         var globalEas = 5;
 
@@ -1196,6 +1207,61 @@ window.addEventListener('DOMContentLoaded', () => {
     })
     djs.on('remove', (query, db) => {
         djs.updateTable();
+    })
+
+
+
+
+    /*
+        RECIPIENTS FUNCTIONS
+    */
+
+
+
+
+    recipients.on('replace', (db) => {
+        messages.updateRecipientsTable();
+    })
+    recipients.on('insert', (query, db) => {
+        messages.updateRecipientsTable();
+    })
+    recipients.on('update', (query, db) => {
+        messages.updateRecipientsTable();
+    })
+    recipients.on('remove', (query, db) => {
+        messages.updateRecipientsTable();
+    })
+    recipients.on('recipientChanged', (recipient) => {
+        messages.changeRecipient(recipient);
+    });
+
+
+
+
+    /*
+        MESSAGES FUNCTIONS
+    */
+
+
+
+
+    messages.on('replace', (db) => {
+        messages.updateRecipient();
+        messages.updateRecipientsTable();
+    })
+    messages.on('insert', (query, db) => {
+        messages.updateRecipient();
+        messages.updateRecipientsTable();
+    })
+    messages.on('update', (query, db) => {
+        messages.updateRecipient();
+        messages.updateRecipientsTable();
+    })
+    messages.on('remove', (query, db) => {
+        messages.read = messages.read.filter((value) => value !== query);
+        messages.notified = messages.notified.filter((value) => value !== query);
+        messages.updateRecipient();
+        messages.updateRecipientsTable();
     })
 
 });

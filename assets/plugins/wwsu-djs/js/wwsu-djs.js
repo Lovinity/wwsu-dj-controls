@@ -93,7 +93,7 @@ class WWSUdjs extends WWSUdb {
                     "order": [ [ 0, "asc" ] ],
                     pageLength: 10
                 });
-                this.db().each((dj) => {
+                this.find().forEach((dj) => {
                     table.rows.add([ [
                         dj.name || 'Unknown',
                         dj.fullName || 'Unknown',
@@ -120,7 +120,7 @@ class WWSUdjs extends WWSUdb {
         this.newDjModal.body = ``;
         this.newDjModal.iziModal('open');
 
-        var _djs = this.db().get().map((dj) => dj.name);
+        var _djs = this.find().map((dj) => dj.name);
 
         $(this.newDjModal.body).alpaca({
             "schema": {
@@ -395,23 +395,23 @@ class WWSUdjs extends WWSUdb {
                         $('.btn-dj-delete').unbind('click');
 
                         $('.btn-dj-analytics').click((e) => {
-                            var dj = this.db().get().find((dj) => dj.ID === parseInt($(e.currentTarget).data('id')));
+                            var dj = this.find().find((dj) => dj.ID === parseInt($(e.currentTarget).data('id')));
                             this.showDJAnalytics(dj);
                         });
 
                         $('.btn-dj-logs').click((e) => {
-                            var dj = this.db().get().find((dj) => dj.ID === parseInt($(e.currentTarget).data('id')));
+                            var dj = this.find().find((dj) => dj.ID === parseInt($(e.currentTarget).data('id')));
                             this.showDJLogs(dj);
                         });
 
                         $('.btn-dj-edit').click((e) => {
-                            var dj = this.db().get().find((dj) => dj.ID === parseInt($(e.currentTarget).data('id')));
+                            var dj = this.find().find((dj) => dj.ID === parseInt($(e.currentTarget).data('id')));
                             this.showDJForm(dj);
                         });
 
                         $('.btn-dj-delete').click((e) => {
                             var util = new WWSUutil();
-                            var dj = this.db().get().find((dj) => dj.ID === parseInt($(e.currentTarget).data('id')));
+                            var dj = this.find().find((dj) => dj.ID === parseInt($(e.currentTarget).data('id')));
                             util.confirmDialog(`Are you sure you want to <strong>permanently</strong> remove the DJ "${dj.name}"?
                             <ul>
                             <li><strong>Do NOT permanently remove a DJ until you no longer need their analytics, and they are no longer with WWSU and will not be returning.</strong></li>
@@ -445,7 +445,7 @@ class WWSUdjs extends WWSUdb {
         this.animations.add('djs-update-table', () => {
             if (this.table) {
                 this.table.clear();
-                this.db().each((dj) => {
+                this.find().forEach((dj) => {
                     var icon = `secondary`;
                     if (!dj.lastSeen || moment(dj.lastSeen).add(30, 'days').isBefore(moment())) {
                         icon = `danger`
