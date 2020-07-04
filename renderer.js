@@ -37,6 +37,7 @@ window.addEventListener('DOMContentLoaded', () => {
         var subscriptions = new WWSUsubscriptions(socket, noReq);
         var meta = new WWSUMeta(socket, noReq);
         var api = new WWSUapi(noReq, hostReq, djReq, directorReq, adminDirectorReq);
+        var discipline = new WWSUdiscipline(socket, noReq, directorReq);
         var hosts = new WWSUhosts(socket, meta, machineID, window.ipcRenderer.sendSync('get-app-version'), hostReq, directorReq);
         var requests = new WWSUrequests(socket, hosts, hostReq);
         var state = new WWSUstate(socket, hosts, calendar, hostReq);
@@ -396,7 +397,7 @@ window.addEventListener('DOMContentLoaded', () => {
         $('#content').removeClass('d-none');
         socket._raw.io._reconnectionAttempts = Infinity;
 
-        checkDiscipline(() => {
+        discipline.checkDiscipline(() => {
             hosts.get((success) => {
                 if (success === 1) {
                     directors.init();
@@ -739,55 +740,6 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
-
-
-
-    /*
-        DISCIPLINE CHECK
-    */
-
-
-
-
-    /**
-     * Check if this client has an active discipline on WWSU's API, and if so, display the #modal-discipline.
-     * 
-     * @param {function} cb Callback executed if user is not under a discipline
-     */
-    function checkDiscipline (cb) {
-        socket.post('/discipline/get-web', {}, function serverResponded (body) {
-            try {
-                var docb = true
-                if (body.length > 0) {
-                    body.map((discipline) => {
-                        var activeDiscipline = (discipline.active && (discipline.action !== 'dayban' || moment(discipline.createdAt).add(1, 'days').isAfter(moment())))
-                        if (activeDiscipline) { docb = false }
-                        if (activeDiscipline || !discipline.acknowledged) {
-                            $('#modal-discipline-title').html(`Disciplinary action ${activeDiscipline ? `active against you` : `was issued in the past against you`}`);
-                            $('#modal-discipline-body').html(`<p>On ${moment(discipline.createdAt).format('LLL')}, disciplinary action was issued against you for the following reason: ${discipline.message}.</p>
-                <p>${activeDiscipline ? `A ${discipline.action} is currently active, and you are not allowed to use WWSU's services at this time.` : `The discipline has expired, but you must acknowledge this message before you may use WWSU's services. Further issues may warrant more severe disciplinary action.`}</p>
-                <p>Please contact gm@wwsu1069.org if you have any questions or concerns.</p>`);
-                            $('#modal-discipline').modal({ backdrop: 'static', keyboard: false });
-                        }
-                    })
-                }
-                if (docb) {
-                    cb()
-                }
-            } catch (e) {
-                console.error(e);
-                $(document).Toasts('create', {
-                    class: 'bg-danger',
-                    title: 'Error checking discipline',
-                    body: 'There was an error checking to see if you are allowed to access WWSU. Please try again later, or contact the engineer if this problem continues.',
-                    autoHide: true,
-                    delay: 10000,
-                    icon: 'fas fa-skull-crossbones fa-lg',
-                })
-            }
-        })
-    }
-
 
 
 

@@ -767,7 +767,10 @@ class WWSUmodal {
   }
 
   set title (value) {
-    $(`#modal-${this.id}-title`).html(value);
+    var util = new WWSUutil();
+    util.waitForElement(`#modal-${this.id}-title`, () => {
+      $(`#modal-${this.id}-title`).html(value);
+    });
   }
 
   get body () {
@@ -775,7 +778,10 @@ class WWSUmodal {
   }
 
   set body (value) {
-    $(`#modal-${this.id}-body`).html(value);
+    var util = new WWSUutil();
+    util.waitForElement(`#modal-${this.id}-body`, () => {
+      $(`#modal-${this.id}-body`).html(value);
+    });
   }
 
   get footer () {
@@ -783,7 +789,19 @@ class WWSUmodal {
   }
 
   set footer (value) {
-    $(`#modal-${this.id}-footer`).html(value);
+    var util = new WWSUutil();
+    util.waitForElement(`#modal-${this.id}-footer`, () => {
+      $(`#modal-${this.id}-footer`).html(value);
+    });
+  }
+
+  addEvent (event, fn) {
+    var util = new WWSUutil();
+    util.waitForElement(`#modal-${this.id}`, () => {
+      $(document).on(event, `#modal-${this.id}`, function (e) {
+        fn(e);
+      });
+    });
   }
 
   iziModal (query) {
