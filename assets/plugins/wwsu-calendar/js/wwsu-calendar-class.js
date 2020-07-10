@@ -1,15 +1,23 @@
-/* global CalendarDb */
-
-// This class manages the calendar from WWSU's sockets.
+/**
+ * This class extends CalendarDb to use WWSU's calendar API and build the calendar interface.
+ * @requires WWSUutil WWSU utility class
+ * @requires CalendarDb Base WWSU calendar class for processing data into calendar events
+ * @requires WWSUmodal iziModal wrapper
+ * @requires EventEmitter event emitter for JS browsers
+ * @requires $ jQuery
+ * @requires $.block jQuery blockUI
+ * @requires $.DataTable DataTables.js
+ * @requires $.alpaca Alpaca forms custom WWSU build
+ */
 class WWSUcalendar extends CalendarDb {
 
     /**
      * Create the calendar class.
      * 
-     * @param {sails.io} socket 
+     * @param {sails.io} socket Socket connection to WWSU.
      * @param {WWSUreq} noReq WWSU request with no authorization
      * @param {WWSUreq} directorReq WWSU request with director authorization
-     * @param {WWSUreq} djReq WWSU request with DJ authorization
+     * @param {WWSUreq} djReq WWSU request with DJ authorization if using the DJ panel.
      */
     constructor(socket, noReq, directorReq, djReq) {
         super(); // Create the db
@@ -185,13 +193,17 @@ class WWSUcalendar extends CalendarDb {
      * Generate a simple DataTables.js table of the events in the system and have edit/delete links
      */
     showSimpleEvents () {
+        // Initialize the table class
         this.eventsModal.body = `<table id="modal-${this.eventsModal.id}-table" class="table table-striped" style="min-width: 100%;"></table>`;
         this.eventsModal.iziModal('open');
+
+        // Block the modal while we generate the table
         $(`#modal-${this.eventsModal.id}`).block({
             message: '<h1>Loading...</h1>',
             css: { border: '3px solid #a00' },
             timeout: 30000,
             onBlock: () => {
+                // Generate the data table
                 var table = $(`#modal-${this.eventsModal.id}-table`).DataTable({
                     paging: false,
                     data: [],
@@ -203,20 +215,24 @@ class WWSUcalendar extends CalendarDb {
                     "order": [ [ 0, "asc" ], [ 1, "asc" ] ],
                     pageLength: 25,
                     drawCallback: () => {
+
                         // Action button click events
                         $('.btn-event-edit').unbind('click');
                         $('.btn-event-editschedule').unbind('click');
                         $('.btn-event-delete').unbind('click');
 
+                        // Edit event
                         $('.btn-event-edit').click((e) => {
                             var event = this.calendar.find().find((event) => event.ID === parseInt($(e.currentTarget).data('calendarid')));
                             this.showEventForm(event);
                         });
 
+                        // Edit event's schedules
                         $('.btn-event-editschedule').click((e) => {
                             this.showSchedules(parseInt($(e.currentTarget).data('calendarid')));
                         });
 
+                        // Confirm before deleting when someone wants to delete an event
                         $('.btn-event-delete').click((e) => {
                             var util = new WWSUutil();
                             var event = this.calendar.find().find((event) => event.ID === parseInt($(e.currentTarget).data('calendarid')));
@@ -238,6 +254,8 @@ class WWSUcalendar extends CalendarDb {
                         });
                     }
                 });
+
+                // Populate the data table with data.
                 var drawRows = () => {
                     this.calendar.find().forEach((calendar) => {
                         table.rows.add([ [
@@ -262,14 +280,24 @@ class WWSUcalendar extends CalendarDb {
         });
     }
 
+    /**
+     * Open a dataTables.js modal with the schedules for the provided calendar event.
+     * 
+     * @param {number} calendarID Calendar event ID
+     */
     showSchedules (calendarID) {
+
+        // Initialize the table
         this.schedulesModal.body = `<table id="modal-${this.schedulesModal.id}-table" class="table table-striped" style="min-width: 100%;"></table>`;
         this.schedulesModal.iziModal('open');
+
+        // Block the modal while we populate
         $(`#modal-${this.schedulesModal.id}`).block({
             message: '<h1>Loading...</h1>',
             css: { border: '3px solid #a00' },
             timeout: 30000,
             onBlock: () => {
+                // Generate the table
                 var table = $(`#modal-${this.schedulesModal.id}-table`).DataTable({
                     scrollCollapse: true,
                     paging: false,
@@ -284,11 +312,14 @@ class WWSUcalendar extends CalendarDb {
                         $('.btn-schedule-edit').unbind('click');
                         $('.btn-schedule-delete').unbind('click');
 
+                        // Edit a schedule
                         $('.btn-schedule-edit').click((e) => {
                             var schedule = this.schedule.find({ ID: parseInt($(e.currentTarget).data('scheduleid')) }, true);
                             var calendarID = parseInt($(e.currentTarget).data('calendarid'));
                             this.showScheduleForm(schedule, calendarID);
                         });
+
+                        // Prompt before deleting a schedule
                         $('.btn-schedule-delete').click((e) => {
                             var util = new WWSUutil();
                             util.confirmDialog(`<p>Are you sure you want to delete that schedule?</p>
@@ -310,6 +341,8 @@ class WWSUcalendar extends CalendarDb {
                         });
                     }
                 });
+
+                // Populate the table with data
                 var drawRows = () => {
                     this.schedule.find({ calendarID: calendarID }).forEach((schedule) => {
                         // Skip all schedule entries that are unauthorized or specify an update/cancellation; these should be managed via the calendar.
@@ -574,12 +607,12 @@ class WWSUcalendar extends CalendarDb {
     }
 
     /**
-  * Tell WWSU API to edit a calendar event.
-  * 
-  * @param {WWSUmodal} modal Modal to get blocked by JQuery UI when prompting for authorization.
-  * @param {object} data Data to pass to the endpoint.
-  * @param {function} cb Function called after the request. True = success, false = failure.
-  */
+     * Tell WWSU API to edit a calendar event.
+     * 
+     * @param {WWSUmodal} modal Modal to get blocked by JQuery UI when prompting for authorization.
+     * @param {object} data Data to pass to the endpoint.
+     * @param {function} cb Function called after the request. True = success, false = failure.
+     */
     editCalendar (modal, data, cb) {
         // Editing a calendar event requires conflict checking because it may affect the priority of its schedules using default values.
         this.doConflictCheck(modal, data, 'updateCalendar', () => {
@@ -679,22 +712,23 @@ class WWSUcalendar extends CalendarDb {
         this.occurrenceModal.title = `${event.type}: ${event.hosts} - ${event.name}`;
         this.occurrenceModal.body = this.generateFullEventCard(event);
 
-        // Generate actions to perform on the event
         // Initialize utilities
         var util = new WWSUutil();
 
-        // Initialize choices
+        // Initialize choices / actions that can be performed on the event.
         var choices = [ 'Do Nothing' ];
+
+        // Determine what else can be done
         if (event.scheduleType === 'updated') {
             choices.push(`Occurrence: Reverse / discard changes`);
         }
         if (event.scheduleType === 'canceled') {
             choices.push(`Occurrence: Un-cancel`);
         }
-        if ([ 'canceled', 'canceled-system', 'unscheduled' ].indexOf(event.scheduleType) === -1) {
+        if ([ 'canceled', 'canceled-system', 'canceled-changed', 'unscheduled' ].indexOf(event.scheduleType) === -1) {
             choices.push(`Occurrence: Cancel`);
         }
-        if ([ 'canceled', 'canceled-system', 'unscheduled', 'updated', 'updated-system' ].indexOf(event.scheduleType) === -1) {
+        if ([ 'canceled', 'canceled-system', 'canceled-changed', 'unscheduled', 'updated', 'updated-system' ].indexOf(event.scheduleType) === -1) {
             choices.push(`Occurrence: Edit and/or reschedule`);
         }
         choices.push(`Event Schedules: Add / Edit / Delete`);
@@ -728,14 +762,17 @@ class WWSUcalendar extends CalendarDb {
                         "submit": {
                             "title": "Perform Action",
                             "click": (form, e) => {
+
                                 form.refreshValidationState(true);
                                 if (!form.isValid(true)) {
                                     form.focus();
                                     return;
                                 }
                                 var value = form.getValue();
-                                switch (value.action) {
 
+                                // Determine what to do based on selected action
+                                switch (value.action) {
+                                    // Confirm whether or not to reverse schedule changes
                                     case `Occurrence: Reverse / discard changes`:
                                         util.confirmDialog(`<p>Are you sure you want to reverse updates made for ${event.type}: ${event.name} on ${moment(event.start).format('LLLL')}?</p>
                                         <ul>
@@ -753,6 +790,7 @@ class WWSUcalendar extends CalendarDb {
                                         });
                                         break;
 
+                                    // Confirm whether or not to reverse a cancellation
                                     case `Occurrence: Un-cancel`:
                                         util.confirmDialog(`<p>Are you sure you want to reverse the cancellation of ${event.type}: ${event.name} on ${moment(event.start).format('LLLL')}?</p>
                                         <ul>
@@ -770,6 +808,7 @@ class WWSUcalendar extends CalendarDb {
                                         });
                                         break;
 
+                                    // Confirm whether or not to permanently remove an event
                                     case `Event: Delete (and all schedules)`:
                                         util.confirmDialog(`<p>Are you sure you want to <b>permanently</b> remove ${event.type}: ${event.name}?</p>
                                         <ul>
@@ -793,7 +832,7 @@ class WWSUcalendar extends CalendarDb {
                                         break;
 
                                     case `Event: Edit defaults`:
-                                        var _calendar = this.calendar.find().find((_event) => event.ID === event.calendarID);
+                                        var _calendar = this.calendar.find().find((_event) => _event.ID === event.calendarID);
                                         this.showEventForm(_calendar);
                                         break;
 
@@ -817,17 +856,20 @@ class WWSUcalendar extends CalendarDb {
     }
 
     /**
-     * Generate HTML to view a full event
+     * Generate HTML card to view a full event
      * 
      * @param {object} event Event as generated from calendardb.processRecord
      * @returns {string} HTML of the card
      */
     generateFullEventCard (event) {
+        // Get color and icon for the event
         var colorClass = this.getColorClass(event);
         var iconClass = this.getIconClass(event);
 
+        // Use dark color instead if this event was canceled
         if ([ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) !== -1) { colorClass = 'dark' }
 
+        // Determine if we should show a badge indicating a changed status of the event
         var badgeInfo
         if ([ 'canceled-changed' ].indexOf(event.scheduleType) !== -1) {
             badgeInfo = `<span class="badge-warning" style="font-size: 1em;">RESCHEDULED</span>`
@@ -855,7 +897,7 @@ class WWSUcalendar extends CalendarDb {
         ${event.scheduleReason !== null ? `<p><strong>${event.scheduleReason}</strong></p>` : ``}
       </li>` : ``}
         <li class="list-group-item text-center">
-            <b>${[ 'canceled', 'canceled-system', 'canceled-updated' ].indexOf(event.scheduleType) !== -1 ? `Original Time: ` : ``}${moment(event.start).format('lll')} - ${moment(event.end).format('hh:mm A')}</b>
+            <b>${[ 'canceled', 'canceled-system', 'canceled-changed' ].indexOf(event.scheduleType) !== -1 ? `Original Time: ` : ``}${moment(event.start).format('lll')} - ${moment(event.end).format('hh:mm A')}</b>
         </li>
         <li class="list-group-item">
         ${event.banner !== null ? `<img class="img-fluid" src="https://server.wwsu1069.org/uploads/calendar/banner/${event.banner}" alt="Show Banner">` : ``}
@@ -881,6 +923,7 @@ class WWSUcalendar extends CalendarDb {
         this.occurrenceActionModal.footer = ``;
         this.occurrenceActionModal.body = ``;
 
+        // Generate form
         $(this.occurrenceActionModal.body).alpaca({
             "schema": {
                 "type": "object",
@@ -910,6 +953,8 @@ class WWSUcalendar extends CalendarDb {
                                     return;
                                 }
                                 var value = form.getValue();
+
+                                // Confirm if we want to really cancel
                                 util.confirmDialog(`<p>Are you sure you want to cancel ${event.type}: ${event.hosts} - ${event.name} on ${moment(event.start).format("LLLL")}?</p>
                                         <ul>
                                             <li>Please <strong>do not</strong> cancel occurrences to make room to schedule other events; scheduling the other event will automatically make adjustments as necessary and reverse the changes should the other event get canceled.</li>
@@ -955,11 +1000,13 @@ class WWSUcalendar extends CalendarDb {
         this.eventModal.footer = ``;
         this.eventModal.body = ``;
 
+        // We need to get the events and playlists we can choose from
         this.getEventsPlaylists((events, playlists) => {
             var _djs = this.requests.dj.db.find();
 
-            var calendarEvents = this.calendar.find().map((event) => event.name);
+            var calendarEvents = this.calendar.find().map((_event) => _event.name);
 
+            // Generate the form
             $(this.eventModal.body).alpaca({
                 "schema": {
                     "title": "Default Event Properties",
@@ -1140,7 +1187,9 @@ class WWSUcalendar extends CalendarDb {
                                         return;
                                     }
                                     var value = form.getValue();
-                                    var _event = this.verify(value);
+
+                                    var _event = this.verify(value); // Verify the event is valid first just to be extra sure
+
                                     if (!_event.event) {
                                         $(document).Toasts('create', {
                                             class: 'bg-warning',
@@ -1152,6 +1201,8 @@ class WWSUcalendar extends CalendarDb {
                                         form.focus();
                                         return;
                                     }
+
+                                    // Add/edit the event
                                     if (event) {
                                         value.ID = event.ID;
                                         this.editCalendar(this.eventModal, value, (success) => {
@@ -1194,6 +1245,7 @@ class WWSUcalendar extends CalendarDb {
         var validTypes = [];
         var util = new WWSUutil();
 
+        // Limit the types we can switch to for this occurrence depending on the type of the original event.
         switch (event.type) {
             case 'show':
             case 'remote':
@@ -1219,14 +1271,17 @@ class WWSUcalendar extends CalendarDb {
                 break;
         }
 
+        // Get events and playlist we can select
         this.getEventsPlaylists((events, playlists) => {
             var _djs = this.requests.dj.db.find();
 
             var calendarEvents = this.calendar.find().map((event) => event.name);
+
             var sportsEvents = this.calendar.find()
                 .filter((event) => event.type === 'sports')
                 .map((event) => event.name);
 
+            // Generate form
             $(this.occurrenceActionModal.body).alpaca({
                 "schema": {
                     "title": "Properties for this occurrence only",
@@ -1356,8 +1411,9 @@ class WWSUcalendar extends CalendarDb {
                                     });
                                     return;
                                 }
-                                value = value.split(" vs.")[ 0 ];
+
                                 var type = this.getParent().childrenByPropertyId[ "type" ].getValue();
+                                if (event.type === 'sports') value = value.split(" vs.")[ 0 ];
                                 if ((((!type || type === '') && event.type === 'sports') || type === 'sports') && sportsEvents.indexOf(value) === -1) {
                                     callback({
                                         "status": false,
@@ -1469,7 +1525,8 @@ class WWSUcalendar extends CalendarDb {
                                         return;
                                     }
                                     var value = form.getValue();
-                                    var _event = this.verify(value);
+
+                                    var _event = this.verify(value); // Verify the event just to be safe
                                     if (!_event.event) {
                                         $(document).Toasts('create', {
                                             class: 'bg-warning',
@@ -1481,6 +1538,8 @@ class WWSUcalendar extends CalendarDb {
                                         form.focus();
                                         return;
                                     }
+
+                                    // Confirm if we really want to edit
                                     util.confirmDialog(`<p>Are you sure you want to edit occurrence ${event.type}: ${event.hosts} - ${event.name} on ${moment(event.start).format("LLLL")}?</p>
                                         <ul>
                                             <li>Changes will only apply to the event's original occurrence of ${moment(event.start).format("LLLL")}.</li>
@@ -1530,6 +1589,7 @@ class WWSUcalendar extends CalendarDb {
         var validTypes = [];
         var util = new WWSUutil();
 
+        // Limit the types we can change to depending on the main event type.
         switch (event.type) {
             case 'show':
             case 'remote':
@@ -1555,6 +1615,7 @@ class WWSUcalendar extends CalendarDb {
                 break;
         }
 
+        // Get the events and playlists we can select from
         this.getEventsPlaylists((events, playlists) => {
             var _djs = this.requests.dj.db.find();
 
@@ -1563,6 +1624,7 @@ class WWSUcalendar extends CalendarDb {
                 .filter((event) => event.type === 'sports')
                 .map((event) => event.name);
 
+            // Generate form
             $(this.scheduleModal.body).alpaca({
                 "schema": {
                     "title": "Schedule",
@@ -1836,7 +1898,7 @@ class WWSUcalendar extends CalendarDb {
                                     });
                                     return;
                                 }
-                                value = value.split(" vs.")[ 0 ];
+                                if (event.type === 'sports') value = value.split(" vs.")[ 0 ];
                                 var type = this.getParent().childrenByPropertyId[ "type" ].getValue();
                                 if ((((!type || type === '') && event.type === 'sports') || type === 'sports') && sportsEvents.indexOf(event.name) === -1 && sportsEvents.indexOf(value) === -1) {
                                     callback({
@@ -1950,12 +2012,13 @@ class WWSUcalendar extends CalendarDb {
                                     }
                                     var value = form.getValue();
 
+                                    // Map recurring rules to an array
                                     value.recurDM = value.recurDM.map((val) => val.value);
                                     value.recurWM = value.recurWM.map((val) => val.value);
                                     value.recurDW = value.recurDW.map((val) => val.value);
                                     value.recurH = value.recurH.map((val) => val.value);
-                                    console.dir(value);
-                                    var _event = this.verify(value);
+
+                                    var _event = this.verify(value); // Verify the event just to be safe
                                     if (!_event.event) {
                                         $(document).Toasts('create', {
                                             class: 'bg-warning',
@@ -1968,6 +2031,7 @@ class WWSUcalendar extends CalendarDb {
                                         return;
                                     }
 
+                                    // Add or edit the schedule
                                     if (!schedule) {
                                         this.addSchedule(this.scheduleModal, value, (success) => {
                                             if (success) {

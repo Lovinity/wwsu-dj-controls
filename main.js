@@ -52,6 +52,8 @@ function createWindow () {
     calendarWindow.close()
     calendarWindow = null
   })
+
+  mainWindow.on('focus', () => mainWindow.flashFrame(false))
 }
 
 function createCalendarWindow () {
@@ -144,7 +146,7 @@ ipcMain.on('calendar', (event, arg) => {
 // Flash the icon in the taskbar
 ipcMain.on('flashMain', (event, arg) => {
   try {
-    mainWindow.flashFrame(true)
+    mainWindow.flashFrame(arg)
   } catch (e) {
     console.error(e);
   }

@@ -1,5 +1,5 @@
 // This class manages messages/chat from a host level
-// NOTE: event also supports 'flashNewMessage' emitted when a new message is notified and the app should flash the taskbar.
+// NOTE: event also supports 'newMessage' emitted when a new message is received that should be notified.
 
 class WWSUmessages extends WWSUdb {
 
@@ -255,8 +255,7 @@ class WWSUmessages extends WWSUdb {
                     // Notify new messages
                     if (!this.firstLoad && this.notified.indexOf(message.ID) === -1) {
                         this.notified.push(message.ID);
-                        this.events.emitEvent('flashNewMessage', [ message ]);
-
+                        this.events.emitEvent('newMessage', [ message ]);
                     }
                 }
             });
@@ -278,6 +277,7 @@ class WWSUmessages extends WWSUdb {
             $(this.menuNew).addClass(`badge-danger`);
             $(this.menuIcon).addClass(`nav-icon-flash-success`);
         }
+        this.firstLoad = false;
     }
 
     /**

@@ -447,7 +447,7 @@
             <li class="nav-item">
               <a href="#" class="nav-link" id="nav-dashboard"
                 title="View the clockwheel, announcements / reported problems, and broadcast log.">
-                <i class="nav-icon nav-icon-dashboard fas fa-newspaper"></i>
+                <i class="nav-icon nav-icon-dashboard fas fa-lightbulb"></i>
                 <p>
                   Dashboard
                 </p>
@@ -476,6 +476,15 @@
                 <i class="nav-icon nav-icon-requests fas fa-record-vinyl"></i>
                 <p>
                   Track Requests <span class="badge badge-secondary right track-requests">0</span>
+                </p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" id="nav-news"
+                title="View local weather conditions and forecast, and read local and national news.">
+                <i class="nav-icon nav-icon-news fas fa-newspaper"></i>
+                <p>
+                  Weather / News
                 </p>
               </a>
             </li>
@@ -833,6 +842,7 @@
       </div>
     </section>
 
+    <!--Chat--->
     <section id="section-chat">
       <div class="content-wrapper" style="padding-top: 8em;">
         <div class="content-header">
@@ -913,6 +923,129 @@
           </div>
         </div>
       </div>
+    </section>
+
+    <section id="section-news">
+      <div class="content-wrapper" style="padding-top: 8em;">
+        <!-- Content Header (Page header) -->
+        <div class="content-header">
+          <div class="container-fluid">
+            <div class="row mb-2">
+              <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Weather / News</h1>
+              </div><!-- /.col -->
+            </div><!-- /.row -->
+          </div><!-- /.container-fluid -->
+        </div>
+        <!-- /.content-header -->
+
+        <!-- Main content -->
+        <div class="content">
+
+          <div class="card card-info elevation-2">
+            <div class="card-header">
+              <h3 class="card-title">Wright State University weather</h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+
+              <div class="row">
+                <div class="col-12">
+                  <div class="card card-widget widget-user-2"
+                    title="Current weather conditions at Wright State University.">
+                    <div class="widget-user-header bg-primary" style="min-height: 96px;">
+                      <div class="widget-user-image">
+                        <div class="text-white weather-current-icon" style="font-size: 3em; position: absolute;"><i
+                            class="fas fa-question"></i></div>
+                      </div>
+                      <!-- /.widget-user-image -->
+                      <div class="widget-user-desc">
+                        <ul>
+                          <li>Summary:      <span class="weather-current-summary text-warning"></span></li>
+                          <li>Temperature:  <span class="weather-current-temperature text-warning"></span> (feels like <span class="weather-current-feelslike text-warning"></span>)</li>
+                          <li>Wind:         From the <span class="weather-current-winddirection text-warning"></span> at <span class="weather-current-windspeed text-warning"></span> (gusts to <span class="weather-current-windgust text-warning"></span>)</li>
+                          <li>Humidity:     <span class="weather-current-humidity text-warning"></span> (Dew point <span class="weather-current-dewpoint text-warning"></span>)</li>
+                          <li>Visibility:   <span class="weather-current-visibility text-warning"></span></li>
+                          <li>UV Index:     <span class="weather-current-uvindex text-warning"></span></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <div class="card card-widget bg-gray" title="Hourly forecast for the next 48 hours.">
+                    <div class="text-white" style="width: 100%; text-align: center;">
+                      <h3 style="font-size: 1.5em;"><strong>Forecast next 24 hours (via Darksky)</strong></h3>
+                    </div>
+                    <div class="weather-hourly-graph" style="width: 100%; height: 4em;">
+                    </div>
+                    <div>
+                      <span style="color: #ffffff;" class="m-1">Key:</span>
+
+                      <span style="color: #F8E187; padding-left: 1em; font-size: 1em;">Clear </span>
+
+                      <span style="color: #F8E187; font-size: 1em;"><i class="fas fa-sun"
+                          style="color: #ffffff;"></i></span>
+                      <span style="color: #F8E187; font-size: 1em;"><i class="fas fa-cloud-sun"
+                          style="color: #ffffff;"></i></span>
+                      <span style="color: #F8E187; font-size: 1em;"><i class="fas fa-cloud" style="color: #ffffff;"></i>
+                        Cloudy</span>
+
+                      <span style="color: #99CBED; padding-left: 1em; font-size: 1em;">Rain Possible </span>
+
+                      <span style="color: #99CBED; font-size: 1em;"><i class="fas fa-cloud-sun-rain"
+                          style="color: #ffffff;"></i></span>
+                      <span style="color: #99CBED; font-size: 1em;"><i class="fas fa-cloud-showers-heavy"
+                          style="color: #ffffff;"></i></span>
+                      <span style="color: #99CBED; font-size: 1em;"><i class="fas fa-cloud-rain"
+                          style="color: #ffffff;"></i> Rain Likely</span>
+
+                      <span style="color: #F8F8F8; padding-left: 1em; font-size: 1em;">Snow Possible </span>
+
+                      <span style="color: #F8F8F8; font-size: 1em;"><i class="far fa-snowflake"
+                          style="color: #ffffff;"></i></span>
+                      <span style="color: #F8F8F8; font-size: 1em;"><i class="fas fa-snowflake"
+                          style="color: #ffffff;"></i></span>
+                      <span style="color: #F8F8F8; font-size: 1em;"><i class="fas fa-snowman"
+                          style="color: #ffffff;"></i> Snow Likely</span>
+
+                      <span style="color: #F78EB4; padding-left: 1em; font-size: 1em;">Sleet Possible </span>
+
+                      <span style="color: #F78EB4; font-size: 1em;"><i class="fas fa-icicles"
+                          style="color: #ffffff;"></i></span>
+                      <span style="color: #F78EB4; font-size: 1em;"><i class="fas fa-igloo" style="color: #ffffff;"></i>
+                        Sleet Likely</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Top row of numbers -->
+              <div class="row">
+
+                <div class="col-lg-4 col-md-6 col-12">
+                  <div class="small-box bg-gray eas-global-color"
+                    title="Level of the most severe EAS/weather alert in effect for the WWSU EAS coverage area (Greene OH, Clark OH, Montgomery OH). Click more info to see what alerts are in effect and for what counties.">
+                    <div class="inner">
+                      <h3 class="eas-global">???</h3>
+
+                      <p>Emergency Alerts</p>
+                    </div>
+                    <div class="icon">
+                      <i class="fas fa-bolt"></i>
+                    </div>
+                    <a href="#" class="small-box-footer eas-more">
+                      More info <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- /.card-body -->
+          </div>
+
+        </div>
     </section>
 
     <!-- Report a problem page -->

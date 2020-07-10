@@ -1,6 +1,6 @@
-// Require libraries if necessary. Because this script runs both in browser and in node, we need to cover both methods of including scripts.
+// This is intended for Node.js ONLY; use wwsu calendar web for web browsers.
 
-// Node require
+// Node require libraries
 if (typeof require !== 'undefined') {
     if (typeof TAFFY === 'undefined') {
         var TAFFY = require('../../taffy/js/taffy-min.js').taffy;
@@ -27,23 +27,35 @@ if (typeof require !== 'undefined') {
     }
 
 } else if (typeof TAFFY === 'undefined' || typeof WWSUdb === 'undefined' || typeof WWSUqueue === 'undefined' || typeof later === 'undefined' || typeof moment === 'undefined' || typeof _ === 'undefined') {
-    console.error(new Error('wwsu-calendar requires TAFFY, WWSUdb, WWSUqueue, later, and moment. However, neither node.js require() nor JQuery were available to require the scripts.'));
+    console.error(new Error('wwsu-calendar requires TAFFY, WWSUdb, WWSUqueue, later, lodash, and moment. However, neither node.js require() nor JQuery were available to require the scripts.'));
 }
 
-// Use local time instead of UTC for scheduling
+// Later.js: Use local time instead of UTC for scheduling
 later.date.localTime()
 
-// Class to manage calendar events for WWSU
+/**
+ * Class to manage calendar events for WWSU.
+ * Note: We do not extend WWSUdb here because CalendarDb has 3 separate databases to maintain.
+ * 
+ * @requires TAFFY TAFFYDB
+ * @requires WWSUdb Wrapper for TAFFYDB
+ * @requires WWSUqueue Event queue
+ * @requires later later.js recurring schedule management
+ * @requires moment Moment.js date/time management
+ * @requires _ lodash utilities
+ */
 class CalendarDb {
 
     /**
-     * Construct the calendar database
+     * Construct the calendar database.
      * 
-     * @param {?array} calendar Array of calendar entries to initialize with.
-     * @param {?array} schedule Array of schedule entries to initialize with.
-     * @param {?array} clockwheels Array of clockwheel records to initialize with.
+     * @param {array} calendar Array of calendar entries to initialize with.
+     * @param {array} schedule Array of schedule entries to initialize with.
+     * @param {array} clockwheels Array of clockwheel records to initialize with.
      */
     constructor(calendar = [], schedule = [], clockwheels = []) {
+
+        // Initialize the databases
         this.calendar = new WWSUdb(TAFFY());
         this.schedule = new WWSUdb(TAFFY());
         this.clockwheels = new WWSUdb(TAFFY());
@@ -82,19 +94,26 @@ class CalendarDb {
      * @param {string} start ISO String of the earliest date/time allowed for an event's start time
      * @param {string} end ISO string of the latest date/time allowed for an event's end time
      * @param {object} query Filter results by the provided TAFFY query
-     * @param {WWSUdb} calendardb If provided, will use the calendardb provided. Otherwise, will use the CalendarDb one.
-     * @param {WWSUdb} scheduledb If provided, will use the scheduledb provided. Otherwise, will use the CalendarDb one.
+     * @param {WWSUdb} calendardb If provided, will use the calendardb provided. Otherwise, will use this.calendar.
+     * @param {WWSUdb} scheduledb If provided, will use the scheduledb provided. Otherwise, will use the this.schedule.
      * @param {function} progressCallback Function fired after every task. Contains two number paramaters: Number of tasks completed, and total number of tasks.
      * @returns {?array} If callback not provided, function will return events.
      */
     getEvents (callback = null, start = moment().subtract(1, 'days').toISOString(true), end = moment().add(1, 'days').toISOString(true), query = {}, calendardb = this.calendar, scheduledb = this.schedule, progressCallback = () => { }) {
+
         // Event loop
         var tasks = 0;
         var tasksCompleted = 0;
 
         var events = [];
 
-        // Extension of this.processRecord to also determine if the event falls within the start and end times.
+        /**
+         * Extends this.processRecord by filtering out events that do not fall within start and end.
+         * 
+         * @param {object} calendar Main calendar record
+         * @param {object} schedule Schedule record
+         * @param {string} eventStart Start date/time of the event
+         */
         var _processRecord = (calendar, schedule, eventStart) => {
             var criteria = this.processRecord(calendar, schedule, eventStart);
 
@@ -141,6 +160,7 @@ class CalendarDb {
             }
         }
 
+        // Called when a task has been completed, and fires progressCallback and eventually callback when all tasks are done.
         var taskComplete = () => {
             tasksCompleted++;
             progressCallback(tasksCompleted, tasks);
@@ -149,8 +169,14 @@ class CalendarDb {
             }
         }
 
-        // Schedule function
+        /**
+         * Process a schedule entry.
+         * 
+         * @param {object} calendar Calendar event the schedule belongs to.
+         * @param {object} schedule Schedule record.
+         */
         var processScheduleEntry = (calendar, schedule) => {
+
             // Polyfill any schedule overridden information with the main calendar event for use with schedule overrides
             var tempCal = Object.assign({}, calendar);
             for (var stuff in schedule) {
@@ -177,7 +203,7 @@ class CalendarDb {
 
                                 // For updated records, add a canceled-changed record into the events so people know the original time was changed.
                                 if ([ "updated", "updated-system" ].indexOf(exc.scheduleType) !== -1 && exc.newTime) {
-                                    _processRecord(tempCal, { calendarID: calendar.ID, ID: schedule.ID, scheduleType: 'canceled-changed', scheduleReason: `Rescheduled to ${moment(exc.newTime).format("lll")}` }, exc.originalTime);
+                                    _processRecord(tempCal, { calendarID: calendar.ID, ID: schedule.ID, scheduleType: 'canceled-changed', scheduleReason: `[SYSTEM] Event was rescheduled to ${moment(exc.newTime).format("llll")}` }, exc.originalTime);
                                 }
                             })
                         }
@@ -206,17 +232,17 @@ class CalendarDb {
 
             // Next, process recurring schedules if hours is not null (if hours is null, we should never process this even if DW or M is not null)
             if (schedule.recurH && schedule.recurH.length > 0) {
-                // Null value denotes all values for Days of Week
+                // Null value for recurDW denotes all values for Days of Week
                 if (!schedule.recurDW || schedule.recurDW.length === 0) schedule.recurDW = [ 1, 2, 3, 4, 5, 6, 7 ];
 
-                // later.js does not work correctly if DW or H is not in numeric order
+                // later.js does not work correctly if DW or H is not in numeric order. So sort them.
                 schedule.recurDW.sort((a, b) => a - b);
                 schedule.recurH.sort((a, b) => a - b);
 
-                // Format minute into an array for proper processing in later.js
+                // If no recurM specified, we default to 0, or top of the hour.
                 if (!schedule.recurM) schedule.recurM = 0;
 
-                // Generate later schedule
+                // Generate later schedule. Note recurM, which is not specified as an array, is specified as an array here for later.js to work.
                 var laterSchedule = later.schedule({ schedules: [ { "dw": schedule.recurDW, "h": schedule.recurH, "m": [ schedule.recurM ] } ] });
 
                 var beginAt = start;
@@ -263,7 +289,7 @@ class CalendarDb {
 
                                 // For updated records, add a canceled-changed record into the events so people know the original time was changed.
                                 if ([ "updated", "updated-system" ].indexOf(exc.scheduleType) !== -1 && exc.newTime) {
-                                    _processRecord(calendar, { calendarID: calendar.ID, ID: schedule.ID, scheduleType: 'canceled-changed', scheduleReason: `Rescheduled to ${moment(exc.newTime).format("lll")}` }, exc.originalTime);
+                                    _processRecord(calendar, { calendarID: calendar.ID, ID: schedule.ID, scheduleType: 'canceled-changed', scheduleReason: `[SYSTEM] Event was rescheduled to ${moment(exc.newTime).format("llll")}` }, exc.originalTime);
                                 }
                             })
                         }
@@ -292,7 +318,11 @@ class CalendarDb {
             taskComplete();
         }
 
-        // Calendar function
+        /**
+         * Process a main calendar entry by getting and processing its schedules.
+         * 
+         * @param {object} calendar The calendar record.
+         */
         var processCalendarEntry = (calendar) => {
             // Get regular and unscheduled events
             var regularEvents = scheduledb.find({ calendarID: calendar.ID, scheduleType: [ null, 'unscheduled', undefined ] });
@@ -324,6 +354,7 @@ class CalendarDb {
             }
         });
 
+        // Return the events if not using a callback.
         if (!callback)
             return events;
     }
@@ -337,8 +368,16 @@ class CalendarDb {
      * @returns {?array} If callback not provided, will return array of events scheduled.
      */
     whatShouldBePlaying (callback = null, automationOnly = false, progressCallback = () => { }) {
+
+        /**
+         * Function called after getting events via getEvents to filter what actually should be playing.
+         * 
+         * @param {array} events Array of events
+         */
         var afterFunction = (events) => {
             if (events.length > 0) {
+
+                // Order events by priority (priority value, then start time, then ID)
                 var compare = function (a, b) {
                     try {
                         if (a.priority > b.priority) { return -1 };
@@ -374,11 +413,14 @@ class CalendarDb {
                         if (event && event.unique)
                             returnData.push(event);
                     })
+
+                // Return either in a callback or as a return if no callback provided.
                 if (callback) {
                     callback(returnData);
                 } else {
                     return returnData;
                 }
+
             } else {
                 if (callback) {
                     callback([]);
@@ -388,6 +430,7 @@ class CalendarDb {
             }
         }
 
+        // Get events and then process in the afterFunction.
         if (callback) {
             this.getEvents(afterFunction, undefined, undefined, { active: true }, undefined, undefined, progressCallback);
         } else {
@@ -399,14 +442,15 @@ class CalendarDb {
      * Check for conflicts that would arise if we performed the provided schedule queries. Do this BEFORE adding/editing/deleting records!
      * 
      * @param {?function} callback If provided, will run in queue and function fired when all tasks completed. Otherwise, will return conflicts.
-     * @param {array} _queries Array of WWSUdb queries we want to perform on schedule; (insert, update, remove, updateCalendar, or removeCalendar).
+     * @param {array} _queries Array of WWSUdb queries we want to perform on schedule (insert, update, remove) or the main calendar event (updateCalendar or removeCalendar). Each item should be an object with key as operation and value as the new/updated data or the ID of the record to remove.
      * @param {function} progressCallback Function fired on every task completion. Contains a single parameter with a descriptive string explaining the progress.
      * @returns {?object} If callback not provided, returns conflicts object {additions: [schedule records that should also be added], removals: [schedule records that should also be removed], errors: [strings of error messages for queries that cannot be performed]}
      */
     checkConflicts (callback = null, _queries = [], progressCallback = () => { }) {
+
+        // We have to clone the queries or we accidentally modify mutable objects
         var queries = _.cloneDeep(_queries);
-        console.log(`deep cloned queries`);
-        console.dir(queries);
+
         var tasks = 0;
         var tasksCompleted = 0;
 
@@ -423,20 +467,26 @@ class CalendarDb {
         var end = null;
         var timePeriods = [];
 
-        // Return data
+        // Return data variables
         var removals = [];
         var additions = [];
         var errors = [];
 
-        // Check if eventa and eventb conflicts
+        /**
+         * When we want to check if two events conflict, we call this function on them.
+         * 
+         * @param {object} eventa First event
+         * @param {object} eventb Second event
+         * @returns {number} -1 = eventb overrides eventa. 0 = no conflict. 1 = eventa overrides eventb.
+         */
         var conflicts = (eventa, eventb) => {
             // If either event is a cancellation, there is no conflict
             if ((eventa.scheduleType && eventa.scheduleType.startsWith('canceled')) || (eventb.scheduleType && eventb.scheduleType.startsWith('canceled'))) return 0;
 
-            // If either event has a priority of -1, there is no conflict
+            // If either event has a priority of -1, there is no conflict (-1 events ignore conflict detection)
             if (eventa.priority === -1 || eventb.priority === -1) return 0;
 
-            // If one event is priority 0 and the other is not, there is no conflict
+            // If one event is priority 0 and the other is not, there is no conflict (0 events only conflict with other 0 events).
             if ((eventa.priority === 0 && eventb.priority !== 0) || (eventb.priority === 0 && eventa.priority !== 0)) return 0;
 
             // If the times overlap, there is a conflict, but we need to determine which event conflicts with the other
@@ -465,11 +515,16 @@ class CalendarDb {
             return 0;
         }
 
-        // Check is eventa and eventb conflicts. If so, push an updated or canceled record into our arrays.
+        /**
+         * Check if two events conflict, and if so, push to one of our return data variables what should be done to resolve it.
+         * 
+         * @param {object} eventa First event
+         * @param {object} eventb Second event
+         */
         var checkAndResolveConflicts = (eventa, eventb) => {
-            var overrides;
+            // Determine which event overrides the other
+            var overrides; // This event overrides the overridden event.
             var overridden;
-            var newRecord;
             switch (conflicts(eventa, eventb)) {
                 case -1:
                     overrides = eventb;
@@ -483,6 +538,7 @@ class CalendarDb {
                     return;
             }
 
+            // Initialize our conflict resolving schedule record with some defaults.
             var newRecord = {
                 calendarID: overridden.calendarID,
                 scheduleID: overridden.scheduleID,
@@ -499,7 +555,7 @@ class CalendarDb {
             // Instead of a cancellation, just decrease show duration.
             if (startdiff >= 30 && startdiff >= enddiff) {
                 newRecord.scheduleType = "updated-system";
-                newRecord.scheduleReason = `An event with a higher priority (${overrides.type}: ${overrides.hosts} - ${overrides.name}) was scheduled to start during this event's time block.`;
+                newRecord.scheduleReason = `[SYSTEM] An event with a higher priority (${overrides.type}: ${overrides.hosts} - ${overrides.name}) has a start date/time within this event's original time block; this event's end time was adjusted.`;
                 newRecord.originalTime = overridden.start;
                 newRecord.duration = startdiff;
             }
@@ -507,7 +563,7 @@ class CalendarDb {
             // Instead of a cancellation, just update show start time.
             else if (enddiff >= 30 && enddiff >= startdiff) {
                 newRecord.scheduleType = "updated-system";
-                newRecord.scheduleReason = `An event with a higher priority (${overrides.type}: ${overrides.hosts} - ${overrides.name}) will run partially through this event's time block.`;
+                newRecord.scheduleReason = `[SYSTEM] An event with a higher priority (${overrides.type}: ${overrides.hosts} - ${overrides.name}) will run past this event's original start time; this event's start time was adjusted.`;
                 newRecord.originalTime = overridden.start;
                 newRecord.duration = enddiff;
                 newRecord.newTime = moment(overrides.end).toISOString(true);
@@ -515,7 +571,7 @@ class CalendarDb {
             // If neither of the above conditions apply, the event being checked should be canceled.
             else {
                 newRecord.scheduleType = "canceled-system";
-                newRecord.scheduleReason = `An event with a higher priority (${overrides.type}: ${overrides.hosts} - ${overrides.name}) is scheduled during this event's time block.`;
+                newRecord.scheduleReason = `[SYSTEM] An event with a higher priority (${overrides.type}: ${overrides.hosts} - ${overrides.name}) will run through this event's original time block and leave less than 30 minutes of available air time. This event has been canceled.`;
                 newRecord.originalTime = overridden.start;
             }
 
@@ -527,6 +583,11 @@ class CalendarDb {
             }
         }
 
+        /**
+         * Called when a task in intelligent filtewring is completed.
+         * 
+         * @param {function} cb Callback fired when all tasks in this stage are complete.
+         */
         var taskComplete3 = (cb) => {
             tasksCompleted++;
             var newprogress = tasksCompleted > 0 ? tasksCompleted / tasks : 0;
@@ -536,6 +597,11 @@ class CalendarDb {
             }
         }
 
+        /**
+         * Called when a task in query processing is completed.
+         * 
+         * @param {function} cb Callback fired when all tasks in this stage are complete.
+         */
         var taskComplete = (cb) => {
             tasksCompleted++;
             var newprogress = tasksCompleted > 0 ? tasksCompleted / tasks : 0;
@@ -545,6 +611,9 @@ class CalendarDb {
             }
         }
 
+        /**
+         * Called when a task in event conflict checking is completed. Fires main function callback when all tasks are done.
+         */
         var taskComplete2 = () => {
             tasksCompleted++;
             var newprogress = tasksCompleted > 0 ? tasksCompleted / tasks : 0;
@@ -554,7 +623,14 @@ class CalendarDb {
             }
         }
 
+        /**
+         * Process one of the provided schedule queries (after having converted updateCalendar and removeCalendar into schedule queries).
+         * 
+         * @param {object} query Query to process
+         */
         var processQuery = (query) => {
+
+            // Run the query in our copied schedule db
             if (typeof query.remove !== 'undefined') {
                 query.remove = vschedule.find({ ID: query.remove }, true);
                 vschedule.query({ remove: query.remove.ID });
@@ -569,7 +645,7 @@ class CalendarDb {
                     // Polyfill calendar and schedule information
                     var event = this.scheduleToEvent(query[ key ], vcalendar, vschedule);
 
-                    // Determine start and end times for conflict checking
+                    // Determine start and end times for conflict checking.
                     if (query[ key ].originalTime) {
                         if (!start || moment(query[ key ].originalTime).startOf('minute').isBefore(moment(start))) {
                             start = moment(query[ key ].originalTime).startOf('minute');
@@ -658,6 +734,13 @@ class CalendarDb {
             }
         }
 
+        /**
+         * Process conflict checking on an event.
+         * 
+         * @param {array} events Array of events to conflict check event against.
+         * @param {object} event Event to check for conflicts.
+         * @param {number} index Start checking at this events index.
+         */
         var processEvent = (events, event, index) => {
             // If this schedule was created as an override, we need to check to see if the override is still valid
             if (event.overriddenID) {
@@ -692,6 +775,7 @@ class CalendarDb {
             queries
                 .filter((query) => typeof query.updateCalendar !== 'undefined' || typeof query.removeCalendar !== 'undefined')
                 .map((query, index) => {
+
                     // Process the calendar update
                     if (typeof query.updateCalendar !== 'undefined') {
                         vcalendar.query({ update: query.updateCalendar });
@@ -717,7 +801,7 @@ class CalendarDb {
                     }
                 })
 
-            // It is possible we edited or removed a calendar without any schedules, this the query is now empty. Exit if so; no more checks necessary.
+            // It is possible we edited or removed a calendar without any schedules, thus the query is now empty. Exit if so; no more checks necessary.
             if (queries.length === 0) {
                 if (callback) {
                     callback({ removals: [], additions: [], errors: [] });
@@ -754,7 +838,11 @@ class CalendarDb {
                     });
             }
 
-            // Function called when we get all events for checking
+            /**
+             * After getting events from this.getEvents, we call this function for intelligently filtering events by start/end times of queries.
+             * 
+             * @param {array} events Array of events
+             */
             var eventsCall = (events) => {
                 progressCallback(`Stage 3 of 4: Intelligently filtering events`);
                 tasks = events.length;
@@ -772,6 +860,8 @@ class CalendarDb {
                 }
 
                 events.map((event) => {
+                    // Called on each event to determine of its start/end times fall within any of the query times.
+                    // This speeds up conflict checking by not checking events outside of the dates/times affected by the queries.
                     var _determineFilter = (_event) => {
                         var filter = timePeriods.find((period) => (moment(_event.end).isAfter(moment(period.start)) && moment(_event.start).isSameOrBefore(moment(period.end))));
                         if (filter) {
@@ -794,10 +884,11 @@ class CalendarDb {
                 }
             }
 
+            // Called after all queries have been processed.
             var postQuery = () => {
 
                 // If no start detected, or start is before current time, then start should be current time.
-                // (We are bypassing conflict detection on events that have a start date over 24 hours ago)
+                // (We are bypassing conflict detection on events that have a start date over 24 hours ago; no need to check conflicts on past events)
                 if (!start || moment().isAfter(moment(start)))
                     start = moment();
 
@@ -848,15 +939,18 @@ class CalendarDb {
     }
 
     /**
-     * Check which directors are scheduled to be in the office at this time +- 30 minutes.
+     * Check which directors are scheduled to be in the office at this time (Returns events up to 30 minutes before start time)
      * 
      * @param {?function} callback If provided, function will run in queue and call this function with office-hours array when done.
      * @param {function} progressCallback Function called after every task executed. Contains two parameters: tasks completed, and total tasks.
      * @returns {?array} If callback not provided, will return array of office-hours on the schedule.
      */
     whoShouldBeIn (callback = null, progressCallback = () => { }) {
+        // Function called after running this.getEvents
         var afterFunction = (events) => {
             if (events.length > 0) {
+
+                // Sort by start time
                 var compare = function (a, b) {
                     try {
                         if (moment(a.start).valueOf() < moment(b.start).valueOf()) { return -1 }
@@ -1105,32 +1199,41 @@ class CalendarDb {
     /**
      * Combine a base calendar or schedule record with a modifying schedule record.
      * 
+     * Note 1: _schedule can provide the number 0 for any of the following properties to specify we should use null even if the main _calendar event has something set:
+     * hostDJ, cohostDJ1, cohostDJ2, cohostDJ3, eventID, playlistID, director
+     * 
+     * Note 2: _schedule can provide {clearAll: true} for any of the following properties to specify we should use null even if the main _calendar event has something set:
+     * oneTime, recurDM, recurWM, recurDW, recurH
+     * 
      * @param {object} _calendar The base event or schedule
      * @param {object} _schedule The schedule making modifications to calendar
      * @param {string} eventStart ISO String of the start or original time for the event
      * @returns {object} Modified event
      */
     processRecord (_calendar, _schedule, eventStart) {
+        // Clone these to avoid accidental modifications of mutable objects.
         var calendar = _.cloneDeep(_calendar);
         var schedule = _.cloneDeep(_schedule);
+
+        // Define an initial event record
         var criteria = {
             calendarID: schedule.calendarID || calendar.ID, // ID of the main calendar event
             scheduleID: schedule.ID || null, // ID of the schedule record to process
             scheduleOverrideID: schedule.scheduleID || null, // If this schedule overrides another schedule, this is the ID of the schedule that this schedule overrides.
             overriddenID: schedule.overriddenID || null, // ID of the schedule which overrode this one (for -system schedules).
-            scheduleType: schedule.scheduleType || null, // Schedule type (null [default schedule], unscheduled, updated, updated-system, canceled, canceled-system, canceled-updated)
+            scheduleType: schedule.scheduleType || null, // Schedule type (null [default schedule], unscheduled, updated, updated-system, canceled, canceled-system, canceled-changed)
             scheduleReason: schedule.scheduleReason || null, // A reason for this schedule or override, if applicable.
             originalTime: schedule.originalTime ? moment(schedule.originalTime).startOf('minute').toISOString(true) : null, // The specific time this schedule is applicable for... used for updates and cancelations.
             type: schedule.type ? schedule.type : calendar.type, // Event type (show, remote, sports, prerecord, genre, playlist, event, onair-booking, prod-booking, office-hours, task)
             priority: schedule.priority || schedule.priority === 0 ? schedule.priority : (calendar.priority || calendar.priority === 0 ? calendar.priority : (schedule.type ? this.getDefaultPriority(schedule) : this.getDefaultPriority(calendar))), // Priority of the event. -1 = no conflict detection. 0 and up = overridden by any events scheduled that have the same or higher priority.
-            hostDJ: schedule.hostDJ ? schedule.hostDJ : calendar.hostDJ || null, // The ID of the DJ hosting the event
-            cohostDJ1: schedule.cohostDJ1 ? schedule.cohostDJ1 : calendar.cohostDJ1 || null, // The ID of the first cohost DJ
-            cohostDJ2: schedule.cohostDJ2 ? schedule.cohostDJ2 : calendar.cohostDJ2 || null, // The ID of the second cohost DJ
-            cohostDJ3: schedule.cohostDJ3 ? schedule.cohostDJ3 : calendar.cohostDJ3 || null, // The ID of the third cohost DJ
+            hostDJ: schedule.hostDJ ? schedule.hostDJ : (schedule.hostDJ !== 0 ? calendar.hostDJ || null : null), // The ID of the DJ hosting the event
+            cohostDJ1: schedule.cohostDJ1 ? schedule.cohostDJ1 : (schedule.cohostDJ1 !== 0 ? calendar.cohostDJ1 || null : null), // The ID of the first cohost DJ
+            cohostDJ2: schedule.cohostDJ2 ? schedule.cohostDJ2 : (schedule.cohostDJ2 !== 0 ? calendar.cohostDJ2 || null : null), // The ID of the second cohost DJ
+            cohostDJ3: schedule.cohostDJ3 ? schedule.cohostDJ3 : (schedule.cohostDJ3 !== 0 ? calendar.cohostDJ3 || null : null), // The ID of the third cohost DJ
             active: calendar.active, // True if the event is active, false if it is not.
-            eventID: schedule.eventID ? schedule.eventID : calendar.eventID || null, // ID of the radioDJ manual event to fire, for genre events
-            playlistID: schedule.playlistID ? schedule.playlistID : calendar.playlistID || null, // ID of the playlist to queue, for playlist and prerecord events.
-            director: schedule.director ? schedule.director : calendar.director || null, // ID of the director, for office-hours and task events.
+            eventID: schedule.eventID ? schedule.eventID : (schedule.eventID !== 0 ? calendar.eventID || null : null), // ID of the radioDJ manual event to fire, for genre events
+            playlistID: schedule.playlistID ? schedule.playlistID : (schedule.playlistID !== 0 ? calendar.playlistID || null : null), // ID of the playlist to queue, for playlist and prerecord events.
+            director: schedule.director ? schedule.director : (schedule.director !== 0 ? calendar.director || null : null), // ID of the director, for office-hours and task events.
             hosts: schedule.hosts ? schedule.hosts : calendar.hosts || "Unknown Hosts", // String of host names based on director and/or DJ IDs.
             name: schedule.name ? schedule.name : calendar.name || "Unknown Event", // Name of event
             description: schedule.description ? schedule.description : calendar.description || null, // Description of event
@@ -1139,11 +1242,11 @@ class CalendarDb {
             newTime: schedule.newTime ? moment(schedule.newTime).startOf('minute').toISOString(true) : null, // If an exception is applied that overrides an event's start time, this is the event's new start time.
             start: schedule.newTime ? moment(schedule.newTime).startOf('minute').toISOString(true) : moment(eventStart).startOf('minute').toISOString(true), // Start time of the event
             duration: schedule.duration || schedule.duration === 0 ? schedule.duration : (calendar.duration || calendar.duration === 0 ? calendar.duration : null), // The duration of the event in minutes
-            oneTime: schedule.oneTime || calendar.oneTime ? schedule.oneTime || calendar.oneTime : null, // Array of oneTime ISO dates to execute the event
-            recurDM: schedule.recurDM || calendar.recurDM, // Array of days of the month to execute this event
-            recurWM: schedule.recurWM || calendar.recurWM, // Array of weeks of the month to execute this event (0 = last week)
-            recurDW: schedule.recurDW || calendar.recurDW, // Array of days of the week (1-7) to execute this event
-            recurH: schedule.recurH || calendar.recurH, // Array of hours of the day to execute this event
+            oneTime: schedule.oneTime && !schedule.oneTime.clearAll ? schedule.oneTime : ((!schedule.oneTime || !schedule.oneTime.clearAll) && calendar.oneTime && !calendar.oneTime.clearAll ? calendar.oneTime : null), // Array of oneTime ISO dates to execute the event
+            recurDM: schedule.recurDM && !schedule.recurDM.clearAll ? schedule.recurDM : ((!schedule.recurDM || !schedule.recurDM.clearAll) && calendar.recurDM && !calendar.recurDM.clearAll ? calendar.recurDM : null), // Array of days of the month to execute this event
+            recurWM: schedule.recurWM && !schedule.recurWM.clearAll ? schedule.recurWM : ((!schedule.recurWM || !schedule.recurWM.clearAll) && calendar.recurWM && !calendar.recurWM.clearAll ? calendar.recurWM : null), // Array of weeks of the month to execute this event (0 = last week)
+            recurDW: schedule.recurDW && !schedule.recurDW.clearAll ? schedule.recurDW : ((!schedule.recurDW || !schedule.recurDW.clearAll) && calendar.recurDW && !calendar.recurDW.clearAll ? calendar.recurDW : null), // Array of days of the week (1-7) to execute this event
+            recurH: schedule.recurH && !schedule.recurH.clearAll ? schedule.recurH : ((!schedule.recurH || !schedule.recurH.clearAll) && calendar.recurH && !calendar.recurH.clearAll ? calendar.recurH : null), // Array of hours of the day to execute this event
             recurM: schedule.recurM || schedule.recurM === 0 ? schedule.recurM : (calendar.recurM || calendar.recurM === 0 ? calendar.recurM : null), // The minute of the hour at which to execute the event
             recurEvery: schedule.recurEvery || calendar.recurEvery || 1, // Only schedule when week of year % recurEvery = 0 (eg. recurEvery = 2 means every even week of the year, recurEvery = 3 means every week of the year divisible by 3)
             startDate: schedule.startDate || calendar.startDate ? moment(schedule.startDate || calendar.startDate).startOf('day').toISOString(true) : null, // Date the event starts
@@ -1158,7 +1261,7 @@ class CalendarDb {
 
         // Generate a unique string for this specific event time so we can differentiate recurring events easily.
         // Note: The start time in unique strings should be UTC to avoid Daylight Savings complications.
-        // Format: calendarID_originalEventStartTime[_originalScheduleID].
+        // Format: calendarID-originalEventStartTime[-originalScheduleID].
         if (criteria.scheduleOverrideID && criteria.originalTime) {
             criteria.unique = `${criteria.calendarID}-${moment.utc(criteria.originalTime).valueOf()}-${criteria.scheduleOverrideID}`;
         } else if (criteria.scheduleID) {
@@ -1204,15 +1307,17 @@ class CalendarDb {
         var oneTime = [];
         var recurDayString = ``;
 
+        // If this is an updated / rescheduled event, return the new date/time only.
         if (event.newTime) {
             return `On ${moment(event.newTime).format("LLLL")} for ${moment.duration(event.duration, 'minutes').format("h [hours], m [minutes]")}`;
         }
 
-        // Start with the easy one
+        // Add oneTime dates/times to the oneTime variable.
         if (event.oneTime && event.oneTime.length > 0) {
             oneTime = event.oneTime.map((onetime) => moment(onetime).format("LLLL"));
         }
 
+        // No oneTimes? Start with "Every", else start with each oneTime date/time, followed by "and every" if a recurring schedule was also provided.
         if (oneTime.length === 0) {
             recurDayString = `Every `;
         } else {
@@ -1224,9 +1329,10 @@ class CalendarDb {
                 recurDayString += `... and every `;
             }
 
-            // Times
+            // Generate times from recurH and recurM
             recurAt = event.recurH.map((h) => `${h < 10 ? `0${h}` : h}:${event.recurM < 10 ? `0${event.recurM}` : event.recurM}`);
 
+            // Other, more complicated recurrance rules
             if (event.recurDM && event.recurDM.length > 0 && event.recurDM.length < 31) {
                 var ifit = false;
                 recurDayString += `${event.recurDM.join(", ")} day(s) of the month`;
@@ -1380,7 +1486,7 @@ class CalendarDb {
     scheduleToEvent (_record, calendardb = this.calendar, scheduledb = this.schedule) {
         var tempCal = {};
         var event;
-        var record = _.cloneDeep(_record);
+        var record = _.cloneDeep(_record); // Clone the record to avoid accidental mutable object editing.
         if (record.calendarID) {
             var calendar = calendardb.find({ ID: record.calendarID }, true);
             tempCal = calendar || {};

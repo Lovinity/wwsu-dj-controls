@@ -1,17 +1,18 @@
-/* global WWSUdb */
-
-// This class manages directors from WWSU.
+/**
+ * This class manages raw API queries to WWSU.
+ * @requires $ jQuery
+ * @requires $.alpaca Alpaca forms custom WWSU build
+ */
 class WWSUapi {
 
     /**
-     * Construct the directors.
+     * Construct the class.
      * 
-     * @param {sails.io} socket The socket connection to WWSU
      * @param {WWSUreq} noReq A request with no authorization
-     * @param {WWSUreq} hostReq A request with no authorization
-     * @param {WWSUreq} djReq A request with no authorization
-     * @param {WWSUreq} directorReq A request with no authorization
-     * @param {WWSUreq} adminDirectorReq A request with no authorization
+     * @param {WWSUreq} hostReq A request with host authorization
+     * @param {WWSUreq} djReq A request with DJ authorization
+     * @param {WWSUreq} directorReq A request with director authorization
+     * @param {WWSUreq} adminDirectorReq A request with admin director authorization
      */
     constructor(noReq, hostReq, djReq, directorReq, adminDirectorReq) {
         this.requests = {
@@ -22,7 +23,7 @@ class WWSUapi {
             adminDirector: adminDirectorReq
         };
 
-        this.dom;
+        this.dom; // The DOM string of the API form will be stored here when initialized.
     }
 
     /**

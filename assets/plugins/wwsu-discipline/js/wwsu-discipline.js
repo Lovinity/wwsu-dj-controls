@@ -63,14 +63,18 @@ class WWSUdiscipline extends WWSUdb {
                 }
             }
         );
-
         this.disciplineModal.footer = `<button type="button" class="btn btn-success" id="modal-${this.disciplineModal.id}-acknowledge">Acknowledge</button>`;
-
         var util = new WWSUutil();
         util.waitForElement(`#modal-${this.disciplineModal.id}-acknowledge`, () => {
             $(`#modal-${this.disciplineModal.id}-acknowledge`).click(() => {
                 this.acknowledgeDiscipline(this.activeDiscipline);
             });
+        });
+
+        this.muteModal = new WWSUmodal(`Mute`, null, ``, true, {
+            headerColor: '',
+            zindex: 1100,
+            overlayClose: false,
         });
     }
 

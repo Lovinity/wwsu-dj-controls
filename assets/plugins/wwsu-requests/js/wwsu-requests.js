@@ -1,6 +1,7 @@
 /* global WWSUdb */
 
 // This class manages WWSU track requests
+// Event emitter also supports 'trackRequested' with the request object as a parameter
 class WWSUrequests extends WWSUdb {
 
     /**
@@ -167,16 +168,7 @@ class WWSUrequests extends WWSUdb {
                     ])
 
                     if (this.IDs.indexOf(request.ID) === -1) {
-                        $(document).Toasts('create', {
-                            class: 'bg-primary',
-                            title: 'Track Requested',
-                            autohide: true,
-                            delay: 30000,
-                            body: `A track was requested.<br />
-                Track: <strong>${request.trackname}</strong>`,
-                            icon: 'fas fa-record-vinyl fa-lg',
-                            position: 'bottomRight'
-                        })
+                        this.events.emitEvent('trackRequested', [ request ]);
                         this.IDs.push(request.ID);
                     }
                 });

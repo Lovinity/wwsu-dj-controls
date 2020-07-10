@@ -42,9 +42,9 @@ class WWSUeas extends WWSUdb {
 
         this.easSevereAlert = new WWSUmodal(
             `Severe Alert Active`,
-            `bg-orange`,
+            `bg-warning bg-flash-warning`,
             `<div style="text-align: center;">
-                <i class="text-white fas fa-bolt" style="font-size: 25vw;"></i>
+                <i class="fas fa-bolt" style="font-size: 25vw;"></i>
             </div>
             <h3>A severe alert is in effect.</h3>
             Alert: <strong class="eas-severe-alert-alert"></strong><br />
@@ -62,9 +62,9 @@ class WWSUeas extends WWSUdb {
 
         this.easExtremeAlert = new WWSUmodal(
             `Extreme Alert Active`,
-            `bg-danger`,
+            `bg-danger bg-flash-danger`,
             `<div style="text-align: center;">
-                <i class="text-white fas fa-bolt" style="font-size: 25vw;"></i>
+                <i class="fas fa-bolt" style="font-size: 25vw;"></i>
             </div>
             <h3>An extreme alert is in effect.</h3> <strong>Please consider ending your show and evacuating / taking shelter now, if applicable!</strong>
             Alert: <strong class="eas-extreme-alert-alert"></strong><br />

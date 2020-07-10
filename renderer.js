@@ -44,8 +44,6 @@ window.addEventListener('DOMContentLoaded', () => {
         var recipients = new WWSUrecipients(socket, meta, hostReq);
         var messages = new WWSUmessages(socket, recipients, meta, hosts, null, hostReq);
 
-        var disciplineModal;
-
         // Sound alerts
         var sounds = {
             onBreak: new Howl({ src: [ 'assets/voice-queues/break.mp3' ] }),
@@ -58,9 +56,13 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         // Variables
-        var queueLength = 0;
-        var countDown = 0;
-        var todos = {
+        var breakNotified = false; // Did we notify the DJ they have to take a top of hour ID break?
+
+        var queueLength = 0; // Current queue in seconds
+
+        var countDown = 0; // Countdown to on air in seconds
+
+        var todos = { // Todo notification count tracker
             status: {
                 danger: 0,
                 orange: 0,
@@ -97,6 +99,7 @@ window.addEventListener('DOMContentLoaded', () => {
         navigation.addItem('#nav-announcements-view', '#section-announcements-view', 'View Announcements - WWSU DJ Controls', '/announcements-view', false);
         navigation.addItem('#nav-chat', '#section-chat', 'Messages / Chat - WWSU DJ Controls', '/chat', false);
         navigation.addItem('#nav-requests', '#section-requests', 'Track requests - WWSU DJ Controls', '/requests', false);
+        navigation.addItem('#nav-news', '#section-news', 'Weather / News - WWSU DJ Controls', '/news', false);
         navigation.addItem('#nav-report', '#section-report', 'Report a Problem - WWSU DJ Controls', '/report', false);
 
         navigation.addItem('#nav-notifications', '#section-notifications', 'Notifications / Todo - WWSU DJ Controls', '/notifications', false);
@@ -434,6 +437,7 @@ window.addEventListener('DOMContentLoaded', () => {
         $('#connecting').addClass('d-none');
         $('#unauthorized').addClass('d-none');
         $('#content').addClass('d-none');
+        window.ipcRenderer.send('flashMain', true);
     })
 
     // Connection error
@@ -442,6 +446,7 @@ window.addEventListener('DOMContentLoaded', () => {
         $('#connecting').addClass('d-none');
         $('#reconnecting').addClass('d-none');
         $('#content').addClass('d-none');
+        window.ipcRenderer.send('flashMain', true);
     });
 
     socket.on('error', () => {
@@ -450,6 +455,7 @@ window.addEventListener('DOMContentLoaded', () => {
             $('#connecting').addClass('d-none');
             $('#reconnecting').addClass('d-none');
             $('#content').addClass('d-none');
+            window.ipcRenderer.send('flashMain', true);
         }
     })
 
@@ -480,6 +486,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            // Changes in attendance ID? Update logs.
             if (typeof updated.attendanceID !== 'undefined') {
                 logs.setAttendanceID(updated.attendanceID);
             }
@@ -728,6 +735,34 @@ window.addEventListener('DOMContentLoaded', () => {
                 }, 500);
             });
 
+            // Flash backgrounds
+            animations.add('bg-flash', () => {
+                $('.bg-flash-danger').addClass('bg-danger');
+                $('.bg-flash-warning').addClass('bg-warning');
+                $('.bg-flash-primary').addClass('bg-primary');
+                $('.bg-flash-info').addClass('bg-info');
+                $('.bg-flash-success').addClass('bg-success');
+                setTimeout(() => {
+                    $('.bg-flash-danger').removeClass('bg-danger');
+                    $('.bg-flash-warning').removeClass('bg-warning');
+                    $('.bg-flash-primary').removeClass('bg-primary');
+                    $('.bg-flash-info').removeClass('bg-info');
+                    $('.bg-flash-success').removeClass('bg-success');
+                }, 500);
+            });
+
+            // Top of hour ID break reminder
+            if (moment(fullMeta.time).minutes() >= 2 && moment(fullMeta.time).minutes() < 5 && moment(fullMeta.time).diff(moment(fullMeta.lastID), 'minutes') >= 10 && hosts.isHost) {
+                if (!breakNotified) {
+                    breakNotified = true;
+                    state.topOfHourBreak.iziModal('open');
+                    window.ipcRenderer.send('flashMain', true);
+                }
+            } else if (breakNotified) {
+                breakNotified = false;
+                state.topOfHourBreak.iziModal('close');
+            }
+
         } catch (e) {
             console.error(e);
             $(document).Toasts('create', {
@@ -885,8 +920,10 @@ window.addEventListener('DOMContentLoaded', () => {
                         html += `<li>
                         <span class="badge badge-danger">EXTREME</span> <strong>${record.alert}</strong>: in effect for ${record.counties} from ${moment(record.starts).format("llll")} until ${moment(record.expires).format("llll")}.
                         </li>`;
-                        if (globalEas > 1)
+                        if (globalEas > 1) {
                             globalEas = 1;
+                            window.ipcRenderer.send('flashMain', true);
+                        }
                         break;
                     case "Severe":
                         html += `<li>
@@ -1137,6 +1174,19 @@ window.addEventListener('DOMContentLoaded', () => {
     requests.on('remove', (query, db) => {
         requests.updateTable();
     })
+    requests.on('trackRequested', (request) => {
+        $(document).Toasts('create', {
+            class: 'bg-primary',
+            title: 'Track Requested',
+            autohide: true,
+            delay: 30000,
+            body: `A track was requested.<br />
+Track: <strong>${request.trackname}</strong>`,
+            icon: 'fas fa-record-vinyl fa-lg',
+            position: 'bottomRight'
+        });
+        window.ipcRenderer.send('flashMain', true);
+    });
 
 
 
@@ -1214,6 +1264,18 @@ window.addEventListener('DOMContentLoaded', () => {
         messages.notified = messages.notified.filter((value) => value !== query);
         messages.updateRecipient();
         messages.updateRecipientsTable();
+    })
+    messages.on('newMessage', (message) => {
+        window.ipcRenderer.send('flashMain', true);
+        $(document).Toasts('create', {
+            class: 'bg-primary',
+            title: `New Message from ${message.fromFriendly}`,
+            autohide: true,
+            delay: 30000,
+            body: message.message,
+            icon: 'fas fa-comment fa-lg',
+            position: 'bottomRight'
+        });
     })
 
 });
