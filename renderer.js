@@ -43,6 +43,7 @@ window.addEventListener('DOMContentLoaded', () => {
         var state = new WWSUstate(socket, hosts, calendar, hostReq);
         var recipients = new WWSUrecipients(socket, meta, hostReq);
         var messages = new WWSUmessages(socket, recipients, meta, hosts, null, hostReq);
+        var climacell = new WWSUclimacell(socket, noReq);
 
         // Sound alerts
         var sounds = {
@@ -99,7 +100,8 @@ window.addEventListener('DOMContentLoaded', () => {
         navigation.addItem('#nav-announcements-view', '#section-announcements-view', 'View Announcements - WWSU DJ Controls', '/announcements-view', false);
         navigation.addItem('#nav-chat', '#section-chat', 'Messages / Chat - WWSU DJ Controls', '/chat', false);
         navigation.addItem('#nav-requests', '#section-requests', 'Track requests - WWSU DJ Controls', '/requests', false);
-        navigation.addItem('#nav-news', '#section-news', 'Weather / News - WWSU DJ Controls', '/news', false);
+        navigation.addItem('#nav-weather', '#section-weather', 'Weather - WWSU DJ Controls', '/weather', false);
+        // navigation.addItem('#nav-news', '#section-news', 'News - WWSU DJ Controls', '/news', false);
         navigation.addItem('#nav-report', '#section-report', 'Report a Problem - WWSU DJ Controls', '/report', false);
 
         navigation.addItem('#nav-notifications', '#section-notifications', 'Notifications / Todo - WWSU DJ Controls', '/notifications', false);
@@ -413,6 +415,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     requests.init();
                     recipients.init();
                     messages.init();
+                    climacell.init();
                     if (hosts.client.admin) {
                         $('.nav-admin').removeClass('d-none');
                         announcements.initTable('#section-announcements-content');
