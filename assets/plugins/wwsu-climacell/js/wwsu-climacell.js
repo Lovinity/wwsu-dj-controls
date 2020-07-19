@@ -4,6 +4,9 @@
  *
  * @requires $ jQuery
  * @requires WWSUdb WWSU TAFFYdb wrapper
+ * @requires EventEmitter Browser event emitter
+ * @requires WWSUanimations WWSU animations management
+ * @requires moment moment.js time/date library
  */
 class WWSUclimacell extends WWSUdb {
   /**
@@ -31,23 +34,41 @@ class WWSUclimacell extends WWSUdb {
 
     this.animations = new WWSUanimations();
 
+    this.ncTimer;
+
     // Data operations
     super.on("insert", (query) => {
       this.updateData(query);
+      clearTimeout(this.ncTimer);
+      this.ncTimer = setTimeout(() => {
+        this.recalculateNowcast();
+      }, 1000);
     });
     super.on("update", (query) => {
       this.updateData(query);
+      clearTimeout(this.ncTimer);
+      this.ncTimer = setTimeout(() => {
+        this.recalculateNowcast();
+      }, 1000);
     });
     super.on("remove", (query) => {
       var record = this.find({ ID: query }, true);
       if (record) {
         this.updateData({ dataClass: record.dataClass, data: `???` });
       }
+      clearTimeout(this.ncTimer);
+      this.ncTimer = setTimeout(() => {
+        this.recalculateNowcast();
+      }, 1000);
     });
     super.on("replace", (db) => {
       db.get().forEach((record) => {
         this.updateData(record);
       });
+      clearTimeout(this.ncTimer);
+      this.ncTimer = setTimeout(() => {
+        this.recalculateNowcast();
+      }, 1000);
     });
   }
 
@@ -80,6 +101,70 @@ class WWSUclimacell extends WWSUdb {
         );
       }
     });
+  }
+
+  // Recalculate when precipitation is expected
+  recalculateNowcast() {
+    var precip = [];
+
+    // Populate precip
+    this.db().get()
+    .filter((record) => record.dataClass.startsWith('nc-'))
+    .map((record) => {
+      var splits = record.dataClass.split("-");
+      var ncNumber = parseInt(splits[1]);
+      if (typeof precip[ncNumber] === 'undefined') {
+        precip[ncNumber] = {type: null, rate: null, time: null}
+      }
+
+      if (record.dataClass.endsWith('precipitation-type')) {
+        precip[ncNumber].type = record.data;
+      } else if (record.dataClass.endsWith('precipitation')) {
+        precip[ncNumber].rate = record.data;
+      } else if (record.dataClass.endsWith('observation-time')) {
+        precip[ncNumber].time = record.data;
+      }
+    })
+
+    // sort precip by observation time
+    precip.sort((a, b) => {
+      if (!a.time) return 1;
+      if (!b.time) return -1;
+      if (moment(a.time).isBefore(moment(b.time))) return -1;
+      if (moment(b.time).isBefore(moment(a.time))) return 1;
+      return 0;
+    });
+
+    // Figure out the next chance of precipitation, and update cards
+    var precipExpected = precip.find((record) => record.type && record.type !== 'none');
+    var realtimePrecipType = this.db({dataClass: `realtime-precipitation-type`}).first();
+    var realtimePrecip = this.db({dataClass: `realtime-precipitation`}).first();
+    console.dir(precipExpected);
+    if (precipExpected && (!realtimePrecipType || realtimePrecipType.data === 'none')) {
+      $('.climacell-nowcast-color').removeClass(`bg-gray`);
+      $('.climacell-nowcast-color').removeClass(`bg-danger`);
+      $('.climacell-nowcast-color').removeClass(`bg-success`);
+      $('.climacell-nowcast-color').addClass(`bg-warning`);
+      $('.climacell-nowcast-time').html(moment(precipExpected.time).format("h:mm A"))
+      $('.climacell-nowcast-text').html(`${precipExpected.type} possible`);
+    } else if (!precipExpected) {
+      $('.climacell-nowcast-color').removeClass(`bg-gray`);
+      $('.climacell-nowcast-color').removeClass(`bg-danger`);
+      $('.climacell-nowcast-color').removeClass(`bg-warning`);
+      $('.climacell-nowcast-color').addClass(`bg-success`);
+      $('.climacell-nowcast-time').html(`None`)
+      $('.climacell-nowcast-text').html(`No Precip Next 6 Hours`);
+    } else {
+      $('.climacell-nowcast-color').removeClass(`bg-gray`);
+      $('.climacell-nowcast-color').removeClass(`bg-success`);
+      $('.climacell-nowcast-color').removeClass(`bg-warning`);
+      $('.climacell-nowcast-color').addClass(`bg-danger`);
+
+      // Determine when the precip is expected to end
+      var precipEnd = precip.find((record) => record.type && record.type === 'none');
+      $('.climacell-nowcast-time').html(precipEnd ? moment(precipEnd.time).format("h:mm A") : `Next >6 Hours`)
+      $('.climacell-nowcast-text').html(`${realtimePrecipType ? realtimePrecipType.data || `Unknown Precip` : `Unknown Precip`} ending`);
+    }
   }
 
   /**
