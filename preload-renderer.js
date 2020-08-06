@@ -2,10 +2,7 @@
 // It has the same sandbox as a Chrome extension.
 
 window.addEventListener("DOMContentLoaded", () => {
-  const { webFrame, ipcRenderer, contextBridge } = require("electron");
-
-  window.webFrame = webFrame;
-  window.ipcRenderer = ipcRenderer;
+  const { ipcRenderer, contextBridge } = require("electron");
 
   contextBridge.exposeInMainWorld("ipc", {
     // Get Data

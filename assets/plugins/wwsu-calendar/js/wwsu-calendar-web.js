@@ -4,9 +4,6 @@ if (typeof TAFFY === 'undefined' || typeof WWSUdb === 'undefined' || typeof WWSU
     console.error(new Error('wwsu-calendar requires TAFFY, WWSUdb, WWSUqueue, later, lodash, and moment. However, neither node.js require() nor JQuery were available to require the scripts.'));
 }
 
-// Later.js: Use local time instead of UTC for scheduling
-later.date.localTime()
-
 /**
  * Class to manage calendar events for WWSU.
  * Note: We do not extend WWSUdb here because CalendarDb has 3 separate databases to maintain.
@@ -30,6 +27,12 @@ class CalendarDb {
      */
     constructor(meta, calendar = [], schedule = [], clockwheels = []) {
         this.meta = meta;
+
+        // Set timezone
+        // TODO: meta event
+        later.date.timezone(this.meta.meta.timezone);
+
+        console.log(this.meta.meta.timezone);
 
         // Initialize the databases
         this.calendar = new WWSUdb(TAFFY());
@@ -206,8 +209,6 @@ class CalendarDb {
                 });
             }
 
-            // TODO: RESUME
-
             // Next, process recurring schedules if hours is not null (if hours is null, we should never process this even if DW or M is not null)
             if (schedule.recurH && schedule.recurH.length > 0) {
                 // Null value for recurDW denotes all values for Days of Week
@@ -231,6 +232,7 @@ class CalendarDb {
                     var scheduleIDs = [];
 
                     // Determine next start date/time. Bail if there are no more. Set beginAt to the next minute so we avoid infinite loops.
+                    // TODO: RESUME. Make sure this works with timezone changes.
                     var eventStart = moment(laterSchedule.next(1, beginAt)).startOf('minute').toISOString(true);
                     if (!eventStart) break;
                     beginAt = moment(eventStart).add(1, 'minute').toISOString(true);

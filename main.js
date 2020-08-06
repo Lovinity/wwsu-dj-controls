@@ -10,7 +10,7 @@ function enforceCORS () {
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        // Does not work yet; need to modify this to allow devTools to work
+        // TODO: Enable before publishing to production
         // 'Content-Security-Policy': [ `script-src 'self' https://server.wwsu1069.org https://webrtc.ecl.ntt.com` ],
         'Origin': details.url.includes('webrtc.ecl.ntt.com') ? "https://server.wwsu1069.org" : "file://"
       }
@@ -25,13 +25,13 @@ function createWindow () {
     height: 720,
     minWidth: 480,
     minHeight: 360,
-    show: false,
+    show: false, // Do not show until we are ready to show via ready-to-show event
     title: `WWSU DJ Controls`,
     autoHideMenuBar: true, // Do not show manu bar unless alt is pressed
     webPreferences: {
       contextIsolation: true,
       enableRemoteModule: false, // electron's remote module is insecure
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload-renderer.js'),
       zoomFactor: 1.25,
     }
   })
@@ -63,13 +63,13 @@ function createCalendarWindow () {
     show: false,
     title: `WWSU DJ Controls - Calendar Process`,
     webPreferences: {
-      // contextIsolation blocks window variable setting. Disable for now.
-      // contextIsolation: true,
+      contextIsolation: true,
       enableRemoteModule: false, // electron's remote module is insecure
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload-calendar.js'),
       backgroundThrottling: false // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
     }
   });
+
   calendarWindow.on('closed', function () {
     if (mainWindow !== null) { createCalendarWindow() }
   });
