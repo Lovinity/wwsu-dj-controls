@@ -12,7 +12,7 @@ class WWSUMeta {
     constructor(socket, request) {
         this.endpoint = '/meta/get';
 
-        this._meta = { time: moment().toISOString(true), history: [], webchat: true, state: 'unknown' }
+        this._meta = { time: moment().toISOString(true), timezone: moment.tz.guess(), history: [], webchat: true, state: 'unknown' }
         this.events = new EventEmitter();
         this.request = request;
 

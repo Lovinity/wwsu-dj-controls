@@ -19,7 +19,7 @@ if (typeof require !== 'undefined') {
     }
 
     if (typeof moment === 'undefined') {
-        var moment = require('moment');
+        var moment = require('moment-timezone');
     }
 
     if (typeof _ === 'undefined') {
@@ -27,7 +27,7 @@ if (typeof require !== 'undefined') {
     }
 
 } else if (typeof TAFFY === 'undefined' || typeof WWSUdb === 'undefined' || typeof WWSUqueue === 'undefined' || typeof later === 'undefined' || typeof moment === 'undefined' || typeof _ === 'undefined') {
-    console.error(new Error('wwsu-calendar requires TAFFY, WWSUdb, WWSUqueue, later, lodash, and moment. However, neither node.js require() nor JQuery were available to require the scripts.'));
+    console.error(new Error('wwsu-calendar requires TAFFY, WWSUdb, WWSUqueue, later, lodash, and moment (moment-timezone). However, neither node.js require() nor JQuery were available to require the scripts.'));
 }
 
 // Later.js: Use local time instead of UTC for scheduling
@@ -41,7 +41,7 @@ later.date.localTime()
  * @requires WWSUdb Wrapper for TAFFYDB
  * @requires WWSUqueue Event queue
  * @requires later later.js recurring schedule management
- * @requires moment Moment.js date/time management
+ * @requires moment moment-timezone; moment.js date/time management with timezone support
  * @requires _ lodash utilities
  */
 class CalendarDb {

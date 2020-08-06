@@ -23,22 +23,22 @@ try {
     });
 
     // Announcements
-    var announcementIDs = [];
-    var announcements = new WWSUannouncements(socket, noReq, `website`);
+    var announcementsToastIDs = [];
+    var announcements = new WWSUannouncements(socket, noReq, [ 'website-toast', 'website-nowplaying', 'website-chat', 'website-schedule', 'website-request', 'website-directors' ]);
+
+    // Add event handlers
     announcements.on('insert', (record, db) => {
-        if (announcementIDs.indexOf(record.ID) === -1) {
-            announcementIDs.push(record.ID);
-            addAnnouncement(record);
-        }
-    })
-    announcements.on('replace', (db) => {
-        db.get().map((record) => {
-            if (announcementIDs.indexOf(record.ID) === -1) {
-                announcementIDs.push(record.ID);
-                addAnnouncement(record);
-            }
-        });
-    })
+        processAnnouncements();
+    });
+    announcements.on('update', (record, db) => {
+        processAnnouncements();
+    });
+    announcements.on('remove', (record, db) => {
+        processAnnouncements();
+    });
+    announcements.on('replace', (record, db) => {
+        processAnnouncements();
+    });
 
     var messageIDs = [];
     var navigation = new WWSUNavigation();
@@ -71,9 +71,7 @@ try {
     $(document).Toasts('create', {
         class: 'bg-danger',
         title: 'Error initializing',
-        body: 'There was an error initializing the website. Please report this to the engineer.',
-        autoHide: true,
-        delay: 10000,
+        body: 'There was an error initializing the website. Please report this to wwsu4@wright.edu.',
         icon: 'fas fa-skull-crossbones fa-lg',
     });
 }
@@ -186,9 +184,7 @@ $(document).ready(function () {
         $(document).Toasts('create', {
             class: 'bg-danger',
             title: 'Error in document.ready',
-            body: 'There was an error in the document.ready function. Please report this to the engineer.',
-            autoHide: true,
-            delay: 10000,
+            body: 'There was an error in the document.ready function. Please report this to wwsu4@wright.edu.',
             icon: 'fas fa-skull-crossbones fa-lg',
         });
     }
@@ -263,9 +259,7 @@ function checkDiscipline (cb) {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error checking discipline',
-                body: 'There was an error checking to see if you are allowed to access WWSU. Please try again later, or contact the engineer if this problem continues.',
-                autoHide: true,
-                delay: 10000,
+                body: 'There was an error checking to see if you are allowed to access WWSU. Please try again later, or contact wwsu4@wright.edu if this problem continues.',
                 icon: 'fas fa-skull-crossbones fa-lg',
             })
         }
@@ -384,12 +378,104 @@ meta.on('newMeta', (response, _meta) => {
                     $('.chat-status').html(`<h5>Chat Status: Prerecord</h5>
                     <p>The show airing now is prerecorded. There might not be anyone in the studio to see your messages.</p>`);
                 }
+
+                /* TODO
+                temp = document.querySelector(`#show-subscribe`)
+                temp2 = document.querySelector(`#show-subscribe-button`)
+                temp3 = document.querySelector(`#show-subscribe-name`)
+                temp4 = document.querySelector(`#show-subscribe-instructions`)
+                if (temp !== null) {
+                    subscribed = Subscriptions({ type: `calendar-all`, subtype: _meta.state.startsWith('sports') ? `Sports: ${_meta.show}` : _meta.show }).get().length
+                    if (subscribed === 0) {
+                        temp.style.display = 'block'
+                    } else {
+                        temp.style.display = 'none'
+                    }
+                    temp3.innerHTML = _meta.show
+                    if (notificationsSupported || isMobile) {
+                        if (device === null && !isMobile) {
+                            temp2.innerHTML = 'Show Prompt'
+                            temp4.innerHTML = `First, click "Show Prompt" and allow notifications. Then when the button turns to "Subscribe", click it again.`
+                            temp2.onclick = () => OneSignal.showSlidedownPrompt({ force: true })
+                            temp2.onkeydown = () => OneSignal.showSlidedownPrompt({ force: true })
+                        } else {
+                            temp2.innerHTML = 'Subscribe'
+                            temp4.innerHTML = `Click "Subscribe" to receive notifications when this show is on the air.`
+                            temp2.onclick = () => {
+                                if (_meta.state.startsWith('live_') || _meta.state.startsWith('remote_')) {
+                                    subscribe(`calendar-all`, _meta.show)
+                                } else if (_meta.state.startsWith('sports_') || _meta.state.startsWith('sportsremote_')) {
+                                    subscribe(`calendar-all`, `Sports: ${_meta.show}`)
+                                }
+                            }
+                            temp2.onkeydown = () => {
+                                if (_meta.state.startsWith('live_') || _meta.state.startsWith('remote_')) {
+                                    subscribe(`calendar-all`, _meta.show)
+                                } else if (_meta.state.startsWith('sports_') || _meta.state.startsWith('sportsremote_')) {
+                                    subscribe(`calendar-all`, `Sports: ${_meta.show}`)
+                                }
+                            }
+                        }
+                    } else {
+                        temp2.innerHTML = 'Not Supported'
+                        temp4.innerHTML = `Sorry, push notifications are not supported on your browser at this time. Stay tuned as we will be releasing a WWSU mobile app in the future!`
+                        temp2.onclick = () => { }
+                        temp2.onkeydown = () => { }
+                    }
+                }
+                */
             } else {
                 if (automationpost !== response.show) {
                     $('.chat-status').html(`<h5>Chat Status: Active</h5>
                     <p>Your messages should be received by the DJ / host.</p>`);
                     automationpost = response.show
                 }
+
+                /* TODO
+                temp = document.querySelector(`#show-subscribe`)
+                temp2 = document.querySelector(`#show-subscribe-button`)
+                temp3 = document.querySelector(`#show-subscribe-name`)
+                temp4 = document.querySelector(`#show-subscribe-instructions`)
+                if (temp !== null) {
+                    subscribed = Subscriptions({ type: `calendar-all`, subtype: _meta.state.startsWith('sports') ? `Sports: ${_meta.show}` : _meta.show }).get().length
+                    if (subscribed === 0) {
+                        temp.style.display = 'block'
+                    } else {
+                        temp.style.display = 'none'
+                    }
+                    temp3.innerHTML = _meta.show
+                    if (notificationsSupported || isMobile) {
+                        if (device === null && !isMobile) {
+                            temp2.innerHTML = 'Show Prompt'
+                            temp4.innerHTML = `First, click "Show Prompt" and allow notifications. Then when the button turns to "Subscribe", click it again.`
+                            temp2.onclick = () => OneSignal.showSlidedownPrompt({ force: true })
+                            temp2.onkeydown = () => OneSignal.showSlidedownPrompt({ force: true })
+                        } else {
+                            temp2.innerHTML = 'Subscribe'
+                            temp4.innerHTML = `Click "Subscribe" to receive notifications when this show goes on the air.`
+                            temp2.onclick = () => {
+                                if (_meta.state.startsWith('live_') || _meta.state.startsWith('remote_')) {
+                                    subscribe(`calendar-all`, _meta.show)
+                                } else if (_meta.state.startsWith('sports_') || _meta.state.startsWith('sportsremote_')) {
+                                    subscribe(`calendar-all`, `Sports: ${_meta.show}`)
+                                }
+                            }
+                            temp2.onkeydown = () => {
+                                if (_meta.state.startsWith('live_') || _meta.state.startsWith('remote_')) {
+                                    subscribe(`calendar-all`, _meta.show)
+                                } else if (_meta.state.startsWith('sports_') || _meta.state.startsWith('sportsremote_')) {
+                                    subscribe(`calendar-all`, `Sports: ${_meta.show}`)
+                                }
+                            }
+                        }
+                    } else {
+                        temp2.innerHTML = 'Not Supported'
+                        temp4.innerHTML = `Sorry, push notifications are not supported on your browser at this time. Stay tuned as we will be releasing a WWSU mobile app in the future!`
+                        temp2.onclick = () => { }
+                        temp2.onkeydown = () => { }
+                    }
+                }
+                */
             }
         }
 
@@ -446,26 +532,42 @@ function likeTrack (trackID) {
 
 
 /**
- * Display an announcement if it was not already displayed.
- * 
- * @param {object} announcement Announcement object received from WWSU API.
+ *  Update all announcements for the website.
  */
-function addAnnouncement (announcement) {
-    if (moment(meta.meta.time).isAfter(moment(announcement.starts)) && moment(meta.meta.time).isBefore(moment(announcement.expires))) {
-        var color = 'bg-light'
-        if (announcement.level === 'success') { color = 'bg-success' }
-        if (announcement.level === 'danger' || announcement.level === 'urgent') { color = 'bg-danger' }
-        if (announcement.level === 'warning') { color = 'bg-warning' }
-        announcementIDs.push(announcement.ID)
-        $(document).Toasts('create', {
-            class: color,
-            title: announcement.title,
-            subtitle: `Announcement`,
-            autohide: true,
-            delay: (announcement.displayTime * 1000) || 15000,
-            body: announcement.announcement,
-            icon: 'fas fa-bullhorn fa-lg',
-        })
+function processAnnouncements () {
+
+    // Process all announcements
+    var html = { nowplaying: ``, chat: ``, schedule: ``, request: ``, directors: `` };
+    announcements.db().each((announcement) => {
+        if (moment(meta.meta.time).isAfter(moment(announcement.starts)) && moment(meta.meta.time).isBefore(moment(announcement.expires))) {
+            if (announcement.type.startsWith('website-')) {
+                var type = announcement.type.replace('website-', '');
+                if (type === 'toast' && announcementsToastIDs.indexOf(announcement.ID) === -1) {
+                    announcementsToastIDs.push(announcement.ID)
+                    $(document).Toasts('create', {
+                        class: `bg-${announcement.level}`,
+                        title: announcement.title,
+                        subtitle: `Announcement`,
+                        autohide: true,
+                        delay: (announcement.displayTime * 1000) || 15000,
+                        body: announcement.announcement,
+                        icon: 'fas fa-bullhorn fa-lg',
+                    })
+                } else {
+                    html[ type ] += `<div class="alert alert-${announcement.level}">
+                    <h5>${announcement.title}</h5>
+                    ${announcement.announcement}
+                  </div>`;
+                }
+            }
+        }
+    });
+
+    // Display announcements on website
+    for (var announcementType in html) {
+        if (Object.prototype.hasOwnProperty.call(html, announcementType)) {
+            $(`.announcements-${announcementType}`).html(html[ announcementType ])
+        }
     }
 }
 
@@ -539,7 +641,7 @@ function scheduleSocket () {
  * Re-process calendar events
  */
 function updateCalendar () {
-    $('#schedule-events').html('');
+    $('#schedule-events').html('Processing...');
 
     // Get the value of the currently selected calendar item
     var selectedOption = $('#schedule-select').children("option:selected").val();
@@ -625,9 +727,7 @@ function updateCalendar () {
                     $(document).Toasts('create', {
                         class: 'bg-danger',
                         title: 'calendar error',
-                        body: 'There was an error in the updateCalendar function, event mapping. Please report this to the engineer.',
-                        autoHide: true,
-                        delay: 10000,
+                        body: 'There was an error in the updateCalendar function, event mapping. Please report this to wwsu4@wright.edu.',
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });
                 }
@@ -654,9 +754,7 @@ function displayEventInfo (showID) {
                 class: 'bg-danger',
                 title: 'calendar error',
                 subtitle: showID,
-                body: 'There was an error trying to load that event. Please report this to the engineer.',
-                autoHide: true,
-                delay: 10000,
+                body: 'There was an error trying to load that event. Please report this to wwsu4@wright.edu.',
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
             return null;
@@ -696,7 +794,7 @@ function displayEventInfo (showID) {
         if ([ 'canceled-changed' ].indexOf(event.scheduleType) !== -1) {
             badgeInfo = `<span class="badge-warning" style="font-size: 1em;">RESCHEDULED</span>`
         }
-        if ([ 'updated', 'updated-system' ].indexOf(event.scheduleType) !== -1 && (event.newTime !== null || event.duration !== null)) {
+        if ([ 'updated', 'updated-system' ].indexOf(event.scheduleType) !== -1 && event.timeChanged) {
             badgeInfo = `<span class="badge badge-warning" style="font-size: 1em;">TEMP TIME CHANGE</span>`
         }
         if ([ 'canceled', 'canceled-system' ].indexOf(event.scheduleType) !== -1) {
@@ -825,7 +923,7 @@ socket.on('messages', (data) => {
                         addMessage(data[ key ], firstTime)
                         break
                     case 'remove':
-                        $(`#msg-${data[ key ]} .direct-chat-text`).html(`XXX This message was deleted XXX`)
+                        removeMessage(data[ key ]);
                         break
                 }
             }
@@ -952,7 +1050,7 @@ function addMessage (data, firsttime = false) {
         }
 
     } else if (data.from === client) {
-        $('#chat-messages').append(`<div class="direct-chat-msg right">
+        $('#chat-messages').append(`<div class="direct-chat-msg right" id="msg-${data.ID}">
         <div class="direct-chat-infos clearfix">
           <span class="direct-chat-name float-right">YOU${data.to === 'DJ-private' ? ` (Private Message)` : ``}</span>
           <span class="direct-chat-timestamp float-left">${moment(data.createdAt).format('hh:mm A')}</span>
@@ -979,6 +1077,15 @@ function addMessage (data, firsttime = false) {
 }
 
 /**
+ * Remove a message if it exists.
+ * 
+ * @param {number} ID ID of the message to remove.
+ */
+function removeMessage(ID) {
+    $(`#msg-${ID}`).remove();
+}
+
+/**
  * Send whatever is in the message box as a message.
  * 
  * @param {boolean} privateMsg Is this message to be sent privately?
@@ -992,8 +1099,6 @@ function sendMessage (privateMsg = false) {
             autohide: true,
             delay: 10000,
             body: 'You did not type a message to send.',
-            autoHide: true,
-            delay: 10000,
             icon: 'fas fa-skull-crossbones fa-lg',
         });
         return null;
@@ -1007,8 +1112,6 @@ function sendMessage (privateMsg = false) {
                     autohide: true,
                     delay: 15000,
                     body: 'WWSU rejected your message. This could be because you are sending messages too fast, or you are banned from sending messages.',
-                    autoHide: true,
-                    delay: 10000,
                     icon: 'fas fa-skull-crossbones fa-lg',
                 });
                 return null
@@ -1019,9 +1122,7 @@ function sendMessage (privateMsg = false) {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error sending message',
-                body: 'There was an error sending your message. Please report this to the engineer.',
-                autoHide: true,
-                delay: 10000,
+                body: 'There was an error sending your message. Please report this to wwsu4@wright.edu.',
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
         }
@@ -1053,9 +1154,7 @@ function loadGenres () {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error loading genres for request system',
-                body: 'There was an error loading the available genres to filter by in the request system. Please report this to the engineer.',
-                autoHide: true,
-                delay: 10000,
+                body: 'There was an error loading the available genres to filter by in the request system. Please report this to wwsu4@wright.edu.',
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
         }
@@ -1107,9 +1206,7 @@ function loadTracks (skip = skipIt) {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error loading tracks for request system',
-                body: 'There was an error loading the tracks for the request system. Please report this to the engineer.',
-                autoHide: true,
-                delay: 10000,
+                body: 'There was an error loading the tracks for the request system. Please report this to wwsu4@wright.edu.',
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
         }
@@ -1162,9 +1259,7 @@ function loadTrackInfo (trackID) {
                 class: 'bg-danger',
                 title: 'Error loading track information',
                 subtitle: trackID,
-                body: 'There was an error loading track information. Please report this to the engineer.',
-                autoHide: true,
-                delay: 10000,
+                body: 'There was an error loading track information. Please report this to wwsu4@wright.edu.',
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
         }
@@ -1209,9 +1304,7 @@ function requestTrack (trackID) {
                 class: 'bg-danger',
                 title: 'Error placing track request',
                 subtitle: trackID,
-                body: 'There was an error placing the track request. Please report this to the engineer.',
-                autoHide: true,
-                delay: 10000,
+                body: 'There was an error placing the track request. Please report this to wwsu4@wright.edu.',
                 icon: 'fas fa-skull-crossbones fa-lg',
             });
         }

@@ -3,6 +3,7 @@
 // Worker for processing calendar events
 
 importScripts(`../../../plugins/moment/moment.min.js`)
+importScripts(`../../../plugins/lodash/js/lodash.min.js`)
 importScripts(`../../../plugins/wwsu-sails/js/wwsu.js`)
 importScripts(`../../../plugins/taffy/js/taffy-min.js`)
 importScripts(`../../../plugins/later/js/later.min.js`)
@@ -24,7 +25,7 @@ onmessage = function (e) {
   var innercontent = ``;
   var today = [];
 
-  var events = calendardb.getEvents(null);
+  var events = calendardb.getEvents(null, undefined, moment().add(1, 'days').toISOString(true));
 
   var noEvents = true
   var activeEvents = 0
@@ -95,6 +96,7 @@ onmessage = function (e) {
                 </div>`
       }
     })
+    .sort((a, b) => moment(a.start).valueOf() - moment(b.start).valueOf())
 
   if (noEvents) {
     innercontent = `

@@ -15,7 +15,7 @@ later.date.localTime()
  * @requires WWSUdb Wrapper for TAFFYDB
  * @requires WWSUqueue Event queue
  * @requires later later.js recurring schedule management
- * @requires moment Moment.js date/time management
+ * @requires moment Moment.js date/time management with timezone support
  * @requires _ lodash utilities
  */
 class CalendarDb {
@@ -23,11 +23,13 @@ class CalendarDb {
     /**
      * Construct the calendar database.
      * 
+     * @param {WWSUmeta} meta the initialized WWSUmeta class
      * @param {array} calendar Array of calendar entries to initialize with.
      * @param {array} schedule Array of schedule entries to initialize with.
      * @param {array} clockwheels Array of clockwheel records to initialize with.
      */
-    constructor(calendar = [], schedule = [], clockwheels = []) {
+    constructor(meta, calendar = [], schedule = [], clockwheels = []) {
+        this.meta = meta;
 
         // Initialize the databases
         this.calendar = new WWSUdb(TAFFY());
@@ -73,7 +75,7 @@ class CalendarDb {
      * @param {function} progressCallback Function fired after every task. Contains two number paramaters: Number of tasks completed, and total number of tasks.
      * @returns {?array} If callback not provided, function will return events.
      */
-    getEvents (callback = null, start = moment().subtract(1, 'days').toISOString(true), end = moment().add(1, 'days').toISOString(true), query = {}, calendardb = this.calendar, scheduledb = this.schedule, progressCallback = () => { }) {
+    getEvents (callback = null, start = moment(this.meta.meta.time).subtract(1, 'days').toISOString(true), end = moment(this.meta.meta.time).add(1, 'days').toISOString(true), query = {}, calendardb = this.calendar, scheduledb = this.schedule, progressCallback = () => { }) {
 
         // Event loop
         var tasks = 0;
@@ -203,6 +205,8 @@ class CalendarDb {
                     }
                 });
             }
+
+            // TODO: RESUME
 
             // Next, process recurring schedules if hours is not null (if hours is null, we should never process this even if DW or M is not null)
             if (schedule.recurH && schedule.recurH.length > 0) {

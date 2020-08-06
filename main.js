@@ -29,8 +29,7 @@ function createWindow () {
     title: `WWSU DJ Controls`,
     autoHideMenuBar: true, // Do not show manu bar unless alt is pressed
     webPreferences: {
-      // contextIsolation blocks window variable setting. Disable for now.
-      // contextIsolation: true,
+      contextIsolation: true,
       enableRemoteModule: false, // electron's remote module is insecure
       preload: path.join(__dirname, 'preload.js'),
       zoomFactor: 1.25,

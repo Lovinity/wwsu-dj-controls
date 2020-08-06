@@ -9,7 +9,7 @@
   "repository": "https://github.com/Lovinity/wwsu-dj-controls",
   "author": "Patrick Schmalstig",
   "devDependencies": {
-    "electron": "^9.0.4",
+    "electron": "^9.1.1",
     "prettier": "^2.0.5",
     "sloc": "^0.2.1"
   },

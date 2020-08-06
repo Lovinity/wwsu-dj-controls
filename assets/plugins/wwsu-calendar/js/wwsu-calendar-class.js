@@ -15,12 +15,13 @@ class WWSUcalendar extends CalendarDb {
      * Create the calendar class.
      * 
      * @param {sails.io} socket Socket connection to WWSU.
+     * @param {WWSUmeta} meta WWSUmeta initialized class
      * @param {WWSUreq} noReq WWSU request with no authorization
      * @param {WWSUreq} directorReq WWSU request with director authorization
      * @param {WWSUreq} djReq WWSU request with DJ authorization if using the DJ panel.
      */
-    constructor(socket, noReq, directorReq, djReq) {
-        super(); // Create the db
+    constructor(socket, meta, noReq, directorReq, djReq) {
+        super(meta); // Create the db
 
         this.endpoints = {
             add: '/calendar/add',
