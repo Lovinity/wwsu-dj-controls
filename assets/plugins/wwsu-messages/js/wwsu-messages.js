@@ -255,7 +255,7 @@ class WWSUmessages extends WWSUdb {
                     // Notify new messages
                     if (!this.firstLoad && this.notified.indexOf(message.ID) === -1) {
                         this.notified.push(message.ID);
-                        this.events.emitEvent('newMessage', [ message ]);
+                        this.emitEvent('newMessage', [ message ]);
                     }
                 }
             });

@@ -361,7 +361,7 @@ window.addEventListener("DOMContentLoaded", () => {
       $s = $("#second");
 
     function computeTimePositions($h, $m, $s) {
-      var now = moment(meta.meta.time),
+      var now = moment.parseZone(meta.meta.time),
         h = now.hours(),
         m = now.minutes(),
         s = now.seconds(),
@@ -646,7 +646,7 @@ window.addEventListener("DOMContentLoaded", () => {
     */
 
   // New meta information
-  meta.on("newMeta", (updated, fullMeta) => {
+  meta.on("newMeta", "renderer", (updated, fullMeta) => {
     try {
       // handle changingState blocking operations buttons
       if (typeof updated.changingState !== "undefined") {
@@ -795,7 +795,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   // Meta ticker
-  meta.on("metaTick", (fullMeta) => {
+  meta.on("metaTick", "renderer", (fullMeta) => {
     try {
       // Calculate queue time and countdown time
       queueLength =
@@ -832,7 +832,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
       // Update station time
       animations.add("meta-time", () => {
-        $(".meta-time").html(moment(fullMeta.time).format("llll"));
+        $(".meta-time").html(moment.parseZone(fullMeta.time).format("llll"));
       });
 
       // Update trackFinish
@@ -1162,16 +1162,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  status.on("replace", (db) => {
-    processStatus(db.get());
-  });
-  status.on("insert", (query, db) => {
-    processStatus(db.get());
-  });
-  status.on("update", (query, db) => {
-    processStatus(db.get());
-  });
-  status.on("remove", (query, db) => {
+  status.on("change", "renderer", (db) => {
     processStatus(db.get());
   });
 
@@ -1286,16 +1277,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  eas.on("replace", (db) => {
-    processEas(db.get());
-  });
-  eas.on("insert", (query, db) => {
-    processEas(db.get());
-  });
-  eas.on("update", (query, db) => {
-    processEas(db.get());
-  });
-  eas.on("remove", (query, db) => {
+  eas.on("change", "renderer", (db) => {
     processEas(db.get());
   });
 
@@ -1334,16 +1316,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  announcements.on("replace", (db) => {
-    processAnnouncements(db.get());
-  });
-  announcements.on("insert", (query, db) => {
-    processAnnouncements(db.get());
-  });
-  announcements.on("update", (query, db) => {
-    processAnnouncements(db.get());
-  });
-  announcements.on("remove", (query, db) => {
+  announcements.on("change", "renderer", (db) => {
     processAnnouncements(db.get());
   });
 
@@ -1378,7 +1351,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // execute updateCalendar function each time calendar has been changed, but add a 1-second buffer so we don't update a million times at once.
   var calTimer;
-  calendar.on("calendarUpdated", () => {
+  calendar.on("calendarUpdated", "renderer", () => {
     clearTimeout(calTimer);
     calTimer = setTimeout(() => {
       updateCalendar();
@@ -1390,7 +1363,7 @@ window.addEventListener("DOMContentLoaded", () => {
     */
 
   // Count event throws number of issues that need reviewed.
-  logs.on("count", (danger, orange, warning, info) => {
+  logs.on("count", "renderer", (danger, orange, warning, info) => {
     todos.accountability = {
       danger,
       orange,
@@ -1460,19 +1433,10 @@ window.addEventListener("DOMContentLoaded", () => {
         TRACK REQUESTS FUNCTIONS
     */
 
-  requests.on("replace", (db) => {
+  requests.on("change", "renderer", (db) => {
     requests.updateTable();
   });
-  requests.on("insert", (query, db) => {
-    requests.updateTable();
-  });
-  requests.on("update", (query, db) => {
-    requests.updateTable();
-  });
-  requests.on("remove", (query, db) => {
-    requests.updateTable();
-  });
-  requests.on("trackRequested", (request) => {
+  requests.on("trackRequested", "renderer", (request) => {
     $(document).Toasts("create", {
       class: "bg-primary",
       title: "Track Requested",
@@ -1490,16 +1454,7 @@ Track: <strong>${request.trackname}</strong>`,
         DJ FUNCTIONS
     */
 
-  djs.on("replace", (db) => {
-    djs.updateTable();
-  });
-  djs.on("insert", (query, db) => {
-    djs.updateTable();
-  });
-  djs.on("update", (query, db) => {
-    djs.updateTable();
-  });
-  djs.on("remove", (query, db) => {
+  djs.on("change", "renderer", (db) => {
     djs.updateTable();
   });
 
@@ -1507,16 +1462,7 @@ Track: <strong>${request.trackname}</strong>`,
         RECIPIENTS FUNCTIONS
     */
 
-  recipients.on("replace", (db) => {
-    messages.updateRecipientsTable();
-  });
-  recipients.on("insert", (query, db) => {
-    messages.updateRecipientsTable();
-  });
-  recipients.on("update", (query, db) => {
-    messages.updateRecipientsTable();
-  });
-  recipients.on("remove", (query, db) => {
+  recipients.on("change", "renderer", (db) => {
     messages.updateRecipientsTable();
   });
   recipients.on("recipientChanged", (recipient) => {
@@ -1526,22 +1472,11 @@ Track: <strong>${request.trackname}</strong>`,
   /*
         MESSAGES FUNCTIONS
     */
-
-  messages.on("replace", (db) => {
-    messages.updateRecipient();
-    messages.updateRecipientsTable();
-  });
-  messages.on("insert", (query, db) => {
-    messages.updateRecipient();
-    messages.updateRecipientsTable();
-  });
-  messages.on("update", (query, db) => {
-    messages.updateRecipient();
-    messages.updateRecipientsTable();
-  });
-  messages.on("remove", (query, db) => {
+   messages.on("remove", "renderer", (query, db) => {
     messages.read = messages.read.filter((value) => value !== query);
     messages.notified = messages.notified.filter((value) => value !== query);
+  });
+  messages.on("change", "renderer", (db) => {
     messages.updateRecipient();
     messages.updateRecipientsTable();
   });

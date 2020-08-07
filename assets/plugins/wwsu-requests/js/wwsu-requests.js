@@ -168,7 +168,7 @@ class WWSUrequests extends WWSUdb {
                     ])
 
                     if (this.IDs.indexOf(request.ID) === -1) {
-                        this.events.emitEvent('trackRequested', [ request ]);
+                        this.emitEvent('trackRequested', [ request ]);
                         this.IDs.push(request.ID);
                     }
                 });

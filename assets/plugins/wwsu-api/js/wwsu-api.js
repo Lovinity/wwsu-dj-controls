@@ -109,7 +109,6 @@ class WWSUapi {
                                     return;
                                 }
                                 var value = form.getValue();
-                                console.dir(value);
                                 this.query(value.path, value.req, value.data, (response) => {
                                     form.setValue({ path: value.path, req: value.req, data: value.data, response: JSON.stringify(response) })
                                 });

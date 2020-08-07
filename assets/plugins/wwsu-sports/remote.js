@@ -3,7 +3,6 @@
 var sportsdb = new WWSUdb(TAFFY())
 
 var changeData = (data) => {
-  console.dir(data)
   switch (data.name) {
     case `wsuScore`:
       document.querySelector('#wsu-score').value = data.value
@@ -38,15 +37,15 @@ var changeData = (data) => {
   }
 }
 
-sportsdb.setOnInsert((data) => {
+sportsdb.on('insert', "overlay", (data) => {
   changeData(data)
 })
 
-sportsdb.setOnUpdate((data) => {
+sportsdb.on('update', "overlay", (data) => {
   changeData(data)
 })
 
-sportsdb.setOnReplace((db) => {
+sportsdb.on('replace', "overlay",(db) => {
   db.each((record) => {
     changeData(record)
   })

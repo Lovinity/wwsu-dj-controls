@@ -1,7 +1,5 @@
-/* global EventEmitter */
-
 // This class handles states and operations.
-class WWSUstate {
+class WWSUstate extends WWSUevents {
 
     /**
      * Construct the class
@@ -12,6 +10,7 @@ class WWSUstate {
      * @param {WWSUreq} hostReq Request with host authorization
      */
     constructor(socket, hosts, calendar, hostReq) {
+        super();
         this.endpoints = {
             return: '/state/return',
             queuePSA: '/songs/queue-psa',
@@ -28,7 +27,6 @@ class WWSUstate {
         this.data = {
             get: {}
         };
-        this.events = new EventEmitter();
         this.hosts = hosts;
         this.calendar = calendar;
 
@@ -55,16 +53,6 @@ class WWSUstate {
                 timeoutProgressbar: true,
             }
         );
-    }
-
-    /**
-     * Listen to an event.
-     * 
-     * @param {string} event Name of event.
-     * @param {function} fn Function to call when the event is fired
-     */
-    on (event, fn) {
-        this.events.on(event, fn);
     }
 
     /**

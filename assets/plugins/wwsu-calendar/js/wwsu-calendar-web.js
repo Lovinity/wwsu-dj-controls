@@ -29,10 +29,15 @@ class CalendarDb {
         this.meta = meta;
 
         // Set timezone
-        // TODO: meta event
         later.date.timezone(this.meta.meta.timezone);
 
-        console.log(this.meta.meta.timezone);
+        // Update timezone when meta calls for it
+        meta.on("newMeta", "CalendarDb", (data) => {
+            if (data.timezone) {
+                console.log(`New timezone set: ${data.timezone}`);
+                later.date.timezone(data.timezone);
+            }
+        });
 
         // Initialize the databases
         this.calendar = new WWSUdb(TAFFY());
@@ -78,13 +83,16 @@ class CalendarDb {
      * @param {function} progressCallback Function fired after every task. Contains two number paramaters: Number of tasks completed, and total number of tasks.
      * @returns {?array} If callback not provided, function will return events.
      */
-    getEvents (callback = null, start = moment(this.meta.meta.time).subtract(1, 'days').toISOString(true), end = moment(this.meta.meta.time).add(1, 'days').toISOString(true), query = {}, calendardb = this.calendar, scheduledb = this.schedule, progressCallback = () => { }) {
+    getEvents (callback = null, start = moment.parseZone(this.meta.meta.time).subtract(1, 'days').toISOString(true), end = moment.parseZone(this.meta.meta.time).add(1, 'days').toISOString(true), query = {}, calendardb = this.calendar, scheduledb = this.schedule, progressCallback = () => { }) {
 
         // Event loop
         var tasks = 0;
         var tasksCompleted = 0;
 
         var events = [];
+
+        console.dir(start);
+        console.dir(end);
 
         /**
          * Extends this.processRecord by filtering out events that do not fall within start and end.
@@ -95,6 +103,8 @@ class CalendarDb {
          */
         var _processRecord = (calendar, schedule, eventStart) => {
             var criteria = this.processRecord(calendar, schedule, eventStart);
+
+            if (criteria.scheduleType !== null) console.dir(criteria);
 
             // This event is within our time range if one or more of the following is true:
             // A. Calendar event start is same or before generated event start.

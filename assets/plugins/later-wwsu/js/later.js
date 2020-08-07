@@ -858,12 +858,42 @@ later = function() {
     };
   };
   later.date = {};
-  // Modified for moment-timezone
+
+  // WWSU modified for moment-timezone
   later.date.timezone = function(timezone) {
     later.date.build = function(Y, M, D, h, m, s) {
-      return moment([Y, M, D, h, m, s]).tz(timezone).toDate();
+      if (timezone) {
+        console.log('---')
+        // First get current offset
+        var dNow = new Date(Y, M, D, h, m, s);
+        console.dir(dNow);
+
+        var localTime = dNow.getTime();
+        var localOffset = dNow.getTimezoneOffset() * 60000;
+        // console.log(`Local offset: ${localOffset}`);
+
+        // Then, get UTC time
+        var utc = localTime + localOffset;
+        // console.log(`utc: ${utc}`);
+
+        // Next, get destination offset in hours
+        var offset = moment().tz(timezone).utcOffset() / 60;
+        // console.log(`Remote offset: ${offset}`);
+        var conversion = utc + (3600000*offset);
+        // console.log(`conversion: ${conversion}`);
+
+        // Make new date
+        var nd = new Date(conversion);
+
+        console.dir(nd);
+
+        timezone = undefined;
+
+        return nd;
+      }
+      return new Date(Y, M, D, h, m, s);
     };
-    var get = timezone !== "UTC" ? "get" : "getUTC", d = Date.prototype;
+    var get = !timezone || timezone !== "UTC" ? "get" : "getUTC", d = Date.prototype;
     later.date.getYear = d[get + "FullYear"];
     later.date.getMonth = d[get + "Month"];
     later.date.getDate = d[get + "Date"];
@@ -871,14 +901,15 @@ later = function() {
     later.date.getHour = d[get + "Hours"];
     later.date.getMin = d[get + "Minutes"];
     later.date.getSec = d[get + "Seconds"];
-    later.date.isUTC = timezone === "UTC";
+    later.date.isUTC = timezone && timezone === "UTC";
   };
   later.date.UTC = function() {
     later.date.timezone("UTC");
   };
   later.date.localTime = function() {
-    later.date.timezone(moment.tz.guess());
+    later.date.timezone();
   };
+
   later.date.UTC();
   later.SEC = 1e3;
   later.MIN = later.SEC * 60;
@@ -906,6 +937,643 @@ later = function() {
   later.date.prevRollover = function(d, val, constraint, period) {
     var cur = constraint.val(d);
     return val >= cur || !val ? period.start(period.prev(d, period.val(d) - 1)) : period.start(d);
+  };
+  later.parse = {};
+  later.parse.cron = function(expr, hasSeconds) {
+    var NAMES = {
+      JAN: 1,
+      FEB: 2,
+      MAR: 3,
+      APR: 4,
+      MAY: 5,
+      JUN: 6,
+      JUL: 7,
+      AUG: 8,
+      SEP: 9,
+      OCT: 10,
+      NOV: 11,
+      DEC: 12,
+      SUN: 1,
+      MON: 2,
+      TUE: 3,
+      WED: 4,
+      THU: 5,
+      FRI: 6,
+      SAT: 7
+    };
+    var REPLACEMENTS = {
+      "* * * * * *": "0/1 * * * * *",
+      "@YEARLY": "0 0 1 1 *",
+      "@ANNUALLY": "0 0 1 1 *",
+      "@MONTHLY": "0 0 1 * *",
+      "@WEEKLY": "0 0 * * 0",
+      "@DAILY": "0 0 * * *",
+      "@HOURLY": "0 * * * *"
+    };
+    var FIELDS = {
+      s: [ 0, 0, 59 ],
+      m: [ 1, 0, 59 ],
+      h: [ 2, 0, 23 ],
+      D: [ 3, 1, 31 ],
+      M: [ 4, 1, 12 ],
+      Y: [ 6, 1970, 2099 ],
+      d: [ 5, 1, 7, 1 ]
+    };
+    function getValue(value, offset, max) {
+      return isNaN(value) ? NAMES[value] || null : Math.min(+value + (offset || 0), max || 9999);
+    }
+    function cloneSchedule(sched) {
+      var clone = {}, field;
+      for (field in sched) {
+        if (field !== "dc" && field !== "d") {
+          clone[field] = sched[field].slice(0);
+        }
+      }
+      return clone;
+    }
+    function add(sched, name, min, max, inc) {
+      var i = min;
+      if (!sched[name]) {
+        sched[name] = [];
+      }
+      while (i <= max) {
+        if (sched[name].indexOf(i) < 0) {
+          sched[name].push(i);
+        }
+        i += inc || 1;
+      }
+      sched[name].sort(function(a, b) {
+        return a - b;
+      });
+    }
+    function addHash(schedules, curSched, value, hash) {
+      if (curSched.d && !curSched.dc || curSched.dc && curSched.dc.indexOf(hash) < 0) {
+        schedules.push(cloneSchedule(curSched));
+        curSched = schedules[schedules.length - 1];
+      }
+      add(curSched, "d", value, value);
+      add(curSched, "dc", hash, hash);
+    }
+    function addWeekday(s, curSched, value) {
+      var except1 = {}, except2 = {};
+      if (value === 1) {
+        add(curSched, "D", 1, 3);
+        add(curSched, "d", NAMES.MON, NAMES.FRI);
+        add(except1, "D", 2, 2);
+        add(except1, "d", NAMES.TUE, NAMES.FRI);
+        add(except2, "D", 3, 3);
+        add(except2, "d", NAMES.TUE, NAMES.FRI);
+      } else {
+        add(curSched, "D", value - 1, value + 1);
+        add(curSched, "d", NAMES.MON, NAMES.FRI);
+        add(except1, "D", value - 1, value - 1);
+        add(except1, "d", NAMES.MON, NAMES.THU);
+        add(except2, "D", value + 1, value + 1);
+        add(except2, "d", NAMES.TUE, NAMES.FRI);
+      }
+      s.exceptions.push(except1);
+      s.exceptions.push(except2);
+    }
+    function addRange(item, curSched, name, min, max, offset) {
+      var incSplit = item.split("/"), inc = +incSplit[1], range = incSplit[0];
+      if (range !== "*" && range !== "0") {
+        var rangeSplit = range.split("-");
+        min = getValue(rangeSplit[0], offset, max);
+        max = getValue(rangeSplit[1], offset, max) || max;
+      }
+      add(curSched, name, min, max, inc);
+    }
+    function parse(item, s, name, min, max, offset) {
+      var value, split, schedules = s.schedules, curSched = schedules[schedules.length - 1];
+      if (item === "L") {
+        item = min - 1;
+      }
+      if ((value = getValue(item, offset, max)) !== null) {
+        add(curSched, name, value, value);
+      } else if ((value = getValue(item.replace("W", ""), offset, max)) !== null) {
+        addWeekday(s, curSched, value);
+      } else if ((value = getValue(item.replace("L", ""), offset, max)) !== null) {
+        addHash(schedules, curSched, value, min - 1);
+      } else if ((split = item.split("#")).length === 2) {
+        value = getValue(split[0], offset, max);
+        addHash(schedules, curSched, value, getValue(split[1]));
+      } else {
+        addRange(item, curSched, name, min, max, offset);
+      }
+    }
+    function isHash(item) {
+      return item.indexOf("#") > -1 || item.indexOf("L") > 0;
+    }
+    function itemSorter(a, b) {
+      return isHash(a) && !isHash(b) ? 1 : a - b;
+    }
+    function parseExpr(expr) {
+      var schedule = {
+        schedules: [ {} ],
+        exceptions: []
+      }, components = expr.replace(/(\s)+/g, " ").split(" "), field, f, component, items;
+      for (field in FIELDS) {
+        f = FIELDS[field];
+        component = components[f[0]];
+        if (component && component !== "*" && component !== "?") {
+          items = component.split(",").sort(itemSorter);
+          var i, length = items.length;
+          for (i = 0; i < length; i++) {
+            parse(items[i], schedule, field, f[1], f[2], f[3]);
+          }
+        }
+      }
+      return schedule;
+    }
+    function prepareExpr(expr) {
+      var prepared = expr.toUpperCase();
+      return REPLACEMENTS[prepared] || prepared;
+    }
+    var e = prepareExpr(expr);
+    return parseExpr(hasSeconds ? e : "0 " + e);
+  };
+  later.parse.recur = function() {
+    var schedules = [], exceptions = [], cur, curArr = schedules, curName, values, every, modifier, applyMin, applyMax, i, last;
+    function add(name, min, max) {
+      name = modifier ? name + "_" + modifier : name;
+      if (!cur) {
+        curArr.push({});
+        cur = curArr[0];
+      }
+      if (!cur[name]) {
+        cur[name] = [];
+      }
+      curName = cur[name];
+      if (every) {
+        values = [];
+        for (i = min; i <= max; i += every) {
+          values.push(i);
+        }
+        last = {
+          n: name,
+          x: every,
+          c: curName.length,
+          m: max
+        };
+      }
+      values = applyMin ? [ min ] : applyMax ? [ max ] : values;
+      var length = values.length;
+      for (i = 0; i < length; i += 1) {
+        var val = values[i];
+        if (curName.indexOf(val) < 0) {
+          curName.push(val);
+        }
+      }
+      values = every = modifier = applyMin = applyMax = 0;
+    }
+    return {
+      schedules: schedules,
+      exceptions: exceptions,
+      on: function() {
+        values = arguments[0] instanceof Array ? arguments[0] : arguments;
+        return this;
+      },
+      every: function(x) {
+        every = x || 1;
+        return this;
+      },
+      after: function(x) {
+        modifier = "a";
+        values = [ x ];
+        return this;
+      },
+      before: function(x) {
+        modifier = "b";
+        values = [ x ];
+        return this;
+      },
+      first: function() {
+        applyMin = 1;
+        return this;
+      },
+      last: function() {
+        applyMax = 1;
+        return this;
+      },
+      time: function() {
+        for (var i = 0, len = values.length; i < len; i++) {
+          var split = values[i].split(":");
+          if (split.length < 3) split.push(0);
+          values[i] = +split[0] * 3600 + +split[1] * 60 + +split[2];
+        }
+        add("t");
+        return this;
+      },
+      second: function() {
+        add("s", 0, 59);
+        return this;
+      },
+      minute: function() {
+        add("m", 0, 59);
+        return this;
+      },
+      hour: function() {
+        add("h", 0, 23);
+        return this;
+      },
+      dayOfMonth: function() {
+        add("D", 1, applyMax ? 0 : 31);
+        return this;
+      },
+      dayOfWeek: function() {
+        add("d", 1, 7);
+        return this;
+      },
+      onWeekend: function() {
+        values = [ 1, 7 ];
+        return this.dayOfWeek();
+      },
+      onWeekday: function() {
+        values = [ 2, 3, 4, 5, 6 ];
+        return this.dayOfWeek();
+      },
+      dayOfWeekCount: function() {
+        add("dc", 1, applyMax ? 0 : 5);
+        return this;
+      },
+      dayOfYear: function() {
+        add("dy", 1, applyMax ? 0 : 366);
+        return this;
+      },
+      weekOfMonth: function() {
+        add("wm", 1, applyMax ? 0 : 5);
+        return this;
+      },
+      weekOfYear: function() {
+        add("wy", 1, applyMax ? 0 : 53);
+        return this;
+      },
+      month: function() {
+        add("M", 1, 12);
+        return this;
+      },
+      year: function() {
+        add("Y", 1970, 2450);
+        return this;
+      },
+      fullDate: function() {
+        for (var i = 0, len = values.length; i < len; i++) {
+          values[i] = values[i].getTime();
+        }
+        add("fd");
+        return this;
+      },
+      customModifier: function(id, vals) {
+        var custom = later.modifier[id];
+        if (!custom) throw new Error("Custom modifier " + id + " not recognized!");
+        modifier = id;
+        values = arguments[1] instanceof Array ? arguments[1] : [ arguments[1] ];
+        return this;
+      },
+      customPeriod: function(id) {
+        var custom = later[id];
+        if (!custom) throw new Error("Custom time period " + id + " not recognized!");
+        add(id, custom.extent(new Date())[0], custom.extent(new Date())[1]);
+        return this;
+      },
+      startingOn: function(start) {
+        return this.between(start, last.m);
+      },
+      between: function(start, end) {
+        cur[last.n] = cur[last.n].splice(0, last.c);
+        every = last.x;
+        add(last.n, start, end);
+        return this;
+      },
+      and: function() {
+        cur = curArr[curArr.push({}) - 1];
+        return this;
+      },
+      except: function() {
+        curArr = exceptions;
+        cur = null;
+        return this;
+      }
+    };
+  };
+  later.parse.text = function(str) {
+    var recur = later.parse.recur, pos = 0, input = "", error;
+    var TOKENTYPES = {
+      eof: /^$/,
+      rank: /^((\d+)(st|nd|rd|th)?)\b/,
+      time: /^((([0]?[1-9]|1[0-2]):[0-5]\d(\s)?(am|pm))|(([0]?\d|1\d|2[0-3]):[0-5]\d))\b/,
+      dayName: /^((sun|mon|tue(s)?|wed(nes)?|thu(r(s)?)?|fri|sat(ur)?)(day)?)\b/,
+      monthName: /^(jan(uary)?|feb(ruary)?|ma((r(ch)?)?|y)|apr(il)?|ju(ly|ne)|aug(ust)?|oct(ober)?|(sept|nov|dec)(ember)?)\b/,
+      yearIndex: /^(\d\d\d\d)\b/,
+      every: /^every\b/,
+      after: /^after\b/,
+      before: /^before\b/,
+      second: /^(s|sec(ond)?(s)?)\b/,
+      minute: /^(m|min(ute)?(s)?)\b/,
+      hour: /^(h|hour(s)?)\b/,
+      day: /^(day(s)?( of the month)?)\b/,
+      dayInstance: /^day instance\b/,
+      dayOfWeek: /^day(s)? of the week\b/,
+      dayOfYear: /^day(s)? of the year\b/,
+      weekOfYear: /^week(s)?( of the year)?\b/,
+      weekOfMonth: /^week(s)? of the month\b/,
+      weekday: /^weekday\b/,
+      weekend: /^weekend\b/,
+      month: /^month(s)?\b/,
+      year: /^year(s)?\b/,
+      between: /^between (the)?\b/,
+      start: /^(start(ing)? (at|on( the)?)?)\b/,
+      at: /^(at|@)\b/,
+      and: /^(,|and\b)/,
+      except: /^(except\b)/,
+      also: /(also)\b/,
+      first: /^(first)\b/,
+      last: /^last\b/,
+      "in": /^in\b/,
+      of: /^of\b/,
+      onthe: /^on the\b/,
+      on: /^on\b/,
+      through: /(-|^(to|through)\b)/
+    };
+    var NAMES = {
+      jan: 1,
+      feb: 2,
+      mar: 3,
+      apr: 4,
+      may: 5,
+      jun: 6,
+      jul: 7,
+      aug: 8,
+      sep: 9,
+      oct: 10,
+      nov: 11,
+      dec: 12,
+      sun: 1,
+      mon: 2,
+      tue: 3,
+      wed: 4,
+      thu: 5,
+      fri: 6,
+      sat: 7,
+      "1st": 1,
+      fir: 1,
+      "2nd": 2,
+      sec: 2,
+      "3rd": 3,
+      thi: 3,
+      "4th": 4,
+      "for": 4
+    };
+    function t(start, end, text, type) {
+      return {
+        startPos: start,
+        endPos: end,
+        text: text,
+        type: type
+      };
+    }
+    function peek(expected) {
+      var scanTokens = expected instanceof Array ? expected : [ expected ], whiteSpace = /\s+/, token, curInput, m, scanToken, start, len;
+      scanTokens.push(whiteSpace);
+      start = pos;
+      while (!token || token.type === whiteSpace) {
+        len = -1;
+        curInput = input.substring(start);
+        token = t(start, start, input.split(whiteSpace)[0]);
+        var i, length = scanTokens.length;
+        for (i = 0; i < length; i++) {
+          scanToken = scanTokens[i];
+          m = scanToken.exec(curInput);
+          if (m && m.index === 0 && m[0].length > len) {
+            len = m[0].length;
+            token = t(start, start + len, curInput.substring(0, len), scanToken);
+          }
+        }
+        if (token.type === whiteSpace) {
+          start = token.endPos;
+        }
+      }
+      return token;
+    }
+    function scan(expectedToken) {
+      var token = peek(expectedToken);
+      pos = token.endPos;
+      return token;
+    }
+    function parseThroughExpr(tokenType) {
+      var start = +parseTokenValue(tokenType), end = checkAndParse(TOKENTYPES.through) ? +parseTokenValue(tokenType) : start, nums = [];
+      for (var i = start; i <= end; i++) {
+        nums.push(i);
+      }
+      return nums;
+    }
+    function parseRanges(tokenType) {
+      var nums = parseThroughExpr(tokenType);
+      while (checkAndParse(TOKENTYPES.and)) {
+        nums = nums.concat(parseThroughExpr(tokenType));
+      }
+      return nums;
+    }
+    function parseEvery(r) {
+      var num, period, start, end;
+      if (checkAndParse(TOKENTYPES.weekend)) {
+        r.on(NAMES.sun, NAMES.sat).dayOfWeek();
+      } else if (checkAndParse(TOKENTYPES.weekday)) {
+        r.on(NAMES.mon, NAMES.tue, NAMES.wed, NAMES.thu, NAMES.fri).dayOfWeek();
+      } else {
+        num = parseTokenValue(TOKENTYPES.rank);
+        r.every(num);
+        period = parseTimePeriod(r);
+        if (checkAndParse(TOKENTYPES.start)) {
+          num = parseTokenValue(TOKENTYPES.rank);
+          r.startingOn(num);
+          parseToken(period.type);
+        } else if (checkAndParse(TOKENTYPES.between)) {
+          start = parseTokenValue(TOKENTYPES.rank);
+          if (checkAndParse(TOKENTYPES.and)) {
+            end = parseTokenValue(TOKENTYPES.rank);
+            r.between(start, end);
+          }
+        }
+      }
+    }
+    function parseOnThe(r) {
+      if (checkAndParse(TOKENTYPES.first)) {
+        r.first();
+      } else if (checkAndParse(TOKENTYPES.last)) {
+        r.last();
+      } else {
+        r.on(parseRanges(TOKENTYPES.rank));
+      }
+      parseTimePeriod(r);
+    }
+    function parseScheduleExpr(str) {
+      pos = 0;
+      input = str;
+      error = -1;
+      var r = recur();
+      while (pos < input.length && error < 0) {
+        var token = parseToken([ TOKENTYPES.every, TOKENTYPES.after, TOKENTYPES.before, TOKENTYPES.onthe, TOKENTYPES.on, TOKENTYPES.of, TOKENTYPES["in"], TOKENTYPES.at, TOKENTYPES.and, TOKENTYPES.except, TOKENTYPES.also ]);
+        switch (token.type) {
+         case TOKENTYPES.every:
+          parseEvery(r);
+          break;
+
+         case TOKENTYPES.after:
+          if (peek(TOKENTYPES.time).type !== undefined) {
+            r.after(parseTokenValue(TOKENTYPES.time));
+            r.time();
+          } else {
+            r.after(parseTokenValue(TOKENTYPES.rank));
+            parseTimePeriod(r);
+          }
+          break;
+
+         case TOKENTYPES.before:
+          if (peek(TOKENTYPES.time).type !== undefined) {
+            r.before(parseTokenValue(TOKENTYPES.time));
+            r.time();
+          } else {
+            r.before(parseTokenValue(TOKENTYPES.rank));
+            parseTimePeriod(r);
+          }
+          break;
+
+         case TOKENTYPES.onthe:
+          parseOnThe(r);
+          break;
+
+         case TOKENTYPES.on:
+          r.on(parseRanges(TOKENTYPES.dayName)).dayOfWeek();
+          break;
+
+         case TOKENTYPES.of:
+          r.on(parseRanges(TOKENTYPES.monthName)).month();
+          break;
+
+         case TOKENTYPES["in"]:
+          r.on(parseRanges(TOKENTYPES.yearIndex)).year();
+          break;
+
+         case TOKENTYPES.at:
+          r.on(parseTokenValue(TOKENTYPES.time)).time();
+          while (checkAndParse(TOKENTYPES.and)) {
+            r.on(parseTokenValue(TOKENTYPES.time)).time();
+          }
+          break;
+
+         case TOKENTYPES.and:
+          break;
+
+         case TOKENTYPES.also:
+          r.and();
+          break;
+
+         case TOKENTYPES.except:
+          r.except();
+          break;
+
+         default:
+          error = pos;
+        }
+      }
+      return {
+        schedules: r.schedules,
+        exceptions: r.exceptions,
+        error: error
+      };
+    }
+    function parseTimePeriod(r) {
+      var timePeriod = parseToken([ TOKENTYPES.second, TOKENTYPES.minute, TOKENTYPES.hour, TOKENTYPES.dayOfYear, TOKENTYPES.dayOfWeek, TOKENTYPES.dayInstance, TOKENTYPES.day, TOKENTYPES.month, TOKENTYPES.year, TOKENTYPES.weekOfMonth, TOKENTYPES.weekOfYear ]);
+      switch (timePeriod.type) {
+       case TOKENTYPES.second:
+        r.second();
+        break;
+
+       case TOKENTYPES.minute:
+        r.minute();
+        break;
+
+       case TOKENTYPES.hour:
+        r.hour();
+        break;
+
+       case TOKENTYPES.dayOfYear:
+        r.dayOfYear();
+        break;
+
+       case TOKENTYPES.dayOfWeek:
+        r.dayOfWeek();
+        break;
+
+       case TOKENTYPES.dayInstance:
+        r.dayOfWeekCount();
+        break;
+
+       case TOKENTYPES.day:
+        r.dayOfMonth();
+        break;
+
+       case TOKENTYPES.weekOfMonth:
+        r.weekOfMonth();
+        break;
+
+       case TOKENTYPES.weekOfYear:
+        r.weekOfYear();
+        break;
+
+       case TOKENTYPES.month:
+        r.month();
+        break;
+
+       case TOKENTYPES.year:
+        r.year();
+        break;
+
+       default:
+        error = pos;
+      }
+      return timePeriod;
+    }
+    function checkAndParse(tokenType) {
+      var found = peek(tokenType).type === tokenType;
+      if (found) {
+        scan(tokenType);
+      }
+      return found;
+    }
+    function parseToken(tokenType) {
+      var t = scan(tokenType);
+      if (t.type) {
+        t.text = convertString(t.text, tokenType);
+      } else {
+        error = pos;
+      }
+      return t;
+    }
+    function parseTokenValue(tokenType) {
+      return parseToken(tokenType).text;
+    }
+    function convertString(str, tokenType) {
+      var output = str;
+      switch (tokenType) {
+       case TOKENTYPES.time:
+        var parts = str.split(/(:|am|pm)/), hour = parts[3] === "pm" && parts[0] < 12 ? parseInt(parts[0], 10) + 12 : parts[0], min = parts[2].trim();
+        output = (hour.length === 1 ? "0" : "") + hour + ":" + min;
+        break;
+
+       case TOKENTYPES.rank:
+        output = parseInt(/^\d+/.exec(str)[0], 10);
+        break;
+
+       case TOKENTYPES.monthName:
+       case TOKENTYPES.dayName:
+        output = NAMES[str.substring(0, 3)];
+        break;
+      }
+      return output;
+    }
+    return parseScheduleExpr(str.toLowerCase());
   };
   return later;
 }();

@@ -21,7 +21,6 @@ class WWSUstatus extends WWSUdb {
         this.data = {
             get: {}
         };
-        this.events = new EventEmitter();
 
         this.assignSocketEvent('status', socket);
 

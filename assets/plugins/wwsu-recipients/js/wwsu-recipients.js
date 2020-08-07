@@ -90,7 +90,7 @@ class WWSUrecipients extends WWSUdb {
                         $('.btn-recipient-choose').click((e) => {
                             var recipient = this.find().find((recipient) => recipient.ID === parseInt($(e.currentTarget).data('id')));
                             this.activeRecipient = recipient;
-                            this.events.emitEvent('recipientChanged', [ recipient ]);
+                            this.emitEvent('recipientChanged', [ recipient ]);
                             this.formModal.iziModal('close');
                         });
                     }

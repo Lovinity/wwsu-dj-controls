@@ -25,7 +25,6 @@ class WWSUhosts extends WWSUdb {
         this.data = {
             get: { host: machineID, app: app },
         };
-        this.events = new EventEmitter();
         this.meta = meta;
 
         this.assignSocketEvent('hosts', socket);

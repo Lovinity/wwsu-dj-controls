@@ -1,10 +1,8 @@
 /**
  * This class manages climaCell weather data from the WWSU API.
- * NOTE: This class uses this.events for events outside the class, and WWSUdb events for internal operations.
  *
  * @requires $ jQuery
  * @requires WWSUdb WWSU TAFFYdb wrapper
- * @requires EventEmitter Browser event emitter
  * @requires WWSUanimations WWSU animations management
  * @requires moment moment.js time/date library
  */
@@ -30,28 +28,26 @@ class WWSUclimacell extends WWSUdb {
 
     this.assignSocketEvent("climacell", socket);
 
-    this.events = new EventEmitter();
-
     this.animations = new WWSUanimations();
 
     this.ncTimer;
 
     // Data operations
-    super.on("insert", (query) => {
+    super.on("insert", "WWSUclimacell", (query) => {
       this.updateData(query);
       clearTimeout(this.ncTimer);
       this.ncTimer = setTimeout(() => {
         this.recalculateNowcast();
       }, 1000);
     });
-    super.on("update", (query) => {
+    super.on("update", "WWSUclimacell", (query) => {
       this.updateData(query);
       clearTimeout(this.ncTimer);
       this.ncTimer = setTimeout(() => {
         this.recalculateNowcast();
       }, 1000);
     });
-    super.on("remove", (query) => {
+    super.on("remove", "WWSUclimacell", (query) => {
       var record = this.find({ ID: query }, true);
       if (record) {
         this.updateData({ dataClass: record.dataClass, data: `???` });
@@ -61,7 +57,7 @@ class WWSUclimacell extends WWSUdb {
         this.recalculateNowcast();
       }, 1000);
     });
-    super.on("replace", (db) => {
+    super.on("replace", "WWSUclimacell", (db) => {
       db.get().forEach((record) => {
         this.updateData(record);
       });
@@ -75,16 +71,6 @@ class WWSUclimacell extends WWSUdb {
   // Initialize connection. Call this on socket connect event.
   init() {
     this.replaceData(this.requests.no, this.endpoints.get, this.data.get);
-  }
-
-  /**
-   * Add an event listener.
-   *
-   * @param {string} event Event triggered: insert(data, db), update(data, db), remove(data, db), or replace(db)
-   * @param {function} fn Function to call when this event is triggered
-   */
-  on(event, fn) {
-    this.events.on(event, fn);
   }
 
   /**
@@ -139,7 +125,6 @@ class WWSUclimacell extends WWSUdb {
     var precipExpected = precip.find((record) => record.type && record.type !== 'none');
     var realtimePrecipType = this.db({dataClass: `realtime-precipitation-type`}).first();
     var realtimePrecip = this.db({dataClass: `realtime-precipitation`}).first();
-    console.dir(precipExpected);
     if (precipExpected && (!realtimePrecipType || realtimePrecipType.data === 'none')) {
       $('.climacell-nowcast-color').removeClass(`bg-gray`);
       $('.climacell-nowcast-color').removeClass(`bg-danger`);

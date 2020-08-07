@@ -3,7 +3,7 @@
 // This class manages logs, analytics, and attendance
 
 // NOTE: unlike most other WWSU models, this does not use traditional WWSUdb extends. Otherwise, memory can be quickly eaten up by logs.
-class WWSUlogs {
+class WWSUlogs extends WWSUevents {
 
     /**
      * Construct the class.
@@ -14,6 +14,7 @@ class WWSUlogs {
      * @param {WWSUreq} directorReq Request with director authorization
      */
     constructor(socket, noReq, hostReq, directorReq) {
+        super();
         this.endpoints = {
             edit: '/logs/edit',
             get: '/logs/get',
@@ -38,7 +39,6 @@ class WWSUlogs {
                 width: 800
             })
         }
-        this.events = new EventEmitter();
 
         this.animations = new WWSUanimations();
 
@@ -46,21 +46,21 @@ class WWSUlogs {
 
         // WWSUdbs
         this.issues = new WWSUdb(TAFFY());
-        this.issues.on('replace', (data) => {
-            this.events.emitEvent('issues-replace', [ data ]);
+        this.issues.on('replace', "WWSUlogs", (data) => {
+            this.emitEvent('issues-replace', [ data ]);
             this.updateIssuesTable();
         })
 
         this.dashboardLogs;
         this.dashboard = new WWSUdb(TAFFY());
-        this.dashboard.on('replace', (data) => {
+        this.dashboard.on('replace', "WWSUlogs", (data) => {
             this.updateDashboardLogs();
         })
 
         socket.on('logs', (data) => {
             for (var key in data) {
                 if (key === 'remove') {
-                    this.events.emitEvent(`issues-remove`, [ data[ key ] ]);
+                    this.emitEvent(`issues-remove`, [ data[ key ] ]);
                     this.issues.query({ remove: data[ key ].ID }, false);
                     this.updateIssuesTable();
                     continue;
@@ -98,13 +98,13 @@ class WWSUlogs {
                     if (!data[ key ].acknowledged) {
                         if (this.issues.find({ ID: data[ key ].ID }).length > 0) {
                             this.issues.query(data, false);
-                            this.events.emitEvent(`issues-${key}`, [ data[ key ] ]);
+                            this.emitEvent(`issues-${key}`, [ data[ key ] ]);
                         } else {
                             this.issues.query({ insert: data[ key ] }, false);
-                            this.events.emitEvent(`issues-insert`, [ data[ key ] ]);
+                            this.emitEvent(`issues-insert`, [ data[ key ] ]);
                         }
                     } else {
-                        this.events.emitEvent(`issues-remove`, [ data[ key ].ID ]);
+                        this.emitEvent(`issues-remove`, [ data[ key ].ID ]);
                         this.issues.query({ remove: data[ key ].ID }, false);
                     }
                     this.updateIssuesTable();
@@ -137,16 +137,6 @@ class WWSUlogs {
         this.getLogs({ attendanceID: id }, (records) => {
             this.dashboard.query(records, true);
         })
-    }
-
-    /**
-     * Listen for an event.
-     * 
-     * @param {string} event Event to listen: issues-[insert|update|remove|replce](record|record.ID), counts(fcc, accountability, timesheets, updated)
-     * @param {function} fn Function called when the event is fired
-     */
-    on (event, fn) {
-        this.events.on(event, fn);
     }
 
     /**
@@ -436,7 +426,7 @@ class WWSUlogs {
                 var orange = this.issues.find({ loglevel: 'orange' }).length;
                 var warning = this.issues.find({ loglevel: 'warning' }).length;
                 var info = this.issues.find({ loglevel: 'info' }).length;
-                this.events.emitEvent(`count`, [ danger, orange, warning, info ]);
+                this.emitEvent(`count`, [ danger, orange, warning, info ]);
             }
         });
     }

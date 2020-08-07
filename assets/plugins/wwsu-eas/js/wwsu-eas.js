@@ -26,7 +26,6 @@ class WWSUeas extends WWSUdb {
             test: {},
             send: {}
         };
-        this.events = new EventEmitter();
 
         this.displayed = [];
 

@@ -75,11 +75,11 @@ var Directors = [];
 var directorsdb = new WWSUdb(TAFFY());
 
 // Add database event handlers
-directorsdb.setOnInsert((data, db) => {
+directorsdb.on('insert', "timesheet", (data, db) => {
     Directors[data.ID] = new Director(data);
 });
 
-directorsdb.setOnUpdate((data, db) => {
+directorsdb.on('update', "timesheet", (data, db) => {
     if (typeof Directors[data.ID] === `undefined`)
     {
         Directors[data.ID] = new Director(data);
@@ -94,12 +94,12 @@ directorsdb.setOnUpdate((data, db) => {
     }
 });
 
-directorsdb.setOnRemove((data, db) => {
+directorsdb.on('remove', "timesheet", (data, db) => {
     if (typeof Directors[data] !== `undefined`)
         delete Directors[data];
 });
 
-directorsdb.setOnReplace((db) => {
+directorsdb.on('replace', "timesheet", (db) => {
     Directors = [];
     db.each((director) => {
         Directors[director.ID] = new Director(director);
@@ -163,12 +163,12 @@ var Timesheets = [];
 var timesheetsdb = new WWSUdb(TAFFY());
 
 // Add database event handlers
-timesheetsdb.setOnInsert((data, db) => {
+timesheetsdb.on('insert', "timesheet", (data, db) => {
     Timesheets[data.ID] = new Timesheet(data);
     filterDate();
 });
 
-timesheetsdb.setOnUpdate((data, db) => {
+timesheetsdb.on('update', "timesheet", (data, db) => {
     if (typeof Timesheets[data.ID] === `undefined`)
     {
         Timesheets[data.ID] = new Timesheet(data);
@@ -184,13 +184,13 @@ timesheetsdb.setOnUpdate((data, db) => {
     filterDate();
 });
 
-timesheetsdb.setOnRemove((data, db) => {
+timesheetsdb.on('remove', "timesheet", (data, db) => {
     if (typeof Timesheets[data] !== `undefined`)
         delete Timesheets[data];
     filterDate();
 });
 
-timesheetsdb.setOnReplace((db) => {
+timesheetsdb.on('replace', "timesheet", (db) => {
     Timesheets = [];
     db.each((timesheet) => {
         Timesheets[timesheet.ID] = new Timesheet(timesheet);

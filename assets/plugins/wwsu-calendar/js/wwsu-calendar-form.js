@@ -56,7 +56,6 @@ class AlpacaCalendar {
             case 'show': {
                 Object.assign(this.alpacaOptions.schema.properties, this.name.properties, this.priority.properties, this.djs.properties, this.start.properties, this.end.properties, this.description.properties, this.schedule.properties);
                 Object.assign(this.alpacaOptions.options.fields, this.name.options.fields, this.priority.options.fields, this.djs.options.fields, this.start.options.fields, this.end.options.fields, this.description.options.fields, this.schedule.options.fields);
-                console.dir(this.alpacaOptions);
                 this.generateForm();
             }
         }
