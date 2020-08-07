@@ -39,15 +39,10 @@ if (typeof require !== "undefined") {
   typeof moment.duration === "undefined" ||
   typeof _ === "undefined"
 ) {
-  console.error(
-    new Error(
-      "wwsu-calendar requires TAFFY, WWSUdb, WWSUqueue, later, lodash, and moment (moment-timezone + moment-recur-ts + moment-duration-format). However, neither node.js require() nor JQuery were available to require the scripts."
-    )
+  throw new Error(
+    "wwsu-calendar requires TAFFY, WWSUdb, WWSUqueue, lodash, and moment (moment-timezone + moment-recur-ts + moment-duration-format). However, neither node.js require() nor JQuery were available to require the scripts."
   );
 }
-
-// Later.js: Use local time instead of UTC for scheduling
-later.date.localTime();
 
 /**
  * Class to manage calendar events for WWSU.
@@ -58,7 +53,7 @@ later.date.localTime();
  * @requires WWSUqueue Event queue
  * @requires moment moment.js date/time management
  * @requires moment.tz moment-timezone for timezone converting
- * @requires moment.recur moment-recur-ts plugin (MUST use the ts version as the non-ts version could result in freeze-ups)
+ * @requires moment.recur moment-recur-ts plugin, modified for WWSU
  * @requires moment.duration moment-duration-format plugin
  * @requires _ lodash utilities
  */
@@ -1783,7 +1778,6 @@ class CalendarDb {
    * @returns {string} Human readable representation of the schedule.
    */
   generateScheduleText(event) {
-    // TODO: RESUME
     var recurAt = [];
     var oneTime = [];
     var recurDayString = ``;
@@ -1811,77 +1805,152 @@ class CalendarDb {
       recurDayString = `On ${oneTime.join(", ")}`;
     }
 
-    if (event.startTime) {
+    if (
+      event.startTime &&
+      event.recurrenceRules &&
+      event.recurrenceRules.length > 0
+    ) {
       if (oneTime.length > 0) {
-        recurDayString += `... and every `;
+        recurDayString += `... and `;
       }
 
-      recurAt = `${event.startTime}${
+      recurrenceRules.map((rule) => {
+        if (!rule.measure || !rule.units || rule.units.length === 0) return;
+        switch (rule.measure) {
+          case "days":
+          case "weeks":
+          case "months":
+          case "years":
+            recurDayString += `every ${rule.units.join(", ")} ${
+              rule.measure
+            }, `;
+            break;
+          case "monthsOfYear":
+            var days = rule.units.map((unit) => {
+              switch (unit) {
+                case 0:
+                  return "January";
+                case 1:
+                  return "February";
+                case 2:
+                  return "March";
+                case 3:
+                  return "April";
+                case 4:
+                  return "May";
+                case 5:
+                  return "June";
+                case 6:
+                  return "July";
+                case 7:
+                  return "August";
+                case 8:
+                  return "September";
+                case 9:
+                  return "October";
+                case 10:
+                  return "November";
+                case 11:
+                  return "December";
+              }
+              return "Unknown month";
+            });
+            recurDayString += `in ${days.join(", ")}, `;
+            break;
+          case "daysOfWeek":
+            var days = rule.units.map((unit) => {
+              switch (unit) {
+                case 0:
+                  return "Sunday";
+                case 1:
+                  return "Monday";
+                case 2:
+                  return "Tuesday";
+                case 3:
+                  return "Wednesday";
+                case 4:
+                  return "Thursday";
+                case 5:
+                  return "Friday";
+                case 6:
+                  return "Saturday";
+              }
+              return "Unknown day";
+            });
+            recurDayString += `on ${days.join(", ")}, `;
+            break;
+          case "weeksOfMonth":
+          case "weeksOfMonthByDay":
+            var days = rule.units.map((unit) => {
+              switch (unit) {
+                case 0:
+                  return "1st";
+                case 1:
+                  return "2nd";
+                case 2:
+                  return "3rd";
+                case 3:
+                  return "4th";
+                case 4:
+                  return "5th";
+                case 5:
+                  return "last";
+              }
+            });
+            recurDayString += `on the ${days.join(
+              ", "
+            )} week(s) of the month, `;
+            break;
+          case "daysOfMonth":
+            var days = rule.units.map((unit) => {
+              switch (unit) {
+                case 1:
+                case 21:
+                case 31:
+                  return `${unit}st`;
+                case 2:
+                case 22:
+                  return `${unit}nd`;
+                case 3:
+                case 23:
+                  return `${unit}rd`;
+              }
+              return `${unit}th`;
+            });
+            recurDayString += `on the ${days.join(", ")} day(s) of the month, `;
+            break;
+          case "weeksOfYear":
+            var days = rule.units.map((unit) => {
+              switch (unit) {
+                case 1:
+                case 21:
+                case 31:
+                case 41:
+                case 51:
+                  return `${unit}st`;
+                case 2:
+                case 22:
+                case 32:
+                case 42:
+                case 52:
+                  return `${unit}nd`;
+                case 3:
+                case 23:
+                case 33:
+                case 43:
+                case 53:
+                  return `${unit}rd`;
+              }
+              return `${unit}th`;
+            });
+            recurDayString += `on the ${days.join(", ")} week(s) of the year, `;
+            break;
+        }
+      });
+
+      recurDayString += `... at ${event.startTime}${
         this.meta ? moment().tz(this.meta.meta.timezone).format(" z") : ``
       }`;
-
-      // Interval recurrence
-      if (
-        event.intervalUnit &&
-        event.intervalValue &&
-        event.intervalValue.length > 0
-      ) {
-        recurDayString += `${event.intervalValue.join(", ")} ${
-          event.intervalUnit
-        }`;
-      }
-
-      if (event.daysOfWeek && event.daysOfWeek.length > 0) {
-        var daysOfWeek = event.daysOfWeek.map((dayOfWeek) => {
-          switch (dayOfWeek) {
-            case 0:
-              return "Sunday";
-            case 1:
-              return "Monday";
-            case 2:
-              return "Tuesday";
-            case 3:
-              return "Wednesday";
-            case 4:
-              return "Thursday";
-            case 5:
-              return "Friday";
-            case 6:
-              return "Saturday";
-          }
-          return "Unknown Day";
-        });
-        recurDayString += `, on ${daysOfWeek.join(", ")}`;
-      }
-
-      if (event.daysOfMonth && event.daysOfMonth.length > 0) {
-        recurDayString += `, on the ${event.daysOfMonth.join(
-          ", "
-        )} day(s) of the month`;
-      }
-
-      if (event.weeksOfMonth && event.weeksOfMonth.length > 0) {
-        var weeksOfMonth = event.weeksOfMonth.map((weekOfMonth) => {
-          switch (weekOfMonth) {
-            case 0:
-              return "1st";
-            case 1:
-              return "2nd";
-            case 2:
-              return "3rd";
-            case 3:
-              return "4th";
-            case 4:
-              return "5th";
-          }
-          return "Unknown";
-        });
-        recurDayString += `, on the ${weeksOfMonth.join(
-          ", "
-        )} week(s) of the month`;
-      }
-
-      recurDayString += `... at ${recurAt}`;
     }
 
     recurDayString += `... for ${moment
@@ -1892,10 +1961,14 @@ class CalendarDb {
       recurDayString += `... `;
     }
     if (event.startDate) {
-      recurDayString += `starting ${moment(event.startDate).format("LL")} `;
+      recurDayString += `starting ${moment
+        .parseZone(event.startDate)
+        .format("LL")} `;
     }
     if (event.endDate) {
-      recurDayString += `until ${moment(event.endDate).format("LL")} `;
+      recurDayString += `until ${moment
+        .parseZone(event.endDate)
+        .format("LL")} `;
     }
 
     return recurDayString;
@@ -1949,7 +2022,9 @@ class CalendarDb {
       event = this.processRecord(
         record,
         { calendarID: null },
-        moment().toISOString(true)
+        moment
+          .parseZone(this.meta ? this.meta.meta.time : undefined)
+          .toISOString(true)
       );
     }
 
