@@ -33,6 +33,9 @@ class WWSUMeta extends WWSUevents {
             this.prevTime = moment();
             this.resetTick();
           }
+          if (key === "timezone") {
+            $('.wwsumeta-timezone-display').html(`Times are shown in the timezone ${data[key]}.`);
+          }
           if (key === "trackFinish") {
             this.resetTick();
           }
@@ -56,6 +59,9 @@ class WWSUMeta extends WWSUevents {
               if (key === "time") {
                 this.prevTime = moment();
                 this.resetTick();
+              }
+              if (key === "timezone") {
+                $('.wwsumeta-timezone-display').html(`Times are shown in the timezone ${body[key]}.`);
               }
               if (key === "trackFinish") {
                 this.resetTick();

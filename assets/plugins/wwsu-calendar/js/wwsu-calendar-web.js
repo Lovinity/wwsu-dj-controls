@@ -956,7 +956,7 @@ class CalendarDb {
               });
             });
           }
-          if (query[key].startTime) {
+          if (query[key].startTime || query[key].recurrenceRules || query[key].recurrenceInterval) {
             if (
               !start ||
               moment(event.startDate).startOf("minute").isBefore(moment(start))
@@ -978,8 +978,8 @@ class CalendarDb {
             var recur = moment.recur({
               start: start,
               end: end,
-              rules: query[key].recurrenceRules
-                ? query[key].recurrenceRules
+              rules: event.recurrenceRules
+                ? event.recurrenceRules
                 : undefined,
             });
 
@@ -991,20 +991,20 @@ class CalendarDb {
               allDates.map((eventStart) => {
                 // Skip dates that fail recurrence intervals
                 if (
-                  schedule.recurrenceInterval &&
-                  schedule.recurrenceInterval.measure &&
-                  schedule.recurrenceInterval.unit &&
-                  schedule.recurrenceInterval.unit > 1
+                  event.recurrenceInterval &&
+                  event.recurrenceInterval.measure &&
+                  event.recurrenceInterval.unit &&
+                  event.recurrenceInterval.unit > 1
                 ) {
                   var startInterval;
-                  switch (schedule.recurrenceInterval.measure) {
+                  switch (event.recurrenceInterval.measure) {
                     case "days":
                       startInterval = moment(start).startOf("day");
                       if (
                         moment(eventStart)
                           .startOf("day")
                           .diff(startInterval, "days") %
-                          schedule.recurrenceInterval.unit !==
+                          event.recurrenceInterval.unit !==
                         0
                       )
                         return;
@@ -1015,7 +1015,7 @@ class CalendarDb {
                         moment(eventStart)
                           .startOf("week")
                           .diff(startInterval, "weeks") %
-                          schedule.recurrenceInterval.unit !==
+                          event.recurrenceInterval.unit !==
                         0
                       )
                         return;
@@ -1026,7 +1026,7 @@ class CalendarDb {
                         moment(eventStart)
                           .startOf("month")
                           .diff(startInterval, "months") %
-                          schedule.recurrenceInterval.unit !==
+                          event.recurrenceInterval.unit !==
                         0
                       )
                         return;
@@ -1037,7 +1037,7 @@ class CalendarDb {
                         moment(eventStart)
                           .startOf("year")
                           .diff(startInterval, "years") %
-                          schedule.recurrenceInterval.unit !==
+                          event.recurrenceInterval.unit !==
                         0
                       )
                         return;
@@ -1048,13 +1048,13 @@ class CalendarDb {
                 timePeriods.push({
                   start: moment
                     .tz(
-                      `${eventStart} ${query[key].startTime}`,
+                      `${eventStart} ${event.startTime}`,
                       this.meta ? this.meta.meta.timezone : moment.tz.guess()
                     )
                     .toISOString(true),
                   end: moment
                     .tz(
-                      `${eventStart} ${query[key].startTime}`,
+                      `${eventStart} ${event.startTime}`,
                       this.meta ? this.meta.meta.timezone : moment.tz.guess()
                     )
                     .add(event.duration, "minutes")
@@ -1885,7 +1885,7 @@ class CalendarDb {
     if (event.newTime) {
       return `On ${moment
         .parseZone(event.newTime)
-        .format("LLLL z")} for ${moment
+        .format("LLLL Z")} for ${moment
         .duration(event.duration, "minutes")
         .format("h [hours], m [minutes]")}`;
     }
@@ -1893,7 +1893,7 @@ class CalendarDb {
     // Add oneTime dates/times to the oneTime variable.
     if (event.oneTime && event.oneTime.length > 0) {
       oneTime = event.oneTime.map((onetime) =>
-        moment.parseZone(onetime).format("LLLL z")
+        moment.parseZone(onetime).format("LLLL Z")
       );
     }
 

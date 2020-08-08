@@ -10,8 +10,9 @@ class WWSUrequests extends WWSUdb {
      * @param {sails.io} socket Socket connection to WWSU
      * @param {WWSUhosts} hosts An instance of WWSUhosts to check for DJ locking and prompt if not a host.
      * @param {WWSUreq} hostReq Request class with host authorization
+     * @param {WWSUmeta} meta WWSUmeta class
      */
-    constructor(socket, hosts, hostReq) {
+    constructor(socket, hosts, hostReq, meta) {
         super(); // Create the db
 
         this.endpoints = {
@@ -25,6 +26,7 @@ class WWSUrequests extends WWSUdb {
             host: hostReq
         };
         this.hosts = hosts;
+        this.meta = meta;
 
         this.table = undefined;
         this.icon = undefined;
@@ -57,7 +59,7 @@ class WWSUrequests extends WWSUdb {
             var util = new WWSUutil();
 
             // Init html
-            $(table).html(`<table id="section-requests-table" class="table table-striped display responsive" style="width: 100%;"></table>`);
+            $(table).html(`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${this.meta ? this.meta.meta.timezone : moment.tz.guess()}.</p><table id="section-requests-table" class="table table-striped display responsive" style="width: 100%;"></table>`);
 
             util.waitForElement(`#section-requests-table`, () => {
 
@@ -160,7 +162,7 @@ class WWSUrequests extends WWSUdb {
                     numRequests++;
                     this.table.row.add([
                         request.ID,
-                        moment(request.createdAt).format('lll'),
+                        moment.tz(request.createdAt, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('lll'),
                         request.trackname,
                         request.username,
                         request.message,

@@ -9,9 +9,12 @@ class WWSUdiscipline extends WWSUdb {
      * @param {sails.io} socket The socket connection to WWSU
      * @param {WWSUreq} noReq A request with no authorization
      * @param {WWSUreq} directorReq A request with director authorization (only provide if this client is allowed to manage discipline)
+     * @param {WWSUmeta} meta The WWSUmeta class
      */
-    constructor(socket, noReq, directorReq) {
+    constructor(socket, noReq, directorReq, meta) {
         super(); // Create the db
+
+        this.meta = meta;
 
         this.endpoints = {
             acknowledge: '/discipline/acknowledge',
@@ -32,7 +35,7 @@ class WWSUdiscipline extends WWSUdb {
 
         // This event is called when the client gets issued discipline
         socket.on('discipline-add', (discipline) => {
-            var activeDiscipline = (discipline.active && (discipline.action !== 'dayban' || moment(discipline.createdAt).add(1, 'days').isAfter(moment())))
+            var activeDiscipline = (discipline.active && (discipline.action !== 'dayban' || moment(discipline.createdAt).add(1, 'days').isAfter(moment(this.meta ? this.meta.meta.time : undefined))))
             if (activeDiscipline || !discipline.acknowledged) {
                 this.addDiscipline(discipline);
             }
@@ -94,7 +97,7 @@ class WWSUdiscipline extends WWSUdb {
                 var docb = true
                 if (body.length > 0) {
                     body.map((discipline) => {
-                        var activeDiscipline = (discipline.active && (discipline.action !== 'dayban' || moment(discipline.createdAt).add(1, 'days').isAfter(moment())))
+                        var activeDiscipline = (discipline.active && (discipline.action !== 'dayban' || moment(discipline.createdAt).add(1, 'days').isAfter(moment(this.meta ? this.meta.meta.time : undefined))))
                         if (activeDiscipline) { docb = false }
                         if (activeDiscipline || !discipline.acknowledged) {
                             this.addDiscipline(discipline);
@@ -127,7 +130,7 @@ class WWSUdiscipline extends WWSUdb {
         let state = this.disciplineModal.iziModal('getState');
 
         // Skip if the discipline was already acknowledged
-        var activeDiscipline = (discipline.active && (discipline.action !== 'dayban' || moment(discipline.createdAt).add(1, 'days').isAfter(moment())))
+        var activeDiscipline = (discipline.active && (discipline.action !== 'dayban' || moment(discipline.createdAt).add(1, 'days').isAfter(moment(this.meta ? this.meta.meta.time : undefined))))
 
         if (discipline.acknowledged && !activeDiscipline) return;
 
@@ -144,10 +147,10 @@ class WWSUdiscipline extends WWSUdb {
      * @param {object} discipline The discipline record returned from WWSU.
      */
     showDiscipline (discipline) {
-        var activeDiscipline = (discipline.active && (discipline.action !== 'dayban' || moment(discipline.createdAt).add(1, 'days').isAfter(moment())))
+        var activeDiscipline = (discipline.active && (discipline.action !== 'dayban' || moment(discipline.createdAt).add(1, 'days').isAfter(moment(this.meta ? this.meta.meta.time : undefined))))
 
         this.disciplineModal.title = `Disciplinary action ${activeDiscipline ? `active against you` : `was issued in the past against you`}`
-        this.disciplineModal.body = `<p>On ${moment(discipline.createdAt).format('llll')}, disciplinary action was issued against you for the following reason: ${discipline.message}.</p>
+        this.disciplineModal.body = `<p>On ${moment.parseZone(discipline.createdAt).format('LLLL Z')}, disciplinary action was issued against you for the following reason: ${discipline.message}.</p>
         <p>${activeDiscipline ? `A ${discipline.action} is currently active, and you are not allowed to use WWSU's services at this time.` : `The discipline has expired, but you must acknowledge this message before you may use WWSU's services. Further issues may warrant more severe disciplinary action.`}</p>
         <p>Please contact wwsu1@wright.edu if you have any questions or concerns.</p>`;
 

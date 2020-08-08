@@ -12,8 +12,9 @@ class WWSUlogs extends WWSUevents {
      * @param {WWSUreq} noReq Request without authorization
      * @param {WWSUreq} hostReq Request with host authorization
      * @param {WWSUreq} directorReq Request with director authorization
+     * @param {WWSUmeta} meta WWSUmeta class
      */
-    constructor(socket, noReq, hostReq, directorReq) {
+    constructor(socket, noReq, hostReq, directorReq, meta) {
         super();
         this.endpoints = {
             edit: '/logs/edit',
@@ -39,6 +40,8 @@ class WWSUlogs extends WWSUevents {
                 width: 800
             })
         }
+
+        this.meta = meta;
 
         this.animations = new WWSUanimations();
 
@@ -311,7 +314,7 @@ class WWSUlogs extends WWSUevents {
             var util = new WWSUutil();
 
             // Init html
-            $(table).html(`<table id="section-notifications-issues-table" class="table table-striped display responsive" style="width: 100%;"></table>`);
+            $(table).html(`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${this.meta ? this.meta.meta.timezone : moment.tz.guess()}.</p><table id="section-notifications-issues-table" class="table table-striped display responsive" style="width: 100%;"></table>`);
 
             util.waitForElement(`#section-notifications-issues-table`, () => {
                 // Generate table
@@ -414,7 +417,7 @@ class WWSUlogs extends WWSUevents {
                     this.tables.issues.row.add([
                         log.ID,
                         `<i class="${log.logIcon !== '' ? log.logIcon : `fas fa-dot-circle`} bg-${log.loglevel}" style="border-radius: 50%; font-size: 15px; height: 30px; line-height: 30px; text-align: center; width: 30px;"></i>`,
-                        moment(log.createdAt).format("llll"),
+                        moment.tz(log.createdAt, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format("llll"),
                         `<strong>${log.title}</strong><br />${log.event}${log.trackArtist || log.trackTitle || log.trackAlbum || log.trackRecordLabel ? `${log.trackArtist || log.trackTitle ? `<br />Track: ${log.trackArtist ? log.trackArtist : `Unknown Artist`} - ${log.trackTitle ? log.trackTitle : `Unknown Title`}` : ``}${log.trackAlbum ? `<br />Album: ${log.trackAlbum}` : ``}${log.trackLabel ? `<br />Label: ${log.trackLabel}` : ``}` : ``}`,
                         `${this.isAccountable(log) && log.attendanceID && !log.excused ? `<div class="btn-group"><button class="btn btn-sm btn-danger btn-issue-unexcused" data-id="${log.ID}" title="Mark Unexcused (counts in analytics)"><i class="fas fa-thumbs-down"></i></button><button class="btn btn-sm btn-success btn-issue-excused" data-id="${log.ID}" title="Mark Excused (does not count in analytics)"><i class="fas fa-thumbs-up"></i></button></div>` : `<button class="btn btn-sm btn-warning btn-issue-dismiss" data-id="${log.ID}" title="Acknowledge / Dismiss"><i class="fas fa-check-circle"></i></button>`}`
                     ])
@@ -441,7 +444,7 @@ class WWSUlogs extends WWSUevents {
             var util = new WWSUutil();
 
             // Init html
-            $(dom).html(`<table id="section-logs-table" class="table table-striped display responsive" style="width: 100%;"></table>`);
+            $(dom).html(`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${this.meta ? this.meta.meta.timezone : moment.tz.guess()}.</p><table id="section-logs-table" class="table table-striped display responsive" style="width: 100%;"></table>`);
 
             util.waitForElement(`#section-logs-table`, () => {
                 // Generate table
@@ -482,12 +485,6 @@ class WWSUlogs extends WWSUevents {
         this.getAttendance(`#section-logs-table`, { date, duration: 1 }, (records) => {
             this.tables.attendance.clear();
             records.map((record) => {
-                var theDate
-                if (record.actualStart !== null) {
-                    theDate = moment(record.actualStart)
-                } else {
-                    theDate = moment(record.scheduledStart)
-                }
                 var theClass = 'secondary'
                 if (record.event.toLowerCase().startsWith('show: ') || record.event.toLowerCase().startsWith('prerecord: ')) {
                     theClass = 'danger'
@@ -503,8 +500,8 @@ class WWSUlogs extends WWSUevents {
                         record.ID,
                         `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
                         record.event,
-                        moment(record.actualStart).format('h:mm A'),
-                        moment(record.actualEnd).format('h:mm A'),
+                        moment.tz(record.actualStart, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('h:mm A'),
+                        moment.tz(record.actualEnd, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('h:mm A'),
                         `<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`
                     ] ])
                 } else if (record.actualStart !== null && record.actualEnd === null && record.happened === 1) {
@@ -512,7 +509,7 @@ class WWSUlogs extends WWSUevents {
                         record.ID,
                         `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
                         record.event,
-                        moment(record.actualStart).format('h:mm A'),
+                        moment.tz(record.actualStart, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('h:mm A'),
                         `ONGOING`,
                         `<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`
                     ] ])
@@ -521,8 +518,8 @@ class WWSUlogs extends WWSUevents {
                         record.ID,
                         `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
                         record.event,
-                        `CANCELED (${moment(record.scheduledStart).format('h:mm A')})`,
-                        `CANCELED (${moment(record.scheduledEnd).format('h:mm A')})`,
+                        `CANCELED (${moment.tz(record.scheduledStart, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('h:mm A')})`,
+                        `CANCELED (${moment.tz(record.scheduledEnd, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('h:mm A')})`,
                         `<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`
                     ] ])
                 } else if (record.happened === 0) {
@@ -530,8 +527,8 @@ class WWSUlogs extends WWSUevents {
                         record.ID,
                         `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
                         record.event,
-                        `ABSENT (${moment(record.scheduledStart).format('h:mm A')})`,
-                        `ABSENT (${moment(record.scheduledEnd).format('h:mm A')})`,
+                        `ABSENT (${moment.tz(record.scheduledStart, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('h:mm A')})`,
+                        `ABSENT (${moment.tz(record.scheduledEnd, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('h:mm A')})`,
                         `<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`
                     ] ])
                 } else if (record.actualStart !== null && record.actualEnd !== null) {
@@ -539,8 +536,8 @@ class WWSUlogs extends WWSUevents {
                         record.ID,
                         `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
                         record.event,
-                        moment(record.actualStart).format('h:mm A'),
-                        record.actualEnd !== null ? moment(record.actualEnd).format('h:mm A') : `ONGOING`,
+                        moment.tz(record.actualStart, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('h:mm A'),
+                        record.actualEnd !== null ? moment.tz(record.actualEnd, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('h:mm A') : `ONGOING`,
                         `<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`
                     ] ])
                 } else {
@@ -548,8 +545,8 @@ class WWSUlogs extends WWSUevents {
                         record.ID,
                         `<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
                         record.event,
-                        `SCHEDULED (${moment(record.scheduledStart).format('h:mm A')})`,
-                        `SCHEDULED (${moment(record.scheduledEnd).format('h:mm A')})`,
+                        `SCHEDULED (${moment.tz(record.scheduledStart, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('h:mm A')})`,
+                        `SCHEDULED (${moment.tz(record.scheduledEnd, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('h:mm A')})`,
                         `<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`
                     ] ])
                 }
@@ -567,14 +564,14 @@ class WWSUlogs extends WWSUevents {
      */
     viewLog (id, name) {
         var util = new WWSUutil();
-        this.models.viewLog.body = `<canvas id="modal-${this.models.viewLog.id}-body-listeners" style="min-height: 200px; height: 200px; max-height: 350px; max-width: 100%;"></canvas><div id="modal-${this.models.viewLog.id}-body-info"></div><table id="modal-${this.models.viewLog.id}-body-log" class="table table-striped display responsive" style="width: 100%;"></table>`
+        this.models.viewLog.body = `<p class="wwsumeta-timezone-display">Times are shown in the timezone ${this.meta ? this.meta.meta.timezone : moment.tz.guess()}.</p><canvas id="modal-${this.models.viewLog.id}-body-listeners" style="min-height: 200px; height: 200px; max-height: 350px; max-width: 100%;"></canvas><div id="modal-${this.models.viewLog.id}-body-info"></div><table id="modal-${this.models.viewLog.id}-body-log" class="table table-striped display responsive" style="width: 100%;"></table>`
         this.models.viewLog.iziModal('open');
         this.getAttendance(`#section-logs-table`, { ID: id }, (attendance) => {
             util.waitForElement(`#modal-${this.models.viewLog.id}-body-listeners`, () => {
                 this.getListeners(`#modal-${this.models.viewLog.id}-body-listeners`, { start: moment(attendance.actualStart).toISOString(true), end: moment(attendance.actualEnd ? attendance.actualEnd : moment(attendance.actualStart).add(1, 'days')).toISOString(true) }, (listeners) => {
                     var data = [];
                     data = listeners.map((listener) => {
-                        return { x: moment(listener.createdAt).format(), y: listener.listeners }
+                        return { x: moment.tz(listener.createdAt, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format(), y: listener.listeners }
                     });
 
                     var listenerChartCanvas = $(`#modal-${this.models.viewLog.id}-body-listeners`).get(0).getContext('2d');
@@ -608,8 +605,8 @@ class WWSUlogs extends WWSUevents {
                                             fontStyle: 'bold',
                                             fontColor: '#FF0000'
                                         },
-                                        min: moment(attendance.actualStart).format(),
-                                        max: moment(attendance.actualEnd).format()
+                                        min: moment.tz(attendance.actualStart, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format(),
+                                        max: moment.tz(attendance.actualEnd, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format()
                                     },
                                 } ],
                                 yAxes: [ {
@@ -640,7 +637,7 @@ class WWSUlogs extends WWSUevents {
                                 data: logs.map((log) => {
                                     return [
                                         log.ID,
-                                        moment(log.createdAt).format("llll"),
+                                        moment.tz(log.createdAt, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format("llll"),
                                         `<i class="${log.logIcon !== '' ? log.logIcon : `fas fa-dot-circle`} bg-${log.loglevel}" style="border-radius: 50%; font-size: 15px; height: 30px; line-height: 30px; text-align: center; width: 30px;"></i>`,
                                         `<strong>${log.title}</strong><br />${log.event}${log.trackArtist || log.trackTitle || log.trackAlbum || log.trackRecordLabel ? `${log.trackArtist || log.trackTitle ? `<br />Track: ${log.trackArtist ? log.trackArtist : `Unknown Artist`} - ${log.trackTitle ? log.trackTitle : `Unknown Title`}` : ``}${log.trackAlbum ? `<br />Album: ${log.trackAlbum}` : ``}${log.trackLabel ? `<br />Label: ${log.trackLabel}` : ``}` : ``}`,
                                         `${this.isAccountable(log) && log.attendanceID ? `<div class="btn-group"><button class="btn btn-sm btn-danger btn-log-unexcused" data-id="${log.ID}" title="Mark Unexcused (counts in analytics)"><i class="fas fa-thumbs-down"></i></button><button class="btn btn-sm btn-success btn-log-excused" data-id="${log.ID}" title="Mark Excused (does not count in analytics)"><i class="fas fa-thumbs-up"></i></button></div>${log.excused ? `<div class="text-success">EXCUSED</div>` : `<div class="text-danger">UN-EXCUSED</div>`}` : ``}`
@@ -701,7 +698,7 @@ class WWSUlogs extends WWSUevents {
                             this.tables.log.rows.add(logs.map((log) => {
                                 return [
                                     log.ID,
-                                    moment(log.createdAt).format("llll"),
+                                    moment.tz(log.createdAt, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format("llll"),
                                     `<i class="${log.logIcon !== '' ? log.logIcon : `fas fa-dot-circle`} bg-${log.loglevel}" style="border-radius: 50%; font-size: 15px; height: 30px; line-height: 30px; text-align: center; width: 30px;"></i>`,
                                     `<strong>${log.title}</strong><br />${log.event}${log.trackArtist || log.trackTitle || log.trackAlbum || log.trackRecordLabel ? `${log.trackArtist || log.trackTitle ? `<br />Track: ${log.trackArtist ? log.trackArtist : `Unknown Artist`} - ${log.trackTitle ? log.trackTitle : `Unknown Title`}` : ``}${log.trackAlbum ? `<br />Album: ${log.trackAlbum}` : ``}${log.trackLabel ? `<br />Label: ${log.trackLabel}` : ``}` : ``}`,
                                     `${this.isAccountable(log) && log.attendanceID ? `<div class="btn-group"><button class="btn btn-sm btn-danger btn-log-unexcused" data-id="${log.ID}" title="Mark Unexcused (counts in analytics)"><i class="fas fa-thumbs-down"></i></button><button class="btn btn-sm btn-success btn-log-excused" data-id="${log.ID}" title="Mark Excused (does not count in analytics)"><i class="fas fa-thumbs-up"></i></button></div>${log.excused ? `<div class="text-success">EXCUSED</div>` : `<div class="text-danger">UN-EXCUSED</div>`}` : ``}`
@@ -727,7 +724,7 @@ class WWSUlogs extends WWSUevents {
                         $(this.dashboardLogs).prepend(`<div>
                     <i class="${log.logIcon !== '' ? log.logIcon : `fas fa-dot-circle`} bg-${log.loglevel}"></i>
                     <div class="timeline-item">
-                      <span class="time"><i class="fas fa-clock"></i> ${moment(log.createdAt).format("LT")}</span>
+                      <span class="time"><i class="fas fa-clock"></i> ${moment.tz(log.createdAt, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format("LT")}</span>
                       <h3 class="timeline-header">${log.title}</h3>
                       <div class="timeline-body">
                       ${log.event}${log.trackArtist || log.trackTitle || log.trackAlbum || log.trackRecordLabel ? `${log.trackArtist || log.trackTitle ? `<br />Track: ${log.trackArtist ? log.trackArtist : `Unknown Artist`} - ${log.trackTitle ? log.trackTitle : `Unknown Title`}` : ``}${log.trackAlbum ? `<br />Album: ${log.trackAlbum}` : ``}${log.trackLabel ? `<br />Label: ${log.trackLabel}` : ``}` : ``}

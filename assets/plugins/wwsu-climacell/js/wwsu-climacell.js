@@ -130,7 +130,7 @@ class WWSUclimacell extends WWSUdb {
       $('.climacell-nowcast-color').removeClass(`bg-danger`);
       $('.climacell-nowcast-color').removeClass(`bg-success`);
       $('.climacell-nowcast-color').addClass(`bg-warning`);
-      $('.climacell-nowcast-time').html(moment(precipExpected.time).format("h:mm A"))
+      $('.climacell-nowcast-time').html(moment.parseZone(precipExpected.time).format("h:mm A Z"))
       $('.climacell-nowcast-text').html(`${precipExpected.type} possible`);
     } else if (!precipExpected) {
       $('.climacell-nowcast-color').removeClass(`bg-gray`);
@@ -147,7 +147,7 @@ class WWSUclimacell extends WWSUdb {
 
       // Determine when the precip is expected to end
       var precipEnd = precip.find((record) => record.type && record.type === 'none');
-      $('.climacell-nowcast-time').html(precipEnd ? moment(precipEnd.time).format("h:mm A") : `Next >6 Hours`)
+      $('.climacell-nowcast-time').html(precipEnd ? moment.parseZone(precipEnd.time).format("h:mm A Z") : `Next >6 Hours`)
       $('.climacell-nowcast-text').html(`${realtimePrecipType ? realtimePrecipType.data || `Unknown Precip` : `Unknown Precip`} ending`);
     }
   }

@@ -50,7 +50,7 @@ class WWSUmessages extends WWSUdb {
         // Prune old messages (over 1 hour old) every minute.
         this.prune = setInterval(() => {
             this.find().forEach((message) => {
-                if (moment(this.meta.meta.time).subtract(1, 'hours').isAfter(moment(message.createdAt))) {
+                if (moment(this.meta ? this.meta.meta.time : undefined).subtract(1, 'hours').isAfter(moment(message.createdAt))) {
                     this.query({ remove: message.ID });
                 }
             });
@@ -316,14 +316,14 @@ class WWSUmessages extends WWSUdb {
                             : `${this.meta.meta.webchat
                                 ? `${recipient.status !== 0
                                     ? `Visitor is currently online and should receive your message.<br />Messages you send will only be visible to this visitor.`
-                                    : `Visitor is offline and was last seen ${moment(recipient.time).format('llll')}. They will not receive your message unless they come back online within an hour of you sending your message.<br />Messages you send will only be visible to this visitor.`
+                                    : `Visitor is offline and was last seen ${moment.tz(recipient.time, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('llll')}. They will not receive your message unless they come back online within an hour of you sending your message.<br />Messages you send will only be visible to this visitor.`
                                 }`
                                 : `Web messages are NOT active; visitors cannot send you messages.`
                             }`
                         }`
                         : `${recipient.status !== 0
                             ? `Computer/host is online. However, this does not necessarily mean someone is around and will see your message.`
-                            : `Computer/host is offline and was last seen ${moment(recipient.time).format('llll')}. They will not receive your message unless they come back online within an hour of you sending your message.`
+                            : `Computer/host is offline and was last seen ${moment.tz(recipient.time, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('llll')}. They will not receive your message unless they come back online within an hour of you sending your message.`
                         }`
                     }</p>
             </div>`);
@@ -392,7 +392,7 @@ class WWSUmessages extends WWSUdb {
             return `<div class="direct-chat-msg right">
             <div class="direct-chat-infos clearfix">
               <span class="direct-chat-name float-right">YOU -> ${message.toFriendly}</span>
-              <span class="direct-chat-timestamp float-left">${moment(message.createdAt).format('hh:mm A')} <i class="fas fa-trash" id="message-delete-${message.ID}"></i></span>
+              <span class="direct-chat-timestamp float-left">${moment.tz(message.createdAt, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('hh:mm A')} <i class="fas fa-trash" id="message-delete-${message.ID}"></i></span>
             </div>
             <div class="direct-chat-img bg-secondary">${jdenticon.toSvg(message.from, 40)}</div>
             <div class="direct-chat-text bg-success">
@@ -405,7 +405,7 @@ class WWSUmessages extends WWSUdb {
                 return `<div class="direct-chat-msg">
                 <div class="direct-chat-infos clearfix">
                   <span class="direct-chat-name float-left">${message.fromFriendly} -> ${message.toFriendly}</span>
-                  <span class="direct-chat-timestamp float-right">${moment(message.createdAt).format('hh:mm A')} <i class="fas fa-trash" id="message-delete-${message.ID}"></i></span></span>
+                  <span class="direct-chat-timestamp float-right">${moment.tz(message.createdAt, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('hh:mm A')} <i class="fas fa-trash" id="message-delete-${message.ID}"></i></span></span>
                 </div>
                 <div class="direct-chat-img bg-secondary">${jdenticon.toSvg(message.from, 40)}</div>
                 <div class="direct-chat-text bg-danger">
@@ -417,7 +417,7 @@ class WWSUmessages extends WWSUdb {
                 return `<div class="direct-chat-msg">
                 <div class="direct-chat-infos clearfix">
                   <span class="direct-chat-name float-left">${message.fromFriendly} -> ${message.toFriendly}</span>
-                  <span class="direct-chat-timestamp float-right">${moment(message.createdAt).format('hh:mm A')} <i class="fas fa-trash" id="message-delete-${message.ID}"></i></span></span>
+                  <span class="direct-chat-timestamp float-right">${moment.tz(message.createdAt, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('hh:mm A')} <i class="fas fa-trash" id="message-delete-${message.ID}"></i></span></span>
                 </div>
                 <div class="direct-chat-img bg-secondary">${jdenticon.toSvg(message.from, 40)}</div>
                 <div class="direct-chat-text bg-secondary">

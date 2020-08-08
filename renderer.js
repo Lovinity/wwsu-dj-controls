@@ -21,6 +21,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // WWSU Requests and Endpoint managers
     var noReq = new WWSUreq(socket, null);
+    var meta = new WWSUMeta(socket, noReq);
     var hostReq = new WWSUreq(
       socket,
       machineID,
@@ -40,8 +41,8 @@ window.addEventListener("DOMContentLoaded", () => {
       "/auth/director",
       "Director"
     );
-    var logs = new WWSUlogs(socket, noReq, hostReq, directorReq);
-    var djs = new WWSUdjs(socket, noReq, directorReq, hostReq, logs);
+    var logs = new WWSUlogs(socket, noReq, hostReq, directorReq, meta);
+    var djs = new WWSUdjs(socket, noReq, directorReq, hostReq, logs, meta);
     var djReq = new WWSUreq(
       socket,
       machineID,
@@ -61,19 +62,19 @@ window.addEventListener("DOMContentLoaded", () => {
       "Administrator Director"
     );
     var status = new WWSUstatus(socket, noReq);
-    var eas = new WWSUeas(socket, noReq, directorReq);
+    var eas = new WWSUeas(socket, noReq, directorReq, meta);
     var announcements = new WWSUannouncements(
       socket,
       noReq,
       ["all"],
+      meta,
       directorReq
     );
     var timesheets = new WWSUtimesheet(socket, noReq);
-    var meta = new WWSUMeta(socket, noReq);
     var calendar = new WWSUcalendar(socket, meta, noReq, directorReq, djReq);
     var subscriptions = new WWSUsubscriptions(socket, noReq);
     var api = new WWSUapi(noReq, hostReq, djReq, directorReq, adminDirectorReq);
-    var discipline = new WWSUdiscipline(socket, noReq, directorReq);
+    var discipline = new WWSUdiscipline(socket, noReq, directorReq, meta);
     var hosts = new WWSUhosts(
       socket,
       meta,
@@ -1191,9 +1192,17 @@ window.addEventListener("DOMContentLoaded", () => {
                           record.alert
                         }</strong>: in effect for ${
             record.counties
-          } from ${moment.parseZone(record.starts).format("llll")} until ${moment.parseZone(
-            record.expires
-          ).format("llll")}.
+          } from ${moment
+            .tz(
+              record.starts,
+              meta.meta ? meta.meta.timezone : moment.tz.guess()
+            )
+            .format("llll")} until ${moment
+            .tz(
+              record.expires,
+              meta.meta ? meta.meta.timezone : moment.tz.guess()
+            )
+            .format("llll")}.
                         </li>`;
           if (globalEas > 1) {
             globalEas = 1;
@@ -1206,9 +1215,11 @@ window.addEventListener("DOMContentLoaded", () => {
                           record.alert
                         }</strong>: in effect for ${
             record.counties
-          } from ${moment.parseZone(record.starts).format("llll")} until ${moment.parseZone(
-            record.expires
-          ).format("llll")}.
+          } from ${moment
+            .tz(record.starts, meta.meta ? meta.meta.timezone : moment.tz.guess())
+            .format("llll")} until ${moment
+            .tz(record.expires, meta.meta ? meta.meta.timezone : moment.tz.guess())
+            .format("llll")}.
                         </li>`;
           if (globalEas > 2) globalEas = 2;
           break;
@@ -1218,9 +1229,11 @@ window.addEventListener("DOMContentLoaded", () => {
                           record.alert
                         }</strong>: in effect for ${
             record.counties
-          } from ${moment.parseZone(record.starts).format("llll")} until ${moment.parseZone(
-            record.expires
-          ).format("llll")}.
+          } from ${moment
+            .tz(record.starts, meta.meta ? meta.meta.timezone : moment.tz.guess())
+            .format("llll")} until ${moment
+            .tz(record.expires, meta.meta ? meta.meta.timezone : moment.tz.guess())
+            .format("llll")}.
                         </li>`;
           if (globalEas > 3) globalEas = 3;
           break;
@@ -1230,9 +1243,11 @@ window.addEventListener("DOMContentLoaded", () => {
                           record.alert
                         }</strong>: in effect for ${
             record.counties
-          } from ${moment.parseZone(record.starts).format("llll")} until ${moment.parseZone(
-            record.expires
-          ).format("llll")}.
+          } from ${moment
+            .tz(record.starts, meta.meta ? meta.meta.timezone : moment.tz.guess())
+            .format("llll")} until ${moment
+            .tz(record.expires, meta.meta ? meta.meta.timezone : moment.tz.guess())
+            .format("llll")}.
                         </li>`;
           if (globalEas > 4) globalEas = 4;
           break;
@@ -1472,7 +1487,7 @@ Track: <strong>${request.trackname}</strong>`,
   /*
         MESSAGES FUNCTIONS
     */
-   messages.on("remove", "renderer", (query, db) => {
+  messages.on("remove", "renderer", (query, db) => {
     messages.read = messages.read.filter((value) => value !== query);
     messages.notified = messages.notified.filter((value) => value !== query);
   });

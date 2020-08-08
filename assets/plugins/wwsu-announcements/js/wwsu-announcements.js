@@ -9,9 +9,10 @@ class WWSUannouncements extends WWSUdb {
      * @param {sails.io} socket Socket connection to WWSU
      * @param {WWSUreq} noReq Request class with no authorization
      * @param {array} types Array of types of announcements to retrieve
+     * @param {WWSUmeta} meta WWSUmeta class
      * @param {?WWSUreq} directorReq Request class with director authorization, if we will be managing announcements
      */
-    constructor(socket, noReq, types, directorReq) {
+    constructor(socket, noReq, types, meta, directorReq) {
         super(); // Create the db
 
         this.endpoints = {
@@ -29,6 +30,8 @@ class WWSUannouncements extends WWSUdb {
         };
 
         this.assignSocketEvent('announcements', socket);
+
+        this.meta = meta;
 
         this.table;
 
@@ -56,14 +59,13 @@ class WWSUannouncements extends WWSUdb {
             var util = new WWSUutil();
 
             // Init html
-            $(table).html(`<table id="section-announcements-table" class="table table-striped display responsive" style="width: 100%;"></table>
-        <button type="button" class="btn btn-block btn-success btn-announcement-new">New Announcement</button>`);
+            $(table).html(`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${this.meta ? this.meta.meta.timezone : moment.tz.guess()}.</p><p><button type="button" class="btn btn-block btn-success btn-announcement-new">New Announcement</button></p><table id="section-announcements-table" class="table table-striped display responsive" style="width: 100%;"></table>`);
 
             util.waitForElement(`#section-announcements-table`, () => {
 
                 // Generate table
                 this.table = $(`#section-announcements-table`).DataTable({
-                    paging: true,
+                    paging: false,
                     data: [],
                     columns: [
                         { title: "Title" },
@@ -271,8 +273,8 @@ class WWSUannouncements extends WWSUdb {
                     this.table.row.add([
                         announcement.title,
                         announcement.type,
-                        moment.parseZone(announcement.starts).format("llll Z"),
-                        moment.parseZone(announcement.expires).format("llll Z"),
+                        moment.tz(announcement.starts, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format("LLLL"),
+                        moment.tz(announcement.expires, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format("LLLL"),
                         `<span class="text-${announcement.level}"><i class="fas fa-dot-circle"></i></span>`,
                         `<div class="btn-group"><button class="btn btn-sm btn-warning btn-announcement-edit" data-id="${announcement.ID}" title="Edit Announcement"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-announcement-delete" data-id="${announcement.ID}" title="Delete Announcement"><i class="fas fa-trash"></i></button></div>`
                     ])
@@ -373,18 +375,24 @@ class WWSUannouncements extends WWSUdb {
                         "helper": "How long the announcement is displayed. Only applies to Website (Pop-up) or any of the display sign announcement types."
                     },
                     "starts": {
-                        "dateFormat": "YYYY-MM-DDTHH:mm:[00]Z",
+                        "dateFormat": `YYYY-MM-DDTHH:mm:[00]${moment
+                            .parseZone(this.meta ? this.meta.meta.time : undefined)
+                            .format("Z")}`,
                         "picker": {
                             "inline": true,
                             "sideBySide": true
-                        }
+                        },
+                        "helper": `Defaults to the timezone ${this.meta ? this.meta.meta.timezone : moment.tz.guess()}`
                     },
                     "expires": {
-                        "dateFormat": "YYYY-MM-DDTHH:mm:[00]Z",
+                        "dateFormat": `YYYY-MM-DDTHH:mm:[00]${moment
+                            .parseZone(this.meta ? this.meta.meta.time : undefined)
+                            .format("Z")}`,
                         "picker": {
                             "inline": true,
                             "sideBySide": true
-                        }
+                        },
+                        "helper": `Defaults to the timezone ${this.meta ? this.meta.meta.timezone : moment.tz.guess()}`
                     },
                 },
 

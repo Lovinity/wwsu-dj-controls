@@ -8,8 +8,9 @@ class WWSUeas extends WWSUdb {
      * @param {sails.io} socket Socket connection to WWSU
      * @param {WWSUreq} noReq Request with no authorization
      * @param {WWSUreq} directorReq Request with director authorization
+     * @param {WWSUmeta} meta WWSUmeta class
      */
-    constructor(socket, noReq, directorReq) {
+    constructor(socket, noReq, directorReq, meta) {
         super(); // Create the db
 
         this.endpoints = {
@@ -26,6 +27,8 @@ class WWSUeas extends WWSUdb {
             test: {},
             send: {}
         };
+
+        this.meta = meta;
 
         this.displayed = [];
 
@@ -97,7 +100,7 @@ class WWSUeas extends WWSUdb {
      * @param {?string} expires ISO timestamp when this alert expires (undefined = 1 hour from now)
      * @param {string} starts ISO timestamp when this alert starts (undefined = now)
      */
-    send (dom, counties, alert, severity, color, information, expires = moment().add(1, 'hour').toISOString(true), starts = moment().toISOString(true)) {
+    send (dom, counties, alert, severity, color, information, expires = moment(this.meta ? this.meta.meta.time : undefined).add(1, 'hour').toISOString(true), starts = moment(this.meta ? this.meta.meta.time : undefined).toISOString(true)) {
         try {
             this.requests.director.request({ dom, method: 'post', url: this.endpoints.send, data: { counties, alert, severity, color, information, expires, starts } }, (response) => {
                 if (response !== 'OK') {
@@ -189,16 +192,16 @@ class WWSUeas extends WWSUdb {
                 if (record.severity === 'Severe') {
                     this.easSevereAlert.iziModal('close');
                     $('.eas-severe-alert-alert').html(record.alert);
-                    $('.eas-severe-alert-starts').html(moment(record.starts).format("lll"));
-                    $('.eas-severe-alert-expires').html(moment(record.expires).format("lll"));
+                    $('.eas-severe-alert-starts').html(moment.tz(record.starts, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format("lll"));
+                    $('.eas-severe-alert-expires').html(moment.tz(record.expires, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format("lll"));
                     $('.eas-severe-alert-counties').html(record.counties);
                     this.easSevereAlert.iziModal('open');
                     this.displayed.push(record.ID);
                 } else if (record.severity === 'Extreme') {
                     this.easExtremeAlert.iziModal('close');
                     $('.eas-extreme-alert-alert').html(record.alert);
-                    $('.eas-extreme-alert-starts').html(moment(record.starts).format("lll"));
-                    $('.eas-extreme-alert-expires').html(moment(record.expires).format("lll"));
+                    $('.eas-extreme-alert-starts').html(moment.tz(record.starts, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format("lll"));
+                    $('.eas-extreme-alert-expires').html(moment.tz(record.expires, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format("lll"));
                     $('.eas-extreme-alert-counties').html(record.counties);
                     this.easExtremeAlert.iziModal('open');
                     this.displayed.push(record.ID);

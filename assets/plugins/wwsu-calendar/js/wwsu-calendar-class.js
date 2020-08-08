@@ -22,6 +22,8 @@ class WWSUcalendar extends CalendarDb {
   constructor(socket, meta, noReq, directorReq, djReq) {
     super([], [], [], meta); // Create the db
 
+    this.meta = meta;
+
     this.endpoints = {
       add: "/calendar/add",
       addSchedule: "/calendar/add-schedule",
@@ -1785,13 +1787,13 @@ class WWSUcalendar extends CalendarDb {
             },
             newTime: {
               format: "datetime",
-              title: "Re-schedule to this time/date",
+              title: "Change start date/time",
             },
             duration: {
               type: "number",
-              title: "Change occurrence duration (in minutes)",
-              min: 1,
-              max: 1440,
+              title: "Change occurrence duration",
+              min: 1 / 60,
+              max: 24,
             },
             type: {
               type: "string",
@@ -1867,17 +1869,19 @@ class WWSUcalendar extends CalendarDb {
                 "The reason will be displayed publicly on the website and will be saved in logs",
             },
             newTime: {
-              dateFormat: "YYYY-MM-DDTHH:mm:[00]Z",
-              helper: `If this occurrence should happen at a different date/time, specify it here. The current start date/time is <strong>${moment(
+              dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
+                .parseZone(this.meta ? this.meta.meta.time : undefined)
+                .format("Z")}`,
+              helper: `If this occurrence should happen at a different date/time, specify it here. The date will default to the station's timezone of ${this.meta ? this.meta.meta.timezone : "Unknown zone"}. The current start date/time is <strong>${moment.parseZone(
                 event.start
-              ).format("LLLL")}</strong>.`,
+              ).format("LLLL Z")}</strong>.`,
               picker: {
                 inline: true,
                 sideBySide: true,
               },
             },
             duration: {
-              helper: `If changing the duration of this occurrence, type the new duration here. The current duration is <strong>${event.duration}</strong>.`,
+              helper: `If changing the duration of this occurrence, type the new duration here (in hours; decimals permitted). The current duration is <strong>${event.duration / 60}</strong>.`,
             },
             type: {
               type: "select",
@@ -2079,6 +2083,9 @@ class WWSUcalendar extends CalendarDb {
                   }
                   var value = form.getValue();
 
+                  // Change duration from hours to minutes.
+                  value.duration *= 60;
+
                   var _event = this.verify(value); // Verify the event just to be safe
                   if (!_event.event) {
                     $(document).Toasts("create", {
@@ -2172,7 +2179,7 @@ class WWSUcalendar extends CalendarDb {
    * @param {number} calendarID The ID of the calendar record pertaining to this schedule
    */
   showScheduleForm(schedule, calendarID) {
-    var event = this.calendar.db({ ID: calendarID }, true);
+    var event = this.calendar.db({ ID: calendarID }, true).first();
 
     this.scheduleModal.title = `${
       schedule
@@ -2221,6 +2228,9 @@ class WWSUcalendar extends CalendarDb {
         .filter((event) => event.type === "sports")
         .map((event) => event.name);
 
+      // Convert duration from minutes to hours
+      if (schedule && schedule.duration) schedule.duration /= 60;
+
       // Generate form
       $(this.scheduleModal.body).alpaca({
         schema: {
@@ -2243,6 +2253,31 @@ class WWSUcalendar extends CalendarDb {
                 title: "One-time start date/time",
                 format: "datetime",
               },
+            },
+            startDate: {
+              title: "Start Date",
+              format: "date",
+            },
+            endDate: {
+              title: "End Date",
+              required: true,
+              format: "date",
+            },
+            recurDW: {
+              title: "Recur on days of the week",
+              type: "array",
+              items: {
+                type: "number",
+              },
+              enum: [0, 1, 2, 3, 4, 5, 6],
+            },
+            recurWM: {
+              title: "Recur on weeks of the month",
+              type: "array",
+              items: {
+                type: "number",
+              },
+              enum: [0, 1, 2, 3, 4, 5],
             },
             recurDM: {
               title: "Recur on days of the month",
@@ -2284,84 +2319,24 @@ class WWSUcalendar extends CalendarDb {
                 31,
               ],
             },
-            recurWM: {
-              title: "Recur on weeks of the month",
-              type: "array",
-              items: {
-                type: "number",
-              },
-              enum: [1, 2, 3, 4, 5, 0],
-            },
-            recurDW: {
-              title: "Recur on days of the week",
-              type: "array",
-              items: {
-                type: "number",
-              },
-              enum: [1, 2, 3, 4, 5, 6, 7],
-            },
-            recurEvery: {
-              title: "Schedule only on every X week of the year",
+            recurEveryWeeks: {
+              title: "Recur every x weeks",
               type: "number",
               required: true,
               default: 1,
               min: 1,
               max: 52,
             },
-            recurH: {
-              title: "Recur on hours of the day",
-              type: "array",
-              items: {
-                type: "number",
-              },
-              enum: [
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-              ],
-            },
-            recurM: {
-              title: "Minute of the hour",
-              type: "number",
-              min: 0,
-              max: 59,
+            startTime: {
+              title: "Event start time",
+              format: "time",
             },
             duration: {
-              title: "Duration (minutes)",
+              title: "Event Duration",
               type: "number",
               required: true,
-              min: 1,
-              max: 1440,
-            },
-            startDate: {
-              title: "Start Date",
-              format: "date",
-            },
-            endDate: {
-              title: "End Date",
-              required: true,
-              format: "date",
+              min: 1 / 60,
+              max: 24,
             },
             type: {
               type: "string",
@@ -2429,10 +2404,14 @@ class WWSUcalendar extends CalendarDb {
               type: "hidden",
             },
             oneTime: {
-              helper: `Specify specific non-recurring dates/times you would like the event to occur.`,
+              helper: `Specify specific non-recurring dates/times you would like the event to occur. Note that all oneTime occurrences use the same duration you provide. Also, times you provide are in the station timezone (${
+                this.meta ? this.meta.meta.timezone : "Unknown zone"
+              }) by default.`,
               fields: {
                 item: {
-                  dateFormat: "YYYY-MM-DDTHH:mm:[00]Z",
+                  dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
+                    .parseZone(this.meta ? this.meta.meta.time : undefined)
+                    .format("Z")}`,
                   picker: {
                     inline: true,
                     sideBySide: true,
@@ -2463,25 +2442,25 @@ class WWSUcalendar extends CalendarDb {
                 ],
               },
             },
-            recurDM: {
-              helper:
-                "If you want this event to recur on specific days of the month, choose them here. This recurring filter will be combined with others you specify. For example, if you also specify recurring days of the week, this event will only be scheduled on the selected days of the month that also match the selected days of the week.",
-              type: "select",
-              multiple: true,
+            startDate: {
+              dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
+                .parseZone(this.meta ? this.meta.meta.time : undefined)
+                .format("Z")}`,
+              helper: `If a date is specified, this schedule will not occur prior to this date.`,
+              picker: {
+                inline: true,
+                sideBySide: true,
+              },
             },
-            recurWM: {
-              helper:
-                "If you want this event to recur on specific weeks of the month, choose them here. This recurring filter will be combined with others you specify.",
-              type: "select",
-              multiple: true,
-              optionLabels: [
-                "First",
-                "Second",
-                "Third",
-                "Fourth",
-                "Fifth (only if applicable)",
-                "Last (either fourth or fifth)",
-              ],
+            endDate: {
+              dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
+                .parseZone(this.meta ? this.meta.meta.time : undefined)
+                .format("Z")}`,
+              helper: `This schedule will not occur after this date. It is recommended to set this as the end of the show scheduling period (such as the semester).`,
+              picker: {
+                inline: true,
+                sideBySide: true,
+              },
             },
             recurDW: {
               helper:
@@ -2498,41 +2477,39 @@ class WWSUcalendar extends CalendarDb {
                 "Saturday",
               ],
             },
-            recurEvery: {
+            recurWM: {
               helper:
-                "This event should only be scheduled every X weeks in the year. For example, 1 = every week, 2 = every other week, 3 = every third week, etc.",
-            },
-            recurH: {
-              helper:
-                "If you specify any recurring filters, specify what hour(s) of the day this event should begin.",
+                "If you want this event to recur on specific weeks of the month, choose them here. This recurring filter will be combined with others you specify.",
               type: "select",
               multiple: true,
               optionLabels: [
-                "12 AM",
-                "1 AM",
-                "2 AM",
-                "3 AM",
-                "4 AM",
-                "5 AM",
-                "6 AM",
-                "7 AM",
-                "8 AM",
-                "9 AM",
-                "10 AM",
-                "11 AM",
-                "12 PM",
-                "1 PM",
-                "2 PM",
-                "3 PM",
-                "4 PM",
-                "5 PM",
-                "6 PM",
-                "7 PM",
-                "8 PM",
-                "9 PM",
-                "10 PM",
-                "11 PM",
+                "First",
+                "Second",
+                "Third",
+                "Fourth",
+                "Fifth (only if applicable)",
+                "Last (fifth if applicable, otherwise fourth)",
               ],
+            },
+            recurDM: {
+              helper:
+                "If you want this event to recur on specific days of the month, choose them here.",
+              type: "select",
+              multiple: true,
+            },
+            recurEveryWeeks: {
+              helper:
+                "This event will only occur every specified number of weeks starting from the Start Date. For example, if you specify 2, the event will occur bi-weekly.",
+            },
+            startTime: {
+              helper: `If using recurrence, specify start time in the station's timezone of ${
+                this.meta ? this.meta.meta.timezone : "Unknown"
+              }. For different start times, create multiple schedules.`,
+              dateFormat: "HH:mm",
+              picker: {
+                inline: true,
+                sideBySide: true,
+              },
               validator: function (callback) {
                 var value = this.getValue();
                 var dm = this.getParent().childrenByPropertyId[
@@ -2547,12 +2524,12 @@ class WWSUcalendar extends CalendarDb {
 
                 if (
                   (dm.length > 0 || wm.length > 0 || dw.length > 0) &&
-                  value.length === 0
+                  !moment(value, "HH:mm", true).isValid()
                 ) {
                   callback({
                     status: false,
                     message:
-                      "You must specify at least one hour when you have a Day of Month, Week of Month, or Day of Week recurrence filter set.",
+                      "You must specify a start time in the 24-hour format HH:mm when using recurrence rules.",
                   });
                   return;
                 }
@@ -2561,58 +2538,9 @@ class WWSUcalendar extends CalendarDb {
                 });
               },
             },
-            recurM: {
+            duration: {
               helper:
-                "If you specify any recurring filters, specify what minute of the hour(s) this event should begin.",
-              validator: function (callback) {
-                var value = this.getValue();
-                var dm = this.getParent().childrenByPropertyId[
-                  "recurDM"
-                ].getValue();
-                var wm = this.getParent().childrenByPropertyId[
-                  "recurWM"
-                ].getValue();
-                var dw = this.getParent().childrenByPropertyId[
-                  "recurDW"
-                ].getValue();
-                var h = this.getParent().childrenByPropertyId[
-                  "recurH"
-                ].getValue();
-
-                if (
-                  (dm.length > 0 ||
-                    wm.length > 0 ||
-                    dw.length > 0 ||
-                    h.length > 0) &&
-                  ((!value && value !== 0) || value === ``)
-                ) {
-                  callback({
-                    status: false,
-                    message:
-                      "Minute is required when one or more recurrence filters are specified.",
-                  });
-                  return;
-                }
-                callback({
-                  status: true,
-                });
-              },
-            },
-            startDate: {
-              dateFormat: "YYYY-MM-DDT[00]:[00]:[00]Z",
-              helper: `If a date is specified, this schedule will not occur prior to this date.`,
-              picker: {
-                inline: true,
-                sideBySide: true,
-              },
-            },
-            endDate: {
-              dateFormat: "YYYY-MM-DDT[00]:[00]:[00]Z",
-              helper: `This schedule will not occur after this date. It is recommended to set this as the end of the show scheduling period (such as the semester).`,
-              picker: {
-                inline: true,
-                sideBySide: true,
-              },
+                "Specify the amount of time this event lasts (in hours). Decimals permitted (eg. 1.5 = 1 hour and 30 minutes). Duration is used for all oneTime and recurrence rules specified. If you need a different duration for different times, create multiple schedules.",
             },
             type: {
               type: "select",
@@ -2818,7 +2746,19 @@ class WWSUcalendar extends CalendarDb {
                   value.recurDM = value.recurDM.map((val) => val.value);
                   value.recurWM = value.recurWM.map((val) => val.value);
                   value.recurDW = value.recurDW.map((val) => val.value);
-                  value.recurH = value.recurH.map((val) => val.value);
+
+                  // Prepare fields for database
+                  value = Object.assign(
+                    value,
+                    this.fieldsToRecurrenceRules(value)
+                  );
+                  delete value.recurDM;
+                  delete value.recurDW;
+                  delete value.recurWM;
+                  delete value.recurEveryWeeks;
+
+                  // Convert duration from hours to minutes
+                  value.duration *= 60;
 
                   var _event = this.verify(value); // Verify the event just to be safe
                   if (!_event.event) {
@@ -2861,7 +2801,9 @@ class WWSUcalendar extends CalendarDb {
           },
         },
 
-        data: schedule ? schedule : { calendarID: calendarID },
+        data: schedule
+          ? Object.assign(schedule, this.recurrenceRulesToFields(schedule))
+          : { calendarID: calendarID },
       });
 
       this.scheduleModal.iziModal("open");
@@ -3032,5 +2974,110 @@ class WWSUcalendar extends CalendarDb {
         );
       },
     });
+  }
+
+  /**
+   * Utility function to convert schedule fields into moment.recur recurrence rules.
+   *
+   * @param {object} record The form record to check
+   * @returns {object} properties recurrenceRules and recurrenceInterval to use in the database.
+   */
+  fieldsToRecurrenceRules(record) {
+    var criteria = { recurrenceRules: null, recurrenceInterval: null };
+
+    if (record.startTime) {
+      criteria.recurrenceRules = [];
+
+      if (record.recurDM && record.recurDM.length > 0) {
+        criteria.recurrenceRules.push({
+          measure: "daysOfMonth",
+          units: record.recurDM,
+        });
+      }
+
+      if (record.recurWM && record.recurWM.length > 0) {
+        record.recurWM = record.recurWM.map((recur) => {
+          recur -= 1;
+          if (recur < 0) {
+            recur = 5;
+            if (!record.recurDW || record.recurDW.length === 0) {
+              record.recurDW = [0, 1, 2, 3, 4, 5, 6];
+            }
+          }
+          return recur;
+        });
+        criteria.recurrenceRules.push({
+          measure:
+            record.recurWM && record.recurWM.length > 0
+              ? "weeksOfMonthByDay"
+              : "weeksOfMonth",
+          units: record.recurWM,
+        });
+      }
+
+      if (record.recurDW && record.recurDW.length > 0) {
+        record.recurDW = record.recurDW.map((recur) => {
+          recur -= 1;
+          return recur;
+        });
+        criteria.recurrenceRules.push({
+          measure: "daysOfWeek",
+          units: record.recurDW,
+        });
+      }
+
+      if (record.recurEveryWeeks && record.recurEveryWeeks > 1) {
+        criteria.recurrenceInterval = {
+          measure: "weeks",
+          unit: record.recurEveryWeeks,
+        };
+      }
+    }
+
+    return criteria;
+  }
+
+  /**
+   * Utility function to convert recurrenceRules and recurrenceInterval into form fields.
+   *
+   * @param {object} record The event record.
+   * @returns {object} recurDM, recurWM, recurDW, and recurEveryWeeks.
+   */
+  recurrenceRulesToFields(record) {
+    var criteria = {
+      recurDM: null,
+      recurWM: null,
+      recurDW: null,
+      recurEveryWeeks: 1,
+    };
+
+    if (record.recurrenceRules && record.recurrenceRules.length > 0) {
+      record.recurrenceRules.map((rule) => {
+        if (!rule.measure || !rule.units || rule.units.length === 0) return;
+        switch (rule.measure) {
+          case "daysOfMonth":
+            criteria.recurDM = rule.units;
+            break;
+          case "weeksOfMonth":
+          case "weeksOfMonthByDay":
+            criteria.recurWM = rule.units;
+            break;
+          case "daysOfWeek":
+            criteria.recurDW = rule.units;
+            break;
+        }
+      });
+    }
+
+    if (
+      record.recurrenceInterval &&
+      record.recurrenceInterval.measure &&
+      record.recurrenceInterval.measure === "weeks" &&
+      record.recurrenceInterval.unit
+    ) {
+      criteria.recurEveryWeeks = record.recurrenceInterval.unit;
+    }
+
+    return criteria;
   }
 }
