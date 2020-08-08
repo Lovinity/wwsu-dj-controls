@@ -223,7 +223,6 @@ class WWSUcalendar extends CalendarDb {
 
   // Emit calendarUpdated event when called.
   calendarUpdated() {
-    console.dir(this.schedule.db().get());
     this.emitEvent("calendarUpdated", []);
   }
 

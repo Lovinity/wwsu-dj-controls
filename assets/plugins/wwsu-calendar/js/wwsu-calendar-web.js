@@ -37,7 +37,6 @@ class CalendarDb {
    */
   constructor(calendar = [], schedule = [], clockwheels = [], meta) {
     this.meta = meta;
-    // TODO: RESUME; why is this changing to undefined?
 
     // Initialize the databases
     this.calendar = new WWSUdb(TAFFY());
@@ -316,22 +315,9 @@ class CalendarDb {
 
             // Get schedule overrides if they exist
             try {
+              var tempMeta = this.meta; // this.meta scope is not available in scheduledb.find; we must create a temp variable for it.
               var scheduleOverrides =
                 scheduledb.find(function () {
-                    if (tempCal.name === "The Talk" && this.originalTime) {
-                    console.log(`${eventStart} for ${tempCal.name}`)
-                    console.dir(this.meta);
-                    console.log(`${eventStart}T${schedule.startTime}${moment.parseZone(
-                        this.meta ? this.meta.meta.time : undefined
-                      )
-                      .format("Z")}`);
-                    console.dir(moment.parseZone(
-                        `${eventStart}T${schedule.startTime}${moment.parseZone(
-                            this.meta ? this.meta.meta.time : undefined
-                          )
-                          .format("Z")}`
-                      ));
-                          }
                   return (
                     this.calendarID === calendar.ID &&
                     this.scheduleID === schedule.ID &&
@@ -342,7 +328,7 @@ class CalendarDb {
                       moment(
                         `${eventStart}T${schedule.startTime}${moment
                           .parseZone(
-                            this.meta ? this.meta.meta.time : undefined
+                            tempMeta ? tempMeta.meta.time : undefined
                           )
                           .format("Z")}`
                       ),
