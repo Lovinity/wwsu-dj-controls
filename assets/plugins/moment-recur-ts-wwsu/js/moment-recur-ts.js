@@ -505,7 +505,7 @@
               period: "week",
               range: "month",
               low: 0,
-              high: 5, // 5 = last week of month, whether it's week 3 or 4
+              high: 5, // 5 = last week of month, whether it's 3 or 4
             },
             weeksOfYear: {
               period: "week",

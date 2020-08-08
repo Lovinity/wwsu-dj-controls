@@ -477,8 +477,8 @@ window.addEventListener("DOMContentLoaded", () => {
                   return {
                     id: event.unique,
                     groupId: event.calendarID,
-                    start: moment(event.start).toDate(),
-                    end: moment(event.end).toDate(),
+                    start: moment.parseZone(event.start).toISOString(true),
+                    end: moment.parseZone(event.end).toISOString(true),
                     title: `${event.type}: ${event.hosts} - ${event.name}`,
                     backgroundColor:
                       ["canceled", "canceled-system"].indexOf(
@@ -924,7 +924,7 @@ window.addEventListener("DOMContentLoaded", () => {
           );
           if (
             fullMeta.scheduledStart &&
-            moment().isSameOrAfter(moment(fullMeta.scheduledStart))
+            moment(fullMeta.time).isSameOrAfter(moment(fullMeta.scheduledStart))
           ) {
             var totalMinutes = moment(fullMeta.scheduledEnd).diff(
               moment(fullMeta.scheduledStart),
@@ -1191,7 +1191,7 @@ window.addEventListener("DOMContentLoaded", () => {
                           record.alert
                         }</strong>: in effect for ${
             record.counties
-          } from ${moment(record.starts).format("llll")} until ${moment(
+          } from ${moment.parseZone(record.starts).format("llll")} until ${moment.parseZone(
             record.expires
           ).format("llll")}.
                         </li>`;
@@ -1206,7 +1206,7 @@ window.addEventListener("DOMContentLoaded", () => {
                           record.alert
                         }</strong>: in effect for ${
             record.counties
-          } from ${moment(record.starts).format("llll")} until ${moment(
+          } from ${moment.parseZone(record.starts).format("llll")} until ${moment.parseZone(
             record.expires
           ).format("llll")}.
                         </li>`;
@@ -1218,7 +1218,7 @@ window.addEventListener("DOMContentLoaded", () => {
                           record.alert
                         }</strong>: in effect for ${
             record.counties
-          } from ${moment(record.starts).format("llll")} until ${moment(
+          } from ${moment.parseZone(record.starts).format("llll")} until ${moment.parseZone(
             record.expires
           ).format("llll")}.
                         </li>`;
@@ -1230,7 +1230,7 @@ window.addEventListener("DOMContentLoaded", () => {
                           record.alert
                         }</strong>: in effect for ${
             record.counties
-          } from ${moment(record.starts).format("llll")} until ${moment(
+          } from ${moment.parseZone(record.starts).format("llll")} until ${moment.parseZone(
             record.expires
           ).format("llll")}.
                         </li>`;

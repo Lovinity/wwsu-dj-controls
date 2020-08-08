@@ -271,8 +271,8 @@ class WWSUannouncements extends WWSUdb {
                     this.table.row.add([
                         announcement.title,
                         announcement.type,
-                        moment(announcement.starts).format("llll"),
-                        moment(announcement.expires).format("llll"),
+                        moment.parseZone(announcement.starts).format("llll Z"),
+                        moment.parseZone(announcement.expires).format("llll Z"),
                         `<span class="text-${announcement.level}"><i class="fas fa-dot-circle"></i></span>`,
                         `<div class="btn-group"><button class="btn btn-sm btn-warning btn-announcement-edit" data-id="${announcement.ID}" title="Edit Announcement"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-announcement-delete" data-id="${announcement.ID}" title="Delete Announcement"><i class="fas fa-trash"></i></button></div>`
                     ])

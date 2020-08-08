@@ -20,7 +20,7 @@ class WWSUcalendar extends CalendarDb {
    * @param {WWSUreq} djReq WWSU request with DJ authorization if using the DJ panel.
    */
   constructor(socket, meta, noReq, directorReq, djReq) {
-    super(meta); // Create the db
+    super([], [], [], meta); // Create the db
 
     this.endpoints = {
       add: "/calendar/add",
@@ -223,6 +223,7 @@ class WWSUcalendar extends CalendarDb {
 
   // Emit calendarUpdated event when called.
   calendarUpdated() {
+    console.dir(this.schedule.db().get());
     this.emitEvent("calendarUpdated", []);
   }
 
@@ -1008,8 +1009,8 @@ class WWSUcalendar extends CalendarDb {
                     util.confirmDialog(
                       `<p>Are you sure you want to reverse updates made for ${
                         event.type
-                      }: ${event.name} on ${moment(event.start).format(
-                        "LLLL"
+                      }: ${event.name} on ${moment.parseZone(event.start).format(
+                        "LLLL Z"
                       )}?</p>
                                         <ul>
                                             <li>Discards updates applied to this date/time</li>
@@ -1063,8 +1064,8 @@ class WWSUcalendar extends CalendarDb {
                     util.confirmDialog(
                       `<p>Are you sure you want to reverse the cancellation of ${
                         event.type
-                      }: ${event.name} on ${moment(event.start).format(
-                        "LLLL"
+                      }: ${event.name} on ${moment.parseZone(event.start).format(
+                        "LLLL Z"
                       )}?</p>
                                         <ul>
                                             <li>Occurrence will be on the schedule again</li>
@@ -1271,8 +1272,8 @@ class WWSUcalendar extends CalendarDb {
               ) !== -1
                 ? `Original Time: `
                 : ``
-            }${moment(event.start).format("lll")} - ${moment(event.end).format(
-      "hh:mm A"
+            }${moment.parseZone(event.start).format("lll")} - ${moment.parseZone(event.end).format(
+      "hh:mm A Z"
     )}</b>
         </li>
         <li class="list-group-item">
@@ -1301,7 +1302,7 @@ class WWSUcalendar extends CalendarDb {
 
     this.occurrenceActionModal.title = `Cancel ${event.type}: ${
       event.hosts
-    } - ${event.name} on ${moment(event.start).format("LLLL")}`;
+    } - ${event.name} on ${moment.parseZone(event.start).format("LLLL Z")}`;
     this.occurrenceActionModal.footer = ``;
     this.occurrenceActionModal.body = ``;
 
@@ -1341,8 +1342,8 @@ class WWSUcalendar extends CalendarDb {
                 util.confirmDialog(
                   `<p>Are you sure you want to cancel ${event.type}: ${
                     event.hosts
-                  } - ${event.name} on ${moment(event.start).format(
-                    "LLLL"
+                  } - ${event.name} on ${moment.parseZone(event.start).format(
+                    "LLLL Z"
                   )}?</p>
                                         <ul>
                                             <li>Please <strong>do not</strong> cancel occurrences to make room to schedule other events; scheduling the other event will automatically make adjustments as necessary and reverse the changes should the other event get canceled.</li>
@@ -1716,7 +1717,7 @@ class WWSUcalendar extends CalendarDb {
   showOccurrenceForm(event) {
     this.occurrenceActionModal.title = `Edit occurrence ${event.type}: ${
       event.hosts
-    } - ${event.name} on ${moment(event.start).format("LLLL")}`;
+    } - ${event.name} on ${moment.parseZone(event.start).format("LLLL Z")}`;
     this.occurrenceActionModal.footer = "";
     this.occurrenceActionModal.body = "";
 
@@ -1868,9 +1869,9 @@ class WWSUcalendar extends CalendarDb {
             },
             newTime: {
               dateFormat: "YYYY-MM-DDTHH:mm:[00]Z",
-              helper: `If this occurrence should happen at a different date/time, specify it here. The current start date/time is <strong>${moment(
+              helper: `If this occurrence should happen at a different date/time, specify it here. The current start date/time is <strong>${moment.parseZone(
                 event.start
-              ).format("LLLL")}</strong>.`,
+              ).format("LLLL Z")}</strong>.`,
               picker: {
                 inline: true,
                 sideBySide: true,
@@ -2096,13 +2097,13 @@ class WWSUcalendar extends CalendarDb {
                   util.confirmDialog(
                     `<p>Are you sure you want to edit occurrence ${
                       event.type
-                    }: ${event.hosts} - ${event.name} on ${moment(
+                    }: ${event.hosts} - ${event.name} on ${moment.parseZone(
                       event.start
-                    ).format("LLLL")}?</p>
+                    ).format("LLLL Z")}?</p>
                                         <ul>
-                                            <li>Changes will only apply to the event's original occurrence of ${moment(
+                                            <li>Changes will only apply to the event's original occurrence of ${moment.parseZone(
                                               event.start
-                                            ).format("LLLL")}.</li>
+                                            ).format("LLLL Z")}.</li>
                                             <li>A conflict check will run, and you will be notified of occurrence changes that will be made to avoid conflicts</li>
                                             ${
                                               value.newTime &&
@@ -2157,7 +2158,7 @@ class WWSUcalendar extends CalendarDb {
           calendarID: event.calendarID,
           scheduleID: event.scheduleID,
           scheduleType: "updated",
-          originalTime: moment(event.start).toISOString(true),
+          originalTime: moment.parseZone(event.start).toISOString(true),
         },
       });
 
@@ -2926,8 +2927,8 @@ class WWSUcalendar extends CalendarDb {
                 actions.push(
                   `<li>${conflict.type}: ${conflict.hosts} - ${
                     conflict.name
-                  } on ${moment(conflict.originalTime).format(
-                    "LLLL"
+                  } on ${moment.parseZone(conflict.originalTime).format(
+                    "LLLL Z"
                   )} will be CANCELED.</li>`
                 );
               }
@@ -2938,13 +2939,13 @@ class WWSUcalendar extends CalendarDb {
                 actions.push(
                   `<li>${conflict.type}: ${conflict.hosts} - ${
                     conflict.name
-                  } on ${moment(conflict.originalTime).format(
+                  } on ${moment.parseZone(conflict.originalTime).format(
                     "LLLL"
-                  )} will be CHANGED; it will end at ${moment(
+                  )} will be CHANGED; it will end at ${moment.parseZone(
                     conflict.originalTime
                   )
                     .add(conflict.duration, "minutes")
-                    .format("LLLL")}.</li>`
+                    .format("LLLL Z")}.</li>`
                 );
               }
               if (
@@ -2954,13 +2955,13 @@ class WWSUcalendar extends CalendarDb {
                 actions.push(
                   `<li>${conflict.type}: ${conflict.hosts} - ${
                     conflict.name
-                  } on ${moment(conflict.originalTime).format(
-                    "LLLL"
-                  )} will be CHANGED; it will air on ${moment(
+                  } on ${moment.parseZone(conflict.originalTime).format(
+                    "LLLL Z"
+                  )} will be CHANGED; it will air on ${moment.parseZone(
                     conflict.newTime
-                  ).format("LLLL")} - ${moment(conflict.newTime)
+                  ).format("LLLL")} - ${moment.parseZone(conflict.newTime)
                     .add(conflict.duration, "minutes")
-                    .format("LLLL")}.</li>`
+                    .format("LLLL Z")}.</li>`
                 );
               }
             });
@@ -2970,9 +2971,9 @@ class WWSUcalendar extends CalendarDb {
                 actions.push(
                   `<li>${conflict.type}: ${conflict.hosts} - ${
                     conflict.name
-                  }, which was canceled on ${moment(
+                  }, which was canceled on ${moment.parseZone(
                     conflict.originalTime
-                  ).format("LLLL")}, will be put back on the schedule.</li>`
+                  ).format("LLLL Z")}, will be put back on the schedule.</li>`
                 );
               }
               if (
@@ -2982,12 +2983,12 @@ class WWSUcalendar extends CalendarDb {
                 actions.push(
                   `<li>${conflict.type}: ${conflict.hosts} - ${
                     conflict.name
-                  }, whose end time was changed to ${moment(
+                  }, whose end time was changed to ${moment.parseZone(
                     conflict.originalTime
                   )
                     .add(conflict.duration, "minutes")
                     .format(
-                      "LLLL"
+                      "LLLL Z"
                     )}, will end at its originally scheduled end time.</li>`
                 );
               }
@@ -2998,10 +2999,10 @@ class WWSUcalendar extends CalendarDb {
                 actions.push(
                   `<li>${conflict.type}: ${conflict.hosts} - ${
                     conflict.name
-                  }, whose start date/time was rescheduled to ${moment(
+                  }, whose start date/time was rescheduled to ${moment.parseZone(
                     conflict.newTime
                   ).format(
-                    "LLLL"
+                    "LLLL Z"
                   )}, will now start at its originally scheduled date/time.</li>`
                 );
               }

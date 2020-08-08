@@ -37,6 +37,7 @@ class CalendarDb {
    */
   constructor(calendar = [], schedule = [], clockwheels = [], meta) {
     this.meta = meta;
+    // TODO: RESUME; why is this changing to undefined?
 
     // Initialize the databases
     this.calendar = new WWSUdb(TAFFY());
@@ -263,7 +264,7 @@ class CalendarDb {
                       scheduleType: "canceled-changed",
                       scheduleReason: `[SYSTEM] Event was rescheduled to ${moment(
                         exc.newTime
-                      ).format("llll")}`,
+                      ).format("llll Z")}`,
                     },
                     exc.originalTime
                   );
@@ -317,6 +318,20 @@ class CalendarDb {
             try {
               var scheduleOverrides =
                 scheduledb.find(function () {
+                    if (tempCal.name === "The Talk" && this.originalTime) {
+                    console.log(`${eventStart} for ${tempCal.name}`)
+                    console.dir(this.meta);
+                    console.log(`${eventStart}T${schedule.startTime}${moment.parseZone(
+                        this.meta ? this.meta.meta.time : undefined
+                      )
+                      .format("Z")}`);
+                    console.dir(moment.parseZone(
+                        `${eventStart}T${schedule.startTime}${moment.parseZone(
+                            this.meta ? this.meta.meta.time : undefined
+                          )
+                          .format("Z")}`
+                      ));
+                          }
                   return (
                     this.calendarID === calendar.ID &&
                     this.scheduleID === schedule.ID &&
@@ -324,9 +339,12 @@ class CalendarDb {
                     this.scheduleType !== "unscheduled" &&
                     this.originalTime &&
                     moment(this.originalTime).isSame(
-                      moment.tz(
-                        `${eventStart} ${schedule.startTime}`,
-                        this.meta ? this.meta.meta.timezone : moment.tz.guess()
+                      moment(
+                        `${eventStart}T${schedule.startTime}${moment
+                          .parseZone(
+                            this.meta ? this.meta.meta.time : undefined
+                          )
+                          .format("Z")}`
                       ),
                       "minute"
                     )
@@ -351,7 +369,7 @@ class CalendarDb {
                         scheduleType: "canceled-changed",
                         scheduleReason: `[SYSTEM] Event was rescheduled to ${moment
                           .parseZone(exc.newTime)
-                          .format("llll z")}`,
+                          .format("llll Z")}`,
                       },
                       exc.originalTime
                     );
@@ -377,13 +395,17 @@ class CalendarDb {
               _processRecord(
                 tempCal,
                 tempEvent,
-                `${eventStart} ${schedule.startTime}`
+                `${eventStart}T${schedule.startTime}${moment
+                  .parseZone(this.meta ? this.meta.meta.time : undefined)
+                  .format("Z")}`
               );
             } else {
               _processRecord(
                 calendar,
                 schedule,
-                `${eventStart} ${schedule.startTime}`
+                `${eventStart}T${schedule.startTime}${moment
+                  .parseZone(this.meta ? this.meta.meta.time : undefined)
+                  .format("Z")}`
               );
             }
           });
@@ -501,12 +523,12 @@ class CalendarDb {
                 (event.type === "prerecord" ||
                   event.type === "genre" ||
                   event.type === "playlist") &&
-                moment
-                  .parseZone(this.meta ? this.meta.meta.time : undefined)
-                  .isSameOrAfter(moment(event.start)) &&
-                moment
-                  .parseZone(this.meta ? this.meta.meta.time : undefined)
-                  .isBefore(moment(event.end))
+                moment(
+                  this.meta ? this.meta.meta.time : undefined
+                ).isSameOrAfter(moment(event.start)) &&
+                moment(this.meta ? this.meta.meta.time : undefined).isBefore(
+                  moment(event.end)
+                )
               );
             } else {
               // Allow 5 minutes early for non-automation shows.
@@ -514,21 +536,19 @@ class CalendarDb {
                 (((event.type === "prerecord" ||
                   event.type === "genre" ||
                   event.type === "playlist") &&
-                  moment
-                    .parseZone(this.meta ? this.meta.meta.time : undefined)
-                    .isSameOrAfter(moment(event.start)) &&
-                  moment
-                    .parseZone(this.meta ? this.meta.meta.time : undefined)
-                    .isBefore(moment(event.end))) ||
+                  moment(
+                    this.meta ? this.meta.meta.time : undefined
+                  ).isSameOrAfter(moment(event.start)) &&
+                  moment(this.meta ? this.meta.meta.time : undefined).isBefore(
+                    moment(event.end)
+                  )) ||
                   ((event.type === "show" ||
                     event.type === "sports" ||
                     event.type === "remote") &&
-                    moment
-                      .parseZone(this.meta ? this.meta.meta.time : undefined)
+                    moment(this.meta ? this.meta.meta.time : undefined)
                       .add(5, "minutes")
                       .isSameOrAfter(moment(event.start)) &&
-                    moment
-                      .parseZone(this.meta ? this.meta.meta.time : undefined)
+                    moment(this.meta ? this.meta.meta.time : undefined)
                       .add(5, "minutes")
                       .isBefore(moment(event.end)))) &&
                 event.active
@@ -1576,7 +1596,10 @@ class CalendarDb {
       scheduleType: schedule.scheduleType || null, // Schedule type (null [default schedule], unscheduled, updated, updated-system, canceled, canceled-system, canceled-changed)
       scheduleReason: schedule.scheduleReason || null, // A reason for this schedule or override, if applicable.
       originalTime: schedule.originalTime
-        ? moment(schedule.originalTime).startOf("minute").toISOString(true)
+        ? moment
+            .parseZone(schedule.originalTime)
+            .startOf("minute")
+            .toISOString(true)
         : null, // The specific time this schedule is applicable for... used for updates and cancelations.
       type: schedule.type ? schedule.type : calendar.type, // Event type (show, remote, sports, prerecord, genre, playlist, event, onair-booking, prod-booking, office-hours, task)
       priority:
@@ -1670,13 +1693,15 @@ class CalendarDb {
           : null, // Array of recurrence rules for moment-recur-ts
       startDate:
         schedule.startDate || calendar.startDate
-          ? moment(schedule.startDate || calendar.startDate)
+          ? moment
+              .parseZone(schedule.startDate || calendar.startDate)
               .startOf("day")
               .toISOString(true)
           : null, // Date the event starts
       endDate:
         schedule.endDate || calendar.endDate
-          ? moment(schedule.endDate || calendar.endDate)
+          ? moment
+              .parseZone(schedule.endDate || calendar.endDate)
               .startOf("day")
               .toISOString(true)
           : null, // Date the event ends (exclusive).
