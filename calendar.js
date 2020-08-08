@@ -25,9 +25,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
     if (events.length > 0) {
       // Determine what the exact date/time is for the "12" (start of the doughnut chart) on the clock
-      var topOfClock = moment(meta.time).startOf("day").add(1, "days");
-      if (moment(meta.time).hours() < 12) {
-        topOfClock = moment(topOfClock).subtract(12, "hours");
+      var topOfClock = moment.parseZone(meta.time).startOf("day").add(1, "days");
+      if (moment.parseZone(meta.time).hours() < 12) {
+        topOfClock = moment.parseZone(topOfClock).subtract(12, "hours");
       }
 
       // Determine number of minutes from current time to topOfClock
@@ -42,7 +42,7 @@ window.addEventListener("DOMContentLoaded", () => {
           (event) =>
             moment(event.end).isAfter(moment(meta.time), "minutes") &&
             moment(event.start).isSameOrBefore(
-              moment(meta.time).add(12, "hours"),
+              moment.parseZone(meta.time).add(12, "hours"),
               "minutes"
             ) &&
             [
@@ -100,12 +100,12 @@ window.addEventListener("DOMContentLoaded", () => {
             // Correct length if it goes beyond 12 hours
             if (
               moment(event.end).isAfter(
-                moment(meta.time).add(12, "hours"),
+                moment.parseZone(meta.time).add(12, "hours"),
                 "minutes"
               )
             ) {
               var correction = moment(event.end).diff(
-                moment(meta.time).add(12, "hours"),
+                moment.parseZone(meta.time).add(12, "hours"),
                 "minutes"
               );
               length -= correction;

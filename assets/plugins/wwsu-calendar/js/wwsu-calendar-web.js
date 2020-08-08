@@ -310,6 +310,63 @@ class CalendarDb {
         // loop through all dates
         if (allDates && allDates.length > 0) {
           allDates.map((eventStart) => {
+            // If a recurrence interval is specified, skip applicable dates.
+            // NOTE: Combining intervals and calendar rules with moment-recur does not work, so we only use calendar rules for moment-recur.
+            if (
+              schedule.recurrenceInterval &&
+              schedule.recurrenceInterval.measure &&
+              schedule.recurrenceInterval.unit &&
+              schedule.recurrenceInterval.unit > 1
+            ) {
+              var startInterval;
+              switch (schedule.recurrenceInterval.measure) {
+                case "days":
+                  startInterval = moment(start).startOf("day");
+                  if (
+                    moment(eventStart)
+                      .startOf("day")
+                      .diff(startInterval, "days") %
+                      schedule.recurrenceInterval.unit !==
+                    0
+                  )
+                    return;
+                  break;
+                case "weeks":
+                  startInterval = moment(start).startOf("week");
+                  if (
+                    moment(eventStart)
+                      .startOf("week")
+                      .diff(startInterval, "weeks") %
+                      schedule.recurrenceInterval.unit !==
+                    0
+                  )
+                    return;
+                  break;
+                case "months":
+                  startInterval = moment(start).startOf("month");
+                  if (
+                    moment(eventStart)
+                      .startOf("month")
+                      .diff(startInterval, "months") %
+                      schedule.recurrenceInterval.unit !==
+                    0
+                  )
+                    return;
+                  break;
+                case "years":
+                  startInterval = moment(start).startOf("year");
+                  if (
+                    moment(eventStart)
+                      .startOf("year")
+                      .diff(startInterval, "years") %
+                      schedule.recurrenceInterval.unit !==
+                    0
+                  )
+                    return;
+                  break;
+              }
+            }
+
             var tempSchedules = [];
             var scheduleIDs = [];
 
@@ -327,9 +384,7 @@ class CalendarDb {
                     moment(this.originalTime).isSame(
                       moment(
                         `${eventStart}T${schedule.startTime}${moment
-                          .parseZone(
-                            tempMeta ? tempMeta.meta.time : undefined
-                          )
+                          .parseZone(tempMeta ? tempMeta.meta.time : undefined)
                           .format("Z")}`
                       ),
                       "minute"
@@ -934,6 +989,62 @@ class CalendarDb {
             // Loop through each schedule between start and end
             if (allDates && allDates.length > 0) {
               allDates.map((eventStart) => {
+                // Skip dates that fail recurrence intervals
+                if (
+                  schedule.recurrenceInterval &&
+                  schedule.recurrenceInterval.measure &&
+                  schedule.recurrenceInterval.unit &&
+                  schedule.recurrenceInterval.unit > 1
+                ) {
+                  var startInterval;
+                  switch (schedule.recurrenceInterval.measure) {
+                    case "days":
+                      startInterval = moment(start).startOf("day");
+                      if (
+                        moment(eventStart)
+                          .startOf("day")
+                          .diff(startInterval, "days") %
+                          schedule.recurrenceInterval.unit !==
+                        0
+                      )
+                        return;
+                      break;
+                    case "weeks":
+                      startInterval = moment(start).startOf("week");
+                      if (
+                        moment(eventStart)
+                          .startOf("week")
+                          .diff(startInterval, "weeks") %
+                          schedule.recurrenceInterval.unit !==
+                        0
+                      )
+                        return;
+                      break;
+                    case "months":
+                      startInterval = moment(start).startOf("month");
+                      if (
+                        moment(eventStart)
+                          .startOf("month")
+                          .diff(startInterval, "months") %
+                          schedule.recurrenceInterval.unit !==
+                        0
+                      )
+                        return;
+                      break;
+                    case "years":
+                      startInterval = moment(start).startOf("year");
+                      if (
+                        moment(eventStart)
+                          .startOf("year")
+                          .diff(startInterval, "years") %
+                          schedule.recurrenceInterval.unit !==
+                        0
+                      )
+                        return;
+                      break;
+                  }
+                }
+
                 timePeriods.push({
                   start: moment
                     .tz(
@@ -1677,6 +1788,14 @@ class CalendarDb {
             !calendar.recurrenceRules.clearAll
           ? calendar.recurrenceRules
           : null, // Array of recurrence rules for moment-recur-ts
+      recurrenceInterval:
+        schedule.recurrenceInterval && !schedule.recurrenceInterval.clearAll
+          ? schedule.recurrenceInterval
+          : (!schedule.recurrenceInterval || !schedule.recurrenceInterval.clearAll) &&
+            calendar.recurrenceInterval &&
+            !calendar.recurrenceInterval.clearAll
+          ? calendar.recurrenceInterval
+          : null, // recurrenceInterval object containing an interval the event should occur, if not every occurrence.
       startDate:
         schedule.startDate || calendar.startDate
           ? moment
@@ -1780,7 +1899,7 @@ class CalendarDb {
 
     // No oneTimes? Start with "Every", else start with each oneTime date/time, followed by "and every" if a recurring schedule was also provided.
     if (oneTime.length === 0) {
-      recurDayString = `Every `;
+      recurDayString = ``;
     } else {
       recurDayString = `On ${oneTime.join(", ")}`;
     }
@@ -1794,19 +1913,19 @@ class CalendarDb {
         recurDayString += `... and `;
       }
 
-      recurrenceRules.map((rule) => {
+      event.recurrenceRules.map((rule) => {
         if (!rule.measure || !rule.units || rule.units.length === 0) return;
         switch (rule.measure) {
           case "days":
           case "weeks":
           case "months":
           case "years":
-            recurDayString += `every ${rule.units.join(", ")} ${
+            recurDayString += `every ${rule.units.sort((a, b) => a - b).join(", ")} ${
               rule.measure
             }, `;
             break;
           case "monthsOfYear":
-            var days = rule.units.map((unit) => {
+            var days = rule.units.sort((a, b) => a - b).map((unit) => {
               switch (unit) {
                 case 0:
                   return "January";
@@ -1838,7 +1957,7 @@ class CalendarDb {
             recurDayString += `in ${days.join(", ")}, `;
             break;
           case "daysOfWeek":
-            var days = rule.units.map((unit) => {
+            var days = rule.units.sort((a, b) => a - b).map((unit) => {
               switch (unit) {
                 case 0:
                   return "Sunday";
@@ -1861,7 +1980,7 @@ class CalendarDb {
             break;
           case "weeksOfMonth":
           case "weeksOfMonthByDay":
-            var days = rule.units.map((unit) => {
+            var days = rule.units.sort((a, b) => a - b).map((unit) => {
               switch (unit) {
                 case 0:
                   return "1st";
@@ -1882,7 +2001,7 @@ class CalendarDb {
             )} week(s) of the month, `;
             break;
           case "daysOfMonth":
-            var days = rule.units.map((unit) => {
+            var days = rule.units.sort((a, b) => a - b).map((unit) => {
               switch (unit) {
                 case 1:
                 case 21:
@@ -1900,7 +2019,7 @@ class CalendarDb {
             recurDayString += `on the ${days.join(", ")} day(s) of the month, `;
             break;
           case "weeksOfYear":
-            var days = rule.units.map((unit) => {
+            var days = rule.units.sort((a, b) => a - b).map((unit) => {
               switch (unit) {
                 case 1:
                 case 21:
