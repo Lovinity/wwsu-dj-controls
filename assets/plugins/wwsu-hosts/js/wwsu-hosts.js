@@ -6,17 +6,17 @@ class WWSUhosts extends WWSUdb {
      * 
      * @param {sails.io} socket Socket connection to WWSU
      * @param {WWSUmeta} meta WWSUmeta class instance
+     * @param {WWSUrecipients} recipients WWSUrecipients class instance
      * @param {string} machineID The ID of this machine / installation
      * @param {string} app The app name and version this host is running
      * @param {WWSUreq} hostReq Request with host authorization
      * @param {WWSUreq} directorReq Request with director authorization
      */
-    constructor(socket, meta, machineID, app, hostReq, directorReq) {
+    constructor(socket, meta, recipients, machineID, app, hostReq, directorReq) {
         super(); // Create the db
 
         this.endpoints = {
             get: '/hosts/get',
-            addRecipientComputer: '/recipients/add-computers'
         };
         this.requests = {
             host: hostReq,
@@ -26,18 +26,12 @@ class WWSUhosts extends WWSUdb {
             get: { host: machineID, app: app },
         };
         this.meta = meta;
+        this.recipients = recipients;
 
         this.assignSocketEvent('hosts', socket);
 
-        // Contains information about the current host and recipient
+        // Contains information about the current host
         this.client = {};
-        this.recipient = {};
-
-        // Determines if we connected to the API at least once before
-        this.connectedBefore = false;
-
-        // If true, ignores whether or not this host is already connected
-        this.development = true;
     }
 
     /**
@@ -58,7 +52,7 @@ class WWSUhosts extends WWSUdb {
                         this.query(body.otherHosts, true);
                         delete this.client.otherHosts;
                     }
-                    this.addRecipientComputer((success) => {
+                    this.recipients.addRecipientComputer(this.client.host, (recipient, success) => {
                         if (success) {
                             cb(1);
                         } else {
@@ -68,28 +62,6 @@ class WWSUhosts extends WWSUdb {
                 }
             } catch (e) {
                 cb(0)
-                console.error(e)
-            }
-        })
-    }
-
-    /**
-     * Add this host as a computer recipient to the WWSU API (register as online).
-     * 
-     * @param {function} cb Callback; true = success, false = no success (or another host is already connected)
-     */
-    addRecipientComputer (cb) {
-        this.requests.host.request({ method: 'post', url: this.endpoints.addRecipientComputer, data: { host: this.client.host } }, (response2) => {
-            try {
-                this.recipient = response2;
-                if (this.connectedBefore || (typeof response2.alreadyConnected !== 'undefined' && !response2.alreadyConnected) || this.development) {
-                    this.connectedBefore = true
-                    cb(true)
-                } else {
-                    cb(false)
-                }
-            } catch (e) {
-                cb(false)
                 console.error(e)
             }
         })

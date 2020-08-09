@@ -840,15 +840,16 @@ class WWSUmodal {
     closeButton = true,
     modalOptions = {}
   ) {
-    var util = new WWSUutil();
-
-    util.waitForElement("body", () => {
+    if ($.fn.iziModal) {
+      var util = new WWSUutil();
       this.id = util.createUUID();
 
-      // Append the model
-      $("body").append(`<div class="modal" id="modal-${
-        this.id
-      }" aria-hidden="true" aria-labelledby="modal-${this.id}-title">
+      util.waitForElement("body", () => {
+
+        // Append the model
+        $("body").append(`<div class="modal" id="modal-${
+          this.id
+        }" aria-hidden="true" aria-labelledby="modal-${this.id}-title">
       <div class="modal-content${bgClass ? ` ${bgClass}` : ``}">
           <div class="modal-header">
               <h4 class="modal-title" id="modal-${this.id}-title">${title}</h4>
@@ -871,11 +872,12 @@ class WWSUmodal {
       <!-- /.modal-content -->
   </div>`);
 
-      // Initialize the model once loaded in the DOM
-      util.waitForElement(`#modal-${this.id}`, () => {
-        this.izi = $(`#modal-${this.id}`).iziModal(modalOptions);
+        // Initialize the model once loaded in the DOM
+        util.waitForElement(`#modal-${this.id}`, () => {
+          this.izi = $(`#modal-${this.id}`).iziModal(modalOptions);
+        });
       });
-    });
+    }
   }
 
   get title() {
@@ -921,7 +923,10 @@ class WWSUmodal {
   }
 
   iziModal(query) {
-    return this.izi.iziModal(query);
+    if ($.fn.iziModal) {
+      return this.izi.iziModal(query);
+    }
+    return;
   }
 }
 

@@ -75,17 +75,18 @@ window.addEventListener("DOMContentLoaded", () => {
     var subscriptions = new WWSUsubscriptions(socket, noReq);
     var api = new WWSUapi(noReq, hostReq, djReq, directorReq, adminDirectorReq);
     var discipline = new WWSUdiscipline(socket, noReq, directorReq, meta);
+    var requests = new WWSUrequests(socket, hosts, hostReq);
+    var state = new WWSUstate(socket, hosts, calendar, hostReq);
+    var recipients = new WWSUrecipients(socket, meta, hostReq);
     var hosts = new WWSUhosts(
       socket,
       meta,
+      recipients,
       machineID,
       window.ipc.getAppVersion(),
       hostReq,
       directorReq
     );
-    var requests = new WWSUrequests(socket, hosts, hostReq);
-    var state = new WWSUstate(socket, hosts, calendar, hostReq);
-    var recipients = new WWSUrecipients(socket, meta, hostReq);
     var messages = new WWSUmessages(
       socket,
       recipients,
@@ -1177,9 +1178,6 @@ window.addEventListener("DOMContentLoaded", () => {
    * @param {array} db Array of active EAS alerts
    */
   function processEas(db) {
-    //if (hosts.isHost)
-    eas.displayAlerts();
-
     var globalEas = 5;
 
     // Process each status and generate content
@@ -1216,9 +1214,15 @@ window.addEventListener("DOMContentLoaded", () => {
                         }</strong>: in effect for ${
             record.counties
           } from ${moment
-            .tz(record.starts, meta.meta ? meta.meta.timezone : moment.tz.guess())
+            .tz(
+              record.starts,
+              meta.meta ? meta.meta.timezone : moment.tz.guess()
+            )
             .format("llll")} until ${moment
-            .tz(record.expires, meta.meta ? meta.meta.timezone : moment.tz.guess())
+            .tz(
+              record.expires,
+              meta.meta ? meta.meta.timezone : moment.tz.guess()
+            )
             .format("llll")}.
                         </li>`;
           if (globalEas > 2) globalEas = 2;
@@ -1230,9 +1234,15 @@ window.addEventListener("DOMContentLoaded", () => {
                         }</strong>: in effect for ${
             record.counties
           } from ${moment
-            .tz(record.starts, meta.meta ? meta.meta.timezone : moment.tz.guess())
+            .tz(
+              record.starts,
+              meta.meta ? meta.meta.timezone : moment.tz.guess()
+            )
             .format("llll")} until ${moment
-            .tz(record.expires, meta.meta ? meta.meta.timezone : moment.tz.guess())
+            .tz(
+              record.expires,
+              meta.meta ? meta.meta.timezone : moment.tz.guess()
+            )
             .format("llll")}.
                         </li>`;
           if (globalEas > 3) globalEas = 3;
@@ -1244,9 +1254,15 @@ window.addEventListener("DOMContentLoaded", () => {
                         }</strong>: in effect for ${
             record.counties
           } from ${moment
-            .tz(record.starts, meta.meta ? meta.meta.timezone : moment.tz.guess())
+            .tz(
+              record.starts,
+              meta.meta ? meta.meta.timezone : moment.tz.guess()
+            )
             .format("llll")} until ${moment
-            .tz(record.expires, meta.meta ? meta.meta.timezone : moment.tz.guess())
+            .tz(
+              record.expires,
+              meta.meta ? meta.meta.timezone : moment.tz.guess()
+            )
             .format("llll")}.
                         </li>`;
           if (globalEas > 4) globalEas = 4;
@@ -1294,6 +1310,44 @@ window.addEventListener("DOMContentLoaded", () => {
 
   eas.on("change", "renderer", (db) => {
     processEas(db.get());
+  });
+  eas.on("newAlert", "renderer", (record) => {
+    if (record.severity === "Extreme") {
+      iziToast.show({
+        class: "flash-bg",
+        title: "Life-threatening Alert In Effect",
+        message: `A <strong>${record.alert}</strong> is in effect for the counties of ${record.counties} from ${moment.tz(record.starts, meta.meta ? meta.meta.timezone : moment.tz.guess()).format("MM/DD h:mmA Z")} until ${moment.tz(record.expires, meta.meta ? meta.meta.timezone : moment.tz.guess()).format("MM/DD h:mmA Z")}. <strong>This is a life threatening emergency! You are advised to seek shelter immediately and potentially end any broadcasts early if you are in these counties.</strong>`,
+        timeout: 900000,
+        close: true,
+        color: "red",
+        drag: false,
+        position: "center",
+        closeOnClick: false,
+        overlay: true,
+        overlayColor: "rgba(255, 0, 0, 0.33)",
+        zindex: 5000,
+        layout: 2,
+        image: `assets/images/extremeWeather.png`,
+        maxWidth: 640,
+      });
+    } else if (record.severity === "Severe") {
+      iziToast.show({
+        class: 'iziToast-eas-severe',
+        title: 'Severe Alert in Effect',
+        message: `A <strong>${record.alert}</strong> is in effect for the counties of ${record.counties} from ${moment.tz(record.starts, meta.meta ? meta.meta.timezone : moment.tz.guess()).format("MM/DD h:mmA Z")} until ${moment.tz(record.expires, meta.meta ? meta.meta.timezone : moment.tz.guess()).format("MM/DD h:mmA Z")}. Please keep an eye on the weather / latest news.`,
+        timeout: 900000,
+        close: true,
+        color: 'yellow',
+        drag: false,
+        position: 'center',
+        closeOnClick: true,
+        overlay: true,
+        zindex: 4000,
+        layout: 2,
+        image: `assets/images/severeWeather.png`,
+        maxWidth: 640
+      })
+    };
   });
 
   /*

@@ -330,7 +330,7 @@ class WWSUmessages extends WWSUdb {
 
                 var chatHTML = ``;
 
-                var query = [ { from: recipient.host, to: [ this.hosts.client.host, 'DJ', 'DJ-private', this.hosts.recipient.host ] }, { to: recipient.host } ]
+                var query = [ { from: recipient.host, to: [ this.hosts.client.host, 'DJ', 'DJ-private', this.recipients.recipient.host ] }, { to: recipient.host } ]
                 if (recipient.host === 'website') {
                     query = [ { to: [ 'DJ', 'website' ] } ]
                 }
@@ -388,7 +388,7 @@ class WWSUmessages extends WWSUdb {
     messageHTML (message) {
 
         // Message was from this host
-        if (message.from === this.hosts.recipient.host) {
+        if (message.from === this.recipients.recipient.host) {
             return `<div class="direct-chat-msg right">
             <div class="direct-chat-infos clearfix">
               <span class="direct-chat-name float-right">YOU -> ${message.toFriendly}</span>
