@@ -13,10 +13,11 @@ window.addEventListener("DOMContentLoaded", () => {
     flashMain: (arg) => ipcRenderer.send("flashMain", arg),
     progressMain: (progress) => ipcRenderer.send("progressMain", progress),
 
+    on: (event, fn) => ipcRenderer.on(event, fn),
+
     // Calendar worker
     calendar: {
         send: (task, args) => ipcRenderer.send("calendar", [task, args]),
-        on: (event, fn) => ipcRenderer.on(event, fn),
     },
   });
 });

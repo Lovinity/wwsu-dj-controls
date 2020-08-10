@@ -1,4 +1,6 @@
 window.addEventListener("DOMContentLoaded", () => {
+  window.ipc.renderer.send("console", ["log", "Calendar: Process is ready"]);
+
   /**
    *  Update the clockwheel
    *  TODO: Find a better calculation method
@@ -6,7 +8,7 @@ window.addEventListener("DOMContentLoaded", () => {
    *  @var {array} arg[0] Array of calendar events (WWSUcalendar.getEvents) between 24 hours before now and 24 hours after now.
    *  @var {object} arg[1] WWSUMeta.meta
    */
-  window.ipc.calendar.on("update-clockwheel", (event, arg) => {
+  window.ipc.on("update-clockwheel", (event, arg) => {
     console.dir(arg);
     var events = arg[0];
     var meta = arg[1];
@@ -25,7 +27,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
     if (events.length > 0) {
       // Determine what the exact date/time is for the "12" (start of the doughnut chart) on the clock
-      var topOfClock = moment.parseZone(meta.time).startOf("day").add(1, "days");
+      var topOfClock = moment
+        .parseZone(meta.time)
+        .startOf("day")
+        .add(1, "days");
       if (moment.parseZone(meta.time).hours() < 12) {
         topOfClock = moment.parseZone(topOfClock).subtract(12, "hours");
       }
@@ -208,6 +213,6 @@ window.addEventListener("DOMContentLoaded", () => {
     clockwheelDonutData.datasets[0].backgroundColor.push(`#ffffff`);
 
     // Finally, send this data back to renderer
-    window.ipc.calendar.send("update-clockwheel", [clockwheelDonutData]);
+    window.ipc.renderer.send("update-clockwheel", [clockwheelDonutData]);
   });
 });

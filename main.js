@@ -1,8 +1,10 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, ipcMain, session, shell } = require('electron')
+const config = require("./config");
 const path = require('path')
 let mainWindow;
 let calendarWindow;
+let skywayWindow;
 
 function enforceCORS () {
   // Enforce CORS and Origin; skywayJS needs origin set to our server address, but everything else needs file origin.
@@ -18,7 +20,7 @@ function enforceCORS () {
   })
 }
 
-function createWindow () {
+function createWindows () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -37,8 +39,11 @@ function createWindow () {
   })
 
   // Do not show the window until DOM has loaded. Otherwise, we will get a white flash effect that is not pleasant.
+  // Also, do not load other processes until renderer is ready.
   mainWindow.once('ready-to-show', () => {
-    mainWindow.show()
+    mainWindow.show();
+    createCalendarWindow();
+    createSkywayWindow();
   })
 
   // and load the index.html of the app.
@@ -50,6 +55,8 @@ function createWindow () {
 
     calendarWindow.close()
     calendarWindow = null
+    skywayWindow.close()
+    skywayWindow = null
   })
 
   mainWindow.on('focus', () => mainWindow.flashFrame(false))
@@ -76,13 +83,34 @@ function createCalendarWindow () {
   calendarWindow.loadFile('calendar.html');
 }
 
+function createSkywayWindow () {
+  // Create the skyway process
+  skywayWindow = new BrowserWindow({
+    width: 1280,
+    height: 720,
+    show: false,
+    title: `WWSU DJ Controls - Skywayjs Process`,
+    webPreferences: {
+      contextIsolation: true,
+      enableRemoteModule: false, // electron's remote module is insecure
+      preload: path.join(__dirname, 'preload-skyway.js'),
+      backgroundThrottling: false // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
+    }
+  });
+
+  skywayWindow.on('closed', function () {
+    if (mainWindow !== null) { createSkywayWindow() }
+  });
+  skywayWindow.loadFile('skyway.html');
+}
+
 // Enforce sandboxing for security
 app.enableSandbox();
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(enforceCORS).then(createWindow).then(createCalendarWindow)
+app.whenReady().then(enforceCORS).then(createWindows);
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
@@ -92,7 +120,7 @@ app.on('window-all-closed', function () {
 app.on('activate', function () {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  if (BrowserWindow.getAllWindows().length === 0) createWindows()
 })
 
 // Prevent opening new windows in the app; use the default browser instead
@@ -142,6 +170,15 @@ ipcMain.on('calendar', (event, arg) => {
   }
 })
 
+// Messages to be sent to the skyway process
+ipcMain.on('skyway', (event, arg) => {
+  try {
+    skywayWindow.webContents.send(arg[ 0 ], arg[ 1 ]);
+  } catch (e) {
+    console.error(e);
+  }
+})
+
 // Flash the icon in the taskbar
 ipcMain.on('flashMain', (event, arg) => {
   try {
@@ -158,4 +195,9 @@ ipcMain.on('progressMain', (event, arg) => {
   } catch (e) {
     console.error(e);
   }
+});
+
+// Return config
+ipcMain.on('config', (event, arg) => {
+  event.returnValue = config && config[arg] ? config[arg] : null;
 });

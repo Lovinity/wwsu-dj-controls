@@ -8,6 +8,9 @@ window.addEventListener("DOMContentLoaded", () => {
     on: (event, fn) => ipcRenderer.on(event, fn),
     renderer: {
       send: (task, args) => ipcRenderer.send("renderer", [task, args]),
-    },
+    }
   });
+
+  // Skyway config
+  contextBridge.exposeInMainWorld("config", ipcRenderer.sendSync("config", "skyway"));
 });

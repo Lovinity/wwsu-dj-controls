@@ -76,7 +76,6 @@ window.addEventListener("DOMContentLoaded", () => {
     var api = new WWSUapi(noReq, hostReq, djReq, directorReq, adminDirectorReq);
     var discipline = new WWSUdiscipline(socket, noReq, directorReq, meta);
     var requests = new WWSUrequests(socket, hosts, hostReq);
-    var state = new WWSUstate(socket, hosts, calendar, hostReq);
     var recipients = new WWSUrecipients(socket, meta, hostReq);
     var hosts = new WWSUhosts(
       socket,
@@ -95,6 +94,7 @@ window.addEventListener("DOMContentLoaded", () => {
       null,
       hostReq
     );
+    var state = new WWSUstate(socket, hosts, calendar, hostReq);
     var climacell = new WWSUclimacell(socket, noReq);
 
     // Sound alerts
@@ -570,6 +570,21 @@ window.addEventListener("DOMContentLoaded", () => {
       icon: "fas fa-skull-crossbones fa-lg",
     });
   }
+
+  // IPC events
+  window.ipc.on("console", (event, arg) => {
+    switch (arg[0]) {
+      case "log":
+        console.log(arg[1]);
+        break;
+      case "dir":
+        console.dir(arg[1]);
+        break;
+      case "error":
+        console.error(arg[1]);
+        break;
+    }
+  });
 
   /*
         SOCKET EVENTS AND FUNCTIONS
@@ -1410,7 +1425,7 @@ window.addEventListener("DOMContentLoaded", () => {
    *
    * @var {object} arg[0] New data object for the clockwheel Chart.js
    */
-  window.ipc.calendar.on("update-clockwheel", (event, arg) => {
+  window.ipc.on("update-clockwheel", (event, arg) => {
     animations.add("update-clockwheel", () => {
       var clockwheelDonutData = arg[0];
       clockwheelDonut.data = clockwheelDonutData;
@@ -1534,7 +1549,7 @@ Track: <strong>${request.trackname}</strong>`,
   recipients.on("change", "renderer", (db) => {
     messages.updateRecipientsTable();
   });
-  recipients.on("recipientChanged", (recipient) => {
+  recipients.on("recipientChanged", "renderer", (recipient) => {
     messages.changeRecipient(recipient);
   });
 
