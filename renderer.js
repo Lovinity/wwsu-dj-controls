@@ -95,7 +95,7 @@ window.addEventListener("DOMContentLoaded", () => {
       hostReq
     );
     var state = new WWSUstate(socket, hosts, calendar, hostReq);
-    var climacell = new WWSUclimacell(socket, noReq);
+    var climacell = new WWSUclimacell(socket, noReq, meta);
 
     // Sound alerts
     var sounds = {
