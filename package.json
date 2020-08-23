@@ -10,11 +10,11 @@
   "author": "Patrick Schmalstig",
   "devDependencies": {
     "electron": "^9.1.1",
+    "electron-builder": "^22.8.0",
     "prettier": "^2.0.5",
     "sloc": "^0.2.1"
   },
   "dependencies": {
-    "electron-builder": "^22.8.0",
     "electron-store": "^6.0.0",
     "node-machine-id": "^1.1.12",
     "semver": "^7.3.2",
