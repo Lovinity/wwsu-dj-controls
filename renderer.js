@@ -586,6 +586,21 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Add a log in WWSU when a recording was saved
+  window.ipc.on("recorderSaved", (event, arg) => {
+    logs.add(
+      {
+        logtype: "recorder",
+        logsubtype: "automation",
+        loglevel: "info",
+        logIcon: `fas fa-file-audio`,
+        title: `A recording was saved.`,
+        event: `Path: ${arg}`,
+      },
+      true
+    );
+  });
+
   /*
         SOCKET EVENTS AND FUNCTIONS
     */
@@ -796,6 +811,11 @@ window.addEventListener("DOMContentLoaded", () => {
               break;
           }
         });
+      }
+
+      // Recorder stuff
+      if (typeof updated.state !== "undefined") {
+        window.ipc.main.send("metaState", updated.state);
       }
     } catch (e) {
       console.error(e);
@@ -1062,12 +1082,20 @@ window.addEventListener("DOMContentLoaded", () => {
       ) {
         if (!breakNotified) {
           breakNotified = true;
-          state.topOfHourBreak.iziModal("open");
+          window.ipc.main.send("makeNotification", [
+            {
+              title: "Top of Hour Break",
+              bg: "warning",
+              header: "Do Not Forget the Top of the Hour Break!",
+              flash: true,
+              body:
+                "You are required to take a break before :05 past the hour unless you are ending your broadcast before then.",
+            },
+          ]);
           window.ipc.flashMain(true);
         }
       } else if (breakNotified) {
         breakNotified = false;
-        state.topOfHourBreak.iziModal("close");
       }
     } catch (e) {
       console.error(e);
@@ -1331,7 +1359,20 @@ window.addEventListener("DOMContentLoaded", () => {
       iziToast.show({
         class: "flash-bg",
         title: "Life-threatening Alert In Effect",
-        message: `A <strong>${record.alert}</strong> is in effect for the counties of ${record.counties} from ${moment.tz(record.starts, meta.meta ? meta.meta.timezone : moment.tz.guess()).format("MM/DD h:mmA Z")} until ${moment.tz(record.expires, meta.meta ? meta.meta.timezone : moment.tz.guess()).format("MM/DD h:mmA Z")}. <strong>This is a life threatening emergency! You are advised to seek shelter immediately and potentially end any broadcasts early if you are in these counties.</strong>`,
+        message: `A <strong>${
+          record.alert
+        }</strong> is in effect for the counties of ${
+          record.counties
+        } from ${moment
+          .tz(record.starts, meta.meta ? meta.meta.timezone : moment.tz.guess())
+          .format("MM/DD h:mmA Z")} until ${moment
+          .tz(
+            record.expires,
+            meta.meta ? meta.meta.timezone : moment.tz.guess()
+          )
+          .format(
+            "MM/DD h:mmA Z"
+          )}. <strong>This is a life threatening emergency! You are advised to seek shelter immediately and potentially end any broadcasts early if you are in these counties.</strong>`,
         timeout: 900000,
         close: true,
         color: "red",
@@ -1347,22 +1388,35 @@ window.addEventListener("DOMContentLoaded", () => {
       });
     } else if (record.severity === "Severe") {
       iziToast.show({
-        class: 'iziToast-eas-severe',
-        title: 'Severe Alert in Effect',
-        message: `A <strong>${record.alert}</strong> is in effect for the counties of ${record.counties} from ${moment.tz(record.starts, meta.meta ? meta.meta.timezone : moment.tz.guess()).format("MM/DD h:mmA Z")} until ${moment.tz(record.expires, meta.meta ? meta.meta.timezone : moment.tz.guess()).format("MM/DD h:mmA Z")}. Please keep an eye on the weather / latest news.`,
+        class: "iziToast-eas-severe",
+        title: "Severe Alert in Effect",
+        message: `A <strong>${
+          record.alert
+        }</strong> is in effect for the counties of ${
+          record.counties
+        } from ${moment
+          .tz(record.starts, meta.meta ? meta.meta.timezone : moment.tz.guess())
+          .format("MM/DD h:mmA Z")} until ${moment
+          .tz(
+            record.expires,
+            meta.meta ? meta.meta.timezone : moment.tz.guess()
+          )
+          .format(
+            "MM/DD h:mmA Z"
+          )}. Please keep an eye on the weather / latest news.`,
         timeout: 900000,
         close: true,
-        color: 'yellow',
+        color: "yellow",
         drag: false,
-        position: 'center',
+        position: "center",
         closeOnClick: true,
         overlay: true,
         zindex: 4000,
         layout: 2,
         image: `assets/images/severeWeather.png`,
-        maxWidth: 640
-      })
-    };
+        maxWidth: 640,
+      });
+    }
   });
 
   /*

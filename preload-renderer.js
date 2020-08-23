@@ -13,11 +13,22 @@ window.addEventListener("DOMContentLoaded", () => {
     flashMain: (arg) => ipcRenderer.send("flashMain", arg),
     progressMain: (progress) => ipcRenderer.send("progressMain", progress),
 
+    // Listen for messages
     on: (event, fn) => ipcRenderer.on(event, fn),
 
-    // Calendar worker
+    // Calendar process
     calendar: {
-        send: (task, args) => ipcRenderer.send("calendar", [task, args]),
+      send: (task, args) => ipcRenderer.send("calendar", [task, args]),
+    },
+
+    // Recorder process
+    recorder: {
+      send: (task, args) => ipcRenderer.send("recorder", [task, args]),
+    },
+
+    // Main process
+    main: {
+      send: (task, args) => ipcRenderer.send("main", [task, args]),
     },
   });
 });
