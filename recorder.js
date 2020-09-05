@@ -1,3 +1,4 @@
+"use strict";
 window.addEventListener("DOMContentLoaded", () => {
   // Initialize the recorder
   var recorder = new WWSUrecorder("assets/plugins/webaudiorecorder/");
@@ -33,6 +34,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // Start a new recording
   window.ipc.on("recorderStart", (file) => {
-    recorder.newRecording
+    recorder.newRecording(file, window.settings.delay);
   });
 });

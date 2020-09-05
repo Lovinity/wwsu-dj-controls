@@ -1,3 +1,4 @@
+"use strict";
 window.addEventListener("DOMContentLoaded", () => {
   window.ipc.renderer.send("console", ["log", "Calendar: Process is ready"]);
 
@@ -126,7 +127,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     // Now, begin updating clockwheel
-    clockwheelDonutData = {
+    let clockwheelDonutData = {
       labels: [],
       datasets: [
         {

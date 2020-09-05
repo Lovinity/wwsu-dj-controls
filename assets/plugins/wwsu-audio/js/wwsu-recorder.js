@@ -69,23 +69,23 @@ class WWSUrecorder extends WWSUevents {
     var _newRecording = () => {
       // Stop current recording if active
       try {
-        if (this.recorder.isRecording()) {
+        if (this.recorder && this.recorder.isRecording()) {
           this.encodingTitle = this.currentTitle;
           this.recorder.finishRecording();
         }
-      } catch (eee) {
-        // Ignore errors
+      } catch (e) {
+        console.log(e);
       }
 
       // Start new recording
       try {
-        if (this.pendingTitle) {
+        if (this.recorder && this.pendingTitle) {
           this.currentTitle = this.pendingTitle;
           this.recorder.startRecording();
           this.emitEvent("recorderStarted", [this.pendingTitle]);
         }
-      } catch (eee) {
-        // Ignore errors
+      } catch (e) {
+        console.log(e);
       }
     };
 
@@ -111,14 +111,18 @@ class WWSUrecorder extends WWSUevents {
   stopRecording(delay = 0) {
     var _stopRecording = () => {
       try {
-          // Stop recording if not pending to start a new one
-        if (this.recorder.isRecording() && (!this.recorderPending || delay <= 0)) {
+        // Stop recording if not pending to start a new one
+        if (
+          this.recorder &&
+          this.recorder.isRecording() &&
+          (!this.recorderPending || delay <= 0)
+        ) {
           this.encodingTitle = this.currentTitle;
           this.recorder.finishRecording();
           this.emitEvent("recorderStopped", [this.encodingTitle]);
         }
-      } catch (eee) {
-        // ignore errors
+      } catch (e) {
+        console.log(e);
       }
     };
 

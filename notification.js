@@ -1,3 +1,4 @@
+"use strict";
 window.addEventListener("DOMContentLoaded", () => {
   window.ipc.on("notificationData", (event, data) => {
     $(".main-content").html(`<div class="card bg-${data.bg}">
