@@ -128,7 +128,7 @@ const createWindows = () => {
 		calendarWindow = new BrowserWindow({
 			width: 1280,
 			height: 720,
-			show: true,
+			show: false,
 			title: `${app.name} - Calendar Process`,
 			webPreferences: {
 				contextIsolation: true,
