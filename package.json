@@ -15,7 +15,7 @@
 		"lint": "xo",
 		"start": "electron .",
 		"pack": "electron-builder --dir",
-		"dist": "electron-builder --macos --linux --windows",
+		"dist": "electron-builder --macos --linux --windows -p always",
 		"release": "build -p always"
 	},
 	"dependencies": {
