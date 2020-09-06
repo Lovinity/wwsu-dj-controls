@@ -1,8 +1,13 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.8 - 2020-09-06
+
+## Updated
+- Using default Travis config from electron.build instead of generator-electron.
+
 ## 8.0.0-alpha.7 - 2020-09-06
 
-Update packages to latest versions.
+THIS IS A FAILED RELEASE. DO NOT USE.
 
 ## Added
 - Activated update notification functionality (UNTESTED).

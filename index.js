@@ -16,7 +16,6 @@ const unhandled = require("electron-unhandled");
 const debug = require("electron-debug");
 const contextMenu = require("electron-context-menu");
 const config = require("./config.js");
-const tokens = require("./config.json");
 const menu = require("./menu");
 const packageJson = require("./package.json");
 const { machineIdSync } = require("./assets/wwsu-host-id");
@@ -256,11 +255,6 @@ ipcMain.on("get-machine-id", (event) => {
 // Sync Get the app and version info
 ipcMain.on("get-app-version", (event) => {
 	event.returnValue = `${packageJson.name} v${packageJson.version}`;
-});
-
-// Sync return config file json
-ipcMain.on("config", (event, arg) => {
-	event.returnValue = tokens && tokens[arg] ? tokens[arg] : null;
 });
 
 // Sync return settings store
