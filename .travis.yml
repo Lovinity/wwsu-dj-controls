@@ -2,9 +2,5 @@ os: osx
 osx_image: xcode10.2
 language: node_js
 node_js: '12'
-before_script:
-  - export NODE_OPTIONS=–max_old_space_size=4096
 script:
-  - npm test
   - npm run dist
-  - npm run release

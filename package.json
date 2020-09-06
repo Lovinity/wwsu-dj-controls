@@ -39,11 +39,12 @@
 		"envs": [
 			"node",
 			"browser"
-		]
+		],
+		"prettier": true
 	},
 	"np": {
 		"publish": false,
-		"releaseDraft": false
+		"releaseDraft": true
 	},
 	"build": {
 		"appId": "com.Lovinity.wwsu-dj-controls",
