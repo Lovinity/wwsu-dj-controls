@@ -32,16 +32,18 @@ contextMenu();
 
 app.setAppUserModelId(packageJson.build.appId);
 
-// TODO: Uncomment this before publishing your first version.
-// It's commented out as it throws an error if there are no published versions.
-// if (!is.development) {
-// 	const FOUR_HOURS = 1000 * 60 * 60 * 4;
-// 	setInterval(() => {
-// 		autoUpdater.checkForUpdatesAndNotify();
-// 	}, FOUR_HOURS);
-//
-// 	autoUpdater.checkForUpdatesAndNotify();
-// }
+// Use custom update config
+autoUpdater.updateConfigPath = path.join(__dirname, 'app-update.yml');
+
+// Auto update interval (we do not immediate check for an update until mainWindow is ready to show)
+const ONE_HOUR = 1000 * 60 * 60;
+setInterval(() => {
+	autoUpdater.checkForUpdates();
+}, ONE_HOUR);
+
+autoUpdater.on("update-available", (info) => {
+	mainWindow.webContents.send("update-available", [info, packageJson]);
+});
 
 // Prevent windows from being garbage collected
 let mainWindow;
@@ -51,6 +53,7 @@ let recorderWindow;
 
 // Other variables
 let metaState = `unknown`;
+let latestVersion = ``;
 
 const enforceCORS = () => {
 	// Enforce CORS and Origin; skywayJS needs origin set to our server address, but everything else needs file origin.
@@ -58,8 +61,11 @@ const enforceCORS = () => {
 		callback({
 			responseHeaders: {
 				...details.responseHeaders,
-				// TODO: Enable before publishing to production
-				// 'Content-Security-Policy': [ `script-src 'self' https://server.wwsu1069.org https://webrtc.ecl.ntt.com` ],
+				"Content-Security-Policy": !is.development
+					? [
+							`script-src 'self' https://server.wwsu1069.org https://webrtc.ecl.ntt.com`,
+					  ]
+					: [],
 				Origin: details.url.includes("webrtc.ecl.ntt.com")
 					? "https://server.wwsu1069.org"
 					: "file://",
@@ -90,7 +96,10 @@ const createWindows = () => {
 	// Do not show the window until DOM has loaded. Otherwise, we will get a white flash effect that is not pleasant.
 	// Also, do not load other processes until renderer is ready.
 	mainWindow.once("ready-to-show", () => {
+		// Show the window and check for updates
 		mainWindow.show();
+		autoUpdater.checkForUpdates();
+
 		createCalendarWindow();
 		createSkywayWindow();
 		createRecorderWindow();
