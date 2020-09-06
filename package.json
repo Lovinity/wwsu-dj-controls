@@ -16,7 +16,7 @@
 		"start": "electron .",
 		"pack": "electron-builder --dir",
 		"dist": "electron-builder --macos --linux --windows",
-		"release": "build"
+		"release": "electron-builder --macos --linux --windows -p always"
 	},
 	"dependencies": {
 		"electron-context-menu": "^2.3.0",

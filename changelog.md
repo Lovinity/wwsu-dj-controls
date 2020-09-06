@@ -3,7 +3,7 @@
 ## 8.0.0-alpha.8 - 2020-09-06
 
 ## Updated
-- Using default Travis config from electron.build instead of generator-electron.
+- Travis cache
 
 ## 8.0.0-alpha.7 - 2020-09-06
 
