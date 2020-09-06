@@ -1,7 +1,2 @@
 node_modules
-/tokens.json
-/wwsu-dj-controls-win32-x64/resources/app/nbproject/private/
-/wwsu-dj-controls-win32-x64
-/wwsu-dj-controls-darwin-x64/wwsu-dj-controls.app/Contents/Resources/app/nbproject/private/
-/nbproject
-dist
+/config.json

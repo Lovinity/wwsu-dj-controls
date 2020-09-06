@@ -5,27 +5,26 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 -->
 <html>
-    <head>
-        <script>if (typeof module === 'object') {
-                window.module = module;
-                module = undefined;
-            }</script> 
-        <title>Calendar Worker</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="assets/js/moment.min.js"></script>
-        <script src="assets/js/moment-duration-format.js"></script>
-        <script src="assets/js/taffy-min.js"></script>
-        <script src="assets/js/later.min.js"></script>
-        <script src="assets/js/lodash.min.js"></script>
-        <script src="assets/js/wwsu.js"></script>
-        <script src="assets/js/wwsu-calendar-web.js"></script>
-    </head>
-    <body>
-    </body>
-    <script>
 
-        // You can also require other files to run in this process
-        require('./calendar.js');
+<head>
+    <script>if (typeof module === 'object') {
+            window.module = module;
+            module = undefined;
+        }
     </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Moment -->
+    <script src="assets/plugins/moment/moment.min.js"></script>
+    <!-- Moment Duration Format -->
+    <script src="assets/plugins/moment-duration-format/js/moment-duration-format.js"></script>
+    <!-- Moment Recur ts -->
+    <script src="assets/plugins/moment-recur-ts/js/moment-recur-ts.js"></script>
+    <!-- lodash -->
+    <script src="assets/plugins/lodash/js/lodash.min.js"></script>
+
+    <script src="calendar.js"></script>
+</head>
+
 </html>
