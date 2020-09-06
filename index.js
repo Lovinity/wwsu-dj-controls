@@ -1,6 +1,33 @@
 "use strict";
 
-// Require constants
+// Initialize unhandled exceptions handler first
+const { is, openNewGitHubIssue, debugInfo } = require("electron-util");
+const unhandled = require("electron-unhandled");
+unhandled({
+	reportButton: (error) => {
+		openNewGitHubIssue({
+			user: "Lovinity",
+			repo: "wwsu-dj-controls",
+			body: `
+			<!-- Below, please describe what you were doing leading up to the issue (steps to reproduce) -->
+			
+			<!-- Below, please explain what you expected to happen -->
+			
+			<!-- Below, please explain what actually happened, including relevant error messages -->
+
+			---
+			The following is auto-generated information about the error you received.
+			${error.message}
+			${error.stack}
+			
+			---
+			The following is auto-generated information about the app version you are using and the OS you are running.
+			${debugInfo()}`,
+		});
+	},
+});
+
+// Require other constants
 const path = require("path");
 const {
 	app,
@@ -11,8 +38,6 @@ const {
 	shell,
 } = require("electron");
 const { autoUpdater } = require("electron-updater");
-const { is } = require("electron-util");
-const unhandled = require("electron-unhandled");
 const debug = require("electron-debug");
 const contextMenu = require("electron-context-menu");
 const config = require("./config.js");
@@ -20,25 +45,33 @@ const menu = require("./menu");
 const packageJson = require("./package.json");
 const { machineIdSync } = require("./assets/wwsu-host-id");
 
-// Initialize unhandled exceptions catcher
-unhandled();
-
 // Initialize debug tools
 debug();
 
 // Initialize context menu
 contextMenu();
 
-app.setAppUserModelId(packageJson.build.appId);
+app.setAppUserModelId(packageJson.appId);
 
 // Use custom update config
-autoUpdater.updateConfigPath = path.join(__dirname, 'app-update.yml');
+autoUpdater.updateConfigPath = path.join(__dirname, "app-update.yml");
+
+// Do not auto download files because we are using unsigned programs
+autoUpdater.autoDownload = false;
+
+// Allow prereleases as we do these often
+autoUpdater.allowPrerelease = true;
 
 // Auto update interval (we do not immediate check for an update until mainWindow is ready to show)
 const ONE_HOUR = 1000 * 60 * 60;
 setInterval(() => {
-	autoUpdater.checkForUpdates();
+	// TODO: disabled as it does not work
+	// autoUpdater.checkForUpdates();
 }, ONE_HOUR);
+
+autoUpdater.on("error", (e) => {
+	console.error(e);
+});
 
 autoUpdater.on("update-available", (info) => {
 	mainWindow.webContents.send("update-available", [info, packageJson]);
@@ -97,7 +130,9 @@ const createWindows = () => {
 	mainWindow.once("ready-to-show", () => {
 		// Show the window and check for updates
 		mainWindow.show();
-		autoUpdater.checkForUpdates();
+
+		// TODO: Check for updates (disabled as it does not work)
+		// autoUpdater.checkForUpdates();
 
 		createCalendarWindow();
 		createSkywayWindow();

@@ -2,6 +2,9 @@
 
 ## 8.0.0-alpha.8 - 2020-09-06
 
+## Removed
+- Auto update checking; still does not work and is taking more time than it is worth to try and get working.
+
 ## Updated
 - Travis cache
 
