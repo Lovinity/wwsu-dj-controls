@@ -13,5 +13,5 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   // Skyway config
-  contextBridge.exposeInMainWorld("config", ipcRenderer.sendSync("config", "skyway"));
+  contextBridge.exposeInMainWorld("settings", ipcRenderer.sendSync("settings", "skyway"));
 });

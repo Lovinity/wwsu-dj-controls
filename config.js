@@ -16,6 +16,9 @@ module.exports = new Store({
 			threshold: 0.1,
 			delay: 15000,
 		},
+		skyway: {
+			api: ``
+		}
 	},
 
 	// TODO: Keep this updated
