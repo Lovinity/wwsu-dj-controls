@@ -18,25 +18,29 @@ const showPreferences = () => {
 const helpSubmenu = [
 	openUrlMenuItem({
 		label: 'Website',
-		url: 'https://github.com/xanaftp@gmail.com/undefined'
+		url: 'https://github.com/Lovinity/wwsu-dj-controls'
 	}),
 	openUrlMenuItem({
 		label: 'Source Code',
-		url: 'https://github.com/xanaftp@gmail.com/undefined'
+		url: 'https://github.com/Lovinity/wwsu-dj-controls'
 	}),
 	{
 		label: 'Report an Issue…',
 		click() {
 			const body = `
-<!-- Please succinctly describe your issue and steps to reproduce it. -->
+<!-- Below, please describe what you were doing leading up to the issue (steps to reproduce) -->
 
+<!-- Below, please explain what you expected to happen -->
+
+<!-- Below, please explain what actually happened, including relevant error messages -->
 
 ---
+The following is auto-generated information about the app version you are using and the OS you are running.
 
 ${debugInfo()}`;
 
 			openNewGitHubIssue({
-				user: 'xanaftp@gmail.com',
+				user: 'Lovinity',
 				repo: 'wwsu-dj-controls',
 				body
 			});

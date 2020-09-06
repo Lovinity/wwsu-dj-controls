@@ -37,10 +37,10 @@ app.setAppUserModelId(packageJson.build.appId);
 // if (!is.development) {
 // 	const FOUR_HOURS = 1000 * 60 * 60 * 4;
 // 	setInterval(() => {
-// 		autoUpdater.checkForUpdates();
+// 		autoUpdater.checkForUpdatesAndNotify();
 // 	}, FOUR_HOURS);
 //
-// 	autoUpdater.checkForUpdates();
+// 	autoUpdater.checkForUpdatesAndNotify();
 // }
 
 // Prevent windows from being garbage collected
