@@ -1,5 +1,13 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.9 - 2020-09-06
+
+## Removed
+- WebAudioRecorder.js as it no longer works; replacing with browser MediaRecorder.
+
+## Added
+- MP3 program recorder
+
 ## 8.0.0-alpha.8 - 2020-09-06
 
 ## Removed

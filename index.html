@@ -1,1993 +1,2090 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <script>
-      if (typeof module === "object") {
-        window.module = module;
-        module = undefined;
-      }
-    </script>
-    <meta charset="UTF-8" />
+	<head>
+		<script>
+			if (typeof module === "object") {
+				window.module = module;
+				module = undefined;
+			}
+		</script>
+		<meta charset="UTF-8" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta http-equiv="x-ua-compatible" content="ie=edge" />
 
-    <!-- Clock styling -->
-    <style>
-      .clock {
-        width: 200px;
-        height: 200px;
-        position: absolute;
-        left: 50%;
-        margin-left: -100px;
-        top: 50%;
-        margin-top: -100px;
-      }
+		<!-- Clock styling -->
+		<style>
+			.clock {
+				width: 200px;
+				height: 200px;
+				position: absolute;
+				left: 50%;
+				margin-left: -100px;
+				top: 50%;
+				margin-top: -100px;
+			}
 
-      #clock {
-        width: 100%;
-        height: 100%;
-        margin: auto;
-        position: relative;
-      }
+			#clock {
+				width: 100%;
+				height: 100%;
+				margin: auto;
+				position: relative;
+			}
 
-      #clock div,
-      .faceBox {
-        border: 0;
-        background-color: black;
-        position: absolute;
-        transform-origin: center bottom;
-        -webkit-transform-origin: center bottom;
-        -moz-transform-origin: center bottom;
-        -o-transform-origin: center bottom;
-        transform: rotate(0deg);
-      }
+			#clock div,
+			.faceBox {
+				border: 0;
+				background-color: black;
+				position: absolute;
+				transform-origin: center bottom;
+				-webkit-transform-origin: center bottom;
+				-moz-transform-origin: center bottom;
+				-o-transform-origin: center bottom;
+				transform: rotate(0deg);
+			}
 
-      #clock #hour {
-        border-radius: 0.5em 0.5em 0 0;
-        width: 3%;
-        height: 20%;
-        top: 30%;
-        left: 47.5%;
-        z-index: 30;
-      }
+			#clock #hour {
+				border-radius: 0.5em 0.5em 0 0;
+				width: 3%;
+				height: 20%;
+				top: 30%;
+				left: 47.5%;
+				z-index: 30;
+			}
 
-      #clock #minute {
-        border-radius: 0.33em;
-        width: 2%;
-        height: 36.66%;
-        top: 13.33%;
-        left: 48.33%;
-        z-index: 20;
-      }
+			#clock #minute {
+				border-radius: 0.33em;
+				width: 2%;
+				height: 36.66%;
+				top: 13.33%;
+				left: 48.33%;
+				z-index: 20;
+			}
 
-      #clock #second {
-        border-radius: 0.2em;
-        width: 0.83%;
-        height: 46.66%;
-        top: 3.33%;
-        left: 49.16%;
-        z-index: 10;
-        background-color: red;
-      }
+			#clock #second {
+				border-radius: 0.2em;
+				width: 0.83%;
+				height: 46.66%;
+				top: 3.33%;
+				left: 49.16%;
+				z-index: 10;
+				background-color: red;
+			}
 
-      #clock #center {
-        height: 6.66%;
-        width: 6.66%;
-        border-radius: 50%;
-        top: 46.66%;
-        left: 46.66%;
-        z-index: 50;
-        transform: rotate(0deg);
-      }
+			#clock #center {
+				height: 6.66%;
+				width: 6.66%;
+				border-radius: 50%;
+				top: 46.66%;
+				left: 46.66%;
+				z-index: 50;
+				transform: rotate(0deg);
+			}
 
-      .smallTick {
-        width: 3.33%;
-        height: 16.66%;
-        background-color: black;
-      }
+			.smallTick {
+				width: 3.33%;
+				height: 16.66%;
+				background-color: black;
+			}
 
-      .mediumTick {
-        width: 8.33%;
-        height: 26.66%;
-        background-color: black;
-      }
+			.mediumTick {
+				width: 8.33%;
+				height: 26.66%;
+				background-color: black;
+			}
 
-      .largeTick {
-        width: 13.33%;
-        height: 26.66%;
-        background-color: black;
-        position: relative;
-      }
+			.largeTick {
+				width: 13.33%;
+				height: 26.66%;
+				background-color: black;
+				position: relative;
+			}
 
-      .tickNum {
-        font-family: Arial, sans-serif;
-        font-size: 0.75em;
-        line-height: 0;
-        color: black;
-        position: relative;
-        top: 3.33%;
-        left: -0.66%;
-        z-index: 1;
-      }
+			.tickNum {
+				font-family: Arial, sans-serif;
+				font-size: 0.75em;
+				line-height: 0;
+				color: black;
+				position: relative;
+				top: 3.33%;
+				left: -0.66%;
+				z-index: 1;
+			}
 
-      .faceBox {
-        border: 0;
-        width: 0;
-        height: 50%;
-        top: 0;
-        left: 50%;
-        position: absolute;
-        text-align: center;
-        overflow: visible;
-        margin: 0 auto;
-      }
-    </style>
+			.faceBox {
+				border: 0;
+				width: 0;
+				height: 50%;
+				top: 0;
+				left: 50%;
+				position: absolute;
+				text-align: center;
+				overflow: visible;
+				margin: 0 auto;
+			}
+		</style>
 
-    <!-- Font Awesome Icons -->
-    <link
-      rel="stylesheet"
-      href="assets/plugins/fontawesome-free/css/all.min.css"
-    />
-    <!-- Theme style -->
-    <link
-      rel="stylesheet"
-      href="assets/plugins/adminlte/css/adminlte.min.css"
-    />
-    <!-- overlayScrollbars -->
-    <link
-      rel="stylesheet"
-      href="assets/plugins/overlayScrollbars/css/OverlayScrollbars.min.css"
-    />
+		<!-- Font Awesome Icons -->
+		<link
+			rel="stylesheet"
+			href="assets/plugins/fontawesome-free/css/all.min.css"
+		/>
+		<!-- Theme style -->
+		<link
+			rel="stylesheet"
+			href="assets/plugins/adminlte/css/adminlte.min.css"
+		/>
+		<!-- overlayScrollbars -->
+		<link
+			rel="stylesheet"
+			href="assets/plugins/overlayScrollbars/css/OverlayScrollbars.min.css"
+		/>
 
-    <!-- jQuery -->
-    <script src="assets/plugins/jquery/jquery.min.js"></script>
-    <!-- JQuery BlockUI -->
-    <script src="assets/plugins/jquery-blockui/js/jquery.blockUI.js"></script>
-    <!-- JQuery multipleselect -->
-    <link
-      rel="stylesheet"
-      href="assets/plugins/jquery-multipleselect/css/multiple-select.min.css"
-    />
-    <script src="assets/plugins/jquery-multipleselect/js/multiple-select.min.js"></script>
-    <!-- JQuery overlayScrollbars -->
-    <script src="assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
-    <!-- JQuery Mousewheel -->
-    <script src="assets/plugins/jquery-mousewheel/jquery.mousewheel.js"></script>
+		<!-- jQuery -->
+		<script src="assets/plugins/jquery/jquery.min.js"></script>
+		<!-- JQuery BlockUI -->
+		<script src="assets/plugins/jquery-blockui/js/jquery.blockUI.js"></script>
+		<!-- JQuery multipleselect -->
+		<link
+			rel="stylesheet"
+			href="assets/plugins/jquery-multipleselect/css/multiple-select.min.css"
+		/>
+		<script src="assets/plugins/jquery-multipleselect/js/multiple-select.min.js"></script>
+		<!-- JQuery overlayScrollbars -->
+		<script src="assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+		<!-- JQuery Mousewheel -->
+		<script src="assets/plugins/jquery-mousewheel/jquery.mousewheel.js"></script>
 
-    <!-- Bootstrap -->
-    <script src="assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <!-- AdminLTE -->
-    <script src="assets/plugins/adminlte/js/adminlte.js"></script>
+		<!-- Bootstrap -->
+		<script src="assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+		<!-- AdminLTE -->
+		<script src="assets/plugins/adminlte/js/adminlte.js"></script>
 
-    <!-- lodash -->
-    <script src="assets/plugins/lodash/js/lodash.min.js"></script>
-    <!-- Taffy -->
-    <script src="assets/plugins/taffy/js/taffy-min.js"></script>
-    <!-- Moment -->
-    <script src="assets/plugins/moment/moment.min.js"></script>
-    <!-- Moment timezone -->
-    <script src="assets/plugins/moment-timezone/js/moment-timezone-with-data.js"></script>
-    <!-- Moment Duration Format -->
-    <script src="assets/plugins/moment-duration-format/js/moment-duration-format.js"></script>
-    <!-- Moment Recur -->
-    <script src="assets/plugins/moment-recur-ts/js/moment-recur-ts.js"></script>
-    <!-- Jdenticon -->
-    <script src="assets/plugins/jdenticon/js/jdenticon.min.js"></script>
-    <!-- Howler -->
-    <script src="assets/plugins/howler/js/howler.min.js"></script>
+		<!-- lodash -->
+		<script src="assets/plugins/lodash/js/lodash.min.js"></script>
+		<!-- Taffy -->
+		<script src="assets/plugins/taffy/js/taffy-min.js"></script>
+		<!-- Moment -->
+		<script src="assets/plugins/moment/moment.min.js"></script>
+		<!-- Moment timezone -->
+		<script src="assets/plugins/moment-timezone/js/moment-timezone-with-data.js"></script>
+		<!-- Moment Duration Format -->
+		<script src="assets/plugins/moment-duration-format/js/moment-duration-format.js"></script>
+		<!-- Moment Recur -->
+		<script src="assets/plugins/moment-recur-ts/js/moment-recur-ts.js"></script>
+		<!-- Jdenticon -->
+		<script src="assets/plugins/jdenticon/js/jdenticon.min.js"></script>
+		<!-- Howler -->
+		<script src="assets/plugins/howler/js/howler.min.js"></script>
 
-    <!-- Chart.js -->
-    <script src="assets/plugins/chart.js/Chart.bundle.min.js"></script>
-    <link rel="stylesheet" href="assets/plugins/chart.js/Chart.min.css" />
+		<!-- Chart.js -->
+		<script src="assets/plugins/chart.js/Chart.bundle.min.js"></script>
+		<link rel="stylesheet" href="assets/plugins/chart.js/Chart.min.css" />
 
-    <!-- Summernote -->
-    <script src="assets/plugins/summernote/summernote.min.js"></script>
-    <link rel="stylesheet" href="assets/plugins/summernote/summernote.css" />
+		<!-- Summernote -->
+		<script src="assets/plugins/summernote/summernote.min.js"></script>
+		<link rel="stylesheet" href="assets/plugins/summernote/summernote.css" />
 
-    <!-- TinyMCE -->
-    <script src="assets/plugins/tinymce/js/tinymce.min.js"></script>
+		<!-- TinyMCE -->
+		<script src="assets/plugins/tinymce/js/tinymce.min.js"></script>
 
-    <!-- Bootstrap Tempus Dominus (datetimepicker) -->
-    <link
-      rel="stylesheet"
-      href="assets/plugins/bootstrap-tempusdominus/css/tempusdominus-bootstrap-4.min.css"
-    />
-    <script src="assets/plugins/bootstrap-tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+		<!-- Bootstrap Tempus Dominus (datetimepicker) -->
+		<link
+			rel="stylesheet"
+			href="assets/plugins/bootstrap-tempusdominus/css/tempusdominus-bootstrap-4.min.css"
+		/>
+		<script src="assets/plugins/bootstrap-tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
 
-    <!-- Handlebars -->
-    <script src="assets/plugins/handlebars/js/handlebars.min.js"></script>
-    <!-- Alpaca (custom build) -->
-    <script src="assets/plugins/alpaca-wwsu/alpaca.js"></script>
-    <link rel="stylesheet" href="assets/plugins/alpaca-wwsu/alpaca.min.css" />
+		<!-- Handlebars -->
+		<script src="assets/plugins/handlebars/js/handlebars.min.js"></script>
+		<!-- Alpaca (custom build) -->
+		<script src="assets/plugins/alpaca-wwsu/alpaca.js"></script>
+		<link rel="stylesheet" href="assets/plugins/alpaca-wwsu/alpaca.min.css" />
 
-    <!-- Datatables -->
-    <script src="assets/plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-    <link
-      rel="stylesheet"
-      href="assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css"
-    />
+		<!-- Datatables -->
+		<script src="assets/plugins/datatables/jquery.dataTables.min.js"></script>
+		<script src="assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+		<link
+			rel="stylesheet"
+			href="assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css"
+		/>
 
-    <!-- Datatables Responsive -->
-    <script src="assets/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-    <script src="assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-    <link
-      rel="stylesheet"
-      href="assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css"
-    />
+		<!-- Datatables Responsive -->
+		<script src="assets/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+		<script src="assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+		<link
+			rel="stylesheet"
+			href="assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css"
+		/>
 
-    <!--izi-->
-    <link
-      rel="stylesheet"
-      href="assets/plugins/iziModal/css/iziModal.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="assets/plugins/iziToast/css/iziToast.min.css"
-    />
-    <script src="assets/plugins/iziModal/js/iziModal.min.js"></script>
-    <script src="assets/plugins/iziToast/js/iziToast.min.js"></script>
+		<!--izi-->
+		<link
+			rel="stylesheet"
+			href="assets/plugins/iziModal/css/iziModal.min.css"
+		/>
+		<link
+			rel="stylesheet"
+			href="assets/plugins/iziToast/css/iziToast.min.css"
+		/>
+		<script src="assets/plugins/iziModal/js/iziModal.min.js"></script>
+		<script src="assets/plugins/iziToast/js/iziToast.min.js"></script>
 
-    <!--FullCalendar-->
-    <script src="assets/plugins/fullcalendar/main.min.js"></script>
-    <script src="assets/plugins/fullcalendar-bootstrap/main.min.js"></script>
-    <script src="assets/plugins/fullcalendar-daygrid/main.min.js"></script>
-    <script src="assets/plugins/fullcalendar-timegrid/main.min.js"></script>
-    <script src="assets/plugins/fullcalendar-interaction/main.min.js"></script>
-    <script src="assets/plugins/fullcalendar-list/main.min.js"></script>
-    <link rel="stylesheet" href="assets/plugins/fullcalendar/main.min.css" />
-    <link
-      rel="stylesheet"
-      href="assets/plugins/fullcalendar-bootstrap/main.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="assets/plugins/fullcalendar-daygrid/main.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="assets/plugins/fullcalendar-timegrid/main.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="assets/plugins/fullcalendar-list/main.min.css"
-    />
+		<!--FullCalendar-->
+		<script src="assets/plugins/fullcalendar/main.min.js"></script>
+		<script src="assets/plugins/fullcalendar-bootstrap/main.min.js"></script>
+		<script src="assets/plugins/fullcalendar-daygrid/main.min.js"></script>
+		<script src="assets/plugins/fullcalendar-timegrid/main.min.js"></script>
+		<script src="assets/plugins/fullcalendar-interaction/main.min.js"></script>
+		<script src="assets/plugins/fullcalendar-list/main.min.js"></script>
+		<link rel="stylesheet" href="assets/plugins/fullcalendar/main.min.css" />
+		<link
+			rel="stylesheet"
+			href="assets/plugins/fullcalendar-bootstrap/main.min.css"
+		/>
+		<link
+			rel="stylesheet"
+			href="assets/plugins/fullcalendar-daygrid/main.min.css"
+		/>
+		<link
+			rel="stylesheet"
+			href="assets/plugins/fullcalendar-timegrid/main.min.css"
+		/>
+		<link
+			rel="stylesheet"
+			href="assets/plugins/fullcalendar-list/main.min.css"
+		/>
 
-    <!--WWSU-->
-    <script
-      src="assets/plugins/sails.io/sails.io.js"
-      autoConnect="false"
-      environment="production"
-      reconnection="true"
-    ></script>
-    <script src="assets/plugins/wwsu-sails/js/wwsu.js"></script>
-    <script src="assets/plugins/wwsu-api/js/wwsu-api.js"></script>
-    <script src="assets/plugins/wwsu-navigation/js/wwsu-navigation.js"></script>
-    <script src="assets/plugins/wwsu-directors/js/wwsu-directors.js"></script>
-    <script src="assets/plugins/wwsu-djs/js/wwsu-djs.js"></script>
-    <script src="assets/plugins/wwsu-timesheet/js/wwsu-timesheet.js"></script>
-    <script src="assets/plugins/wwsu-calendar/js/wwsu-calendar-web.js"></script>
-    <script src="assets/plugins/wwsu-calendar/js/wwsu-calendar-class.js"></script>
-    <script src="assets/plugins/wwsu-meta/js/wwsu-meta.js"></script>
-    <script src="assets/plugins/wwsu-status/js/wwsu-status.js"></script>
-    <script src="assets/plugins/wwsu-eas/js/wwsu-eas.js"></script>
-    <script src="assets/plugins/wwsu-subscriptions/js/wwsu-subscriptions.js"></script>
-    <script src="assets/plugins/wwsu-likedtracks/js/wwsu-likedtracks.js"></script>
-    <script src="assets/plugins/wwsu-announcements/js/wwsu-announcements.js"></script>
-    <script src="assets/plugins/wwsu-logs/js/wwsu-logs.js"></script>
-    <script src="assets/plugins/wwsu-requests/js/wwsu-requests.js"></script>
-    <script src="assets/plugins/wwsu-state/js/wwsu-state.js"></script>
-    <script src="assets/plugins/wwsu-hosts/js/wwsu-hosts.js"></script>
-    <script src="assets/plugins/wwsu-recipients/js/wwsu-recipients.js"></script>
-    <script src="assets/plugins/wwsu-discipline/js/wwsu-discipline.js"></script>
-    <script src="assets/plugins/wwsu-messages/js/wwsu-messages.js"></script>
-    <script src="assets/plugins/wwsu-climacell/js/wwsu-climacell.js"></script>
-  </head>
+		<!--WWSU-->
+		<script
+			src="assets/plugins/sails.io/sails.io.js"
+			autoConnect="false"
+			environment="production"
+			reconnection="true"
+		></script>
+		<script src="assets/plugins/wwsu-sails/js/wwsu.js"></script>
+		<script src="assets/plugins/wwsu-api/js/wwsu-api.js"></script>
+		<script src="assets/plugins/wwsu-navigation/js/wwsu-navigation.js"></script>
+		<script src="assets/plugins/wwsu-directors/js/wwsu-directors.js"></script>
+		<script src="assets/plugins/wwsu-djs/js/wwsu-djs.js"></script>
+		<script src="assets/plugins/wwsu-timesheet/js/wwsu-timesheet.js"></script>
+		<script src="assets/plugins/wwsu-calendar/js/wwsu-calendar-web.js"></script>
+		<script src="assets/plugins/wwsu-calendar/js/wwsu-calendar-class.js"></script>
+		<script src="assets/plugins/wwsu-meta/js/wwsu-meta.js"></script>
+		<script src="assets/plugins/wwsu-status/js/wwsu-status.js"></script>
+		<script src="assets/plugins/wwsu-eas/js/wwsu-eas.js"></script>
+		<script src="assets/plugins/wwsu-subscriptions/js/wwsu-subscriptions.js"></script>
+		<script src="assets/plugins/wwsu-likedtracks/js/wwsu-likedtracks.js"></script>
+		<script src="assets/plugins/wwsu-announcements/js/wwsu-announcements.js"></script>
+		<script src="assets/plugins/wwsu-logs/js/wwsu-logs.js"></script>
+		<script src="assets/plugins/wwsu-requests/js/wwsu-requests.js"></script>
+		<script src="assets/plugins/wwsu-state/js/wwsu-state.js"></script>
+		<script src="assets/plugins/wwsu-hosts/js/wwsu-hosts.js"></script>
+		<script src="assets/plugins/wwsu-recipients/js/wwsu-recipients.js"></script>
+		<script src="assets/plugins/wwsu-discipline/js/wwsu-discipline.js"></script>
+		<script src="assets/plugins/wwsu-messages/js/wwsu-messages.js"></script>
+		<script src="assets/plugins/wwsu-climacell/js/wwsu-climacell.js"></script>
+	</head>
 
-  <body class="hold-transition sidebar-mini">
-    <!-- Connection problems screen -->
-    <div
-      class="wrapper bg-black text-danger d-none"
-      id="unauthorized"
-      style="text-align: center; height: 100vh; width: 100vw;"
-    >
-      <i
-        class="text-danger fas fa-skull-crossbones"
-        style="font-size: 33vw;"
-      ></i>
-      <h1>Connection Problems</h1>
-      <h3>
-        DJ Controls was unable to connect to WWSU. Check your internet
-        connection, and make sure your computer is allowed to connect to WWSU.
-        Contact a director for further assistance (provide the Host ID when you
-        do).
-      </h3>
-      <h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
-    </div>
+	<body class="hold-transition sidebar-mini">
+		<!-- Connection problems screen -->
+		<div
+			class="wrapper bg-black text-danger d-none"
+			id="unauthorized"
+			style="text-align: center; height: 100vh; width: 100vw;"
+		>
+			<i
+				class="text-danger fas fa-skull-crossbones"
+				style="font-size: 33vw;"
+			></i>
+			<h1>Connection Problems</h1>
+			<h3>
+				DJ Controls was unable to connect to WWSU. Check your internet
+				connection, and make sure your computer is allowed to connect to WWSU.
+				Contact a director for further assistance (provide the Host ID when you
+				do).
+			</h3>
+			<h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
+		</div>
 
-    <!-- Already Connected screen -->
-    <div
-      class="wrapper bg-black text-danger d-none"
-      id="already-connected"
-      style="text-align: center; height: 100vh; width: 100vw;"
-    >
-      <i
-        class="text-warning fas fa-skull-crossbones"
-        style="font-size: 33vw;"
-      ></i>
-      <h1>Another DJ Controls is Running!</h1>
-      <h3>
-        Another DJ Controls is already running and connected to WWSU from this
-        computer. Please close it and wait 1 minute before closing and
-        re-opening this instance.
-      </h3>
-      <h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
-    </div>
+		<!-- Already Connected screen -->
+		<div
+			class="wrapper bg-black text-danger d-none"
+			id="already-connected"
+			style="text-align: center; height: 100vh; width: 100vw;"
+		>
+			<i
+				class="text-warning fas fa-skull-crossbones"
+				style="font-size: 33vw;"
+			></i>
+			<h1>Another DJ Controls is Running!</h1>
+			<h3>
+				Another DJ Controls is already running and connected to WWSU from this
+				computer. Please close it and wait 1 minute before closing and
+				re-opening this instance.
+			</h3>
+			<h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
+		</div>
 
-    <!-- Connecting screen -->
-    <div
-      class="wrapper bg-black text-danger d-none"
-      id="connecting"
-      style="text-align: center; height: 100vh; width: 100vw;"
-    >
-      <div
-        class="spinner-border text-primary"
-        role="status"
-        style="font-size: 33vw;"
-      >
-        <span class="sr-only">Loading...</span>
-      </div>
-      <h1>Connecting to WWSU...</h1>
-      <h3>Please allow up to 30 seconds while DJ Controls connects to WWSU.</h3>
-      <h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
-    </div>
+		<!-- Connecting screen -->
+		<div
+			class="wrapper bg-black text-danger d-none"
+			id="connecting"
+			style="text-align: center; height: 100vh; width: 100vw;"
+		>
+			<div
+				class="spinner-border text-primary"
+				role="status"
+				style="font-size: 33vw;"
+			>
+				<span class="sr-only">Loading...</span>
+			</div>
+			<h1>Connecting to WWSU...</h1>
+			<h3>Please allow up to 30 seconds while DJ Controls connects to WWSU.</h3>
+			<h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
+		</div>
 
-    <!-- Loading screen -->
-    <div
-      class="wrapper bg-black text-danger"
-      id="loading"
-      style="text-align: center; height: 100vh; width: 100vw;"
-    >
-      <div
-        class="spinner-border text-info"
-        role="status"
-        style="font-size: 33vw;"
-      >
-        <span class="sr-only">Loading...</span>
-      </div>
-      <h1>Loading DJ Controls...</h1>
-      <h3>Please wait while DJ Controls loads.</h3>
-      <h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
-    </div>
+		<!-- Loading screen -->
+		<div
+			class="wrapper bg-black text-danger"
+			id="loading"
+			style="text-align: center; height: 100vh; width: 100vw;"
+		>
+			<div
+				class="spinner-border text-info"
+				role="status"
+				style="font-size: 33vw;"
+			>
+				<span class="sr-only">Loading...</span>
+			</div>
+			<h1>Loading DJ Controls...</h1>
+			<h3>Please wait while DJ Controls loads.</h3>
+			<h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
+		</div>
 
-    <!-- Reconnecting screen -->
-    <div
-      class="wrapper bg-black text-danger d-none"
-      id="reconnecting"
-      style="text-align: center; height: 100vh; width: 100vw;"
-    >
-      <div
-        class="spinner-border text-warning"
-        role="status"
-        style="font-size: 33vw;"
-      >
-        <span class="sr-only">Loading...</span>
-      </div>
-      <h1>Lost Connection to WWSU</h1>
-      <h3>
-        Attempting to reconnect. Connection loss could be from a bad network
-        connection or WWSU's server rebooting.
-      </h3>
-      <h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
-    </div>
+		<!-- Reconnecting screen -->
+		<div
+			class="wrapper bg-black text-danger d-none"
+			id="reconnecting"
+			style="text-align: center; height: 100vh; width: 100vw;"
+		>
+			<div
+				class="spinner-border text-warning"
+				role="status"
+				style="font-size: 33vw;"
+			>
+				<span class="sr-only">Loading...</span>
+			</div>
+			<h1>Lost Connection to WWSU</h1>
+			<h3>
+				Attempting to reconnect. Connection loss could be from a bad network
+				connection or WWSU's server rebooting.
+			</h3>
+			<h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
+		</div>
 
-    <!-- All other content -->
-    <div class="wrapper d-none" id="content">
-      <!-- Navbar (broadcast operations buttons and times) -->
-      <nav
-        class="main-header navbar navbar-expand navbar-dark navbar-gray-dark operations operations-bar"
-        style="
-          height: 7.5em;
-          position: fixed;
-          top: 0;
-          width: 100%;
-          overflow-y: hidden;
-          overflow-x: auto;
-        "
-      >
-        <!-- Left navbar links -->
-        <ul class="navbar-nav p-1">
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              data-widget="pushmenu"
-              href="#"
-              title="Open/Close navigation menu"
-              ><i class="fas fa-bars"></i
-            ></a>
-          </li>
-          <li
-            class="nav-item operation-queue"
-            style="text-align: center; min-width: 6em;"
-            title="How much audio is in the RadioDJ queue."
-          >
-            <div class="text-light" style="font-size: 1.5em;">Queue:</div>
-            <div class="text-warning meta-queueLength" style="font-size: 2em;">
-              ??:??
-            </div>
-            <div
-              style="text-align: center; font-size: 1.75em;"
-              class="badge badge-danger meta-onAir d-none"
-            >
-              ON AIR
-            </div>
-          </li>
-          <li
-            class="nav-item operation-firstTrack d-none"
-            style="text-align: center; min-width: 6em;"
-            title="How much time until the first track of the broadcast (such as the intro/opener) begins."
-          >
-            <div class="text-light" style="font-size: 1.5em;">First Track:</div>
-            <div class="text-info meta-firstTrack" style="font-size: 2em;">
-              ??:??
-            </div>
-          </li>
-          <li class="nav-item operation-button operation-resume d-none">
-            <button
-              class="btn btn-app bg-success btn-operation-resume"
-              style="height: 6em; font-size: 1em;"
-              title="End the break and resume the broadcast"
-            >
-              <i class="fas fa-check"></i> Resume
-            </button>
-          </li>
-          <li class="nav-item operation-button operation-15-psa d-none">
-            <button
-              class="btn btn-app bg-indigo btn-operation-15-psa"
-              style="height: 6em; font-size: 1em;"
-              title="Add a 15-second PSA to the queue"
-            >
-              <i class="fas fa-plus"></i> +15-sec PSA
-            </button>
-          </li>
-          <li class="nav-item operation-button operation-30-psa d-none">
-            <button
-              class="btn btn-app bg-indigo btn-operation-30-psa"
-              style="height: 6em; font-size: 1em;"
-              title="Add a 30-second PSA to the queue"
-            >
-              <i class="fas fa-plus"></i> +30-sec PSA
-            </button>
-          </li>
-          <li class="nav-item operation-button operation-live d-none">
-            <button
-              class="btn btn-app bg-danger btn-operation-live"
-              style="height: 6em; font-size: 1em;"
-              title="Start a live show produced in the WWSU studio"
-            >
-              <i class="fas fa-microphone"></i> Live
-            </button>
-          </li>
-          <li class="nav-item operation-button operation-remote d-none">
-            <button
-              class="btn btn-app bg-purple"
-              style="height: 6em; font-size: 1em;"
-              title="Start a remote show streamed via DJ Controls to WWSU"
-            >
-              <i class="fas fa-broadcast-tower"></i> Remote
-            </button>
-          </li>
-          <li class="nav-item operation-button operation-sports d-none">
-            <button
-              class="btn btn-app bg-success"
-              style="height: 6em; font-size: 1em;"
-              title="Start a sports broadcast produced in the WWSU studio"
-            >
-              <i class="fas fa-basketball-ball"></i> Sports Live
-            </button>
-          </li>
-          <li class="nav-item operation-button operation-sportsremote d-none">
-            <button
-              class="btn btn-app bg-teal"
-              style="height: 6em; font-size: 1em;"
-              title="Start a sports broadcast streamed via DJ Controls to WWSU"
-            >
-              <i class="fas fa-basketball-ball"></i> Sports Remote
-            </button>
-          </li>
-          <li class="nav-item operation-button operation-automation d-none">
-            <button
-              class="btn btn-app bg-primary btn-operation-automation"
-              style="height: 6em; font-size: 1em;"
-              title="End the broadcast and go to automation"
-            >
-              <i class="fas fa-microphone-slash"></i> Automation
-            </button>
-          </li>
-          <li class="nav-item operation-button operation-switch d-none">
-            <button
-              class="btn btn-app bg-danger btn-operation-switch"
-              style="height: 6em; font-size: 1em;"
-              title="End the broadcast and go to break for the next DJ"
-            >
-              <i class="fas fa-microphone-slash"></i> Next Show
-            </button>
-          </li>
-          <li class="nav-item operation-button operation-break d-none">
-            <button
-              class="btn btn-app bg-warning btn-operation-break"
-              style="height: 6em; font-size: 1em;"
-              title="Play underwritings and PSAs until you resume the broadcast"
-            >
-              <i class="fas fa-coffee"></i> Take a Break
-            </button>
-          </li>
-          <li class="nav-item operation-button operation-extended-break d-none">
-            <button
-              class="btn btn-app bg-orange btn-operation-extended-break"
-              style="height: 6em; font-size: 1em;"
-              title="Play music and suspend audio streaming until you resume the broadcast"
-            >
-              <i class="fas fa-hourglass"></i> Extended Break
-            </button>
-          </li>
-          <li class="nav-item operation-button operation-top-add d-none">
-            <button
-              class="btn btn-app bg-purple btn-operation-top-add"
-              style="height: 6em; font-size: 1em;"
-              title="Play a random top add music track immediately"
-            >
-              <i class="fas fa-headphones"></i> Play Top Add
-            </button>
-          </li>
-          <li class="nav-item operation-button operation-liner d-none">
-            <button
-              class="btn btn-app bg-purple btn-operation-liner"
-              style="height: 6em; font-size: 1em;"
-              title="Play a short station liner"
-            >
-              <i class="fas fa-angle-double-right"></i> Play Liner
-            </button>
-          </li>
-          <li class="nav-item operation-button operation-log d-none">
-            <button
-              class="btn btn-app bg-info"
-              style="height: 6em; font-size: 1em;"
-              title="Log something you played on the air, such as music."
-            >
-              <i class="fas fa-file"></i> Add a Log
-            </button>
-          </li>
-          <li class="nav-item operation-button operation-dump d-none">
-            <button
-              class="btn btn-app bg-fuchsia btn-operation-dump"
-              style="height: 6em; font-size: 1em;"
-              title="Remotely trigger the dump on the delay system if something inappropriate was said."
-            >
-              <i class="fas fa-eject"></i> Dump <br />
-              (<span class="operation-dump-time">??? Secs</span>)
-            </button>
-          </li>
-        </ul>
+		<!-- All other content -->
+		<div class="wrapper d-none" id="content">
+			<!-- Navbar (broadcast operations buttons and times) -->
+			<nav
+				class="main-header navbar navbar-expand navbar-dark navbar-gray-dark operations operations-bar"
+				style="
+					height: 7.5em;
+					position: fixed;
+					top: 0;
+					width: 100%;
+					overflow-y: hidden;
+					overflow-x: auto;
+				"
+			>
+				<!-- Left navbar links -->
+				<ul class="navbar-nav p-1">
+					<li class="nav-item">
+						<a
+							class="nav-link"
+							data-widget="pushmenu"
+							href="#"
+							title="Open/Close navigation menu"
+							><i class="fas fa-bars"></i
+						></a>
+					</li>
+					<li
+						class="nav-item operation-queue"
+						style="text-align: center; min-width: 6em;"
+						title="How much audio is in the RadioDJ queue."
+					>
+						<div class="text-light" style="font-size: 1.5em;">Queue:</div>
+						<div class="text-warning meta-queueLength" style="font-size: 2em;">
+							??:??
+						</div>
+						<div
+							style="text-align: center; font-size: 1.75em;"
+							class="badge badge-danger meta-onAir d-none"
+						>
+							ON AIR
+						</div>
+					</li>
+					<li
+						class="nav-item operation-firstTrack d-none"
+						style="text-align: center; min-width: 6em;"
+						title="How much time until the first track of the broadcast (such as the intro/opener) begins."
+					>
+						<div class="text-light" style="font-size: 1.5em;">First Track:</div>
+						<div class="text-info meta-firstTrack" style="font-size: 2em;">
+							??:??
+						</div>
+					</li>
+					<li class="nav-item operation-button operation-resume d-none">
+						<button
+							class="btn btn-app bg-success btn-operation-resume"
+							style="height: 6em; font-size: 1em;"
+							title="End the break and resume the broadcast"
+						>
+							<i class="fas fa-check"></i> Resume
+						</button>
+					</li>
+					<li class="nav-item operation-button operation-15-psa d-none">
+						<button
+							class="btn btn-app bg-indigo btn-operation-15-psa"
+							style="height: 6em; font-size: 1em;"
+							title="Add a 15-second PSA to the queue"
+						>
+							<i class="fas fa-plus"></i> +15-sec PSA
+						</button>
+					</li>
+					<li class="nav-item operation-button operation-30-psa d-none">
+						<button
+							class="btn btn-app bg-indigo btn-operation-30-psa"
+							style="height: 6em; font-size: 1em;"
+							title="Add a 30-second PSA to the queue"
+						>
+							<i class="fas fa-plus"></i> +30-sec PSA
+						</button>
+					</li>
+					<li class="nav-item operation-button operation-live d-none">
+						<button
+							class="btn btn-app bg-danger btn-operation-live"
+							style="height: 6em; font-size: 1em;"
+							title="Start a live show produced in the WWSU studio"
+						>
+							<i class="fas fa-microphone"></i> Live
+						</button>
+					</li>
+					<li class="nav-item operation-button operation-remote d-none">
+						<button
+							class="btn btn-app bg-purple"
+							style="height: 6em; font-size: 1em;"
+							title="Start a remote show streamed via DJ Controls to WWSU"
+						>
+							<i class="fas fa-broadcast-tower"></i> Remote
+						</button>
+					</li>
+					<li class="nav-item operation-button operation-sports d-none">
+						<button
+							class="btn btn-app bg-success"
+							style="height: 6em; font-size: 1em;"
+							title="Start a sports broadcast produced in the WWSU studio"
+						>
+							<i class="fas fa-basketball-ball"></i> Sports Live
+						</button>
+					</li>
+					<li class="nav-item operation-button operation-sportsremote d-none">
+						<button
+							class="btn btn-app bg-teal"
+							style="height: 6em; font-size: 1em;"
+							title="Start a sports broadcast streamed via DJ Controls to WWSU"
+						>
+							<i class="fas fa-basketball-ball"></i> Sports Remote
+						</button>
+					</li>
+					<li class="nav-item operation-button operation-automation d-none">
+						<button
+							class="btn btn-app bg-primary btn-operation-automation"
+							style="height: 6em; font-size: 1em;"
+							title="End the broadcast and go to automation"
+						>
+							<i class="fas fa-microphone-slash"></i> Automation
+						</button>
+					</li>
+					<li class="nav-item operation-button operation-switch d-none">
+						<button
+							class="btn btn-app bg-danger btn-operation-switch"
+							style="height: 6em; font-size: 1em;"
+							title="End the broadcast and go to break for the next DJ"
+						>
+							<i class="fas fa-microphone-slash"></i> Next Show
+						</button>
+					</li>
+					<li class="nav-item operation-button operation-break d-none">
+						<button
+							class="btn btn-app bg-warning btn-operation-break"
+							style="height: 6em; font-size: 1em;"
+							title="Play underwritings and PSAs until you resume the broadcast"
+						>
+							<i class="fas fa-coffee"></i> Take a Break
+						</button>
+					</li>
+					<li class="nav-item operation-button operation-extended-break d-none">
+						<button
+							class="btn btn-app bg-orange btn-operation-extended-break"
+							style="height: 6em; font-size: 1em;"
+							title="Play music and suspend audio streaming until you resume the broadcast"
+						>
+							<i class="fas fa-hourglass"></i> Extended Break
+						</button>
+					</li>
+					<li class="nav-item operation-button operation-top-add d-none">
+						<button
+							class="btn btn-app bg-purple btn-operation-top-add"
+							style="height: 6em; font-size: 1em;"
+							title="Play a random top add music track immediately"
+						>
+							<i class="fas fa-headphones"></i> Play Top Add
+						</button>
+					</li>
+					<li class="nav-item operation-button operation-liner d-none">
+						<button
+							class="btn btn-app bg-purple btn-operation-liner"
+							style="height: 6em; font-size: 1em;"
+							title="Play a short station liner"
+						>
+							<i class="fas fa-angle-double-right"></i> Play Liner
+						</button>
+					</li>
+					<li class="nav-item operation-button operation-log d-none">
+						<button
+							class="btn btn-app bg-info"
+							style="height: 6em; font-size: 1em;"
+							title="Log something you played on the air, such as music."
+						>
+							<i class="fas fa-file"></i> Add a Log
+						</button>
+					</li>
+					<li class="nav-item operation-button operation-dump d-none">
+						<button
+							class="btn btn-app bg-fuchsia btn-operation-dump"
+							style="height: 6em; font-size: 1em;"
+							title="Remotely trigger the dump on the delay system if something inappropriate was said."
+						>
+							<i class="fas fa-eject"></i> Dump <br />
+							(<span class="operation-dump-time">??? Secs</span>)
+						</button>
+					</li>
+				</ul>
 
-        <!-- Right navbar links -->
-        <ul class="navbar-nav ml-auto"></ul>
-      </nav>
-      <!-- /.navbar -->
+				<!-- Right navbar links -->
+				<ul class="navbar-nav ml-auto"></ul>
+			</nav>
+			<!-- /.navbar -->
 
-      <!-- Main Sidebar Menu -->
-      <aside class="main-sidebar sidebar-dark-maroon elevation-4">
-        <!-- Logo -->
-        <a href="#" class="brand-link">
-          <img
-            src="assets/images/logo_round.png"
-            alt="WWSU logo"
-            class="brand-image img-circle elevation-3"
-            style="opacity: 0.8;"
-          />
-          <span class="brand-text font-weight-light">WWSU DJ Controls</span>
-        </a>
+			<!-- Main Sidebar Menu -->
+			<aside class="main-sidebar sidebar-dark-maroon elevation-4">
+				<!-- Logo -->
+				<a href="#" class="brand-link">
+					<img
+						src="assets/images/logo_round.png"
+						alt="WWSU logo"
+						class="brand-image img-circle elevation-3"
+						style="opacity: 0.8;"
+					/>
+					<span class="brand-text font-weight-light">WWSU DJ Controls</span>
+				</a>
 
-        <!-- Sidebar -->
-        <div class="sidebar">
-          <!-- Sidebar station time -->
-          <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-            <div class="image text-light">
-              <i class="nav-icon fas fa-clock"></i>
-            </div>
-            <div class="info">
-              <span class="d-block text-light meta-time">Unknown Time</span>
-            </div>
-          </div>
+				<!-- Sidebar -->
+				<div class="sidebar">
+					<!-- Sidebar station time -->
+					<div class="user-panel mt-3 pb-3 mb-3 d-flex">
+						<div class="image text-light">
+							<i class="nav-icon fas fa-clock"></i>
+						</div>
+						<div class="info">
+							<span class="d-block text-light meta-time">Unknown Time</span>
+						</div>
+					</div>
 
-          <!-- Sidebar Menu -->
-          <nav class="mt-2">
-            <ul
-              class="nav nav-pills nav-sidebar nav-compact nav-flat flex-column"
-              data-widget="treeview"
-              role="menu"
-              data-accordion="false"
-            >
-              <li class="nav-header text-light">BROADCASTS</li>
-              <li class="nav-item">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-dashboard"
-                  title="View the clockwheel, announcements / reported problems, and broadcast log."
-                >
-                  <i class="nav-icon nav-icon-dashboard fas fa-lightbulb"></i>
-                  <p>
-                    Dashboard
-                  </p>
-                </a>
+					<!-- Sidebar Menu -->
+					<nav class="mt-2">
+						<ul
+							class="nav nav-pills nav-sidebar nav-compact nav-flat flex-column"
+							data-widget="treeview"
+							role="menu"
+							data-accordion="false"
+						>
+							<li class="nav-header text-light">BROADCASTS</li>
+							<li class="nav-item">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-dashboard"
+									title="View the clockwheel, announcements / reported problems, and broadcast log."
+								>
+									<i class="nav-icon nav-icon-dashboard fas fa-lightbulb"></i>
+									<p>
+										Dashboard
+									</p>
+								</a>
+							</li>
+							<li class="nav-item">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-announcements-view"
+									title="View announcements and important info for DJs."
+								>
+									<i class="nav-icon fas fa-bullhorn"></i>
+									<p>
+										Announcements
+									</p>
+								</a>
+							</li>
+							<li class="nav-item">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-chat"
+									title="Send and receive messages between other DJ Controls and those tuned in to WWSU online."
+								>
+									<i class="nav-icon nav-icon-messages fas fa-comments"></i>
+									<p>
+										Messages / Chat
+										<span class="badge badge-secondary right messages-new-all"
+											>0</span
+										>
+									</p>
+								</a>
+							</li>
+							<li class="nav-item">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-requests"
+									title="View and play requested tracks."
+								>
+									<i class="nav-icon nav-icon-requests fas fa-record-vinyl"></i>
+									<p>
+										Track Requests
+										<span class="badge badge-secondary right track-requests"
+											>0</span
+										>
+									</p>
+								</a>
+							</li>
+							<li class="nav-item">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-weather"
+									title="View local weather conditions and forecast for WWSU, powered by ClimaCell."
+								>
+									<i
+										class="nav-icon nav-icon-weather fas fa-cloud-sun-rain"
+									></i>
+									<p>
+										Weather
+									</p>
+								</a>
+							</li>
+							<li class="nav-item">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-report"
+									title="Report a technical issue to the station engineer."
+								>
+									<i
+										class="nav-icon nav-icon-report fas fa-exclamation-triangle"
+									></i>
+									<p>
+										Report a Problem
+									</p>
+								</a>
+							</li>
+							<li class="nav-header text-light">DJ CONTROLS SETTINGS</li>
+							<li class="nav-item">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-audio"
+									title="Edit audio recording and streaming settings for this DJ Controls"
+								>
+									<i class="nav-icon fas fa-volume-up"></i>
+									<p>
+										Audio Settings
+									</p>
+								</a>
               </li>
-              <li class="nav-item">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-announcements-view"
-                  title="View announcements and important info for DJs."
-                >
-                  <i class="nav-icon fas fa-bullhorn"></i>
-                  <p>
-                    Announcements
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-chat"
-                  title="Send and receive messages between other DJ Controls and those tuned in to WWSU online."
-                >
-                  <i class="nav-icon nav-icon-messages fas fa-comments"></i>
-                  <p>
-                    Messages / Chat
-                    <span class="badge badge-secondary right messages-new-all"
-                      >0</span
-                    >
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-requests"
-                  title="View and play requested tracks."
-                >
-                  <i class="nav-icon nav-icon-requests fas fa-record-vinyl"></i>
-                  <p>
-                    Track Requests
-                    <span class="badge badge-secondary right track-requests"
-                      >0</span
-                    >
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-weather"
-                  title="View local weather conditions and forecast for WWSU, powered by ClimaCell."
-                >
-                  <i
-                    class="nav-icon nav-icon-weather fas fa-cloud-sun-rain"
-                  ></i>
-                  <p>
-                    Weather
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-report"
-                  title="Report a technical issue to the station engineer."
-                >
-                  <i
-                    class="nav-icon nav-icon-report fas fa-exclamation-triangle"
-                  ></i>
-                  <p>
-                    Report a Problem
-                  </p>
-                </a>
-              </li>
-              <li class="nav-header text-light">DJ CONTROLS SETTINGS</li>
-              <li class="nav-item">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-audio"
-                  title="Edit audio recording and streaming settings for this DJ Controls"
-                >
-                  <i class="nav-icon fas fa-volume-up text-danger"></i>
-                  <p>
-                    Audio Settings
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-serial"
-                  title="Configure serial ports for station equipment, such as the Delay System and Emergency Alert System."
-                >
-                  <i class="nav-icon fas fa-stream text-danger"></i>
-                  <p>
-                    Serial Port Settings
-                  </p>
-                </a>
-              </li>
-              <li class="nav-header nav-admin d-none text-light">
-                ADMINISTRATION
-              </li>
-              <li class="nav-item nav-admin d-none">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-notifications"
-                  title="Notifications / things that need done."
-                >
-                  <i class="nav-icon nav-icon-notifications fas fa-bell"></i>
-                  <p>
-                    To-Do
-                    <span class="right">
-                      <span
-                        class="badge badge-danger notifications-danger"
-                        title="Danger items (needs addressed immediately)."
-                        >0</span
-                      >
-                      <span
-                        class="badge bg-orange notifications-orange"
-                        title="Urgent items (needs addressed as soon as possible)."
-                        >0</span
-                      >
-                      <span
-                        class="badge bg-warning notifications-warning"
-                        title="Important items (needs addressed at earliest convenience)."
-                        >0</span
-                      >
-                      <span
-                        class="badge badge-info notifications-info"
-                        title="Things that need reviewed but are not significantly important."
-                        >0</span
-                      >
-                      <span
-                        class="badge badge-primary notifications-primary"
-                        title="DJs without email/password set, and timesheets that need approved."
-                        >0</span
-                      >
-                    </span>
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item nav-admin d-none">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-analytics"
-                  title="Browse various analytic charts for broadcasts and DJs."
-                >
-                  <i class="nav-icon fas fa-chart-line text-danger"></i>
-                  <p>
-                    Analytics
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item nav-admin d-none">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-announcements"
-                  title="Manage announcements and display sign slides."
-                >
-                  <i class="nav-icon fas fa-bullhorn"></i>
-                  <p>
-                    Announcements
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item nav-admin d-none">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-api"
-                  title="Make a raw API query to WWSU."
-                >
-                  <i class="nav-icon fas fa-terminal"></i>
-                  <p>
-                    API Query
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item nav-admin d-none">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-bans"
-                  title="Manage bans / disciplinary action on web visitors and those who use the WWSU API."
-                >
-                  <i class="nav-icon fas fa-ban text-danger"></i>
-                  <p>
-                    Bans
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item nav-admin d-none">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-calendar"
-                  title="Manage events / broadcasts and their schedules."
-                >
-                  <i class="nav-icon fas fa-calendar"></i>
-                  <p>
-                    Calendar
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item nav-admin d-none">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-configuration"
-                  title="Manage system-wide configuration for WWSU."
-                >
-                  <i class="nav-icon fas fa-cogs text-danger"></i>
-                  <p>
-                    Configuration
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item nav-admin d-none">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-directors"
-                  title="Manage directors / assistant directors in the system, and view / edit their timesheets. Directors should always be kept up to date or unauthorized [ex]-directors could make changes to the system."
-                >
-                  <i class="nav-icon fas fa-user-tie text-danger"></i>
-                  <p>
-                    Directors / Timesheets
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item nav-admin d-none">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-djs"
-                  title="Manage the DJs (on-air talents) in the system."
-                >
-                  <i class="nav-icon fas fa-user"></i>
-                  <p>
-                    DJs
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item nav-admin d-none">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-hosts"
-                  title="Manage the devices / DJ Controls allowed to connect to WWSU and their privileges."
-                >
-                  <i class="nav-icon fas fa-laptop text-danger"></i>
-                  <p>
-                    Hosts
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item nav-admin d-none">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-logs"
-                  title="Browse operation and broadcast logs."
-                >
-                  <i class="nav-icon fas fa-file-alt"></i>
-                  <p>
-                    Logs
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item nav-admin d-none">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-maintenance"
-                  title="Perform actions / maintenance on the system."
-                >
-                  <i class="nav-icon fas fa-cog text-danger"></i>
-                  <p>
-                    Maintenance
-                  </p>
-                </a>
-              </li>
-              <li class="nav-item nav-admin d-none">
-                <a
-                  href="#"
-                  class="nav-link"
-                  id="nav-underwritings"
-                  title="Manage the underwritings (commercials) in the system and when they should air."
-                >
-                  <i class="nav-icon fas fa-hand-holding-usd text-danger"></i>
-                  <p>
-                    Underwritings
-                  </p>
-                </a>
-              </li>
-            </ul>
-          </nav>
-          <!-- /.sidebar-menu -->
-        </div>
-        <!-- /.sidebar -->
-      </aside>
+							<li class="nav-item">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-serial"
+									title="Configure serial ports for station equipment, such as the Delay System and Emergency Alert System."
+								>
+									<i class="nav-icon fas fa-stream text-danger"></i>
+									<p>
+										Serial Port Settings
+									</p>
+								</a>
+							</li>
+							<li class="nav-header nav-admin d-none text-light">
+								ADMINISTRATION
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-notifications"
+									title="Notifications / things that need done."
+								>
+									<i class="nav-icon nav-icon-notifications fas fa-bell"></i>
+									<p>
+										To-Do
+										<span class="right">
+											<span
+												class="badge badge-danger notifications-danger"
+												title="Danger items (needs addressed immediately)."
+												>0</span
+											>
+											<span
+												class="badge bg-orange notifications-orange"
+												title="Urgent items (needs addressed as soon as possible)."
+												>0</span
+											>
+											<span
+												class="badge bg-warning notifications-warning"
+												title="Important items (needs addressed at earliest convenience)."
+												>0</span
+											>
+											<span
+												class="badge badge-info notifications-info"
+												title="Things that need reviewed but are not significantly important."
+												>0</span
+											>
+											<span
+												class="badge badge-primary notifications-primary"
+												title="DJs without email/password set, and timesheets that need approved."
+												>0</span
+											>
+										</span>
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-analytics"
+									title="Browse various analytic charts for broadcasts and DJs."
+								>
+									<i class="nav-icon fas fa-chart-line text-danger"></i>
+									<p>
+										Analytics
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-announcements"
+									title="Manage announcements and display sign slides."
+								>
+									<i class="nav-icon fas fa-bullhorn"></i>
+									<p>
+										Announcements
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-api"
+									title="Make a raw API query to WWSU."
+								>
+									<i class="nav-icon fas fa-terminal"></i>
+									<p>
+										API Query
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-bans"
+									title="Manage bans / disciplinary action on web visitors and those who use the WWSU API."
+								>
+									<i class="nav-icon fas fa-ban text-danger"></i>
+									<p>
+										Bans
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-calendar"
+									title="Manage events / broadcasts and their schedules."
+								>
+									<i class="nav-icon fas fa-calendar"></i>
+									<p>
+										Calendar
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-configuration"
+									title="Manage system-wide configuration for WWSU."
+								>
+									<i class="nav-icon fas fa-cogs text-danger"></i>
+									<p>
+										Configuration
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-directors"
+									title="Manage directors / assistant directors in the system, and view / edit their timesheets. Directors should always be kept up to date or unauthorized [ex]-directors could make changes to the system."
+								>
+									<i class="nav-icon fas fa-user-tie text-danger"></i>
+									<p>
+										Directors / Timesheets
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-djs"
+									title="Manage the DJs (on-air talents) in the system."
+								>
+									<i class="nav-icon fas fa-user"></i>
+									<p>
+										DJs
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-hosts"
+									title="Manage the devices / DJ Controls allowed to connect to WWSU and their privileges."
+								>
+									<i class="nav-icon fas fa-laptop text-danger"></i>
+									<p>
+										Hosts
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-logs"
+									title="Browse operation and broadcast logs."
+								>
+									<i class="nav-icon fas fa-file-alt"></i>
+									<p>
+										Logs
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-maintenance"
+									title="Perform actions / maintenance on the system."
+								>
+									<i class="nav-icon fas fa-cog text-danger"></i>
+									<p>
+										Maintenance
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-underwritings"
+									title="Manage the underwritings (commercials) in the system and when they should air."
+								>
+									<i class="nav-icon fas fa-hand-holding-usd text-danger"></i>
+									<p>
+										Underwritings
+									</p>
+								</a>
+							</li>
+						</ul>
+					</nav>
+					<!-- /.sidebar-menu -->
+				</div>
+				<!-- /.sidebar -->
+			</aside>
 
-      <!-- Dashboard page -->
-      <section id="section-dashboard">
-        <div class="content-wrapper" style="padding-top: 8em;">
-          <!-- Content Header (Page header) -->
-          <div class="content-header">
-            <div class="container-fluid">
-              <div class="row mb-2">
-                <div class="col-sm-6">
-                  <h1 class="m-0 text-dark">Dashboard</h1>
-                </div>
-                <!-- /.col -->
-              </div>
-              <!-- /.row -->
-            </div>
-            <!-- /.container-fluid -->
-          </div>
-          <!-- /.content-header -->
+			<!-- Dashboard page -->
+			<section id="section-dashboard">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<!-- Content Header (Page header) -->
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0 text-dark">Dashboard</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+					<!-- /.content-header -->
 
-          <!-- Main content -->
-          <div class="content">
-            <div class="card card-info elevation-2">
-              <div class="card-header">
-                <h3 class="card-title">Status</h3>
-              </div>
-              <!-- /.card-header -->
-              <div class="card-body">
-                <div class="row">
-                  <div class="col-12">
-                    <div
-                      class="card card-widget widget-user-2"
-                      title="This is what WWSU is advertising as currently on the air."
-                    >
-                      <div class="widget-user-header bg-primary">
-                        <div class="widget-user-image">
-                          <div
-                            class="text-lime meta-trackFinish"
-                            style="font-size: 1.5em; position: absolute;"
-                            title="How much time is left in the current track"
-                          >
-                            ??:??
-                          </div>
-                        </div>
-                        <!-- /.widget-user-image -->
-                        <h3 class="widget-user-username meta-line1"></h3>
-                        <h5 class="widget-user-desc meta-line2"></h5>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+					<!-- Main content -->
+					<div class="content">
+						<div class="card card-info elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Status</h3>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body">
+								<div class="row">
+									<div class="col-12">
+										<div
+											class="card card-widget widget-user-2"
+											title="This is what WWSU is advertising as currently on the air."
+										>
+											<div class="widget-user-header bg-primary">
+												<div class="widget-user-image">
+													<div
+														class="text-lime meta-trackFinish"
+														style="font-size: 1.5em; position: absolute;"
+														title="How much time is left in the current track"
+													>
+														??:??
+													</div>
+												</div>
+												<!-- /.widget-user-image -->
+												<h3 class="widget-user-username meta-line1"></h3>
+												<h5 class="widget-user-desc meta-line2"></h5>
+											</div>
+										</div>
+									</div>
+								</div>
 
-                <!-- Top row of numbers -->
-                <div class="row">
-                  <div class="col-lg-3 col-md-6 col-12">
-                    <div
-                      class="small-box bg-info"
-                      title="Number of listeners currently tuned in online. Does NOT factor listeners on the radio."
-                    >
-                      <div class="inner">
-                        <h3 class="meta-listeners">???</h3>
+								<!-- Top row of numbers -->
+								<div class="row">
+									<div class="col-lg-3 col-md-6 col-12">
+										<div
+											class="small-box bg-info"
+											title="Number of listeners currently tuned in online. Does NOT factor listeners on the radio."
+										>
+											<div class="inner">
+												<h3 class="meta-listeners">???</h3>
 
-                        <p>Online Listeners</p>
-                      </div>
-                      <div class="icon">
-                        <i class="fas fa-headphones"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- ./col -->
+												<p>Online Listeners</p>
+											</div>
+											<div class="icon">
+												<i class="fas fa-headphones"></i>
+											</div>
+										</div>
+									</div>
+									<!-- ./col -->
 
-                  <div class="col-lg-3 col-md-6 col-12">
-                    <div
-                      class="small-box bg-teal meta-remaining-box"
-                      title="How much scheduled time is left for the current broadcast, prerecord, or genre rotation."
-                    >
-                      <div class="inner">
-                        <h3 class="meta-remaining">???</h3>
+									<div class="col-lg-3 col-md-6 col-12">
+										<div
+											class="small-box bg-teal meta-remaining-box"
+											title="How much scheduled time is left for the current broadcast, prerecord, or genre rotation."
+										>
+											<div class="inner">
+												<h3 class="meta-remaining">???</h3>
 
-                        <p>Scheduled Time Left</p>
-                        <div
-                          class="progress progress-xs"
-                          style="background-color: rgba(0, 0, 0, 0.125);"
-                        >
-                          <div
-                            class="progress-bar bg-light meta-remaining-progress"
-                            role="progressbar"
-                            style="width: 0%;"
-                          ></div>
-                        </div>
-                      </div>
-                      <div class="icon">
-                        <i class="fas fa-stopwatch"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- ./col -->
+												<p>Scheduled Time Left</p>
+												<div
+													class="progress progress-xs"
+													style="background-color: rgba(0, 0, 0, 0.125);"
+												>
+													<div
+														class="progress-bar bg-light meta-remaining-progress"
+														role="progressbar"
+														style="width: 0%;"
+													></div>
+												</div>
+											</div>
+											<div class="icon">
+												<i class="fas fa-stopwatch"></i>
+											</div>
+										</div>
+									</div>
+									<!-- ./col -->
 
-                  <div class="col-lg-3 col-md-6 col-12">
-                    <div
-                      class="small-box bg-gray status-global-color"
-                      title="Current status of WWSU; major or critical status means something is wrong which could impact broadcasts. Click more info to see details of current problems."
-                    >
-                      <div class="inner">
-                        <h3 class="status-global">???</h3>
+									<div class="col-lg-3 col-md-6 col-12">
+										<div
+											class="small-box bg-gray status-global-color"
+											title="Current status of WWSU; major or critical status means something is wrong which could impact broadcasts. Click more info to see details of current problems."
+										>
+											<div class="inner">
+												<h3 class="status-global">???</h3>
 
-                        <p>System Status</p>
-                      </div>
-                      <div class="icon">
-                        <i class="fas fa-exclamation-triangle"></i>
-                      </div>
-                      <a href="#" class="small-box-footer status-more">
-                        More info <i class="fas fa-arrow-circle-right"></i>
-                      </a>
-                    </div>
-                  </div>
+												<p>System Status</p>
+											</div>
+											<div class="icon">
+												<i class="fas fa-exclamation-triangle"></i>
+											</div>
+											<a href="#" class="small-box-footer status-more">
+												More info <i class="fas fa-arrow-circle-right"></i>
+											</a>
+										</div>
+									</div>
 
-                  <div class="col-lg-3 col-md-6 col-12">
-                    <div
-                      class="small-box bg-gray eas-global-color"
-                      title="Level of the most severe EAS/weather alert in effect for the WWSU EAS coverage area (Greene OH, Clark OH, Montgomery OH). Click more info to see what alerts are in effect and for what counties."
-                    >
-                      <div class="inner">
-                        <h3 class="eas-global">???</h3>
+									<div class="col-lg-3 col-md-6 col-12">
+										<div
+											class="small-box bg-gray eas-global-color"
+											title="Level of the most severe EAS/weather alert in effect for the WWSU EAS coverage area (Greene OH, Clark OH, Montgomery OH). Click more info to see what alerts are in effect and for what counties."
+										>
+											<div class="inner">
+												<h3 class="eas-global">???</h3>
 
-                        <p>Emergency Alerts</p>
-                      </div>
-                      <div class="icon">
-                        <i class="fas fa-bolt"></i>
-                      </div>
-                      <a href="#" class="small-box-footer eas-more">
-                        More info <i class="fas fa-arrow-circle-right"></i>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- /.card-body -->
-            </div>
+												<p>Emergency Alerts</p>
+											</div>
+											<div class="icon">
+												<i class="fas fa-bolt"></i>
+											</div>
+											<a href="#" class="small-box-footer eas-more">
+												More info <i class="fas fa-arrow-circle-right"></i>
+											</a>
+										</div>
+									</div>
+								</div>
+							</div>
+							<!-- /.card-body -->
+						</div>
 
-            <div class="row">
-              <div class="col-md-5 col-12">
-                <div class="card card-primary elevation-2">
-                  <div class="card-header">
-                    <h3 class="card-title">Clockwheel</h3>
-                  </div>
-                  <!-- /.card-header -->
-                  <div class="card-body">
-                    <div class="chartjs-size-monitor">
-                      <div class="chartjs-size-monitor-expand">
-                        <div class=""></div>
-                      </div>
-                      <div class="chartjs-size-monitor-shrink">
-                        <div class=""></div>
-                      </div>
-                    </div>
-                    <div style="position: relative;">
-                      <canvas
-                        id="clockwheel-donut"
-                        style="
-                          min-height: 350px;
-                          height: 350px;
-                          max-height: 66vh;
-                          max-width: 100%;
-                        "
-                      >
-                      </canvas>
-                      <div class="clock">
-                        <div id="clock">
-                          <div id="hour"></div>
-                          <div id="minute"></div>
-                          <div id="second"></div>
-                          <div id="center"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card-footer p-0">
-                    <strong>Clockwheel is in station timezone.</strong><br />
-                    Hover over segments to read them. <br />
-                    Outer ring: show segments (1-hour wheel)<br />
-                    Inner ring: schedule (12-hour wheel).
-                  </div>
-                </div>
-              </div>
-              <!-- /.card-body -->
+						<div class="row">
+							<div class="col-md-5 col-12">
+								<div class="card card-primary elevation-2">
+									<div class="card-header">
+										<h3 class="card-title">Clockwheel</h3>
+									</div>
+									<!-- /.card-header -->
+									<div class="card-body">
+										<div class="chartjs-size-monitor">
+											<div class="chartjs-size-monitor-expand">
+												<div class=""></div>
+											</div>
+											<div class="chartjs-size-monitor-shrink">
+												<div class=""></div>
+											</div>
+										</div>
+										<div style="position: relative;">
+											<canvas
+												id="clockwheel-donut"
+												style="
+													min-height: 350px;
+													height: 350px;
+													max-height: 66vh;
+													max-width: 100%;
+												"
+											>
+											</canvas>
+											<div class="clock">
+												<div id="clock">
+													<div id="hour"></div>
+													<div id="minute"></div>
+													<div id="second"></div>
+													<div id="center"></div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="card-footer p-0">
+										<strong>Clockwheel is in station timezone.</strong><br />
+										Hover over segments to read them. <br />
+										Outer ring: show segments (1-hour wheel)<br />
+										Inner ring: schedule (12-hour wheel).
+									</div>
+								</div>
+							</div>
+							<!-- /.card-body -->
 
-              <div class="col-md-7 col-12">
-                <div class="card card-info elevation-2">
-                  <div class="card-header">
-                    <h3 class="card-title">Logs</h3>
-                  </div>
-                  <!-- /.card-header -->
-                  <div class="card-body">
-                    <div
-                      class="timeline"
-                      id="section-dashboard-logs"
-                      style="max-height: 500px; overflow-y: scroll;"
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- /.content -->
-        </div>
-      </section>
+							<div class="col-md-7 col-12">
+								<div class="card card-info elevation-2">
+									<div class="card-header">
+										<h3 class="card-title">Logs</h3>
+									</div>
+									<!-- /.card-header -->
+									<div class="card-body">
+										<div
+											class="timeline"
+											id="section-dashboard-logs"
+											style="max-height: 500px; overflow-y: scroll;"
+										></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- /.content -->
+				</div>
+			</section>
 
-      <!-- Announcements (view) -->
-      <section id="section-announcements-view">
-        <div class="content-wrapper" style="padding-top: 8em;">
-          <!-- Content Header (Page header) -->
-          <div class="content-header">
-            <div class="container-fluid">
-              <div class="row mb-2">
-                <div class="col-sm-6">
-                  <h1 class="m-0 text-dark">Announcements (View)</h1>
-                </div>
-                <!-- /.col -->
-              </div>
-              <!-- /.row -->
-            </div>
-            <!-- /.container-fluid -->
-          </div>
-          <!-- /.content-header -->
+			<!-- Announcements (view) -->
+			<section id="section-announcements-view">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<!-- Content Header (Page header) -->
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0 text-dark">Announcements (View)</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+					<!-- /.content-header -->
 
-          <!-- Main content -->
-          <div class="content announcements"></div>
-        </div>
-      </section>
+					<!-- Main content -->
+					<div class="content announcements"></div>
+				</div>
+			</section>
 
-      <!--Chat--->
-      <section id="section-chat">
-        <div class="content-wrapper" style="padding-top: 8em;">
-          <div class="content-header">
-            <div class="container-fluid">
-              <div class="row mb-2">
-                <div class="col-12">
-                  <h1 class="m-0 text-dark">Messages / Chat</h1>
-                </div>
-                <!-- /.col -->
-              </div>
-              <!-- /.row -->
-            </div>
-            <!-- /.container-fluid -->
-          </div>
+			<!--Chat--->
+			<section id="section-chat">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-12">
+									<h1 class="m-0 text-dark">Messages / Chat</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
 
-          <div class="card card-success card-outline p-1 m-3">
-            <div class="card-header">
-              <h3 class="card-title chat-active-recipient">
-                (Select a recipient)
-              </h3>
-              <div class="card-tools">
-                <button
-                  type="button"
-                  class="btn btn-outline-primary chat-recipients"
-                >
-                  Recipients
-                </button>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="callout callout-info chat-status">
-                <h5>Select a Recipient</h5>
-                <p>Please select a recipient to send a message.</p>
-              </div>
-              <p>
-                Unread messages are in red. Click a message to mark as read.
-                Sending a message marks all messages as read. Click the trash
-                can to delete a message from everyone's screen.
-              </p>
-              <div
-                class="chat-messages"
-                style="height: 50vh; overflow-x: auto;"
-              >
-                <!--Chat messages go here-->
-              </div>
-              <div class="chat-form">
-                <!--Chat Alpaca form goes here-->
-              </div>
-            </div>
-            <div class="card-footer">
-              <button type="button" class="btn btn-warning chat-mute d-none">
-                Mute
-              </button>
-              <button type="button" class="btn btn-danger chat-ban d-none">
-                Ban
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+					<div class="card card-success card-outline p-1 m-3">
+						<div class="card-header">
+							<h3 class="card-title chat-active-recipient">
+								(Select a recipient)
+							</h3>
+							<div class="card-tools">
+								<button
+									type="button"
+									class="btn btn-outline-primary chat-recipients"
+								>
+									Recipients
+								</button>
+							</div>
+						</div>
+						<div class="card-body">
+							<div class="callout callout-info chat-status">
+								<h5>Select a Recipient</h5>
+								<p>Please select a recipient to send a message.</p>
+							</div>
+							<p>
+								Unread messages are in red. Click a message to mark as read.
+								Sending a message marks all messages as read. Click the trash
+								can to delete a message from everyone's screen.
+							</p>
+							<div
+								class="chat-messages"
+								style="height: 50vh; overflow-x: auto;"
+							>
+								<!--Chat messages go here-->
+							</div>
+							<div class="chat-form">
+								<!--Chat Alpaca form goes here-->
+							</div>
+						</div>
+						<div class="card-footer">
+							<button type="button" class="btn btn-warning chat-mute d-none">
+								Mute
+							</button>
+							<button type="button" class="btn btn-danger chat-ban d-none">
+								Ban
+							</button>
+						</div>
+					</div>
+				</div>
+			</section>
 
-      <!-- Track Requests-->
-      <section id="section-requests">
-        <div class="content-wrapper" style="padding-top: 8em;">
-          <!-- Content Header (Page header) -->
-          <div class="content-header">
-            <div class="container-fluid">
-              <div class="row mb-2">
-                <div class="col-sm-6">
-                  <h1 class="m-0 text-dark">Track Requests</h1>
-                </div>
-                <!-- /.col -->
-              </div>
-              <!-- /.row -->
-            </div>
-            <!-- /.container-fluid -->
-          </div>
-          <!-- /.content-header -->
+			<!-- Track Requests-->
+			<section id="section-requests">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<!-- Content Header (Page header) -->
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0 text-dark">Track Requests</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+					<!-- /.content-header -->
 
-          <!-- Main content -->
-          <div class="content">
-            <div class="card elevation-2">
-              <!-- /.card-header -->
-              <div class="card-body" id="section-requests-table-div"></div>
-              <div class="card-footer p-1">
-                <div class="callout callout-info">
-                  <h5>Playing Requests are Optional</h5>
+					<!-- Main content -->
+					<div class="content">
+						<div class="card elevation-2">
+							<!-- /.card-header -->
+							<div class="card-body" id="section-requests-table-div"></div>
+							<div class="card-footer p-1">
+								<div class="callout callout-info">
+									<h5>Playing Requests are Optional</h5>
 
-                  <p>
-                    You do not have to play track requests during your show.
-                    Requests you ignore will play during automation.
-                  </p>
-                </div>
-                <div class="callout callout-info">
-                  <h5>Requests Stay Until Played</h5>
+									<p>
+										You do not have to play track requests during your show.
+										Requests you ignore will play during automation.
+									</p>
+								</div>
+								<div class="callout callout-info">
+									<h5>Requests Stay Until Played</h5>
 
-                  <p>
-                    Track requests will remain in this list, even when they are
-                    queued, until they are played in RadioDJ.
-                  </p>
-                </div>
-              </div>
-              <!-- /.card-body -->
-            </div>
-          </div>
-        </div>
-      </section>
+									<p>
+										Track requests will remain in this list, even when they are
+										queued, until they are played in RadioDJ.
+									</p>
+								</div>
+							</div>
+							<!-- /.card-body -->
+						</div>
+					</div>
+				</div>
+			</section>
 
-      <section id="section-weather">
-        <div class="content-wrapper" style="padding-top: 8em;">
-          <!-- Content Header (Page header) -->
-          <div class="content-header">
-            <div class="container-fluid">
-              <div class="row mb-2">
-                <div class="col-sm-6">
-                  <h1 class="m-0 text-dark">
-                    WWSU Weather (powered by ClimaCell)
-                  </h1>
-                </div>
-                <!-- /.col -->
-              </div>
-              <!-- /.row -->
-            </div>
-            <!-- /.container-fluid -->
-          </div>
-          <!-- /.content-header -->
+			<section id="section-weather">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<!-- Content Header (Page header) -->
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0 text-dark">
+										WWSU Weather (powered by ClimaCell)
+									</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+					<!-- /.content-header -->
 
-          <!-- Main content -->
-          <div class="content">
-            <div class="card card-primary elevation-2">
-              <div class="card-header">
-                <h3 class="card-title">Current Conditions</h3>
-              </div>
-              <!-- /.card-header -->
-              <div
-                class="card-body"
-                title="Current weather conditions at WWSU."
-              >
-                <div class="row">
-                  <div class="col-md-8 col-12">
-                    <ul>
-                      <li>
-                        Conditions:
-                        <span
-                          class="climacell-realtime-weather-code text-danger"
-                          >???</span
-                        >
-                      </li>
-                      <li>
-                        Cloud Cover:
-                        <span class="climacell-realtime-cloud-cover text-danger"
-                          >???</span
-                        >
-                      </li>
-                      <li>
-                        Precip:
-                        <span
-                          class="climacell-realtime-precipitation text-danger"
-                          >???</span
-                        >
-                        of
-                        <span
-                          class="climacell-realtime-precipitation-type text-danger"
-                          >???</span
-                        >
-                      </li>
-                      <li>
-                        Temperature:
-                        <span class="climacell-realtime-temp text-danger"
-                          >???</span
-                        >
-                        (feels like
-                        <span class="climacell-realtime-feels-like text-danger"
-                          >???</span
-                        >)
-                      </li>
-                      <li>
-                        Wind: From the
-                        <span
-                          class="climacell-realtime-wind-direction-code text-danger"
-                          >???</span
-                        >
-                        at
-                        <span class="climacell-realtime-wind-speed text-danger"
-                          >???</span
-                        >
-                        (gusting to
-                        <span
-                          class="climacell-realtime-wind-gust text-danger"
-                        ></span
-                        >)
-                      </li>
-                      <li>
-                        Humidity:
-                        <span class="climacell-realtime-humidity text-danger"
-                          >???</span
-                        >
-                        (Dew point
-                        <span class="climacell-realtime-dewpoint text-danger"
-                          >???</span
-                        >)
-                      </li>
-                      <li>
-                        Visibility:
-                        <span class="climacell-realtime-visibility text-danger"
-                          >???</span
-                        >
-                      </li>
-                      <li>
-                        Air Quality:
-                        <span
-                          class="climacell-realtime-epa-health_concern text-danger"
-                          >???</span
-                        >
-                      </li>
-                      <li>
-                        Road Risk:
-                        <span
-                          class="climacell-realtime-road-risk_score text-danger"
-                          >???</span
-                        >
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col-md-4 col-12">
-                    <div
-                      class="small-box bg-gray eas-global-color"
-                      title="Level of the most severe EAS/weather alert in effect for the WWSU EAS coverage area (Greene OH, Clark OH, Montgomery OH). Click more info to see what alerts are in effect and for what counties."
-                    >
-                      <div class="inner">
-                        <h3 class="eas-global">???</h3>
+					<!-- Main content -->
+					<div class="content">
+						<div class="card card-primary elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Current Conditions</h3>
+							</div>
+							<!-- /.card-header -->
+							<div
+								class="card-body"
+								title="Current weather conditions at WWSU."
+							>
+								<div class="row">
+									<div class="col-md-8 col-12">
+										<ul>
+											<li>
+												Conditions:
+												<span
+													class="climacell-realtime-weather-code text-danger"
+													>???</span
+												>
+											</li>
+											<li>
+												Cloud Cover:
+												<span class="climacell-realtime-cloud-cover text-danger"
+													>???</span
+												>
+											</li>
+											<li>
+												Precip:
+												<span
+													class="climacell-realtime-precipitation text-danger"
+													>???</span
+												>
+												of
+												<span
+													class="climacell-realtime-precipitation-type text-danger"
+													>???</span
+												>
+											</li>
+											<li>
+												Temperature:
+												<span class="climacell-realtime-temp text-danger"
+													>???</span
+												>
+												(feels like
+												<span class="climacell-realtime-feels-like text-danger"
+													>???</span
+												>)
+											</li>
+											<li>
+												Wind: From the
+												<span
+													class="climacell-realtime-wind-direction-code text-danger"
+													>???</span
+												>
+												at
+												<span class="climacell-realtime-wind-speed text-danger"
+													>???</span
+												>
+												(gusting to
+												<span
+													class="climacell-realtime-wind-gust text-danger"
+												></span
+												>)
+											</li>
+											<li>
+												Humidity:
+												<span class="climacell-realtime-humidity text-danger"
+													>???</span
+												>
+												(Dew point
+												<span class="climacell-realtime-dewpoint text-danger"
+													>???</span
+												>)
+											</li>
+											<li>
+												Visibility:
+												<span class="climacell-realtime-visibility text-danger"
+													>???</span
+												>
+											</li>
+											<li>
+												Air Quality:
+												<span
+													class="climacell-realtime-epa-health_concern text-danger"
+													>???</span
+												>
+											</li>
+											<li>
+												Road Risk:
+												<span
+													class="climacell-realtime-road-risk_score text-danger"
+													>???</span
+												>
+											</li>
+										</ul>
+									</div>
+									<div class="col-md-4 col-12">
+										<div
+											class="small-box bg-gray eas-global-color"
+											title="Level of the most severe EAS/weather alert in effect for the WWSU EAS coverage area (Greene OH, Clark OH, Montgomery OH). Click more info to see what alerts are in effect and for what counties."
+										>
+											<div class="inner">
+												<h3 class="eas-global">???</h3>
 
-                        <p>Emergency Alerts</p>
-                      </div>
-                      <div class="icon">
-                        <i class="fas fa-bolt"></i>
-                      </div>
-                      <a href="#" class="small-box-footer eas-more">
-                        More info <i class="fas fa-arrow-circle-right"></i>
-                      </a>
-                    </div>
-                    <div
-                      class="small-box bg-gray climacell-nowcast-color"
-                      title="How long until precipitation is possible or will end."
-                    >
-                      <div class="inner">
-                        <h3 class="climacell-nowcast-time">???</h3>
+												<p>Emergency Alerts</p>
+											</div>
+											<div class="icon">
+												<i class="fas fa-bolt"></i>
+											</div>
+											<a href="#" class="small-box-footer eas-more">
+												More info <i class="fas fa-arrow-circle-right"></i>
+											</a>
+										</div>
+										<div
+											class="small-box bg-gray climacell-nowcast-color"
+											title="How long until precipitation is possible or will end."
+										>
+											<div class="inner">
+												<h3 class="climacell-nowcast-time">???</h3>
 
-                        <p class="climacell-nowcast-text">
-                          Precipitation Expected
-                        </p>
-                      </div>
-                      <div class="icon">
-                        <i class="fas fa-cloud-showers-heavy"></i>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+												<p class="climacell-nowcast-text">
+													Precipitation Expected
+												</p>
+											</div>
+											<div class="icon">
+												<i class="fas fa-cloud-showers-heavy"></i>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 
-            <div class="card bg-secondary elevation-2">
-              <div class="card-header">
-                <h3 class="card-title">24-hour forecast</h3>
-              </div>
-              <!-- /.card-header -->
-              <div
-                class="card-body"
-                title="WWSU forecast for the next 24 hours."
-              >
-                <div
-                  class="weather-hourly-graph"
-                  style="width: 100%; height: 4em;"
-                ></div>
-                <div>
-                  <span style="color: #ffffff;" class="m-1">Key:</span>
+						<div class="card bg-secondary elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">24-hour forecast</h3>
+							</div>
+							<!-- /.card-header -->
+							<div
+								class="card-body"
+								title="WWSU forecast for the next 24 hours."
+							>
+								<div
+									class="weather-hourly-graph"
+									style="width: 100%; height: 4em;"
+								></div>
+								<div>
+									<span style="color: #ffffff;" class="m-1">Key:</span>
 
-                  <span
-                    style="color: #f8e187; padding-left: 1em; font-size: 1em;"
-                    >Clear
-                  </span>
+									<span
+										style="color: #f8e187; padding-left: 1em; font-size: 1em;"
+										>Clear
+									</span>
 
-                  <span style="color: #f8e187; font-size: 1em;"
-                    ><i class="fas fa-sun" style="color: #ffffff;"></i
-                  ></span>
-                  <span style="color: #f8e187; font-size: 1em;"
-                    ><i class="fas fa-cloud-sun" style="color: #ffffff;"></i
-                  ></span>
-                  <span style="color: #f8e187; font-size: 1em;"
-                    ><i class="fas fa-cloud" style="color: #ffffff;"></i>
-                    Cloudy</span
-                  >
+									<span style="color: #f8e187; font-size: 1em;"
+										><i class="fas fa-sun" style="color: #ffffff;"></i
+									></span>
+									<span style="color: #f8e187; font-size: 1em;"
+										><i class="fas fa-cloud-sun" style="color: #ffffff;"></i
+									></span>
+									<span style="color: #f8e187; font-size: 1em;"
+										><i class="fas fa-cloud" style="color: #ffffff;"></i>
+										Cloudy</span
+									>
 
-                  <span
-                    style="color: #99cbed; padding-left: 1em; font-size: 1em;"
-                    >Rain Possible
-                  </span>
+									<span
+										style="color: #99cbed; padding-left: 1em; font-size: 1em;"
+										>Rain Possible
+									</span>
 
-                  <span style="color: #99cbed; font-size: 1em;"
-                    ><i
-                      class="fas fa-cloud-sun-rain"
-                      style="color: #ffffff;"
-                    ></i
-                  ></span>
-                  <span style="color: #99cbed; font-size: 1em;"
-                    ><i
-                      class="fas fa-cloud-showers-heavy"
-                      style="color: #ffffff;"
-                    ></i
-                  ></span>
-                  <span style="color: #99cbed; font-size: 1em;"
-                    ><i class="fas fa-cloud-rain" style="color: #ffffff;"></i>
-                    Rain Likely</span
-                  >
+									<span style="color: #99cbed; font-size: 1em;"
+										><i
+											class="fas fa-cloud-sun-rain"
+											style="color: #ffffff;"
+										></i
+									></span>
+									<span style="color: #99cbed; font-size: 1em;"
+										><i
+											class="fas fa-cloud-showers-heavy"
+											style="color: #ffffff;"
+										></i
+									></span>
+									<span style="color: #99cbed; font-size: 1em;"
+										><i class="fas fa-cloud-rain" style="color: #ffffff;"></i>
+										Rain Likely</span
+									>
 
-                  <span
-                    style="color: #f8f8f8; padding-left: 1em; font-size: 1em;"
-                    >Snow Possible
-                  </span>
+									<span
+										style="color: #f8f8f8; padding-left: 1em; font-size: 1em;"
+										>Snow Possible
+									</span>
 
-                  <span style="color: #f8f8f8; font-size: 1em;"
-                    ><i class="far fa-snowflake" style="color: #ffffff;"></i
-                  ></span>
-                  <span style="color: #f8f8f8; font-size: 1em;"
-                    ><i class="fas fa-snowflake" style="color: #ffffff;"></i
-                  ></span>
-                  <span style="color: #f8f8f8; font-size: 1em;"
-                    ><i class="fas fa-snowman" style="color: #ffffff;"></i> Snow
-                    Likely</span
-                  >
+									<span style="color: #f8f8f8; font-size: 1em;"
+										><i class="far fa-snowflake" style="color: #ffffff;"></i
+									></span>
+									<span style="color: #f8f8f8; font-size: 1em;"
+										><i class="fas fa-snowflake" style="color: #ffffff;"></i
+									></span>
+									<span style="color: #f8f8f8; font-size: 1em;"
+										><i class="fas fa-snowman" style="color: #ffffff;"></i> Snow
+										Likely</span
+									>
 
-                  <span
-                    style="color: #f78eb4; padding-left: 1em; font-size: 1em;"
-                    >Sleet Possible
-                  </span>
+									<span
+										style="color: #f78eb4; padding-left: 1em; font-size: 1em;"
+										>Sleet Possible
+									</span>
 
-                  <span style="color: #f78eb4; font-size: 1em;"
-                    ><i class="fas fa-icicles" style="color: #ffffff;"></i
-                  ></span>
-                  <span style="color: #f78eb4; font-size: 1em;"
-                    ><i class="fas fa-igloo" style="color: #ffffff;"></i> Sleet
-                    Likely</span
-                  >
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- /.card-body -->
-        </div>
-      </section>
+									<span style="color: #f78eb4; font-size: 1em;"
+										><i class="fas fa-icicles" style="color: #ffffff;"></i
+									></span>
+									<span style="color: #f78eb4; font-size: 1em;"
+										><i class="fas fa-igloo" style="color: #ffffff;"></i> Sleet
+										Likely</span
+									>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- /.card-body -->
+				</div>
+			</section>
 
-      <!-- Report a problem page -->
-      <section id="section-report">
-        <div class="content-wrapper" style="padding-top: 8em;">
-          <!-- Content Header (Page header) -->
-          <div class="content-header">
-            <div class="container-fluid">
-              <div class="row mb-2">
-                <div class="col-sm-6">
-                  <h1 class="m-0 text-dark">Report a Problem</h1>
-                </div>
-                <!-- /.col -->
-              </div>
-              <!-- /.row -->
-            </div>
-            <!-- /.container-fluid -->
-          </div>
-          <!-- /.content-header -->
+			<!-- Report a problem page -->
+			<section id="section-report">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<!-- Content Header (Page header) -->
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0 text-dark">Report a Problem</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+					<!-- /.content-header -->
 
-          <!-- Main content -->
-          <div class="content">
-            <div class="card elevation-2">
-              <!-- /.card-header -->
-              <div class="card-body" id="section-report-form"></div>
-              <!-- /.card-body -->
-            </div>
-          </div>
-        </div>
-      </section>
+					<!-- Main content -->
+					<div class="content">
+						<div class="card elevation-2">
+							<!-- /.card-header -->
+							<div class="card-body" id="section-report-form"></div>
+							<!-- /.card-body -->
+						</div>
+					</div>
+				</div>
+			</section>
 
-      <!-- Todo page -->
-      <section id="section-notifications">
-        <div class="content-wrapper" style="padding-top: 8em;">
-          <div class="content-header">
-            <div class="container-fluid">
-              <div class="row mb-2">
-                <div class="col-12">
-                  <h1 class="m-0 text-dark">Notifications / Todo</h1>
-                </div>
-                <!-- /.col -->
-              </div>
-              <!-- /.row -->
-            </div>
-            <!-- /.container-fluid -->
-          </div>
+			<!-- Audio settings page -->
+			<section id="section-audio">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<!-- Content Header (Page header) -->
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0 text-dark">Audio Settings</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+					<!-- /.content-header -->
 
-          <div class="content">
-            <div class="card card-danger elevation-2">
-              <div class="card-header">
-                <h3 class="card-title">System Problems that Need Resolved</h3>
-              </div>
-              <!-- /.card-header -->
-              <div class="card-body system-status"></div>
-              <!-- /.card-body -->
-            </div>
+					<!-- Main content -->
+					<div class="content">
+						<div class="callout callout-info">
+							<h5>Settings are specific to this DJ Controls</h5>
 
-            <div class="card card-warning elevation-2">
-              <div class="card-header">
-                <h3 class="card-title">Accountability / Issues Logged</h3>
-              </div>
-              <!-- /.card-header -->
-              <div class="card-body" id="section-notifications-issues"></div>
-              <!-- /.card-body -->
-            </div>
-          </div>
-        </div>
-      </section>
+							<p>
+								The settings you apply here are specific to this DJ Controls.
+								The settings are not shared with other DJ Controls instances on
+								other computers.
+							</p>
+						</div>
 
-      <!-- Announcements options page -->
-      <section id="section-announcements">
-        <div class="content-wrapper" style="padding-top: 8em;">
-          <!-- Content Header (Page header) -->
-          <div class="content-header">
-            <div class="container-fluid">
-              <div class="row mb-2">
-                <div class="col-sm-6">
-                  <h1 class="m-0 text-dark">Manage Announcements</h1>
-                </div>
-                <!-- /.col -->
-              </div>
-              <!-- /.row -->
-            </div>
-            <!-- /.container-fluid -->
-          </div>
-          <!-- /.content-header -->
+						<div class="card card-primary elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Remote Stream Settings</h3>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body">
+								<div class="callout callout-info">
+									<h5>Ignored if not actively in a remote broadcast</h5>
 
-          <!-- Main content -->
-          <div class="content">
-            <div class="card elevation-2">
-              <div class="card-body" id="section-announcements-content"></div>
-            </div>
-          </div>
-        </div>
-      </section>
+									<p>
+										These settings are only used if you want to change audio
+										devices while in a remote broadcast.
+									</p>
+								</div>
+								<div id="section-audio-remote-form"></div>
+							</div>
+							<!-- /.card-body -->
+						</div>
 
-      <!-- API Query -->
-      <section id="section-api">
-        <div class="content-wrapper" style="padding-top: 8em;">
-          <!-- Content Header (Page header) -->
-          <div class="content-header">
-            <div class="container-fluid">
-              <div class="row mb-2">
-                <div class="col-sm-6">
-                  <h1 class="m-0 text-dark">Make API Query</h1>
-                </div>
-                <!-- /.col -->
-              </div>
-              <!-- /.row -->
-            </div>
-            <!-- /.container-fluid -->
-          </div>
-          <!-- /.content-header -->
+						<div class="card card-danger elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Silence Detection Settings</h3>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body">
+								<div class="callout callout-info">
+									<h5>Ignored if not monitoring for silence</h5>
 
-          <!-- Main content -->
-          <div class="content">
-            <div class="card elevation-2">
-              <!-- /.card-header -->
-              <div class="card-body" id="section-api-form"></div>
-              <!-- /.card-body -->
-            </div>
-          </div>
-        </div>
-      </section>
+									<p>
+										These settings are only used if and when this DJ Controls is
+										set as the responsible DJ Controls for silence detection.
+									</p>
+								</div>
+								<div id="section-audio-silence-form"></div>
+							</div>
+							<!-- /.card-body -->
+						</div>
 
-      <!-- Calendar -->
-      <section id="section-calendar">
-        <div class="content-wrapper" style="padding-top: 8em;">
-          <div class="content-header">
-            <div class="container-fluid">
-              <div class="row mb-2">
-                <div class="col-12">
-                  <h1 class="m-0 text-dark">Calendar</h1>
-                </div>
-                <!-- /.col -->
-              </div>
-              <!-- /.row -->
-            </div>
-            <!-- /.container-fluid -->
-          </div>
+						<div class="card card-warning elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Audio Recording Settings</h3>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body">
+								<div class="callout callout-info">
+									<h5>Ignored if not responsible for recording programming</h5>
 
-          <div class="content">
-            <div class="container-fluid">
-              <div class="row">
-                <!-- /.col -->
-                <div class="col">
-                  <div class="card">
-                    <div class="card-header">
-                      <h4 class="card-title">Info / Tasks</h4>
-                    </div>
-                    <div class="card-body container-fluid">
-                      <div class="container-fluid">
-                        <div class="row">
-                          <div class="col-12 col-md-6 col-lg-4">
-                            <button
-                              type="button"
-                              class="btn btn-block btn-info btn-sm btn-calendar-definitions"
-                              title="Open a pop-up explaining what an event, schedule, and occurrence is."
-                            >
-                              Definitions
-                            </button>
-                          </div>
-                          <div class="col-12 col-md-6 col-lg-4">
-                            <button
-                              type="button"
-                              class="btn btn-block btn-info btn-sm btn-calendar-prerequisites"
-                              title="Open a pop-up explaining what must be done for different types of events before adding them to the calendar."
-                            >
-                              Prerequisites
-                            </button>
-                          </div>
-                          <div class="col-12 col-md-6 col-lg-4">
-                            <button
-                              type="button"
-                              class="btn btn-block btn-warning btn-sm btn-manage-events"
-                              title="Add, edit, and remove events and their schedules (for occurrences, use the calendar)."
-                            >
-                              Manage Events / Schedules
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card">
-                    <div class="card-header">
-                      <h4 class="card-title">Filter Calendar by Event Type</h4>
-                    </div>
-                    <div class="card-body container-fluid">
-                      <div class="row p-2">
-                        <div
-                          class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-danger"
-                          title="Show live shows on calendar?"
-                        >
-                          <input
-                            type="checkbox"
-                            class="custom-control-input"
-                            id="filter-show"
-                            checked
-                          />
-                          <label class="custom-control-label" for="filter-show"
-                            >Live Shows</label
-                          >
-                        </div>
-                        <div
-                          class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-success"
-                          title="Show sports broadcasts on calendar?"
-                        >
-                          <input
-                            type="checkbox"
-                            class="custom-control-input"
-                            id="filter-sports"
-                            checked
-                          />
-                          <label
-                            class="custom-control-label"
-                            for="filter-sports"
-                            >Sports</label
-                          >
-                        </div>
-                        <div
-                          class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-indigo"
-                          title="Show remote broadcasts on calendar?"
-                        >
-                          <input
-                            type="checkbox"
-                            class="custom-control-input"
-                            id="filter-remote"
-                            checked
-                          />
-                          <label
-                            class="custom-control-label"
-                            for="filter-remote"
-                            >Remote Broadcasts</label
-                          >
-                        </div>
-                        <div
-                          class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-pink"
-                          title="Show prerecords on calendar?"
-                        >
-                          <input
-                            type="checkbox"
-                            class="custom-control-input"
-                            id="filter-prerecord"
-                            checked
-                          />
-                          <label
-                            class="custom-control-label"
-                            for="filter-prerecord"
-                            >Prerecords</label
-                          >
-                        </div>
-                        <div
-                          class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-info"
-                          title="Show playlists on calendar?"
-                        >
-                          <input
-                            type="checkbox"
-                            class="custom-control-input"
-                            id="filter-playlist"
-                            checked
-                          />
-                          <label
-                            class="custom-control-label"
-                            for="filter-playlist"
-                            >Playlists</label
-                          >
-                        </div>
-                        <div
-                          class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-primary"
-                          title="Show genre rotations on calendar?"
-                        >
-                          <input
-                            type="checkbox"
-                            class="custom-control-input"
-                            id="filter-genre"
-                          />
-                          <label class="custom-control-label" for="filter-genre"
-                            >Genres</label
-                          >
-                        </div>
-                        <div
-                          class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-gray"
-                          title="Show manual events on calendar?"
-                        >
-                          <input
-                            type="checkbox"
-                            class="custom-control-input"
-                            id="filter-event"
-                          />
-                          <label class="custom-control-label" for="filter-event"
-                            >Manual Events</label
-                          >
-                        </div>
-                        <div
-                          class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-warning"
-                          title="Show office hours on calendar?"
-                        >
-                          <input
-                            type="checkbox"
-                            class="custom-control-input"
-                            id="filter-office-hours"
-                          />
-                          <label
-                            class="custom-control-label"
-                            for="filter-office-hours"
-                            >Director Office Hours</label
-                          >
-                        </div>
-                        <div
-                          class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-orange"
-                          title="Show tasks on calendar?"
-                        >
-                          <input
-                            type="checkbox"
-                            class="custom-control-input"
-                            id="filter-task"
-                          />
-                          <label class="custom-control-label" for="filter-task"
-                            >Director Tasks</label
-                          >
-                        </div>
-                        <div
-                          class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-teal"
-                          title="Show reservations for the on-air studio on calendar?"
-                        >
-                          <input
-                            type="checkbox"
-                            class="custom-control-input"
-                            id="filter-onair-booking"
-                          />
-                          <label
-                            class="custom-control-label"
-                            for="filter-onair-booking"
-                            >On-Air Bookings</label
-                          >
-                        </div>
-                        <div
-                          class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-teal"
-                          title="Show reservations for the production studio on calendar?"
-                        >
-                          <input
-                            type="checkbox"
-                            class="custom-control-input"
-                            id="filter-prod-booking"
-                          />
-                          <label
-                            class="custom-control-label"
-                            for="filter-prod-booking"
-                            >Production Studio Bookings</label
-                          >
-                        </div>
-                      </div>
-                    </div>
-                    <!-- /.card-body -->
-                  </div>
-                  <div class="card card-primary">
-                    <div class="card-body p-0">
-                      <p class="p-1"><strong>All event times are displayed in your local time zone, but you will use the station timezone when specifying times in schedules.</strong></p>
-                      <!-- THE CALENDAR -->
-                      <div id="calendar"></div>
-                    </div>
-                    <!-- /.card-body -->
-                  </div>
-                  <!-- /.card -->
-                </div>
-                <!-- /.col -->
-              </div>
-              <!-- /.row -->
-              <div class="row">
-                <div class="col">
-                  <div class="callout callout-info">
-                    <h5>Manage online</h5>
+									<p>
+										These settings are only used if and when this DJ Controls is
+										set as the responsible DJ Controls for recording on-air
+										programming.
+									</p>
+								</div>
+								<div id="section-audio-recording-form"></div>
+							</div>
+							<!-- /.card-body -->
+						</div>
+					</div>
+				</div>
+			</section>
 
-                    <p>
-                      You can also edit the calendar online at
-                      server.wwsu1069.org/directors/calendar
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- /.container-fluid -->
-          </div>
-        </div>
-      </section>
+			<!-- Todo page -->
+			<section id="section-notifications">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-12">
+									<h1 class="m-0 text-dark">Notifications / Todo</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
 
-      <!-- DJ management -->
-      <section id="section-djs">
-        <div class="content-wrapper" style="padding-top: 8em;">
-          <!-- Content Header (Page header) -->
-          <div class="content-header">
-            <div class="container-fluid">
-              <div class="row mb-2">
-                <div class="col-sm-6">
-                  <h1 class="m-0 text-dark">Manage DJs</h1>
-                </div>
-                <!-- /.col -->
-              </div>
-              <!-- /.row -->
-            </div>
-            <!-- /.container-fluid -->
-          </div>
-          <!-- /.content-header -->
+					<div class="content">
+						<div class="card card-danger elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">System Problems that Need Resolved</h3>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body system-status"></div>
+							<!-- /.card-body -->
+						</div>
 
-          <!-- Main content -->
-          <div class="content">
-            <div class="card elevation-2">
-              <div class="card-body" id="section-djs-content"></div>
-            </div>
-          </div>
-        </div>
-      </section>
+						<div class="card card-warning elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Accountability / Issues Logged</h3>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body" id="section-notifications-issues"></div>
+							<!-- /.card-body -->
+						</div>
+					</div>
+				</div>
+			</section>
 
-      <!--- Logs -->
-      <section id="section-logs">
-        <div class="content-wrapper" style="padding-top: 8em;">
-          <div class="content-header">
-            <div class="container-fluid">
-              <div class="row mb-2">
-                <div class="col-12">
-                  <h1 class="m-0 text-dark">Operation / Program Logs</h1>
-                </div>
-                <!-- /.col -->
-              </div>
-              <!-- /.row -->
-            </div>
-            <!-- /.container-fluid -->
-          </div>
+			<!-- Announcements options page -->
+			<section id="section-announcements">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<!-- Content Header (Page header) -->
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0 text-dark">Manage Announcements</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+					<!-- /.content-header -->
 
-          <div class="content">
-            <div class="card card-primary elevation-2">
-              <div class="card-header">
-                <h3 class="card-title">Date Selection</h3>
-              </div>
-              <!-- /.card-header -->
-              <div class="card-body">
-                <div class="form-group" title="View logs of the specified day.">
-                  <label for="options-timesheets-date">Choose a day</label>
-                  <input type="date" id="section-logs-date" />
-                  <input
-                    type="submit"
-                    class="btn btn-primary"
-                    id="section-logs-date-browse"
-                    value="Browse"
-                  />
-                </div>
-              </div>
-              <!-- /.card-body -->
-            </div>
+					<!-- Main content -->
+					<div class="content">
+						<div class="card elevation-2">
+							<div class="card-body" id="section-announcements-content"></div>
+						</div>
+					</div>
+				</div>
+			</section>
 
-            <div class="card card-info elevation-2">
-              <div class="card-header">
-                <h3 class="card-title">Logs</h3>
-              </div>
-              <!-- /.card-header -->
-              <div class="card-body" id="section-logs-table-div"></div>
-              <!-- /.card-body -->
-            </div>
-          </div>
-        </div>
-      </section>
+			<!-- API Query -->
+			<section id="section-api">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<!-- Content Header (Page header) -->
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0 text-dark">Make API Query</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+					<!-- /.content-header -->
 
-      <!-- Control Sidebar -->
-      <aside class="control-sidebar control-sidebar-dark">
-        <!-- Control sidebar content goes here -->
-      </aside>
-      <!-- /.control-sidebar -->
+					<!-- Main content -->
+					<div class="content">
+						<div class="card elevation-2">
+							<!-- /.card-header -->
+							<div class="card-body" id="section-api-form"></div>
+							<!-- /.card-body -->
+						</div>
+					</div>
+				</div>
+			</section>
 
-      <!-- Main Footer -->
-      <footer class="main-footer">
-        This application was developed by Patrick Schmalstig. You may contact
-        them at <strong>xanaftp@gmail.com</strong>
-        if there are any problems with it.
-      </footer>
-    </div>
-    <!-- ./wrapper -->
+			<!-- Calendar -->
+			<section id="section-calendar">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-12">
+									<h1 class="m-0 text-dark">Calendar</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
 
-    <script src="renderer.js"></script>
-  </body>
+					<div class="content">
+						<div class="container-fluid">
+							<div class="row">
+								<!-- /.col -->
+								<div class="col">
+									<div class="card">
+										<div class="card-header">
+											<h4 class="card-title">Info / Tasks</h4>
+										</div>
+										<div class="card-body container-fluid">
+											<div class="container-fluid">
+												<div class="row">
+													<div class="col-12 col-md-6 col-lg-4">
+														<button
+															type="button"
+															class="btn btn-block btn-info btn-sm btn-calendar-definitions"
+															title="Open a pop-up explaining what an event, schedule, and occurrence is."
+														>
+															Definitions
+														</button>
+													</div>
+													<div class="col-12 col-md-6 col-lg-4">
+														<button
+															type="button"
+															class="btn btn-block btn-info btn-sm btn-calendar-prerequisites"
+															title="Open a pop-up explaining what must be done for different types of events before adding them to the calendar."
+														>
+															Prerequisites
+														</button>
+													</div>
+													<div class="col-12 col-md-6 col-lg-4">
+														<button
+															type="button"
+															class="btn btn-block btn-warning btn-sm btn-manage-events"
+															title="Add, edit, and remove events and their schedules (for occurrences, use the calendar)."
+														>
+															Manage Events / Schedules
+														</button>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="card">
+										<div class="card-header">
+											<h4 class="card-title">Filter Calendar by Event Type</h4>
+										</div>
+										<div class="card-body container-fluid">
+											<div class="row p-2">
+												<div
+													class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-danger"
+													title="Show live shows on calendar?"
+												>
+													<input
+														type="checkbox"
+														class="custom-control-input"
+														id="filter-show"
+														checked
+													/>
+													<label class="custom-control-label" for="filter-show"
+														>Live Shows</label
+													>
+												</div>
+												<div
+													class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-success"
+													title="Show sports broadcasts on calendar?"
+												>
+													<input
+														type="checkbox"
+														class="custom-control-input"
+														id="filter-sports"
+														checked
+													/>
+													<label
+														class="custom-control-label"
+														for="filter-sports"
+														>Sports</label
+													>
+												</div>
+												<div
+													class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-indigo"
+													title="Show remote broadcasts on calendar?"
+												>
+													<input
+														type="checkbox"
+														class="custom-control-input"
+														id="filter-remote"
+														checked
+													/>
+													<label
+														class="custom-control-label"
+														for="filter-remote"
+														>Remote Broadcasts</label
+													>
+												</div>
+												<div
+													class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-pink"
+													title="Show prerecords on calendar?"
+												>
+													<input
+														type="checkbox"
+														class="custom-control-input"
+														id="filter-prerecord"
+														checked
+													/>
+													<label
+														class="custom-control-label"
+														for="filter-prerecord"
+														>Prerecords</label
+													>
+												</div>
+												<div
+													class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-info"
+													title="Show playlists on calendar?"
+												>
+													<input
+														type="checkbox"
+														class="custom-control-input"
+														id="filter-playlist"
+														checked
+													/>
+													<label
+														class="custom-control-label"
+														for="filter-playlist"
+														>Playlists</label
+													>
+												</div>
+												<div
+													class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-primary"
+													title="Show genre rotations on calendar?"
+												>
+													<input
+														type="checkbox"
+														class="custom-control-input"
+														id="filter-genre"
+													/>
+													<label class="custom-control-label" for="filter-genre"
+														>Genres</label
+													>
+												</div>
+												<div
+													class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-gray"
+													title="Show manual events on calendar?"
+												>
+													<input
+														type="checkbox"
+														class="custom-control-input"
+														id="filter-event"
+													/>
+													<label class="custom-control-label" for="filter-event"
+														>Manual Events</label
+													>
+												</div>
+												<div
+													class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-warning"
+													title="Show office hours on calendar?"
+												>
+													<input
+														type="checkbox"
+														class="custom-control-input"
+														id="filter-office-hours"
+													/>
+													<label
+														class="custom-control-label"
+														for="filter-office-hours"
+														>Director Office Hours</label
+													>
+												</div>
+												<div
+													class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-orange"
+													title="Show tasks on calendar?"
+												>
+													<input
+														type="checkbox"
+														class="custom-control-input"
+														id="filter-task"
+													/>
+													<label class="custom-control-label" for="filter-task"
+														>Director Tasks</label
+													>
+												</div>
+												<div
+													class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-teal"
+													title="Show reservations for the on-air studio on calendar?"
+												>
+													<input
+														type="checkbox"
+														class="custom-control-input"
+														id="filter-onair-booking"
+													/>
+													<label
+														class="custom-control-label"
+														for="filter-onair-booking"
+														>On-Air Bookings</label
+													>
+												</div>
+												<div
+													class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-teal"
+													title="Show reservations for the production studio on calendar?"
+												>
+													<input
+														type="checkbox"
+														class="custom-control-input"
+														id="filter-prod-booking"
+													/>
+													<label
+														class="custom-control-label"
+														for="filter-prod-booking"
+														>Production Studio Bookings</label
+													>
+												</div>
+											</div>
+										</div>
+										<!-- /.card-body -->
+									</div>
+									<div class="card card-primary">
+										<div class="card-body p-0">
+											<p class="p-1">
+												<strong
+													>All event times are displayed in your local time
+													zone, but you will use the station timezone when
+													specifying times in schedules.</strong
+												>
+											</p>
+											<!-- THE CALENDAR -->
+											<div id="calendar"></div>
+										</div>
+										<!-- /.card-body -->
+									</div>
+									<!-- /.card -->
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+							<div class="row">
+								<div class="col">
+									<div class="callout callout-info">
+										<h5>Manage online</h5>
+
+										<p>
+											You can also edit the calendar online at
+											server.wwsu1069.org/directors/calendar
+										</p>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+				</div>
+			</section>
+
+			<!-- DJ management -->
+			<section id="section-djs">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<!-- Content Header (Page header) -->
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0 text-dark">Manage DJs</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+					<!-- /.content-header -->
+
+					<!-- Main content -->
+					<div class="content">
+						<div class="card elevation-2">
+							<div class="card-body" id="section-djs-content"></div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!--- Logs -->
+			<section id="section-logs">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-12">
+									<h1 class="m-0 text-dark">Operation / Program Logs</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+
+					<div class="content">
+						<div class="card card-primary elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Date Selection</h3>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body">
+								<div class="form-group" title="View logs of the specified day.">
+									<label for="options-timesheets-date">Choose a day</label>
+									<input type="date" id="section-logs-date" />
+									<input
+										type="submit"
+										class="btn btn-primary"
+										id="section-logs-date-browse"
+										value="Browse"
+									/>
+								</div>
+							</div>
+							<!-- /.card-body -->
+						</div>
+
+						<div class="card card-info elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Logs</h3>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body" id="section-logs-table-div"></div>
+							<!-- /.card-body -->
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Control Sidebar -->
+			<aside class="control-sidebar control-sidebar-dark">
+				<!-- Control sidebar content goes here -->
+			</aside>
+			<!-- /.control-sidebar -->
+
+			<!-- Main Footer -->
+			<footer class="main-footer">
+				This application was developed by Patrick Schmalstig. You may contact
+				them at <strong>xanaftp@gmail.com</strong>
+				if there are any problems with it.
+			</footer>
+		</div>
+		<!-- ./wrapper -->
+
+		<script src="renderer.js"></script>
+	</body>
 </html>

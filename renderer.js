@@ -198,6 +198,102 @@ window.addEventListener("DOMContentLoaded", () => {
 	);
 
 	navigation.addItem(
+		"#nav-audio",
+		"#section-audio",
+		"Audio Settings - WWSU DJ Controls",
+		"/audio",
+		false,
+		() => {
+			// Re-generate the settings forms as input devices may have changed
+			navigator.mediaDevices.enumerateDevices().then((devices) => {
+				let inputDevices = devices
+					.filter((device) => device.kind === "audioinput")
+					.map((device) => {
+						return { id: device.deviceId, label: device.label };
+					});
+
+				$("#section-audio-recording-form").alpaca({
+					schema: {
+						type: "object",
+						properties: {
+							deviceId: {
+								type: "string",
+								title: "Recording Input Device",
+								enum: inputDevices.map((device) => device.id),
+							},
+							delay: {
+								type: "number",
+								title: "Delay (milliseconds)",
+							},
+							recordPath: {
+								type: "string",
+								format: "uri",
+								title: "Path to audio recordings",
+							},
+						},
+					},
+					options: {
+						fields: {
+							deviceId: {
+								optionLabels: inputDevices.map((device) => device.label),
+								helpers: [
+									`<div class="progress progress-xs">
+										<div class="progress-bar bg-primary progress-recorder-left" role="progressbar" style="width: 0%; transition: none;"></div>
+										</div>`,
+									`<div class="progress progress-xs">
+										<div class="progress-bar bg-primary progress-recorder-right" role="progressbar" style="width: 0%; transition: none;"></div>
+										</div>`,
+								],
+								events: {
+									change: function () {
+										let value = this.getValue();
+										window.saveSettings.recorder("deviceId", value);
+										window.ipc.recorder.send("recorderChangeDevice", [value]);
+										startRecording(0);
+									},
+								},
+							},
+							delay: {
+								helper:
+									"How much time passes between a state change and when the input device receives the audio? For example, if the input device is subject to a delay system, you would put the amount of delay time in here.",
+								events: {
+									change: function () {
+										let value = this.getValue();
+										if (!this.handleValidate()) {
+											console.log(`invalid`);
+											return;
+										}
+										window.saveSettings.recorder("delay", value);
+									},
+								},
+							},
+							// TODO: re-compile alpaca with the capability of choosing a folder.
+							recordPath: {
+								helpers: [
+									`Write the full path to the directory you want audio files to be saved`,
+									`Sub-directories for automation, remote, live, and sports will be created automatically after the first recording is saved.`,
+									`Additional sub-sub-directories will be created to organize recordings by genre, show, or sport.`,
+								],
+								events: {
+									change: function () {
+										let value = this.getValue();
+										if (!this.handleValidate()) {
+											console.log(`invalid`);
+											return;
+										}
+										window.saveSettings.recorder("recordPath", value);
+									},
+								},
+							},
+						},
+					},
+					data: window.settings.recorder,
+				});
+			});
+		}
+	);
+
+	navigation.addItem(
 		"#nav-notifications",
 		"#section-notifications",
 		"Notifications / Todo - WWSU DJ Controls",
@@ -423,6 +519,67 @@ window.addEventListener("DOMContentLoaded", () => {
 	setUpFace();
 	computeTimePositions($h, $m, $s);
 
+	// Define recorder function
+	function startRecording(delay) {
+		let startRecording = null;
+		let preText = ``;
+		let preText2 = ``;
+		let temp = ``;
+
+		if (meta.meta.state === "live_on" || meta.meta.state === `prerecord_on`) {
+			startRecording = "live";
+			temp = meta.meta.show.split(" - ");
+			preText = window.sanitize.string(temp[1]);
+			preText2 = `${window.sanitize.string(meta.meta.show)}${
+				meta.meta.state === `prerecord_on` ? ` PRERECORDED` : ``
+			}`;
+		} else if (meta.meta.state === "remote_on") {
+			startRecording = "remote";
+			temp = meta.meta.show.split(" - ");
+			preText = window.sanitize.string(temp[1]);
+			preText2 = `${window.sanitize.string(meta.meta.show)}${
+				meta.meta.state === `prerecord_on` ? ` PRERECORDED` : ``
+			}`;
+		} else if (
+			meta.meta.state === "sports_on" ||
+			meta.meta.state === "sportsremote_on"
+		) {
+			startRecording = "sports";
+			preText = window.sanitize.string(meta.meta.show);
+			preText2 = window.sanitize.string(meta.meta.show);
+		} else if (
+			meta.meta.state === `automation_on` ||
+			meta.meta.state === `automation_genre` ||
+			meta.meta.state === `automation_playlist`
+		) {
+			startRecording = "automation";
+			preText = window.sanitize.string(meta.meta.genre);
+			preText2 = window.sanitize.string(meta.meta.genre);
+		} else if (
+			meta.meta.state.includes("_break") ||
+			meta.meta.state.includes("_returning") ||
+			meta.meta.state.includes("_halftime")
+		) {
+			window.ipc.recorder.send("recorderStop", [delay]);
+		} else {
+			startRecording = "automation";
+			preText = window.sanitize.string(meta.meta.genre);
+			preText2 = window.sanitize.string(meta.meta.genre);
+		}
+		if (startRecording !== null) {
+			if (hosts.client.recordAudio) {
+				window.ipc.recorder.send("recorderStart", [
+					`${startRecording}/${preText}/${preText2} (${moment().format(
+						"YYYY_MM_DD HH_mm_ss"
+					)}).mp3`,
+					delay,
+				]);
+			} else {
+				window.ipc.recorder.send("recorderStop", [-1]);
+			}
+		}
+	}
+
 	// CALENDAR
 
 	// Initialize Calendar
@@ -558,19 +715,18 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
-  // IPC events
-  window.ipc.on("update-available", (event, arg) => {
-    let info = arg[0];
-    let packageJson = arg[1];
+	// IPC events
+	window.ipc.on("update-available", (event, arg) => {
+		let info = arg[0];
+		let packageJson = arg[1];
 
-    window.ipc.main.send("makeNotification", [
-      {
-        title: "New Version Available",
-        bg: "primary",
-        header: "New version of DJ Controls available!",
-        flash: false,
-        body:
-          `<p>A new version of DJ Controls is available for download. Features of this DJ Controls may no longer work until you update.</p>
+		window.ipc.main.send("makeNotification", [
+			{
+				title: "New Version Available",
+				bg: "primary",
+				header: "New version of DJ Controls available!",
+				flash: false,
+				body: `<p>A new version of DJ Controls is available for download. Features of this DJ Controls may no longer work until you update.</p>
           <ul>
           <li>Your version: ${packageJson.version}</li>
           <li>Latest version: ${info.version}</li>
@@ -581,9 +737,9 @@ window.addEventListener("DOMContentLoaded", () => {
           <li>MacOS: After having installed the app from the dmg (and overwriting the old one), open Finder. Browse to the app (probably in your Applications folder). Hold control down and click the app. Click open.</li>
           <li>Windows (10): Run the exe installer. If Windows displays a warning, click "more info" to expose the "Run Anyway" button.</li>
           </ul>`,
-      },
-    ]);
-  });
+			},
+		]);
+	});
 
 	window.ipc.on("console", (event, arg) => {
 		switch (arg[0]) {
@@ -597,6 +753,21 @@ window.addEventListener("DOMContentLoaded", () => {
 				console.error(arg[1]);
 				break;
 		}
+	});
+
+	// When the recorder is ready, determine if a recording should be started
+	window.ipc.on("recorderReady", (event, arg) => {
+		startRecording(-1);
+	});
+
+	// Volume for recorder
+	window.ipc.on("recorderVolume", (event, arg) => {
+		animations.add("recorder-volume", () => {
+			$(`.progress-recorder-left`).width(`${arg[0][0] * 100}%`);
+			$(`.progress-recorder-right`).width(
+				`${typeof arg[0][1] !== "undefined" ? arg[0][1] * 100 : 0}%`
+			);
+		});
 	});
 
 	// Add a log in WWSU when a recording was saved
@@ -828,7 +999,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 			// Recorder stuff
 			if (typeof updated.state !== "undefined") {
-				window.ipc.main.send("metaState", updated.state);
+				startRecording();
 			}
 		} catch (e) {
 			console.error(e);
@@ -1643,4 +1814,13 @@ Track: <strong>${request.trackname}</strong>`,
 			position: "bottomRight",
 		});
 	});
+
+	/*
+		HOSTS FUNCTIONS
+	*/
+
+	hosts.on("clientChanged", "renderer", (newClient) => {
+		// Restart the recorder when settings for this host were changed.
+		startRecording(-1);
+	})
 });

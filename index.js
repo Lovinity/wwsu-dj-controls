@@ -28,6 +28,7 @@ unhandled({
 });
 
 // Require other constants
+const fs = require("fs");
 const path = require("path");
 const {
 	app,
@@ -44,6 +45,7 @@ const config = require("./config.js");
 const menu = require("./menu");
 const packageJson = require("./package.json");
 const { machineIdSync } = require("./assets/wwsu-host-id");
+const Sanitize = require("sanitize-filename");
 
 // Initialize debug tools
 debug();
@@ -150,8 +152,7 @@ const createWindows = () => {
 		calendarWindow = null;
 		skywayWindow.close();
 		skywayWindow = null;
-		recorderWindow.close();
-		recorderWindow = null;
+		recorderWindow.webContents.send("shutDown");
 	});
 
 	mainWindow.on("focus", () => mainWindow.flashFrame(false));
@@ -297,6 +298,11 @@ ipcMain.on("settings", (event, arg) => {
 	event.returnValue = config.get(arg);
 });
 
+// Save new settings
+ipcMain.on("saveSettings", (event, arg) => {
+	config.set(arg[0], arg[1]);
+});
+
 // Flash the icon in the taskbar
 ipcMain.on("flashMain", (event, arg) => {
 	try {
@@ -321,27 +327,21 @@ ipcMain.on("progressMain", (event, arg) => {
 ipcMain.on("renderer", (event, arg) => {
 	try {
 		mainWindow.webContents.send(arg[0], arg[1]);
-	} catch (e) {
-		console.error(e);
-	}
+	} catch (e) {}
 });
 
 // Messages to be sent to the calendar process
 ipcMain.on("calendar", (event, arg) => {
 	try {
 		calendarWindow.webContents.send(arg[0], arg[1]);
-	} catch (e) {
-		console.error(e);
-	}
+	} catch (e) {}
 });
 
 // Messages to be sent to the skyway process
 ipcMain.on("skyway", (event, arg) => {
 	try {
 		skywayWindow.webContents.send(arg[0], arg[1]);
-	} catch (e) {
-		console.error(e);
-	}
+	} catch (e) {}
 });
 
 // Messages to be sent to the recorder process
@@ -386,41 +386,84 @@ ipcMain.on("main", (event, arg) => {
 			})(arg[1][0]);
 			break;
 
-		// When a buffer is ready to be saved to an audio file
-		case "recorderBuffer":
+		// When a file reader is ready to be saved to an audio file
+		case "recorderEncoded":
 			try {
-				if (!fs.existsSync(path.dirname(args[0]))) {
-					fs.mkdirSync(path.dirname(args[0]));
+				var arrayBuffer = Buffer.from(new Uint8Array(args[1]));
+
+				// If the base path does not exist, create it
+				if (
+					!fs.existsSync(path.resolve(`${config.get("recorder.recordPath")}/`))
+				) {
+					console.log(`base does not exist`);
+					fs.mkdirSync(path.resolve(`${config.get("recorder.recordPath")}/`));
+				}
+
+				// Make subdirectories if they do not exist
+				["live", "remote", "sports", "automation"].map((subdir) => {
+					if (
+						!fs.existsSync(
+							path.resolve(`${config.get("recorder.recordPath")}/${subdir}/`)
+						)
+					) {
+						console.log(`Subdirectory ${subdir} does not exist`);
+						fs.mkdirSync(
+							path.resolve(`${config.get("recorder.recordPath")}/${subdir}/`)
+						);
+					}
+				});
+
+				// If the specialized sub subdirectory does not exist, make it.
+				console.log(
+					path.resolve(
+						path.dirname(`${config.get("recorder.recordPath")}/${args[0]}`)
+					)
+				);
+				if (
+					!fs.existsSync(
+						path.resolve(
+							path.dirname(`${config.get("recorder.recordPath")}/${args[0]}`)
+						)
+					)
+				) {
+					console.log(`Special directory does not exist.`);
+					fs.mkdirSync(
+						path.resolve(
+							path.dirname(`${config.get("recorder.recordPath")}/${args[0]}`)
+						)
+					);
 				}
 
 				console.log(`audio save file ${args[0]}`);
 				fs.writeFile(
-					`${store.get("recorder.path")}/${args[0]}`,
-					args[1],
+					`${config.get("recorder.recordPath")}/${args[0]}`,
+					arrayBuffer,
 					function (err) {
 						if (err) {
 							console.error(err);
 						} else {
 							recorderWindow.webContents.send(
 								`recorderSaved`,
-								`${store.get("recorder.path")}/${args[0]}`
+								`${config.get("recorder.recordPath")}/${args[0]}`
 							);
-							mainWindow.webContents.send("console", [
-								"log",
-								`Recorder: File saved... ${store.get("recorder.path")}/${
-									args[0]
-								}`,
-							]);
-							mainWindow.webContents.send(
-								`recorderSaved`,
-								`${store.get("recorder.path")}/${args[0]}`
-							);
+							if (mainWindow) {
+								mainWindow.webContents.send("console", [
+									"log",
+									`Recorder: Recording ${config.get("recorder.recordPath")}/${
+										args[0]
+									} saved.`,
+								]);
+								mainWindow.webContents.send(
+									`recorderSaved`,
+									`${config.get("recorder.recordPath")}/${args[0]}`
+								);
+							}
 						}
 					}
 				);
 			} catch (e) {
-				mainWindow.webContents.send("console", ["error", e]);
 				console.error(e);
+				if (mainWindow) mainWindow.webContents.send("console", ["error", e]);
 			}
 			break;
 
@@ -431,4 +474,9 @@ ipcMain.on("main", (event, arg) => {
 
 			break;
 	}
+});
+
+// use sanitize-filename
+ipcMain.on("sanitize", (event, arg) => {
+	event.returnValue = Sanitize(arg);
 });
