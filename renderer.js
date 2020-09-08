@@ -96,6 +96,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	);
 	var state = new WWSUstate(socket, hosts, calendar, hostReq);
 	var climacell = new WWSUclimacell(socket, noReq, meta);
+	var version = new WWSUversion(socket, `wwsu-dj-controls`, hostReq);
 
 	// Sound alerts
 	var sounds = {
@@ -715,32 +716,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
-	// IPC events
-	window.ipc.on("update-available", (event, arg) => {
-		let info = arg[0];
-		let packageJson = arg[1];
-
-		window.ipc.main.send("makeNotification", [
-			{
-				title: "New Version Available",
-				bg: "primary",
-				header: "New version of DJ Controls available!",
-				flash: false,
-				body: `<p>A new version of DJ Controls is available for download. Features of this DJ Controls may no longer work until you update.</p>
-          <ul>
-          <li>Your version: ${packageJson.version}</li>
-          <li>Latest version: ${info.version}</li>
-          </ul>
-          <p>To download the latest version, go to https://github.com/Lovinity/wwsu-dj-controls/releases . Find the newest version (usually at the top). And under "Assets", download and run the installer appropriate for your operating system (dmg for macOS, AppImage or deb for Linux, exe for Windows). </p>
-          <p><strong>Warning! WWSU DJ Controls is an unsigned application.</strong> Your operating system may warn you of this and require additional steps to install:</p>
-          <ul>
-          <li>MacOS: After having installed the app from the dmg (and overwriting the old one), open Finder. Browse to the app (probably in your Applications folder). Hold control down and click the app. Click open.</li>
-          <li>Windows (10): Run the exe installer. If Windows displays a warning, click "more info" to expose the "Run Anyway" button.</li>
-          </ul>`,
-			},
-		]);
-	});
-
 	window.ipc.on("console", (event, arg) => {
 		switch (arg[0]) {
 			case "log":
@@ -811,6 +786,7 @@ window.addEventListener("DOMContentLoaded", () => {
 					recipients.init();
 					messages.init();
 					climacell.init();
+					version.init();
 					if (hosts.client.admin) {
 						$(".nav-admin").removeClass("d-none");
 						announcements.initTable("#section-announcements-content");
@@ -1822,5 +1798,41 @@ Track: <strong>${request.trackname}</strong>`,
 	hosts.on("clientChanged", "renderer", (newClient) => {
 		// Restart the recorder when settings for this host were changed.
 		startRecording(-1);
-	})
+	});
+
+	/*
+		VERSION FUNCTIONS
+	*/
+
+	let newestVersion = ``;
+	version.on("change", "renderer", (db) => {
+		let record = db.get().find((rec) => rec.app === `wwsu-dj-controls`);
+		if (!record) return;
+		if (record.version !== newestVersion) {
+			newestVersion = record.version;
+			let isNewVersion = window.ipc.checkVersion(record.version);
+			if (isNewVersion) {
+				window.ipc.main.send("makeNotification", [
+					{
+						title: "New Version Available",
+						bg: "success",
+						header: "New version of DJ Controls available!",
+						flash: false,
+						body: `<p>A new version of DJ Controls is available for download. Features of this DJ Controls may no longer work until you update.</p>
+				  <ul>
+				  <li>Your version: ${isNewVersion.current}</li>
+				  <li>Latest version: ${record.version}</li>
+				  </ul>
+				  <p>To download the latest version, <a href="${record.downloadURL}" target="_blank">click this link</a>. And under "Assets", download and run the installer appropriate for your operating system (dmg for macOS, AppImage or deb for Linux, exe for Windows). </p>
+				  <p><strong>Warning! WWSU DJ Controls is an unsigned application.</strong> Your operating system may warn you of this and require additional steps to install:</p>
+				  <ul>
+				  <li>Web browsers: Some web browsers such as Chrome may block the download of DJ Controls. You will need to unblock / choose the "keep" option.</li>
+				  <li>MacOS: After having installed the app from the dmg (and overwriting the old one in the Applications folder), open Finder. Browse to the app (probably in your Applications folder). Hold control down and click the app. Click open.</li>
+				  <li>Windows (10): Run the exe installer. If Windows displays a warning, click "more info" to expose the "Run Anyway" button.</li>
+				  </ul>`,
+					},
+				]);
+			}
+		}
+	});
 });

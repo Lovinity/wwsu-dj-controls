@@ -1,5 +1,10 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.10 - 2020-09-08
+
+## Added
+- Notifications when a new version of DJ Controls is available (uses WWSU API to check for updates instead of autoUpdater, which does not work).
+
 ## 8.0.0-alpha.9 - 2020-09-06
 
 ## Removed

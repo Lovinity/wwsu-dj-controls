@@ -46,6 +46,7 @@ const menu = require("./menu");
 const packageJson = require("./package.json");
 const { machineIdSync } = require("./assets/wwsu-host-id");
 const Sanitize = require("sanitize-filename");
+const semver = require("semver");
 
 // Initialize debug tools
 debug();
@@ -141,8 +142,8 @@ const createWindows = () => {
 		createRecorderWindow();
 	});
 
-	// and load the index.html of the app.
-	mainWindow.loadFile("index.html");
+	// and load the renderer.html of the app.
+	mainWindow.loadFile("renderer.html");
 
 	// When mainWindow is closed, all other processes should also be closed
 	mainWindow.on("closed", function () {
@@ -291,6 +292,14 @@ ipcMain.on("get-machine-id", (event) => {
 // Sync Get the app and version info
 ipcMain.on("get-app-version", (event) => {
 	event.returnValue = `${packageJson.name} v${packageJson.version}`;
+});
+
+// Sync check if a version is newer than our version
+ipcMain.on("check-version", (event, arg) => {
+	if (semver.gt(arg, packageJson.version)) {
+		event.returnValue = { current: packageJson.version };
+	}
+	event.returnValue = false;
 });
 
 // Sync return settings store

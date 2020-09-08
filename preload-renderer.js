@@ -10,6 +10,10 @@ window.addEventListener("DOMContentLoaded", () => {
 		getMachineId: () => ipcRenderer.sendSync("get-machine-id"),
 		getAppVersion: () => ipcRenderer.sendSync("get-app-version"),
 
+		// Check for update
+		checkVersion: (latestVersion) =>
+			ipcRenderer.sendSync("check-version", latestVersion),
+
 		// Status
 		flashMain: (arg) => ipcRenderer.send("flashMain", arg),
 		progressMain: (progress) => ipcRenderer.send("progressMain", progress),
