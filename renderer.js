@@ -70,7 +70,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		meta,
 		directorReq
 	);
-	var timesheets = new WWSUtimesheet(socket, noReq);
+	var timesheets = new WWSUtimesheet(socket, noReq, adminDirectorReq, meta);
 	var calendar = new WWSUcalendar(socket, meta, noReq, directorReq, djReq);
 	var subscriptions = new WWSUsubscriptions(socket, noReq);
 	var api = new WWSUapi(noReq, hostReq, djReq, directorReq, adminDirectorReq);
@@ -339,6 +339,13 @@ window.addEventListener("DOMContentLoaded", () => {
 		"/logs",
 		false
 	);
+	navigation.addItem(
+		"#nav-timesheets",
+		"#section-timesheets",
+		"Director timesheets - WWSU DJ Controls",
+		"/timesheets",
+		false
+	);
 
 	// Click events
 	$(".status-more").click(() => {
@@ -407,6 +414,13 @@ window.addEventListener("DOMContentLoaded", () => {
 		"#section-requests-table-div",
 		".nav-icon-requests",
 		".track-requests"
+	);
+	timesheets.init(
+		`#section-timesheets-hours`,
+		`#section-timesheets-records`,
+		`#section-timesheets-start`,
+		`#section-timesheets-end`,
+		`#section-timesheets-browse`
 	);
 	messages.initComponents(
 		".chat-active-recipient",
@@ -1823,12 +1837,13 @@ Track: <strong>${request.trackname}</strong>`,
 				  <li>Your version: ${isNewVersion.current}</li>
 				  <li>Latest version: ${record.version}</li>
 				  </ul>
-				  <p>To download the latest version, <a href="${record.downloadURL}" target="_blank">click this link</a>. And under "Assets", download and run the installer appropriate for your operating system (dmg for macOS, AppImage or deb for Linux, exe for Windows). </p>
+				  <p>To download the latest version, <a href="${record.downloadURL}" target="_blank">click this link</a>. And under "Assets", download and run the installer appropriate for your operating system (.dmg for macOS, .AppImage or deb for Linux, .exe for Windows). </p>
 				  <p><strong>Warning! WWSU DJ Controls is an unsigned application.</strong> Your operating system may warn you of this and require additional steps to install:</p>
 				  <ul>
 				  <li>Web browsers: Some web browsers such as Chrome may block the download of DJ Controls. You will need to unblock / choose the "keep" option.</li>
-				  <li>MacOS: After having installed the app from the dmg (and overwriting the old one in the Applications folder), open Finder. Browse to the app (probably in your Applications folder). Hold control down and click the app. Click open.</li>
+				  <li>MacOS: After having installed the app from the dmg (and overwriting the old one in the Applications folder), open Finder. Browse to the app (probably in your Applications folder). Hold control down and click the app. Click open in the menu. You should have an "open" option in the resulting warning dialog window.</li>
 				  <li>Windows (10): Run the exe installer. If Windows displays a warning, click "more info" to expose the "Run Anyway" button.</li>
+				  <li>Antivirus / Firewall: Some antiviruses or firewalls may block the installer or DJ Controls application since it is unsigned. Add them as trusted applications.</li>
 				  </ul>`,
 					},
 				]);

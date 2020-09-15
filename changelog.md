@@ -1,5 +1,13 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.11 - 2020-09-15
+
+## Added
+- Timesheets tab for viewing and modifying director timesheets
+
+## Changed
+- Some of the language in the update available dialog.
+
 ## 8.0.0-alpha.10 - 2020-09-08
 
 ## Added

@@ -712,7 +712,7 @@
 										Audio Settings
 									</p>
 								</a>
-              </li>
+							</li>
 							<li class="nav-item">
 								<a
 									href="#"
@@ -852,11 +852,11 @@
 									href="#"
 									class="nav-link"
 									id="nav-directors"
-									title="Manage directors / assistant directors in the system, and view / edit their timesheets. Directors should always be kept up to date or unauthorized [ex]-directors could make changes to the system."
+									title="Manage directors / assistant directors in the system. Directors should always be kept up to date or unauthorized [ex]-directors could make changes to the system."
 								>
 									<i class="nav-icon fas fa-user-tie text-danger"></i>
 									<p>
-										Directors / Timesheets
+										Directors
 									</p>
 								</a>
 							</li>
@@ -909,6 +909,19 @@
 									<i class="nav-icon fas fa-cog text-danger"></i>
 									<p>
 										Maintenance
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-timesheets"
+									title="Manage and view the timesheets and clocked hours of directors."
+								>
+									<i class="nav-icon fas fa-clock"></i>
+									<p>
+										Timesheets
 									</p>
 								</a>
 							</li>
@@ -2065,6 +2078,65 @@
 							</div>
 							<!-- /.card-header -->
 							<div class="card-body" id="section-logs-table-div"></div>
+							<!-- /.card-body -->
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Timesheets -->
+			<section id="section-timesheets">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-12">
+									<h1 class="m-0 text-dark">Director Timesheets</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+
+					<div class="content">
+						<div class="card card-primary elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Choose Date Range</h3>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body">
+								<div class="form-group" title="Choose timesheet date range.">
+									<label for="section-timesheets-start">Start</label>
+									<input type="date" id="section-timesheets-start" />
+									<label for="section-timesheets-end">End</label>
+									<input type="date" id="section-timesheets-end" />
+									<input
+										type="submit"
+										class="btn btn-primary"
+										id="section-timesheets-browse"
+										value="Browse"
+									/>
+								</div>
+							</div>
+						</div>
+
+						<div class="card card-warning elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Hours</h3>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body" id="section-timesheets-hours"></div>
+							<!-- /.card-body -->
+						</div>
+
+						<div class="card card-info elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Records</h3>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body" id="section-timesheets-records"></div>
 							<!-- /.card-body -->
 						</div>
 					</div>
