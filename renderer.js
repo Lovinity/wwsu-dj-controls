@@ -1837,11 +1837,11 @@ Track: <strong>${request.trackname}</strong>`,
 				  <li>Your version: ${isNewVersion.current}</li>
 				  <li>Latest version: ${record.version}</li>
 				  </ul>
-				  <p>To download the latest version, <a href="${record.downloadURL}" target="_blank">click this link</a>. And under "Assets", download and run the installer appropriate for your operating system (.dmg for macOS, .AppImage or deb for Linux, .exe for Windows). </p>
+				  <p>To download the latest version, <a href="${record.downloadURL}" target="_blank">click this link</a>. And under "Assets", download and run the installer appropriate for your operating system (.pkg for macOS, .rpm or .deb for Linux, .exe for Windows). </p>
 				  <p><strong>Warning! WWSU DJ Controls is an unsigned application.</strong> Your operating system may warn you of this and require additional steps to install:</p>
 				  <ul>
 				  <li>Web browsers: Some web browsers such as Chrome may block the download of DJ Controls. You will need to unblock / choose the "keep" option.</li>
-				  <li>MacOS: After having installed the app from the dmg (and overwriting the old one in the Applications folder), open Finder. Browse to the app (probably in your Applications folder). Hold control down and click the app. Click open in the menu. You should have an "open" option in the resulting warning dialog window.</li>
+				  <li>MacOS: You may need to run the .pkg file from Finder. Open Finder, browse to the downloaded .pkg, and hold down the control key while clicking on it. Click "open" in the menu item. The warning dialog should now have an open button, allowing you to run the installer.</li>
 				  <li>Windows (10): Run the exe installer. If Windows displays a warning, click "more info" to expose the "Run Anyway" button.</li>
 				  <li>Antivirus / Firewall: Some antiviruses or firewalls may block the installer or DJ Controls application since it is unsigned. Add them as trusted applications.</li>
 				  </ul>`,

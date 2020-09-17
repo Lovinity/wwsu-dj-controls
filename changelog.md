@@ -1,5 +1,19 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.12 - 2020-09-17
+
+## Removed
+- TinyMCE autosave plugin no longer used; caused a bug preventing DJ Controls from closing.
+
+## Changed
+- Installer packages. Now, MacOS will use .pkg (instead of .dmg) and Linux will use .deb or .rpm. Windows will still use .exe, but the installer now allows to install on entire machine.
+
+## Fixed
+- TinyMCE blocking DJ Controls from closing when clicking the close button (caused by TinyMCE autosave plugin; which we disabled).
+- Timesheet edit bug which always required Clocked time in when it was supposed to only require that for certain approval statuses.
+- Reduced padding on administration To-do menu item notification numbers so they do not run into the To-do text.
+- Typo in recipients/add-computer (should be recipients/add-computers) preventing registering the host as online.
+
 ## 8.0.0-alpha.11 - 2020-09-15
 
 ## Added

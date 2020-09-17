@@ -486,20 +486,19 @@ class WWSUtimesheet extends WWSUevents {
 						title: "Scheduled Time Out",
 						readonly: true,
 					},
-					timeIn: {
-						format: "datetime",
-						required: true,
-						title: "Clocked Time In",
-					},
-					timeOut: {
-						format: "datetime",
-						title: "Clocked Time Out",
-					},
 					approved: {
 						type: "number",
 						required: true,
 						enum: [-1, 2, 0, 1],
 						title: "Approval Status",
+					},
+					timeIn: {
+						format: "datetime",
+						title: "Clocked Time In",
+					},
+					timeOut: {
+						format: "datetime",
+						title: "Clocked Time Out",
 					},
 				},
 			},
@@ -520,6 +519,14 @@ class WWSUtimesheet extends WWSUevents {
 							.format("Z")}`,
 						helper: "The date/time the director was scheduled to clock out.",
 					},
+					approved: {
+						optionLabels: [
+							"Unexcused Absence",
+							"Excused Cancellation",
+							"Unapproved Hours",
+							"Approved Hours",
+						],
+					},
 					timeIn: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
 							.parseZone(this.meta ? this.meta.meta.time : undefined)
@@ -528,7 +535,28 @@ class WWSUtimesheet extends WWSUevents {
 							inline: true,
 							sideBySide: true,
 						},
-						helper: "The date/time the director clocked in.",
+						helper:
+							"The date/time the director clocked in. Field required for approved hours and unapproved hours approval statuses.",
+						validator: function (callback) {
+							var value = this.getValue();
+							var approved = this.getParent().childrenByPropertyId[
+								"approved"
+							].getValue();
+							if (
+								(approved === 0 || approved === 1) &&
+								(!value || value === "")
+							) {
+								callback({
+									status: false,
+									message:
+										"Field is required when approval status is approved hours or unapproved hours.",
+								});
+								return;
+							}
+							callback({
+								status: true,
+							});
+						},
 					},
 					timeOut: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
@@ -538,15 +566,8 @@ class WWSUtimesheet extends WWSUevents {
 							inline: true,
 							sideBySide: true,
 						},
-						helper: "The date/time the director clocked out.",
-					},
-					approved: {
-						optionLabels: [
-							"Unexcused Absence",
-							"Excused Cancellation",
-							"Unapproved Hours",
-							"Approved Hours",
-						],
+						helper:
+							"The date/time the director clocked out. If clocked time in is filled in, and this is left empty, we assume the director is still clocked in.",
 					},
 				},
 				form: {
