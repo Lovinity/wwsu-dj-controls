@@ -657,7 +657,7 @@ window.addEventListener("DOMContentLoaded", () => {
 										) === -1
 											? event.color
 											: "#161616",
-									textColor: "#e6e6e6",
+									textColor: wwsuutil.getContrastYIQ(event.color) ? "#161616" : "#e6e6e6",
 									borderColor: borderColor,
 									extendedProps: {
 										event: event,

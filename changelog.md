@@ -1,5 +1,15 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.13 - 2020-09-20
+
+## Updated
+- AdminLTE and plugins to latest versions
+- NPM packages
+
+## Changed
+- Now using WCAG AAA compliant colors both in AdminLTE and in calendar colors
+- Calendar event text will turn black if event background color is light so it can be read
+
 ## 8.0.0-alpha.12 - 2020-09-17
 
 ## Removed
