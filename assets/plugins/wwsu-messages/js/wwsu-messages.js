@@ -357,7 +357,7 @@ class WWSUmessages extends WWSUdb {
                         $(`#message-delete-${message.ID}`).unbind('click');
 
                         $(`#message-delete-${message.ID}`).click(() => {
-                            util.confirmDialog(`Are you sure you want to permanently delete this message?`, null, () => {
+                            util.confirmDialog(`Are you sure you want to permanently delete this message? It will be removed from everyone's messenger window.`, null, () => {
                                 this.remove({ ID: message.ID });
                             });
                         });

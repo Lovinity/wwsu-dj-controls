@@ -258,7 +258,7 @@ class WWSUtimesheet extends WWSUevents {
 							var id = parseInt($(e.currentTarget).data("id"));
 							util.confirmDialog(
 								`<p>Are you sure you want to <strong>permanently</strong> remove the timesheet record ${id}?</p>
-                                <p>This will permanently remove the timesheet record, and all associated hours will no longer count.</p>`,
+                                <p>This will remove the timesheet record, and its logged hours will no longer tally.</p>`,
 								null,
 								() => {
 									this.remove({ ID: id }, (success) => {

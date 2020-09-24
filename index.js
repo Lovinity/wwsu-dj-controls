@@ -56,6 +56,7 @@ contextMenu();
 
 app.setAppUserModelId(packageJson.appId);
 
+/*
 // Use custom update config
 autoUpdater.updateConfigPath = path.join(__dirname, "app-update.yml");
 
@@ -68,7 +69,6 @@ autoUpdater.allowPrerelease = true;
 // Auto update interval (we do not immediate check for an update until mainWindow is ready to show)
 const ONE_HOUR = 1000 * 60 * 60;
 setInterval(() => {
-	// TODO: disabled as it does not work
 	// autoUpdater.checkForUpdates();
 }, ONE_HOUR);
 
@@ -79,6 +79,7 @@ autoUpdater.on("error", (e) => {
 autoUpdater.on("update-available", (info) => {
 	mainWindow.webContents.send("update-available", [info, packageJson]);
 });
+*/
 
 // Prevent windows from being garbage collected
 let mainWindow;

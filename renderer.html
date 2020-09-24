@@ -291,7 +291,7 @@
 		<div
 			class="wrapper bg-black text-danger d-none"
 			id="unauthorized"
-			style="text-align: center; height: 100vh; width: 100vw;"
+			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999;"
 		>
 			<i
 				class="text-danger fas fa-skull-crossbones"
@@ -311,7 +311,7 @@
 		<div
 			class="wrapper bg-black text-danger d-none"
 			id="already-connected"
-			style="text-align: center; height: 100vh; width: 100vw;"
+			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999;"
 		>
 			<i
 				class="text-warning fas fa-skull-crossbones"
@@ -330,7 +330,7 @@
 		<div
 			class="wrapper bg-black text-danger d-none"
 			id="connecting"
-			style="text-align: center; height: 100vh; width: 100vw;"
+			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999;"
 		>
 			<div
 				class="spinner-border text-primary"
@@ -348,7 +348,7 @@
 		<div
 			class="wrapper bg-black text-danger"
 			id="loading"
-			style="text-align: center; height: 100vh; width: 100vw;"
+			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999;"
 		>
 			<div
 				class="spinner-border text-info"
@@ -366,7 +366,7 @@
 		<div
 			class="wrapper bg-black text-danger d-none"
 			id="reconnecting"
-			style="text-align: center; height: 100vh; width: 100vw;"
+			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999;"
 		>
 			<div
 				class="spinner-border text-warning"
@@ -610,7 +610,7 @@
 							role="menu"
 							data-accordion="false"
 						>
-							<li class="nav-header text-light">BROADCASTS</li>
+							<li class="nav-header text-light">INFORMATION</li>
 							<li class="nav-item">
 								<a
 									href="#"
@@ -641,6 +641,22 @@
 								<a
 									href="#"
 									class="nav-link"
+									id="nav-weather"
+									title="View local weather conditions and forecast for WWSU, powered by ClimaCell."
+								>
+									<i
+										class="nav-icon nav-icon-weather fas fa-cloud-sun-rain"
+									></i>
+									<p>
+										Weather
+									</p>
+								</a>
+							</li>
+							<li class="nav-header text-light">CONTROL</li>
+							<li class="nav-item">
+								<a
+									href="#"
+									class="nav-link"
 									id="nav-chat"
 									title="Send and receive messages between other DJ Controls and those tuned in to WWSU online."
 								>
@@ -666,21 +682,6 @@
 										<span class="badge badge-secondary right track-requests"
 											>0</span
 										>
-									</p>
-								</a>
-							</li>
-							<li class="nav-item">
-								<a
-									href="#"
-									class="nav-link"
-									id="nav-weather"
-									title="View local weather conditions and forecast for WWSU, powered by ClimaCell."
-								>
-									<i
-										class="nav-icon nav-icon-weather fas fa-cloud-sun-rain"
-									></i>
-									<p>
-										Weather
 									</p>
 								</a>
 							</li>
@@ -843,23 +844,10 @@
 								<a
 									href="#"
 									class="nav-link"
-									id="nav-configuration"
-									title="Manage system-wide configuration for WWSU."
-								>
-									<i class="nav-icon fas fa-cogs text-danger"></i>
-									<p>
-										Configuration
-									</p>
-								</a>
-							</li>
-							<li class="nav-item nav-admin d-none">
-								<a
-									href="#"
-									class="nav-link"
 									id="nav-directors"
 									title="Manage directors / assistant directors in the system. Directors should always be kept up to date or unauthorized [ex]-directors could make changes to the system."
 								>
-									<i class="nav-icon fas fa-user-tie text-danger"></i>
+									<i class="nav-icon fas fa-user-tie"></i>
 									<p>
 										Directors
 									</p>
@@ -914,6 +902,19 @@
 									<i class="nav-icon fas fa-cog text-danger"></i>
 									<p>
 										Maintenance
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-configuration"
+									title="Manage system-wide configuration for WWSU."
+								>
+									<i class="nav-icon fas fa-cogs text-danger"></i>
+									<p>
+										System Settings
 									</p>
 								</a>
 							</li>
@@ -982,10 +983,10 @@
 											class="card card-widget widget-user-2"
 											title="This is what WWSU is advertising as currently on the air."
 										>
-											<div class="widget-user-header bg-primary">
+											<div class="widget-user-header bg-gray-dark card-meta">
 												<div class="widget-user-image">
 													<div
-														class="text-lime meta-trackFinish"
+														class="meta-trackFinish"
 														style="font-size: 1.5em; position: absolute;"
 														title="How much time is left in the current track"
 													>
@@ -2009,6 +2010,33 @@
 							</div>
 						</div>
 						<!-- /.container-fluid -->
+					</div>
+				</div>
+			</section>
+
+			<!-- Directors management -->
+			<section id="section-directors">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<!-- Content Header (Page header) -->
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0 text-dark">Manage Directors</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+					<!-- /.content-header -->
+
+					<!-- Main content -->
+					<div class="content">
+						<div class="card elevation-2">
+							<div class="card-body" id="section-directors-content"></div>
+						</div>
 					</div>
 				</div>
 			</section>

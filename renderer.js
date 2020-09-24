@@ -31,7 +31,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		"/auth/host",
 		"Host"
 	);
-	var directors = new WWSUdirectors(socket, noReq);
+	var directors = new WWSUdirectors(socket, noReq, machineID);
 	var directorReq = new WWSUreq(
 		socket,
 		machineID,
@@ -56,7 +56,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		socket,
 		machineID,
 		directors,
-		(record) => record.admin,
+		{ admin: true },
 		"name",
 		"/auth/admin-director",
 		"Administrator Director"
@@ -324,6 +324,13 @@ window.addEventListener("DOMContentLoaded", () => {
 		() => {
 			fullCalendar.updateSize();
 		}
+	);
+	navigation.addItem(
+		"#nav-directors",
+		"#section-directors",
+		"Manage Directors - WWSU DJ Controls",
+		"/directors",
+		false
 	);
 	navigation.addItem(
 		"#nav-djs",
@@ -657,7 +664,9 @@ window.addEventListener("DOMContentLoaded", () => {
 										) === -1
 											? event.color
 											: "#161616",
-									textColor: wwsuutil.getContrastYIQ(event.color) ? "#161616" : "#e6e6e6",
+									textColor: wwsuutil.getContrastYIQ(event.color)
+										? "#161616"
+										: "#e6e6e6",
 									borderColor: borderColor,
 									extendedProps: {
 										event: event,
@@ -805,6 +814,7 @@ window.addEventListener("DOMContentLoaded", () => {
 						$(".nav-admin").removeClass("d-none");
 						announcements.initTable("#section-announcements-content");
 						djs.initTable("#section-djs-content");
+						directors.initTable("#section-directors-content");
 						logs.initIssues();
 						logs.initIssuesTable("#section-notifications-issues");
 					}
@@ -916,9 +926,64 @@ window.addEventListener("DOMContentLoaded", () => {
 			}
 
 			// Determine which operation buttons should be visible depending on system state
+			// Also determine color of status info
 			if (typeof updated.state !== "undefined") {
 				animations.add("meta-state", () => {
 					$(".operation-button").addClass("d-none");
+					$(".card-meta").removeClass("bg-gray-dark");
+					$(".card-meta").removeClass("bg-danger");
+					$(".card-meta").removeClass("bg-warning");
+					$(".card-meta").removeClass("bg-success");
+					$(".card-meta").removeClass("bg-info");
+					$(".card-meta").removeClass("bg-primary");
+					$(".card-meta").removeClass("bg-indigo");
+					$(".card-meta").removeClass("bg-secondary");
+					$(".card-meta").removeClass("bg-pink");
+
+					switch (updated.state) {
+						case "automation_on":
+						case "automation_break":
+							$(".card-meta").addClass("bg-secondary");
+							break;
+						case "automation_playlist":
+							$(".card-meta").addClass("bg-primary");
+							break;
+						case "automation_genre":
+							$(".card-meta").addClass("bg-info");
+							break;
+						case "automation_prerecord":
+						case "automation_live":
+						case "automation_sports":
+						case "automation_remote":
+						case "automation_sportsremote":
+							$(".card-meta").addClass("bg-warning");
+							break;
+						case "prerecord_on":
+						case "prerecord_break":
+							$(".card-meta").addClass("bg-pink");
+							break;
+						case "live_returning":
+						case "live_break":
+						case "live_on":
+							$(".card-meta").addClass("bg-danger");
+							break;
+						case "remote_returning":
+						case "remote_break":
+						case "remote_on":
+							$(".card-meta").addClass("bg-indigo");
+							break;
+						case "sports_returning":
+						case "sportsremote_returning":
+						case "sports_break":
+						case "sports_halftime":
+						case "sportsremote_break":
+						case "sportsremote_halftime":
+							$(".card-meta").addClass("bg-success");
+							break;
+						default:
+							$(".card-meta").addClass("bg-secondary");
+					}
+
 					switch (updated.state) {
 						case "automation_on":
 						case "automation_break":
@@ -1768,6 +1833,14 @@ Track: <strong>${request.trackname}</strong>`,
 
 	djs.on("change", "renderer", (db) => {
 		djs.updateTable();
+	});
+
+	/*
+		DIRECTOR FUNCTIONS
+	*/
+
+	directors.on("change", "renderer", (db) => {
+		directors.updateTable();
 	});
 
 	/*
