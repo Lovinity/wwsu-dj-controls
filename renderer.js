@@ -96,6 +96,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	);
 	var state = new WWSUstate(socket, hosts, calendar, hostReq);
 	var climacell = new WWSUclimacell(socket, noReq, meta);
+	var inventory = new WWSUinventory(socket, meta, hostReq, directorReq);
 	var version = new WWSUversion(socket, `wwsu-dj-controls`, hostReq);
 
 	// Sound alerts
@@ -337,6 +338,13 @@ window.addEventListener("DOMContentLoaded", () => {
 		"#section-djs",
 		"Manage DJs - WWSU DJ Controls",
 		"/djs",
+		false
+	);
+	navigation.addItem(
+		"#nav-inventory",
+		"#section-inventory",
+		"Manage Inventory - WWSU DJ Controls",
+		"/inventory",
 		false
 	);
 	navigation.addItem(
@@ -809,12 +817,14 @@ window.addEventListener("DOMContentLoaded", () => {
 					recipients.init();
 					messages.init();
 					climacell.init();
+					inventory.init();
 					version.init();
 					if (hosts.client.admin) {
 						$(".nav-admin").removeClass("d-none");
 						announcements.initTable("#section-announcements-content");
 						djs.initTable("#section-djs-content");
 						directors.initTable("#section-directors-content");
+						inventory.initTable("#section-inventory-content");
 						logs.initIssues();
 						logs.initIssuesTable("#section-notifications-issues");
 					}

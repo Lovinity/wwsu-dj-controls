@@ -1,5 +1,10 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.15
+
+### Added
+- Inventory management and check in/out system.
+
 ## 8.0.0-alpha.14 - 2020-09-24
 
 ### Added

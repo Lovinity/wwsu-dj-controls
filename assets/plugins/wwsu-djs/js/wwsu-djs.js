@@ -89,9 +89,9 @@ class WWSUdjs extends WWSUdb {
 			$(`#modal-${this.djsModal.id}-new`).click(() => {
 				this.showDJForm();
 			});
-    });
-    
-    this.djsModal.iziModal("open");
+		});
+
+		this.djsModal.iziModal("open");
 
 		$(this.djsModal.body).block({
 			message: "<h1>Loading...</h1>",
@@ -137,9 +137,9 @@ class WWSUdjs extends WWSUdb {
 		// reset login to null when filling out default values
 		if (data && data.login) data.login = null;
 
-    this.newDjModal.body = ``;
-    
-    this.newDjModal.iziModal("open");
+		this.newDjModal.body = ``;
+
+		this.newDjModal.iziModal("open");
 
 		var _djs = this.find().map((dj) => dj.name);
 
@@ -237,12 +237,14 @@ class WWSUdjs extends WWSUdb {
 									this.editDJ(value, (success) => {
 										if (success) {
 											this.djsModal.iziModal("close");
+											this.newDjModal.iziModal("close");
 										}
 									});
 								} else {
 									this.addDJ(value, (success) => {
 										if (success) {
 											this.djsModal.iziModal("close");
+											this.newDjModal.iziModal("close");
 										}
 									});
 								}
@@ -560,9 +562,9 @@ class WWSUdjs extends WWSUdb {
 		this.djInfoModal.title = `Analytics for ${dj.name} (${
 			dj.realName || `Unknown Person`
 		})`;
-    this.djInfoModal.body = ``;
-    
-    this.djInfoModal.iziModal("open");
+		this.djInfoModal.body = ``;
+
+		this.djInfoModal.iziModal("open");
 
 		this.logs.getShowtime(
 			`#modal-${this.djInfoModal.id}`,
@@ -1068,9 +1070,9 @@ class WWSUdjs extends WWSUdb {
 		})`;
 		this.djInfoModal.body = `<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
 			this.meta ? this.meta.meta.timezone : moment.tz.guess()
-    }.</p><table id="section-djs-table-logs" class="table table-striped display responsive" style="width: 100%;"></table>`;
-    
-    this.djInfoModal.iziModal("open");
+		}.</p><table id="section-djs-table-logs" class="table table-striped display responsive" style="width: 100%;"></table>`;
+
+		this.djInfoModal.iziModal("open");
 
 		util.waitForElement(`#section-djs-table-logs`, () => {
 			this.logs.getAttendance(
