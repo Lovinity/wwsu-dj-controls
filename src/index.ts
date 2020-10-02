@@ -45,7 +45,7 @@ import debug = require("electron-debug");
 import contextMenu = require("electron-context-menu");
 import { config } from "./config";
 import { menu } from "./menu";
-import * as packageJson from "./package.json";
+import * as packageJson from "../package.json";
 import Sanitize = require("sanitize-filename");
 import semver = require("semver");
 
@@ -148,12 +148,8 @@ const createWindows = () => {
 
 	// When mainWindow is closed, all other processes should also be closed
 	mainWindow.on("closed", function () {
-		mainWindow = null;
-
 		calendarWindow.close();
-		calendarWindow = null;
 		skywayWindow.close();
-		skywayWindow = null;
 		recorderWindow.webContents.send("shutDown");
 	});
 

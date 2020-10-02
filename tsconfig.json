@@ -6,13 +6,12 @@
 		"allowJs": true,
 		"sourceMap": true,
 		"strictNullChecks": true,
-		"outDir": ".",
+		"outDir": "dist",
 		"baseUrl": ".",
 		"paths": {
 			"*": ["node_modules/*"]
 		},
-		"resolveJsonModule": true,
-		"target": "es5"
+		"resolveJsonModule": true
 	},
-	"include": ["**/*"]
+	"include": ["src/**/*"]
 }

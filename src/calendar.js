@@ -1,4 +1,5 @@
 "use strict";
+
 window.addEventListener("DOMContentLoaded", () => {
   window.ipc.renderer.send("console", ["log", "Calendar: Process is ready"]);
 
