@@ -1,5 +1,4 @@
 node_modules
-src/config.json
+/config.json
 OnAir Recordings
 dist
-/src/config.json

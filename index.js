@@ -1,8 +1,8 @@
 "use strict";
 
 // Initialize unhandled exceptions handler first
-import { is, openNewGitHubIssue, debugInfo } from "electron-util";
-import unhandled = require("electron-unhandled");
+const { is, openNewGitHubIssue, debugInfo } = require("electron-util");
+const unhandled = require("electron-unhandled");
 unhandled({
 	reportButton: (error) => {
 		openNewGitHubIssue({
@@ -28,29 +28,25 @@ unhandled({
 });
 
 // Require other constants
-import fs = require("fs");
-import path = require("path");
-import {
+const fs = require("fs");
+const path = require("path");
+const {
 	app,
+	BrowserWindow,
 	Menu,
 	ipcMain,
 	session,
 	shell,
-	WebContents,
-	BrowserWindow,
-	NewWindowEvent,
-} from "electron";
-import { autoUpdater } from "electron-updater";
-import debug = require("electron-debug");
-import contextMenu = require("electron-context-menu");
-import { config } from "./config";
-import { menu } from "./menu";
-import * as packageJson from "../package.json";
-import Sanitize = require("sanitize-filename");
-import semver = require("semver");
-
-// machineIdSync is not Typescript nor ES6 compatible
+} = require("electron");
+const { autoUpdater } = require("electron-updater");
+const debug = require("electron-debug");
+const contextMenu = require("electron-context-menu");
+const config = require("./config.js");
+const menu = require("./menu");
+const packageJson = require("./package.json");
 const { machineIdSync } = require("./assets/wwsu-host-id");
+const Sanitize = require("sanitize-filename");
+const semver = require("semver");
 
 // Initialize debug tools
 debug();
@@ -86,10 +82,14 @@ autoUpdater.on("update-available", (info) => {
 */
 
 // Prevent windows from being garbage collected
-let mainWindow: BrowserWindow;
-let calendarWindow: BrowserWindow;
-let skywayWindow: BrowserWindow;
-let recorderWindow: BrowserWindow;
+let mainWindow;
+let calendarWindow;
+let skywayWindow;
+let recorderWindow;
+
+// Other variables
+let metaState = `unknown`;
+let latestVersion = ``;
 
 const enforceCORS = () => {
 	// Enforce CORS and Origin; skywayJS needs origin set to our server address, but everything else needs file origin.
@@ -148,8 +148,12 @@ const createWindows = () => {
 
 	// When mainWindow is closed, all other processes should also be closed
 	mainWindow.on("closed", function () {
+		mainWindow = null;
+
 		calendarWindow.close();
+		calendarWindow = null;
 		skywayWindow.close();
+		skywayWindow = null;
 		recorderWindow.webContents.send("shutDown");
 	});
 
@@ -260,8 +264,8 @@ app.on("activate", () => {
 });
 
 // Prevent opening new windows in the app browsers; use the default browser instead
-app.on("web-contents-created", (_event: any, contents: WebContents) => {
-	contents.on("new-window", async (event: NewWindowEvent, navigationUrl) => {
+app.on("web-contents-created", (event, contents) => {
+	contents.on("new-window", async (event, navigationUrl) => {
 		// In this example, we'll ask the operating system
 		// to open this event's url in the default browser.
 		event.preventDefault();
@@ -273,7 +277,7 @@ app.on("web-contents-created", (_event: any, contents: WebContents) => {
 // Start loading the app
 app
 	.whenReady()
-	.then(() => Menu.setApplicationMenu(menu))
+	.then(Menu.setApplicationMenu(menu))
 	.then(enforceCORS)
 	.then(createWindows);
 
@@ -476,6 +480,8 @@ ipcMain.on("main", (event, arg) => {
 		// Handle changes in meta.state
 		// TODO
 		case "metaState":
+			metaState = args[0];
+
 			break;
 	}
 });

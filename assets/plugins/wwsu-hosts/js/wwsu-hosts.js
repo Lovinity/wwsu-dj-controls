@@ -29,8 +29,6 @@ class WWSUhosts extends WWSUdb {
 
 		this.host = machineID;
 
-		this.table;
-
 		this.assignSocketEvent("hosts", socket);
 
 		// Contains information about the current host
@@ -43,12 +41,6 @@ class WWSUhosts extends WWSUdb {
 				this.emitEvent("clientChanged", [record]);
 			}
 		});
-
-		this.on("change", "WWSUhosts", () => {
-			this.updateTable();
-		});
-
-		this.animations = new WWSUanimations();
 	}
 
 	/**
@@ -118,76 +110,5 @@ class WWSUhosts extends WWSUdb {
 		} else {
 			cb();
 		}
-	}
-
-	/**
-	 * Initialize Hosts management table
-	 *
-	 * @param {string} table DOm query string for the div container to put the table.
-	 */
-	initTable(table) {
-		this.animations.add("hosts-init-table", () => {
-			var util = new WWSUutil();
-
-			// Init html
-			$(table).html(
-				`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
-					this.meta ? this.meta.meta.timezone : moment.tz.guess()
-				}.</p><table id="section-hosts-table" class="table table-striped display responsive" style="width: 100%;"></table>`
-			);
-
-			util.waitForElement(`#section-hosts-table`, () => {
-				// Generate table
-				this.table = $(`#section-hosts-table`).DataTable({
-					paging: false,
-					data: [],
-					columns: [
-						{ title: "Name" },
-						{ title: "Authorized?" },
-						{ title: "Responsibility" },
-						{ title: "Admin?" },
-						{ title: "Remote Calls?" },
-						{ title: "Actions" },
-					],
-					columnDefs: [{ responsivePriority: 1, targets: 5 }],
-					order: [[0, "asc"]],
-					pageLength: 10,
-					drawCallback: () => {
-						// Action button click events
-						$(".btn-host-edit").unbind("click");
-						$(".btn-host-delete").unbind("click");
-
-						$(".btn-host-edit").click((e) => {
-							var host = this.find().find(
-								(host) => host.ID === parseInt($(e.currentTarget).data("id"))
-							);
-							this.showHostForm(host);
-						});
-
-						$(".btn-host-delete").click((e) => {
-							var util = new WWSUutil();
-							var host = this.find().find(
-								(host) => host.ID === parseInt($(e.currentTarget).data("id"))
-							);
-							util.confirmDialog(
-								`Are you sure you want to remove the host "${host.name}"?
-							<ul>
-							<li>The host will no longer have access to WWSU.</li>
-							<li>The settings for the host will be removed.</li>
-							<li>The host will be removed from the hosts list until / unless they try to connect to WWSU again. Otherwise, they will be re-added, but unauthorized to connect.</li>
-                            </ul>`,
-								host.ID,
-								() => {
-									this.remove({ ID: host.ID });
-								}
-							);
-						});
-					},
-				});
-
-				// Update with information
-				this.updateTable();
-			});
-		});
 	}
 }

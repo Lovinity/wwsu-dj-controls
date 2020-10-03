@@ -1,7 +1,7 @@
 "use strict";
 const Store = require("electron-store");
 
-let config = new Store({
+module.exports = new Store({
 	name: "wwsu-dj-controls",
 	clearInvalidConfig: false,
 	defaults: {
@@ -16,12 +16,10 @@ let config = new Store({
 			delay: 15000,
 		},
 		skyway: {
-			api: ``,
-		},
+			api: ``
+		}
 	},
 
 	// TODO: Keep this updated
 	migrations: {},
 });
-
-export { config };

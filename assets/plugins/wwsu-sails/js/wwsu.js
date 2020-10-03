@@ -81,12 +81,12 @@ class WWSUevents {
 class WWSUdb extends WWSUevents {
 	/**
 	 *Creates an instance of WWSUdb.
-	 * @param {?TAFFY} db TAFFY DB to use
+	 * @param {TAFFY} db TAFFY DB to use
 	 * @memberof WWSUdb
 	 */
-	constructor(db = TAFFY()) {
+	constructor(db) {
 		super();
-		this._db = db;
+		this._db = db || TAFFY();
 	}
 
 	/**

@@ -825,7 +825,6 @@ window.addEventListener("DOMContentLoaded", () => {
 						djs.initTable("#section-djs-content");
 						directors.initTable("#section-directors-content");
 						inventory.initTable("#section-inventory-content");
-						hosts.initTable(`#section-hosts-content`);
 						logs.initIssues();
 						logs.initIssuesTable("#section-notifications-issues");
 					}
