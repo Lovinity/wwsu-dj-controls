@@ -4,6 +4,7 @@
 
 ### Added
 - Delay system accountability logging
+- Hosts management
 
 ### Changed
 - Using CSS box shadow flashing for nav icons instead of flashing color class, which was unreliable.

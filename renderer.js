@@ -84,7 +84,8 @@ window.addEventListener("DOMContentLoaded", () => {
 		machineID,
 		window.ipc.getAppVersion(),
 		hostReq,
-		directorReq
+		directorReq,
+		djs
 	);
 	var messages = new WWSUmessages(
 		socket,
@@ -338,6 +339,13 @@ window.addEventListener("DOMContentLoaded", () => {
 		"#section-djs",
 		"Manage DJs - WWSU DJ Controls",
 		"/djs",
+		false
+	);
+	navigation.addItem(
+		"#nav-hosts",
+		"#section-hosts",
+		"Manage Hosts - WWSU DJ Controls",
+		"/hosts",
 		false
 	);
 	navigation.addItem(
@@ -812,6 +820,7 @@ window.addEventListener("DOMContentLoaded", () => {
 						announcements.initTable("#section-announcements-content");
 						djs.initTable("#section-djs-content");
 						directors.initTable("#section-directors-content");
+						hosts.initTable("#section-hosts-content");
 						inventory.initTable("#section-inventory-content");
 						logs.initIssues();
 						logs.initIssuesTable("#section-notifications-issues");
@@ -1865,6 +1874,10 @@ Track: <strong>${request.trackname}</strong>`,
 	hosts.on("clientChanged", "renderer", (newClient) => {
 		// Restart the recorder when settings for this host were changed.
 		startRecording(-1);
+	});
+
+	hosts.on("change", "renderer", (db) => {
+		hosts.updateTable();
 	});
 
 	/*

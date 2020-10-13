@@ -416,6 +416,11 @@ class WWSUdjs extends WWSUdb {
 		}
 	}
 
+	/**
+	 * Initialize the table for managing DJs.
+	 * 
+	 * @param {string} table The DOM query string for the div container to place the table.
+	 */
 	initTable(table) {
 		this.animations.add("djs-init-table", () => {
 			var util = new WWSUutil();
