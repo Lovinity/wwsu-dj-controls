@@ -1,5 +1,16 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.16 - 2020-10-13
+
+### Added
+- Delay system accountability logging
+
+### Changed
+- Using CSS box shadow flashing for nav icons instead of flashing color class, which was unreliable.
+
+### Updated
+- Packages and plugins
+
 ## 8.0.0-alpha.15
 
 ### Added

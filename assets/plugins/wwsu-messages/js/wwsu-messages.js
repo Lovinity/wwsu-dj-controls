@@ -270,12 +270,12 @@ class WWSUmessages extends WWSUdb {
             $(this.menuNew).html(`0`);
             $(this.menuNew).removeClass(`badge-danger`);
             $(this.menuNew).addClass(`badge-secondary`);
-            $(this.menuIcon).removeClass(`nav-icon-flash-success`);
+            $(this.menuIcon).removeClass(`pulse-success`);
         } else {
             $(this.menuNew).html(unreadMessages);
             $(this.menuNew).removeClass(`badge-secondary`);
             $(this.menuNew).addClass(`badge-danger`);
-            $(this.menuIcon).addClass(`nav-icon-flash-success`);
+            $(this.menuIcon).addClass(`pulse-success`);
         }
         this.firstLoad = false;
     }

@@ -427,7 +427,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	api.initApiForm("#section-api-form");
 	requests.initTable(
 		"#section-requests-table-div",
-		".nav-icon-requests",
+		"#nav-requests",
 		".track-requests"
 	);
 	timesheets.init(
@@ -445,7 +445,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		".chat-mute",
 		".chat-ban",
 		".messages-new-all",
-		".nav-icon-messages"
+		"#nav-messages"
 	);
 
 	// CLOCKWHEEL
@@ -616,23 +616,22 @@ window.addEventListener("DOMContentLoaded", () => {
 	var calendarEl = document.getElementById("calendar");
 
 	var fullCalendar = new FullCalendar.Calendar(calendarEl, {
-		plugins: ["interaction", "dayGrid", "timeGrid", "bootstrap"],
-		header: {
-			left: "prev,next today",
+		headerToolbar: {
+			start: "prev,next today",
 			center: "title",
-			right: "dayGridMonth,timeGridWeek,timeGridDay",
+			end: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
 		},
-		defaultView: "timeGridWeek",
+		initialView: "timeGridWeek",
 		navLinks: true, // can click day/week names to navigate views
 		selectable: false,
 		selectMirror: true,
 		nowIndicator: true,
 		editable: false,
-		startEditable: false,
-		durationEditable: false,
-		resourceEditable: false,
+		eventStartEditable: false,
+		eventDurationEditable: false,
+		eventResourceEditable: false,
 		themeSystem: "bootstrap",
-		eventLimit: true, // allow "more" link when too many events
+		dayMaxEvents: 5,
 		events: function (info, successCallback, failureCallback) {
 			$("#calendar").block({
 				message: "<h1>Loading...</h1>",
@@ -641,46 +640,63 @@ window.addEventListener("DOMContentLoaded", () => {
 				onBlock: () => {
 					calendar.getEvents(
 						(events) => {
-							events = events.map((event) => {
-								var borderColor;
-								if (event.scheduleType === "canceled-changed") return false;
-								if (
-									["canceled", "canceled-system"].indexOf(
-										event.scheduleType
-									) !== -1
-								) {
-									borderColor = "#ff0000";
-								} else if (
-									["updated", "updated-system"].indexOf(event.scheduleType) !==
-									-1
-								) {
-									borderColor = "#ffff00";
-								} else if (["unscheduled"].indexOf(event.scheduleType) !== -1) {
-									borderColor = "#00ff00";
-								} else {
-									borderColor = "#0000ff";
-								}
-								return {
-									id: event.unique,
-									groupId: event.calendarID,
-									start: moment.parseZone(event.start).toISOString(true),
-									end: moment.parseZone(event.end).toISOString(true),
-									title: `${event.type}: ${event.hosts} - ${event.name}`,
-									backgroundColor:
+							events = events
+								.filter((event) => {
+									// Filter out events by filters
+									if (event.scheduleType === "canceled-changed") return false;
+									var temp = document.getElementById(`filter-${event.type}`);
+									if (temp !== null && temp.checked) {
+										return true;
+									} else {
+										return false;
+									}
+								})
+								.map((event) => {
+									var borderColor;
+									var title = `${event.type}: ${event.hosts} - ${event.name}`;
+									if (
 										["canceled", "canceled-system"].indexOf(
 											event.scheduleType
-										) === -1
-											? event.color
-											: "#161616",
-									textColor: wwsuutil.getContrastYIQ(event.color)
-										? "#161616"
-										: "#e6e6e6",
-									borderColor: borderColor,
-									extendedProps: {
-										event: event,
-									},
-								};
-							});
+										) !== -1
+									) {
+										borderColor = "#ff0000";
+										title += ` (CANCELED)`;
+									} else if (
+										["updated", "updated-system"].indexOf(
+											event.scheduleType
+										) !== -1
+									) {
+										borderColor = "#ffff00";
+										title += ` (changed this occurrence)`;
+									} else if (
+										["unscheduled"].indexOf(event.scheduleType) !== -1
+									) {
+										borderColor = "#00ff00";
+										title += ` (unscheduled/unauthorized)`;
+									} else {
+										borderColor = "#0000ff";
+									}
+									return {
+										id: event.unique,
+										groupId: event.calendarID,
+										start: moment.parseZone(event.start).toISOString(true),
+										end: moment.parseZone(event.end).toISOString(true),
+										title: title,
+										backgroundColor:
+											["canceled", "canceled-system"].indexOf(
+												event.scheduleType
+											) === -1
+												? event.color
+												: "#161616",
+										textColor: wwsuutil.getContrastYIQ(event.color)
+											? "#161616"
+											: "#e6e6e6",
+										borderColor: borderColor,
+										extendedProps: {
+											event: event,
+										},
+									};
+								});
 							successCallback(events);
 							fullCalendar.updateSize();
 							$("#calendar").unblock();
@@ -690,34 +706,6 @@ window.addEventListener("DOMContentLoaded", () => {
 					);
 				},
 			});
-		},
-		// When rendering events, filter by active filters.
-		eventRender: function eventRender(info) {
-			if (info.event.extendedProps.event.scheduleType === "canceled-changed")
-				return false;
-			info.el.title = info.event.title;
-			if (
-				["canceled", "canceled-system"].indexOf(
-					info.event.extendedProps.event.scheduleType
-				) !== -1
-			) {
-				info.el.title += ` (CANCELED)`;
-			}
-			if (
-				["updated", "updated-system"].indexOf(
-					info.event.extendedProps.event.scheduleType
-				) !== -1
-			) {
-				info.el.title += ` (edited on this occurrence)`;
-			}
-			var temp = document.getElementById(
-				`filter-${info.event.extendedProps.event.type}`
-			);
-			if (temp !== null && temp.checked) {
-				return true;
-			} else {
-				return false;
-			}
 		},
 
 		eventClick: function (info) {
@@ -1290,22 +1278,6 @@ window.addEventListener("DOMContentLoaded", () => {
 				updateClockwheel();
 			}
 
-			// Flash icons
-			animations.add("nav-icons-flash", () => {
-				$(".nav-icon-flash-danger").addClass("text-danger");
-				$(".nav-icon-flash-warning").addClass("text-warning");
-				$(".nav-icon-flash-primary").addClass("text-primary");
-				$(".nav-icon-flash-info").addClass("text-info");
-				$(".nav-icon-flash-success").addClass("text-success");
-				setTimeout(() => {
-					$(".nav-icon-flash-danger").removeClass("text-danger");
-					$(".nav-icon-flash-warning").removeClass("text-warning");
-					$(".nav-icon-flash-primary").removeClass("text-primary");
-					$(".nav-icon-flash-info").removeClass("text-info");
-					$(".nav-icon-flash-success").removeClass("text-success");
-				}, 500);
-			});
-
 			// Flash backgrounds
 			animations.add("bg-flash", () => {
 				$(".bg-flash-danger").addClass("bg-danger");
@@ -1795,23 +1767,21 @@ window.addEventListener("DOMContentLoaded", () => {
 			$(".notifications-info").html(info);
 			$(".notifications-primary").html(primary);
 
-			$(".nav-icon-notifications").removeClass("nav-icon-flash-danger");
-			$(".nav-icon-notifications").removeClass("text-danger");
-			$(".nav-icon-notifications").removeClass("nav-icon-flash-warning");
-			$(".nav-icon-notifications").removeClass("text-warning");
-			$(".nav-icon-notifications").removeClass("nav-icon-flash-info");
-			$(".nav-icon-notifications").removeClass("text-info");
+			$("#nav-notifications").removeClass("pulse-danger");
+			$("#nav-notifications").removeClass("pulse-warning");
+			$("#nav-notifications").removeClass("pulse-info");
+			$("#nav-notifications").removeClass("pulse-primary");
 
 			if (danger > 0) {
-				$(".nav-icon-notifications").addClass("nav-icon-flash-danger");
+				$("#nav-notifications").addClass("pulse-danger");
 			} else if (orange > 0) {
-				$(".nav-icon-notifications").addClass("nav-icon-flash-warning");
+				$("#nav-notifications").addClass("pulse-warning");
 			} else if (warning > 0) {
-				$(".nav-icon-notifications").addClass("nav-icon-flash-warning");
+				$("#nav-notifications").addClass("pulse-warning");
 			} else if (info > 0) {
-				$(".nav-icon-notifications").addClass("nav-icon-flash-info");
+				$("#nav-notifications").addClass("pulse-info");
 			} else if (primary > 0) {
-				$(".nav-icon-notifications").addClass("nav-icon-flash-primary");
+				$("#nav-notifications").addClass("pulse-primary");
 			}
 		});
 	}

@@ -79,6 +79,8 @@ class WWSUlogs extends WWSUevents {
 					[
 						"cancellation",
 						"updated",
+						"delay-dump",
+						"delay-bypass",
 						"director-cancellation",
 						"director-updated",
 						"silence",
@@ -496,6 +498,8 @@ class WWSUlogs extends WWSUevents {
 			[
 				"cancellation",
 				"updated",
+				"delay-dump",
+				"delay-bypass",
 				"director-cancellation",
 				"director-updated",
 				"silence",
