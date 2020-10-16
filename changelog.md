@@ -1,5 +1,21 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.17 - 2020-10-16
+
+### Removed
+- Buttons in notifications; they do not work with Electron IPC.
+
+### Added
+- Notification when the main UI of DJ Controls crashes.
+- Informative messages on certain pages.
+- Helper messages for check in due date and check in/out quantity fields in the inventory system.
+- originalDuration property to events (for now, only when conflict checking).
+- Remote office hours support in timesheet system.
+- Support for master director (ID = 0): cannot be removed, disabled as admin, nor edited by anyone other than the master director.
+
+### Changed
+- Wording in the event conflicts window to be easier to read.
+
 ## 8.0.0-alpha.16 - 2020-10-13
 
 ### Added

@@ -159,6 +159,40 @@ const createWindows = () => {
 
 	mainWindow.on("focus", () => mainWindow.flashFrame(false));
 
+	/* Electron v10
+	mainWindow.webContents.on("render-process-gone", (event, details) => {
+		console.log("Process gone!");
+		makeNotification({
+			title: "WWSU DJ Controls Crashed!",
+			bg: "danger",
+			header: "WWSU DJ Controls Crashed!",
+			flash: true,
+			body: `<p>Wuh oh! WWSU DJ Controls crashed, code ${details.reason}!</p>`,
+			buttons: [
+				{
+					id: "restart-renderer",
+					class: "success",
+					html: "Restart WWSU DJ Controls",
+					click: () => {
+						mainWindow.reload();
+					},
+				},
+			],
+		});
+	});
+	*/
+
+	mainWindow.webContents.on("crashed", (event, killed) => {
+		console.log("Main UI gone!");
+		makeNotification({
+			title: "WWSU DJ Controls Crashed!",
+			bg: "danger",
+			header: "WWSU DJ Controls Crashed!",
+			flash: true,
+			body: `<p>WWSU DJ Controls either crashed or was forcefully terminated. Please restart WWSU DJ Controls if you were using it, especially if doing a broadcast.</p>`
+		});
+	});
+
 	// Calendar process
 	const createCalendarWindow = () => {
 		// Create the calendar process
@@ -230,6 +264,32 @@ const createWindows = () => {
 		});
 		recorderWindow.loadFile("recorder.html");
 	};
+};
+
+const makeNotification = (data) => {
+	let notificationWindow = new BrowserWindow({
+		width: 640,
+		height: 480,
+		show: false,
+		center: true,
+		alwaysOnTop: true,
+		minimizable: false,
+		maximizable: false,
+		autoHideMenuBar: true, // Do not show manu bar unless alt is pressed
+		title: `DJ Controls - ${data.title}`,
+		webPreferences: {
+			contextIsolation: true,
+			enableRemoteModule: false, // electron's remote module is insecure
+			preload: path.join(__dirname, "preload-notification.js"),
+			backgroundThrottling: false, // Do not throttle this process.
+			zoomFactor: 1.25,
+		},
+	});
+	notificationWindow.once("ready-to-show", () => {
+		notificationWindow.show();
+		notificationWindow.webContents.send("notificationData", data);
+	});
+	notificationWindow.loadFile("notification.html");
 };
 
 // Enforce sandboxing for security
@@ -369,31 +429,7 @@ ipcMain.on("main", (event, arg) => {
 	switch (arg[0]) {
 		// Generate a notification window
 		case "makeNotification":
-			((data) => {
-				let notificationWindow = new BrowserWindow({
-					width: 640,
-					height: 480,
-					show: false,
-					center: true,
-					alwaysOnTop: true,
-					minimizable: false,
-					maximizable: false,
-					autoHideMenuBar: true, // Do not show manu bar unless alt is pressed
-					title: `DJ Controls - ${data.title}`,
-					webPreferences: {
-						contextIsolation: true,
-						enableRemoteModule: false, // electron's remote module is insecure
-						preload: path.join(__dirname, "preload-notification.js"),
-						backgroundThrottling: false, // Do not throttle this process.
-						zoomFactor: 1.25,
-					},
-				});
-				notificationWindow.once("ready-to-show", () => {
-					notificationWindow.show();
-					notificationWindow.webContents.send("notificationData", data);
-				});
-				notificationWindow.loadFile("notification.html");
-			})(arg[1][0]);
+			makeNotification(arg[1][0]);
 			break;
 
 		// When a file reader is ready to be saved to an audio file

@@ -15,8 +15,8 @@ class WWSUdirectors extends WWSUdb {
 		this.endpoints = {
 			get: "/directors/get",
 			add: "/directors/add",
-            edit: "/directors/edit",
-            remove: "/directors/remove"
+			edit: "/directors/edit",
+			remove: "/directors/remove",
 		};
 		this.data = {
 			get: {},
@@ -26,14 +26,23 @@ class WWSUdirectors extends WWSUdb {
 
 			// We are creating our own WWSUreq inside WWSUdirectors because this req depends on WWSUdirectors, thereby making a circular reference problem.
 			adminDirector: new WWSUreq(
-                socket,
-                machineID,
-                this,
-                { admin: true },
-                "name",
-                "/auth/admin-director",
-                "Administrator Director"
-            ),
+				socket,
+				machineID,
+				this,
+				{ admin: true },
+				"name",
+				"/auth/admin-director",
+				"Administrator Director"
+			),
+			masterDirector: new WWSUreq(
+				socket,
+				machineID,
+				this,
+				{ ID: 0 },
+				"name",
+				"/auth/admin-director",
+				"Master Director"
+			),
 		};
 
 		this.table;
@@ -114,7 +123,7 @@ class WWSUdirectors extends WWSUdb {
 	 */
 	editDirector(data, cb) {
 		try {
-			this.requests.adminDirector.request(
+			this.requests[data.ID === 0 ? "masterDirector" : "adminDirector"].request(
 				{
 					dom: `#modal-${this.newDirectorModal.id}`,
 					method: "post",
@@ -255,7 +264,19 @@ class WWSUdirectors extends WWSUdb {
 								(director) =>
 									director.ID === parseInt($(e.currentTarget).data("id"))
 							);
-							this.showDirectorForm(director);
+							if (director.ID === 0) {
+								util.confirmDialog(
+									`<p>Are you sure you want to edit the <strong>Master Director</strong>?</p>
+									<p>Please be aware that <strong>only the master director may edit the master director</strong>.</p>
+									<p>If the master director forgot their password, it must be reset. Please contact Patrick Schmalstig at xanaftp@gmail.com.</p>`,
+									null,
+									() => {
+										this.showDirectorForm(director);
+									}
+								);
+							} else {
+								this.showDirectorForm(director);
+							}
 						});
 
 						$(".btn-director-delete").click((e) => {
@@ -308,7 +329,11 @@ class WWSUdirectors extends WWSUdb {
 						director.name || "",
 						director.position || "Unknown Position",
 						director.present
-							? `<i class="fas fa-check-circle text-success" title="${director.name} is currently clocked in"></i>`
+							? `<i class="fas fa-check-circle text-${
+									director.present === 2 ? `indigo` : `success`
+							  }" title="${director.name} is currently clocked in${
+									director.present === 2 ? ` for remote hours` : ``
+							  }"></i>`
 							: ``,
 						director.admin
 							? `<i class="fas fa-check-circle text-success" title="${director.name} is an administrator director"></i>`
@@ -329,7 +354,15 @@ class WWSUdirectors extends WWSUdb {
 								? `<i class="fas fa-chart-line text-primary" title="${director.name} will receive emails every Sunday 12AM containing weekly analytics."></i>`
 								: ``
 						}`,
-						`<div class="btn-group"><button class="btn btn-sm btn-warning btn-director-edit" data-id="${director.ID}" title="Edit director"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-director-delete" data-id="${director.ID}" title="Remove Director"><i class="fas fa-trash"></i></button></div>`,
+						`<div class="btn-group"><button class="btn btn-sm btn-warning btn-director-edit" data-id="${
+							director.ID
+						}" title="Edit director"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-director-delete" data-id="${
+							director.ID
+						}" ${
+							director.ID === 0
+								? `title="Cannot remove the master director" disabled`
+								: `title="Remove Director"`
+						}><i class="fas fa-trash"></i></button></div>`,
 					]);
 				});
 				this.table.draw();
@@ -344,9 +377,9 @@ class WWSUdirectors extends WWSUdb {
 		// reset login to null when filling out default values
 		if (data && data.login) data.login = null;
 
-        this.newDirectorModal.body = ``;
-        
-        this.newDirectorModal.iziModal("open");
+		this.newDirectorModal.body = ``;
+
+		this.newDirectorModal.iziModal("open");
 
 		$(this.newDirectorModal.body).alpaca({
 			schema: {
@@ -370,6 +403,7 @@ class WWSUdirectors extends WWSUdb {
 					admin: {
 						type: "boolean",
 						title: "Is Admin Director?",
+						readonly: data && data.ID === 0,
 					},
 					assistant: {
 						type: "boolean",
@@ -412,8 +446,10 @@ class WWSUdirectors extends WWSUdb {
 					},
 					admin: {
 						rightLabel: "Yes",
-						helper:
+						helpers: [
 							"Check this box if this director is an admin. Admin directors have the power to manage other directors and their timesheets in the system.",
+							"This option cannot be changed for the master director.",
+						],
 					},
 					assistant: {
 						rightLabel: "Yes",

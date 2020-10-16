@@ -205,9 +205,9 @@ class WWSUtimesheet extends WWSUevents {
 					columns: [
 						{ title: "Director" },
 						{ title: "Scheduled Hours" },
-						{ title: "Approved Hours" },
-						{ title: "Unapproved Hours" },
-						{ title: "Total Clocked Hours" },
+						{ title: "In-Office Hours" },
+						{ title: "Remote Hours" },
+						{ title: "Total Hours" },
 					],
 					order: [[0, "asc"]],
 				});
@@ -228,7 +228,7 @@ class WWSUtimesheet extends WWSUevents {
 						{ title: "Actual Out" },
 						{ title: "Actions" },
 					],
-					columnDefs: [{ responsivePriority: 1, targets: 6 }],
+					columnDefs: [{ responsivePriority: 1, targets: 7 }],
 					order: [[0, "asc"]],
 					pageLength: 25,
 					drawCallback: () => {
@@ -319,30 +319,62 @@ class WWSUtimesheet extends WWSUevents {
 							// Set up tamplate if new director
 							if (typeof directors[record.name] === "undefined") {
 								directors[record.name] = {
-									approved: 0,
-									unapproved: 0,
-									scheduled: 0,
+									scheduled: { office: 0, remote: 0, total: 0 },
+									office: { approved: 0, unapproved: 0, total: 0 },
+									remote: { approved: 0, unapproved: 0, total: 0 },
+									total: { approved: 0, unapproved: 0, total: 0 },
 								};
 							}
 
 							// Add scheduled hours
 							if (record.scheduledIn && record.scheduledOut) {
-								directors[record.name].scheduled += moment(
+								directors[record.name].scheduled[
+									record.remote ? "remote" : "office"
+								] += moment(record.scheduledOut).diff(
+									record.scheduledIn,
+									"hours",
+									true
+								);
+								directors[record.name].scheduled.total += moment(
 									record.scheduledOut
 								).diff(record.scheduledIn, "hours", true);
 							}
 
 							// Add actual hours
 							if (record.timeIn) {
-								if (record.approved === 1) {
-									directors[record.name].approved += moment(
+								if (record.remote) {
+									directors[record.name].remote[
+										record.approved === 1 ? "approved" : "unapproved"
+									] += moment(record.timeOut || undefined).diff(
+										record.timeIn,
+										"hours",
+										true
+									);
+									directors[record.name].remote.total += moment(
 										record.timeOut || undefined
 									).diff(record.timeIn, "hours", true);
 								} else {
-									directors[record.name].unapproved += moment(
+									directors[record.name].office[
+										record.approved === 1 ? "approved" : "unapproved"
+									] += moment(record.timeOut || undefined).diff(
+										record.timeIn,
+										"hours",
+										true
+									);
+									directors[record.name].office.total += moment(
 										record.timeOut || undefined
 									).diff(record.timeIn, "hours", true);
 								}
+								directors[record.name].total[
+									record.approved === 1 ? "approved" : "unapproved"
+								] += moment(record.timeOut || undefined).diff(
+									record.timeIn,
+									"hours",
+									true
+								);
+								directors[record.name].total.total += moment(
+									record.timeOut || undefined
+								).diff(record.timeIn, "hours", true);
 							}
 						});
 
@@ -353,21 +385,50 @@ class WWSUtimesheet extends WWSUevents {
 								this.tables.hours.rows.add([
 									[
 										director,
-										Math.round(
-											(directors[director].scheduled + Number.EPSILON) * 100
-										) / 100,
-										Math.round(
-											(directors[director].approved + Number.EPSILON) * 100
-										) / 100,
-										Math.round(
-											(directors[director].unapproved + Number.EPSILON) * 100
-										) / 100,
-										Math.round(
-											(directors[director].approved +
-												directors[director].unapproved +
-												Number.EPSILON) *
-												100
-										) / 100,
+										`<ul>
+										<li>In-Office: ${Math.round(
+											(directors[director].scheduled.office + Number.EPSILON) * 100
+										) / 100}</li>
+										<li>Remote: ${Math.round(
+											(directors[director].scheduled.remote + Number.EPSILON) * 100
+										) / 100}</li>
+										<li>Total: ${Math.round(
+											(directors[director].scheduled.total + Number.EPSILON) * 100
+										) / 100}</li>
+										</ul>`,
+										`<ul>
+										<li>Approved: ${Math.round(
+											(directors[director].office.approved + Number.EPSILON) * 100
+										) / 100}</li>
+										<li>Un-approved: ${Math.round(
+											(directors[director].office.unapproved + Number.EPSILON) * 100
+										) / 100}</li>
+										<li>Total: ${Math.round(
+											(directors[director].office.total + Number.EPSILON) * 100
+										) / 100}</li>
+										</ul>`,
+										`<ul>
+										<li>Approved: ${Math.round(
+											(directors[director].remote.approved + Number.EPSILON) * 100
+										) / 100}</li>
+										<li>Un-approved: ${Math.round(
+											(directors[director].remote.unapproved + Number.EPSILON) * 100
+										) / 100}</li>
+										<li>Total: ${Math.round(
+											(directors[director].remote.total + Number.EPSILON) * 100
+										) / 100}</li>
+										</ul>`,
+										`<ul>
+										<li>Approved: ${Math.round(
+											(directors[director].total.approved + Number.EPSILON) * 100
+										) / 100}</li>
+										<li>Un-approved: ${Math.round(
+											(directors[director].total.unapproved + Number.EPSILON) * 100
+										) / 100}</li>
+										<li>Total: ${Math.round(
+											(directors[director].total.total + Number.EPSILON) * 100
+										) / 100}</li>
+										</ul>`,
 									],
 								]);
 							}
@@ -398,7 +459,7 @@ class WWSUtimesheet extends WWSUevents {
 								return [
 									record.ID,
 									record.name,
-									status,
+									`${record.remote ? `<span class="badge bg-indigo">Remote</span>` : ``}${status}`,
 									record.scheduledIn
 										? moment
 												.tz(
@@ -474,6 +535,11 @@ class WWSUtimesheet extends WWSUevents {
 					name: {
 						type: "string",
 						title: "Director",
+						readonly: true,
+					},
+					remote: {
+						type: "boolean",
+						title: "Is Remote Hours?",
 						readonly: true,
 					},
 					scheduledIn: {

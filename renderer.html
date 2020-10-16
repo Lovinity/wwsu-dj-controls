@@ -1263,21 +1263,22 @@
 
 					<!-- Main content -->
 					<div class="content">
-						<div class="card elevation-2">
+						<div class="card card-primary elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Track Requests</h3>
+							</div>
 							<!-- /.card-header -->
 							<div class="card-body" id="section-requests-table-div"></div>
 							<div class="card-footer p-1">
 								<div class="callout callout-info">
 									<h5>Playing Requests are Optional</h5>
-
 									<p>
 										You do not have to play track requests during your show.
 										Requests you ignore will play during automation.
 									</p>
 								</div>
 								<div class="callout callout-info">
-									<h5>Requests Stay Until Played</h5>
-
+									<h5>Requests Remain Until Played</h5>
 									<p>
 										Track requests will remain in this list, even when they are
 										queued, until they are played in RadioDJ.
@@ -1553,9 +1554,26 @@
 
 					<!-- Main content -->
 					<div class="content">
-						<div class="card elevation-2">
-							<!-- /.card-header -->
+						<div class="card card-danger elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Report a Problem</h3>
+							</div>
 							<div class="card-body" id="section-report-form"></div>
+							<div class="card-footer">
+								<div class="callout callout-info">
+									<h5>What happens when you report?</h5>
+									<ul>
+										<li>
+											Directors will be notified by email and in DJ Controls.
+										</li>
+										<li>
+											The issue will be visible for other DJs in the
+											Announcements tab of DJ Controls until the issue is
+											resolved.
+										</li>
+									</ul>
+								</div>
+							</div>
 							<!-- /.card-body -->
 						</div>
 					</div>
@@ -1584,7 +1602,6 @@
 					<div class="content">
 						<div class="callout callout-info">
 							<h5>Settings are specific to this DJ Controls</h5>
-
 							<p>
 								The settings you apply here are specific to this DJ Controls.
 								The settings are not shared with other DJ Controls instances on
@@ -1600,7 +1617,6 @@
 							<div class="card-body">
 								<div class="callout callout-info">
 									<h5>Ignored if not actively in a remote broadcast</h5>
-
 									<p>
 										These settings are only used if you want to change audio
 										devices while in a remote broadcast.
@@ -1619,7 +1635,6 @@
 							<div class="card-body">
 								<div class="callout callout-info">
 									<h5>Ignored if not monitoring for silence</h5>
-
 									<p>
 										These settings are only used if and when this DJ Controls is
 										set as the responsible DJ Controls for silence detection.
@@ -1638,7 +1653,6 @@
 							<div class="card-body">
 								<div class="callout callout-info">
 									<h5>Ignored if not responsible for recording programming</h5>
-
 									<p>
 										These settings are only used if and when this DJ Controls is
 										set as the responsible DJ Controls for recording on-air
@@ -1670,6 +1684,13 @@
 					</div>
 
 					<div class="content">
+						<div class="callout callout-warning">
+							<h5>Check Daily</h5>
+							<p>
+								It is highly recommended to check the to-do list at least daily;
+								please do not let the logged issues accumulate.
+							</p>
+						</div>
 						<div class="card card-danger elevation-2">
 							<div class="card-header">
 								<h3 class="card-title">System Problems that Need Resolved</h3>
@@ -1711,7 +1732,18 @@
 
 					<!-- Main content -->
 					<div class="content">
-						<div class="card elevation-2">
+						<div class="callout callout-info">
+							<h5>What Are Announcements?</h5>
+							<p>
+								Announcements are messages that can be displayed on DJ Controls,
+								the timesheet system, the website, or the display signs (as
+								slides).
+							</p>
+						</div>
+						<div class="card card-info elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Announcements Management</h3>
+							</div>
 							<div class="card-body" id="section-announcements-content"></div>
 						</div>
 					</div>
@@ -1738,7 +1770,17 @@
 
 					<!-- Main content -->
 					<div class="content">
-						<div class="card elevation-2">
+						<div class="callout callout-warning">
+							<h5>Mainly for developers</h5>
+							<p>
+								This is mainly for the engineer / developers. Please only use if
+								you know what you are doing.
+							</p>
+						</div>
+						<div class="card card-danger elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Make API Query</h3>
+							</div>
 							<!-- /.card-header -->
 							<div class="card-body" id="section-api-form"></div>
 							<!-- /.card-body -->
@@ -1764,6 +1806,16 @@
 					</div>
 
 					<div class="content">
+						<div class="callout callout-warning">
+							<h5>Keep Up To Date</h5>
+							<p>
+								Please keep the calendar up to date at all times. The calendar
+								is visible in many public places, such as the display signs and
+								the website. The calendar also tells the system what broadcasts
+								are expected to air and when, or which directors are expected to
+								be in the office.
+							</p>
+						</div>
 						<div class="container-fluid">
 							<div class="row">
 								<!-- /.col -->
@@ -1979,6 +2031,9 @@
 										<!-- /.card-body -->
 									</div>
 									<div class="card card-primary">
+										<div class="card-header">
+											<h3 class="card-title">Calendar</h3>
+										</div>
 										<div class="card-body p-0">
 											<p class="p-1">
 												<strong
@@ -2035,7 +2090,25 @@
 
 					<!-- Main content -->
 					<div class="content">
-						<div class="card elevation-2">
+						<div class="callout callout-warning">
+							<h5>Keep Up To Date</h5>
+							<p>
+								Please keep this up to date. Immediately remove directors when
+								no longer with WWSU to prevent them from making unauthorized
+								changes. Add new directors as they join.
+							</p>
+							<p>
+								<strong
+									>When you remove a director, be sure to remove/modify their
+									hosts via the Hosts tab, if applicable!</strong
+								>
+								Otherwise, they might have unintended access to WWSU.
+							</p>
+						</div>
+						<div class="card card-primary elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Director Management</h3>
+							</div>
 							<div class="card-body" id="section-directors-content"></div>
 						</div>
 					</div>
@@ -2062,7 +2135,25 @@
 
 					<!-- Main content -->
 					<div class="content">
-						<div class="card elevation-2">
+						<div class="callout callout-warning">
+							<h5>Keep Up To Date</h5>
+							<p>
+								Please keep this DJ list up to date. Remove DJs who are no
+								longer at WWSU and will not return within the next year. Add new
+								DJs when they join WWSU.
+							</p>
+							<p>
+								<strong
+									>When you remove a DJ, be sure to remove/modify their hosts
+									via the Hosts tab, if applicable!</strong
+								>
+								Otherwise, they might have unintended access to WWSU.
+							</p>
+						</div>
+						<div class="card card-danger elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">DJ Management</h3>
+							</div>
 							<div class="card-body" id="section-djs-content"></div>
 						</div>
 					</div>
@@ -2089,7 +2180,40 @@
 
 					<!-- Main content -->
 					<div class="content">
-						<div class="card elevation-2">
+						<div class="callout callout-info">
+							<h5>What are hosts?</h5>
+							<p>
+								Hosts are computers / installations running WWSU DJ Controls or
+								the WWSU Timesheets application.
+							</p>
+							<ul>
+								<li>
+									Hosts management helps ensure those who should not have access
+									to the WWSU System do not have it.
+								</li>
+								<li>
+									Hosts management helps ensure certain installations /
+									computers have certain permissions and cannot make
+									unauthorized changes.
+								</li>
+								<li>
+									Hosts management defines which computers are responsible for
+									certain things, such as silence detection.
+								</li>
+							</ul>
+						</div>
+						<div class="callout callout-warning">
+							<h5>Keep Up To Date</h5>
+							<p>
+								Do not allow people [no longer] involved with WWSU to have
+								authorization / access to WWSU. Be sure to de-authorize or
+								remove hosts belonging to directors or DJs when they leave WWSU.
+							</p>
+						</div>
+						<div class="card card-secondary elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Hosts Management</h3>
+							</div>
 							<div class="card-body" id="section-hosts-content"></div>
 						</div>
 					</div>
@@ -2116,7 +2240,25 @@
 
 					<!-- Main content -->
 					<div class="content">
-						<div class="card elevation-2">
+						<div class="callout callout-info">
+							<h5>What is this?</h5>
+							<p>
+								Inventory management enables keeping track of the equipment and
+								supplies at WWSU. It also provides a check-in and check-out
+								system with logging.
+							</p>
+						</div>
+						<div class="callout callout-warning">
+							<h5>Keep Up To Date</h5>
+							<p>
+								Be sure to keep the inventory up to date. Periodically go over
+								everything (once per year is recommended) to ensure accuracy.
+							</p>
+						</div>
+						<div class="card card-secondary elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Inventory Management</h3>
+							</div>
 							<div class="card-body" id="section-inventory-content"></div>
 						</div>
 					</div>

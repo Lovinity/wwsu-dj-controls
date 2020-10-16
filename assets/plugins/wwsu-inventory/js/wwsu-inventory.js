@@ -1103,6 +1103,10 @@ class WWSUinventory extends WWSUdb {
 					item: {
 						type: "hidden",
 					},
+					checkOutQuantity: {
+						helper:
+							"This helps keep track of quantity and alert directors via system status if there are missing quantities of this item.",
+					},
 					checkOutDate: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
 							.parseZone(this.meta ? this.meta.meta.time : undefined)
@@ -1126,6 +1130,8 @@ class WWSUinventory extends WWSUdb {
 							inline: true,
 							sideBySide: true,
 						},
+						helper:
+							"When you specify a date/time, if the item(s) are not checked back in by the provided date/time, the system status will show an info message of the past-due item(s) until checked back in.",
 					},
 					checkOutNotes: {
 						type: "textarea",
@@ -1208,6 +1214,10 @@ class WWSUinventory extends WWSUdb {
 				fields: {
 					ID: {
 						type: "hidden",
+					},
+					checkInQuantity: {
+						helper:
+							"If the quantity of the item being checked in is less than what was checked out, system status will alert of missing quantity.",
 					},
 					checkInDate: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
