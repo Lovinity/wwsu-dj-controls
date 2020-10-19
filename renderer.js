@@ -70,7 +70,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		meta,
 		directorReq
 	);
-	var timesheets = new WWSUtimesheet(socket, noReq, adminDirectorReq, meta);
 	var calendar = new WWSUcalendar(socket, meta, noReq, directorReq, djReq);
 	var subscriptions = new WWSUsubscriptions(socket, noReq);
 	var api = new WWSUapi(noReq, hostReq, djReq, directorReq, adminDirectorReq);
@@ -87,6 +86,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		directorReq,
 		djs
 	);
+	var timesheets = new WWSUtimesheet(socket, noReq, directors, adminDirectorReq, meta, hosts);
 	var messages = new WWSUmessages(
 		socket,
 		recipients,

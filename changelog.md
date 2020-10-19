@@ -1,5 +1,10 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.18
+
+### Added
+- Support for timesheet notes
+
 ## 8.0.0-alpha.17 - 2020-10-16
 
 ### Removed
