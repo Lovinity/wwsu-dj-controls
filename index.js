@@ -84,8 +84,7 @@ autoUpdater.on("update-available", (info) => {
 // Prevent windows from being garbage collected
 let mainWindow;
 let calendarWindow;
-let skywayWindow;
-let recorderWindow;
+let audioWindow;
 
 // Other variables
 let metaState = `unknown`;
@@ -139,8 +138,7 @@ const createWindows = () => {
 		// autoUpdater.checkForUpdates();
 
 		createCalendarWindow();
-		createSkywayWindow();
-		createRecorderWindow();
+		createAudioWindow();
 	});
 
 	// and load the renderer.html of the app.
@@ -152,9 +150,7 @@ const createWindows = () => {
 
 		calendarWindow.close();
 		calendarWindow = null;
-		skywayWindow.close();
-		skywayWindow = null;
-		recorderWindow.webContents.send("shutDown");
+		audioWindow.webContents.send("shutDown");
 	});
 
 	mainWindow.on("focus", () => mainWindow.flashFrame(false));
@@ -217,52 +213,28 @@ const createWindows = () => {
 		calendarWindow.loadFile("calendar.html");
 	};
 
-	// Skyway.js process for remote audio streaming / calling
-	const createSkywayWindow = () => {
-		// Create the skyway process
-		skywayWindow = new BrowserWindow({
+	// Process for audio
+	const createAudioWindow = () => {
+		// Create the audio process
+		audioWindow = new BrowserWindow({
 			width: 1280,
 			height: 720,
 			show: false,
-			title: `${app.name} - Skyway.js Process`,
+			title: `${app.name} - Audio Process`,
 			webPreferences: {
 				contextIsolation: true,
 				enableRemoteModule: false, // electron's remote module is insecure
-				preload: path.join(__dirname, "preload-skyway.js"),
+				preload: path.join(__dirname, "preload-audio.js"),
 				backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
 			},
 		});
 
-		skywayWindow.on("closed", function () {
+		audioWindow.on("closed", function () {
 			if (mainWindow !== null) {
-				createSkywayWindow();
+				createAudioWindow();
 			}
 		});
-		skywayWindow.loadFile("skyway.html");
-	};
-
-	// Process for recording audio / programming
-	const createRecorderWindow = () => {
-		// Create the recorder process
-		recorderWindow = new BrowserWindow({
-			width: 1280,
-			height: 720,
-			show: false,
-			title: `${app.name} - Recorder Process`,
-			webPreferences: {
-				contextIsolation: true,
-				enableRemoteModule: false, // electron's remote module is insecure
-				preload: path.join(__dirname, "preload-recorder.js"),
-				backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
-			},
-		});
-
-		recorderWindow.on("closed", function () {
-			if (mainWindow !== null) {
-				createRecorderWindow();
-			}
-		});
-		recorderWindow.loadFile("recorder.html");
+		audioWindow.loadFile("audio.html");
 	};
 };
 
@@ -407,17 +379,10 @@ ipcMain.on("calendar", (event, arg) => {
 	} catch (e) {}
 });
 
-// Messages to be sent to the skyway process
-ipcMain.on("skyway", (event, arg) => {
+// Messages to be sent to the audio process
+ipcMain.on("audio", (event, arg) => {
 	try {
-		skywayWindow.webContents.send(arg[0], arg[1]);
-	} catch (e) {}
-});
-
-// Messages to be sent to the recorder process
-ipcMain.on("recorder", (event, arg) => {
-	try {
-		recorderWindow.webContents.send(arg[0], arg[1]);
+		audioWindow.webContents.send(arg[0], arg[1]);
 	} catch (e) {
 		console.error(e);
 	}
@@ -488,14 +453,14 @@ ipcMain.on("main", (event, arg) => {
 						if (err) {
 							console.error(err);
 						} else {
-							recorderWindow.webContents.send(
+							audioWindow.webContents.send(
 								`recorderSaved`,
 								`${config.get("recorder.recordPath")}/${args[0]}`
 							);
 							if (mainWindow) {
 								mainWindow.webContents.send("console", [
 									"log",
-									`Recorder: Recording ${config.get("recorder.recordPath")}/${
+									`Audio: Recording ${config.get("recorder.recordPath")}/${
 										args[0]
 									} saved.`,
 								]);

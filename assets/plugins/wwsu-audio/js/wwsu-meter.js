@@ -1,6 +1,6 @@
 // Create an Audio node and meter/processor from the audio worklet
 
-const SMOOTHING_FACTOR = 0.98;
+const SMOOTHING_FACTOR = 0.94;
 const MINIMUM_VALUE = 0.00001;
 
 // This is the way to register an AudioWorkletProcessor
@@ -16,7 +16,7 @@ registerProcessor(
 		constructor() {
 			super();
 			this._volume = [0, 0];
-			this._updateIntervalInMS = 60;
+			this._updateIntervalInMS = 180;
 			this._nextUpdateFrame = this._updateIntervalInMS;
 			this.port.onmessage = (event) => {
 				if (event.data.updateIntervalInMS)

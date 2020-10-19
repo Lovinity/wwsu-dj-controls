@@ -9,13 +9,11 @@ class WWSUrecorder extends WWSUevents {
 	/**
 	 * Construct the audio device.
 	 *
-	 * @param {string} worker Directory path to the workewr file
-	 * @param {string} device The input device to use initially.
+	 * @param {string} worker Directory path to the worker file
 	 */
-	constructor(worker, device) {
+	constructor(worker) {
 		super();
 
-		this.device = device;
 		this.encodingTitle;
 		this.currentTitle;
 		this.pendingTitle;
@@ -26,9 +24,10 @@ class WWSUrecorder extends WWSUevents {
 
 		this.recorder;
 
-		this.audio = new WWSUaudio(this.device);
-
-		this.emitEvent("recorderReady", []);
+		// Create audio context and destination
+		window.AudioContext = window.AudioContext || window.webkitAudioContext;
+		this.audioContext = new AudioContext();
+		this.destination = this.audioContext.createMediaStreamDestination();
 	}
 
 	/**
@@ -54,7 +53,7 @@ class WWSUrecorder extends WWSUevents {
 				if (this.pendingTitle) {
 					this.currentTitle = this.pendingTitle;
 					this.recorder = new window.mp3MediaRecorder.Mp3MediaRecorder(
-						this.audio.mediaStream,
+						this.destination.stream,
 						{ worker: this.worker }
 					);
 					this.recorder.start();
@@ -132,5 +131,23 @@ class WWSUrecorder extends WWSUevents {
 				_stopRecording();
 			}, delay);
 		}
+	}
+
+	/**
+	 * Connect an input node to the recorder.
+	 * 
+	 * @param {AudioNode} node The audio node to connect
+	 */
+	connectSource(node) {
+		node.connect(this.audioContext.destination);
+	}
+
+	/**
+	 * Disconnect an input node from the recorder.
+	 * 
+	 * @param {AudioNode} node The audio node to disconnect
+	 */
+	disconnectSource(node) {
+		node.disconnect(this.audioContext.destination);
 	}
 }
