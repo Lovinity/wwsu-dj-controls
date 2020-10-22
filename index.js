@@ -219,7 +219,7 @@ const createWindows = () => {
 		audioWindow = new BrowserWindow({
 			width: 1280,
 			height: 720,
-			show: false,
+			show: true,
 			title: `${app.name} - Audio Process`,
 			webPreferences: {
 				contextIsolation: true,
@@ -342,6 +342,8 @@ ipcMain.on("settings", (event, arg) => {
 
 // Save new settings
 ipcMain.on("saveSettings", (event, arg) => {
+	console.log('saving settings');
+	console.dir(arg);
 	config.set(arg[0], arg[1]);
 });
 

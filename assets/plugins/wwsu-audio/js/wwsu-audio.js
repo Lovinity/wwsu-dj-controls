@@ -1,7 +1,8 @@
 /**
  * Manager for audio devices
+ * // TODO: settings does not update as it should when they are changed; figure out another way to access settings.
  */
-class WWSUAudioManager {
+class WWSUAudioManager extends WWSUevents {
 	/**
 	 *
 	 * @param {ipc} settings IPC to main process for settings
@@ -10,12 +11,13 @@ class WWSUAudioManager {
 	 * @param {WWSUsilence} silence Initialized WWSU silence detection
 	 * @param {WWSUremote} remote initialized WWSU remote broadcasting
 	 */
-	constructor(settings, saveSettings, recorder, silence, remote) {
+	constructor(settings, recorder, silence, remote) {
+		super();
+
 		this.inputs = new Map();
 		this.outputs = new Map();
 
 		this.settings = settings;
-		this.saveSettings = saveSettings;
 		this.recorder = recorder;
 		this.silence = silence;
 		this.remote = remote;
@@ -23,6 +25,8 @@ class WWSUAudioManager {
 		// Create audio context
 		window.AudioContext = window.AudioContext || window.webkitAudioContext;
 		this.audioContext = new AudioContext();
+
+		this.loadDevices();
 	}
 
 	/**
@@ -34,12 +38,10 @@ class WWSUAudioManager {
 			this.inputs.forEach((device) => {
 				device.disconnect();
 				try {
-					this.recorder.disconnect(device.outputNode);
-					this.silence.disconnect(device.outputNode);
-					this.remote.disconnect(device.outputNode);
-				} catch (e) {
-
-				}
+					this.recorder.disconnectSource(device.outputNode);
+					this.silence.disconnectSource(device.outputNode);
+					this.remote.disconnectSource(device.outputNode);
+				} catch (e) {}
 			});
 		}
 		if (this.outputs.size > 0) {
@@ -52,47 +54,52 @@ class WWSUAudioManager {
 
 		// Grab available devices
 		navigator.mediaDevices.enumerateDevices().then((devices) => {
-			// Start with inputs
-			devices
-				.filter((device) => device.kind === "audioinput")
-				.map((device) => {
-					// Get saved device settings or add defaults if they do not exist
-					let settings = this.getDeviceSettings(deviceId);
-
+			let _devices = devices.map((device) => {
+				// Get saved device settings or add defaults if they do not exist
+				let settings = this.getDeviceSettings(device.deviceId);
+				// Input devices
+				if (device.kind === "audioinput") {
 					let wwsuaudio = new WWSUAudioInput(
 						device,
 						settings,
 						this.audioContext
 					);
+					wwsuaudio.on("audioVolume", "WWSUAudioManager", (volume) => {
+						this.emitEvent("audioVolume", [device.deviceId, volume]);
+					});
 					wwsuaudio.on("audioVolumeChanged", "WWSUAudioManager", (volume) => {
-						this.saveSettings(
-							`audio`,
-							this.settings
-								.filter((_dev) => _dev.deviceId !== device.deviceId)
-								.push(Object.assign(settings, { volume: volume }))
+						let _settings = this.settings.audio.filter(
+							(_dev) => _dev.deviceId !== device.deviceId
 						);
+						_settings.push(Object.assign(settings, { volume: volume }));
+						this.settings.save(`audio`, _settings);
 					});
 					wwsuaudio.on("outputNodeReady", "WWSUAudioManager", (node) => {
 						if (settings.recorder) {
 							this.recorder.connect(node);
 						}
+						if (settings.silence) {
+							this.silence.connect(node);
+						}
+						if (settings.remote) {
+							this.remote.connect(node);
+						}
 					});
 
 					this.inputs.set(device.deviceId, wwsuaudio);
-				});
 
-			// Outputs
-			devices
-				.filter((device) => device.kind === "audiooutput")
-				.map((device) => {
+					// Output devices
+				} else if (device.kind === "audiooutput") {
 					// Get saved device settings or add defaults if they do not exist
-					let settings = this.getDeviceSettings(deviceId);
+					// TODO
+					// let settings = this.getDeviceSettings(deviceId);
+					// let wwsuaudio = new WWSUAudioOutput(device, settings);
+					//this.inputs.set(device.deviceId, wwsuaudio);
+				}
 
-					this.inputs.set(
-						device.deviceId,
-						new WWSUAudioOutput(device, settings)
-					);
-				});
+				return { device: device, settings: settings };
+			});
+			this.emitEvent("devices", [_devices]);
 		});
 	}
 
@@ -103,7 +110,7 @@ class WWSUAudioManager {
 	 */
 	getDeviceSettings(deviceId) {
 		return (
-			this.settings.find((sett) => sett.deviceId === deviceId) ||
+			this.settings.audio.find((sett) => sett.deviceId === deviceId) ||
 			((dev) => {
 				let defaults = {
 					deviceId: dev,
@@ -113,13 +120,27 @@ class WWSUAudioManager {
 					remote: false,
 					output: false,
 				};
-				this.saveSettings(
-					`audio`,
-					this.settings.filter((_dev) => _dev.deviceId !== dev).push(defaults)
+				let _settings = this.settings.audio.filter(
+					(_dev) => _dev.deviceId !== deviceId
 				);
+				_settings.push(defaults);
+				this.settings.save(`audio`);
 				return defaults;
 			})(deviceId)
 		);
+	}
+
+	/**
+	 * Change the volume of a device.
+	 *
+	 * @param {string} deviceId The device ID to change volume.
+	 * @param {number} volume The new volume to set at (between 0 and 1);
+	 */
+	changeVolume(deviceId, volume) {
+		let device = this.inputs.get(deviceId) || this.outputs.get(deviceId);
+		if (device) {
+			device.changeVolume(volume);
+		}
 	}
 }
 
@@ -145,7 +166,10 @@ class WWSUAudioInput extends WWSUevents {
 
 		// Create gain, and set to setting volume.
 		this.gain = this.audioContext.createGain();
-		this.gain.setValueAtTime(settings.volume, this.audioContext.currentTime);
+		this.gain.gain.setValueAtTime(
+			settings.volume,
+			this.audioContext.currentTime
+		);
 
 		// Add VU meter audio worklet
 		this.audioContext.audioWorklet
@@ -199,7 +223,10 @@ class WWSUAudioInput extends WWSUevents {
 				.disconnect(this.gain)
 				.disconnect(this.node)
 				.disconnect(this.audioContext.destination);
+			this.outputNode.disconnect(this.gain);
+
 			this.analyser = undefined;
+			this.outputNode = undefined;
 		} catch (eee) {
 			// ignore errors
 		}
@@ -211,7 +238,7 @@ class WWSUAudioInput extends WWSUevents {
 	 * @param {number} gain New gain value
 	 */
 	changeVolume(gain) {
-		this.gain.setValueAtTime(gain, this.audioContext.currentTime);
+		this.gain.gain.setValueAtTime(gain, this.audioContext.currentTime);
 		this.emitEvent("audioVolumeChanged", [gain]);
 	}
 }

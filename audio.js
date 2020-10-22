@@ -7,34 +7,57 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	// Initialize the recorder
 	var recorder = new WWSUrecorder(
-		"assets/plugins/mediarecorder/mp3-mediarecorder-worker.js"
+		"assets/plugins/wwsu-audio/js/wwsu-recorder-worker.js"
 	);
 
-	// TODO: Initialize the silence detection
-	var silence = new WWSUsilence(window.settings);
+	// Initialize the silence detection
+	var silence = new WWSUsilence(window.settings.silence);
 
 	// TODO: Initialize the skywayjs remote broadcasting
-	var remote = new WWSUsilence(window.settings);
+	var remote = new WWSUremote(window.settings.skyway);
 
 	// Initialize the audio manager
 	var audioManager = new WWSUAudioManager(
 		window.settings,
-		window.saveSettings,
 		recorder,
 		silence,
 		remote
 	);
 
+	audioManager.on("devices", "renderer", (devices) => {
+		devices = devices.map((device) => {
+			return {
+				device: { deviceId: device.device.deviceId, label: device.device.label, kind: device.device.kind },
+				settings: device.settings,
+			};
+		});
+		console.log(`Audio: Sending audio devices to renderer`);
+		console.dir(devices);
+		window.ipc.renderer.send("audioDevices", [devices]);
+	});
+	audioManager.on("audioVolume", "renderer", (device, volume) => {
+		window.ipc.renderer.send("audioVolume", [device, volume]);
+	});
+
 	window.ipc.renderer.send("console", ["log", "Audio: Process is ready"]);
 	window.ipc.renderer.send("audioReady", []);
 
+	/*
+		AUDIO DEVICES
+	*/
 
+	window.ipc.on("audioChangeVolume", (event, arg) => {
+		console.log(`Audio: Changing volume for device ${arg[0]} to ${arg[1]}`);
+		audioManager.changeVolume(arg[0], arg[1]);
+		window.ipc.renderer.send("console", [
+			"log",
+			`Audio: Changed audio volume for ${arg[0]} to ${arg[1]}`,
+		]);
+	});
 
 	/**
 	 *	RECORDER
 	 */
-
-
 
 	recorder.on("recorderStopped", "recorder", (file) => {
 		console.log(`Audio: Recording ${file} ended.`);
@@ -54,12 +77,6 @@ window.addEventListener("DOMContentLoaded", () => {
 			"log",
 			`Audio: Recording ${file} started.`,
 		]);
-	});
-
-	// Pass volume info to main process to be passed to renderer
-	// TODO
-	recorder.audio.on("audioVolume", "recorder", (volume) => {
-		window.ipc.renderer.send("recorderVolume", [volume]);
 	});
 
 	// Pass encoded info to main process to be saved
@@ -125,5 +142,15 @@ window.addEventListener("DOMContentLoaded", () => {
 		recorder.stopRecording(-1);
 	});
 
-	
+	/*
+		SILENCE
+	*/
+
+	silence.on("silence", "renderer", (silence) => {
+		window.ipc.renderer.send("silence", [silence]);
+	});
+
+	silence.on("silenceTrigger", "renderer", (silenceTrigger) => {
+		window.ipc.renderer.send("silenceTrigger", [silenceTrigger]);
+	});
 });

@@ -86,7 +86,14 @@ window.addEventListener("DOMContentLoaded", () => {
 		directorReq,
 		djs
 	);
-	var timesheets = new WWSUtimesheet(socket, noReq, directors, adminDirectorReq, meta, hosts);
+	var timesheets = new WWSUtimesheet(
+		socket,
+		noReq,
+		directors,
+		adminDirectorReq,
+		meta,
+		hosts
+	);
 	var messages = new WWSUmessages(
 		socket,
 		recipients,
@@ -205,95 +212,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		"#section-audio",
 		"Audio Settings - WWSU DJ Controls",
 		"/audio",
-		false,
-		() => {
-			// Re-generate the settings forms as input devices may have changed
-			navigator.mediaDevices.enumerateDevices().then((devices) => {
-				let inputDevices = devices
-					.filter((device) => device.kind === "audioinput")
-					.map((device) => {
-						return { id: device.deviceId, label: device.label };
-					});
-
-				$("#section-audio-recording-form").alpaca({
-					schema: {
-						type: "object",
-						properties: {
-							deviceId: {
-								type: "string",
-								title: "Recording Input Device",
-								enum: inputDevices.map((device) => device.id),
-							},
-							delay: {
-								type: "number",
-								title: "Delay (milliseconds)",
-							},
-							recordPath: {
-								type: "string",
-								format: "uri",
-								title: "Path to audio recordings",
-							},
-						},
-					},
-					options: {
-						fields: {
-							deviceId: {
-								optionLabels: inputDevices.map((device) => device.label),
-								helpers: [
-									`<div class="progress progress-xs">
-										<div class="progress-bar bg-primary progress-recorder-left" role="progressbar" style="width: 0%; transition: none;"></div>
-										</div>`,
-									`<div class="progress progress-xs">
-										<div class="progress-bar bg-primary progress-recorder-right" role="progressbar" style="width: 0%; transition: none;"></div>
-										</div>`,
-								],
-								events: {
-									change: function () {
-										let value = this.getValue();
-										window.saveSettings.recorder("deviceId", value);
-										window.ipc.recorder.send("recorderChangeDevice", [value]);
-										startRecording(0);
-									},
-								},
-							},
-							delay: {
-								helper:
-									"How much time passes between a state change and when the input device receives the audio? For example, if the input device is subject to a delay system, you would put the amount of delay time in here.",
-								events: {
-									change: function () {
-										let value = this.getValue();
-										if (!this.handleValidate()) {
-											console.log(`invalid`);
-											return;
-										}
-										window.saveSettings.recorder("delay", value);
-									},
-								},
-							},
-							// TODO: re-compile alpaca with the capability of choosing a folder.
-							recordPath: {
-								helpers: [
-									`Write the full path to the directory you want audio files to be saved`,
-									`Sub-directories for automation, remote, live, and sports will be created automatically after the first recording is saved.`,
-									`Additional sub-sub-directories will be created to organize recordings by genre, show, or sport.`,
-								],
-								events: {
-									change: function () {
-										let value = this.getValue();
-										if (!this.handleValidate()) {
-											console.log(`invalid`);
-											return;
-										}
-										window.saveSettings.recorder("recordPath", value);
-									},
-								},
-							},
-						},
-					},
-					data: window.settings.recorder,
-				});
-			});
-		}
+		false
 	);
 
 	navigation.addItem(
@@ -598,7 +517,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			meta.meta.state.includes("_returning") ||
 			meta.meta.state.includes("_halftime")
 		) {
-			window.ipc.recorder.send("recorderStop", [delay]);
+			window.ipc.audio.send("recorderStop", [delay]);
 		} else {
 			startRecording = "automation";
 			preText = window.sanitize.string(meta.meta.genre);
@@ -606,14 +525,14 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 		if (startRecording !== null) {
 			if (hosts.client.recordAudio) {
-				window.ipc.recorder.send("recorderStart", [
+				window.ipc.audio.send("recorderStart", [
 					`${startRecording}/${preText}/${preText2} (${moment().format(
 						"YYYY_MM_DD HH_mm_ss"
 					)}).mp3`,
 					delay,
 				]);
 			} else {
-				window.ipc.recorder.send("recorderStop", [-1]);
+				window.ipc.audio.send("recorderStop", [-1]);
 			}
 		}
 	}
@@ -785,6 +704,54 @@ window.addEventListener("DOMContentLoaded", () => {
 			},
 			true
 		);
+	});
+
+	window.ipc.on("audioDevices", (event, arg) => {
+		console.log(`Audio: Received audio devices`);
+		console.dir(arg);
+		let htmlInputs = ``;
+		let htmlOutputs = ``;
+
+		if (arg[0] && arg[0].length > 0) {
+			arg[0].map((device, index) => {
+				if (device.device.kind === "audioinput") {
+					htmlInputs += `<h5>${device.device.label}</h5>
+					<div class="progress progress-xs">
+						<div class="progress-bar bg-primary vu-left-${index}" data-id="${device.device.deviceId}" role="progressbar" style="width: 0%; transition: none;"></div>
+					</div>
+					<div class="progress progress-xs">
+						<div class="progress-bar bg-primary vu-right-${index}" data-id="${device.device.deviceId}" role="progressbar" style="width: 0%; transition: none;"></div>
+					</div>
+					<div class="slider-primary">
+                      <input type="text" id="audio-volume-${index}" data-id="${device.device.deviceId}" value="" class="slider form-control" data-slider-min="0" data-slider-max="1.5"
+                           data-slider-step="0.01" data-slider-value="${device.settings.volume}" data-slider-orientation="horizontal"
+                           data-slider-selection="before" data-slider-tooltip="show">
+					</div>`;
+
+					window.requestAnimationFrame(() => {
+						$(`#audio-volume-${index}`).bootstrapSlider({
+							min: 0,
+							max: 1.5,
+							step: 0.01,
+							value: device.settings.volume,
+							orientation: "horizontal",
+							selection: "before",
+							tooltip: "show",
+						});
+						$(`#audio-volume-${index}`).off("change");
+						$(`#audio-volume-${index}`).on("change", (obj) => {
+							console.log(index);
+							let deviceId = $(`#audio-volume-${index}`).data("id");
+							window.ipc.audio.send("audioChangeVolume", [deviceId, obj.value.newValue]);
+						});
+					});
+				} else if (device.device.kind === "audiooutput") {
+				}
+			});
+		}
+
+		$("#section-audio-devices-inputs").html(htmlInputs);
+		$("#section-audio-devices-outputs").html(htmlOutputs);
 	});
 
 	/*

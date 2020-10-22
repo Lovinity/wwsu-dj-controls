@@ -27,8 +27,8 @@ window.addEventListener("DOMContentLoaded", () => {
 		},
 
 		// Recorder process
-		recorder: {
-			send: (task, args) => ipcRenderer.send("recorder", [task, args]),
+		audio: {
+			send: (task, args) => ipcRenderer.send("audio", [task, args]),
 		},
 
 		// Main process

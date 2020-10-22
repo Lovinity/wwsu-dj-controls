@@ -20,9 +20,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		silence: ipcRenderer.sendSync("settings", "silence"),
 		recorder: ipcRenderer.sendSync("settings", "recorder"),
 		skyway: ipcRenderer.sendSync("settings", "skyway"),
+		save: (key, value) => ipcRenderer.send("saveSettings", [key, value]),
 	});
-
-	contextBridge.exposeInMainWorld("saveSettings", (key, value) =>
-		ipcRenderer.send("saveSettings", [key, value])
-	);
 });

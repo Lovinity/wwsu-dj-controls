@@ -177,6 +177,10 @@
 		<!-- Howler -->
 		<script src="assets/plugins/howler/howler.min.js"></script>
 
+		<!-- Bootstrap Slider -->
+		<link rel="stylesheet" href="assets/plugins/bootstrap-slider/css/bootstrap-slider.min.css" />
+		<script src="assets/plugins/bootstrap-slider/bootstrap-slider.min.js"></script>
+
 		<!-- Chart.js -->
 		<script src="assets/plugins/chart.js/Chart.bundle.min.js"></script>
 		<link rel="stylesheet" href="assets/plugins/chart.js/Chart.min.css" />
@@ -1611,55 +1615,14 @@
 
 						<div class="card card-primary elevation-2">
 							<div class="card-header">
-								<h3 class="card-title">Remote Stream Settings</h3>
+								<h3 class="card-title">Audio Devices</h3>
 							</div>
 							<!-- /.card-header -->
 							<div class="card-body">
-								<div class="callout callout-info">
-									<h5>Ignored if not actively in a remote broadcast</h5>
-									<p>
-										These settings are only used if you want to change audio
-										devices while in a remote broadcast.
-									</p>
-								</div>
-								<div id="section-audio-remote-form"></div>
-							</div>
-							<!-- /.card-body -->
-						</div>
-
-						<div class="card card-danger elevation-2">
-							<div class="card-header">
-								<h3 class="card-title">Silence Detection Settings</h3>
-							</div>
-							<!-- /.card-header -->
-							<div class="card-body">
-								<div class="callout callout-info">
-									<h5>Ignored if not monitoring for silence</h5>
-									<p>
-										These settings are only used if and when this DJ Controls is
-										set as the responsible DJ Controls for silence detection.
-									</p>
-								</div>
-								<div id="section-audio-silence-form"></div>
-							</div>
-							<!-- /.card-body -->
-						</div>
-
-						<div class="card card-warning elevation-2">
-							<div class="card-header">
-								<h3 class="card-title">Audio Recording Settings</h3>
-							</div>
-							<!-- /.card-header -->
-							<div class="card-body">
-								<div class="callout callout-info">
-									<h5>Ignored if not responsible for recording programming</h5>
-									<p>
-										These settings are only used if and when this DJ Controls is
-										set as the responsible DJ Controls for recording on-air
-										programming.
-									</p>
-								</div>
-								<div id="section-audio-recording-form"></div>
+								<h3 class="card-title">Input Devices</h3>
+								<div id="section-audio-devices-inputs"></div>
+								<h3 class="card-title">Output Devices</h3>
+								<div id="section-audio-devices-outputs"></div>
 							</div>
 							<!-- /.card-body -->
 						</div>
