@@ -20,6 +20,7 @@ module.exports = new Store({
 	},
 
 	// TODO: Keep this updated
+	// TODO: Waiting for https://github.com/sindresorhus/electron-store/issues/142
 	migrations: {
 		'>=8.0.0-alpha.18': store => {
 			store.delete('recorder.deviceId');

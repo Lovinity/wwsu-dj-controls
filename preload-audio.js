@@ -16,10 +16,10 @@ window.addEventListener("DOMContentLoaded", () => {
 	});
 
 	contextBridge.exposeInMainWorld("settings", {
-		audio: ipcRenderer.sendSync("settings", "audio"),
-		silence: ipcRenderer.sendSync("settings", "silence"),
-		recorder: ipcRenderer.sendSync("settings", "recorder"),
-		skyway: ipcRenderer.sendSync("settings", "skyway"),
+		audio: (() => ipcRenderer.sendSync("settings", "audio"))(),
+		silence: (() => ipcRenderer.sendSync("settings", "silence"))(),
+		recorder: (() => ipcRenderer.sendSync("settings", "recorder"))(),
+		skyway: (() => ipcRenderer.sendSync("settings", "skyway"))(),
 		save: (key, value) => ipcRenderer.send("saveSettings", [key, value]),
 	});
 });
