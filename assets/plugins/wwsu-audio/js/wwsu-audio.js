@@ -68,7 +68,7 @@ class WWSUAudioManager extends WWSUevents {
 						this.emitEvent("audioVolume", [device.deviceId, volume]);
 					});
 					wwsuaudio.on("audioVolumeChanged", "WWSUAudioManager", (volume) => {
-						let _settings = this.settings.audio.filter(
+						let _settings = this.settings.audio().filter(
 							(_dev) => _dev.deviceId !== device.deviceId
 						);
 						_settings.push(Object.assign(settings, { volume: volume }));
@@ -110,7 +110,7 @@ class WWSUAudioManager extends WWSUevents {
 	 */
 	getDeviceSettings(deviceId) {
 		return (
-			this.settings.audio.find((sett) => sett.deviceId === deviceId) ||
+			this.settings.audio().find((sett) => sett.deviceId === deviceId) ||
 			((dev) => {
 				let defaults = {
 					deviceId: dev,
@@ -120,7 +120,7 @@ class WWSUAudioManager extends WWSUevents {
 					remote: false,
 					output: false,
 				};
-				let _settings = this.settings.audio.filter(
+				let _settings = this.settings.audio().filter(
 					(_dev) => _dev.deviceId !== deviceId
 				);
 				_settings.push(defaults);
@@ -197,8 +197,8 @@ class WWSUAudioInput extends WWSUevents {
 					.then((stream) => {
 						// Set properties and make the media stream / audio analyser.
 						this.mediaStream = stream;
-						this.analyser = this.audioContext.createMediaStreamSource(stream);
-						this.outputNode = this.audioContext.createMediaStreamSource(stream);
+						this.analyser = this.audioContext.createMediaStreamSource(this.mediaStream);
+						this.outputNode = this.audioContext.createMediaStreamSource(this.mediaStream);
 
 						this.outputNode.connect(this.gain);
 						this.emitEvent("outputNodeReady", [this.outputNode]);
@@ -216,6 +216,7 @@ class WWSUAudioInput extends WWSUevents {
 	 */
 	disconnect() {
 		// Reset stuff
+		console.log(`Disconnecting ${this.device.deviceId}`);
 		try {
 			this.mediaStream.getTracks().forEach((track) => track.stop());
 			this.mediaStream = undefined;
@@ -227,6 +228,7 @@ class WWSUAudioInput extends WWSUevents {
 
 			this.analyser = undefined;
 			this.outputNode = undefined;
+			this.node = undefined;
 		} catch (eee) {
 			// ignore errors
 		}

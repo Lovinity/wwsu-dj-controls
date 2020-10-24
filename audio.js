@@ -11,10 +11,10 @@ window.addEventListener("DOMContentLoaded", () => {
 	);
 
 	// Initialize the silence detection
-	var silence = new WWSUsilence(window.settings.silence);
+	var silence = new WWSUsilence(window.settings.silence());
 
 	// TODO: Initialize the skywayjs remote broadcasting
-	var remote = new WWSUremote(window.settings.skyway);
+	var remote = new WWSUremote(window.settings.skyway());
 
 	// Initialize the audio manager
 	var audioManager = new WWSUAudioManager(
@@ -53,6 +53,11 @@ window.addEventListener("DOMContentLoaded", () => {
 			"log",
 			`Audio: Changed audio volume for ${arg[0]} to ${arg[1]}`,
 		]);
+	});
+
+	window.ipc.on("audioRefreshDevices", (event, arg) => {
+		console.log(`Audio: Refreshing available audio devices`);
+		audioManager.loadDevices();
 	});
 
 	/**

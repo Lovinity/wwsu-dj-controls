@@ -129,6 +129,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	var countDown = 0; // Countdown to on air in seconds
 
+	var audioDevices = [];
+
 	var todos = {
 		// Todo notification count tracker
 		status: {
@@ -310,6 +312,16 @@ window.addEventListener("DOMContentLoaded", () => {
 	});
 	$(".chat-recipients").click(() => {
 		recipients.openRecipients();
+	});
+	$("#section-audio-devices-refresh").click(() => {
+		$("#section-audio-devices").block({
+			message: "<h1>Refreshing audio process...</h1>",
+			css: { border: "3px solid #a00" },
+			timeout: 30000,
+			onBlock: () => {
+				window.ipc.main.send("audioReload", [true]);
+			},
+		});
 	});
 
 	// Operation click events
@@ -681,13 +693,19 @@ window.addEventListener("DOMContentLoaded", () => {
 		startRecording(-1);
 	});
 
-	// Volume for recorder
-	window.ipc.on("recorderVolume", (event, arg) => {
-		animations.add("recorder-volume", () => {
-			$(`.progress-recorder-left`).width(`${arg[0][0] * 100}%`);
-			$(`.progress-recorder-right`).width(
-				`${typeof arg[0][1] !== "undefined" ? arg[0][1] * 100 : 0}%`
-			);
+	// Volume for audio
+	window.ipc.on("audioVolume", (event, arg) => {
+		animations.add("audio-volume", () => {
+			let device = audioDevices.find((dev) => dev.device.deviceId === arg[0]);
+			device = audioDevices.indexOf(device);
+			if (device > -1) {
+				$(`.vu-left-${device}`).width(`${arg[1][0] * 100}%`);
+				$(`.vu-right-${device}`).width(
+					`${
+						typeof arg[1][1] !== "undefined" ? arg[1][1] * 100 : arg[0][1] * 100
+					}%`
+				);
+			}
 		});
 	});
 
@@ -706,33 +724,45 @@ window.addEventListener("DOMContentLoaded", () => {
 		);
 	});
 
+	window.ipc.on("audioReady", () => {
+		$("#section-audio-devices").unblock();
+	});
+
 	window.ipc.on("audioDevices", (event, arg) => {
 		console.log(`Audio: Received audio devices`);
 		console.dir(arg);
 		let htmlInputs = ``;
 		let htmlOutputs = ``;
 
+		audioDevices = arg[0];
+
 		if (arg[0] && arg[0].length > 0) {
 			arg[0].map((device, index) => {
 				if (device.device.kind === "audioinput") {
-					htmlInputs += `<h5>${device.device.label}</h5>
+					htmlInputs += `<div class="p-2">
+					<h5>${device.device.label}</h5>
 					<div class="progress progress-xs">
 						<div class="progress-bar bg-primary vu-left-${index}" data-id="${device.device.deviceId}" role="progressbar" style="width: 0%; transition: none;"></div>
 					</div>
 					<div class="progress progress-xs">
 						<div class="progress-bar bg-primary vu-right-${index}" data-id="${device.device.deviceId}" role="progressbar" style="width: 0%; transition: none;"></div>
 					</div>
-					<div class="slider-primary">
-                      <input type="text" id="audio-volume-${index}" data-id="${device.device.deviceId}" value="" class="slider form-control" data-slider-min="0" data-slider-max="1.5"
+					<div class="slider-primary" style="width: 100%;">
+                      <input type="text" style="width: 100%;" id="audio-volume-${index}" data-id="${device.device.deviceId}" value="" class="slider form-control" data-slider-min="0" data-slider-max="2"
                            data-slider-step="0.01" data-slider-value="${device.settings.volume}" data-slider-orientation="horizontal"
                            data-slider-selection="before" data-slider-tooltip="show">
+					</div>
 					</div>`;
 
 					window.requestAnimationFrame(() => {
 						$(`#audio-volume-${index}`).bootstrapSlider({
 							min: 0,
-							max: 1.5,
+							max: 2,
 							step: 0.01,
+							ticks: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
+							ticks_positions: [0, (100 * (1/8)), (100 * (2/8)), (100 * (3/8)), (100 * (4/8)), (100 * (5/8)), (100 * (6/8)), (100 * (7/8)), 100],
+							ticks_labels: ["OFF", "25%", "50%", "75%", "100%", "125%", "150%", "175%", "200%"],
+							ticks_snap_bounds: 0.025,
 							value: device.settings.volume,
 							orientation: "horizontal",
 							selection: "before",
@@ -742,7 +772,10 @@ window.addEventListener("DOMContentLoaded", () => {
 						$(`#audio-volume-${index}`).on("change", (obj) => {
 							console.log(index);
 							let deviceId = $(`#audio-volume-${index}`).data("id");
-							window.ipc.audio.send("audioChangeVolume", [deviceId, obj.value.newValue]);
+							window.ipc.audio.send("audioChangeVolume", [
+								deviceId,
+								obj.value.newValue,
+							]);
 						});
 					});
 				} else if (device.device.kind === "audiooutput") {

@@ -486,6 +486,11 @@ ipcMain.on("main", (event, arg) => {
 			metaState = args[0];
 
 			break;
+
+		// Reload audio process and devices
+		case "audioReload":
+			audioWindow.webContents.send("shutDown");
+			break;
 	}
 });
 

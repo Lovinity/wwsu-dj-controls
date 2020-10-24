@@ -3,7 +3,7 @@ const Store = require("electron-store");
 
 module.exports = new Store({
 	name: "wwsu-dj-controls",
-	clearInvalidConfig: false,
+	clearInvalidConfig: true,
 	defaults: {
 		recorder: {
 			delay: 10000,
