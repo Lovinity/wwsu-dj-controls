@@ -1,10 +1,27 @@
 "use strict";
 
+// WARNING: We should never directly close this process. Instead, send ipc "shutDown" to shut down gracefully and save the current recording.
+
 window.addEventListener("DOMContentLoaded", () => {
+	let closingDown = false;
+
+	// Initialize the recorder
+	var recorder = new WWSUrecorder(
+		"assets/plugins/wwsu-audio/js/wwsu-recorder-worker.js"
+	);
+
+	// Initialize the silence detection
+	var silence = new WWSUsilence(window.settings.silence);
+
+	// TODO: Initialize the skywayjs remote broadcasting
+	var remote = new WWSUremote(window.settings.skyway);
 
 	// Initialize the audio manager
 	var audioManager = new WWSUAudioManager(
-		window.settings
+		window.settings,
+		recorder,
+		silence,
+		remote
 	);
 
 	audioManager.on("devices", "renderer", (devices) => {

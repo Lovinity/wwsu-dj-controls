@@ -6,27 +6,18 @@ class WWSUAudioManager extends WWSUevents {
 	/**
 	 *
 	 * @param {ipc} settings IPC to main process for settings
-	 * @param {ipc} saveSettings IPC to main process to save new settings
-	 * @param {WWSUrecorder} recorder Initialized WWSU recorder
-	 * @param {WWSUsilence} silence Initialized WWSU silence detection
-	 * @param {WWSUremote} remote initialized WWSU remote broadcasting
 	 */
-	constructor(settings, recorder, silence, remote) {
+	constructor(settings) {
 		super();
+
+		this.settings = settings;
 
 		this.inputs = new Map();
 		this.outputs = new Map();
 
-		this.settings = settings;
-		this.recorder = recorder;
-		this.silence = silence;
-		this.remote = remote;
-
 		// Create audio context
 		window.AudioContext = window.AudioContext || window.webkitAudioContext;
 		this.audioContext = new AudioContext();
-
-		this.loadDevices();
 	}
 
 	/**
@@ -37,11 +28,6 @@ class WWSUAudioManager extends WWSUevents {
 		if (this.inputs.size > 0) {
 			this.inputs.forEach((device) => {
 				device.disconnect();
-				try {
-					this.recorder.disconnectSource(device.outputNode);
-					this.silence.disconnectSource(device.outputNode);
-					this.remote.disconnectSource(device.outputNode);
-				} catch (e) {}
 			});
 		}
 		if (this.outputs.size > 0) {
@@ -55,35 +41,17 @@ class WWSUAudioManager extends WWSUevents {
 		// Grab available devices
 		navigator.mediaDevices.enumerateDevices().then((devices) => {
 			let _devices = devices.map((device) => {
-				// Get saved device settings or add defaults if they do not exist
-				let settings = this.getDeviceSettings(device.deviceId);
 				// Input devices
 				if (device.kind === "audioinput") {
 					let wwsuaudio = new WWSUAudioInput(
 						device,
-						settings,
 						this.audioContext
 					);
 					wwsuaudio.on("audioVolume", "WWSUAudioManager", (volume) => {
 						this.emitEvent("audioVolume", [device.deviceId, volume]);
 					});
-					wwsuaudio.on("audioVolumeChanged", "WWSUAudioManager", (volume) => {
-						let _settings = this.settings.audio().filter(
-							(_dev) => _dev.deviceId !== device.deviceId
-						);
-						_settings.push(Object.assign(settings, { volume: volume }));
-						this.settings.save(`audio`, _settings);
-					});
 					wwsuaudio.on("outputNodeReady", "WWSUAudioManager", (node) => {
-						if (settings.recorder) {
-							this.recorder.connect(node);
-						}
-						if (settings.silence) {
-							this.silence.connect(node);
-						}
-						if (settings.remote) {
-							this.remote.connect(node);
-						}
+						// TODO
 					});
 
 					this.inputs.set(device.deviceId, wwsuaudio);
@@ -97,37 +65,10 @@ class WWSUAudioManager extends WWSUevents {
 					//this.inputs.set(device.deviceId, wwsuaudio);
 				}
 
-				return { device: device, settings: settings };
+				return device;
 			});
 			this.emitEvent("devices", [_devices]);
 		});
-	}
-
-	/**
-	 * Get settings for specified device id, or create default settings.
-	 *
-	 * @param {string} deviceId webAPI device id
-	 */
-	getDeviceSettings(deviceId) {
-		return (
-			this.settings.audio().find((sett) => sett.deviceId === deviceId) ||
-			((dev) => {
-				let defaults = {
-					deviceId: dev,
-					volume: 1,
-					silence: false,
-					recorder: false,
-					remote: false,
-					output: false,
-				};
-				let _settings = this.settings.audio().filter(
-					(_dev) => _dev.deviceId !== deviceId
-				);
-				_settings.push(defaults);
-				this.settings.save(`audio`);
-				return defaults;
-			})(deviceId)
-		);
 	}
 
 	/**
@@ -150,14 +91,12 @@ class WWSUAudioInput extends WWSUevents {
 	 * Construct the device.
 	 *
 	 * @param {MediaDeviceInfo} device The device
-	 * @param {object} settings Settings for this device
 	 * @param {AudioContext} audioContext The audioContext to use for this device
 	 */
-	constructor(device, settings, audioContext) {
+	constructor(device, audioContext) {
 		super();
 
 		this.device = device;
-		this.settings = settings;
 		this.audioContext = audioContext;
 		this.node;
 		this.mediaStream;
@@ -197,8 +136,12 @@ class WWSUAudioInput extends WWSUevents {
 					.then((stream) => {
 						// Set properties and make the media stream / audio analyser.
 						this.mediaStream = stream;
-						this.analyser = this.audioContext.createMediaStreamSource(this.mediaStream);
-						this.outputNode = this.audioContext.createMediaStreamSource(this.mediaStream);
+						this.analyser = this.audioContext.createMediaStreamSource(
+							this.mediaStream
+						);
+						this.outputNode = this.audioContext.createMediaStreamSource(
+							this.mediaStream
+						);
 
 						this.outputNode.connect(this.gain);
 						this.emitEvent("outputNodeReady", [this.outputNode]);

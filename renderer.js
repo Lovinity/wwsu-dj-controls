@@ -752,6 +752,18 @@ window.addEventListener("DOMContentLoaded", () => {
                            data-slider-step="0.01" data-slider-value="${device.settings.volume}" data-slider-orientation="horizontal"
                            data-slider-selection="before" data-slider-tooltip="show">
 					</div>
+					<div class="form-check form-check-inline" title="If checked, device ${device.device.label} will be streamed to WWSU when broadcasting remotely from this DJ Controls.">
+    					<input type="checkbox" class="form-check-input" id="audio-remote-${index}" data-id="${device.device.deviceId}">
+    					<label class="form-check-label" for="audio-remote-${index}" ${device.settings.remote ? `checked` : ``}>Remote Broadcast</label>
+					  </div>
+					<div class="form-check form-check-inline" title="If checked, device ${device.device.label} will be recorded if this DJ Controls is responsible for recording on-air programming. ONLY CHECK for sources that get a direct feed from WWSU.">
+    					<input type="checkbox" class="form-check-input" id="audio-recorder-${index}" data-id="${device.device.deviceId}">
+    					<label class="form-check-label" for="audio-recorder-${index}" ${device.settings.recorder ? `checked` : ``}>Record</label>
+					  </div>
+					<div class="form-check form-check-inline" title="If checked, device ${device.device.label} will be monitored for silence if this DJ Controls is responsible for reporting silence. ONLY CHECK for sources that get a direct feed from WWSU.">
+    					<input type="checkbox" class="form-check-input" id="audio-silence-${index}" data-id="${device.device.deviceId}">
+    					<label class="form-check-label" for="audio-silence-${index}" ${device.settings.silence ? `checked` : ``}>Silence Detection</label>
+  					</div>
 					</div>`;
 
 					window.requestAnimationFrame(() => {
@@ -768,13 +780,43 @@ window.addEventListener("DOMContentLoaded", () => {
 							selection: "before",
 							tooltip: "show",
 						});
+
+						// Volume slider listener
 						$(`#audio-volume-${index}`).off("change");
 						$(`#audio-volume-${index}`).on("change", (obj) => {
-							console.log(index);
 							let deviceId = $(`#audio-volume-${index}`).data("id");
 							window.ipc.audio.send("audioChangeVolume", [
 								deviceId,
 								obj.value.newValue,
+							]);
+						});
+
+						// Checkbox listeners
+						$(`#audio-remote-${index}`).off("change");
+						$(`#audio-remote-${index}`).on("change", (e) => {
+							let deviceId = $(`#audio-remote-${index}`).data("id");
+							console.log(`Clicked remote ${index}`)
+							window.ipc.audio.send("audioRemoteSetting", [
+								deviceId,
+								e.target.checked,
+							]);
+						});
+						$(`#audio-recorder-${index}`).off("change");
+						$(`#audio-recorder-${index}`).on("change", (e) => {
+							let deviceId = $(`#audio-recorder-${index}`).data("id");
+							console.log(`Clicked recorder ${index}`)
+							window.ipc.audio.send("audioRecorderSetting", [
+								deviceId,
+								e.target.checked,
+							]);
+						});
+						$(`#audio-silence-${index}`).off("change");
+						$(`#audio-silence-${index}`).on("change", (e) => {
+							let deviceId = $(`#audio-silence-${index}`).data("id");
+							console.log(`Clicked silence ${index}`);
+							window.ipc.audio.send("audioSilenceSetting", [
+								deviceId,
+								e.target.checked,
 							]);
 						});
 					});

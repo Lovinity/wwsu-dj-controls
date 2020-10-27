@@ -29,8 +29,8 @@ class WWSUsilence extends WWSUevents {
 
 						// If silence detected, start delay timer, else remove it
 						if (
-							(_volume[0] <= this.settings.threshold ||
-								_volume[1] <= this.settings.threshold) &&
+							(_volume[0] <= this.settings().threshold ||
+								_volume[1] <= this.settings().threshold) &&
 							!this.timer
 						) {
 							this.emitEvent("silence", [true]);
@@ -42,7 +42,7 @@ class WWSUsilence extends WWSUevents {
 								this.timer = setInterval(() => {
 									this.emitEvent("silenceTrigger", [true]);
 								}, 60000);
-							}, this.settings.delay);
+							}, this.settings().delay);
 						} else if (this.timer) {
 							this.emitEvent("silence", [false]);
 							if (this.triggered) this.emitEvent("silenceTrigger", [false]);
