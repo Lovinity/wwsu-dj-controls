@@ -178,7 +178,10 @@
 		<script src="assets/plugins/howler/howler.min.js"></script>
 
 		<!-- Bootstrap Slider -->
-		<link rel="stylesheet" href="assets/plugins/bootstrap-slider/css/bootstrap-slider.min.css" />
+		<link
+			rel="stylesheet"
+			href="assets/plugins/bootstrap-slider/css/bootstrap-slider.min.css"
+		/>
 		<script src="assets/plugins/bootstrap-slider/bootstrap-slider.min.js"></script>
 
 		<!-- Chart.js -->
@@ -1617,11 +1620,27 @@
 							<div class="card-header">
 								<h3 class="card-title">Audio Devices</h3>
 								<div class="card-tools">
-									<button type="button" class="btn btn-tool" id="section-audio-devices-refresh" title="Refresh available audio devices"><i class="fas fa-sync-alt"></i></button>
-								  </div>
+									<button
+										type="button"
+										class="btn btn-tool"
+										id="section-audio-devices-refresh"
+										title="Refresh available audio devices"
+									>
+										<i class="fas fa-sync-alt"></i>
+									</button>
+								</div>
 							</div>
 							<!-- /.card-header -->
 							<div class="card-body" id="section-audio-devices">
+								<div class="callout callout-info">
+									<h5>Capturing computer audio</h5>
+									<p>
+										To capture computer audio, such as from Skype/Discord/etc,
+										you need to install a program such as Voicemeeter (Windows)
+										or Soundflower (MacOS)... or if your sound card supports it,
+										activate "Stereo Mix".
+									</p>
+								</div>
 								<h4>Input Devices</h4>
 								<div id="section-audio-devices-inputs"></div>
 								<h4>Output Devices</h4>

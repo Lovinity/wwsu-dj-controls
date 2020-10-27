@@ -52,6 +52,7 @@ class WWSUrecorder extends WWSUevents {
 			try {
 				if (this.pendingTitle) {
 					this.currentTitle = this.pendingTitle;
+					// TODO: Does not work; re-configure package in AdminLTE compiler
 					this.recorder = new window.mp3MediaRecorder.Mp3MediaRecorder(
 						this.destination.stream,
 						{ worker: this.worker }
