@@ -175,6 +175,10 @@ const createWindows = () => {
 				},
 			],
 		});
+		mainWindow = null;
+		calendarWindow.close();
+		calendarWindow = null;
+		audioWindow.webContents.send("shutDown");
 	});
 	*/
 
@@ -185,7 +189,7 @@ const createWindows = () => {
 			bg: "danger",
 			header: "WWSU DJ Controls Crashed!",
 			flash: true,
-			body: `<p>WWSU DJ Controls either crashed or was forcefully terminated. Please restart WWSU DJ Controls if you were using it, especially if doing a broadcast.</p>`
+			body: `<p>WWSU DJ Controls either crashed or was forcefully terminated. Please restart WWSU DJ Controls if you were using it, especially if doing a broadcast.</p>`,
 		});
 	});
 
@@ -342,7 +346,7 @@ ipcMain.on("settings", (event, arg) => {
 
 // Save new settings
 ipcMain.on("saveSettings", (event, arg) => {
-	console.log('saving settings');
+	console.log("saving settings");
 	console.dir(arg);
 	config.set(arg[0], arg[1]);
 });
