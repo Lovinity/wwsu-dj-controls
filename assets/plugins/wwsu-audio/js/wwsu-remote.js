@@ -20,6 +20,8 @@ class WWSUremote extends WWSUevents {
 
 		// Create compressor; necessary for VOIP calls to help prevent digital clipping
 		this.compressor = this.audioContext.createDynamicsCompressor();
+
+		// Set compressor settings
 		this.compressor.threshold.setValueAtTime(
 			-18.0,
 			this.audioContext.currentTime
@@ -29,6 +31,7 @@ class WWSUremote extends WWSUevents {
 		this.compressor.attack.setValueAtTime(0.01, this.audioContext.currentTime);
 		this.compressor.release.setValueAtTime(0.05, this.audioContext.currentTime);
 
+		// Connect compressor to audioContext
 		this.compressor.connect(this.audioContext.destination);
 	}
 
@@ -48,14 +51,5 @@ class WWSUremote extends WWSUevents {
 	 */
 	disconnectSource(node) {
 		node.disconnect(this.compressor);
-	}
-
-	/**
-	 * Change settings for remote broadcast
-	 *
-	 * @param {object} settings New settings
-	 */
-	changeSettings(settings) {
-		this.settings = settings;
 	}
 }

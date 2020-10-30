@@ -11,6 +11,10 @@
 - Support for timesheet notes
 - Schema validation to config
 
+### Updated
+
+- Packages
+
 ## 8.0.0-alpha.17 - 2020-10-16
 
 ### Removed

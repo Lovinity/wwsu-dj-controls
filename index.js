@@ -85,6 +85,9 @@ autoUpdater.on("update-available", (info) => {
 let mainWindow;
 let calendarWindow;
 let audioWindow;
+let silenceWindow;
+let recorderWindow;
+let remoteWindow;
 
 // Other variables
 let metaState = `unknown`;
@@ -107,6 +110,129 @@ const enforceCORS = () => {
 			},
 		});
 	});
+};
+
+// Calendar process
+const createCalendarWindow = () => {
+	// Create the calendar process
+	calendarWindow = new BrowserWindow({
+		width: 1280,
+		height: 720,
+		show: false,
+		title: `${app.name} - Calendar Process`,
+		webPreferences: {
+			contextIsolation: true,
+			enableRemoteModule: false, // electron's remote module is insecure
+			preload: path.join(__dirname, "preload-calendar.js"),
+			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
+		},
+	});
+
+	calendarWindow.on("closed", function () {
+		if (mainWindow !== null) {
+			createCalendarWindow();
+		}
+	});
+	calendarWindow.loadFile("calendar.html");
+};
+
+// Process for audio
+const createAudioWindow = () => {
+	// Create the audio process
+	audioWindow = new BrowserWindow({
+		width: 1280,
+		height: 720,
+		show: true,
+		title: `${app.name} - Audio Process`,
+		webPreferences: {
+			contextIsolation: true,
+			enableRemoteModule: false, // electron's remote module is insecure
+			preload: path.join(__dirname, "preload-audio.js"),
+			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
+		},
+	});
+
+	audioWindow.on("closed", function () {
+		if (mainWindow !== null) {
+			createAudioWindow();
+		}
+	});
+	audioWindow.loadFile("audio.html");
+};
+
+// Process for silence detection
+const createSilenceWindow = () => {
+	// Create the audio process
+	silenceWindow = new BrowserWindow({
+		width: 1280,
+		height: 720,
+		show: true,
+		title: `${app.name} - Silence Detection Process`,
+		webPreferences: {
+			contextIsolation: true,
+			enableRemoteModule: false, // electron's remote module is insecure
+			preload: path.join(__dirname, "preload-audio.js"),
+			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
+		},
+	});
+
+	silenceWindow.on("closed", function () {
+		if (mainWindow !== null) {
+			mainWindow.webContents.send("processClosed", ["silence"]);
+		}
+	});
+
+	silenceWindow.loadFile("silence.html");
+};
+
+// Process for recorder
+const createRecorderWindow = () => {
+	// Create the audio process
+	recorderWindow = new BrowserWindow({
+		width: 1280,
+		height: 720,
+		show: true,
+		title: `${app.name} - Recorder Process`,
+		webPreferences: {
+			contextIsolation: true,
+			enableRemoteModule: false, // electron's remote module is insecure
+			preload: path.join(__dirname, "preload-audio.js"),
+			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
+		},
+	});
+
+	recorderWindow.on("closed", function () {
+		if (mainWindow !== null) {
+			createRecorderWindow();
+		}
+	});
+
+	recorderWindow.loadFile("recorder.html");
+};
+
+// Process for remote broadcasts
+const createRemoteWindow = () => {
+	// Create the audio process
+	remoteWindow = new BrowserWindow({
+		width: 1280,
+		height: 720,
+		show: true,
+		title: `${app.name} - Remote Process`,
+		webPreferences: {
+			contextIsolation: true,
+			enableRemoteModule: false, // electron's remote module is insecure
+			preload: path.join(__dirname, "preload-audio.js"),
+			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
+		},
+	});
+
+	remoteWindow.on("closed", function () {
+		if (mainWindow !== null) {
+			createRemoteWindow();
+		}
+	});
+
+	remoteWindow.loadFile("remote.html");
 };
 
 // Create the main window, and also create the other renderer processes
@@ -139,6 +265,8 @@ const createWindows = () => {
 
 		createCalendarWindow();
 		createAudioWindow();
+		createRecorderWindow();
+		createRemoteWindow();
 	});
 
 	// and load the renderer.html of the app.
@@ -148,9 +276,24 @@ const createWindows = () => {
 	mainWindow.on("closed", function () {
 		mainWindow = null;
 
-		calendarWindow.close();
-		calendarWindow = null;
-		audioWindow.webContents.send("shutDown");
+		try {
+			// Recorder should be shut down gracefully to save current recording
+			recorderWindow.webContents.send("shutDown");
+
+			calendarWindow.close();
+			calendarWindow = null;
+
+			audioWindow.close();
+			audioWindow = null;
+
+			if (silenceWindow) {
+				silenceWindow.close();
+				silenceWindow = null;
+			}
+
+			remoteWindow.close();
+			remoteWindow = null;
+		} catch (eee) {}
 	});
 
 	mainWindow.on("focus", () => mainWindow.flashFrame(false));
@@ -175,10 +318,24 @@ const createWindows = () => {
 				},
 			],
 		});
-		mainWindow = null;
-		calendarWindow.close();
-		calendarWindow = null;
-		audioWindow.webContents.send("shutDown");
+		try {
+			// Recorder should be shut down gracefully to save current recording
+			recorderWindow.webContents.send("shutDown");
+
+			calendarWindow.close();
+			calendarWindow = null;
+
+			audioWindow.close();
+			audioWindow = null;
+
+if (silenceWindow) {
+				silenceWindow.close();
+				silenceWindow = null;
+			}
+
+			remoteWindow.close();
+			remoteWindow = null;
+		} catch (eee) {}
 	});
 	*/
 
@@ -191,55 +348,26 @@ const createWindows = () => {
 			flash: true,
 			body: `<p>WWSU DJ Controls either crashed or was forcefully terminated. Please restart WWSU DJ Controls if you were using it, especially if doing a broadcast.</p>`,
 		});
+
+		try {
+			// Recorder should be shut down gracefully to save current recording
+			recorderWindow.webContents.send("shutDown");
+
+			calendarWindow.close();
+			calendarWindow = null;
+
+			audioWindow.close();
+			audioWindow = null;
+
+			if (silenceWindow) {
+				silenceWindow.close();
+				silenceWindow = null;
+			}
+
+			remoteWindow.close();
+			remoteWindow = null;
+		} catch (eee) {}
 	});
-
-	// Calendar process
-	const createCalendarWindow = () => {
-		// Create the calendar process
-		calendarWindow = new BrowserWindow({
-			width: 1280,
-			height: 720,
-			show: false,
-			title: `${app.name} - Calendar Process`,
-			webPreferences: {
-				contextIsolation: true,
-				enableRemoteModule: false, // electron's remote module is insecure
-				preload: path.join(__dirname, "preload-calendar.js"),
-				backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
-			},
-		});
-
-		calendarWindow.on("closed", function () {
-			if (mainWindow !== null) {
-				createCalendarWindow();
-			}
-		});
-		calendarWindow.loadFile("calendar.html");
-	};
-
-	// Process for audio
-	const createAudioWindow = () => {
-		// Create the audio process
-		audioWindow = new BrowserWindow({
-			width: 1280,
-			height: 720,
-			show: true,
-			title: `${app.name} - Audio Process`,
-			webPreferences: {
-				contextIsolation: true,
-				enableRemoteModule: false, // electron's remote module is insecure
-				preload: path.join(__dirname, "preload-audio.js"),
-				backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
-			},
-		});
-
-		audioWindow.on("closed", function () {
-			if (mainWindow !== null) {
-				createAudioWindow();
-			}
-		});
-		audioWindow.loadFile("audio.html");
-	};
 };
 
 const makeNotification = (data) => {
@@ -394,6 +522,33 @@ ipcMain.on("audio", (event, arg) => {
 	}
 });
 
+// Messages to be sent to the recorder process
+ipcMain.on("recorder", (event, arg) => {
+	try {
+		recorderWindow.webContents.send(arg[0], arg[1]);
+	} catch (e) {
+		console.error(e);
+	}
+});
+
+// Process tasks
+ipcMain.on("process", (event, arg) => {
+	var args = arg[1];
+	switch (arg[0]) {
+		case "silence":
+			if (args[0] === "open" && !silenceWindow) {
+				createSilenceWindow();
+			}
+			if (args[0] === "close" && silenceWindow) {
+				silenceWindow.close();
+			}
+			if (args[0] === "reload" && silenceWindow) {
+				silenceWindow.reload();
+			}
+			break;
+	}
+});
+
 // Tasks to be completed by the main process
 ipcMain.on("main", (event, arg) => {
 	var args = arg[1];
@@ -459,7 +614,7 @@ ipcMain.on("main", (event, arg) => {
 						if (err) {
 							console.error(err);
 						} else {
-							audioWindow.webContents.send(
+							recorderWindow.webContents.send(
 								`recorderSaved`,
 								`${config.get("recorder.recordPath")}/${args[0]}`
 							);
@@ -491,9 +646,88 @@ ipcMain.on("main", (event, arg) => {
 
 			break;
 
-		// Reload audio process and devices
+		case "audioRefreshDevices":
+			if (audioWindow)
+				audioWindow.webContents.send("audioRefreshDevices", args);
+			if (remoteWindow)
+				remoteWindow.webContents.send("audioRefreshDevices", args);
+			if (silenceWindow)
+				silenceWindow.webContents.send("audioRefreshDevices", args);
+			if (recorderWindow)
+				recorderWindow.webContents.send("audioRefreshDevices", args);
+			break;
+
+		// Reload audio processes and devices
 		case "audioReload":
-			audioWindow.webContents.send("shutDown");
+			if (audioWindow) audioWindow.reload();
+			if (remoteWindow) remoteWindow.reload();
+			if (silenceWindow) silenceWindow.reload();
+			if (recorderWindow) recorderWindow.webContents.send("shutDown");
+			break;
+
+		// Send volume information (from audio process)
+		case "audioVolume":
+			try {
+				// Send new volume info to other audio processes and to the renderer
+				mainWindow.webContents.send("audioVolume", args);
+				if (remoteWindow) remoteWindow.webContents.send("audioVolume", args);
+				if (silenceWindow) silenceWindow.webContents.send("audioVolume", args);
+				if (recorderWindow)
+					recorderWindow.webContents.send("audioVolume", args);
+			} catch (eee) {
+				// Ignore errors
+			}
+			break;
+
+		// Change the gain on a device
+		case "audioChangeVolume":
+			try {
+				// Update settings
+				updateAudioSettings(args[0], { volume: args[1] });
+
+				// Send new volume gain info to audio processes
+				if (audioWindow)
+					audioWindow.webContents.send("audioChangeVolume", args);
+				if (remoteWindow)
+					remoteWindow.webContents.send("audioChangeVolume", args);
+				if (silenceWindow)
+					silenceWindow.webContents.send("audioChangeVolume", args);
+				if (recorderWindow)
+					recorderWindow.webContents.send("audioChangeVolume", args);
+			} catch (eee) {
+				// Ignore errors
+				console.error(eee);
+			}
+			break;
+
+		// Change whether or not a device should be recorded
+		case "audioRecorderSetting":
+			try {
+				// Update settings
+				updateAudioSettings(args[0], { recorder: args[1] });
+
+				// Send new volume gain info to relevant audio processes
+				if (recorderWindow)
+					recorderWindow.webContents.send("audioRecorderSetting", args);
+			} catch (eee) {
+				// Ignore errors
+				console.error(eee);
+			}
+			break;
+
+		// Change whether or not a device should be recorded
+		case "audioSilenceSetting":
+			try {
+				// Update settings
+				updateAudioSettings(args[0], { silence: args[1] });
+
+				// Send new volume gain info to relevant audio processes
+				if (silenceWindow)
+					silenceWindow.webContents.send("audioSilenceSetting", args);
+			} catch (eee) {
+				// Ignore errors
+				console.error(eee);
+			}
 			break;
 	}
 });
@@ -502,3 +736,27 @@ ipcMain.on("main", (event, arg) => {
 ipcMain.on("sanitize", (event, arg) => {
 	event.returnValue = Sanitize(arg);
 });
+
+/**
+ * Update config for an audio device.
+ *
+ * @param {string} deviceId ID of the audio device via web audio API
+ * @param {object} setting Setting(s) to update
+ */
+function updateAudioSettings(deviceId, setting) {
+	let settings = config.get(`audio`);
+
+	// Try to find existing settings for the device
+	let device = settings.find((sett) => sett.deviceId === deviceId);
+
+	// If device settings exist, filter audio array to exclude that device, then push in the new settings for the device
+	if (device) {
+		settings = settings.filter((sett) => sett.deviceId !== deviceId);
+		settings.push(Object.assign(device, setting));
+
+		// Otherwise, make a new item in the audio array for the device
+	} else {
+		settings.push(Object.assign({ deviceId: deviceId }, setting));
+	}
+	config.set(`audio`, settings);
+}

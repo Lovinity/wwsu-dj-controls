@@ -1,16 +1,13 @@
 /**
  * Manager for audio devices
- * // TODO: settings does not update as it should when they are changed; figure out another way to access settings.
  */
 class WWSUAudioManager extends WWSUevents {
 	/**
 	 *
-	 * @param {ipc} settings IPC to main process for settings
+	 * @param {boolean} compressor Whether or not a compressor should be added to the audioContext (such as for remote broadcasts)
 	 */
-	constructor(settings) {
+	constructor(compressor) {
 		super();
-
-		this.settings = settings;
 
 		this.inputs = new Map();
 		this.outputs = new Map();
@@ -18,10 +15,39 @@ class WWSUAudioManager extends WWSUevents {
 		// Create audio context
 		window.AudioContext = window.AudioContext || window.webkitAudioContext;
 		this.audioContext = new AudioContext();
+		this.destination = this.audioContext.createMediaStreamDestination();
+
+		// Create compressor if specified
+		if (compressor) {
+			this.compressor = this.audioContext.createDynamicsCompressor();
+
+			// Set compressor settings
+			this.compressor.threshold.setValueAtTime(
+				-18.0,
+				this.audioContext.currentTime
+			);
+			this.compressor.knee.setValueAtTime(18.0, this.audioContext.currentTime);
+			this.compressor.ratio.setValueAtTime(4.0, this.audioContext.currentTime);
+			this.compressor.attack.setValueAtTime(
+				0.01,
+				this.audioContext.currentTime
+			);
+			this.compressor.release.setValueAtTime(
+				0.05,
+				this.audioContext.currentTime
+			);
+
+			// Connect compressor to audioContext
+			this.compressor.connect(this.destination);
+		}
+
+		// Load available devices
+		this.loadDevices();
 	}
 
 	/**
-	 * Load / refresh available audio devices.
+	 * Load available audio devices and disconnect all existing ones.
+	 * Devices are emitted as "devices" event when loaded. You should use this to determine which devices to connect() to audioContext.
 	 */
 	loadDevices() {
 		// Disconnect devices and reset
@@ -45,13 +71,11 @@ class WWSUAudioManager extends WWSUevents {
 				if (device.kind === "audioinput") {
 					let wwsuaudio = new WWSUAudioInput(
 						device,
-						this.audioContext
+						this.audioContext,
+						this.compressor || this.destination
 					);
 					wwsuaudio.on("audioVolume", "WWSUAudioManager", (volume) => {
 						this.emitEvent("audioVolume", [device.deviceId, volume]);
-					});
-					wwsuaudio.on("outputNodeReady", "WWSUAudioManager", (node) => {
-						// TODO
 					});
 
 					this.inputs.set(device.deviceId, wwsuaudio);
@@ -83,6 +107,31 @@ class WWSUAudioManager extends WWSUevents {
 			device.changeVolume(volume);
 		}
 	}
+
+	/**
+	 * Disconnect a device from the audioContext, but leave the device in the device map.
+	 *
+	 * @param {string} deviceId The device to disconnect
+	 */
+	disconnect(deviceId) {
+		let device = this.inputs.get(deviceId) || this.outputs.get(deviceId);
+		if (device) {
+			device.disconnect();
+		}
+	}
+
+	/**
+	 * Connect a device to the audioContext. Device must be in the inputs or outputs map.
+	 *
+	 * @param {string} deviceId The ID of the device to connect
+	 * @param {string} module Path to the wwsu-meter audio worklet module
+	 */
+	connect(deviceId, module) {
+		let device = this.inputs.get(deviceId) || this.outputs.get(deviceId);
+		if (device) {
+			device.connect(module);
+		}
+	}
 }
 
 // Class for an audio input device.
@@ -92,66 +141,61 @@ class WWSUAudioInput extends WWSUevents {
 	 *
 	 * @param {MediaDeviceInfo} device The device
 	 * @param {AudioContext} audioContext The audioContext to use for this device
+	 * @param {MediaStreamAudioDestinationNode} connectNode The destination node to connect to
 	 */
-	constructor(device, audioContext) {
+	constructor(device, audioContext, connectNode) {
 		super();
 
 		this.device = device;
 		this.audioContext = audioContext;
-		this.node;
-		this.mediaStream;
+
+		this.stream;
 		this.analyser;
-		this.outputNode;
+		this.worklet;
 
-		// Create gain, and set to setting volume.
+		this.connectNode = connectNode;
+
+		// Create gain node (does not set initial value; use this.changeVolume)
 		this.gain = this.audioContext.createGain();
-		this.gain.gain.setValueAtTime(
-			settings.volume,
-			this.audioContext.currentTime
-		);
+	}
 
-		// Add VU meter audio worklet
-		this.audioContext.audioWorklet
-			.addModule("assets/plugins/wwsu-audio/js/wwsu-meter.js")
-			.then(() => {
-				this.node = new AudioWorkletNode(this.audioContext, "wwsu-meter");
-				this.node.port.onmessage = (event) => {
-					let _volume = [0, 0];
-					if (event.data.volume) _volume = event.data.volume;
-					this.emitEvent("audioVolume", [_volume]);
-				};
+	/**
+	 * Make a stream, which connects to the wwsu-meter audio worklet and the this.gain node.
+	 *
+	 * @param {string} module Path to wwsu-meter worklet node module
+	 */
+	connect(module) {
+		console.log(`Connecting ${this.device.deviceId}`);
+		this.audioContext.audioWorklet.addModule(module).then(() => {
+			this.worklet = new AudioWorkletNode(this.audioContext, "wwsu-meter");
+			this.worklet.port.onmessage = (event) => {
+				let _volume = [0, 0];
+				if (event.data.volume) _volume = event.data.volume;
+				this.emitEvent("audioVolume", [_volume]);
+			};
+			this.emitEvent("deviceWorkletReady", [true]);
 
-				// Get the device media stream
-				navigator.mediaDevices
-					.getUserMedia({
-						audio: {
-							deviceId: this.device
-								? { exact: this.device.deviceId }
-								: undefined,
-							echoCancellation: false,
-							channelCount: 2,
-						},
-						video: false,
-					})
-					.then((stream) => {
-						// Set properties and make the media stream / audio analyser.
-						this.mediaStream = stream;
-						this.analyser = this.audioContext.createMediaStreamSource(
-							this.mediaStream
-						);
-						this.outputNode = this.audioContext.createMediaStreamSource(
-							this.mediaStream
-						);
+			// Get the device media stream
+			navigator.mediaDevices
+				.getUserMedia({
+					audio: {
+						deviceId: this.device ? { exact: this.device.deviceId } : undefined,
+						echoCancellation: false,
+						channelCount: 2,
+					},
+					video: false,
+				})
+				.then((stream) => {
+					this.stream = stream;
 
-						this.outputNode.connect(this.gain);
-						this.emitEvent("outputNodeReady", [this.outputNode]);
+					this.analyser = this.audioContext.createMediaStreamSource(stream);
 
-						this.analyser
-							.connect(this.gain)
-							.connect(this.node)
-							.connect(this.audioContext.destination);
-					});
-			});
+					this.analyser
+						.connect(this.gain)
+						.connect(this.worklet)
+						.connect(this.connectNode);
+				});
+		});
 	}
 
 	/**
@@ -161,17 +205,16 @@ class WWSUAudioInput extends WWSUevents {
 		// Reset stuff
 		console.log(`Disconnecting ${this.device.deviceId}`);
 		try {
-			this.mediaStream.getTracks().forEach((track) => track.stop());
-			this.mediaStream = undefined;
+			this.stream.getTracks().forEach((track) => track.stop());
+			this.stream = undefined;
 			this.analyser
 				.disconnect(this.gain)
-				.disconnect(this.node)
-				.disconnect(this.audioContext.destination);
-			this.outputNode.disconnect(this.gain);
+				.disconnect(this.worklet)
+				.disconnect(this.connectNode);
 
 			this.analyser = undefined;
-			this.outputNode = undefined;
-			this.node = undefined;
+			this.worklet.port.postMessage({ destroy: true });
+			this.worklet = undefined;
 		} catch (eee) {
 			// ignore errors
 		}
@@ -184,6 +227,5 @@ class WWSUAudioInput extends WWSUevents {
 	 */
 	changeVolume(gain) {
 		this.gain.gain.setValueAtTime(gain, this.audioContext.currentTime);
-		this.emitEvent("audioVolumeChanged", [gain]);
 	}
 }

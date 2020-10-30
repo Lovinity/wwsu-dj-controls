@@ -318,7 +318,7 @@
   border-width: 0.25em;
   border-style: solid;
   border-radius: 100%;
-  border-color: #3085d6 transparent #3085d6 transparent;
+  border-color: #2778c4 transparent #2778c4 transparent;
 }
 
 .swal2-styled {
@@ -334,7 +334,7 @@
   border: 0;
   border-radius: 0.25em;
   background: initial;
-  background-color: #3085d6;
+  background-color: #2778c4;
   color: #fff;
   font-size: 1.0625em;
 }
@@ -342,7 +342,7 @@
   border: 0;
   border-radius: 0.25em;
   background: initial;
-  background-color: #dd6b55;
+  background-color: #d14529;
   color: #fff;
   font-size: 1.0625em;
 }
@@ -350,7 +350,7 @@
   border: 0;
   border-radius: 0.25em;
   background: initial;
-  background-color: #aaa;
+  background-color: #757575;
   color: #fff;
   font-size: 1.0625em;
 }
@@ -475,9 +475,6 @@
   color: #cccccc;
 }
 .swal2-input:-ms-input-placeholder, .swal2-file:-ms-input-placeholder, .swal2-textarea:-ms-input-placeholder {
-  color: #cccccc;
-}
-.swal2-input::-ms-input-placeholder, .swal2-file::-ms-input-placeholder, .swal2-textarea::-ms-input-placeholder {
   color: #cccccc;
 }
 .swal2-input::placeholder,
@@ -748,13 +745,13 @@
   width: 2em;
   height: 2em;
   border-radius: 2em;
-  background: #3085d6;
+  background: #2778c4;
   color: #fff;
   line-height: 2em;
   text-align: center;
 }
 .swal2-progress-steps .swal2-progress-step.swal2-active-progress-step {
-  background: #3085d6;
+  background: #2778c4;
 }
 .swal2-progress-steps .swal2-progress-step.swal2-active-progress-step ~ .swal2-progress-step {
   background: #add8e6;
@@ -769,7 +766,7 @@
   width: 2.5em;
   height: 0.4em;
   margin: 0 -1px;
-  background: #3085d6;
+  background: #2778c4;
 }
 
 [class^=swal2] {

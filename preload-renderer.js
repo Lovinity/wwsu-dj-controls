@@ -26,14 +26,29 @@ window.addEventListener("DOMContentLoaded", () => {
 			send: (task, args) => ipcRenderer.send("calendar", [task, args]),
 		},
 
-		// Recorder process
+		// audio process
 		audio: {
 			send: (task, args) => ipcRenderer.send("audio", [task, args]),
+		},
+
+		// recorder process
+		recorder: {
+			send: (task, args) => ipcRenderer.send("recorder", [task, args]),
 		},
 
 		// Main process
 		main: {
 			send: (task, args) => ipcRenderer.send("main", [task, args]),
+		},
+
+		// Silence process
+		silence: {
+			send: (task, args) => ipcRenderer.send("silence", [task, args]),
+		},
+
+		// Process control
+		process: {
+			send: (task, args) => ipcRenderer.send("process", [task, args]),
 		},
 	});
 
@@ -53,6 +68,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	// Getting settings
 	contextBridge.exposeInMainWorld("settings", {
+		audio: ipcRenderer.sendSync("settings", "audio"),
 		recorder: ipcRenderer.sendSync("settings", "recorder"),
 		silence: ipcRenderer.sendSync("settings", "silence"),
 		skyway: ipcRenderer.sendSync("settings", "skyway"),

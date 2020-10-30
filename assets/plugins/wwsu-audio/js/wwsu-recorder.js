@@ -9,10 +9,13 @@ class WWSUrecorder extends WWSUevents {
 	/**
 	 * Construct the audio device.
 	 *
+	 * @param {MediaStreamAudioDestinationNode} destination The audioContext destination to use (should use the one from wwsu-audio)
 	 * @param {string} worker Directory path to the worker file
 	 */
-	constructor(worker) {
+	constructor(destination, worker) {
 		super();
+
+		this.destination = destination;
 
 		this.encodingTitle;
 		this.currentTitle;
@@ -23,11 +26,6 @@ class WWSUrecorder extends WWSUevents {
 		this.blobs = [];
 
 		this.recorder;
-
-		// Create audio context and destination
-		window.AudioContext = window.AudioContext || window.webkitAudioContext;
-		this.audioContext = new AudioContext();
-		this.destination = this.audioContext.createMediaStreamDestination();
 	}
 
 	/**
@@ -52,7 +50,7 @@ class WWSUrecorder extends WWSUevents {
 			try {
 				if (this.pendingTitle) {
 					this.currentTitle = this.pendingTitle;
-					// TODO: Does not work; re-configure package in AdminLTE compiler
+					console.dir(this.destination.stream);
 					this.recorder = new window.mp3MediaRecorder.Mp3MediaRecorder(
 						this.destination.stream,
 						{ worker: this.worker }
@@ -132,23 +130,5 @@ class WWSUrecorder extends WWSUevents {
 				_stopRecording();
 			}, delay);
 		}
-	}
-
-	/**
-	 * Connect an input node to the recorder.
-	 * 
-	 * @param {AudioNode} node The audio node to connect
-	 */
-	connectSource(node) {
-		node.connect(this.audioContext.destination);
-	}
-
-	/**
-	 * Disconnect an input node from the recorder.
-	 * 
-	 * @param {AudioNode} node The audio node to disconnect
-	 */
-	disconnectSource(node) {
-		node.disconnect(this.audioContext.destination);
 	}
 }

@@ -28,10 +28,10 @@
 		"electron-util": "^0.14.2",
 		"sanitize-filename": "^1.6.3",
 		"semver": "^7.3.2",
-		"serialport": "^9.0.1"
+		"serialport": "^9.0.2"
 	},
 	"devDependencies": {
-		"electron": "^9.3.2",
+		"electron": "^9.3.3",
 		"electron-builder": "^22.9.1",
 		"np": "^6.5.0",
 		"xo": "^0.33.1"

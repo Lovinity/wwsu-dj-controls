@@ -529,7 +529,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			meta.meta.state.includes("_returning") ||
 			meta.meta.state.includes("_halftime")
 		) {
-			window.ipc.audio.send("recorderStop", [delay]);
+			window.ipc.recorder.send("recorderStop", [delay]);
 		} else {
 			startRecording = "automation";
 			preText = window.sanitize.string(meta.meta.genre);
@@ -537,14 +537,14 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 		if (startRecording !== null) {
 			if (hosts.client.recordAudio) {
-				window.ipc.audio.send("recorderStart", [
+				window.ipc.recorder.send("recorderStart", [
 					`${startRecording}/${preText}/${preText2} (${moment().format(
 						"YYYY_MM_DD HH_mm_ss"
 					)}).mp3`,
 					delay,
 				]);
 			} else {
-				window.ipc.audio.send("recorderStop", [-1]);
+				window.ipc.recorder.send("recorderStop", [-1]);
 			}
 		}
 	}
@@ -742,27 +742,53 @@ window.addEventListener("DOMContentLoaded", () => {
 					htmlInputs += `<div class="p-2">
 					<h5>${device.device.label}</h5>
 					<div class="progress progress-xs">
-						<div class="progress-bar bg-primary vu-left-${index}" data-id="${device.device.deviceId}" role="progressbar" style="width: 0%; transition: none;"></div>
+						<div class="progress-bar bg-primary vu-left-${index}" data-id="${
+						device.device.deviceId
+					}" role="progressbar" style="width: 0%; transition: none;"></div>
 					</div>
 					<div class="progress progress-xs">
-						<div class="progress-bar bg-primary vu-right-${index}" data-id="${device.device.deviceId}" role="progressbar" style="width: 0%; transition: none;"></div>
+						<div class="progress-bar bg-primary vu-right-${index}" data-id="${
+						device.device.deviceId
+					}" role="progressbar" style="width: 0%; transition: none;"></div>
 					</div>
 					<div class="slider-primary" style="width: 100%;">
-                      <input type="text" style="width: 100%;" id="audio-volume-${index}" data-id="${device.device.deviceId}" value="" class="slider form-control" data-slider-min="0" data-slider-max="2"
-                           data-slider-step="0.01" data-slider-value="${device.settings.volume}" data-slider-orientation="horizontal"
+                      <input type="text" style="width: 100%;" id="audio-volume-${index}" data-id="${
+						device.device.deviceId
+					}" value="" class="slider form-control" data-slider-min="0" data-slider-max="2"
+                           data-slider-step="0.01" data-slider-value="${
+															device.settings.volume
+														}" data-slider-orientation="horizontal"
                            data-slider-selection="before" data-slider-tooltip="show">
 					</div>
-					<div class="form-check form-check-inline" title="If checked, device ${device.device.label} will be streamed to WWSU when broadcasting remotely from this DJ Controls.">
-    					<input type="checkbox" class="form-check-input" id="audio-remote-${index}" data-id="${device.device.deviceId}">
-    					<label class="form-check-label" for="audio-remote-${index}" ${device.settings.remote ? `checked` : ``}>Remote Broadcast</label>
+					<div class="form-check form-check-inline" title="If checked, device ${
+						device.device.label
+					} will be streamed to WWSU when broadcasting remotely from this DJ Controls.">
+    					<input type="checkbox" class="form-check-input" id="audio-remote-${index}" data-id="${
+						device.device.deviceId
+					}" ${
+						device.settings.remote ? `checked` : ``
+					}>
+    					<label class="form-check-label" for="audio-remote-${index}">Remote Broadcast</label>
 					  </div>
-					<div class="form-check form-check-inline" title="If checked, device ${device.device.label} will be recorded if this DJ Controls is responsible for recording on-air programming. ONLY CHECK for sources that get a direct feed from WWSU.">
-    					<input type="checkbox" class="form-check-input" id="audio-recorder-${index}" data-id="${device.device.deviceId}">
-    					<label class="form-check-label" for="audio-recorder-${index}" ${device.settings.recorder ? `checked` : ``}>Record</label>
+					<div class="form-check form-check-inline" title="If checked, device ${
+						device.device.label
+					} will be recorded if this DJ Controls is responsible for recording on-air programming. ONLY CHECK for sources that get a direct feed from WWSU.">
+    					<input type="checkbox" class="form-check-input" id="audio-recorder-${index}" data-id="${
+						device.device.deviceId
+					}" ${
+						device.settings.recorder ? `checked` : ``
+					}>
+    					<label class="form-check-label" for="audio-recorder-${index}">Record</label>
 					  </div>
-					<div class="form-check form-check-inline" title="If checked, device ${device.device.label} will be monitored for silence if this DJ Controls is responsible for reporting silence. ONLY CHECK for sources that get a direct feed from WWSU.">
-    					<input type="checkbox" class="form-check-input" id="audio-silence-${index}" data-id="${device.device.deviceId}">
-    					<label class="form-check-label" for="audio-silence-${index}" ${device.settings.silence ? `checked` : ``}>Silence Detection</label>
+					<div class="form-check form-check-inline" title="If checked, device ${
+						device.device.label
+					} will be monitored for silence if this DJ Controls is responsible for reporting silence. ONLY CHECK for sources that get a direct feed from WWSU.">
+    					<input type="checkbox" class="form-check-input" id="audio-silence-${index}" data-id="${
+						device.device.deviceId
+					}" ${
+						device.settings.silence ? `checked` : ``
+					}>
+    					<label class="form-check-label" for="audio-silence-${index}">Silence Detection</label>
   					</div>
 					</div>`;
 
@@ -772,8 +798,28 @@ window.addEventListener("DOMContentLoaded", () => {
 							max: 2,
 							step: 0.01,
 							ticks: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
-							ticks_positions: [0, (100 * (1/8)), (100 * (2/8)), (100 * (3/8)), (100 * (4/8)), (100 * (5/8)), (100 * (6/8)), (100 * (7/8)), 100],
-							ticks_labels: ["OFF", "25%", "50%", "75%", "100%", "125%", "150%", "175%", "200%"],
+							ticks_positions: [
+								0,
+								100 * (1 / 8),
+								100 * (2 / 8),
+								100 * (3 / 8),
+								100 * (4 / 8),
+								100 * (5 / 8),
+								100 * (6 / 8),
+								100 * (7 / 8),
+								100,
+							],
+							ticks_labels: [
+								"OFF",
+								"25%",
+								"50%",
+								"75%",
+								"100%",
+								"125%",
+								"150%",
+								"175%",
+								"200%",
+							],
 							ticks_snap_bounds: 0.025,
 							value: device.settings.volume,
 							orientation: "horizontal",
@@ -785,7 +831,7 @@ window.addEventListener("DOMContentLoaded", () => {
 						$(`#audio-volume-${index}`).off("change");
 						$(`#audio-volume-${index}`).on("change", (obj) => {
 							let deviceId = $(`#audio-volume-${index}`).data("id");
-							window.ipc.audio.send("audioChangeVolume", [
+							window.ipc.main.send("audioChangeVolume", [
 								deviceId,
 								obj.value.newValue,
 							]);
@@ -795,8 +841,8 @@ window.addEventListener("DOMContentLoaded", () => {
 						$(`#audio-remote-${index}`).off("change");
 						$(`#audio-remote-${index}`).on("change", (e) => {
 							let deviceId = $(`#audio-remote-${index}`).data("id");
-							console.log(`Clicked remote ${index}`)
-							window.ipc.audio.send("audioRemoteSetting", [
+							console.log(`Clicked remote ${index}`);
+							window.ipc.main.send("audioRemoteSettings", [
 								deviceId,
 								e.target.checked,
 							]);
@@ -804,8 +850,8 @@ window.addEventListener("DOMContentLoaded", () => {
 						$(`#audio-recorder-${index}`).off("change");
 						$(`#audio-recorder-${index}`).on("change", (e) => {
 							let deviceId = $(`#audio-recorder-${index}`).data("id");
-							console.log(`Clicked recorder ${index}`)
-							window.ipc.audio.send("audioRecorderSetting", [
+							console.log(`Clicked recorder ${index}`);
+							window.ipc.main.send("audioRecorderSetting", [
 								deviceId,
 								e.target.checked,
 							]);
@@ -814,7 +860,7 @@ window.addEventListener("DOMContentLoaded", () => {
 						$(`#audio-silence-${index}`).on("change", (e) => {
 							let deviceId = $(`#audio-silence-${index}`).data("id");
 							console.log(`Clicked silence ${index}`);
-							window.ipc.audio.send("audioSilenceSetting", [
+							window.ipc.main.send("audioSilenceSetting", [
 								deviceId,
 								e.target.checked,
 							]);
@@ -827,6 +873,17 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		$("#section-audio-devices-inputs").html(htmlInputs);
 		$("#section-audio-devices-outputs").html(htmlOutputs);
+	});
+
+	// Crash checking
+	window.ipc.on("processClosed", (event, arg) => {
+		switch (arg[0]) {
+			case "silence":
+				if (hosts.client.silenceDetection) {
+					window.ipc.process.send("silence", ["open"]);
+				}
+			break;
+		}
 	});
 
 	/*
@@ -867,6 +924,14 @@ window.addEventListener("DOMContentLoaded", () => {
 						logs.initIssues();
 						logs.initIssuesTable("#section-notifications-issues");
 					}
+
+					// Open or close the silence detection process depending on whether or not this DJ Controls is responsible for silence detection.
+					if (hosts.client.silenceDetection) {
+						window.ipc.process.send("silence", ["open"]);
+					} else {
+						window.ipc.process.send("silence", ["close"]);
+					}
+
 				} else if (success === -1) {
 					$("#content").addClass("d-none");
 					$("#already-connected").removeClass("d-none");
@@ -1914,7 +1979,14 @@ Track: <strong>${request.trackname}</strong>`,
 	*/
 
 	hosts.on("clientChanged", "renderer", (newClient) => {
-		// Restart the recorder when settings for this host were changed.
+
+		// Check if silence detection process should be running or not
+		if (newClient.silenceDetection) {
+			window.ipc.process.send("silence", ["open"]);
+		} else {
+			window.ipc.process.send("silence", ["close"]);
+		}
+
 		startRecording(-1);
 	});
 

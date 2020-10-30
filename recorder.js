@@ -5,42 +5,37 @@
 window.addEventListener("DOMContentLoaded", () => {
 	let closingDown = false;
 
-	// Initialize the recorder
+	// Initialize the audio manager
+	var audioManager = new WWSUAudioManager();
+
+	// Initialize recorder
 	var recorder = new WWSUrecorder(
+		audioManager.destination,
 		"assets/plugins/wwsu-audio/js/wwsu-recorder-worker.js"
 	);
 
-	// Initialize the silence detection
-	var silence = new WWSUsilence(window.settings.silence);
-
-	// TODO: Initialize the skywayjs remote broadcasting
-	var remote = new WWSUremote(window.settings.skyway);
-
-	// Initialize the audio manager
-	var audioManager = new WWSUAudioManager(
-		window.settings,
-		recorder,
-		silence,
-		remote
-	);
-
+	// Listen for when we receive available devices
 	audioManager.on("devices", "renderer", (devices) => {
 		devices = devices.map((device) => {
-			return {
-				device: { deviceId: device.device.deviceId, label: device.device.label, kind: device.device.kind },
-				settings: device.settings,
-			};
-		});
-		console.log(`Audio: Sending audio devices to renderer`);
-		console.dir(devices);
-		window.ipc.renderer.send("audioDevices", [devices]);
-	});
-	audioManager.on("audioVolume", "renderer", (device, volume) => {
-		window.ipc.renderer.send("audioVolume", [device, volume]);
-	});
+			// Retrieve device settings if they exist
+			let settings = window.settings
+				.audio()
+				.find((dev) => dev.deviceId === device.deviceId);
 
-	window.ipc.renderer.send("console", ["log", "Audio: Process is ready"]);
-	window.ipc.renderer.send("audioReady", []);
+			// Connect device to recorder if device has recorder set to true
+			if (settings && settings.recorder) {
+				audioManager.connect(
+					device.deviceId,
+					"assets/plugins/wwsu-audio/js/wwsu-meter.js"
+				);
+			} else {
+				audioManager.disconnect(device.deviceId);
+			}
+		});
+	});
+	
+	window.ipc.renderer.send("console", ["log", "Recorder: Process is ready"]);
+	window.ipc.renderer.send("recorderReady", []);
 
 	/*
 		AUDIO DEVICES
@@ -51,39 +46,31 @@ window.addEventListener("DOMContentLoaded", () => {
 		audioManager.changeVolume(arg[0], arg[1]);
 		window.ipc.renderer.send("console", [
 			"log",
-			`Audio: Changed audio volume for ${arg[0]} to ${arg[1]}`,
+			`Recorder: Changed audio volume for ${arg[0]} to ${arg[1]}`,
 		]);
 	});
 
 	window.ipc.on("audioRefreshDevices", (event, arg) => {
-		console.log(`Audio: Refreshing available audio devices`);
+		console.log(`Recorder: Refreshing available audio devices`);
 		audioManager.loadDevices();
 	});
 
 	window.ipc.on("audioRecorderSetting", (event, arg) => {
-		console.log(`Audio: Changing recorder setting for device ${arg[0]} to ${arg[1]}`);
-		audioManager.shouldRecord(arg[0], arg[1]);
+		console.log(
+			`Recorder: Changing recorder setting for device ${arg[0]} to ${arg[1]}`
+		);
+		// Connect device to recorder if device has recorder set to true
+		if (arg[1]) {
+			audioManager.connect(
+				arg[0],
+				"assets/plugins/wwsu-audio/js/wwsu-meter.js"
+			);
+		} else {
+			audioManager.disconnect(arg[0]);
+		}
 		window.ipc.renderer.send("console", [
 			"log",
-			`Audio: Changing recorder setting for device ${arg[0]} to ${arg[1]}`,
-		]);
-	});
-
-	window.ipc.on("audioRemoteSetting", (event, arg) => {
-		console.log(`Audio: Changing remote setting for device ${arg[0]} to ${arg[1]}`);
-		audioManager.shouldRemote(arg[0], arg[1]);
-		window.ipc.renderer.send("console", [
-			"log",
-			`Audio: Changing remote setting for device ${arg[0]} to ${arg[1]}`,
-		]);
-	});
-
-	window.ipc.on("audioSilenceSetting", (event, arg) => {
-		console.log(`Audio: Changing silence setting for device ${arg[0]} to ${arg[1]}`);
-		audioManager.shouldSilence(arg[0], arg[1]);
-		window.ipc.renderer.send("console", [
-			"log",
-			`Audio: Changing silence setting for device ${arg[0]} to ${arg[1]}`,
+			`Recorder: Changing recorder setting for device ${arg[0]} to ${arg[1]}`,
 		]);
 	});
 
@@ -92,10 +79,10 @@ window.addEventListener("DOMContentLoaded", () => {
 	 */
 
 	recorder.on("recorderStopped", "recorder", (file) => {
-		console.log(`Audio: Recording ${file} ended.`);
+		console.log(`Recorder: Recording ${file} ended.`);
 		window.ipc.renderer.send("console", [
 			"log",
-			`Audio: Recording ${file} ended.`,
+			`Recorder: Recording ${file} ended.`,
 		]);
 
 		// Close the process if we are pending closing and no file was returned (aka no file to save).
@@ -103,41 +90,31 @@ window.addEventListener("DOMContentLoaded", () => {
 			window.close();
 		}
 	});
+
 	recorder.on("recorderStarted", "recorder", (file) => {
-		console.log(`Audio: Recording ${file} started.`);
+		console.log(`Recorder: Recording ${file} started.`);
 		window.ipc.renderer.send("console", [
 			"log",
-			`Audio: Recording ${file} started.`,
+			`Recorder: Recording ${file} started.`,
 		]);
 	});
 
 	// Pass encoded info to main process to be saved
 	recorder.on("recorderEncoded", "recorder", (file, reader) => {
-		console.log(`Audio: Recording ${file} finished encoding.`);
+		console.log(`Recorder: Recording ${file} finished encoding.`);
 		window.ipc.renderer.send("console", [
 			"log",
-			`Audio: Recording ${file} finished encoding.`,
+			`Recorder: Recording ${file} finished encoding.`,
 		]);
 		window.ipc.main.send("recorderEncoded", [file, reader]);
 	});
 
-	// Listen for device change requests
-	// TODO
-	window.ipc.on("recorderChangeDevice", (event, arg) => {
-		console.log(`Audio: Changing recording device to ${arg[0]}`);
-		recorder.audio.changeDevice(arg[0]);
-		window.ipc.renderer.send("console", [
-			"log",
-			`Audio: Changed recording device to ${arg[0]}`,
-		]);
-	});
-
 	// listen for audio recordings saved
 	window.ipc.on("recorderSaved", (event, arg) => {
-		console.log(`Audio file saved: ${arg[0]}`);
+		console.log(`Recorder: Audio file saved to ${arg[0]}`);
 		window.ipc.renderer.send("console", [
 			"log",
-			`Audio: Audio file saved to ${arg[0]}`,
+			`Recorder: Audio file saved to ${arg[0]}`,
 		]);
 
 		// Close the process if we are pending closing
@@ -151,7 +128,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		recorder.newRecording(arg[0], arg[1] || window.settings.delay);
 		window.ipc.renderer.send("console", [
 			"log",
-			`Audio: Recording ${arg[0]} will start in ${
+			`Recorder: Recording ${arg[0]} will start in ${
 				arg[1] || window.settings.delay
 			} milliseconds.`,
 		]);
@@ -162,7 +139,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		recorder.stopRecording(arg[0] || window.settings.delay);
 		window.ipc.renderer.send("console", [
 			"log",
-			`Audio: Recording ${arg[0]} will stop in ${
+			`Recorder: Recording ${arg[0]} will stop in ${
 				arg[0] || window.settings.delay
 			} milliseconds.`,
 		]);
@@ -170,19 +147,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	window.ipc.on("shutDown", (arg) => {
 		closingDown = true;
-		console.log(`Audio: shut down requested.`);
+		console.log(`Recorder: shut down requested.`);
 		recorder.stopRecording(-1);
-	});
-
-	/*
-		SILENCE
-	*/
-
-	silence.on("silence", "renderer", (silence) => {
-		window.ipc.renderer.send("silence", [silence]);
-	});
-
-	silence.on("silenceTrigger", "renderer", (silenceTrigger) => {
-		window.ipc.renderer.send("silenceTrigger", [silenceTrigger]);
 	});
 });
