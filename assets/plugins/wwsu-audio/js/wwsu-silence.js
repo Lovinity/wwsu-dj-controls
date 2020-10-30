@@ -37,9 +37,5 @@ class WWSUsilence extends WWSUevents {
 					.connect(this.worklet)
 					.connect(this.audioContext.destination);
 			});
-
-		this.triggered = false;
-
-		this.timer;
 	}
 }

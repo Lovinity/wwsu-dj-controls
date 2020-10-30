@@ -14,9 +14,10 @@ window.addEventListener("DOMContentLoaded", () => {
 			);
 
 			// Retrieve device settings if they exist
-			let settings = window.settings
-				.audio()
-				.find((dev) => dev.deviceId === device.deviceId);
+			let settings = Object.assign(
+				{ deviceId: device.deviceId, volume: 1 },
+				window.settings.audio().find((dev) => dev.deviceId === device.deviceId)
+			);
 
 			// Return device info and settings for renderer process
 			return {

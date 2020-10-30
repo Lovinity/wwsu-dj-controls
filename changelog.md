@@ -4,7 +4,7 @@
 
 ### Removed
 
-- recorder.deviceId and silence.deviceId; to be replaced with audio array, each containing recorder and silence booleans whether or not they should be responsible for silence detection or recording.
+- Config recorder.deviceId and silence.deviceId; to be replaced with audio array, each containing recorder and silence booleans whether or not they should be responsible for silence detection or recording.
 
 ### Changed
 
@@ -12,7 +12,7 @@
 
 ### Fixed
 
-- Clockwheel tooltips issue where clock div was preventing tooltips on certain areas of the clockwheel coughnut.
+- Clockwheel tooltips issue where clock div was preventing tooltips on certain areas of the clockwheel doughnut.
 
 ### Added
 
