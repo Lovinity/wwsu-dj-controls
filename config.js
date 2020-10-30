@@ -2,7 +2,7 @@
 const Store = require("electron-store");
 
 module.exports = new Store({
-	name: "wwsu-dj-controls",
+	name: "wwsu-dj-controls-2",
 	clearInvalidConfig: true,
 	defaults: {
 		recorder: {
@@ -71,10 +71,13 @@ module.exports = new Store({
 			items: {
 				type: "object",
 				additionalProperties: false,
-				required: ["deviceId", "volume"],
+				required: ["deviceId", "kind", "volume"],
 				properties: {
 					deviceId: {
 						type: "string",
+					},
+					kind: {
+						type: "string"
 					},
 					volume: {
 						type: "number",
@@ -92,6 +95,9 @@ module.exports = new Store({
 						type: "boolean",
 					},
 					output: {
+						type: "boolean",
+					},
+					queue: {
 						type: "boolean",
 					},
 				},

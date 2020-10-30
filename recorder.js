@@ -20,16 +20,17 @@ window.addEventListener("DOMContentLoaded", () => {
 			// Retrieve device settings if they exist
 			let settings = window.settings
 				.audio()
-				.find((dev) => dev.deviceId === device.deviceId);
+				.find((dev) => dev.deviceId === device.deviceId && dev.kind === device.kind);
 
 			// Connect device to recorder if device has recorder set to true
 			if (settings && settings.recorder) {
 				audioManager.connect(
 					device.deviceId,
+					device.kind,
 					"assets/plugins/wwsu-audio/js/wwsu-meter.js"
 				);
 			} else {
-				audioManager.disconnect(device.deviceId);
+				audioManager.disconnect(device.deviceId, device.kind);
 			}
 		});
 	});
@@ -42,11 +43,11 @@ window.addEventListener("DOMContentLoaded", () => {
 	*/
 
 	window.ipc.on("audioChangeVolume", (event, arg) => {
-		console.log(`Audio: Changing volume for device ${arg[0]} to ${arg[1]}`);
-		audioManager.changeVolume(arg[0], arg[1]);
+		console.log(`Audio: Changing volume for device ${arg[0]} to ${arg[2]}`);
+		audioManager.changeVolume(arg[0], arg[1], arg[2]);
 		window.ipc.renderer.send("console", [
 			"log",
-			`Recorder: Changed audio volume for ${arg[0]} to ${arg[1]}`,
+			`Recorder: Changed audio volume for ${arg[0]} to ${arg[2]}`,
 		]);
 	});
 
@@ -57,20 +58,21 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	window.ipc.on("audioRecorderSetting", (event, arg) => {
 		console.log(
-			`Recorder: Changing recorder setting for device ${arg[0]} to ${arg[1]}`
+			`Recorder: Changing recorder setting for device ${arg[0]} to ${arg[2]}`
 		);
 		// Connect device to recorder if device has recorder set to true
-		if (arg[1]) {
+		if (arg[2]) {
 			audioManager.connect(
 				arg[0],
+				arg[1],
 				"assets/plugins/wwsu-audio/js/wwsu-meter.js"
 			);
 		} else {
-			audioManager.disconnect(arg[0]);
+			audioManager.disconnect(arg[0], arg[1]);
 		}
 		window.ipc.renderer.send("console", [
 			"log",
-			`Recorder: Changing recorder setting for device ${arg[0]} to ${arg[1]}`,
+			`Recorder: Changing recorder setting for device ${arg[0]} to ${arg[2]}`,
 		]);
 	});
 
@@ -85,6 +87,8 @@ window.addEventListener("DOMContentLoaded", () => {
 			`Recorder: Recording ${file} ended.`,
 		]);
 
+		window.ipc.renderer.send("recorderStopped", []);
+
 		// Close the process if we are pending closing and no file was returned (aka no file to save).
 		if (!file && closingDown) {
 			window.close();
@@ -97,6 +101,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			"log",
 			`Recorder: Recording ${file} started.`,
 		]);
+		window.ipc.renderer.send("recorderStarted", []);
 	});
 
 	// Pass encoded info to main process to be saved
@@ -125,22 +130,22 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	// Start a new recording
 	window.ipc.on("recorderStart", (event, arg) => {
-		recorder.newRecording(arg[0], arg[1] || window.settings.delay);
+		recorder.newRecording(arg[0], arg[1] || window.settings.recorder().delay);
 		window.ipc.renderer.send("console", [
 			"log",
 			`Recorder: Recording ${arg[0]} will start in ${
-				arg[1] || window.settings.delay
+				arg[1] || window.settings.recorder().delay
 			} milliseconds.`,
 		]);
 	});
 
 	// Stop current recording
 	window.ipc.on("recorderStop", (arg) => {
-		recorder.stopRecording(arg[0] || window.settings.delay);
+		recorder.stopRecording(arg[0] || window.settings.recorder().delay);
 		window.ipc.renderer.send("console", [
 			"log",
 			`Recorder: Recording ${arg[0]} will stop in ${
-				arg[0] || window.settings.delay
+				arg[0] || window.settings.recorder().delay
 			} milliseconds.`,
 		]);
 	});

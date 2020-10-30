@@ -58,7 +58,7 @@ class WWSUAudioManager extends WWSUevents {
 		}
 		if (this.outputs.size > 0) {
 			this.outputs.forEach((device) => {
-				device.disconect();
+				device.disconnect();
 			});
 		}
 		this.inputs = new Map();
@@ -82,11 +82,9 @@ class WWSUAudioManager extends WWSUevents {
 
 					// Output devices
 				} else if (device.kind === "audiooutput") {
-					// Get saved device settings or add defaults if they do not exist
-					// TODO
-					// let settings = this.getDeviceSettings(deviceId);
-					// let wwsuaudio = new WWSUAudioOutput(device, settings);
-					//this.inputs.set(device.deviceId, wwsuaudio);
+					let wwsuaudio = new WWSUAudioOutput(device, this.audioContext);
+
+					this.outputs.set(device.deviceId, wwsuaudio);
 				}
 
 				return device;
@@ -99,10 +97,11 @@ class WWSUAudioManager extends WWSUevents {
 	 * Change the volume of a device.
 	 *
 	 * @param {string} deviceId The device ID to change volume.
+	 * @param {string} kind The device kind
 	 * @param {number} volume The new volume to set at (between 0 and 1);
 	 */
-	changeVolume(deviceId, volume) {
-		let device = this.inputs.get(deviceId) || this.outputs.get(deviceId);
+	changeVolume(deviceId, kind, volume) {
+		let device = kind === "audioinput" ? this.inputs.get(deviceId) : this.outputs.get(deviceId);
 		if (device) {
 			device.changeVolume(volume);
 		}
@@ -112,9 +111,10 @@ class WWSUAudioManager extends WWSUevents {
 	 * Disconnect a device from the audioContext, but leave the device in the device map.
 	 *
 	 * @param {string} deviceId The device to disconnect
+	 * @param {string} kind The device kind
 	 */
-	disconnect(deviceId) {
-		let device = this.inputs.get(deviceId) || this.outputs.get(deviceId);
+	disconnect(deviceId, kind) {
+		let device = kind === "audioinput" ? this.inputs.get(deviceId) : this.outputs.get(deviceId);
 		if (device) {
 			device.disconnect();
 		}
@@ -124,10 +124,11 @@ class WWSUAudioManager extends WWSUevents {
 	 * Connect a device to the audioContext. Device must be in the inputs or outputs map.
 	 *
 	 * @param {string} deviceId The ID of the device to connect
+	 * @param {string} kind The device kind
 	 * @param {string} module Path to the wwsu-meter audio worklet module
 	 */
-	connect(deviceId, module) {
-		let device = this.inputs.get(deviceId) || this.outputs.get(deviceId);
+	connect(deviceId, kind, module) {
+		let device = kind === "audioinput" ? this.inputs.get(deviceId) : this.outputs.get(deviceId);
 		if (device) {
 			device.connect(module);
 		}
@@ -148,12 +149,16 @@ class WWSUAudioInput extends WWSUevents {
 
 		this.device = device;
 		this.audioContext = audioContext;
+		this.connectNode = connectNode;
+
+		this.destination = this.audioContext.createMediaStreamDestination();
+		this.destinationStream = this.audioContext.createMediaStreamSource(
+			this.destination.stream
+		);
 
 		this.stream;
 		this.analyser;
 		this.worklet;
-
-		this.connectNode = connectNode;
 
 		// Create gain node (does not set initial value; use this.changeVolume)
 		this.gain = this.audioContext.createGain();
@@ -187,14 +192,12 @@ class WWSUAudioInput extends WWSUevents {
 				})
 				.then((stream) => {
 					this.stream = stream;
-
 					this.analyser = this.audioContext.createMediaStreamSource(stream);
-
-					this.analyser.connect(this.gain).connect(this.worklet);
-
-					this.gain.connect(this.connectNode);
-
+					this.analyser.connect(this.gain);
+					this.gain.connect(this.worklet);
+					this.gain.connect(this.destination);
 					this.worklet.connect(this.audioContext.destination);
+					this.destinationStream.connect(this.connectNode);
 				});
 		});
 	}
@@ -212,14 +215,57 @@ class WWSUAudioInput extends WWSUevents {
 			this.analyser.disconnect();
 			this.gain.disconnect();
 			this.worklet.disconnect();
+			this.destinationStream.disconnect();
 
 			this.analyser = undefined;
+			this.destinationStream = undefined;
 			this.worklet.port.postMessage({ destroy: true });
 			this.worklet = undefined;
+			this.gain = undefined;
 		} catch (eee) {
 			// ignore errors
 		}
 	}
+
+	/**
+	 * Change device volume / gain.
+	 *
+	 * @param {number} gain New gain value
+	 */
+	changeVolume(gain) {
+		this.gain.gain.setValueAtTime(gain, this.audioContext.currentTime);
+	}
+}
+
+// Class for an audio output device.
+class WWSUAudioOutput extends WWSUevents {
+	/**
+	 * Construct the device.
+	 *
+	 * @param {MediaDeviceInfo} device The device
+	 * @param {AudioContext} audioContext The audioContext to use for this device
+	 */
+	constructor(device, audioContext) {
+		super();
+
+		this.device = device;
+		this.audioContext = audioContext;
+
+		// Create gain node (does not set initial value; use this.changeVolume)
+		this.gain = this.audioContext.createGain();
+	}
+
+	/**
+	 * Make a stream, which connects to the wwsu-meter audio worklet and the this.gain node.
+	 *
+	 * @param {string} module Path to wwsu-meter worklet node module
+	 */
+	connect(module) {}
+
+	/**
+	 * Disconnect media.
+	 */
+	disconnect() {}
 
 	/**
 	 * Change device volume / gain.

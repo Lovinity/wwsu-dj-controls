@@ -10,13 +10,21 @@ window.addEventListener("DOMContentLoaded", () => {
 			// Generate media stream and VU meters for each device
 			audioManager.connect(
 				device.deviceId,
+				device.kind,
 				"assets/plugins/wwsu-audio/js/wwsu-meter.js"
 			);
 
 			// Retrieve device settings if they exist
 			let settings = Object.assign(
 				{ deviceId: device.deviceId, volume: 1 },
-				window.settings.audio().find((dev) => dev.deviceId === device.deviceId)
+				window.settings.audio().find((dev) => dev.deviceId === device.deviceId && dev.kind === device.kind)
+			);
+
+			// Set volume
+			audioManager.changeVolume(
+				device.deviceId,
+				device.kind,
+				settings.volume
 			);
 
 			// Return device info and settings for renderer process
@@ -35,7 +43,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		// Emit devices to renderer
 		window.ipc.renderer.send("audioDevices", [devices]);
-		window.ipc.renderer.send("audioReady", []);
 	});
 
 	// When a device reports volume information, send this to the main process to be sent out to other audio processes and the renderer
@@ -43,18 +50,16 @@ window.addEventListener("DOMContentLoaded", () => {
 		window.ipc.main.send("audioVolume", [device, volume]);
 	});
 
-	window.ipc.renderer.send("console", ["log", "Audio: Process is ready"]);
-
 	/*
 		AUDIO DEVICES
 	*/
 
 	window.ipc.on("audioChangeVolume", (event, arg) => {
-		console.log(`Audio: Changing volume for device ${arg[0]} to ${arg[1]}`);
-		audioManager.changeVolume(arg[0], arg[1]);
+		console.log(`Audio: Changing volume for device ${arg[0]} to ${arg[2]}`);
+		audioManager.changeVolume(arg[0], arg[1], arg[2]);
 		window.ipc.renderer.send("console", [
 			"log",
-			`Audio: Changed audio volume for ${arg[0]} to ${arg[1]}`,
+			`Audio: Changed audio volume for ${arg[0]} to ${arg[2]}`,
 		]);
 	});
 
@@ -62,4 +67,10 @@ window.addEventListener("DOMContentLoaded", () => {
 		console.log(`Audio: Refreshing available audio devices`);
 		audioManager.loadDevices();
 	});
+
+
+
+	// READY
+	window.ipc.renderer.send("console", ["log", "Audio: Process is ready"]);
+	window.ipc.renderer.send("audioReady", []);
 });

@@ -106,6 +106,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	var climacell = new WWSUclimacell(socket, noReq, meta);
 	var inventory = new WWSUinventory(socket, meta, hostReq, directorReq);
 	var version = new WWSUversion(socket, `wwsu-dj-controls`, hostReq);
+	var silence = new WWSUSilence(hostReq);
 
 	// Sound alerts
 	var sounds = {
@@ -132,7 +133,6 @@ window.addEventListener("DOMContentLoaded", () => {
 	var audioDevices = [];
 
 	var todos = {
-		// Todo notification count tracker
 		status: {
 			danger: 0,
 			orange: 0,
@@ -319,7 +319,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			css: { border: "3px solid #a00" },
 			timeout: 30000,
 			onBlock: () => {
-				window.ipc.main.send("audioReload", [true]);
+				window.ipc.main.send("audioRefreshDevices", [true]);
 			},
 		});
 	});
@@ -690,7 +690,57 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	// When the recorder is ready, determine if a recording should be started
 	window.ipc.on("recorderReady", (event, arg) => {
+		$(".notifications-recorder").removeClass("badge-secondary");
+		$(".notifications-recorder").addClass("badge-warning");
 		startRecording(-1);
+	});
+
+	// Update recorder process status indication
+	window.ipc.on("recorderStarted", (event, arg) => {
+		$(".notifications-recorder").removeClass("badge-warning");
+		$(".notifications-recorder").addClass("badge-success");
+	});
+	window.ipc.on("recorderStopped", (event, arg) => {
+		$(".notifications-recorder").removeClass("badge-success");
+		$(".notifications-recorder").addClass("badge-warning");
+	});
+
+	window.ipc.on("silenceReady", (event, arg) => {
+		$(".notifications-silence").removeClass("badge-secondary");
+		$(".notifications-silence").removeClass("badge-warning");
+		$(".notifications-silence").removeClass("badge-danger");
+		$(".notifications-silence").addClass("badge-success");
+	});
+
+	// Do things depending on state of silence detected
+	window.ipc.on("silenceState", (event, arg) => {
+		let triggered = false;
+
+		$(".notifications-silence").removeClass("badge-secondary");
+		$(".notifications-silence").removeClass("badge-warning");
+		$(".notifications-silence").removeClass("badge-danger");
+		$(".notifications-silence").removeClass("badge-success");
+
+		switch (arg[0]) {
+			case 0:
+				$(".notifications-silence").addClass("badge-success");
+
+				// Deactivate silence if the alarm is active
+				let silenceStatus = status.find({ name: "silence" }, true);
+				if (!silenceStatus || silenceStatus.status < 4 || triggered) {
+					silence.inactive();
+					triggered = false;
+				}
+				break;
+			case 1:
+				$(".notifications-silence").addClass("badge-warning");
+				break;
+			case 2:
+				$(".notifications-silence").addClass("badge-danger");
+				silence.active();
+				triggered = true;
+				break;
+		}
 	});
 
 	// Volume for audio
@@ -724,13 +774,12 @@ window.addEventListener("DOMContentLoaded", () => {
 		);
 	});
 
-	window.ipc.on("audioReady", () => {
-		$("#section-audio-devices").unblock();
-	});
-
 	window.ipc.on("audioDevices", (event, arg) => {
 		console.log(`Audio: Received audio devices`);
 		console.dir(arg);
+
+		$("#section-audio-devices").unblock();
+		
 		let htmlInputs = ``;
 		let htmlOutputs = ``;
 
@@ -765,19 +814,15 @@ window.addEventListener("DOMContentLoaded", () => {
 					} will be streamed to WWSU when broadcasting remotely from this DJ Controls.">
     					<input type="checkbox" class="form-check-input" id="audio-remote-${index}" data-id="${
 						device.device.deviceId
-					}" ${
-						device.settings.remote ? `checked` : ``
-					}>
-    					<label class="form-check-label" for="audio-remote-${index}">Remote Broadcast</label>
+					}" ${device.settings.remote ? `checked` : ``}>
+    					<label class="form-check-label" for="audio-remote-${index}">Remote Broadcast (Input)</label>
 					  </div>
 					<div class="form-check form-check-inline" title="If checked, device ${
 						device.device.label
 					} will be recorded if this DJ Controls is responsible for recording on-air programming. ONLY CHECK for sources that get a direct feed from WWSU.">
     					<input type="checkbox" class="form-check-input" id="audio-recorder-${index}" data-id="${
 						device.device.deviceId
-					}" ${
-						device.settings.recorder ? `checked` : ``
-					}>
+					}" ${device.settings.recorder ? `checked` : ``}>
     					<label class="form-check-label" for="audio-recorder-${index}">Record</label>
 					  </div>
 					<div class="form-check form-check-inline" title="If checked, device ${
@@ -785,9 +830,7 @@ window.addEventListener("DOMContentLoaded", () => {
 					} will be monitored for silence if this DJ Controls is responsible for reporting silence. ONLY CHECK for sources that get a direct feed from WWSU.">
     					<input type="checkbox" class="form-check-input" id="audio-silence-${index}" data-id="${
 						device.device.deviceId
-					}" ${
-						device.settings.silence ? `checked` : ``
-					}>
+					}" ${device.settings.silence ? `checked` : ``}>
     					<label class="form-check-label" for="audio-silence-${index}">Silence Detection</label>
   					</div>
 					</div>`;
@@ -833,6 +876,7 @@ window.addEventListener("DOMContentLoaded", () => {
 							let deviceId = $(`#audio-volume-${index}`).data("id");
 							window.ipc.main.send("audioChangeVolume", [
 								deviceId,
+								"audioinput",
 								obj.value.newValue,
 							]);
 						});
@@ -853,6 +897,7 @@ window.addEventListener("DOMContentLoaded", () => {
 							console.log(`Clicked recorder ${index}`);
 							window.ipc.main.send("audioRecorderSetting", [
 								deviceId,
+								"audioinput",
 								e.target.checked,
 							]);
 						});
@@ -862,11 +907,102 @@ window.addEventListener("DOMContentLoaded", () => {
 							console.log(`Clicked silence ${index}`);
 							window.ipc.main.send("audioSilenceSetting", [
 								deviceId,
+								"audioinput",
 								e.target.checked,
 							]);
 						});
 					});
 				} else if (device.device.kind === "audiooutput") {
+					htmlOutputs += `<div class="p-2">
+					<h5>${device.device.label}</h5>
+					<div class="slider-primary" style="width: 100%;">
+                      <input type="text" style="width: 100%;" id="audio-volume-${index}" data-id="${
+						device.device.deviceId
+					}" value="" class="slider form-control" data-slider-min="0" data-slider-max="2"
+                           data-slider-step="0.01" data-slider-value="${
+															device.settings.volume
+														}" data-slider-orientation="horizontal"
+                           data-slider-selection="before" data-slider-tooltip="show">
+					</div>
+					<div class="form-check form-check-inline" title="If checked and a remote broadcast is streaming to this host, the audio will be played through device ${
+						device.device.label
+					}. ONLY CHECK if this output device can be streamed over WWSU's airwaves.">
+    					<input type="checkbox" class="form-check-input" id="audio-output-${index}" data-id="${
+						device.device.deviceId
+					}" ${device.settings.output ? `checked` : ``}>
+    					<label class="form-check-label" for="audio-output-${index}">Remote Broadcast (Output)</label>
+					  </div>
+					<div class="form-check form-check-inline" title="If checked and doing a remote broadcast, audio queues of queue time and connection problems will be played through device ${
+						device.device.label
+					}.">
+    					<input type="checkbox" class="form-check-input" id="audio-queue-${index}" data-id="${
+						device.device.deviceId
+					}" ${device.settings.queue ? `checked` : ``}>
+    					<label class="form-check-label" for="audio-queue-${index}">Audio Queues</label>
+					  </div>
+  					</div>
+					</div>`;
+
+					window.requestAnimationFrame(() => {
+						$(`#audio-volume-${index}`).bootstrapSlider({
+							min: 0,
+							max: 2,
+							step: 0.01,
+							ticks: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
+							ticks_positions: [
+								0,
+								100 * (1 / 8),
+								100 * (2 / 8),
+								100 * (3 / 8),
+								100 * (4 / 8),
+								100 * (5 / 8),
+								100 * (6 / 8),
+								100 * (7 / 8),
+								100,
+							],
+							ticks_labels: [
+								"OFF",
+								"25%",
+								"50%",
+								"75%",
+								"100%",
+								"125%",
+								"150%",
+								"175%",
+								"200%",
+							],
+							ticks_snap_bounds: 0.025,
+							value: device.settings.volume,
+							orientation: "horizontal",
+							selection: "before",
+							tooltip: "show",
+						});
+
+						// Volume slider listener
+						$(`#audio-volume-${index}`).off("change");
+						$(`#audio-volume-${index}`).on("change", (obj) => {
+							let deviceId = $(`#audio-volume-${index}`).data("id");
+							window.ipc.main.send("audioChangeVolume", [
+								deviceId,
+								"audiooutput",
+								obj.value.newValue,
+							]);
+						});
+
+						// Checkbox listeners
+						$(`#audio-output-${index}`).off("change");
+						$(`#audio-output-${index}`).on("change", (e) => {
+							let deviceId = $(`#audio-output-${index}`).data("id");
+							console.log(`Clicked output ${index}`);
+							// TODO
+						});
+						$(`#audio-queue-${index}`).off("change");
+						$(`#audio-queue-${index}`).on("change", (e) => {
+							let deviceId = $(`#audio-queue-${index}`).data("id");
+							console.log(`Clicked queue ${index}`);
+							// TODO
+						});
+					});
 				}
 			});
 		}
@@ -879,10 +1015,23 @@ window.addEventListener("DOMContentLoaded", () => {
 	window.ipc.on("processClosed", (event, arg) => {
 		switch (arg[0]) {
 			case "silence":
+				$(".notifications-silence").removeClass("badge-success");
+				$(".notifications-silence").removeClass("badge-warning");
+				$(".notifications-silence").removeClass("badge-danger");
+				$(".notifications-silence").addClass("badge-secondary");
 				if (hosts.client.silenceDetection) {
 					window.ipc.process.send("silence", ["open"]);
 				}
-			break;
+				break;
+			case "recorder":
+				$(".notifications-recorder").removeClass("badge-success");
+				$(".notifications-recorder").removeClass("badge-warning");
+				$(".notifications-recorder").removeClass("badge-danger");
+				$(".notifications-recorder").addClass("badge-secondary");
+				if (hosts.client.recordAudio) {
+					window.ipc.process.send("recorder", ["open"]);
+				}
+				break;
 		}
 	});
 
@@ -931,7 +1080,6 @@ window.addEventListener("DOMContentLoaded", () => {
 					} else {
 						window.ipc.process.send("silence", ["close"]);
 					}
-
 				} else if (success === -1) {
 					$("#content").addClass("d-none");
 					$("#already-connected").removeClass("d-none");
@@ -1979,7 +2127,6 @@ Track: <strong>${request.trackname}</strong>`,
 	*/
 
 	hosts.on("clientChanged", "renderer", (newClient) => {
-
 		// Check if silence detection process should be running or not
 		if (newClient.silenceDetection) {
 			window.ipc.process.send("silence", ["open"]);

@@ -275,13 +275,14 @@
 		<script src="assets/plugins/wwsu-climacell/js/wwsu-climacell.js"></script>
 		<script src="assets/plugins/wwsu-version/js/wwsu-version.js"></script>
 		<script src="assets/plugins/wwsu-inventory/js/wwsu-inventory.js"></script>
+		<script src="assets/plugins/wwsu-silence/js/wwsu-silence.js"></script>
 		<link
 			rel="stylesheet"
 			href="assets/plugins/wwsu-navigation/css/wwsu-navigation-flash.css"
 		/>
 	</head>
 
-	<body class="hold-transition sidebar-mini">
+	<body class="hold-transition sidebar-mini layout-fixed">
 		<!-- Connection problems screen -->
 		<div
 			class="wrapper bg-black text-danger d-none"
@@ -705,7 +706,27 @@
 								>
 									<i class="nav-icon fas fa-volume-up"></i>
 									<p>
-										Audio Settings
+										Audio
+										<span class="right">
+											<span
+												style="margin-left: 0rem;"
+												class="badge badge-secondary notifications-silence"
+												title="Silence Detection Status: Gray = off, Green = no silence, yellow = silence without alarm, red = silence alarm"
+												><i class="fas fa-volume-mute"></i
+											></span>
+											<span
+												style="margin-left: 0rem;"
+												class="badge badge-secondary notifications-recorder"
+												title="Recorder status: Gray = off, Green = recording, Yellow = not recording"
+												><i class="fas fa-circle"></i
+											></span>
+											<span
+												style="margin-left: 0rem;"
+												class="badge badge-secondary notifications-remote"
+												title="Remote broadcast call status: Gray = inactive, green = good (sending audio), teal = good (receiving audio), yellow = poor quality detected, red = disconnected"
+												><i class="fas fa-broadcast-tower"></i
+											></span>
+										</span>
 									</p>
 								</a>
 							</li>
@@ -718,7 +739,7 @@
 								>
 									<i class="nav-icon fas fa-stream text-danger"></i>
 									<p>
-										Serial Port Settings
+										Serial Ports
 									</p>
 								</a>
 							</li>
@@ -1577,9 +1598,9 @@
 											Directors will be notified by email and in DJ Controls.
 										</li>
 										<li>
-											The issue will be visible for other DJs in the
-											Announcements tab of DJ Controls until the issue is
-											resolved.
+											The issue will be visible for other DJs via the system
+											status until the issue is marked resolved by the
+											directors.
 										</li>
 									</ul>
 								</div>
@@ -1618,6 +1639,13 @@
 								other computers.
 							</p>
 						</div>
+						<div class="callout callout-info">
+							<h5>Settings saved automatically</h5>
+							<p>
+								Settings are saved and applied automatically when you change
+								them.
+							</p>
+						</div>
 
 						<div class="card card-primary elevation-2">
 							<div class="card-header">
@@ -1635,19 +1663,32 @@
 							</div>
 							<!-- /.card-header -->
 							<div class="card-body" id="section-audio-devices">
-								<div class="callout callout-info">
-									<h5>Capturing computer audio</h5>
-									<p>
-										To capture computer audio, such as from Skype/Discord/etc,
-										you need to install a program such as Voicemeeter (Windows)
-										or Soundflower (MacOS)... or if your sound card supports it,
-										activate "Stereo Mix".
-									</p>
+								<div class="p-3">
+									<h4>Input Devices</h4>
+									<div class="callout callout-info">
+										<h5>Capturing computer audio</h5>
+										<p>
+											To capture computer audio, such as from Skype/Discord/etc,
+											you need to install a program such as Voicemeeter
+											(Windows) or Soundflower (MacOS)... or if your sound card
+											supports it, activate "Stereo Mix".
+										</p>
+									</div>
+									<div id="section-audio-devices-inputs"></div>
 								</div>
-								<h4>Input Devices</h4>
-								<div id="section-audio-devices-inputs"></div>
-								<h4>Output Devices</h4>
-								<div id="section-audio-devices-outputs"></div>
+								<div class="p-3">
+									<h4>Output Devices</h4>
+									<div class="callout callout-info">
+										<h5>One Device Only</h5>
+										<p>
+											Only one output device may be used for playing remote
+											audio, and one device for audio queues. When you click a
+											checkbox on another device, the checkbox for the previous
+											device will be cleared.
+										</p>
+									</div>
+									<div id="section-audio-devices-outputs"></div>
+								</div>
 							</div>
 							<!-- /.card-body -->
 						</div>

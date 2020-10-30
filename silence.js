@@ -5,7 +5,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	var audioManager = new WWSUAudioManager();
 
 	// Initialize silence detection
-	var silence = new WWSUsilence(
+	var silence = new WWSUsilenceaudio(
 		audioManager.audioContext,
 		audioManager.destination
 	);
@@ -14,7 +14,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	// Silence states
 	var timer;
-	var triggered = false;
 
 	// Listen for when we receive available devices
 	audioManager.on("devices", "renderer", (devices) => {
@@ -22,21 +21,23 @@ window.addEventListener("DOMContentLoaded", () => {
 			// Retrieve device settings if they exist
 			let settings = window.settings
 				.audio()
-				.find((dev) => dev.deviceId === device.deviceId);
+				.find((dev) => dev.deviceId === device.deviceId && dev.kind === device.kind);
 
 			// Connect device to recorder if device has silence set to true
 			if (settings && settings.silence) {
 				audioManager.connect(
 					device.deviceId,
+					device.kind,
 					"assets/plugins/wwsu-audio/js/wwsu-meter.js"
 				);
 			} else {
-				audioManager.disconnect(device.deviceId);
+				audioManager.disconnect(device.deviceId, device.kind);
 			}
 		});
 	});
 
 	window.ipc.renderer.send("console", ["log", "Silence: Process is ready"]);
+	window.ipc.renderer.send("silenceReady", []);
 
 	silence.on("audioVolume", "silence", (volume) => {
 		console.dir(volume);
@@ -45,24 +46,26 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		// If silence detected, start delay timer, else remove it
 		if (
-			(volume[0] <= silenceSettings.threshold ||
-				_volume[1] <= silenceSettings.threshold) &&
-			!timer
+			volume[0] <= silenceSettings.threshold ||
+			volume[1] <= silenceSettings.threshold
 		) {
-			window.ipc.renderer.send("silence", [true]);
+			if (!timer) {
+				window.ipc.renderer.send("silenceState", [1]);
+				console.log(`Silence`);
 
-			// Delay timer should trigger active silence and then keep triggering it every minute until silence no longer detected.
-			timer = setTimeout(() => {
-				triggered = true;
-				window.ipc.renderer.send("silenceTrigger", [true]);
-				timer = setInterval(() => {
-					window.ipc.renderer.send("silenceTrigger", [true]);
-				}, 60000);
-			}, silenceSettings.delay);
+				// Delay timer should trigger active silence and then keep triggering it every minute until silence no longer detected.
+				timer = setTimeout(() => {
+					window.ipc.renderer.send("silenceState", [2]);
+					console.log(`Silence trigger activated`);
+					timer = setInterval(() => {
+						window.ipc.renderer.send("silenceState", [2]);
+						console.log(`Silence re-triggered`);
+					}, 60000);
+				}, silenceSettings.delay);
+			}
 		} else if (timer) {
-			window.ipc.renderer.send("silence", [false]);
-			if (triggered) window.ipc.renderer.send("silenceTrigger", [false]);
-			triggered = false;
+			console.log(`No more silence`);
+			window.ipc.renderer.send("silenceState", [0]);
 			clearInterval(timer);
 			clearTimeout(timer);
 			timer = undefined;
@@ -74,11 +77,11 @@ window.addEventListener("DOMContentLoaded", () => {
 	*/
 
 	window.ipc.on("audioChangeVolume", (event, arg) => {
-		console.log(`Silence: Changing volume for device ${arg[0]} to ${arg[1]}`);
-		audioManager.changeVolume(arg[0], arg[1]);
+		console.log(`Silence: Changing volume for device ${arg[0]} to ${arg[2]}`);
+		audioManager.changeVolume(arg[0], arg[1], arg[2]);
 		window.ipc.renderer.send("console", [
 			"log",
-			`Silence: Changed audio volume for ${arg[0]} to ${arg[1]}`,
+			`Silence: Changed audio volume for ${arg[0]} to ${arg[2]}`,
 		]);
 	});
 
@@ -87,55 +90,22 @@ window.addEventListener("DOMContentLoaded", () => {
 		audioManager.loadDevices();
 	});
 
-	window.ipc.on("audioRecorderSetting", (event, arg) => {
-		console.log(
-			`Silence: Changing recorder setting for device ${arg[0]} to ${arg[1]}`
-		);
-		audioManager.shouldRecord(arg[0], arg[1]);
-		window.ipc.renderer.send("console", [
-			"log",
-			`Silence: Changing recorder setting for device ${arg[0]} to ${arg[1]}`,
-		]);
-	});
-
-	window.ipc.on("audioRemoteSetting", (event, arg) => {
-		console.log(
-			`Silence: Changing remote setting for device ${arg[0]} to ${arg[1]}`
-		);
-		audioManager.shouldRemote(arg[0], arg[1]);
-		window.ipc.renderer.send("console", [
-			"log",
-			`Silence: Changing remote setting for device ${arg[0]} to ${arg[1]}`,
-		]);
-	});
-
 	window.ipc.on("audioSilenceSetting", (event, arg) => {
 		console.log(
-			`Silence: Changing silence setting for device ${arg[0]} to ${arg[1]}`
+			`Silence: Changing silence setting for device ${arg[0]} to ${arg[2]}`
 		);
-		if (arg[1]) {
+		if (arg[2]) {
 			audioManager.connect(
 				arg[0],
+				arg[1],
 				"assets/plugins/wwsu-audio/js/wwsu-meter.js"
 			);
 		} else {
-			audioManager.disconnect(arg[0]);
+			audioManager.disconnect(arg[0], arg[1]);
 		}
 		window.ipc.renderer.send("console", [
 			"log",
-			`Silence: Changing silence setting for device ${arg[0]} to ${arg[1]}`,
+			`Silence: Changing silence setting for device ${arg[0]} to ${arg[2]}`,
 		]);
-	});
-
-	/*
-		SILENCE
-	*/
-
-	silence.on("silence", "renderer", (silence) => {
-		window.ipc.renderer.send("silence", [silence]);
-	});
-
-	silence.on("silenceTrigger", "renderer", (silenceTrigger) => {
-		window.ipc.renderer.send("silenceTrigger", [silenceTrigger]);
 	});
 });

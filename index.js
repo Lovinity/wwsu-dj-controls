@@ -203,7 +203,7 @@ const createRecorderWindow = () => {
 
 	recorderWindow.on("closed", function () {
 		if (mainWindow !== null) {
-			createRecorderWindow();
+			mainWindow.webContents.send("processClosed", ["recorder"]);
 		}
 	});
 
@@ -546,6 +546,17 @@ ipcMain.on("process", (event, arg) => {
 				silenceWindow.reload();
 			}
 			break;
+		case "recorder":
+			if (args[0] === "open" && !recorderWindow) {
+				createRecorderWindow();
+			}
+			if (args[0] === "close" && recorderWindow) {
+				recorderWindow.close();
+			}
+			if (args[0] === "reload" && recorderWindow) {
+				recorderWindow.reload();
+			}
+			break;
 	}
 });
 
@@ -683,7 +694,7 @@ ipcMain.on("main", (event, arg) => {
 		case "audioChangeVolume":
 			try {
 				// Update settings
-				updateAudioSettings(args[0], { volume: args[1] });
+				updateAudioSettings(args[0], args[1], { volume: args[2] });
 
 				// Send new volume gain info to audio processes
 				if (audioWindow)
@@ -704,7 +715,7 @@ ipcMain.on("main", (event, arg) => {
 		case "audioRecorderSetting":
 			try {
 				// Update settings
-				updateAudioSettings(args[0], { recorder: args[1] });
+				updateAudioSettings(args[0], args[1], { recorder: args[2] });
 
 				// Send new volume gain info to relevant audio processes
 				if (recorderWindow)
@@ -719,7 +730,7 @@ ipcMain.on("main", (event, arg) => {
 		case "audioSilenceSetting":
 			try {
 				// Update settings
-				updateAudioSettings(args[0], { silence: args[1] });
+				updateAudioSettings(args[0], args[1], { silence: args[2] });
 
 				// Send new volume gain info to relevant audio processes
 				if (silenceWindow)
@@ -741,22 +752,29 @@ ipcMain.on("sanitize", (event, arg) => {
  * Update config for an audio device.
  *
  * @param {string} deviceId ID of the audio device via web audio API
+ * @param {string} kind Device kind
  * @param {object} setting Setting(s) to update
  */
-function updateAudioSettings(deviceId, setting) {
+function updateAudioSettings(deviceId, kind, setting) {
 	let settings = config.get(`audio`);
 
 	// Try to find existing settings for the device
-	let device = settings.find((sett) => sett.deviceId === deviceId);
+	let device = settings.find(
+		(sett) => sett.deviceId === deviceId && sett.kind === kind
+	);
 
 	// If device settings exist, filter audio array to exclude that device, then push in the new settings for the device
 	if (device) {
-		settings = settings.filter((sett) => sett.deviceId !== deviceId);
+		settings = settings.filter(
+			(sett) => sett.deviceId !== deviceId || sett.kind !== kind
+		);
 		settings.push(Object.assign(device, setting));
 
 		// Otherwise, make a new item in the audio array for the device
 	} else {
-		settings.push(Object.assign({ deviceId: deviceId }, setting));
+		settings.push(
+			Object.assign({ deviceId: deviceId, kind: kind, volume: 1 }, setting)
+		);
 	}
 	config.set(`audio`, settings);
 }

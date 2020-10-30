@@ -18,6 +18,8 @@
 
 - Support for timesheet notes
 - Schema validation to config
+- Indications of the status for each audio process
+- Silence detection
 
 ### Updated
 
