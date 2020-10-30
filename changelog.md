@@ -6,6 +6,14 @@
 
 - recorder.deviceId and silence.deviceId; to be replaced with audio array, each containing recorder and silence booleans whether or not they should be responsible for silence detection or recording.
 
+### Changed
+
+- Audio system split into multiple processes. Now supports multiple devices for recording / broadcasting / etc and volume adjustments.
+
+### Fixed
+
+- Clockwheel tooltips issue where clock div was preventing tooltips on certain areas of the clockwheel coughnut.
+
 ### Added
 
 - Support for timesheet notes
