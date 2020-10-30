@@ -926,7 +926,7 @@ window.addEventListener("DOMContentLoaded", () => {
 					}
 
 					// Open or close the silence detection process depending on whether or not this DJ Controls is responsible for silence detection.
-					if (!hosts.client.silenceDetection) {
+					if (hosts.client.silenceDetection) {
 						window.ipc.process.send("silence", ["open"]);
 					} else {
 						window.ipc.process.send("silence", ["close"]);
