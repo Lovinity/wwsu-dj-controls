@@ -40,8 +40,6 @@ window.addEventListener("DOMContentLoaded", () => {
 	window.ipc.renderer.send("silenceReady", []);
 
 	silence.on("audioVolume", "silence", (volume) => {
-		console.dir(volume);
-
 		if (!silenceSettings) return;
 
 		// If silence detected, start delay timer, else remove it

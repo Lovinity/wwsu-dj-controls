@@ -90,10 +90,6 @@ let silenceWindow;
 let recorderWindow;
 let remoteWindow;
 
-// Other variables
-let metaState = `unknown`;
-let latestVersion = ``;
-
 const enforceCORS = () => {
 	// Enforce CORS and Origin; skywayJS needs origin set to our server address, but everything else needs file origin.
 	session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
@@ -114,24 +110,24 @@ const enforceCORS = () => {
 };
 
 const createLoadingScreen = () => {
-  /// create a browser window
-  loadingScreen = new BrowserWindow(
-    Object.assign({
-      /// define width and height for the window
-      width: 200,
-      height: 400,
-      /// remove the window frame, so it will become a frameless window
-      frame: false,
-      /// and set the transparency, to remove any window background color
-      transparent: true
-    })
-  );
-  loadingScreen.setResizable(false);
-  loadingScreen.loadFile("splash.html");
-  loadingScreen.on('closed', () => (loadingScreen = null));
-  loadingScreen.webContents.on('did-finish-load', () => {
-    loadingScreen.show();
-  });
+	/// create a browser window
+	loadingScreen = new BrowserWindow(
+		Object.assign({
+			/// define width and height for the window
+			width: 200,
+			height: 400,
+			/// remove the window frame, so it will become a frameless window
+			frame: false,
+			/// and set the transparency, to remove any window background color
+			transparent: true,
+		})
+	);
+	loadingScreen.setResizable(false);
+	loadingScreen.loadFile("splash.html");
+	loadingScreen.on("closed", () => (loadingScreen = null));
+	loadingScreen.webContents.on("did-finish-load", () => {
+		loadingScreen.show();
+	});
 };
 
 // Calendar process
@@ -250,7 +246,7 @@ const createRemoteWindow = () => {
 
 	remoteWindow.on("closed", function () {
 		if (mainWindow !== null) {
-			createRemoteWindow();
+			mainWindow.webContents.send("processClosed", ["remote"]);
 		}
 	});
 
@@ -292,7 +288,6 @@ const createWindows = () => {
 
 		createCalendarWindow();
 		createAudioWindow();
-		createRemoteWindow();
 	});
 
 	// and load the renderer.html of the app.
@@ -319,8 +314,10 @@ const createWindows = () => {
 				silenceWindow = null;
 			}
 
-			remoteWindow.close();
-			remoteWindow = null;
+			if (remoteWindow) {
+				remoteWindow.close();
+				remoteWindow = null;
+			}
 		} catch (eee) {}
 	});
 
@@ -363,8 +360,10 @@ if (silenceWindow) {
 				silenceWindow = null;
 			}
 
+			if (remoteWindow) {
 			remoteWindow.close();
 			remoteWindow = null;
+			}
 		} catch (eee) {}
 	});
 	*/
@@ -396,8 +395,10 @@ if (silenceWindow) {
 				silenceWindow = null;
 			}
 
-			remoteWindow.close();
-			remoteWindow = null;
+			if (remoteWindow) {
+				remoteWindow.close();
+				remoteWindow = null;
+			}
 		} catch (eee) {}
 	});
 };
@@ -558,8 +559,7 @@ ipcMain.on("audio", (event, arg) => {
 ipcMain.on("recorder", (event, arg) => {
 	try {
 		recorderWindow.webContents.send(arg[0], arg[1]);
-	} catch (e) {
-	}
+	} catch (e) {}
 });
 
 // Process tasks
@@ -584,7 +584,18 @@ ipcMain.on("process", (event, arg) => {
 			if (args[0] === "close" && recorderWindow) {
 				recorderWindow.webContents.send("shutDown");
 			}
-			// Reload is not supported
+			// Reload is not supported for the recorder
+			break;
+		case "remote":
+			if (args[0] === "open" && !remoteWindow) {
+				createRemoteWindow();
+			}
+			if (args[0] === "close" && remoteWindow) {
+				remoteWindow.close();
+			}
+			if (args[0] === "reload" && remoteWindow) {
+				remoteWindow.reload();
+			}
 			break;
 	}
 });
@@ -682,13 +693,7 @@ ipcMain.on("main", (event, arg) => {
 			}
 			break;
 
-		// Handle changes in meta.state
-		// TODO
-		case "metaState":
-			metaState = args[0];
-
-			break;
-
+		// Call to refresh audio devices in all audio processes
 		case "audioRefreshDevices":
 			if (audioWindow)
 				audioWindow.webContents.send("audioRefreshDevices", args);
@@ -700,7 +705,7 @@ ipcMain.on("main", (event, arg) => {
 				recorderWindow.webContents.send("audioRefreshDevices", args);
 			break;
 
-		// Reload audio processes and devices
+		// Reload audio processes
 		case "audioReload":
 			if (audioWindow) audioWindow.reload();
 			if (remoteWindow) remoteWindow.reload();
@@ -767,6 +772,41 @@ ipcMain.on("main", (event, arg) => {
 				// Send new volume gain info to relevant audio processes
 				if (silenceWindow)
 					silenceWindow.webContents.send("audioSilenceSetting", args);
+			} catch (eee) {
+				// Ignore errors
+				console.error(eee);
+			}
+			break;
+
+		// Change whether or not a device should be broadcast on a remote stream
+		case "audioRemoteSetting":
+			try {
+				// Update settings
+				updateAudioSettings(args[0], args[1], { remote: args[2] });
+
+				// Send new volume gain info to relevant audio processes
+				if (remoteWindow)
+					remoteWindow.webContents.send("audioRemoteSetting", args);
+			} catch (eee) {
+				// Ignore errors
+				console.error(eee);
+			}
+			break;
+
+		// Change which device is the output device for incoming remote calls
+		case "audioOutputSetting":
+			try {
+
+				// Update settings; only one device should be allowed to have output as true
+				let settings = config.get(`audio`);
+				settings = settings.map((set) =>
+					updateAudioSettings(set.deviceId, set.kind, { output: false })
+				);
+				updateAudioSettings(args[0], args[1], { output: args[2] });
+
+				// Send new volume gain info to relevant audio processes
+				if (remoteWindow)
+					remoteWindow.webContents.send("audioOutputSetting", args);
 			} catch (eee) {
 				// Ignore errors
 				console.error(eee);

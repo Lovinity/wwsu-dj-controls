@@ -927,7 +927,7 @@ window.addEventListener("DOMContentLoaded", () => {
 					<div class="form-check form-check-inline" title="If checked and a remote broadcast is streaming to this host, the audio will be played through device ${
 						device.device.label
 					}. ONLY CHECK if this output device can be streamed over WWSU's airwaves.">
-    					<input type="checkbox" class="form-check-input" id="audio-output-${index}" data-id="${
+    					<input type="checkbox" class="form-check-input form-check-devices-output" id="audio-output-${index}" data-id="${
 						device.device.deviceId
 					}" ${device.settings.output ? `checked` : ``}>
     					<label class="form-check-label" for="audio-output-${index}">Remote Broadcast (Output)</label>
@@ -935,7 +935,7 @@ window.addEventListener("DOMContentLoaded", () => {
 					<div class="form-check form-check-inline" title="If checked and doing a remote broadcast, audio queues of queue time and connection problems will be played through device ${
 						device.device.label
 					}.">
-    					<input type="checkbox" class="form-check-input" id="audio-queue-${index}" data-id="${
+    					<input type="checkbox" class="form-check-input form-check-devices-queue" id="audio-queue-${index}" data-id="${
 						device.device.deviceId
 					}" ${device.settings.queue ? `checked` : ``}>
     					<label class="form-check-label" for="audio-queue-${index}">Audio Queues</label>
@@ -992,15 +992,38 @@ window.addEventListener("DOMContentLoaded", () => {
 						// Checkbox listeners
 						$(`#audio-output-${index}`).off("change");
 						$(`#audio-output-${index}`).on("change", (e) => {
-							let deviceId = $(`#audio-output-${index}`).data("id");
-							console.log(`Clicked output ${index}`);
-							// TODO
+							if ($(`#audio-output-${index}`).prop("checked")) {
+								$(`.form-check-devices-output`).each((index2, element) => {
+									if (element.id !== `audio-output-${index}`) {
+										$(element).prop({ checked: false });
+									}
+								});
+								let deviceId = $(`#audio-output-${index}`).data("id");
+								console.log(`Clicked output ${index}`);
+								window.ipc.main.send("audioOutputSetting", [
+									deviceId,
+									"audiooutput",
+									true,
+								]);
+							}
 						});
+
 						$(`#audio-queue-${index}`).off("change");
 						$(`#audio-queue-${index}`).on("change", (e) => {
-							let deviceId = $(`#audio-queue-${index}`).data("id");
-							console.log(`Clicked queue ${index}`);
-							// TODO
+							if ($(`#audio-queue-${index}`).prop("checked")) {
+								$(`.form-check-devices-queue`).each((index2, element) => {
+									if (element.id !== `audio-queue-${index}`) {
+										$(element).prop({ checked: false });
+									}
+								});
+								let deviceId = $(`#audio-queue-${index}`).data("id");
+								console.log(`Clicked queue ${index}`);
+								window.ipc.main.send("audioQueueSetting", [
+									deviceId,
+									"audiooutput",
+									true,
+								]);
+							}
 						});
 					});
 				}
@@ -2148,7 +2171,6 @@ Track: <strong>${request.trackname}</strong>`,
 		} else {
 			window.ipc.process.send("recorder", ["close"]);
 		}
-
 	});
 
 	hosts.on("change", "renderer", (db) => {
