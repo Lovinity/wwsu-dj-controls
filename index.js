@@ -265,7 +265,6 @@ const createWindows = () => {
 
 		createCalendarWindow();
 		createAudioWindow();
-		createRecorderWindow();
 		createRemoteWindow();
 	});
 
@@ -278,7 +277,9 @@ const createWindows = () => {
 
 		try {
 			// Recorder should be shut down gracefully to save current recording
-			recorderWindow.webContents.send("shutDown");
+			if (recorderWindow) {
+				recorderWindow.webContents.send("shutDown");
+			}
 
 			calendarWindow.close();
 			calendarWindow = null;
@@ -320,7 +321,9 @@ const createWindows = () => {
 		});
 		try {
 			// Recorder should be shut down gracefully to save current recording
-			recorderWindow.webContents.send("shutDown");
+			if (recorderWindow) {
+				recorderWindow.webContents.send("shutDown");
+			}
 
 			calendarWindow.close();
 			calendarWindow = null;
@@ -351,7 +354,9 @@ if (silenceWindow) {
 
 		try {
 			// Recorder should be shut down gracefully to save current recording
-			recorderWindow.webContents.send("shutDown");
+			if (recorderWindow) {
+				recorderWindow.webContents.send("shutDown");
+			}
 
 			calendarWindow.close();
 			calendarWindow = null;
@@ -527,7 +532,6 @@ ipcMain.on("recorder", (event, arg) => {
 	try {
 		recorderWindow.webContents.send(arg[0], arg[1]);
 	} catch (e) {
-		console.error(e);
 	}
 });
 
@@ -551,11 +555,9 @@ ipcMain.on("process", (event, arg) => {
 				createRecorderWindow();
 			}
 			if (args[0] === "close" && recorderWindow) {
-				recorderWindow.close();
+				recorderWindow.webContents.send("shutDown");
 			}
-			if (args[0] === "reload" && recorderWindow) {
-				recorderWindow.reload();
-			}
+			// Reload is not supported
 			break;
 	}
 });
@@ -572,6 +574,9 @@ ipcMain.on("main", (event, arg) => {
 		// When a file reader is ready to be saved to an audio file
 		case "recorderEncoded":
 			try {
+				// Enforce webm type
+				args[0] = `${args[0]}.webm`;
+
 				var arrayBuffer = Buffer.from(new Uint8Array(args[1]));
 
 				// If the base path does not exist, create it

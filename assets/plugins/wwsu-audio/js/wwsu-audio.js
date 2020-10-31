@@ -151,11 +151,6 @@ class WWSUAudioInput extends WWSUevents {
 		this.audioContext = audioContext;
 		this.connectNode = connectNode;
 
-		this.destination = this.audioContext.createMediaStreamDestination();
-		this.destinationStream = this.audioContext.createMediaStreamSource(
-			this.destination.stream
-		);
-
 		this.stream;
 		this.analyser;
 		this.worklet;
@@ -195,9 +190,8 @@ class WWSUAudioInput extends WWSUevents {
 					this.analyser = this.audioContext.createMediaStreamSource(stream);
 					this.analyser.connect(this.gain);
 					this.gain.connect(this.worklet);
-					this.gain.connect(this.destination);
+					this.gain.connect(this.connectNode);
 					this.worklet.connect(this.audioContext.destination);
-					this.destinationStream.connect(this.connectNode);
 				});
 		});
 	}
@@ -215,13 +209,10 @@ class WWSUAudioInput extends WWSUevents {
 			this.analyser.disconnect();
 			this.gain.disconnect();
 			this.worklet.disconnect();
-			this.destinationStream.disconnect();
 
 			this.analyser = undefined;
-			this.destinationStream = undefined;
 			this.worklet.port.postMessage({ destroy: true });
 			this.worklet = undefined;
-			this.gain = undefined;
 		} catch (eee) {
 			// ignore errors
 		}

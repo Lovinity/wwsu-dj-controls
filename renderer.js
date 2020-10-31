@@ -540,7 +540,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				window.ipc.recorder.send("recorderStart", [
 					`${startRecording}/${preText}/${preText2} (${moment().format(
 						"YYYY_MM_DD HH_mm_ss"
-					)}).mp3`,
+					)})`,
 					delay,
 				]);
 			} else {
@@ -779,7 +779,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		console.dir(arg);
 
 		$("#section-audio-devices").unblock();
-		
+
 		let htmlInputs = ``;
 		let htmlOutputs = ``;
 
@@ -1074,11 +1074,18 @@ window.addEventListener("DOMContentLoaded", () => {
 						logs.initIssuesTable("#section-notifications-issues");
 					}
 
-					// Open or close the silence detection process depending on whether or not this DJ Controls is responsible for silence detection.
+					// If this DJ Controls is supposed to monitor/report silence, open the silence process, else close it.
 					if (hosts.client.silenceDetection) {
 						window.ipc.process.send("silence", ["open"]);
 					} else {
 						window.ipc.process.send("silence", ["close"]);
+					}
+
+					// If this DJ Controls is supposed to record, open the recorder process, else close it.
+					if (hosts.client.recordAudio) {
+						window.ipc.process.send("recorder", ["open"]);
+					} else {
+						window.ipc.process.send("recorder", ["close"]);
 					}
 				} else if (success === -1) {
 					$("#content").addClass("d-none");
@@ -2127,14 +2134,21 @@ Track: <strong>${request.trackname}</strong>`,
 	*/
 
 	hosts.on("clientChanged", "renderer", (newClient) => {
-		// Check if silence detection process should be running or not
+		// If this DJ Controls is supposed to monitor/report silence, open the silence process, else close it.
 		if (newClient.silenceDetection) {
 			window.ipc.process.send("silence", ["open"]);
 		} else {
 			window.ipc.process.send("silence", ["close"]);
 		}
 
-		startRecording(-1);
+		// If this DJ Controls is supposed to record, open the recorder process, else close it.
+		if (newClient.recordAudio) {
+			window.ipc.process.send("recorder", ["open"]);
+			startRecording(-1);
+		} else {
+			window.ipc.process.send("recorder", ["close"]);
+		}
+
 	});
 
 	hosts.on("change", "renderer", (db) => {

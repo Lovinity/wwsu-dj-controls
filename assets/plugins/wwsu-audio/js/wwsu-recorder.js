@@ -22,7 +22,7 @@ class WWSUrecorder extends WWSUevents {
 		this.pendingTitle;
 		this.recorderPending = false;
 
-		this.worker = new Worker(worker);
+		// this.worker = new Worker(worker);
 		this.blobs = [];
 
 		this.recorder;
@@ -51,10 +51,15 @@ class WWSUrecorder extends WWSUevents {
 				if (this.pendingTitle) {
 					this.currentTitle = this.pendingTitle;
 					console.dir(this.destination.stream);
+					/*
 					this.recorder = new window.mp3MediaRecorder.Mp3MediaRecorder(
 						this.destination.stream,
 						{ worker: this.worker }
 					);
+					*/
+					this.recorder = new MediaRecorder(this.destination.stream, {
+						mimeType: "audio/webm;codecs=opus",
+					});
 					this.recorder.start();
 					this.emitEvent("recorderStarted", [this.pendingTitle]);
 
@@ -67,7 +72,8 @@ class WWSUrecorder extends WWSUevents {
 					};
 
 					this.recorder.onstop = (e) => {
-						let mp3Blob = new Blob(this.blobs, { type: "audio/mpeg" });
+						// let blob = new Blob(this.blobs, { type: "audio/mpeg" });
+						let blob = new Blob(this.blobs, { type: "audio/webm;codecs=opus" });
 						let fileReader = new FileReader();
 						fileReader.onload = (e2) => {
 							this.emitEvent("recorderEncoded", [
@@ -75,7 +81,7 @@ class WWSUrecorder extends WWSUevents {
 								e2.target.result,
 							]);
 						};
-						fileReader.readAsArrayBuffer(mp3Blob);
+						fileReader.readAsArrayBuffer(blob);
 					};
 				}
 			} catch (e) {

@@ -9,6 +9,7 @@
 ### Changed
 
 - Audio system split into multiple processes. Now supports multiple devices for recording / broadcasting / etc and volume adjustments.
+- Due to no support for Javascript stereo MP3 recording, recorder will now save in webm Opus format.
 
 ### Fixed
 
