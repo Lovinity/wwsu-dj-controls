@@ -17,7 +17,7 @@ class WWSUevents {
 	 */
 	emitEvent(event, args) {
 		if (typeof this.events[event] === "object") {
-			for (var scope in this.events[event]) {
+			for (let scope in this.events[event]) {
 				if (
 					Object.prototype.hasOwnProperty.call(this.events[event], scope) &&
 					typeof this.events[event][scope].fn === "function"
@@ -117,7 +117,7 @@ class WWSUdb extends WWSUevents {
 			}
 			return null;
 		} else {
-			for (var key in query) {
+			for (let key in query) {
 				if (Object.prototype.hasOwnProperty.call(query, key)) {
 					switch (key) {
 						case "insert":
@@ -997,7 +997,7 @@ class WWSUanimations {
 		// Process queued animations every second
 		setInterval(() => {
 			if (!document[this.hidden]) {
-				for (var key in this.animations) {
+				for (let key in this.animations) {
 					if (Object.prototype.hasOwnProperty.call(this.animations, key)) {
 						this.animations[key]();
 						delete this.animations[key];

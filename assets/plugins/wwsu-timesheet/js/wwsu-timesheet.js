@@ -601,7 +601,7 @@ class WWSUtimesheet extends WWSUevents {
 
 						// Update table
 						this.tables.hours.clear();
-						for (var director in directors) {
+						for (let director in directors) {
 							if (Object.prototype.hasOwnProperty.call(directors, director)) {
 								this.tables.hours.rows.add([
 									[

@@ -26,7 +26,7 @@ class WWSUMeta extends WWSUevents {
 
     // Add meta socket event
     socket.on("meta", (data) => {
-      for (var key in data) {
+      for (let key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           this._meta[key] = data[key];
           if (key === "time") {
@@ -53,7 +53,7 @@ class WWSUMeta extends WWSUevents {
       { method: "POST", url: this.endpoint, data: {} },
       (body) => {
         try {
-          for (var key in body) {
+          for (let key in body) {
             if (Object.prototype.hasOwnProperty.call(body, key)) {
               this._meta[key] = body[key];
               if (key === "time") {

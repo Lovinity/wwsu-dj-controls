@@ -164,7 +164,7 @@ const createAudioWindow = () => {
 	audioWindow = new BrowserWindow({
 		width: 1280,
 		height: 720,
-		show: true,
+		show: false,
 		title: `${app.name} - Audio Process`,
 		webPreferences: {
 			contextIsolation: true,
@@ -188,7 +188,7 @@ const createSilenceWindow = () => {
 	silenceWindow = new BrowserWindow({
 		width: 1280,
 		height: 720,
-		show: true,
+		show: false,
 		title: `${app.name} - Silence Detection Process`,
 		webPreferences: {
 			contextIsolation: true,
@@ -213,7 +213,7 @@ const createRecorderWindow = () => {
 	recorderWindow = new BrowserWindow({
 		width: 1280,
 		height: 720,
-		show: true,
+		show: false,
 		title: `${app.name} - Recorder Process`,
 		webPreferences: {
 			contextIsolation: true,
@@ -238,7 +238,7 @@ const createRemoteWindow = () => {
 	remoteWindow = new BrowserWindow({
 		width: 1280,
 		height: 720,
-		show: true,
+		show: false,
 		title: `${app.name} - Remote Process`,
 		webPreferences: {
 			contextIsolation: true,

@@ -17,7 +17,7 @@ window.addEventListener("DOMContentLoaded", () => {
     var inner = [];
 
     // Initialize inner array
-    for (var i = 0; i < 720; i++) {
+    for (let i = 0; i < 720; i++) {
       inner[i] = {
         id: "0",
         label: "Default Rotation",

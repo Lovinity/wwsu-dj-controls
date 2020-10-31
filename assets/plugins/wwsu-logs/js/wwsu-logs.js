@@ -61,7 +61,7 @@ class WWSUlogs extends WWSUevents {
 		});
 
 		socket.on("logs", (data) => {
-			for (var key in data) {
+			for (let key in data) {
 				if (key === "remove") {
 					this.emitEvent(`issues-remove`, [data[key]]);
 					this.issues.query({ remove: data[key].ID }, false);

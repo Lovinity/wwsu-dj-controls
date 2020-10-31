@@ -817,7 +817,7 @@ class WWSUdjs extends WWSUdb {
             </div>
           </div>`;
 
-				for (var show in analytics[1]) {
+				for (let show in analytics[1]) {
 					if (show > 0) {
 						if (Object.prototype.hasOwnProperty.call(analytics[1], show)) {
 							var analytic = analytics[1][show];

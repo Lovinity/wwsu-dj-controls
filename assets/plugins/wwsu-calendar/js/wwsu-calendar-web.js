@@ -216,7 +216,7 @@ class CalendarDb {
 		var processScheduleEntry = (calendar, schedule) => {
 			// Polyfill any schedule overridden information with the main calendar event for use with schedule overrides
 			var tempCal = Object.assign({}, calendar);
-			for (var stuff in schedule) {
+			for (let stuff in schedule) {
 				if (Object.prototype.hasOwnProperty.call(schedule, stuff)) {
 					if (
 						typeof schedule[stuff] !== "undefined" &&
@@ -279,7 +279,7 @@ class CalendarDb {
 						var tempEvent = {};
 						tempSchedules.sort(scheduleCompare).reverse();
 						tempSchedules.map((ts) => {
-							for (var stuff in ts) {
+							for (let stuff in ts) {
 								if (Object.prototype.hasOwnProperty.call(ts, stuff)) {
 									if (typeof ts[stuff] !== "undefined" && ts[stuff] !== null)
 										tempEvent[stuff] = ts[stuff];
@@ -428,7 +428,7 @@ class CalendarDb {
 							var tempEvent = {};
 							tempSchedules.sort(scheduleCompare).reverse();
 							tempSchedules.map((ts) => {
-								for (var stuff in ts) {
+								for (let stuff in ts) {
 									if (Object.prototype.hasOwnProperty.call(ts, stuff)) {
 										if (typeof ts[stuff] !== "undefined" && ts[stuff] !== null)
 											tempEvent[stuff] = ts[stuff];
@@ -877,7 +877,7 @@ class CalendarDb {
 			}
 
 			// Determine start and end times for conflict checking
-			for (var key in query) {
+			for (let key in query) {
 				if (Object.prototype.hasOwnProperty.call(query, key)) {
 					// Polyfill calendar and schedule information
 					var event = this.scheduleToEvent(query[key], vcalendar, vschedule);
@@ -1420,7 +1420,7 @@ class CalendarDb {
 				return "The provided calendarID does not exist.";
 			} else {
 				// polyfill information
-				for (var stuff in calendar) {
+				for (let stuff in calendar) {
 					if (Object.prototype.hasOwnProperty.call(calendar, stuff)) {
 						if (
 							typeof calendar[stuff] !== "undefined" &&
@@ -1439,7 +1439,7 @@ class CalendarDb {
 				return "The provided scheduleID does not exist.";
 			} else {
 				// polyfill information
-				for (var stuff in schedule) {
+				for (let stuff in schedule) {
 					if (Object.prototype.hasOwnProperty.call(schedule, stuff)) {
 						if (
 							typeof schedule[stuff] !== "undefined" &&
@@ -1452,7 +1452,7 @@ class CalendarDb {
 		}
 
 		// Now, polyfill tempCal with the current event
-		for (var stuff in event) {
+		for (let stuff in event) {
 			if (Object.prototype.hasOwnProperty.call(event, stuff)) {
 				if (typeof event[stuff] !== "undefined" && event[stuff] !== null)
 					tempCal[stuff] = event[stuff];
@@ -2122,7 +2122,7 @@ class CalendarDb {
 				var schedule = scheduledb.find({ ID: record.scheduleID }, true);
 			}
 			if (schedule) {
-				for (var stuff in schedule) {
+				for (let stuff in schedule) {
 					if (Object.prototype.hasOwnProperty.call(schedule, stuff)) {
 						if (
 							typeof schedule[stuff] !== "undefined" &&

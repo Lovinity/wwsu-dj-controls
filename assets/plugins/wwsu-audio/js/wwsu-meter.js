@@ -35,7 +35,7 @@ registerProcessor(
 			// Note that the input will be down-mixed to mono; however, if no inputs are
 			// connected then zero channels will be passed in.
 			if (input.length > 0) {
-				for (var inp in input) {
+				for (let inp in input) {
 					let samples = input[inp];
 					let sum = 0;
 					let rms = 0;

@@ -447,7 +447,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function setUpFace() {
-		for (var x = 1; x <= 60; x += 1) {
+		for (let x = 1; x <= 60; x += 1) {
 			addTick(x);
 		}
 
