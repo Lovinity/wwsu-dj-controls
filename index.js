@@ -82,6 +82,7 @@ autoUpdater.on("update-available", (info) => {
 */
 
 // Prevent windows from being garbage collected
+let loadingScreen;
 let mainWindow;
 let calendarWindow;
 let audioWindow;
@@ -110,6 +111,27 @@ const enforceCORS = () => {
 			},
 		});
 	});
+};
+
+const createLoadingScreen = () => {
+  /// create a browser window
+  loadingScreen = new BrowserWindow(
+    Object.assign({
+      /// define width and height for the window
+      width: 200,
+      height: 400,
+      /// remove the window frame, so it will become a frameless window
+      frame: false,
+      /// and set the transparency, to remove any window background color
+      transparent: true
+    })
+  );
+  loadingScreen.setResizable(false);
+  loadingScreen.loadFile("splash.html");
+  loadingScreen.on('closed', () => (loadingScreen = null));
+  loadingScreen.webContents.on('did-finish-load', () => {
+    loadingScreen.show();
+  });
 };
 
 // Calendar process
@@ -237,6 +259,8 @@ const createRemoteWindow = () => {
 
 // Create the main window, and also create the other renderer processes
 const createWindows = () => {
+	createLoadingScreen();
+
 	// Create the browser window.
 	mainWindow = new BrowserWindow({
 		width: 1280,
@@ -259,6 +283,9 @@ const createWindows = () => {
 	mainWindow.once("ready-to-show", () => {
 		// Show the window and check for updates
 		mainWindow.show();
+
+		// Destroy loading screen
+		loadingScreen.destroy();
 
 		// TODO: Check for updates (disabled as it does not work)
 		// autoUpdater.checkForUpdates();
