@@ -124,7 +124,6 @@ class WWSUremoteaudio extends WWSUevents {
 		});
 
 		// When peer is opened, emit the peer ID via the peerReady event
-		// TODO in renderer
 		this.peer.on("open", (id) => {
 			console.log(`peer opened with id ${id}`);
 			this.emitEvent("peerReady", [id]);
@@ -182,6 +181,10 @@ class WWSUremoteaudio extends WWSUevents {
 	 * @param {string} peer ID of the skyway.js peer to call
 	 */
 	call(peer) {
+		// Do not continue if already in a call with this peer
+		let incomingCall = this.incomingCalls.get(peer);
+		if (incomingCall || this.outgoingCall.remoteId === peer) return;
+
 		this.calling = peer;
 
 		try {
@@ -202,6 +205,7 @@ class WWSUremoteaudio extends WWSUevents {
 			console.log(`CALL CLOSED.`);
 			this.outgoingCall = undefined;
 			this.emitEvent("peerCallClosed", [this.calling]);
+			this.calling = undefined;
 		});
 	}
 
@@ -230,9 +234,9 @@ class WWSUremoteaudio extends WWSUevents {
 	 * Answer an incoming call.
 	 *
 	 * @param {string} peer The peer ID to answer
-	 * @param {?MediaStream} stream Media stream to send over to the call (undefined: an empty stream)
+	 * @param {?MediaStream} stream Media stream to send over to the call (undefined: receive only)
 	 */
-	answer(peer, stream = new MediaStream()) {
+	answer(peer, stream) {
 		// Hang up active calls by the same peer first so we do not have multiple calls
 		this.hangup(peer);
 

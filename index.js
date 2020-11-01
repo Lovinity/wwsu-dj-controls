@@ -195,6 +195,7 @@ const createSilenceWindow = () => {
 	});
 
 	silenceWindow.on("closed", function () {
+		silenceWindow = null;
 		if (mainWindow !== null) {
 			mainWindow.webContents.send("processClosed", ["silence"]);
 		}
@@ -220,6 +221,7 @@ const createRecorderWindow = () => {
 	});
 
 	recorderWindow.on("closed", function () {
+		recorderWindow = null;
 		if (mainWindow !== null) {
 			mainWindow.webContents.send("processClosed", ["recorder"]);
 		}
@@ -245,6 +247,7 @@ const createRemoteWindow = () => {
 	});
 
 	remoteWindow.on("closed", function () {
+		remoteWindow = null;
 		if (mainWindow !== null) {
 			mainWindow.webContents.send("processClosed", ["remote"]);
 		}

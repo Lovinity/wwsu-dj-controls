@@ -107,6 +107,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	var inventory = new WWSUinventory(socket, meta, hostReq, directorReq);
 	var version = new WWSUversion(socket, `wwsu-dj-controls`, hostReq);
 	var silence = new WWSUSilence(hostReq);
+	var remote = new WWSUremote(socket, hostReq);
 
 	// Sound alerts
 	var sounds = {
@@ -131,6 +132,8 @@ window.addEventListener("DOMContentLoaded", () => {
 	var countDown = 0; // Countdown to on air in seconds
 
 	var audioDevices = [];
+
+	var pendingHostCall;
 
 	var todos = {
 		status: {
@@ -357,6 +360,9 @@ window.addEventListener("DOMContentLoaded", () => {
 	});
 	$(".btn-operation-live").click(() => {
 		state.showLiveForm();
+	});
+	$(".btn-operation-remote").click(() => {
+		state.showRemoteForm();
 	});
 
 	// Initialize stuff
@@ -1055,6 +1061,21 @@ window.addEventListener("DOMContentLoaded", () => {
 					window.ipc.process.send("recorder", ["open"]);
 				}
 				break;
+			case "remote":
+				recipients.registerPeer(null);
+				$(".notifications-remote").removeClass("badge-success");
+				$(".notifications-remote").removeClass("badge-warning");
+				$(".notifications-remote").removeClass("badge-danger");
+				$(".notifications-remote").addClass("badge-secondary");
+
+				// Re-open the process if we are supposed to be in a call
+				if (
+					meta.meta.hostCalled === hosts.client.ID ||
+					meta.meta.hostCalling === hosts.client.ID
+				) {
+					window.ipc.process.send("remote", ["open"]);
+				}
+				break;
 		}
 	});
 
@@ -1347,6 +1368,21 @@ window.addEventListener("DOMContentLoaded", () => {
 			// Recorder stuff
 			if (typeof updated.state !== "undefined") {
 				startRecording();
+			}
+
+			// Remote broadcast stuff
+			if (typeof updated.hostCalled !== "undefined") {
+				// Close remote process when no longer doing a remote call
+				if (updated.hostCalled === null) {
+					window.ipc.process.send("remote", ["close"]);
+
+					// Open the remote process when someone wants to call this host and we are allowed to accept calls
+				} else if (
+					updated.hostCalled === hosts.client.ID &&
+					hosts.client.answerCalls
+				) {
+					window.ipc.process.send("remote", ["open"]);
+				}
 			}
 		} catch (e) {
 			console.error(e);
@@ -2123,6 +2159,17 @@ Track: <strong>${request.trackname}</strong>`,
 
 	recipients.on("change", "renderer", (db) => {
 		messages.updateRecipientsTable();
+
+		// If this host wants to make a call, and the host we want to call is online and has a peer, start a call.
+		if (hosts.client.ID === meta.meta.hostCalling) {
+			let called = db.get().find((rec) => rec.hostID === meta.meta.hostCalled);
+			if (called && called.peer && called.status === 5) {
+				console.log(
+					`Host ${rec.hostID} is ready to take the call. Asking remote process to start audio call if not already in one.`
+				);
+				window.ipc.remote.send("remoteStartCall", [called.peer]);
+			}
+		}
 	});
 	recipients.on("recipientChanged", "renderer", (recipient) => {
 		messages.changeRecipient(recipient);
@@ -2211,6 +2258,68 @@ Track: <strong>${request.trackname}</strong>`,
 					},
 				]);
 			}
+		}
+	});
+
+	/*
+		STATE EVENTS
+	*/
+
+	// When a remote broadcast is requested, begin the process of starting up an audio call
+	state.on("startRemote", (host) => {
+		console.log(`Requested remote broadcast with host ${host}`);
+
+		// Check to make sure the selected host is online. If not, bail.
+		let recipient = recipients.find({ hostID: host }, true);
+
+		// Reject if the host recipient reports offline.
+		if (!recipient || recipient.status !== 5) {
+			state.unblockBroadcastModel();
+			$(document).Toasts("create", {
+				class: "bg-danger",
+				title: "Remote broadcast failed",
+				delay: 15000,
+				autohide: true,
+				body: `The host you selected to call is not online. Please try using a different host.`,
+			});
+		}
+
+		pendingHostCall = host;
+
+		// Close and re-open the remote process
+		window.ipc.process.send("remote", ["close"]);
+		window.ipc.process.send("remote", ["open"]);
+	});
+
+	window.ipc.on("remotePeerReady", (event, arg) => {
+		recipients.registerPeer(arg[0]);
+		if (pendingHostCall) {
+			console.log(
+				`Pending remote call to ${pendingHostCall}. Informing the API.`
+			);
+			remote.request({ ID: pendingHostCall });
+			pendingHostCall = undefined;
+		}
+	});
+
+	window.ipc.on("remotePeerUnavailable", (event, arg) => {
+		state.unblockBroadcastModel();
+		$(document).Toasts("create", {
+			class: "bg-danger",
+			title: "Remote broadcast failed",
+			delay: 15000,
+			autohide: true,
+			body: `The host you selected to call did not answer the call. Please try using a different host.`,
+		});
+	});
+
+	window.ipc.on("remoteIncomingCall", (event, arg) => {
+		let recipient = recipients.find({peer: arg[0], makeCalls: true, authorized: true});
+		if (recipient) {
+			console.log(`Peer ${arg[0]} is allowed to call. Requesting to auto-answer.`);
+			window.ipc.remote.send("remoteAnswerCall", [arg[0]]);
+		} else {
+			console.log(`Peer ${arg[0]} does not match any authorized recipients who can make calls. Rejected.`);
 		}
 	});
 });

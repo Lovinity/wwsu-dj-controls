@@ -14,6 +14,8 @@ window.addEventListener("DOMContentLoaded", () => {
 		audioSettings ? audioSettings.find((dev) => dev.output) : undefined
 	);
 
+	remote.init();
+
 	// silence states
 	var timer;
 
@@ -44,10 +46,58 @@ window.addEventListener("DOMContentLoaded", () => {
 	window.ipc.renderer.send("remoteReady", []);
 
 	remote.on("audioVolume", "remote", (volume) => {
-		// If remote detected, start delay timer, else remove it
-		if (volume[0] <= 0 || volume[1] <= 0) {
+		// If silence detected, start delay timer, else remove it
+		if (volume[0] <= 0.001 || volume[1] <= 0.001) {
 			// TODO
 		}
+	});
+
+	remote.on("peerReady", "remote", (id) => {
+		window.ipc.renderer.send("console", [
+			"log",
+			`Remote: Peer is connected with id ${id}.`,
+		]);
+		window.ipc.renderer.send("remotePeerReady", [id]);
+	});
+
+	remote.on("peerUnavailable", "remote", (id) => {
+		window.ipc.renderer.send("console", [
+			"log",
+			`Remote: Peer ${id} is unavailable to take the call.`,
+		]);
+		window.ipc.renderer.send("remotePeerUnavailable", [id]);
+	});
+
+	remote.on("peerCall", "remote", (id) => {
+		window.ipc.renderer.send("console", [
+			"log",
+			`Remote: Incoming call from peer ${id}`,
+		]);
+		window.ipc.renderer.send("remoteIncomingCall", [id]);
+	});
+
+	remote.on("peerIncomingCallVolume", "renderer", (peer, volume) => {
+		// TODO
+	});
+
+	remote.on("peerIncomingCallClosed", "renderer", (peer, volume) => {
+		// TODO
+	});
+
+	remote.on("peerCallClosed", "renderer", (peer, volume) => {
+		// TODO
+	});
+
+	remote.on("peerDestroyed", "renderer", (peer, volume) => {
+		// TODO
+	});
+
+	remote.on("peerDisconnected", "renderer", (peer, volume) => {
+		// TODO
+	});
+
+	remote.on("peerPLC", "renderer", (peer, volume) => {
+		// TODO
 	});
 
 	/*
@@ -96,5 +146,19 @@ window.addEventListener("DOMContentLoaded", () => {
 				`remote: setting output device to ${arg[0]}`,
 			]);
 		}
+	});
+
+	/*
+		REMOTE TASKS
+	*/
+
+	window.ipc.on("remoteStartCall", (event, arg) => {
+		console.log(`Received request to start a call with ${arg[0]}`);
+		remote.call(arg[0]);
+	});
+
+	window.ipc.on("remoteAnswerCall", (event, arg) => {
+		console.log(`Received request to answer a call from ${arg[0]}`);
+		remote.answer(arg[0]);
 	});
 });
