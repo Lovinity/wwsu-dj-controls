@@ -67,7 +67,7 @@ class WWSUrecipients extends WWSUdb {
 	 * @param {string} host Name of the host being registered
 	 * @param {function} cb Callback; response as first parameter, boolean true = success, false = no success (or another host is already connected) for second parameter
 	 */
-	addRecipientComputer(peer, cb) {
+	addRecipientComputer(host, cb) {
 		this.requests.host.request(
 			{
 				method: "post",
