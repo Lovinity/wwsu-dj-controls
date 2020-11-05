@@ -13,6 +13,9 @@ module.exports = new Store({
 			threshold: 0.1,
 			delay: 15000,
 		},
+		delay: {
+			port: "",
+		},
 		skyway: {
 			api: ``,
 		},
@@ -57,6 +60,15 @@ module.exports = new Store({
 				},
 			},
 		},
+		delay: {
+			type: "object",
+			additionalProperties: false,
+			properties: {
+				port: {
+					type: "string",
+				},
+			},
+		},
 		skyway: {
 			type: "object",
 			additionalProperties: false,
@@ -77,13 +89,13 @@ module.exports = new Store({
 						type: "string",
 					},
 					kind: {
-						type: "string"
+						type: "string",
 					},
 					volume: {
 						type: "number",
 						minimum: 0,
 						maximum: 2,
-						default: 1
+						default: 1,
 					},
 					silence: {
 						type: "boolean",

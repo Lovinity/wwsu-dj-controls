@@ -221,6 +221,15 @@ window.addEventListener("DOMContentLoaded", () => {
 	);
 
 	navigation.addItem(
+		"#nav-serial",
+		"#section-serial",
+		"Serial Port Settings - WWSU DJ Controls",
+		"/serial",
+		false
+	);
+
+
+	navigation.addItem(
 		"#nav-notifications",
 		"#section-notifications",
 		"Notifications / Todo - WWSU DJ Controls",
@@ -1079,6 +1088,29 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
+	// Delay system status returned from main process
+	window.ipc.on("delay", (event, args) => {
+		state.delayStatus({ seconds: args[0], bypass: args[1] });
+	});
+
+	// Construct serial port settings
+	let serialPorts = window.ipc.getSerialPorts();
+	let delayPorts = `<option value="">(NONE)</option>`;
+	if (serialPorts.constructor === Array) {
+		serialPorts.map((port) => {
+			delayPorts += `<option value="${port.path}">${port.path}</option>`;
+		});
+	}
+	$("#section-serial-delay-port").html(delayPorts);
+	window.requestAnimationFrame(() => {
+		let delaySettings = window.settings.delay;
+		$("#section-serial-delay-port").val(delaySettings.port);
+	})
+	$("#section-serial-delay-port").on("change", (e) => {
+		let val = $(e.target).val();
+		window.saveSettings.delay("port", val);
+	});
+
 	/*
         SOCKET EVENTS AND FUNCTIONS
     */
@@ -1131,6 +1163,9 @@ window.addEventListener("DOMContentLoaded", () => {
 					} else {
 						window.ipc.process.send("recorder", ["close"]);
 					}
+
+					// Delay system
+					window.ipc.restartDelay(hosts.client.delaySystem);
 				} else if (success === -1) {
 					$("#content").addClass("d-none");
 					$("#already-connected").removeClass("d-none");
@@ -2161,7 +2196,10 @@ Track: <strong>${request.trackname}</strong>`,
 		messages.updateRecipientsTable();
 
 		// If this host wants to make a call, and the host we want to call is online and has a peer, start a call.
-		if (hosts.client.ID === meta.meta.hostCalling) {
+		if (
+			meta.meta.hostCalling !== null &&
+			hosts.client.ID === meta.meta.hostCalling
+		) {
 			let called = db.get().find((rec) => rec.hostID === meta.meta.hostCalled);
 			if (called && called.peer && called.status === 5) {
 				console.log(
@@ -2218,6 +2256,9 @@ Track: <strong>${request.trackname}</strong>`,
 		} else {
 			window.ipc.process.send("recorder", ["close"]);
 		}
+
+		// Delay system
+		window.ipc.restartDelay(newClient.delaySystem);
 	});
 
 	hosts.on("change", "renderer", (db) => {
@@ -2314,12 +2355,29 @@ Track: <strong>${request.trackname}</strong>`,
 	});
 
 	window.ipc.on("remoteIncomingCall", (event, arg) => {
-		let recipient = recipients.find({peer: arg[0], makeCalls: true, authorized: true});
+		let recipient = recipients.find({
+			peer: arg[0],
+			makeCalls: true,
+			authorized: true,
+		});
 		if (recipient) {
-			console.log(`Peer ${arg[0]} is allowed to call. Requesting to auto-answer.`);
+			console.log(
+				`Peer ${arg[0]} is allowed to call. Requesting to auto-answer.`
+			);
 			window.ipc.remote.send("remoteAnswerCall", [arg[0]]);
 		} else {
-			console.log(`Peer ${arg[0]} does not match any authorized recipients who can make calls. Rejected.`);
+			console.log(
+				`Peer ${arg[0]} does not match any authorized recipients who can make calls. Rejected.`
+			);
 		}
+	});
+
+	window.ipc.on("peerCallEstablished", (event, arg) => {
+		state.finalizeRemote((success) => {
+			state.unblockBroadcastModel();
+			if (success) {
+				state.broadcastModal.iziModal("close");
+			}
+		});
 	});
 });

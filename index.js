@@ -47,6 +47,7 @@ const packageJson = require("./package.json");
 const { machineIdSync } = require("./assets/wwsu-host-id");
 const Sanitize = require("sanitize-filename");
 const semver = require("semver");
+const serialport = require("serialport");
 
 // Initialize debug tools
 debug();
@@ -236,7 +237,7 @@ const createRemoteWindow = () => {
 	remoteWindow = new BrowserWindow({
 		width: 1280,
 		height: 720,
-		show: false,
+		show: true,
 		title: `${app.name} - Remote Process`,
 		webPreferences: {
 			contextIsolation: true,
@@ -661,6 +662,21 @@ ipcMain.on("main", (event, arg) => {
 							path.dirname(`${config.get("recorder.recordPath")}/${args[0]}`)
 						)
 					);
+
+					// Write a README file
+					fs.writeFile(
+						`${path.resolve(
+							path.dirname(`${config.get("recorder.recordPath")}/${args[0]}`)
+						)}/README.txt`,
+						`Audio files are recorded in webm/Opus format because there is no good MP3 library available for DJ Controls. If you cannot play webm files, you can use a free online converter such as https://cloudconvert.com/webm-to-mp3.` +
+							"\n\n" +
+							`BE AWARE recordings are only stored temporarily! WWSU reserves the right to delete, modify, and/or monitor any and all recordings at any time without notice. Be sure to save a copy of your recordings ASAP after each show.` +
+							"\n\n" +
+							`WWSU does not guarantee the reliability of automatic recordings! You should always make your own recordings as well.`,
+						(err) => {
+							console.error(err);
+						}
+					);
 				}
 
 				console.log(`audio save file ${args[0]}`);
@@ -799,7 +815,6 @@ ipcMain.on("main", (event, arg) => {
 		// Change which device is the output device for incoming remote calls
 		case "audioOutputSetting":
 			try {
-
 				// Update settings; only one device should be allowed to have output as true
 				let settings = config.get(`audio`);
 				settings = settings.map((set) =>
@@ -822,6 +837,237 @@ ipcMain.on("main", (event, arg) => {
 ipcMain.on("sanitize", (event, arg) => {
 	event.returnValue = Sanitize(arg);
 });
+
+/*
+		SERIAL PORTS
+	*/
+
+let delaySerial;
+let delayData = ``;
+let delayTimer;
+let delayStatusTimer;
+
+// Sync get available serial ports
+ipcMain.on("getSerialPorts", (event) => {
+	serialport
+		.list()
+		.then((ports) => {
+			if (!ports) {
+				event.returnValue = [];
+			} else {
+				event.returnValue = ports;
+			}
+		})
+		.catch((err) => {
+			console.error(err);
+			event.returnValue = [];
+		});
+});
+
+// Restart delay system
+ipcMain.on("delayRestart", (event, arg) => {
+	restartDelay(arg);
+});
+
+// Dump delay system (or deactivate bypass)
+ipcMain.on("delayDump", (event) => {
+	dumpDelay();
+});
+
+function restartDelay(arg) {
+	console.log("Restarting Delay Serial connection");
+	mainWindow.webContents.send(
+		"main-log",
+		`Restarting Delay System serial, device ${config.get(
+			"delay.port"
+		)}, active = ${arg}`
+	);
+	try {
+		delaySerial.close();
+	} catch (e) {}
+
+	delaySerial = undefined;
+	delayData = ``;
+	clearTimeout(delayTimer);
+	clearInterval(delayStatusTimer);
+
+	if (arg) {
+		// Delay connecting to port 5 seconds to accommodate close method
+		setTimeout(() => {
+			let device = config.get("delay.port");
+
+			if (device && device !== null && device !== ``) {
+				delaySerial = new serialport(device, {
+					baudRate: 38400,
+				});
+
+				delaySerial.on("error", (err) => {
+					console.error(err);
+					mainWindow.webContents.send(
+						"log",
+						`Main: Delay serial error... ${err.message}`
+					);
+					if (
+						err.disconnected ||
+						typeof delaySerial === "undefined" ||
+						typeof delaySerial.isOpen === "undefined" ||
+						!delaySerial.isOpen
+					) {
+						mainWindow.webContents.send(
+							"log",
+							`Main: Delay System serial is disconnected. Reconnecting in 15 seconds.`
+						);
+						setTimeout(() => {
+							exports.restartDelay();
+						}, 15000);
+					}
+				});
+
+				delaySerial.on("data", (data) => {
+					mainWindow.webContents.send(
+						"log",
+						`Main: Delay system data received: ${data.toString("hex")}`
+					);
+					delayData += data.toString("hex");
+					clearTimeout(delayTimer);
+					delayTimer = setTimeout(() => {
+						// Delay status
+						if (delayData.includes("000c")) {
+							console.log("Received delay system status");
+							var index = delayData.indexOf("000c");
+							var seconds =
+								parseInt(delayData.substring(index + 6, index + 8), 16) / 10;
+							var bypass = hex2bin(delayData.substring(index + 16, index + 18));
+							bypass = parseInt(bypass.substring(7, 8)) === 1;
+							mainWindow.webContents.send(
+								"log",
+								`Main: Delay System status is ${seconds} seconds, bypass = ${bypass}`
+							);
+							mainWindow.webContents.send("delay", [seconds, bypass]);
+						}
+
+						delayData = ``;
+					}, 1000);
+				});
+
+				delaySerial.on("open", () => {
+					mainWindow.webContents.send("log", `Main: Delay System port opened.`);
+
+					// Request status after opening
+					let buffer = new Buffer.alloc(6);
+					buffer[0] = 0xfb;
+					buffer[1] = 0xff;
+					buffer[2] = 0x00;
+					buffer[3] = 0x02;
+					buffer[4] = 0x11;
+					buffer[5] = 0xed;
+					delaySerial.write(buffer);
+
+					clearInterval(delayStatusTimer);
+					delayStatusTimer = setInterval(() => {
+						mainWindow.webContents.send(
+							"log",
+							`Main: Delay System Querying status`
+						);
+						let buffer = new Buffer.alloc(6);
+						buffer[0] = 0xfb;
+						buffer[1] = 0xff;
+						buffer[2] = 0x00;
+						buffer[3] = 0x02;
+						buffer[4] = 0x11;
+						buffer[5] = 0xed;
+						delaySerial.write(buffer);
+					}, 15000);
+				});
+			} else {
+				mainWindow.webContents.send(
+					"log",
+					`Main: Delay System empty device selected. No ports opened.`
+				);
+			}
+		}, 5000);
+	}
+}
+
+function dumpDelay() {
+	if (delaySerial) {
+		mainWindow.webContents.send(
+			"log",
+			`Main: Delay system recveived dump request.`
+		);
+
+		// Deactivate bypass
+		mainWindow.webContents.send("log", `Main: Delay System Deactivate bypass.`);
+		var buffer = new Buffer.alloc(7);
+		buffer[0] = 0xfb;
+		buffer[1] = 0xff;
+		buffer[2] = 0x00;
+		buffer[3] = 0x03;
+		buffer[4] = 0x91;
+		buffer[5] = 0x00;
+		buffer[6] = 0x6c;
+		delaySerial.write(buffer);
+
+		// Activate Delay
+		mainWindow.webContents.send("log", `Main: Delay System Activate dump.`);
+		var buffer = new Buffer.alloc(7);
+		buffer[0] = 0xfb;
+		buffer[1] = 0xff;
+		buffer[2] = 0x00;
+		buffer[3] = 0x03;
+		buffer[4] = 0x90;
+		buffer[5] = 0x08;
+		buffer[6] = 0x65;
+		delaySerial.write(buffer);
+
+		setTimeout(() => {
+			// Push the start button
+			mainWindow.webContents.send(
+				"log",
+				`Main: Delay System Push start button.`
+			);
+			var buffer = new Buffer(7);
+			buffer[0] = 0xfb;
+			buffer[1] = 0xff;
+			buffer[2] = 0x00;
+			buffer[3] = 0x03;
+			buffer[4] = 0x90;
+			buffer[5] = 0x02;
+			buffer[6] = 0x6b;
+			delaySerial.write(buffer);
+
+			// Deactivate buttons
+			mainWindow.webContents.send("log", `Main: Delay System Deactivate dump.`);
+			var buffer = new Buffer(7);
+			buffer[0] = 0xfb;
+			buffer[1] = 0xff;
+			buffer[2] = 0x00;
+			buffer[3] = 0x03;
+			buffer[4] = 0x90;
+			buffer[5] = 0x00;
+			buffer[6] = 0x6d;
+			delaySerial.write(buffer);
+
+			// Request status after dumping
+			mainWindow.webContents.send(
+				"log",
+				`Main: Delay System Query for new status.`
+			);
+			var buffer = new Buffer(6);
+			buffer[0] = 0xfb;
+			buffer[1] = 0xff;
+			buffer[2] = 0x00;
+			buffer[3] = 0x02;
+			buffer[4] = 0x11;
+			buffer[5] = 0xed;
+			delaySerial.write(buffer);
+		}, 200);
+	}
+}
+
+/*
+		FUNCTIONS
+	*/
 
 /**
  * Update config for an audio device.

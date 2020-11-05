@@ -18,6 +18,12 @@ window.addEventListener("DOMContentLoaded", () => {
 		flashMain: (arg) => ipcRenderer.send("flashMain", arg),
 		progressMain: (progress) => ipcRenderer.send("progressMain", progress),
 
+		getSerialPorts: () => ipcRenderer.sendSync("getSerialPorts"),
+
+		// Delay system
+		restartDelay: (status) => ipcRenderer.send("delayRestart", status),
+		dumpDelay: () => ipcRenderer.send("delayDump"),
+
 		// Listen for messages
 		on: (event, fn) => ipcRenderer.on(event, fn),
 
@@ -72,6 +78,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		recorder: ipcRenderer.sendSync("settings", "recorder"),
 		silence: ipcRenderer.sendSync("settings", "silence"),
 		skyway: ipcRenderer.sendSync("settings", "skyway"),
+		delay: ipcRenderer.sendSync("settings", "delay"),
 	});
 
 	// Saving settings
@@ -80,5 +87,6 @@ window.addEventListener("DOMContentLoaded", () => {
 			ipcRenderer.send("saveSettings", [`recorder.${key}`, value]),
 		silence: (object) => ipcRenderer.send("saveSettings", ["silence", object]),
 		skyway: (object) => ipcRenderer.send("saveSettings", ["skyway", object]),
+		delay: (key, value) => ipcRenderer.send("saveSettings", [`delay.${key}`, value]),
 	});
 });

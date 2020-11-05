@@ -27,6 +27,7 @@ class WWSUremoteaudio extends WWSUevents {
 		// Peer variables
 		this.peer; // Our skyway.js peer
 		this.calling; // Peer ID we are calling
+		this.callingTimer;
 		this.outgoingCall; // Active outgoing call
 		this.incomingCalls = new Map(); // Map of active or pending incoming calls
 		this.PLC = new Map(); // To keep track of call quality
@@ -190,6 +191,7 @@ class WWSUremoteaudio extends WWSUevents {
 		try {
 			// Terminate any existing outgoing calls first
 			if (this.outgoingCall) {
+				clearInterval(this.outgoingCallTimer);
 				this.outgoingCall.close();
 				this.outgoingCall = undefined;
 			}
@@ -200,9 +202,17 @@ class WWSUremoteaudio extends WWSUevents {
 			audioBandwidth: 128,
 		});
 
+		this.outgoingCallTimer = setInterval(() => {
+			if (this.outgoingCall.open) {
+				this.emitEvent("peerCallEstablished", [this.calling]);
+				clearInterval(this.outgoingCallTimer);
+			}
+		}, 1000);
+
 		// When the call is closed, emit peerCallClosed event
 		outgoingCall.on(`close`, () => {
 			console.log(`CALL CLOSED.`);
+			clearInterval(this.outgoingCallTimer);
 			this.outgoingCall = undefined;
 			this.emitEvent("peerCallClosed", [this.calling]);
 			this.calling = undefined;

@@ -22,6 +22,7 @@
 - Indications of the status for each audio process
 - Silence detection
 - Splash screen (basic)
+- Delay system tracking via serial port
 
 ### Updated
 

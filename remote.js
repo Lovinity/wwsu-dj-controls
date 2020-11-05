@@ -76,6 +76,14 @@ window.addEventListener("DOMContentLoaded", () => {
 		window.ipc.renderer.send("remoteIncomingCall", [id]);
 	});
 
+	remote.on("peerCallEstablished", "remote", (id) => {
+		window.ipc.renderer.send("console", [
+			"log",
+			`Remote: Call with ${id} was established.`,
+		]);
+		window.ipc.renderer.send("peerCallEstablished", [id]);
+	});
+
 	remote.on("peerIncomingCallVolume", "renderer", (peer, volume) => {
 		// TODO
 	});

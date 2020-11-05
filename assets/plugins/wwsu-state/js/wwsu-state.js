@@ -18,7 +18,9 @@ class WWSUstate extends WWSUevents {
 			topAdd: "/songs/queue-top-add",
 			liner: "/songs/queue-liner",
 			dump: "/delay/dump",
+			delayStatus: "/delay/status",
 			live: "/state/live",
+			remote: "/state/remote",
 		};
 		this.requests = {
 			host: hostReq,
@@ -36,6 +38,36 @@ class WWSUstate extends WWSUevents {
 		});
 
 		this.pendingRemote;
+	}
+
+	/**
+	 * Report delay system status to WWSU
+	 *
+	 * @param {object} data Data to send to the endpoint
+	 * @param {?function} cb Callback executed when the request is completed
+	 */
+	delayStatus(data, cb) {
+		try {
+			this.requests.host.request(
+				{ method: "post", url: this.endpoints.delayStatus, data },
+				(response) => {
+					if (response !== "OK") {
+						if (typeof cb === "function") {
+							cb(false);
+						}
+					} else {
+						if (typeof cb === "function") {
+							cb(true);
+						}
+					}
+				}
+			);
+		} catch (e) {
+			if (typeof cb === "function") {
+				cb(false);
+			}
+			console.error(e);
+		}
 	}
 
 	/**
@@ -442,163 +474,171 @@ class WWSUstate extends WWSUevents {
 			return;
 		}
 
-		this.broadcastModal.title = `Start Live (in-studio) Broadcast`;
-		this.broadcastModal.body = ``;
-		this.broadcastModal.iziModal("open");
+		this.hosts.promptIfNotHost(`start a live in-studio broadcast`, () => {
+			this.broadcastModal.title = `Start Live (in-studio) Broadcast`;
+			this.broadcastModal.body = ``;
+			this.broadcastModal.iziModal("open");
 
-		let whatShouldBePlaying = this.calendar
-			.whatShouldBePlaying()
-			.sort((a, b) => b.priority - a.priority);
-		whatShouldBePlaying = whatShouldBePlaying.find(
-			(record) => record.type === "show"
-		);
+			let whatShouldBePlaying = this.calendar
+				.whatShouldBePlaying()
+				.sort((a, b) => b.priority - a.priority);
+			whatShouldBePlaying = whatShouldBePlaying.find(
+				(record) => record.type === "show"
+			);
 
-		$(this.broadcastModal.body).alpaca({
-			schema: {
-				title: "Start Live (in-studio) Broadcast",
-				type: "object",
-				properties: {
-					acknowledge: {
-						type: "boolean",
-						default: false,
-						title: "I read the announcements",
-					},
-					djs: {
-						type: "string",
-						required: true,
-						title: "DJ handles",
-						maxLength: 255,
-					},
-					name: {
-						type: "string",
-						title: "Name of Show",
-						required: true,
-						maxLength: 255,
-					},
-					topic: {
-						type: "string",
-						title: "Episode Topic / Description",
-						maxLength: 255,
-					},
-					webchat: {
-						type: "boolean",
-						default: true,
-						title: "Allow Listeners to Send Messages?",
-					},
-				},
-			},
-			options: {
-				fields: {
-					djs: {
-						helper: `Each DJ handle should be separated with a "; " (semicolon-space) if providing multiple DJs.`,
-						validator: function (callback) {
-							var value = this.getValue();
-							if (value.includes(" -")) {
-								callback({
-									status: false,
-									message: `Invalid; DJ handles may not contain " - " as this is a separation used by the system.`,
-								});
-								return;
-							}
-							if (!whatShouldBePlaying || whatShouldBePlaying.hosts !== value) {
-								callback({
-									status: true,
-									message: `Not on the immediate schedule (proceeding could result in the show being flagged as unauthorized)`,
-								});
-								return;
-							}
-							callback({
-								status: true,
-							});
+			$(this.broadcastModal.body).alpaca({
+				schema: {
+					title: "Start Live (in-studio) Broadcast",
+					type: "object",
+					properties: {
+						acknowledge: {
+							type: "boolean",
+							default: false,
+							title: "I read the announcements",
 						},
-					},
-					name: {
-						validator: function (callback) {
-							var value = this.getValue();
-							if (value.includes(" -")) {
-								callback({
-									status: false,
-									message: `Invalid; Show names may not contain " - " as this is a separation used by the system.`,
-								});
-								return;
-							}
-							if (!whatShouldBePlaying || whatShouldBePlaying.name !== value) {
-								callback({
-									status: true,
-									message: `Not on the immediate schedule (proceeding could result in the show being flagged as unauthorized)`,
-								});
-								return;
-							}
-							callback({
-								status: true,
-							});
+						djs: {
+							type: "string",
+							required: true,
+							title: "DJ handles",
+							maxLength: 255,
 						},
-					},
-					topic: {
-						helper:
-							"Limit: 256 characters. The topic will be displayed on the website and display signs.",
-						type: "textarea",
-						placeholder: whatShouldBePlaying
-							? whatShouldBePlaying.description
-							: "",
-					},
-					webchat: {
-						rightLabel: "Yes",
-						helper:
-							"You can mute/ban individual listeners from the chat if they send threatening or harassing messages.",
-					},
-					acknowledge: {
-						rightLabel: "Yes",
-						helper:
-							"Please check this box to indicate you read the announcements on the announcements tab of DJ Controls.",
-						validator: function (callback) {
-							var value = this.getValue();
-							if (!value) {
-								callback({
-									status: false,
-									message: `You must acknowledge that you read the announcements on the announcements tab of DJ Controls before doing a broadcast.`,
-								});
-								return;
-							}
-							callback({
-								status: true,
-							});
+						name: {
+							type: "string",
+							title: "Name of Show",
+							required: true,
+							maxLength: 255,
+						},
+						topic: {
+							type: "string",
+							title: "Episode Topic / Description",
+							maxLength: 255,
+						},
+						webchat: {
+							type: "boolean",
+							default: true,
+							title: "Allow Listeners to Send Messages?",
 						},
 					},
 				},
-				form: {
-					buttons: {
-						submit: {
-							title: "Start Broadcast",
-							click: (form, e) => {
-								form.refreshValidationState(true);
-								if (!form.isValid(true)) {
-									form.focus();
+				options: {
+					fields: {
+						djs: {
+							helper: `Each DJ handle should be separated with a "; " (semicolon-space) if providing multiple DJs.`,
+							validator: function (callback) {
+								var value = this.getValue();
+								if (value.includes(" -")) {
+									callback({
+										status: false,
+										message: `Invalid; DJ handles may not contain " - " as this is a separation used by the system.`,
+									});
 									return;
 								}
-								var value = form.getValue();
-
-								value = {
-									topic: value.topic,
-									showname: `${value.djs} - ${value.name}`,
-									webchat: value.webchat,
-								};
-
-								this.goLive(value, (success) => {
-									if (success) {
-										this.broadcastModal.iziModal("close");
-									}
+								if (
+									!whatShouldBePlaying ||
+									whatShouldBePlaying.hosts !== value
+								) {
+									callback({
+										status: true,
+										message: `Not on the immediate schedule (proceeding could result in the show being flagged as unauthorized)`,
+									});
+									return;
+								}
+								callback({
+									status: true,
+								});
+							},
+						},
+						name: {
+							validator: function (callback) {
+								var value = this.getValue();
+								if (value.includes(" -")) {
+									callback({
+										status: false,
+										message: `Invalid; Show names may not contain " - " as this is a separation used by the system.`,
+									});
+									return;
+								}
+								if (
+									!whatShouldBePlaying ||
+									whatShouldBePlaying.name !== value
+								) {
+									callback({
+										status: true,
+										message: `Not on the immediate schedule (proceeding could result in the show being flagged as unauthorized)`,
+									});
+									return;
+								}
+								callback({
+									status: true,
+								});
+							},
+						},
+						topic: {
+							helper:
+								"Limit: 256 characters. The topic will be displayed on the website and display signs.",
+							type: "textarea",
+							placeholder: whatShouldBePlaying
+								? whatShouldBePlaying.description
+								: "",
+						},
+						webchat: {
+							rightLabel: "Yes",
+							helper:
+								"You can mute/ban individual listeners from the chat if they send threatening or harassing messages.",
+						},
+						acknowledge: {
+							rightLabel: "Yes",
+							helper:
+								"Please check this box to indicate you read the announcements on the announcements tab of DJ Controls.",
+							validator: function (callback) {
+								var value = this.getValue();
+								if (!value) {
+									callback({
+										status: false,
+										message: `You must acknowledge that you read the announcements on the announcements tab of DJ Controls before doing a broadcast.`,
+									});
+									return;
+								}
+								callback({
+									status: true,
 								});
 							},
 						},
 					},
+					form: {
+						buttons: {
+							submit: {
+								title: "Start Broadcast",
+								click: (form, e) => {
+									form.refreshValidationState(true);
+									if (!form.isValid(true)) {
+										form.focus();
+										return;
+									}
+									var value = form.getValue();
+
+									value = {
+										topic: value.topic,
+										showname: `${value.djs} - ${value.name}`,
+										webchat: value.webchat,
+									};
+
+									this.goLive(value, (success) => {
+										if (success) {
+											this.broadcastModal.iziModal("close");
+										}
+									});
+								},
+							},
+						},
+					},
 				},
-			},
-			data: {
-				djs: whatShouldBePlaying ? whatShouldBePlaying.hosts : "",
-				name: whatShouldBePlaying ? whatShouldBePlaying.name : "",
-				topic: whatShouldBePlaying ? whatShouldBePlaying.description : "",
-			},
+				data: {
+					djs: whatShouldBePlaying ? whatShouldBePlaying.hosts : "",
+					name: whatShouldBePlaying ? whatShouldBePlaying.name : "",
+					topic: whatShouldBePlaying ? whatShouldBePlaying.description : "",
+				},
+			});
 		});
 	}
 
@@ -709,230 +749,305 @@ class WWSUstate extends WWSUevents {
 			return;
 		}
 
-		this.broadcastModal.title = `Start Remote Broadcast`;
-		this.broadcastModal.body = ``;
-		this.broadcastModal.iziModal("open");
+		this.hosts.promptIfNotHost(`start a remote broadcast`, () => {
+			this.broadcastModal.title = `Start Remote Broadcast`;
+			this.broadcastModal.body = ``;
+			this.broadcastModal.iziModal("open");
 
-		// Set lock to DJ to a local variable as Alpaca's validators do not use arrow functions
-		let lockToDJ = this.hosts.client.lockToDJ;
+			// Set lock to DJ to a local variable as Alpaca's validators do not use arrow functions
+			let lockToDJ = this.hosts.client.lockToDJ;
 
-		// Get the hosts that may be called for an audio broadcast
-		let callableHosts = this.hosts.find({
-			answerCalls: true,
-            authorized: true
-		});
+			// Get the hosts that may be called for an audio broadcast
+			let callableHosts = this.hosts.find({
+				answerCalls: true,
+				authorized: true,
+			});
 
-		$(this.broadcastModal.body).alpaca({
-			schema: {
-				title: "Start Remote Broadcast",
-				type: "object",
-				properties: {
-					audioAcknowledgement: {
-						type: "boolean",
-						default: false,
-						title: "Settings in Audio menu are correct",
-					},
-					acknowledge: {
-						type: "boolean",
-						default: false,
-						title: "I read the announcements",
-					},
-					hostCall: {
-						type: "number",
-						enum: callableHosts.map((host) => host.ID),
-						required: true,
-						title: "Host to call",
-					},
-					djs: {
-						type: "string",
-						required: true,
-						readonly: this.hosts.client.lockToDJ !== null,
-						title: "DJ handles",
-						maxLength: 255,
-					},
-					name: {
-						type: "string",
-						title: "Name of Show",
-						readonly: this.hosts.client.lockToDJ !== null,
-						required: true,
-						maxLength: 255,
-					},
-					topic: {
-						type: "string",
-						title: "Episode Topic / Description",
-						maxLength: 255,
-					},
-					webchat: {
-						type: "boolean",
-						default: true,
-						title: "Allow Listeners to Send Messages?",
+			$(this.broadcastModal.body).alpaca({
+				schema: {
+					title: "Start Remote Broadcast",
+					type: "object",
+					properties: {
+						audioAcknowledgement: {
+							type: "boolean",
+							default: false,
+							title: "Settings in Audio menu are correct",
+						},
+						acknowledge: {
+							type: "boolean",
+							default: false,
+							title: "I read the announcements",
+						},
+						hostCall: {
+							type: "number",
+							enum: callableHosts.map((host) => host.ID),
+							required: true,
+							title: "Host to call",
+						},
+						djs: {
+							type: "string",
+							required: true,
+							readonly: this.hosts.client.lockToDJ !== null,
+							title: "DJ handles",
+							maxLength: 255,
+						},
+						name: {
+							type: "string",
+							title: "Name of Show",
+							readonly: this.hosts.client.lockToDJ !== null,
+							required: true,
+							maxLength: 255,
+						},
+						topic: {
+							type: "string",
+							title: "Episode Topic / Description",
+							maxLength: 255,
+						},
+						webchat: {
+							type: "boolean",
+							default: true,
+							title: "Allow Listeners to Send Messages?",
+						},
 					},
 				},
-			},
-			options: {
-				fields: {
-					audioAcknowledgement: {
-						rightLabel: "Yes",
-						helper:
-							"Check this box to indicate you went into the Audio menu of DJ Controls and confirmed the devices and volumes you want for the remote broadcast are correct.",
-						validator: function (callback) {
-							var value = this.getValue();
-							if (!value) {
-								callback({
-									status: false,
-									message: `You must acknowledge that you ensured the settings in the Audio menu are correct.`,
-								});
-								return;
-							}
-							callback({
-								status: true,
-							});
-						},
-					},
-					acknowledge: {
-						rightLabel: "Yes",
-						helper:
-							"Please check this box to indicate you read the announcements on the announcements tab of DJ Controls.",
-						validator: function (callback) {
-							var value = this.getValue();
-							if (!value) {
-								callback({
-									status: false,
-									message: `You must acknowledge that you read the announcements on the announcements tab of DJ Controls before doing a broadcast.`,
-								});
-								return;
-							}
-							callback({
-								status: true,
-							});
-						},
-					},
-					djs: {
-						helper: `Each DJ handle should be separated with a "; " (semicolon-space) if providing multiple DJs.`,
-						validator: function (callback) {
-							var value = this.getValue();
-							if (value.includes(" -")) {
-								callback({
-									status: false,
-									message: `Invalid; DJ handles may not contain " - " as this is a separation used by the system.`,
-								});
-								return;
-							}
-							if (!whatShouldBePlaying || whatShouldBePlaying.hosts !== value) {
-								callback({
-									status: true,
-									message: `Not on the immediate schedule (proceeding could result in the show being flagged as unauthorized)`,
-								});
-								return;
-							} else if (whatShouldBePlaying && lockToDJ) {
-								callback({
-									status: true,
-									message: `This field cannot be edited; this is the only broadcast you are allowed to start from this host at this time.`,
-								});
-								return;
-							}
-							callback({
-								status: true,
-							});
-						},
-					},
-					name: {
-						validator: function (callback) {
-							var value = this.getValue();
-							if (value.includes(" -")) {
-								callback({
-									status: false,
-									message: `Invalid; Show names may not contain " - " as this is a separation used by the system.`,
-								});
-								return;
-							}
-							if (!whatShouldBePlaying || whatShouldBePlaying.name !== value) {
-								callback({
-									status: true,
-									message: `Not on the immediate schedule (proceeding could result in the show being flagged as unauthorized)`,
-								});
-								return;
-							} else if (whatShouldBePlaying && lockToDJ) {
-								callback({
-									status: true,
-									message: `This field cannot be edited; this is the only broadcast you are allowed to start from this host at this time.`,
-								});
-								return;
-							}
-							callback({
-								status: true,
-							});
-						},
-					},
-					topic: {
-						helper:
-							"Limit: 256 characters. The topic will be displayed on the website and display signs.",
-						type: "textarea",
-						placeholder: whatShouldBePlaying
-							? whatShouldBePlaying.description
-							: "",
-					},
-					webchat: {
-						rightLabel: "Yes",
-						helper:
-							"You can mute/ban individual listeners from the chat if they send threatening or harassing messages.",
-					},
-					hostCall: {
-						type: "select",
-						optionLabels: callableHosts.map((host) => host.friendlyname),
-						helper:
-							"Choose which host you want to establish an audio call with for the broadcast",
-					},
-				},
-				form: {
-					buttons: {
-						submit: {
-							title: "Start Broadcast",
-							click: (form, e) => {
-								form.refreshValidationState(true);
-								if (!form.isValid(true)) {
-									form.focus();
+				options: {
+					fields: {
+						audioAcknowledgement: {
+							rightLabel: "Yes",
+							helper:
+								"Check this box to indicate you went into the Audio menu of DJ Controls and confirmed the devices and volumes you want for the remote broadcast are correct.",
+							validator: function (callback) {
+								var value = this.getValue();
+								if (!value) {
+									callback({
+										status: false,
+										message: `You must acknowledge that you ensured the settings in the Audio menu are correct.`,
+									});
 									return;
 								}
-								var value = form.getValue();
-
-								// The process of going remote requires a lot of back and forth between processes and the API.
-								// So, store the form data in memory and block the form while we are processing.
-								// Then, once an audio call is established, this.goRemote() should be called.
-
-								this.pendingRemote = {
-									topic: value.topic,
-									showname: `${value.djs} - ${value.name}`,
-									webchat: value.webchat,
-									host: value.hostCall,
-								};
-
-								$(this.broadcastModal.body).block({
-									message: `<h1>Starting Remote Broadcast...</h1>`,
-									css: { border: "3px solid #a00" },
-									timeout: 15000,
-									onBlock: () => {
-										// You should listen for this event and start the process of remote audio calling when called.
-										this.emitEvent("startRemote", [value.hostCall]);
-									},
+								callback({
+									status: true,
 								});
+							},
+						},
+						acknowledge: {
+							rightLabel: "Yes",
+							helper:
+								"Please check this box to indicate you read the announcements on the announcements tab of DJ Controls.",
+							validator: function (callback) {
+								var value = this.getValue();
+								if (!value) {
+									callback({
+										status: false,
+										message: `You must acknowledge that you read the announcements on the announcements tab of DJ Controls before doing a broadcast.`,
+									});
+									return;
+								}
+								callback({
+									status: true,
+								});
+							},
+						},
+						djs: {
+							helper: `Each DJ handle should be separated with a "; " (semicolon-space) if providing multiple DJs.`,
+							validator: function (callback) {
+								var value = this.getValue();
+								if (value.includes(" -")) {
+									callback({
+										status: false,
+										message: `Invalid; DJ handles may not contain " - " as this is a separation used by the system.`,
+									});
+									return;
+								}
+								if (
+									!whatShouldBePlaying ||
+									whatShouldBePlaying.hosts !== value
+								) {
+									callback({
+										status: true,
+										message: `Not on the immediate schedule (proceeding could result in the show being flagged as unauthorized)`,
+									});
+									return;
+								} else if (whatShouldBePlaying && lockToDJ) {
+									callback({
+										status: true,
+										message: `This field cannot be edited; this is the only broadcast you are allowed to start from this host at this time.`,
+									});
+									return;
+								}
+								callback({
+									status: true,
+								});
+							},
+						},
+						name: {
+							validator: function (callback) {
+								var value = this.getValue();
+								if (value.includes(" -")) {
+									callback({
+										status: false,
+										message: `Invalid; Show names may not contain " - " as this is a separation used by the system.`,
+									});
+									return;
+								}
+								if (
+									!whatShouldBePlaying ||
+									whatShouldBePlaying.name !== value
+								) {
+									callback({
+										status: true,
+										message: `Not on the immediate schedule (proceeding could result in the show being flagged as unauthorized)`,
+									});
+									return;
+								} else if (whatShouldBePlaying && lockToDJ) {
+									callback({
+										status: true,
+										message: `This field cannot be edited; this is the only broadcast you are allowed to start from this host at this time.`,
+									});
+									return;
+								}
+								callback({
+									status: true,
+								});
+							},
+						},
+						topic: {
+							helper:
+								"Limit: 256 characters. The topic will be displayed on the website and display signs.",
+							type: "textarea",
+							placeholder: whatShouldBePlaying
+								? whatShouldBePlaying.description
+								: "",
+						},
+						webchat: {
+							rightLabel: "Yes",
+							helper:
+								"You can mute/ban individual listeners from the chat if they send threatening or harassing messages.",
+						},
+						hostCall: {
+							type: "select",
+							optionLabels: callableHosts.map((host) => host.friendlyname),
+							helper:
+								"Choose which host you want to establish an audio call with for the broadcast",
+						},
+					},
+					form: {
+						buttons: {
+							submit: {
+								title: "Start Broadcast",
+								click: (form, e) => {
+									form.refreshValidationState(true);
+									if (!form.isValid(true)) {
+										form.focus();
+										return;
+									}
+									var value = form.getValue();
+
+									// The process of going remote requires a lot of back and forth between processes and the API.
+									// So, store the form data in memory and block the form while we are processing.
+									// Then, once an audio call is established, this.goRemote() should be called.
+
+									this.pendingRemote = {
+										fn: this.goRemote,
+										data: {
+											topic: value.topic,
+											showname: `${value.djs} - ${value.name}`,
+											webchat: value.webchat,
+											host: value.hostCall,
+										},
+									};
+
+									$(this.broadcastModal.body).block({
+										message: `<h1>Starting Remote Broadcast...</h1>`,
+										css: { border: "3px solid #a00" },
+										timeout: 15000,
+										onBlock: () => {
+											// You should listen for this event and start the process of remote audio calling when called.
+											this.emitEvent("startRemote", [value.hostCall]);
+										},
+									});
+								},
 							},
 						},
 					},
 				},
-			},
-			data: {
-				djs: whatShouldBePlaying ? whatShouldBePlaying.hosts : "",
-				name: whatShouldBePlaying ? whatShouldBePlaying.name : "",
-				topic: whatShouldBePlaying ? whatShouldBePlaying.description : "",
-			},
+				data: {
+					djs: whatShouldBePlaying ? whatShouldBePlaying.hosts : "",
+					name: whatShouldBePlaying ? whatShouldBePlaying.name : "",
+					topic: whatShouldBePlaying ? whatShouldBePlaying.description : "",
+				},
+			});
 		});
-    }
-    
-    /**
-     * Unblock the broadcast modal. Usually used externally when a remote broadcast attempt fails.
-     */
-    unblockBroadcastModal() {
-        $(this.broadcastModal.body).unblock();
-    }
+	}
+
+	/**
+	 * Unblock the broadcast modal. Usually used externally when a remote broadcast attempt fails.
+	 */
+	unblockBroadcastModal() {
+		$(this.broadcastModal.body).unblock();
+	}
+
+	/**
+	 * When an audio call for a remote broadcast has been established, call this to transition to the pending remote broadcast.
+	 *
+	 * @param {?function} cb Function to call after the API is called, containing true for success or false for failure.
+	 */
+	finalizeRemote(cb) {
+		if (this.pendingRemote) {
+			this.pendingRemote.fn(data, cb);
+			this.pendingRemote = undefined;
+		} else {
+			cb(false);
+		}
+	}
+
+	/**
+	 * Tell the WWSU API to start a remote broadcast.
+	 *
+	 * @param {object} data Data to send to the endpoint
+	 * @param {?function} cb Callback executed when the request is completed
+	 */
+	goRemote(data, cb) {
+		try {
+			this.hosts.promptIfNotHost(`start a remote broadcast`, () => {
+				this.requests.host.request(
+					{ method: "post", url: this.endpoints.remote, data },
+					(response) => {
+						if (response !== "OK") {
+							$(document).Toasts("create", {
+								class: "bg-danger",
+								title: "Error starting remote broadcast",
+								body:
+									"There was an error starting the remote broadcast. Please contact the engineer if you think you should be allowed to start a remote broadcast.",
+								autoHide: true,
+								delay: 15000,
+								icon: "fas fa-skull-crossbones fa-lg",
+							});
+							if (typeof cb === "function") {
+								cb(false);
+							}
+						} else {
+							if (typeof cb === "function") {
+								cb(true);
+							}
+						}
+					}
+				);
+			});
+		} catch (e) {
+			$(document).Toasts("create", {
+				class: "bg-danger",
+				title: "Error starting remote broadcast",
+				body:
+					"There was an error starting the remote broadcast. Please contact the engineer if you think you should be allowed to start a remote broadcast.",
+				autoHide: true,
+				delay: 15000,
+				icon: "fas fa-skull-crossbones fa-lg",
+			});
+			if (typeof cb === "function") {
+				cb(false);
+			}
+			console.error(e);
+		}
+	}
 }

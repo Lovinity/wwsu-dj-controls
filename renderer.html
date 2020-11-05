@@ -738,7 +738,7 @@
 									id="nav-serial"
 									title="Configure serial ports for station equipment, such as the Delay System and Emergency Alert System."
 								>
-									<i class="nav-icon fas fa-stream text-danger"></i>
+									<i class="nav-icon fas fa-stream"></i>
 									<p>
 										Serial Ports
 									</p>
@@ -1698,6 +1698,71 @@
 									</div>
 									<div id="section-audio-devices-outputs"></div>
 								</div>
+							</div>
+							<!-- /.card-body -->
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Serial Port settings -->
+			<section id="section-serial">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<!-- Content Header (Page header) -->
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0 text-dark">Serial Port Settings</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+					<!-- /.content-header -->
+
+					<!-- Main content -->
+					<div class="content">
+						<div class="callout callout-info">
+							<h5>Settings are specific to this DJ Controls</h5>
+							<p>
+								The settings you apply here are specific to this DJ Controls.
+								The settings are not shared with other DJ Controls instances on
+								other computers.
+							</p>
+						</div>
+						<div class="callout callout-info">
+							<h5>Settings saved automatically</h5>
+							<p>
+								Settings are saved and applied automatically when you change
+								them.
+							</p>
+						</div>
+
+						<div class="card card-primary elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Delay System</h3>
+								<div class="card-tools">
+									<button
+										type="button"
+										class="btn btn-tool"
+										id="section-serial-delay-refresh"
+										title="Refresh available serial ports"
+									>
+										<i class="fas fa-sync-alt"></i>
+									</button>
+								</div>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body" id="section-serial-delay">
+								<div class="form-group">
+									<label for="section-serial-delay-port">Delay System Serial Port</label>
+									<select class="form-control" id="section-serial-delay-port">
+										<option value="">(NONE)</option>
+									  </select>
+								  </div>
 							</div>
 							<!-- /.card-body -->
 						</div>
