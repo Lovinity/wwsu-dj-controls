@@ -92,7 +92,22 @@ let recorderWindow;
 let remoteWindow;
 
 const enforceCORS = () => {
-	// Enforce CORS and Origin; skywayJS needs origin set to our server address, but everything else needs file origin.
+
+	// On requests to skyway.js, we must use the WWSU server as the Origin so skyway can verify us.
+	// For all other requests, we can use the default file origin (which we should, especially for the WWSU server)
+	session.defaultSession.webRequest.onBeforeSendHeaders(
+		{ urls: [`*.webrtc.ecl.ntt.com/*`] },
+		(details, callback) => {
+			callback({
+				requestHeaders: {
+					...details.requestHeaders,
+					Origin: "https://server.wwsu1069.org",
+				},
+			});
+		}
+	);
+
+	// Apply content security policy to all responses when not in development mode
 	session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
 		callback({
 			responseHeaders: {
@@ -102,9 +117,6 @@ const enforceCORS = () => {
 							`script-src 'self' https://server.wwsu1069.org https://webrtc.ecl.ntt.com`,
 					  ]
 					: [],
-				Origin: details.url.includes("webrtc.ecl.ntt.com")
-					? "https://server.wwsu1069.org"
-					: "file://",
 			},
 		});
 	});
@@ -478,8 +490,8 @@ app.on("web-contents-created", (event, contents) => {
 // Start loading the app
 app
 	.whenReady()
-	.then(Menu.setApplicationMenu(menu))
 	.then(enforceCORS)
+	.then(Menu.setApplicationMenu(menu))
 	.then(createWindows);
 
 /*
