@@ -2307,7 +2307,7 @@ Track: <strong>${request.trackname}</strong>`,
 	*/
 
 	// When a remote broadcast is requested, begin the process of starting up an audio call
-	state.on("startRemote", (host) => {
+	state.on("startRemote", "renderer", (host) => {
 		console.log(`Requested remote broadcast with host ${host}`);
 
 		// Check to make sure the selected host is online. If not, bail.
