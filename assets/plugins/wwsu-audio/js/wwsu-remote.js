@@ -52,46 +52,48 @@ class WWSUremoteaudio extends WWSUevents {
 					lastProcess = window.performance.now();
 					if (rtcStats <= 0 && this.peer && this.peer.connections) {
 						rtcStats = 1000;
-						for (let connections in this.peer.connections) {
+						for (let connection in this.peer.connections) {
 							// if (connections.hasOwnProperty(connection))
 							// {
-							if (connections[connection].length > 0) {
-								connections[connection].map((connectionObject, index) => {
-									// console.dir(connectionObject);
-									try {
-										connectionObject._negotiator._pc.getStats((connStats) => {
-											let rtcStatsReports = connStats.result();
-											rtcStatsReports
-												.filter((stat) => stat.type === `ssrc`)
-												.map((stat) => {
-													let properties = stat.names();
-													properties
-														.filter(
-															(property) => property === `googDecodingPLC`
-														)
-														.map((property) => {
-															let value = stat.stat(property);
+							if (this.peer.connections[connection].length > 0) {
+								this.peer.connections[connection].map(
+									(connectionObject, index) => {
+										// console.dir(connectionObject);
+										try {
+											connectionObject._negotiator._pc.getStats((connStats) => {
+												let rtcStatsReports = connStats.result();
+												rtcStatsReports
+													.filter((stat) => stat.type === `ssrc`)
+													.map((stat) => {
+														let properties = stat.names();
+														properties
+															.filter(
+																(property) => property === `googDecodingPLC`
+															)
+															.map((property) => {
+																let value = stat.stat(property);
 
-															// Get the previous value for this connection
-															let prevPLC =
-																this.PLC.get(`${connection}-${index}`) ||
+																// Get the previous value for this connection
+																let prevPLC =
+																	this.PLC.get(`${connection}-${index}`) ||
+																	this.PLC.set(`${connection}-${index}`, value);
+
+																// Choppiness was detected in the last second. Emit event peerPLC.
+																if (value > prevPLC) {
+																	this.emitEvent("peerPLC", [
+																		connection,
+																		value - prevPLC,
+																	]);
+																}
 																this.PLC.set(`${connection}-${index}`, value);
-
-															// Choppiness was detected in the last second. Emit event peerPLC.
-															if (value > prevPLC) {
-																this.emitEvent("peerPLC", [
-																	connection,
-																	value - prevPLC,
-																]);
-															}
-															this.PLC.set(`${connection}-${index}`, value);
-														});
-												});
-										});
-									} catch (e) {
-										console.error(e); // TODO: remove when this is working
+															});
+													});
+											});
+										} catch (e) {
+											console.error(e); // TODO: remove when this is working
+										}
 									}
-								});
+								);
 							}
 							// }
 						}
@@ -186,7 +188,11 @@ class WWSUremoteaudio extends WWSUevents {
 	call(peer) {
 		// Do not continue if already in a call with this peer
 		let incomingCall = this.incomingCalls.get(peer);
-		if (incomingCall || (this.outgoingCall && this.outgoingCall.remoteId === peer)) return;
+		if (
+			incomingCall ||
+			(this.outgoingCall && this.outgoingCall.remoteId === peer)
+		)
+			return;
 
 		this.calling = peer;
 
@@ -339,11 +345,11 @@ class WWSUremoteaudio extends WWSUevents {
 
 	/**
 	 * Change the muted state of all incoming audio
-	 * 
-	 * @param {*} muted 
+	 *
+	 * @param {*} muted
 	 */
 	mute(muted) {
 		this.muted = muted;
-		$("audio").prop('muted', muted);
+		$("audio").prop("muted", muted);
 	}
 }

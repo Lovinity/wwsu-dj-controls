@@ -2390,7 +2390,7 @@ Track: <strong>${request.trackname}</strong>`,
 
 	window.ipc.on("peerCallEstablished", (event, arg) => {
 		state.finalizeRemote((success) => {
-			state.unblockBroadcastModel();
+			state.unblockBroadcastModal();
 			if (success) {
 				pendingHostCall = undefined;
 				state.broadcastModal.iziModal("close");
