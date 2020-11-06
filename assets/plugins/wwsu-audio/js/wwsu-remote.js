@@ -52,7 +52,7 @@ class WWSUremoteaudio extends WWSUevents {
 					lastProcess = window.performance.now();
 					if (rtcStats <= 0 && this.peer && this.peer.connections) {
 						rtcStats = 1000;
-						for (let connection in this.peer.connections) {
+						for (let connections in this.peer.connections) {
 							// if (connections.hasOwnProperty(connection))
 							// {
 							if (connections[connection].length > 0) {

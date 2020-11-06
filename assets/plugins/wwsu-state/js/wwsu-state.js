@@ -994,7 +994,7 @@ class WWSUstate extends WWSUevents {
 	 */
 	finalizeRemote(cb) {
 		if (this.pendingRemote) {
-			this.pendingRemote.fn(data, cb);
+			this.pendingRemote.fn(this.pendingRemote.data, cb);
 			this.pendingRemote = undefined;
 		} else {
 			cb(false);
