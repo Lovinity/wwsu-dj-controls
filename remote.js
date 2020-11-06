@@ -50,6 +50,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		if (volume[0] <= 0.001 || volume[1] <= 0.001) {
 			// TODO
 		}
+		console.log(`Peer outgoing volume: ${volume[0]}, ${volume[1]}.`);
 	});
 
 	remote.on("peerReady", "remote", (id) => {
@@ -86,6 +87,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	remote.on("peerIncomingCallVolume", "renderer", (peer, volume) => {
 		// TODO
+		console.log(`Peer ${peer} incoming volume: ${volume[0]}, ${volume[1]}.`);
 	});
 
 	remote.on("peerIncomingCallClosed", "renderer", (peer, volume) => {
