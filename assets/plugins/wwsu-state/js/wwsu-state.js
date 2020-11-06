@@ -948,7 +948,7 @@ class WWSUstate extends WWSUevents {
 									// Then, once an audio call is established, this.goRemote() should be called.
 
 									this.pendingRemote = {
-										fn: this.goRemote,
+										fn: "goRemote",
 										data: {
 											topic: value.topic,
 											showname: `${value.djs} - ${value.name}`,
@@ -994,7 +994,7 @@ class WWSUstate extends WWSUevents {
 	 */
 	finalizeRemote(cb) {
 		if (this.pendingRemote) {
-			this.pendingRemote.fn(this.pendingRemote.data, cb);
+			this[this.pendingRemote.fn](this.pendingRemote.data, cb);
 			this.pendingRemote = undefined;
 		} else {
 			cb(false);

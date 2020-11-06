@@ -27,7 +27,7 @@ class WWSUSilence extends WWSUevents {
 	active(cb) {
 		try {
 			this.requests.host.request(
-				{ dom: dom, method: "post", url: this.endpoints.active, data },
+				{ method: "post", url: this.endpoints.active, data },
 				(response) => {
 					if (!response) {
 						$(document).Toasts("create", {
@@ -68,7 +68,7 @@ class WWSUSilence extends WWSUevents {
 	inactive(cb) {
 		try {
 			this.requests.host.request(
-				{ dom: dom, method: "post", url: this.endpoints.inactive, data },
+				{ method: "post", url: this.endpoints.inactive, data },
 				(response) => {
 					if (!response) {
 						$(document).Toasts("create", {

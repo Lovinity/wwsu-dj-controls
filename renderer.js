@@ -2330,7 +2330,7 @@ Track: <strong>${request.trackname}</strong>`,
 
 		// Reject if the host recipient reports offline.
 		if (!recipient || recipient.status !== 5) {
-			state.unblockBroadcastModel();
+			state.unblockBroadcastModal();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Remote broadcast failed",
@@ -2360,7 +2360,7 @@ Track: <strong>${request.trackname}</strong>`,
 	});
 
 	window.ipc.on("remotePeerUnavailable", (event, arg) => {
-		state.unblockBroadcastModel();
+		state.unblockBroadcastModal();
 		$(document).Toasts("create", {
 			class: "bg-danger",
 			title: "Remote broadcast failed",
@@ -2404,8 +2404,10 @@ Track: <strong>${request.trackname}</strong>`,
 				meta.meta.state !== "sportsremote_on") ||
 			meta.meta.playing
 		) {
+			console.log(`Muting remote audio`);
 			window.ipc.remote.send("remoteMute", [true]);
 		} else {
+			console.log(`Un-muting remote audio`);
 			window.ipc.remote.send("remoteMute", [false]);
 		}
 	}
