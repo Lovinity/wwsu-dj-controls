@@ -169,4 +169,9 @@ window.addEventListener("DOMContentLoaded", () => {
 		console.log(`Received request to answer a call from ${arg[0]}`);
 		remote.answer(arg[0]);
 	});
+
+	window.ipc.on("remoteMute", (event, arg) => {
+		console.log(`Setting incoming call audio mute status to ${arg[0]}`);
+		remote.mute(arg[0]);
+	});
 });

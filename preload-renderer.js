@@ -52,6 +52,11 @@ window.addEventListener("DOMContentLoaded", () => {
 			send: (task, args) => ipcRenderer.send("silence", [task, args]),
 		},
 
+		// remote process
+		remote: {
+			send: (task, args) => ipcRenderer.send("remote", [task, args]),
+		},
+
 		// Process control
 		process: {
 			send: (task, args) => ipcRenderer.send("process", [task, args]),
@@ -87,6 +92,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			ipcRenderer.send("saveSettings", [`recorder.${key}`, value]),
 		silence: (object) => ipcRenderer.send("saveSettings", ["silence", object]),
 		skyway: (object) => ipcRenderer.send("saveSettings", ["skyway", object]),
-		delay: (key, value) => ipcRenderer.send("saveSettings", [`delay.${key}`, value]),
+		delay: (key, value) =>
+			ipcRenderer.send("saveSettings", [`delay.${key}`, value]),
 	});
 });

@@ -32,6 +32,8 @@ class WWSUremoteaudio extends WWSUevents {
 		this.incomingCalls = new Map(); // Map of active or pending incoming calls
 		this.PLC = new Map(); // To keep track of call quality
 
+		this.muted = true; // Should incoming calls be muted? Start off true as a default until this.mute is called.
+
 		// Add VU meter audio worklet
 		this.audioContext.audioWorklet
 			.addModule("assets/plugins/wwsu-audio/js/wwsu-meter.js")
@@ -305,6 +307,7 @@ class WWSUremoteaudio extends WWSUevents {
 
 		// Create the audio element
 		let audio = document.createElement("audio");
+		audio.muted = this.muted;
 		audio.srcObject = stream;
 		audio.id = `audio-${peer}`;
 		document.body.appendChild(audio);
@@ -332,5 +335,15 @@ class WWSUremoteaudio extends WWSUevents {
 		$("audio").each((index, element) => {
 			element.setSinkId(deviceId);
 		});
+	}
+
+	/**
+	 * Change the muted state of all incoming audio
+	 * 
+	 * @param {*} muted 
+	 */
+	mute(muted) {
+		this.muted = muted;
+		$("audio").prop('muted', muted);
 	}
 }

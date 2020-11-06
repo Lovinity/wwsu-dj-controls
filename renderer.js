@@ -228,7 +228,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		false
 	);
 
-
 	navigation.addItem(
 		"#nav-notifications",
 		"#section-notifications",
@@ -1105,7 +1104,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	window.requestAnimationFrame(() => {
 		let delaySettings = window.settings.delay;
 		$("#section-serial-delay-port").val(delaySettings.port);
-	})
+	});
 	$("#section-serial-delay-port").on("change", (e) => {
 		let val = $(e.target).val();
 		window.saveSettings.delay("port", val);
@@ -1276,6 +1275,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			// Determine which operation buttons should be visible depending on system state
 			// Also determine color of status info
 			if (typeof updated.state !== "undefined") {
+				remoteShouldBeMuted();
 				animations.add("meta-state", () => {
 					$(".operation-button").addClass("d-none");
 					$(".card-meta").removeClass("bg-gray-dark");
@@ -1398,6 +1398,10 @@ window.addEventListener("DOMContentLoaded", () => {
 							break;
 					}
 				});
+			}
+
+			if (typeof updated.playing !== "undefined") {
+				remoteShouldBeMuted();
 			}
 
 			// Recorder stuff
@@ -2333,6 +2337,7 @@ Track: <strong>${request.trackname}</strong>`,
 	});
 
 	window.ipc.on("remotePeerReady", (event, arg) => {
+		remoteShouldBeMuted();
 		recipients.registerPeer(arg[0]);
 		if (pendingHostCall) {
 			console.log(
@@ -2380,4 +2385,12 @@ Track: <strong>${request.trackname}</strong>`,
 			}
 		});
 	});
+
+	function remoteShouldBeMuted() {
+		if ((meta.meta.state !== "remote_on" && meta.meta.state !== "sportsremote_on") || meta.meta.playing) {
+			window.ipc.remote.send("remoteMute", [true]);
+		} else {
+			window.ipc.remote.send("remoteMute", [false]);
+		}
+	}
 });
