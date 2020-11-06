@@ -2200,14 +2200,20 @@ Track: <strong>${request.trackname}</strong>`,
 		messages.updateRecipientsTable();
 
 		// If this host wants to make a call, and the host we want to call is online and has a peer, start a call.
+		console.log(`Recipients changed`);
 		if (
 			meta.meta.hostCalling !== null &&
-			hosts.client.ID === meta.meta.hostCalling
+			hosts.client.ID === meta.meta.hostCalling &&
+			(meta.meta.state.startsWith("remote_") ||
+				meta.meta.state.startsWith("sportsremote_") ||
+				meta.meta.state === "automation_remote" ||
+				meta.meta.state === "automation_sportsremote" ||
+				pendingHostCall)
 		) {
 			let called = db.get().find((rec) => rec.hostID === meta.meta.hostCalled);
 			if (called && called.peer && called.status === 5) {
 				console.log(
-					`Host ${rec.hostID} is ready to take the call. Asking remote process to start audio call if not already in one.`
+					`Host ${called.hostID} is ready to take the call. Asking remote process to start audio call if not already in one.`
 				);
 				window.ipc.remote.send("remoteStartCall", [called.peer]);
 			}
@@ -2339,6 +2345,7 @@ Track: <strong>${request.trackname}</strong>`,
 	window.ipc.on("remotePeerReady", (event, arg) => {
 		remoteShouldBeMuted();
 		recipients.registerPeer(arg[0]);
+		console.dir(pendingHostCall);
 		if (pendingHostCall) {
 			console.log(
 				`Pending remote call to ${pendingHostCall}. Informing the API.`
@@ -2387,7 +2394,11 @@ Track: <strong>${request.trackname}</strong>`,
 	});
 
 	function remoteShouldBeMuted() {
-		if ((meta.meta.state !== "remote_on" && meta.meta.state !== "sportsremote_on") || meta.meta.playing) {
+		if (
+			(meta.meta.state !== "remote_on" &&
+				meta.meta.state !== "sportsremote_on") ||
+			meta.meta.playing
+		) {
 			window.ipc.remote.send("remoteMute", [true]);
 		} else {
 			window.ipc.remote.send("remoteMute", [false]);
