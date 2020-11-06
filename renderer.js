@@ -2201,6 +2201,10 @@ Track: <strong>${request.trackname}</strong>`,
 
 		// If this host wants to make a call, and the host we want to call is online and has a peer, start a call.
 		console.log(`Recipients changed`);
+		console.log(meta.meta.hostCalling);
+		console.log(meta.meta.hostCalled);
+		console.log(meta.meta.state);
+		console.log(pendingHostCall);
 		if (
 			meta.meta.hostCalling !== null &&
 			hosts.client.ID === meta.meta.hostCalling &&
@@ -2211,6 +2215,7 @@ Track: <strong>${request.trackname}</strong>`,
 				pendingHostCall)
 		) {
 			let called = db.get().find((rec) => rec.hostID === meta.meta.hostCalled);
+			console.dir(called);
 			if (called && called.peer && called.status === 5) {
 				console.log(
 					`Host ${called.hostID} is ready to take the call. Asking remote process to start audio call if not already in one.`
@@ -2351,7 +2356,6 @@ Track: <strong>${request.trackname}</strong>`,
 				`Pending remote call to ${pendingHostCall}. Informing the API.`
 			);
 			remote.request({ ID: pendingHostCall });
-			pendingHostCall = undefined;
 		}
 	});
 
@@ -2388,6 +2392,7 @@ Track: <strong>${request.trackname}</strong>`,
 		state.finalizeRemote((success) => {
 			state.unblockBroadcastModel();
 			if (success) {
+				pendingHostCall = undefined;
 				state.broadcastModal.iziModal("close");
 			}
 		});

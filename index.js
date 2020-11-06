@@ -571,6 +571,14 @@ ipcMain.on("audio", (event, arg) => {
 	}
 });
 
+ipcMain.on("remote", (event, arg) => {
+	try {
+		remoteWindow.webContents.send(arg[0], arg[1]);
+	} catch (e) {
+		console.error(e);
+	}
+});
+
 // Messages to be sent to the recorder process
 ipcMain.on("recorder", (event, arg) => {
 	try {
