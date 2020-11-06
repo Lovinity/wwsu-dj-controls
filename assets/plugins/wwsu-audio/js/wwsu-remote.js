@@ -186,7 +186,7 @@ class WWSUremoteaudio extends WWSUevents {
 	call(peer) {
 		// Do not continue if already in a call with this peer
 		let incomingCall = this.incomingCalls.get(peer);
-		if (incomingCall || this.outgoingCall.remoteId === peer) return;
+		if (incomingCall || (this.outgoingCall && this.outgoingCall.remoteId === peer)) return;
 
 		this.calling = peer;
 
