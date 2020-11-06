@@ -900,8 +900,9 @@ window.addEventListener("DOMContentLoaded", () => {
 						$(`#audio-remote-${index}`).on("change", (e) => {
 							let deviceId = $(`#audio-remote-${index}`).data("id");
 							console.log(`Clicked remote ${index}`);
-							window.ipc.main.send("audioRemoteSettings", [
+							window.ipc.main.send("audioRemoteSetting", [
 								deviceId,
+								"audioinput",
 								e.target.checked,
 							]);
 						});
