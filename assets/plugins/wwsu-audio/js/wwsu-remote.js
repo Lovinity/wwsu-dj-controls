@@ -200,7 +200,7 @@ class WWSUremoteaudio extends WWSUevents {
 		} catch (ee) {}
 
 		// Initialize the call
-		this.outgoingCall = peer.call(this.calling, this.destination.stream, {
+		this.outgoingCall = this.peer.call(this.calling, this.destination.stream, {
 			audioBandwidth: 128,
 		});
 
@@ -212,7 +212,7 @@ class WWSUremoteaudio extends WWSUevents {
 		}, 1000);
 
 		// When the call is closed, emit peerCallClosed event
-		outgoingCall.on(`close`, () => {
+		this.outgoingCall.on(`close`, () => {
 			console.log(`CALL CLOSED.`);
 			clearInterval(this.outgoingCallTimer);
 			this.outgoingCall = undefined;
