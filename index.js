@@ -96,7 +96,7 @@ const enforceCORS = () => {
 	// On requests to skyway.js, we must use the WWSU server as the Origin so skyway can verify us.
 	// For all other requests, we can use the default file origin (which we should, especially for the WWSU server)
 	session.defaultSession.webRequest.onBeforeSendHeaders(
-		{ urls: [`*.webrtc.ecl.ntt.com/*`] },
+		{ urls: [`https://*.webrtc.ecl.ntt.com/*`] },
 		(details, callback) => {
 			callback({
 				requestHeaders: {
