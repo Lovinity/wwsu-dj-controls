@@ -961,19 +961,15 @@ window.addEventListener("DOMContentLoaded", () => {
 					window.requestAnimationFrame(() => {
 						$(`#audio-volume-${index}`).bootstrapSlider({
 							min: 0,
-							max: 2,
+							max: 1,
 							step: 0.01,
-							ticks: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
+							ticks: [0, 0.25, 0.5, 0.75, 1],
 							ticks_positions: [
 								0,
-								100 * (1 / 8),
-								100 * (2 / 8),
-								100 * (3 / 8),
-								100 * (4 / 8),
-								100 * (5 / 8),
-								100 * (6 / 8),
-								100 * (7 / 8),
-								100,
+								100 * (1 / 4),
+								100 * (2 / 4),
+								100 * (3 / 4),
+								100 * (4 / 4),
 							],
 							ticks_labels: [
 								"OFF",
@@ -981,10 +977,6 @@ window.addEventListener("DOMContentLoaded", () => {
 								"50%",
 								"75%",
 								"100%",
-								"125%",
-								"150%",
-								"175%",
-								"200%",
 							],
 							ticks_snap_bounds: 0.025,
 							value: device.settings.volume,
@@ -1281,6 +1273,12 @@ window.addEventListener("DOMContentLoaded", () => {
 			// Also determine color of status info
 			if (typeof updated.state !== "undefined") {
 				remoteShouldBeMuted();
+				if (
+					updated.state === "remote_on" ||
+					updated.state === "sportsremote_on"
+				) {
+					window.ipc.remote.send("restartSilenceTimer", []);
+				}
 				animations.add("meta-state", () => {
 					$(".operation-button").addClass("d-none");
 					$(".card-meta").removeClass("bg-gray-dark");
@@ -1392,7 +1390,6 @@ window.addEventListener("DOMContentLoaded", () => {
 							$(".operation-top-add").removeClass("d-none");
 							$(".operation-log").removeClass("d-none");
 							$(".operation-dump").removeClass("d-none");
-							window.ipc.remote.send("restartSilenceTimer", []);
 							break;
 						case "sportsremote_on":
 							$(".operation-automation").removeClass("d-none");
@@ -1401,7 +1398,6 @@ window.addEventListener("DOMContentLoaded", () => {
 							$(".operation-extended-break").removeClass("d-none");
 							$(".operation-liner").removeClass("d-none");
 							$(".operation-dump").removeClass("d-none");
-							window.ipc.remote.send("restartSilenceTimer", []);
 							break;
 					}
 				});

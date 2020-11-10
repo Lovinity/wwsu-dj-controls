@@ -2,7 +2,7 @@
 
 window.addEventListener("DOMContentLoaded", () => {
 	// Initialize the audio manager with compression
-	var audioManager = new WWSUAudioManager(true);
+	var audioManager = new WWSUAudioManager("assets/plugins/wwsu-audio/js/wwsu-limiter.js");
 
 	let audioSettings = window.settings.audio();
 
@@ -126,7 +126,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	remote.on("peerPLC", "renderer", (connection, value) => {
 		// TODO
-		console.log(`PeerPLC ${connection}: ${value}`)
+		console.log(`PeerPLC ${connection}: ${value}`);
 	});
 
 	/*
@@ -136,6 +136,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	window.ipc.on("audioChangeVolume", (event, arg) => {
 		console.log(`remote: Changing volume for device ${arg[0]} to ${arg[2]}`);
 		audioManager.changeVolume(arg[0], arg[1], arg[2]);
+		if (arg[1] === "audiooutput") remote.changeVolume(arg[2]);
 		window.ipc.renderer.send("console", [
 			"log",
 			`remote: Changed audio volume for ${arg[0]} to ${arg[2]}`,
