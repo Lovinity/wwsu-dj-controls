@@ -243,34 +243,43 @@ class WWSUstate extends WWSUevents {
 	 */
 	break(data, cb) {
 		try {
-			this.hosts.promptIfNotHost(
-				`go to ${data && data.halftime ? `extended ` : ``}break`,
-				() => {
-					this.requests.host.request(
-						{ method: "post", url: this.endpoints.break, data },
-						(response) => {
-							if (response !== "OK") {
-								$(document).Toasts("create", {
-									class: "bg-danger",
-									title: "Error going to break",
-									body:
-										"There was an error going to break. Your DJ Controls might not allow you to go to break when you are not on the air. If this is not the case, please contact the engineer.",
-									autoHide: true,
-									delay: 15000,
-									icon: "fas fa-skull-crossbones fa-lg",
-								});
-								if (typeof cb === "function") {
-									cb(false);
-								}
-							} else {
-								if (typeof cb === "function") {
-									cb(true);
-								}
+			let apiRequest = () => {
+				this.requests.host.request(
+					{ method: "post", url: this.endpoints.break, data },
+					(response) => {
+						if (response !== "OK") {
+							$(document).Toasts("create", {
+								class: "bg-danger",
+								title: "Error going to break",
+								body:
+									"There was an error going to break. Your DJ Controls might not allow you to go to break when you are not on the air. If this is not the case, please contact the engineer.",
+								autoHide: true,
+								delay: 15000,
+								icon: "fas fa-skull-crossbones fa-lg",
+							});
+							if (typeof cb === "function") {
+								cb(false);
+							}
+						} else {
+							if (typeof cb === "function") {
+								cb(true);
 							}
 						}
-					);
-				}
-			);
+					}
+				);
+			};
+
+			// Skip host prompting if going to break because of a problem
+			if (data.problem) {
+				apiRequest();
+			} else {
+				this.hosts.promptIfNotHost(
+					`go to ${data && data.halftime ? `extended ` : ``}break`,
+					() => {
+						apiRequest();
+					}
+				);
+			}
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",

@@ -2427,8 +2427,13 @@ Track: <strong>${request.trackname}</strong>`,
 	});
 
 	window.ipc.on("peerOutgoingSilence", (event, arg) => {
-		if (arg[0] && (meta.meta.state === "remote_on" || meta.meta.state === "sportsremote_on")) {
-			state.break({problem: true});
+		if (
+			arg[0] &&
+			(meta.meta.state === "remote_on" ||
+				meta.meta.state === "sportsremote_on") &&
+			hosts.client.ID === meta.meta.hostCalling
+		) {
+			state.break({ problem: true });
 			window.ipc.main.send("makeNotification", [
 				{
 					title: "Silence on Outgoing Audio",
