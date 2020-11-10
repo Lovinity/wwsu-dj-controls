@@ -14,17 +14,15 @@ class WWSUremoteaudio extends WWSUevents {
 	 * @param {AudioContext} audioContext The audioContext to use (should use the one from wwsu-audio if possible)
 	 * @param {MediaStreamAudioDestinationNode} destination The destination node to use (should use the audioContext one)
 	 * @param {string} key The skyway.js API key
-	 * @param {string} device The output deviceId to use for playing incoming calls (you should use changeDevice to modify this);
-	 * @param {number} audioVolume The initial audio volume (0.0 to 1.0) for playing remote audio
+	 * @param {object} device The settings for the output device
 	 */
-	constructor(audioContext, destination, key, device, audioVolume) {
+	constructor(audioContext, destination, key, device) {
 		super();
 
 		this.audioContext = audioContext;
 		this.destination = destination;
 		this.key = key;
 		this.device = device;
-		this.audioVolume = audioVolume;
 
 		// Peer variables
 		this.peer; // Our skyway.js peer
@@ -321,10 +319,10 @@ class WWSUremoteaudio extends WWSUevents {
 		audio.muted = this.muted;
 		audio.srcObject = stream;
 		audio.id = `audio-${peer}`;
-		audio.volume = this.audioVolume;
+		audio.volume = this.device.volume;
 		document.body.appendChild(audio);
 		audio.load();
-		audio.setSinkId(this.device);
+		audio.setSinkId(this.device.deviceId);
 		audio.oncanplay = function (e) {
 			audio.play();
 		};
@@ -343,7 +341,7 @@ class WWSUremoteaudio extends WWSUevents {
 	 * @param {string} deviceId ID of the output device to use
 	 */
 	changeOutputDevice(deviceId) {
-		this.device = deviceId;
+		this.device.deviceId = deviceId;
 		$("audio").each((index, element) => {
 			element.setSinkId(deviceId);
 		});
@@ -355,7 +353,7 @@ class WWSUremoteaudio extends WWSUevents {
 	 * @param {number} volume The gain float
 	 */
 	changeVolume(volume) {
-		this.audioVolume = volume;
+		this.device.volume = volume;
 		$("audio").each((index, element) => {
 			element.volume = volume;
 		});
