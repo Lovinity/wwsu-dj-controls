@@ -47,8 +47,18 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	remote.on("audioVolume", "remote", (volume) => {
 		// If silence detected, start delay timer, else remove it
-		if (volume[0] <= 0.001 || volume[1] <= 0.001) {
-			// TODO
+		// Do not consider silence on the right channel unless we are actually reporting right channel volume. Always report silence on the left channel as it is the mono track.
+		if (volume[0] <= 0.001 || (volume[1] > -1 && volume[1] <= 0.001)) {
+			if (!timer) {
+				timer = setTimeout(() => {
+					window.ipc.renderer.send("peerOutgoingSilence", [true]);
+					timer = undefined;
+				}, 15000);
+			}
+		} else if (timer) {
+			clearTimeout(timer);
+			timer = undefined;
+			window.ipc.renderer.send("peerOutgoingSilence", [false]);
 		}
 		console.log(`Peer outgoing volume: ${volume[0]}, ${volume[1]}.`);
 	});
@@ -85,6 +95,14 @@ window.addEventListener("DOMContentLoaded", () => {
 		window.ipc.renderer.send("peerCallEstablished", [id]);
 	});
 
+	remote.on("peerCallAnswered", "remote", (id) => {
+		window.ipc.renderer.send("console", [
+			"log",
+			`Remote: Call with ${id} was answered.`,
+		]);
+		window.ipc.renderer.send("peerCallAnswered", [id]);
+	});
+
 	remote.on("peerIncomingCallVolume", "renderer", (peer, volume) => {
 		// TODO
 		console.log(`Peer ${peer} incoming volume: ${volume[0]}, ${volume[1]}.`);
@@ -106,8 +124,9 @@ window.addEventListener("DOMContentLoaded", () => {
 		// TODO
 	});
 
-	remote.on("peerPLC", "renderer", (peer, volume) => {
+	remote.on("peerPLC", "renderer", (connection, value) => {
 		// TODO
+		console.log(`PeerPLC ${connection}: ${value}`)
 	});
 
 	/*
@@ -175,5 +194,10 @@ window.addEventListener("DOMContentLoaded", () => {
 	window.ipc.on("remoteMute", (event, arg) => {
 		console.log(`Setting incoming call audio mute status to ${arg[0]}`);
 		remote.mute(arg[0]);
+	});
+
+	window.ipc.on("restartSilenceTimer", (event, arg) => {
+		clearTimeout(timer);
+		timer = undefined;
 	});
 });

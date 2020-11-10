@@ -23,17 +23,18 @@ class WWSUAudioManager extends WWSUevents {
 
 			// Set compressor settings
 			this.compressor.threshold.setValueAtTime(
-				-18.0,
+				-30.0,
 				this.audioContext.currentTime
 			);
-			this.compressor.knee.setValueAtTime(18.0, this.audioContext.currentTime);
+			this.compressor.knee.setValueAtTime(40.0, this.audioContext.currentTime);
 			this.compressor.ratio.setValueAtTime(4.0, this.audioContext.currentTime);
+			this.compressor.reduction.setValueAtTime(-10, this.audioContext.currentTime);
 			this.compressor.attack.setValueAtTime(
-				0.01,
+				0,
 				this.audioContext.currentTime
 			);
 			this.compressor.release.setValueAtTime(
-				0.05,
+				0.25,
 				this.audioContext.currentTime
 			);
 

@@ -43,7 +43,7 @@ class WWSUremoteaudio extends WWSUevents {
 
 				this.worklet = new AudioWorkletNode(this.audioContext, "wwsu-meter");
 				this.worklet.port.onmessage = (event) => {
-					let _volume = [0, 0];
+					let _volume = [-1, -1];
 					if (event.data.volume) _volume = event.data.volume;
 					this.emitEvent("audioVolume", [_volume]);
 
@@ -81,7 +81,7 @@ class WWSUremoteaudio extends WWSUevents {
 																// Choppiness was detected in the last second. Emit event peerPLC.
 																if (value > prevPLC) {
 																	this.emitEvent("peerPLC", [
-																		connection,
+																		`${connection}-${index}`,
 																		value - prevPLC,
 																	]);
 																}
@@ -277,7 +277,7 @@ class WWSUremoteaudio extends WWSUevents {
 					"wwsu-meter"
 				);
 				incomingCall.worklet.port.onmessage = (event) => {
-					let _volume = [0, 0];
+					let _volume = [-1, -1];
 					if (event.data.volume) _volume = event.data.volume;
 					this.emitEvent("peerIncomingCallVolume", [peer, _volume]);
 				};
@@ -286,7 +286,10 @@ class WWSUremoteaudio extends WWSUevents {
 			});
 
 		// When a stream is received from the incoming call, connect it
-		incomingCall.on("stream", (stream) => this.onReceiveStream(peer, stream));
+		incomingCall.on("stream", (stream) => {
+			this.onReceiveStream(peer, stream);
+			this.emitEvent("peerCallAnswered", [peer]);
+		});
 
 		// When the incoming call is closed, clean up and emit the peerIncomingCallClosed event
 		incomingCall.on(`close`, () => {

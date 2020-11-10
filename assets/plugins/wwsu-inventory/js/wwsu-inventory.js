@@ -84,7 +84,8 @@ class WWSUinventory extends WWSUdb {
 			util.waitForElement(`#section-inventory-table`, () => {
 				// Generate table
 				this.table = $(`#section-inventory-table`).DataTable({
-					paging: false,
+					paging: true,
+					"pageLength": 50,
 					data: [],
 					columns: [
 						{ title: "ID" },

@@ -12,7 +12,7 @@ registerProcessor(
 
 		constructor() {
 			super();
-			this._volume = [0, 0];
+			this._volume = [-1, -1];
 			this._updateIntervalInMS = 250;
 			this._nextUpdateFrame = this._updateIntervalInMS;
 			this.port.onmessage = (event) => {

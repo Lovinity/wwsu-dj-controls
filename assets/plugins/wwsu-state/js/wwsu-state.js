@@ -960,7 +960,7 @@ class WWSUstate extends WWSUevents {
 									$(this.broadcastModal.body).block({
 										message: `<h1>Starting Remote Broadcast...</h1>`,
 										css: { border: "3px solid #a00" },
-										timeout: 15000,
+										timeout: 30000,
 										onBlock: () => {
 											// You should listen for this event and start the process of remote audio calling when called.
 											this.emitEvent("startRemote", [value.hostCall]);

@@ -1075,14 +1075,18 @@ window.addEventListener("DOMContentLoaded", () => {
 				$(".notifications-remote").removeClass("badge-success");
 				$(".notifications-remote").removeClass("badge-warning");
 				$(".notifications-remote").removeClass("badge-danger");
+				$(".notifications-remote").removeClass("badge-info");
+				$(".notifications-remote").removeClass("badge-primary");
 				$(".notifications-remote").addClass("badge-secondary");
 
-				// Re-open the process if we are supposed to be in a call
+				// Re-open the process after a 5-second delay if we are supposed to be in a call
 				if (
 					meta.meta.hostCalled === hosts.client.ID ||
 					meta.meta.hostCalling === hosts.client.ID
 				) {
-					window.ipc.process.send("remote", ["open"]);
+					setTimeout(() => {
+						window.ipc.process.send("remote", ["open"]);
+					}, 5000);
 				}
 				break;
 		}
@@ -1388,6 +1392,7 @@ window.addEventListener("DOMContentLoaded", () => {
 							$(".operation-top-add").removeClass("d-none");
 							$(".operation-log").removeClass("d-none");
 							$(".operation-dump").removeClass("d-none");
+							window.ipc.remote.send("restartSilenceTimer", []);
 							break;
 						case "sportsremote_on":
 							$(".operation-automation").removeClass("d-none");
@@ -1396,6 +1401,7 @@ window.addEventListener("DOMContentLoaded", () => {
 							$(".operation-extended-break").removeClass("d-none");
 							$(".operation-liner").removeClass("d-none");
 							$(".operation-dump").removeClass("d-none");
+							window.ipc.remote.send("restartSilenceTimer", []);
 							break;
 					}
 				});
@@ -2349,6 +2355,12 @@ Track: <strong>${request.trackname}</strong>`,
 	});
 
 	window.ipc.on("remotePeerReady", (event, arg) => {
+		$(".notifications-remote").removeClass("badge-success");
+		$(".notifications-remote").removeClass("badge-warning");
+		$(".notifications-remote").removeClass("badge-danger");
+		$(".notifications-remote").removeClass("badge-info");
+		$(".notifications-remote").removeClass("badge-secondary");
+		$(".notifications-remote").addClass("badge-primary");
 		remoteShouldBeMuted();
 		recipients.registerPeer(arg[0]);
 		console.dir(pendingHostCall);
@@ -2390,6 +2402,12 @@ Track: <strong>${request.trackname}</strong>`,
 	});
 
 	window.ipc.on("peerCallEstablished", (event, arg) => {
+		$(".notifications-remote").removeClass("badge-primary");
+		$(".notifications-remote").removeClass("badge-warning");
+		$(".notifications-remote").removeClass("badge-danger");
+		$(".notifications-remote").removeClass("badge-info");
+		$(".notifications-remote").removeClass("badge-secondary");
+		$(".notifications-remote").addClass("badge-success");
 		state.finalizeRemote((success) => {
 			state.unblockBroadcastModal();
 			if (success) {
@@ -2397,6 +2415,30 @@ Track: <strong>${request.trackname}</strong>`,
 				state.broadcastModal.iziModal("close");
 			}
 		});
+	});
+
+	window.ipc.on("peerCallAnswered", (event, arg) => {
+		$(".notifications-remote").removeClass("badge-primary");
+		$(".notifications-remote").removeClass("badge-warning");
+		$(".notifications-remote").removeClass("badge-danger");
+		$(".notifications-remote").removeClass("badge-success");
+		$(".notifications-remote").removeClass("badge-secondary");
+		$(".notifications-remote").addClass("badge-info");
+	});
+
+	window.ipc.on("peerOutgoingSilence", (event, arg) => {
+		if (arg[0] && (meta.meta.state === "remote_on" || meta.meta.state === "sportsremote_on")) {
+			state.break({problem: true});
+			window.ipc.main.send("makeNotification", [
+				{
+					title: "Silence on Outgoing Audio",
+					bg: "danger",
+					header: "Silence on outgoing audio!",
+					flash: true,
+					body: `<p>Silence was detected for 15 seconds on outgoing audio. Remote broadcast has been sent to break. Please check your audio devices and DJ Controls' Audio settings.</p>`,
+				},
+			]);
+		}
 	});
 
 	function remoteShouldBeMuted() {
