@@ -15,6 +15,7 @@
 ### Fixed
 
 - Clockwheel tooltips issue where clock div was preventing tooltips on certain areas of the clockwheel doughnut.
+- Added manually triggering window.resize when switching between menu pages as layout sometimes overlaps each other
 
 ### Added
 
