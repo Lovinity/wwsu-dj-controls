@@ -45,7 +45,7 @@ registerProcessor(
 						sum += samples[i] * samples[i];
 
 					// Calculate the RMS level and update the volume.
-					rms = Math.sqrt(sum / samples.length);
+					rms = samples.length > 0 ? Math.sqrt(sum / samples.length) : 0;
 					this._volume[inp] = Math.max(
 						rms,
 						this._volume[inp] * SMOOTHING_FACTOR
