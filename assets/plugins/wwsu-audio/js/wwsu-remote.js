@@ -13,15 +13,13 @@ class WWSUremoteaudio extends WWSUevents {
 	 *
 	 * @param {AudioContext} audioContext The audioContext to use (should use the one from wwsu-audio if possible)
 	 * @param {MediaStreamAudioDestinationNode} destination The destination node to use (should use the audioContext one)
-	 * @param {string} key The skyway.js API key
 	 * @param {object} device The settings for the output device
 	 */
-	constructor(audioContext, destination, key, device) {
+	constructor(audioContext, destination, device) {
 		super();
 
 		this.audioContext = audioContext;
 		this.destination = destination;
-		this.key = key;
 		this.device = device;
 
 		// Peer variables
@@ -112,9 +110,13 @@ class WWSUremoteaudio extends WWSUevents {
 	}
 
 	/**
-	 * Initialize or restart skyway.js peer.
+	 * Initialize the skyway.js peer.
+	 * 
+	 * @param {string} peerId The Peer ID to use. Must be what was authenticated via the credential parameter.
+	 * @param {string} apiKey The API Key for the Skyway.js app
+	 * @param {string} credential The authenticated credential string to ensure authorized use of this Skyway.js
 	 */
-	init() {
+	init(peerId, apiKey, credential) {
 		try {
 			this.peer.destroy();
 			this.peer = undefined;
@@ -123,8 +125,9 @@ class WWSUremoteaudio extends WWSUevents {
 		}
 
 		// Inisialize Skyway.js peer
-		this.peer = new Peer({
-			key: this.key,
+		this.peer = new Peer(peerId, {
+			key: apiKey,
+			credential: credential,
 			debug: 3,
 		});
 
@@ -146,18 +149,18 @@ class WWSUremoteaudio extends WWSUevents {
 					this.calling = undefined;
 					// TODO
 				} catch (ee) {}
+			} else {
+				this.emitEvent("peerError", [err.type]);
 			}
 		});
 
-		// When the peer gets disconnected, wait 5 seconds before emitting either peerDisconnected or peerDestroyed (to prevent skyway.js flooding)
+		// When the peer gets disconnected, emit either peerDisconnected or peerDestroyed
 		this.peer.on(`disconnected`, () => {
-			setTimeout(() => {
-				if (this.peer && !this.peer.destroyed) {
-					this.emitEvent("peerDisconnected", []);
-				} else {
-					this.emitEvent("peerDestroyed", []);
-				}
-			}, 5000);
+			if (this.peer && !this.peer.destroyed) {
+				this.emitEvent("peerDisconnected", []);
+			} else {
+				this.emitEvent("peerDestroyed", []);
+			}
 		});
 
 		// When the peer is closed, emit peerDestroyed after 5 seconds

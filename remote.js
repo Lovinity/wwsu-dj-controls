@@ -1,20 +1,21 @@
 "use strict";
 
+// TODO: Incoming audio stream is still coming in as mono (2 channels, but equal) when it should be stereo.
+
 window.addEventListener("DOMContentLoaded", () => {
 	// Initialize the audio manager with compression
-	var audioManager = new WWSUAudioManager("assets/plugins/wwsu-audio/js/wwsu-limiter.js");
+	var audioManager = new WWSUAudioManager(
+		"assets/plugins/wwsu-audio/js/wwsu-limiter.js"
+	);
 
 	let audioSettings = window.settings.audio();
 
-	// Initialize remote audio
+	// Remote audio is initialized after remoteReady is emitted by this process to renderer, renderer queries for a credential, and renderer passes the credential here via remotePeerCredential.
 	var remote = new WWSUremoteaudio(
 		audioManager.audioContext,
 		audioManager.destination,
-		window.settings.skyway().api,
 		audioSettings ? audioSettings.find((dev) => dev.output) : undefined
 	);
-
-	remote.init();
 
 	// silence states
 	var timer;
@@ -44,6 +45,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	window.ipc.renderer.send("console", ["log", "remote: Process is ready"]);
 	window.ipc.renderer.send("remoteReady", []);
+
+	/*
+		REMOTE TASKS
+	*/
 
 	remote.on("audioVolume", "remote", (volume) => {
 		// If silence detected, start delay timer, else remove it
@@ -127,6 +132,15 @@ window.addEventListener("DOMContentLoaded", () => {
 	remote.on("peerPLC", "renderer", (connection, value) => {
 		// TODO
 		console.log(`PeerPLC ${connection}: ${value}`);
+	});
+
+	// Init Skyway.js with credentials
+	window.ipc.on("remotePeerCredential", (event, arg) => {
+		let peerId = arg[0];
+		let apiKey = arg[1];
+		let credential = arg[2];
+
+		remote.init(peerId, apiKey, credential);
 	});
 
 	/*

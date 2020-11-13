@@ -107,7 +107,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	var inventory = new WWSUinventory(socket, meta, hostReq, directorReq);
 	var version = new WWSUversion(socket, `wwsu-dj-controls`, hostReq);
 	var silence = new WWSUSilence(hostReq);
-	var remote = new WWSUremote(socket, hostReq);
+	var remote = new WWSUremote(socket, hostReq, recipients);
 
 	// Sound alerts
 	var sounds = {
@@ -971,13 +971,7 @@ window.addEventListener("DOMContentLoaded", () => {
 								100 * (3 / 4),
 								100 * (4 / 4),
 							],
-							ticks_labels: [
-								"OFF",
-								"25%",
-								"50%",
-								"75%",
-								"100%",
-							],
+							ticks_labels: ["OFF", "25%", "50%", "75%", "100%"],
 							ticks_snap_bounds: 0.025,
 							value: device.settings.volume,
 							orientation: "horizontal",
@@ -2348,6 +2342,27 @@ Track: <strong>${request.trackname}</strong>`,
 		// Close and re-open the remote process
 		window.ipc.process.send("remote", ["close"]);
 		window.ipc.process.send("remote", ["open"]);
+	});
+
+	window.ipc.on("remoteReady", (event, arg) => {
+		console.log(`Remote process ready. Grabbing a Skyway.js credential.`);
+		remote.credentialComputer({}, (credential) => {
+			console.dir(credential);
+			if (!credential) {
+				pendingHostCall = undefined;
+				state.unblockBroadcastModal();
+				window.ipc.process.send("remote", ["close"]);
+			} else {
+				console.log(
+					`Credential received. Sending to remote to establish peer connection.`
+				);
+				window.ipc.remote.send("remotePeerCredential", [
+					credential.peerId,
+					credential.apiKey,
+					credential.authToken,
+				]);
+			}
+		});
 	});
 
 	window.ipc.on("remotePeerReady", (event, arg) => {
