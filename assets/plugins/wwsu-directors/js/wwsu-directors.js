@@ -123,7 +123,7 @@ class WWSUdirectors extends WWSUdb {
 	 */
 	editDirector(data, cb) {
 		try {
-			this.requests[data.ID === 0 ? "masterDirector" : "adminDirector"].request(
+			this.requests[data.ID === 1 ? "masterDirector" : "adminDirector"].request(
 				{
 					dom: `#modal-${this.newDirectorModal.id}`,
 					method: "post",
@@ -264,7 +264,7 @@ class WWSUdirectors extends WWSUdb {
 								(director) =>
 									director.ID === parseInt($(e.currentTarget).data("id"))
 							);
-							if (director.ID === 0) {
+							if (director.ID === 1) {
 								util.confirmDialog(
 									`<p>Are you sure you want to edit the <strong>Master Director</strong>?</p>
 									<p>Please be aware that <strong>only the master director may edit the master director</strong>.</p>
@@ -359,7 +359,7 @@ class WWSUdirectors extends WWSUdb {
 						}" title="Edit director"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-director-delete" data-id="${
 							director.ID
 						}" ${
-							director.ID === 0
+							director.ID === 1
 								? `title="Cannot remove the master director" disabled`
 								: `title="Remove Director"`
 						}><i class="fas fa-trash"></i></button></div>`,
@@ -403,7 +403,7 @@ class WWSUdirectors extends WWSUdb {
 					admin: {
 						type: "boolean",
 						title: "Is Admin Director?",
-						readonly: data && data.ID === 0,
+						readonly: data && data.ID === 1,
 					},
 					assistant: {
 						type: "boolean",

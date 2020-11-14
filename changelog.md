@@ -11,6 +11,7 @@
 - Audio system split into multiple processes. Now supports multiple devices for recording / broadcasting / etc and volume adjustments.
 - Due to no support for Javascript stereo MP3 recording, recorder will now save in webm Opus format.
 - Skyway.js now utilizes authorization (credential token) via WWSU API to help prevent unauthorized use of the Skyway.js app.
+- Master director now uses ID 1 because server spits out a bunch of logs when using ID of 0
 
 ### Fixed
 
