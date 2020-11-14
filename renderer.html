@@ -1229,47 +1229,49 @@
 						<!-- /.container-fluid -->
 					</div>
 
-					<div class="card card-success card-outline p-1 m-3">
-						<div class="card-header">
-							<h3 class="card-title chat-active-recipient">
-								(Select a recipient)
-							</h3>
-							<div class="card-tools">
-								<button
-									type="button"
-									class="btn btn-outline-primary chat-recipients"
+					<div class="content">
+						<div class="card card-success card-outline p-1 m-3">
+							<div class="card-header">
+								<h3 class="card-title chat-active-recipient">
+									(Select a recipient)
+								</h3>
+								<div class="card-tools">
+									<button
+										type="button"
+										class="btn btn-outline-primary chat-recipients"
+									>
+										Recipients
+									</button>
+								</div>
+							</div>
+							<div class="card-body">
+								<div class="callout callout-info chat-status">
+									<h5>Select a Recipient</h5>
+									<p>Please select a recipient to send a message.</p>
+								</div>
+								<p>
+									Unread messages are in red. Click a message to mark as read.
+									Sending a message marks all messages as read. Click the trash
+									can to delete a message from everyone's screen.
+								</p>
+								<div
+									class="chat-messages"
+									style="height: 50vh; overflow-x: auto;"
 								>
-									Recipients
+									<!--Chat messages go here-->
+								</div>
+								<div class="chat-form">
+									<!--Chat Alpaca form goes here-->
+								</div>
+							</div>
+							<div class="card-footer">
+								<button type="button" class="btn btn-warning chat-mute d-none">
+									Mute
+								</button>
+								<button type="button" class="btn btn-danger chat-ban d-none">
+									Ban
 								</button>
 							</div>
-						</div>
-						<div class="card-body">
-							<div class="callout callout-info chat-status">
-								<h5>Select a Recipient</h5>
-								<p>Please select a recipient to send a message.</p>
-							</div>
-							<p>
-								Unread messages are in red. Click a message to mark as read.
-								Sending a message marks all messages as read. Click the trash
-								can to delete a message from everyone's screen.
-							</p>
-							<div
-								class="chat-messages"
-								style="height: 50vh; overflow-x: auto;"
-							>
-								<!--Chat messages go here-->
-							</div>
-							<div class="chat-form">
-								<!--Chat Alpaca form goes here-->
-							</div>
-						</div>
-						<div class="card-footer">
-							<button type="button" class="btn btn-warning chat-mute d-none">
-								Mute
-							</button>
-							<button type="button" class="btn btn-danger chat-ban d-none">
-								Ban
-							</button>
 						</div>
 					</div>
 				</div>

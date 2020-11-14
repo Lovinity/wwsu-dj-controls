@@ -30,6 +30,7 @@
 ### Updated
 
 - Packages
+- Electron to the 10.x.x branch (node-serialport can now compile with electron-builder install-app-deps for this version)
 
 ## 8.0.0-alpha.17 - 2020-10-16
 
