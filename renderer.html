@@ -838,7 +838,7 @@
 									id="nav-bans"
 									title="Manage bans / disciplinary action on web visitors and those who use the WWSU API."
 								>
-									<i class="nav-icon fas fa-ban text-danger"></i>
+									<i class="nav-icon fas fa-ban"></i>
 									<p>
 										Bans
 									</p>
@@ -1644,7 +1644,8 @@
 							<h5>Settings saved automatically</h5>
 							<p>
 								Settings are saved and applied automatically when you change
-								them; you do not have to restart remote broadcasts nor DJ Controls.
+								them; you do not have to restart remote broadcasts nor DJ
+								Controls.
 							</p>
 						</div>
 
@@ -1758,11 +1759,13 @@
 							<!-- /.card-header -->
 							<div class="card-body" id="section-serial-delay">
 								<div class="form-group">
-									<label for="section-serial-delay-port">Delay System Serial Port</label>
+									<label for="section-serial-delay-port"
+										>Delay System Serial Port</label
+									>
 									<select class="form-control" id="section-serial-delay-port">
 										<option value="">(NONE)</option>
-									  </select>
-								  </div>
+									</select>
+								</div>
 							</div>
 							<!-- /.card-body -->
 						</div>
@@ -1887,6 +1890,52 @@
 							<!-- /.card-header -->
 							<div class="card-body" id="section-api-form"></div>
 							<!-- /.card-body -->
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Bans management -->
+			<section id="section-bans">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<!-- Content Header (Page header) -->
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0 text-dark">Bans / Discipline</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+					<!-- /.content-header -->
+
+					<!-- Main content -->
+					<div class="content">
+						<div class="callout callout-info">
+							<h5>What are bans?</h5>
+							<p>
+								Bans prevent certain IP addresses (such as trolls and hackers)
+								access to the WWSU system / API. Bans are usually issued for
+								misuse of the WWSU API, sending inappropriate messages, or
+								abusing the "call DJ" functionality.
+							</p>
+						</div>
+						<div class="callout callout-warning">
+							<h5>Clean-up Unwanted Records</h5>
+							<p>
+								Please remove records which are no longer applicable; this list
+								can get very long otherwise.
+							</p>
+						</div>
+						<div class="card card-primary elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Bans Management</h3>
+							</div>
+							<div class="card-body" id="section-bans-content"></div>
 						</div>
 					</div>
 				</div>

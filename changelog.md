@@ -25,6 +25,7 @@
 - Silence detection
 - Splash screen (basic)
 - Delay system tracking via serial port
+- Ban / discipline management, and Mute/Ban functionality in the messages / chat
 
 ### Updated
 

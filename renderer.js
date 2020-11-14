@@ -73,7 +73,13 @@ window.addEventListener("DOMContentLoaded", () => {
 	var calendar = new WWSUcalendar(socket, meta, noReq, directorReq, djReq);
 	var subscriptions = new WWSUsubscriptions(socket, noReq);
 	var api = new WWSUapi(noReq, hostReq, djReq, directorReq, adminDirectorReq);
-	var discipline = new WWSUdiscipline(socket, noReq, directorReq, meta);
+	var discipline = new WWSUdiscipline(
+		socket,
+		noReq,
+		hostReq,
+		directorReq,
+		meta
+	);
 	var requests = new WWSUrequests(socket, hosts, hostReq);
 	var recipients = new WWSUrecipients(socket, meta, hostReq);
 	var hosts = new WWSUhosts(
@@ -250,6 +256,13 @@ window.addEventListener("DOMContentLoaded", () => {
 		false
 	);
 	navigation.addItem(
+		"#nav-bans",
+		"#section-bans",
+		"Manage Bans - WWSU DJ Controls",
+		"/bans",
+		false
+	);
+	navigation.addItem(
 		"#nav-calendar",
 		"#section-calendar",
 		"Manage Calendar - WWSU DJ Controls",
@@ -371,6 +384,15 @@ window.addEventListener("DOMContentLoaded", () => {
 	});
 	$(".btn-operation-remote").click(() => {
 		state.showRemoteForm();
+	});
+
+	$(".chat-mute").click(() => {
+		if (recipients.activeRecipient)
+			discipline.simpleMuteForm(recipients.activeRecipient);
+	});
+	$(".chat-ban").click(() => {
+		if (recipients.activeRecipient)
+			discipline.simpleBanForm(recipients.activeRecipient);
 	});
 
 	// Initialize stuff
@@ -1131,6 +1153,8 @@ window.addEventListener("DOMContentLoaded", () => {
 					version.init();
 					if (hosts.client.admin) {
 						$(".nav-admin").removeClass("d-none");
+						discipline.init();
+						discipline.initTable(`#section-bans-content`);
 						announcements.initTable("#section-announcements-content");
 						djs.initTable("#section-djs-content");
 						directors.initTable("#section-directors-content");
