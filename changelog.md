@@ -4,19 +4,19 @@
 
 ### Removed
 
-- Config recorder.deviceId and silence.deviceId; to be replaced with audio array, each containing recorder and silence booleans whether or not they should be responsible for silence detection or recording.
+- [BREAKING] Config recorder.deviceId and silence.deviceId; to be replaced with audio array, each containing recorder and silence booleans whether or not they should be responsible for silence detection or recording.
 
 ### Changed
 
 - Audio system split into multiple processes. Now supports multiple devices for recording / broadcasting / etc and volume adjustments.
 - Due to no support for Javascript stereo MP3 recording, recorder will now save in webm Opus format.
 - Skyway.js now utilizes authorization (credential token) via WWSU API to help prevent unauthorized use of the Skyway.js app.
-- Master director now uses ID 1 because server spits out a bunch of logs when using ID of 0
+- [BREAKING] Master director now uses ID 1 because server spits out a bunch of logs when using ID of 0
 
 ### Fixed
 
 - Clockwheel tooltips issue where clock div was preventing tooltips on certain areas of the clockwheel doughnut.
-- Added manually triggering window.resize when switching between menu pages as layout sometimes overlaps each other
+- Added manually triggering window.resize when switching between menu pages as layout sometimes overlaps each other. This trigger forces a recalculation of screen size so content does not overlap.
 
 ### Added
 
@@ -27,11 +27,12 @@
 - Splash screen (basic)
 - Delay system tracking via serial port
 - Ban / discipline management, and Mute/Ban functionality in the messages / chat
+- npx electron-builder install-app-deps in .travis.yml to rebuild node-serialport upon compilation of DJ Controls installers
 
 ### Updated
 
 - Packages
-- Electron to the 10.x.x branch (node-serialport can now compile with electron-builder install-app-deps for this version)
+- Electron to the 11.x.x branch (we were running on 9.x.x in alpha.17).
 
 ## 8.0.0-alpha.17 - 2020-10-16
 

@@ -38,7 +38,7 @@ class WWSUdirectors extends WWSUdb {
 				socket,
 				machineID,
 				this,
-				{ ID: 0 },
+				{ ID: 1 },
 				"name",
 				"/auth/admin-director",
 				"Master Director"

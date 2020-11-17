@@ -92,7 +92,6 @@ let recorderWindow;
 let remoteWindow;
 
 const enforceCORS = () => {
-
 	// On requests to skyway.js, we must use the WWSU server as the Origin so skyway can verify us.
 	// For all other requests, we can use the default file origin (which we should, especially for the WWSU server)
 	session.defaultSession.webRequest.onBeforeSendHeaders(
@@ -551,21 +550,21 @@ ipcMain.on("progressMain", (event, arg) => {
 // Messages to be sent to the renderer process
 ipcMain.on("renderer", (event, arg) => {
 	try {
-		mainWindow.webContents.send(arg[0], arg[1]);
+		if (mainWindow) mainWindow.webContents.send(arg[0], arg[1]);
 	} catch (e) {}
 });
 
 // Messages to be sent to the calendar process
 ipcMain.on("calendar", (event, arg) => {
 	try {
-		calendarWindow.webContents.send(arg[0], arg[1]);
+		if (calendarWindow) calendarWindow.webContents.send(arg[0], arg[1]);
 	} catch (e) {}
 });
 
 // Messages to be sent to the audio process
 ipcMain.on("audio", (event, arg) => {
 	try {
-		audioWindow.webContents.send(arg[0], arg[1]);
+		if (audioWindow) audioWindow.webContents.send(arg[0], arg[1]);
 	} catch (e) {
 		console.error(e);
 	}
@@ -573,7 +572,7 @@ ipcMain.on("audio", (event, arg) => {
 
 ipcMain.on("remote", (event, arg) => {
 	try {
-		remoteWindow.webContents.send(arg[0], arg[1]);
+		if (remoteWindow) remoteWindow.webContents.send(arg[0], arg[1]);
 	} catch (e) {
 		console.error(e);
 	}
@@ -582,7 +581,7 @@ ipcMain.on("remote", (event, arg) => {
 // Messages to be sent to the recorder process
 ipcMain.on("recorder", (event, arg) => {
 	try {
-		recorderWindow.webContents.send(arg[0], arg[1]);
+		if (recorderWindow) recorderWindow.webContents.send(arg[0], arg[1]);
 	} catch (e) {}
 });
 
@@ -896,12 +895,12 @@ ipcMain.on("delayDump", (event) => {
 
 function restartDelay(arg) {
 	console.log("Restarting Delay Serial connection");
-	mainWindow.webContents.send(
-		"main-log",
+	mainWindow.webContents.send("console", [
+		"log",
 		`Restarting Delay System serial, device ${config.get(
 			"delay.port"
-		)}, active = ${arg}`
-	);
+		)}, active = ${arg}`,
+	]);
 	try {
 		delaySerial.close();
 	} catch (e) {}
@@ -923,46 +922,42 @@ function restartDelay(arg) {
 
 				delaySerial.on("error", (err) => {
 					console.error(err);
-					mainWindow.webContents.send(
-						"log",
-						`Main: Delay serial error... ${err.message}`
-					);
+					mainWindow.webContents.send("console", ["error", err]);
 					if (
 						err.disconnected ||
 						typeof delaySerial === "undefined" ||
 						typeof delaySerial.isOpen === "undefined" ||
 						!delaySerial.isOpen
 					) {
-						mainWindow.webContents.send(
+						mainWindow.webContents.send("console", [
 							"log",
-							`Main: Delay System serial is disconnected. Reconnecting in 15 seconds.`
-						);
+							`Delay system serial disconnected. Trying to reconnect in 15 seconds.`,
+						]);
 						setTimeout(() => {
-							exports.restartDelay();
+							restartDelay();
 						}, 15000);
 					}
 				});
 
 				delaySerial.on("data", (data) => {
-					mainWindow.webContents.send(
+					mainWindow.webContents.send("console", [
 						"log",
-						`Main: Delay system data received: ${data.toString("hex")}`
-					);
+						`Main: Delay system data received: ${data.toString("hex")}`,
+					]);
 					delayData += data.toString("hex");
 					clearTimeout(delayTimer);
 					delayTimer = setTimeout(() => {
 						// Delay status
 						if (delayData.includes("000c")) {
-							console.log("Received delay system status");
 							var index = delayData.indexOf("000c");
 							var seconds =
 								parseInt(delayData.substring(index + 6, index + 8), 16) / 10;
 							var bypass = hex2bin(delayData.substring(index + 16, index + 18));
 							bypass = parseInt(bypass.substring(7, 8)) === 1;
-							mainWindow.webContents.send(
+							mainWindow.webContents.send("console", [
 								"log",
-								`Main: Delay System status is ${seconds} seconds, bypass = ${bypass}`
-							);
+								`Main: Delay System status is ${seconds} seconds, bypass = ${bypass}`,
+							]);
 							mainWindow.webContents.send("delay", [seconds, bypass]);
 						}
 
@@ -971,7 +966,10 @@ function restartDelay(arg) {
 				});
 
 				delaySerial.on("open", () => {
-					mainWindow.webContents.send("log", `Main: Delay System port opened.`);
+					mainWindow.webContents.send("console", [
+						"log",
+						`Main: Delay System port opened.`,
+					]);
 
 					// Request status after opening
 					let buffer = new Buffer.alloc(6);
@@ -985,10 +983,10 @@ function restartDelay(arg) {
 
 					clearInterval(delayStatusTimer);
 					delayStatusTimer = setInterval(() => {
-						mainWindow.webContents.send(
+						mainWindow.webContents.send("console", [
 							"log",
-							`Main: Delay System Querying status`
-						);
+							`Main: Delay System querying status...`,
+						]);
 						let buffer = new Buffer.alloc(6);
 						buffer[0] = 0xfb;
 						buffer[1] = 0xff;
@@ -1000,10 +998,10 @@ function restartDelay(arg) {
 					}, 15000);
 				});
 			} else {
-				mainWindow.webContents.send(
+				mainWindow.webContents.send("console", [
 					"log",
-					`Main: Delay System empty device selected. No ports opened.`
-				);
+					`Main: Delay System no devices selected / ports opened.`,
+				]);
 			}
 		}, 5000);
 	}
@@ -1011,13 +1009,16 @@ function restartDelay(arg) {
 
 function dumpDelay() {
 	if (delaySerial) {
-		mainWindow.webContents.send(
+		mainWindow.webContents.send("console", [
 			"log",
-			`Main: Delay system recveived dump request.`
-		);
+			`Main: Received request to dump delay system.`,
+		]);
 
 		// Deactivate bypass
-		mainWindow.webContents.send("log", `Main: Delay System Deactivate bypass.`);
+		mainWindow.webContents.send("console", [
+			"log",
+			`Main: Delay System deactivating bypass (in case it is activated).`,
+		]);
 		var buffer = new Buffer.alloc(7);
 		buffer[0] = 0xfb;
 		buffer[1] = 0xff;
@@ -1029,7 +1030,10 @@ function dumpDelay() {
 		delaySerial.write(buffer);
 
 		// Activate Delay
-		mainWindow.webContents.send("log", `Main: Delay System Activate dump.`);
+		mainWindow.webContents.send("console", [
+			"log",
+			`Main: Delay System activating dump button.`,
+		]);
 		var buffer = new Buffer.alloc(7);
 		buffer[0] = 0xfb;
 		buffer[1] = 0xff;
@@ -1042,11 +1046,11 @@ function dumpDelay() {
 
 		setTimeout(() => {
 			// Push the start button
-			mainWindow.webContents.send(
+			mainWindow.webContents.send("console", [
 				"log",
-				`Main: Delay System Push start button.`
-			);
-			var buffer = new Buffer(7);
+				`Main: Delay System activating start button to rebuild delay.`,
+			]);
+			var buffer = new Buffer.alloc(7);
 			buffer[0] = 0xfb;
 			buffer[1] = 0xff;
 			buffer[2] = 0x00;
@@ -1057,8 +1061,11 @@ function dumpDelay() {
 			delaySerial.write(buffer);
 
 			// Deactivate buttons
-			mainWindow.webContents.send("log", `Main: Delay System Deactivate dump.`);
-			var buffer = new Buffer(7);
+			mainWindow.webContents.send("console", [
+				"log",
+				`Main: Delay System deactivating dump button.`,
+			]);
+			var buffer = new Buffer.alloc(7);
 			buffer[0] = 0xfb;
 			buffer[1] = 0xff;
 			buffer[2] = 0x00;
@@ -1069,11 +1076,11 @@ function dumpDelay() {
 			delaySerial.write(buffer);
 
 			// Request status after dumping
-			mainWindow.webContents.send(
+			mainWindow.webContents.send("console", [
 				"log",
-				`Main: Delay System Query for new status.`
-			);
-			var buffer = new Buffer(6);
+				`Main: Delay System querying new status.`,
+			]);
+			var buffer = new Buffer.alloc(6);
 			buffer[0] = 0xfb;
 			buffer[1] = 0xff;
 			buffer[2] = 0x00;

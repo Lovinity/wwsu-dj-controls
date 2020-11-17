@@ -967,7 +967,7 @@ class WWSUstate extends WWSUevents {
 									};
 
 									$(this.broadcastModal.body).block({
-										message: `<h1>Starting Remote Broadcast...</h1>`,
+										message: `<h1>Please wait...</h1><p class="remote-start-status">Initializing...</p>`,
 										css: { border: "3px solid #a00" },
 										timeout: 30000,
 										onBlock: () => {

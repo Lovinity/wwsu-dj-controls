@@ -2221,11 +2221,6 @@ Track: <strong>${request.trackname}</strong>`,
 		messages.updateRecipientsTable();
 
 		// If this host wants to make a call, and the host we want to call is online and has a peer, start a call.
-		console.log(`Recipients changed`);
-		console.log(meta.meta.hostCalling);
-		console.log(meta.meta.hostCalled);
-		console.log(meta.meta.state);
-		console.log(pendingHostCall);
 		if (
 			meta.meta.hostCalling !== null &&
 			hosts.client.ID === meta.meta.hostCalling &&
@@ -2236,11 +2231,11 @@ Track: <strong>${request.trackname}</strong>`,
 				pendingHostCall)
 		) {
 			let called = db.get().find((rec) => rec.hostID === meta.meta.hostCalled);
-			console.dir(called);
 			if (called && called.peer && called.status === 5) {
 				console.log(
 					`Host ${called.hostID} is ready to take the call. Asking remote process to start audio call if not already in one.`
 				);
+				$(".remote-start-status").html("Starting audio call");
 				window.ipc.remote.send("remoteStartCall", [called.peer]);
 			}
 		}
@@ -2364,22 +2359,32 @@ Track: <strong>${request.trackname}</strong>`,
 		pendingHostCall = host;
 
 		// Close and re-open the remote process
+		$(".remote-start-status").html("Starting audio call process");
 		window.ipc.process.send("remote", ["close"]);
 		window.ipc.process.send("remote", ["open"]);
 	});
 
 	window.ipc.on("remoteReady", (event, arg) => {
 		console.log(`Remote process ready. Grabbing a Skyway.js credential.`);
+		$(".remote-start-status").html("Getting a Skyway.js credential");
 		remote.credentialComputer({}, (credential) => {
 			console.dir(credential);
 			if (!credential) {
 				pendingHostCall = undefined;
 				state.unblockBroadcastModal();
 				window.ipc.process.send("remote", ["close"]);
+				$(document).Toasts("create", {
+					class: "bg-danger",
+					title: "Remote broadcast failed",
+					delay: 15000,
+					autohide: true,
+					body: `There was a problem getting a skyway.js authorization credential. Please report this to the engineer.`,
+				});
 			} else {
 				console.log(
 					`Credential received. Sending to remote to establish peer connection.`
 				);
+				$(".remote-start-status").html("Establishing skyway.js connection");
 				window.ipc.remote.send("remotePeerCredential", [
 					credential.peerId,
 					credential.apiKey,
@@ -2403,6 +2408,7 @@ Track: <strong>${request.trackname}</strong>`,
 			console.log(
 				`Pending remote call to ${pendingHostCall}. Informing the API.`
 			);
+			$(".remote-start-status").html("Waiting for remote host to connect");
 			remote.request({ ID: pendingHostCall });
 		}
 	});
@@ -2443,6 +2449,7 @@ Track: <strong>${request.trackname}</strong>`,
 		$(".notifications-remote").removeClass("badge-info");
 		$(".notifications-remote").removeClass("badge-secondary");
 		$(".notifications-remote").addClass("badge-success");
+		$(".remote-start-status").html("Starting remote broadcast");
 		state.finalizeRemote((success) => {
 			state.unblockBroadcastModal();
 			if (success) {
