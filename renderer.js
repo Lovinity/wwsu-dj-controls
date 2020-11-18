@@ -114,6 +114,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	var version = new WWSUversion(socket, `wwsu-dj-controls`, hostReq);
 	var silence = new WWSUSilence(hostReq);
 	var remote = new WWSUremote(socket, hostReq, recipients);
+	var remoteQuality = new WWSUremoteQuality(meta);
 
 	// Sound alerts
 	var sounds = {
@@ -1103,6 +1104,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				break;
 			case "remote":
 				recipients.registerPeer(null);
+				remoteQuality.peerDestroyed();
 				$(".notifications-remote").removeClass("badge-success");
 				$(".notifications-remote").removeClass("badge-warning");
 				$(".notifications-remote").removeClass("badge-danger");
@@ -2563,6 +2565,7 @@ Track: <strong>${request.trackname}</strong>`,
 	});
 
 	window.ipc.on("peerIncomingCallClosed", (event, arg) => {
+		remoteQuality.callClosed(arg[0]);
 		if (
 			(meta.state.state.startsWith("remote_") ||
 				meta.state.state.startsWith("sportsremote_")) &&
@@ -2579,6 +2582,7 @@ Track: <strong>${request.trackname}</strong>`,
 	});
 
 	window.ipc.on("peerCallClosed", (event, arg) => {
+		remoteQuality.callClosed(arg[0]);
 		if (
 			(meta.state.state.startsWith("remote_") ||
 				meta.state.state.startsWith("sportsremote_")) &&
@@ -2604,6 +2608,7 @@ Track: <strong>${request.trackname}</strong>`,
 	});
 
 	window.ipc.on("peerDestroyed", (event, arg) => {
+		remoteQuality.peerDestroyed();
 		if (
 			(meta.state.state.startsWith("remote_") ||
 				meta.state.state.startsWith("sportsremote_")) &&
@@ -2642,8 +2647,14 @@ Track: <strong>${request.trackname}</strong>`,
 		window.ipc.process.send("remote", ["close"]);
 	});
 
-	window.ipc.on("remoteQuality", (event, arg) => {
-		remote.sendQuality(arg[0]);
+	window.ipc.on("peerQualityProblem", (event, arg) => {
+		remoteQuality.qualityProblem(arg[0], arg[1], arg[2]);
+	});
+
+	remoteQuality.on("quality", "renderer", (connection, value) => {
+		if (hosts.client.ID === meta.meta.hostCalled) {
+			remote.sendQuality({ quality: value });
+		}
 	});
 
 	remote.on("callQuality", "renderer", (quality) => {
@@ -2670,6 +2681,24 @@ Track: <strong>${request.trackname}</strong>`,
 				},
 			]);
 			window.ipc.process.send("remote", ["close"]);
+		}
+
+		if (hosts.client.ID === meta.meta.hostCalling) {
+			$(".notifications-remote").removeClass("badge-primary");
+			$(".notifications-remote").removeClass("badge-warning");
+			$(".notifications-remote").removeClass("badge-info");
+			$(".notifications-remote").removeClass("badge-success");
+			$(".notifications-remote").removeClass("badge-secondary");
+			$(".notifications-remote").removeClass("badge-danger");
+			if (quality <= 33) {
+				$(".notifications-remote").addClass("badge-danger");
+			} else if (quality <= 66) {
+				$(".notifications-remote").addClass("badge-warning");
+			} else {
+				$(".notifications-remote").removeClass("badge-success");
+			}
+
+			console.log(`Remote host reports call quality is at ${quality}%.`);
 		}
 	});
 

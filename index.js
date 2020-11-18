@@ -248,7 +248,7 @@ const createRemoteWindow = () => {
 	remoteWindow = new BrowserWindow({
 		width: 1280,
 		height: 720,
-		show: true,
+		show: false,
 		title: `${app.name} - Remote Process`,
 		webPreferences: {
 			contextIsolation: true,
@@ -687,11 +687,11 @@ ipcMain.on("main", (event, arg) => {
 						`${path.resolve(
 							path.dirname(`${config.get("recorder.recordPath")}/${args[0]}`)
 						)}/README.txt`,
-						`Audio files are recorded in webm/Opus format because there is no good MP3 library available for DJ Controls. If you cannot play webm files, you can use a free online converter such as https://cloudconvert.com/webm-to-mp3.` +
+						`Audio files are recorded in webm/Opus format because the MP3 format is proprietary, and webm/opus works best with DJ Controls. If you need to convert these to another format for free, you can use a free online converter such as https://online-audio-convert.com/ or a downloadable converter application such as https://www.freac.org/ .` +
 							"\n\n" +
 							`BE AWARE recordings are only stored temporarily! WWSU reserves the right to delete, modify, and/or monitor any and all recordings at any time without notice. Be sure to save a copy of your recordings ASAP after each show.` +
 							"\n\n" +
-							`WWSU does not guarantee the reliability of automatic recordings! You should always make your own recordings as well.`,
+							`WWSU does not guarantee the reliability of automatic recordings! You should always make your own recordings as well, especially if you want your recordings to be higher than 128kbps.`,
 						(err) => {
 							console.error(err);
 						}

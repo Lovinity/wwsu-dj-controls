@@ -59,6 +59,7 @@ class WWSUrecorder extends WWSUevents {
 					*/
 					this.recorder = new MediaRecorder(this.destination.stream, {
 						mimeType: "audio/webm;codecs=opus",
+						audioBitsPerSecond: 128000
 					});
 					this.recorder.start();
 					this.emitEvent("recorderStarted", [this.pendingTitle]);

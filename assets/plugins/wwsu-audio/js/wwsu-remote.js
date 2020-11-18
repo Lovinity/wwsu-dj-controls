@@ -79,7 +79,7 @@ class WWSUremoteaudio extends WWSUevents {
 																// Choppiness was detected in the last second. Emit event peerPLC.
 																if (value > prevPLC) {
 																	this.emitEvent("peerPLC", [
-																		`${connection}-${index}`,
+																		`${connection}`,
 																		value - prevPLC,
 																	]);
 																}

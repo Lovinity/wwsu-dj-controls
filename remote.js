@@ -10,21 +10,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	let audioSettings = window.settings.audio();
 
-	let quality = 100;
-
-	setInterval(() => {
-		if (quality < 100) {
-			quality += 1;
-			if (quality === 100) {
-				window.ipc.renderer.send("remoteQuality", [100]);
-			} else if (quality === 66) {
-				window.ipc.renderer.send("remoteQuality", [66]);
-			} else if (quality === 33) {
-				window.ipc.renderer.send("remoteQuality", [33]);
-			}
-		}
-	}, 1000);
-
 	// Remote audio is initialized after remoteReady is emitted by this process to renderer, renderer queries for a credential, and renderer passes the credential here via remotePeerCredential.
 	var remote = new WWSUremoteaudio(
 		audioManager.audioContext,
@@ -34,6 +19,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	// silence states
 	var timer;
+	var timer2;
 
 	// Listen for when we receive available devices
 	audioManager.on("devices", "renderer", (devices) => {
@@ -113,7 +99,6 @@ window.addEventListener("DOMContentLoaded", () => {
 			`Remote: Call with ${id} was established.`,
 		]);
 		window.ipc.renderer.send("peerCallEstablished", [id]);
-		quality = 100;
 	});
 
 	remote.on("peerCallAnswered", "remote", (id) => {
@@ -122,22 +107,30 @@ window.addEventListener("DOMContentLoaded", () => {
 			`Remote: Call with ${id} was answered.`,
 		]);
 		window.ipc.renderer.send("peerCallAnswered", [id]);
-		quality = 100;
 	});
 
 	remote.on("peerIncomingCallVolume", "renderer", (peer, volume) => {
 		console.log(`Peer ${peer} incoming volume: ${volume[0]}, ${volume[1]}.`);
 		if (volume[0] <= 0.001 || (volume[1] > -1 && volume[1] <= 0.001)) {
-			decreaseQuality();
+			if (!timer2) {
+				timer2 = setTimeout(() => {
+					window.ipc.renderer.send("peerQualityProblem", [
+						peer,
+						10,
+						`incomingSilence`,
+					]);
+					timer2 = undefined;
+				}, 1000);
+			}
 		}
 	});
 
-	remote.on("peerIncomingCallClosed", "renderer", () => {
-		window.ipc.renderer.send("peerIncomingCallClosed", [true]);
+	remote.on("peerIncomingCallClosed", "renderer", (id) => {
+		window.ipc.renderer.send("peerIncomingCallClosed", [id]);
 	});
 
-	remote.on("peerCallClosed", "renderer", () => {
-		window.ipc.renderer.send("peerCallClosed", [true]);
+	remote.on("peerCallClosed", "renderer", (id) => {
+		window.ipc.renderer.send("peerCallClosed", [id]);
 	});
 
 	remote.on("peerDestroyed", "renderer", () => {
@@ -150,7 +143,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	remote.on("peerPLC", "renderer", (connection, value) => {
 		console.log(`PeerPLC ${connection}: ${value}`);
-		decreaseQuality(value);
+		window.ipc.renderer.send("peerQualityProblem", [connection, value, `PLC`]);
 	});
 
 	// Init Skyway.js with credentials
@@ -234,10 +227,4 @@ window.addEventListener("DOMContentLoaded", () => {
 		clearTimeout(timer);
 		timer = undefined;
 	});
-
-	function decreaseQuality(amount = 1) {
-		quality -= amount;
-		if (quality < 0) quality = 0;
-		// window.ipc.renderer.send("remoteQuality", [quality]);
-	}
 });
