@@ -238,6 +238,6 @@ window.addEventListener("DOMContentLoaded", () => {
 	function decreaseQuality(amount = 1) {
 		quality -= amount;
 		if (quality < 0) quality = 0;
-		window.ipc.renderer.send("remoteQuality", [quality]);
+		// window.ipc.renderer.send("remoteQuality", [quality]);
 	}
 });
