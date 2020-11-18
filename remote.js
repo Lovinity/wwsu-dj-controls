@@ -150,7 +150,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	remote.on("peerPLC", "renderer", (connection, value) => {
 		console.log(`PeerPLC ${connection}: ${value}`);
-		descreaseQuality(value);
+		decreaseQuality(value);
 	});
 
 	// Init Skyway.js with credentials
