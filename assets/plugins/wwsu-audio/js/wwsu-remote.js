@@ -111,7 +111,7 @@ class WWSUremoteaudio extends WWSUevents {
 
 	/**
 	 * Initialize the skyway.js peer.
-	 * 
+	 *
 	 * @param {string} peerId The Peer ID to use. Must be what was authenticated via the credential parameter.
 	 * @param {string} apiKey The API Key for the Skyway.js app
 	 * @param {string} credential The authenticated credential string to ensure authorized use of this Skyway.js
@@ -163,15 +163,13 @@ class WWSUremoteaudio extends WWSUevents {
 			}
 		});
 
-		// When the peer is closed, emit peerDestroyed after 5 seconds
+		// When the peer is closed, emit peerDestroyed
 		this.peer.on("close", () => {
 			console.log(`Peer destroyed.`);
 			try {
+				this.emitEvent("peerDestroyed", []);
 				this.peer = undefined;
 			} catch (ee) {}
-			setTimeout(() => {
-				this.emitEvent("peerDestroyed", []);
-			}, 5000);
 		});
 
 		// When the peer receives a request for an incoming call, emit peerCall event so renderers can check if we should answer it

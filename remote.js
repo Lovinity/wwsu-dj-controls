@@ -10,6 +10,21 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	let audioSettings = window.settings.audio();
 
+	let quality = 100;
+
+	setInterval(() => {
+		if (quality < 100) {
+			quality += 1;
+			if (quality === 100) {
+				window.ipc.renderer.send("remoteQuality", [100]);
+			} else if (quality === 66) {
+				window.ipc.renderer.send("remoteQuality", [66]);
+			} else if (quality === 33) {
+				window.ipc.renderer.send("remoteQuality", [33]);
+			}
+		}
+	}, 1000);
+
 	// Remote audio is initialized after remoteReady is emitted by this process to renderer, renderer queries for a credential, and renderer passes the credential here via remotePeerCredential.
 	var remote = new WWSUremoteaudio(
 		audioManager.audioContext,
@@ -98,6 +113,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			`Remote: Call with ${id} was established.`,
 		]);
 		window.ipc.renderer.send("peerCallEstablished", [id]);
+		quality = 100;
 	});
 
 	remote.on("peerCallAnswered", "remote", (id) => {
@@ -106,32 +122,35 @@ window.addEventListener("DOMContentLoaded", () => {
 			`Remote: Call with ${id} was answered.`,
 		]);
 		window.ipc.renderer.send("peerCallAnswered", [id]);
+		quality = 100;
 	});
 
 	remote.on("peerIncomingCallVolume", "renderer", (peer, volume) => {
-		// TODO
 		console.log(`Peer ${peer} incoming volume: ${volume[0]}, ${volume[1]}.`);
+		if (volume[0] <= 0.001 || (volume[1] > -1 && volume[1] <= 0.001)) {
+			decreaseQuality();
+		}
 	});
 
-	remote.on("peerIncomingCallClosed", "renderer", (peer, volume) => {
-		// TODO
+	remote.on("peerIncomingCallClosed", "renderer", () => {
+		window.ipc.renderer.send("peerIncomingCallClosed", [true]);
 	});
 
-	remote.on("peerCallClosed", "renderer", (peer, volume) => {
-		// TODO
+	remote.on("peerCallClosed", "renderer", () => {
+		window.ipc.renderer.send("peerCallClosed", [true]);
 	});
 
-	remote.on("peerDestroyed", "renderer", (peer, volume) => {
-		// TODO
+	remote.on("peerDestroyed", "renderer", () => {
+		window.ipc.renderer.send("peerDestroyed", [true]);
 	});
 
-	remote.on("peerDisconnected", "renderer", (peer, volume) => {
+	remote.on("peerDisconnected", "renderer", () => {
 		// TODO
 	});
 
 	remote.on("peerPLC", "renderer", (connection, value) => {
-		// TODO
 		console.log(`PeerPLC ${connection}: ${value}`);
+		descreaseQuality(value);
 	});
 
 	// Init Skyway.js with credentials
@@ -215,4 +234,10 @@ window.addEventListener("DOMContentLoaded", () => {
 		clearTimeout(timer);
 		timer = undefined;
 	});
+
+	function decreaseQuality(amount = 1) {
+		quality -= amount;
+		if (quality < 0) quality = 0;
+		window.ipc.renderer.send("remoteQuality", [quality]);
+	}
 });

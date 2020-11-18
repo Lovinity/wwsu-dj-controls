@@ -28,6 +28,7 @@
 - Delay system tracking via serial port
 - Ban / discipline management, and Mute/Ban functionality in the messages / chat
 - npx electron-builder install-app-deps in .travis.yml to rebuild node-serialport upon compilation of DJ Controls installers
+- Silence detection triggered notifications if this DJ Controls started the current broadcast
 
 ### Updated
 

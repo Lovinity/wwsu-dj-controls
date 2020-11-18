@@ -96,6 +96,7 @@ class WWSUMeta extends WWSUevents {
 
   /**
    * Reset the ticker that updates meta.time and fires metaTick every second.
+   * Instead of adding a second each call (setInterval is not exact), determine time difference between system time and station time, as well as system time difference between now and previous timer fire.
    */
   resetTick() {
     var ticker = () => {

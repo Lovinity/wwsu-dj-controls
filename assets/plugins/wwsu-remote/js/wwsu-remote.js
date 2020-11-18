@@ -11,6 +11,7 @@ class WWSUremote extends WWSUevents {
 		this.endpoints = {
 			request: "/call/request",
 			credentialComputer: "/call/credential-computer",
+			quality: "/call/quality",
 		};
 		this.requests = {
 			host: hostReq,
@@ -20,6 +21,10 @@ class WWSUremote extends WWSUevents {
 		};
 
 		this.recipients = recipients;
+
+		socket.on("call-quality", "WWSUremote", (quality) => {
+			this.emitEvent("callQuality", [quality]);
+		});
 	}
 
 	/**
@@ -73,7 +78,7 @@ class WWSUremote extends WWSUevents {
 	/**
 	 * Authorize a host for connecting to Skyway.js.
 	 * TODO: Once the new DJ Controls is ready, credentials should be forced on the Skyway.js dashboard.
-	 * 
+	 *
 	 * @param {object} data Data to be passed to the API
 	 * @param {?function} cb Callback which returns credential data on success
 	 */
@@ -115,6 +120,22 @@ class WWSUremote extends WWSUevents {
 			if (typeof cb === "function") {
 				cb(false);
 			}
+			console.error(e);
+		}
+	}
+
+	/**
+	 * Send call quality data to WWSU API to be transmitted in sockets.
+	 *
+	 * @param {object} data Data to be passed to the API
+	 */
+	sendQuality(data) {
+		try {
+			this.requests.host.request(
+				{ method: "post", url: this.endpoints.quality, data },
+				(response) => {}
+			);
+		} catch (e) {
 			console.error(e);
 		}
 	}

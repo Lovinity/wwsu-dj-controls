@@ -139,6 +139,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	var audioDevices = [];
 
+	// Remote calls
 	var pendingHostCall;
 
 	var todos = {
@@ -350,6 +351,28 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	// Operation click events
 	$(".btn-operation-resume").click(() => {
+		if (
+			meta.meta.hostCalling !== null &&
+			hosts.client.ID === meta.meta.hostCalling &&
+			(meta.meta.state.startsWith("remote_") ||
+				meta.meta.state.startsWith("sportsremote_") ||
+				pendingHostCall)
+		) {
+			let called = recipients
+				.db()
+				.get()
+				.find((rec) => rec.hostID === meta.meta.hostCalled);
+			if (!called || !called.peer || called.status !== 5) {
+				$(document).Toasts("create", {
+					class: "bg-warning",
+					title: "Remote host not connected",
+					delay: 30000,
+					autohide: true,
+					body: `The remote host you started this remote broadcast with is currently experiencing problems. The resume button will pulse when the host is back online. If the host does not return online, end the broadcast and restart it, calling a different host instead.`,
+				});
+				return;
+			}
+		}
 		state.return({});
 	});
 	$(".btn-operation-15-psa").click(() => {
@@ -1689,7 +1712,9 @@ window.addEventListener("DOMContentLoaded", () => {
 				moment(fullMeta.time).minutes() >= 2 &&
 				moment(fullMeta.time).minutes() < 5 &&
 				moment(fullMeta.time).diff(moment(fullMeta.lastID), "minutes") >= 10 &&
-				hosts.isHost
+				hosts.isHost &&
+				!fullMeta.state.startsWith("automation_") &&
+				!fullMeta.state.startsWith("prerecord_")
 			) {
 				if (!breakNotified) {
 					breakNotified = true;
@@ -1708,6 +1733,22 @@ window.addEventListener("DOMContentLoaded", () => {
 			} else if (breakNotified) {
 				breakNotified = false;
 			}
+
+			animations.add("break-check", () => {
+				// Flash break button when break is needed
+				if (
+					(moment(fullMeta.time).minutes() >= 58 ||
+						moment(fullMeta.time).minutes() < 5) &&
+					hosts.isHost &&
+					!fullMeta.state.startsWith("automation_") &&
+					!fullMeta.state.startsWith("prerecord_") &&
+					moment(fullMeta.time).diff(moment(fullMeta.lastID), "minutes") >= 10
+				) {
+					$(".btn-operation-break").addClass("pulse-warning");
+				} else {
+					$(".btn-operation-break").removeClass("pulse-warning");
+				}
+			});
 		} catch (e) {
 			console.error(e);
 			$(document).Toasts("create", {
@@ -1747,6 +1788,19 @@ window.addEventListener("DOMContentLoaded", () => {
 		db.filter((record) => record.status <= 4)
 			.sort((a, b) => a.status - b.status)
 			.map((record) => {
+				// Notifications on silence detection
+				if (record.name === `silence` && hosts.isHost) {
+					window.ipc.main.send("makeNotification", [
+						{
+							title: "Silence Detected",
+							bg: "danger",
+							header: "Silence detection triggered!",
+							flash: true,
+							body: record.data,
+						},
+					]);
+				}
+
 				if (globalStatus > record.status) {
 					globalStatus = record.status;
 				}
@@ -2237,6 +2291,8 @@ Track: <strong>${request.trackname}</strong>`,
 				);
 				$(".remote-start-status").html("Starting audio call");
 				window.ipc.remote.send("remoteStartCall", [called.peer]);
+			} else {
+				$(".btn-operation-resume").removeClass("pulse-success");
 			}
 		}
 	});
@@ -2449,14 +2505,25 @@ Track: <strong>${request.trackname}</strong>`,
 		$(".notifications-remote").removeClass("badge-info");
 		$(".notifications-remote").removeClass("badge-secondary");
 		$(".notifications-remote").addClass("badge-success");
-		$(".remote-start-status").html("Starting remote broadcast");
-		state.finalizeRemote((success) => {
-			state.unblockBroadcastModal();
-			if (success) {
-				pendingHostCall = undefined;
-				state.broadcastModal.iziModal("close");
-			}
-		});
+		if (
+			!meta.meta.state.startsWith("remote_") &&
+			!meta.meta.state.startsWith("sportsremote_")
+		) {
+			$(".remote-start-status").html("Starting remote broadcast");
+			state.finalizeRemote((success) => {
+				state.unblockBroadcastModal();
+				if (success) {
+					pendingHostCall = undefined;
+					state.broadcastModal.iziModal("close");
+				}
+			});
+		} else if (
+			meta.meta.state === "sportsremote_break" ||
+			meta.meta.state === "remote_break" ||
+			meta.meta.state === "sportsremote_halftime"
+		) {
+			$(".btn-operation-resume").addClass("pulse-success");
+		}
 	});
 
 	window.ipc.on("peerCallAnswered", (event, arg) => {
@@ -2476,6 +2543,12 @@ Track: <strong>${request.trackname}</strong>`,
 			hosts.client.ID === meta.meta.hostCalling
 		) {
 			state.break({ problem: true });
+			$(".notifications-remote").removeClass("badge-primary");
+			$(".notifications-remote").removeClass("badge-warning");
+			$(".notifications-remote").removeClass("badge-info");
+			$(".notifications-remote").removeClass("badge-success");
+			$(".notifications-remote").removeClass("badge-secondary");
+			$(".notifications-remote").addClass("badge-danger");
 			window.ipc.main.send("makeNotification", [
 				{
 					title: "Silence on Outgoing Audio",
@@ -2485,6 +2558,118 @@ Track: <strong>${request.trackname}</strong>`,
 					body: `<p>Silence was detected for 15 seconds on outgoing audio. Remote broadcast has been sent to break. Please check your audio devices and DJ Controls' Audio settings.</p>`,
 				},
 			]);
+			window.ipc.process.send("remote", ["close"]);
+		}
+	});
+
+	window.ipc.on("peerIncomingCallClosed", (event, arg) => {
+		if (
+			(meta.state.state.startsWith("remote_") ||
+				meta.state.state.startsWith("sportsremote_")) &&
+			hosts.client.ID === meta.meta.hostCalled
+		) {
+			state.break({ problem: true });
+			$(".notifications-remote").removeClass("badge-primary");
+			$(".notifications-remote").removeClass("badge-warning");
+			$(".notifications-remote").removeClass("badge-info");
+			$(".notifications-remote").removeClass("badge-success");
+			$(".notifications-remote").removeClass("badge-secondary");
+			$(".notifications-remote").addClass("badge-danger");
+		}
+	});
+
+	window.ipc.on("peerCallClosed", (event, arg) => {
+		if (
+			(meta.state.state.startsWith("remote_") ||
+				meta.state.state.startsWith("sportsremote_")) &&
+			hosts.client.ID === meta.meta.hostCalling
+		) {
+			state.break({ problem: true });
+			$(".notifications-remote").removeClass("badge-primary");
+			$(".notifications-remote").removeClass("badge-warning");
+			$(".notifications-remote").removeClass("badge-info");
+			$(".notifications-remote").removeClass("badge-success");
+			$(".notifications-remote").removeClass("badge-secondary");
+			$(".notifications-remote").addClass("badge-danger");
+			window.ipc.main.send("makeNotification", [
+				{
+					title: "Audio Call was Closed!",
+					bg: "danger",
+					header: "Audio Call was Closed",
+					flash: true,
+					body: `<p>The audio call for the remote broadcast closed. The broadcast was sent to break. Please check your network settings and resume the broadcast when things are stable.</p><p>This could also be a network issue on WWSU's end. If so, please report this under "report a problem".</p>`,
+				},
+			]);
+		}
+	});
+
+	window.ipc.on("peerDestroyed", (event, arg) => {
+		if (
+			(meta.state.state.startsWith("remote_") ||
+				meta.state.state.startsWith("sportsremote_")) &&
+			hosts.client.ID === meta.meta.hostCalling
+		) {
+			state.break({ problem: true });
+			$(".notifications-remote").removeClass("badge-primary");
+			$(".notifications-remote").removeClass("badge-warning");
+			$(".notifications-remote").removeClass("badge-info");
+			$(".notifications-remote").removeClass("badge-success");
+			$(".notifications-remote").removeClass("badge-secondary");
+			$(".notifications-remote").addClass("badge-danger");
+			window.ipc.main.send("makeNotification", [
+				{
+					title: "Audio Call was Closed!",
+					bg: "danger",
+					header: "Audio Call was Closed",
+					flash: true,
+					body: `<p>The audio call for the remote broadcast closed. The broadcast was sent to break. Please check your network settings and resume the broadcast when things are stable.</p><p>This could also be a network issue on WWSU's end. If so, please report this under "report a problem".</p>`,
+				},
+			]);
+		}
+		if (
+			(meta.state.state.startsWith("remote_") ||
+				meta.state.state.startsWith("sportsremote_")) &&
+			hosts.client.ID === meta.meta.hostCalled
+		) {
+			state.break({ problem: true });
+			$(".notifications-remote").removeClass("badge-primary");
+			$(".notifications-remote").removeClass("badge-warning");
+			$(".notifications-remote").removeClass("badge-info");
+			$(".notifications-remote").removeClass("badge-success");
+			$(".notifications-remote").removeClass("badge-secondary");
+			$(".notifications-remote").addClass("badge-danger");
+		}
+		window.ipc.process.send("remote", ["close"]);
+	});
+
+	window.ipc.on("remoteQuality", (event, arg) => {
+		remote.sendQuality(arg[0]);
+	});
+
+	remote.on("callQuality", "renderer", (quality) => {
+		if (
+			quality <= 0 &&
+			(meta.state.state.startsWith("remote_") ||
+				meta.state.state.startsWith("sportsremote_")) &&
+			hosts.client.ID === meta.meta.hostCalling
+		) {
+			state.break({ problem: true });
+			$(".notifications-remote").removeClass("badge-primary");
+			$(".notifications-remote").removeClass("badge-warning");
+			$(".notifications-remote").removeClass("badge-info");
+			$(".notifications-remote").removeClass("badge-success");
+			$(".notifications-remote").removeClass("badge-secondary");
+			$(".notifications-remote").addClass("badge-danger");
+			window.ipc.main.send("makeNotification", [
+				{
+					title: "Bad Audio Quality!",
+					bg: "danger",
+					header: "Bad Audio Quality",
+					flash: true,
+					body: `<p>The remote host reports the audio call quality was poor. The broadcast was sent to break. Please ensure your network connection is good, you are not running CPU-intensive apps, and your audio devices are not disconnected / very quiet.</p>`,
+				},
+			]);
+			window.ipc.process.send("remote", ["close"]);
 		}
 	});
 
