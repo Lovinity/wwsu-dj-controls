@@ -2653,11 +2653,13 @@ Track: <strong>${request.trackname}</strong>`,
 
 	remoteQuality.on("quality", "renderer", (connection, value) => {
 		if (hosts.client.ID === meta.meta.hostCalled) {
+			console.log(`Reporting call quality on ${connection} to WWSU: ${value}%`)
 			remote.sendQuality({ quality: value });
 		}
 	});
 
 	remote.on("callQuality", "renderer", (quality) => {
+		console.log(`Call quality reported by remote: ${quality}%`)
 		if (
 			quality <= 0 &&
 			(meta.state.state.startsWith("remote_") ||
@@ -2698,7 +2700,7 @@ Track: <strong>${request.trackname}</strong>`,
 				$(".notifications-remote").removeClass("badge-success");
 			}
 
-			console.log(`Remote host reports call quality is at ${quality}%.`);
+			console.log(`Remote call quality: ${quality}%.`);
 		}
 	});
 

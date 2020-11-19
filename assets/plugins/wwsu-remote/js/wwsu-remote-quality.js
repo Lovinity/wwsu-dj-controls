@@ -9,7 +9,7 @@ class WWSUremoteQuality extends WWSUevents {
 	 */
 	constructor(meta) {
         super();
-        
+
 		this.connections = new Map();
 
 		this.meta = meta;
@@ -53,9 +53,9 @@ class WWSUremoteQuality extends WWSUevents {
 			this.connections.set(connection, 100);
 		currentQuality -= value;
 		if (currentQuality < 0) currentQuality = 0;
-        this.connections.set(connection, value);
+        this.connections.set(connection, currentQuality);
         
-		this.emitEvent("quality", [connection, value]);
+		this.emitEvent("quality", [connection, currentQuality]);
     }
     
     /**
