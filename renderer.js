@@ -2648,6 +2648,7 @@ Track: <strong>${request.trackname}</strong>`,
 	});
 
 	window.ipc.on("peerQualityProblem", (event, arg) => {
+		console.log(`Peer quality ${arg[0]}, ${arg[1]}, ${arg[2]}`);
 		remoteQuality.qualityProblem(arg[0], arg[1], arg[2]);
 	});
 
