@@ -995,12 +995,19 @@ class WWSUanimations {
 		this.animations = {};
 
 		// Process queued animations every second
+		// Once an inactive window becomes active, process one animation every 0.1 seconds to avoid sharp CPU spikes
 		setInterval(() => {
 			if (!document[this.hidden]) {
+				let index = 1;
 				for (let key in this.animations) {
 					if (Object.prototype.hasOwnProperty.call(this.animations, key)) {
-						this.animations[key]();
-						delete this.animations[key];
+						((_key) => {
+							setTimeout(() => {
+								if (this.animations[_key]) this.animations[_key]();
+								delete this.animations[_key];
+							}, 100 * index);
+						})(key);
+						index++;
 					}
 				}
 			}
@@ -1015,6 +1022,7 @@ class WWSUanimations {
 	 */
 	add(name, fn) {
 		if (!document[this.hidden]) {
+			delete this.animations[name]; // In case we are running the animation queue; don't accidentally process an older frame
 			fn();
 		} else {
 			// If a function for the same name is already queued, it is overwritten; we only need to process the most recent frame.

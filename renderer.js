@@ -128,7 +128,14 @@ window.addEventListener("DOMContentLoaded", () => {
 		}),
 		tenSeconds: new Howl({ src: ["assets/voice-queues/tenSeconds.mp3"] }),
 		fiveSeconds: new Howl({ src: ["assets/voice-queues/fiveSeconds.mp3"] }),
-		oneSecond: new Howl({ src: ["assets/voice-queues/oneSecond.mp3"] }),
+		three: new Howl({ src: ["assets/voice-queues/three.mp3"] }),
+		two: new Howl({ src: ["assets/voice-queues/two.mp3"] }),
+		one: new Howl({ src: ["assets/voice-queues/one.mp3"] }),
+		callQuality: new Howl({ src: ["assets/voice-queues/callQuality.mp3"] }),
+		callSilence: new Howl({ src: ["assets/voice-queues/callSilence.mp3"] }),
+		callTerminated: new Howl({
+			src: ["assets/voice-queues/callTerminated.mp3"],
+		}),
 	};
 
 	// Variables
@@ -346,6 +353,17 @@ window.addEventListener("DOMContentLoaded", () => {
 			timeout: 30000,
 			onBlock: () => {
 				window.ipc.main.send("audioRefreshDevices", [true]);
+			},
+		});
+	});
+	$("#section-serial-delay-refresh").click(() => {
+		$("#section-serial-delay").block({
+			message: "<h1>Refreshing serial ports...</h1>",
+			css: { border: "3px solid #a00" },
+			timeout: 30000,
+			onBlock: () => {
+				refreshSerialPorts();
+				$("#section-serial-delay").unblock();
 			},
 		});
 	});
@@ -750,40 +768,52 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	// When the recorder is ready, determine if a recording should be started
 	window.ipc.on("recorderReady", (event, arg) => {
-		$(".notifications-recorder").removeClass("badge-secondary");
-		$(".notifications-recorder").addClass("badge-warning");
+		animations.add("notifications-recorder", () => {
+			$(".notifications-recorder").removeClass("badge-secondary");
+			$(".notifications-recorder").addClass("badge-warning");
+		});
 		startRecording(-1);
 	});
 
 	// Update recorder process status indication
 	window.ipc.on("recorderStarted", (event, arg) => {
-		$(".notifications-recorder").removeClass("badge-warning");
-		$(".notifications-recorder").addClass("badge-success");
+		animations.add("notifications-recorder", () => {
+			$(".notifications-recorder").removeClass("badge-warning");
+			$(".notifications-recorder").addClass("badge-success");
+		});
 	});
 	window.ipc.on("recorderStopped", (event, arg) => {
-		$(".notifications-recorder").removeClass("badge-success");
-		$(".notifications-recorder").addClass("badge-warning");
+		animations.add("notifications-recorder", () => {
+			$(".notifications-recorder").removeClass("badge-success");
+			$(".notifications-recorder").addClass("badge-warning");
+		});
 	});
 
 	window.ipc.on("silenceReady", (event, arg) => {
-		$(".notifications-silence").removeClass("badge-secondary");
-		$(".notifications-silence").removeClass("badge-warning");
-		$(".notifications-silence").removeClass("badge-danger");
-		$(".notifications-silence").addClass("badge-success");
+		animations.add("notifications-silence", () => {
+			$(".notifications-silence").removeClass("badge-secondary");
+			$(".notifications-silence").removeClass("badge-warning");
+			$(".notifications-silence").removeClass("badge-danger");
+			$(".notifications-silence").addClass("badge-success");
+		});
 	});
 
 	// Do things depending on state of silence detected
 	window.ipc.on("silenceState", (event, arg) => {
 		let triggered = false;
 
-		$(".notifications-silence").removeClass("badge-secondary");
-		$(".notifications-silence").removeClass("badge-warning");
-		$(".notifications-silence").removeClass("badge-danger");
-		$(".notifications-silence").removeClass("badge-success");
+		animations.add("notifications-silence", () => {
+			$(".notifications-silence").removeClass("badge-secondary");
+			$(".notifications-silence").removeClass("badge-warning");
+			$(".notifications-silence").removeClass("badge-danger");
+			$(".notifications-silence").removeClass("badge-success");
+		});
 
 		switch (arg[0]) {
 			case 0:
-				$(".notifications-silence").addClass("badge-success");
+				animations.add("notifications-silence", () => {
+					$(".notifications-silence").addClass("badge-success");
+				});
 
 				// Deactivate silence if the alarm is active
 				let silenceStatus = status.find({ name: "silence" }, true);
@@ -793,10 +823,14 @@ window.addEventListener("DOMContentLoaded", () => {
 				}
 				break;
 			case 1:
-				$(".notifications-silence").addClass("badge-warning");
+				animations.add("notifications-silence", () => {
+					$(".notifications-silence").addClass("badge-warning");
+				});
 				break;
 			case 2:
-				$(".notifications-silence").addClass("badge-danger");
+				animations.add("notifications-silence", () => {
+					$(".notifications-silence").addClass("badge-danger");
+				});
 				silence.active();
 				triggered = true;
 				break;
@@ -1085,33 +1119,39 @@ window.addEventListener("DOMContentLoaded", () => {
 	window.ipc.on("processClosed", (event, arg) => {
 		switch (arg[0]) {
 			case "silence":
-				$(".notifications-silence").removeClass("badge-success");
-				$(".notifications-silence").removeClass("badge-warning");
-				$(".notifications-silence").removeClass("badge-danger");
-				$(".notifications-silence").addClass("badge-secondary");
+				animations.add("notifications-silence", () => {
+					$(".notifications-silence").removeClass("badge-success");
+					$(".notifications-silence").removeClass("badge-warning");
+					$(".notifications-silence").removeClass("badge-danger");
+					$(".notifications-silence").addClass("badge-secondary");
+				});
 				if (hosts.client.silenceDetection) {
 					window.ipc.process.send("silence", ["open"]);
 				}
 				break;
 			case "recorder":
-				$(".notifications-recorder").removeClass("badge-success");
-				$(".notifications-recorder").removeClass("badge-warning");
-				$(".notifications-recorder").removeClass("badge-danger");
-				$(".notifications-recorder").addClass("badge-secondary");
-				if (hosts.client.recordAudio) {
-					window.ipc.process.send("recorder", ["open"]);
-				}
+				animations.add("notifications-recorder", () => {
+					$(".notifications-recorder").removeClass("badge-success");
+					$(".notifications-recorder").removeClass("badge-warning");
+					$(".notifications-recorder").removeClass("badge-danger");
+					$(".notifications-recorder").addClass("badge-secondary");
+					if (hosts.client.recordAudio) {
+						window.ipc.process.send("recorder", ["open"]);
+					}
+				});
 				break;
 			case "remote":
 				recipients.registerPeer(null);
 				remoteQuality.peerDestroyed();
-				$(".notifications-remote").removeClass("badge-success");
-				$(".notifications-remote").removeClass("badge-warning");
-				$(".notifications-remote").removeClass("badge-danger");
-				$(".notifications-remote").removeClass("badge-info");
-				$(".notifications-remote").removeClass("badge-primary");
-				$(".notifications-remote").addClass("badge-secondary");
-				$(".meta-callQuality").addClass("d-none");
+				animations.add("notifications-remote", () => {
+					$(".notifications-remote").removeClass("badge-success");
+					$(".notifications-remote").removeClass("badge-warning");
+					$(".notifications-remote").removeClass("badge-danger");
+					$(".notifications-remote").removeClass("badge-info");
+					$(".notifications-remote").removeClass("badge-primary");
+					$(".notifications-remote").addClass("badge-secondary");
+					$(".meta-callQuality").addClass("d-none");
+				});
 
 				// Re-open the process after a 5-second delay if we are supposed to be in a call
 				if (
@@ -1132,22 +1172,27 @@ window.addEventListener("DOMContentLoaded", () => {
 	});
 
 	// Construct serial port settings
-	let serialPorts = window.ipc.getSerialPorts();
-	let delayPorts = `<option value="">(NONE)</option>`;
-	if (serialPorts.constructor === Array) {
-		serialPorts.map((port) => {
-			delayPorts += `<option value="${port.path}">${port.path}</option>`;
+
+	function refreshSerialPorts() {
+		let serialPorts = window.ipc.getSerialPorts();
+		let delayPorts = `<option value="">(NONE)</option>`;
+		if (serialPorts.constructor === Array) {
+			serialPorts.map((port) => {
+				delayPorts += `<option value="${port.path}">${port.path}</option>`;
+			});
+		}
+		$("#section-serial-delay-port").html(delayPorts);
+		window.requestAnimationFrame(() => {
+			let delaySettings = window.settings.delay;
+			$("#section-serial-delay-port").val(delaySettings.port);
+		});
+		$("#section-serial-delay-port").unbind("change");
+		$("#section-serial-delay-port").on("change", (e) => {
+			let val = $(e.target).val();
+			window.saveSettings.delay("port", val);
 		});
 	}
-	$("#section-serial-delay-port").html(delayPorts);
-	window.requestAnimationFrame(() => {
-		let delaySettings = window.settings.delay;
-		$("#section-serial-delay-port").val(delaySettings.port);
-	});
-	$("#section-serial-delay-port").on("change", (e) => {
-		let val = $(e.target).val();
-		window.saveSettings.delay("port", val);
-	});
+	refreshSerialPorts();
 
 	/*
         SOCKET EVENTS AND FUNCTIONS
@@ -1683,8 +1728,14 @@ window.addEventListener("DOMContentLoaded", () => {
 					if (queueLength === 5) {
 						sounds.fiveSeconds.play();
 					}
+					if (queueLength === 3) {
+						sounds.three.play();
+					}
+					if (queueLength === 2) {
+						sounds.two.play();
+					}
 					if (queueLength === 1) {
-						sounds.oneSecond.play();
+						sounds.one.play();
 					}
 				}
 			}
@@ -2454,12 +2505,14 @@ Track: <strong>${request.trackname}</strong>`,
 	});
 
 	window.ipc.on("remotePeerReady", (event, arg) => {
-		$(".notifications-remote").removeClass("badge-success");
-		$(".notifications-remote").removeClass("badge-warning");
-		$(".notifications-remote").removeClass("badge-danger");
-		$(".notifications-remote").removeClass("badge-info");
-		$(".notifications-remote").removeClass("badge-secondary");
-		$(".notifications-remote").addClass("badge-primary");
+		animations.add("notifications-remote", () => {
+			$(".notifications-remote").removeClass("badge-success");
+			$(".notifications-remote").removeClass("badge-warning");
+			$(".notifications-remote").removeClass("badge-danger");
+			$(".notifications-remote").removeClass("badge-info");
+			$(".notifications-remote").removeClass("badge-secondary");
+			$(".notifications-remote").addClass("badge-primary");
+		});
 		remoteShouldBeMuted();
 		recipients.registerPeer(arg[0]);
 		console.dir(pendingHostCall);
@@ -2502,13 +2555,15 @@ Track: <strong>${request.trackname}</strong>`,
 	});
 
 	window.ipc.on("peerCallEstablished", (event, arg) => {
-		$(".notifications-remote").removeClass("badge-primary");
-		$(".notifications-remote").removeClass("badge-warning");
-		$(".notifications-remote").removeClass("badge-danger");
-		$(".notifications-remote").removeClass("badge-info");
-		$(".notifications-remote").removeClass("badge-secondary");
-		$(".notifications-remote").addClass("badge-success");
-		$(".meta-callQuality").removeClass("d-none");
+		animations.add("notifications-remote", () => {
+			$(".notifications-remote").removeClass("badge-primary");
+			$(".notifications-remote").removeClass("badge-warning");
+			$(".notifications-remote").removeClass("badge-danger");
+			$(".notifications-remote").removeClass("badge-info");
+			$(".notifications-remote").removeClass("badge-secondary");
+			$(".notifications-remote").addClass("badge-success");
+			$(".meta-callQuality").removeClass("d-none");
+		});
 		if (
 			!meta.meta.state.startsWith("remote_") &&
 			!meta.meta.state.startsWith("sportsremote_")
@@ -2531,13 +2586,15 @@ Track: <strong>${request.trackname}</strong>`,
 	});
 
 	window.ipc.on("peerCallAnswered", (event, arg) => {
-		$(".notifications-remote").removeClass("badge-primary");
-		$(".notifications-remote").removeClass("badge-warning");
-		$(".notifications-remote").removeClass("badge-danger");
-		$(".notifications-remote").removeClass("badge-success");
-		$(".notifications-remote").removeClass("badge-secondary");
-		$(".notifications-remote").addClass("badge-info");
-		$(".meta-callQuality").removeClass("d-none");
+		animations.add("notifications-remote", () => {
+			$(".notifications-remote").removeClass("badge-primary");
+			$(".notifications-remote").removeClass("badge-warning");
+			$(".notifications-remote").removeClass("badge-danger");
+			$(".notifications-remote").removeClass("badge-success");
+			$(".notifications-remote").removeClass("badge-secondary");
+			$(".notifications-remote").addClass("badge-info");
+			$(".meta-callQuality").removeClass("d-none");
+		});
 	});
 
 	window.ipc.on("peerOutgoingSilence", (event, arg) => {
@@ -2548,12 +2605,14 @@ Track: <strong>${request.trackname}</strong>`,
 			hosts.client.ID === meta.meta.hostCalling
 		) {
 			state.break({ problem: true });
-			$(".notifications-remote").removeClass("badge-primary");
-			$(".notifications-remote").removeClass("badge-warning");
-			$(".notifications-remote").removeClass("badge-info");
-			$(".notifications-remote").removeClass("badge-success");
-			$(".notifications-remote").removeClass("badge-secondary");
-			$(".notifications-remote").addClass("badge-danger");
+			animations.add("notifications-remote", () => {
+				$(".notifications-remote").removeClass("badge-primary");
+				$(".notifications-remote").removeClass("badge-warning");
+				$(".notifications-remote").removeClass("badge-info");
+				$(".notifications-remote").removeClass("badge-success");
+				$(".notifications-remote").removeClass("badge-secondary");
+				$(".notifications-remote").addClass("badge-danger");
+			});
 			window.ipc.main.send("makeNotification", [
 				{
 					title: "Silence on Outgoing Audio",
@@ -2563,6 +2622,7 @@ Track: <strong>${request.trackname}</strong>`,
 					body: `<p>Silence was detected for 15 seconds on outgoing audio. Remote broadcast has been sent to break. Please check your audio devices and DJ Controls' Audio settings.</p>`,
 				},
 			]);
+			sounds.callSilence.play();
 			window.ipc.process.send("remote", ["close"]);
 		}
 	});
@@ -2575,13 +2635,15 @@ Track: <strong>${request.trackname}</strong>`,
 			hosts.client.ID === meta.meta.hostCalled
 		) {
 			state.break({ problem: true });
-			$(".notifications-remote").removeClass("badge-primary");
-			$(".notifications-remote").removeClass("badge-warning");
-			$(".notifications-remote").removeClass("badge-info");
-			$(".notifications-remote").removeClass("badge-success");
-			$(".notifications-remote").removeClass("badge-secondary");
-			$(".notifications-remote").addClass("badge-danger");
-			$(".meta-callQuality").addClass("d-none");
+			animations.add("notifications-remote", () => {
+				$(".notifications-remote").removeClass("badge-primary");
+				$(".notifications-remote").removeClass("badge-warning");
+				$(".notifications-remote").removeClass("badge-info");
+				$(".notifications-remote").removeClass("badge-success");
+				$(".notifications-remote").removeClass("badge-secondary");
+				$(".notifications-remote").addClass("badge-danger");
+				$(".meta-callQuality").addClass("d-none");
+			});
 		}
 	});
 
@@ -2593,13 +2655,15 @@ Track: <strong>${request.trackname}</strong>`,
 			hosts.client.ID === meta.meta.hostCalling
 		) {
 			state.break({ problem: true });
-			$(".notifications-remote").removeClass("badge-primary");
-			$(".notifications-remote").removeClass("badge-warning");
-			$(".notifications-remote").removeClass("badge-info");
-			$(".notifications-remote").removeClass("badge-success");
-			$(".notifications-remote").removeClass("badge-secondary");
-			$(".notifications-remote").addClass("badge-danger");
-			$(".meta-callQuality").addClass("d-none");
+			animations.add("notifications-remote", () => {
+				$(".notifications-remote").removeClass("badge-primary");
+				$(".notifications-remote").removeClass("badge-warning");
+				$(".notifications-remote").removeClass("badge-info");
+				$(".notifications-remote").removeClass("badge-success");
+				$(".notifications-remote").removeClass("badge-secondary");
+				$(".notifications-remote").addClass("badge-danger");
+				$(".meta-callQuality").addClass("d-none");
+			});
 			window.ipc.main.send("makeNotification", [
 				{
 					title: "Audio Call was Closed!",
@@ -2609,6 +2673,7 @@ Track: <strong>${request.trackname}</strong>`,
 					body: `<p>The audio call for the remote broadcast closed. The broadcast was sent to break. Please check your network settings and resume the broadcast when things are stable.</p><p>This could also be a network issue on WWSU's end. If so, please report this under "report a problem".</p>`,
 				},
 			]);
+			sounds.callTerminated.play();
 		}
 	});
 
@@ -2620,13 +2685,15 @@ Track: <strong>${request.trackname}</strong>`,
 			hosts.client.ID === meta.meta.hostCalling
 		) {
 			state.break({ problem: true });
-			$(".notifications-remote").removeClass("badge-primary");
-			$(".notifications-remote").removeClass("badge-warning");
-			$(".notifications-remote").removeClass("badge-info");
-			$(".notifications-remote").removeClass("badge-success");
-			$(".notifications-remote").removeClass("badge-secondary");
-			$(".notifications-remote").addClass("badge-danger");
-			$(".meta-callQuality").addClass("d-none");
+			animations.add("notifications-remote", () => {
+				$(".notifications-remote").removeClass("badge-primary");
+				$(".notifications-remote").removeClass("badge-warning");
+				$(".notifications-remote").removeClass("badge-info");
+				$(".notifications-remote").removeClass("badge-success");
+				$(".notifications-remote").removeClass("badge-secondary");
+				$(".notifications-remote").addClass("badge-danger");
+				$(".meta-callQuality").addClass("d-none");
+			});
 			window.ipc.main.send("makeNotification", [
 				{
 					title: "Audio Call was Closed!",
@@ -2636,6 +2703,7 @@ Track: <strong>${request.trackname}</strong>`,
 					body: `<p>The audio call for the remote broadcast closed. The broadcast was sent to break. Please check your network settings and resume the broadcast when things are stable.</p><p>This could also be a network issue on WWSU's end. If so, please report this under "report a problem".</p>`,
 				},
 			]);
+			sounds.callTerminated.play();
 		}
 		if (
 			(meta.state.state.startsWith("remote_") ||
@@ -2643,13 +2711,15 @@ Track: <strong>${request.trackname}</strong>`,
 			hosts.client.ID === meta.meta.hostCalled
 		) {
 			state.break({ problem: true });
-			$(".notifications-remote").removeClass("badge-primary");
-			$(".notifications-remote").removeClass("badge-warning");
-			$(".notifications-remote").removeClass("badge-info");
-			$(".notifications-remote").removeClass("badge-success");
-			$(".notifications-remote").removeClass("badge-secondary");
-			$(".notifications-remote").addClass("badge-danger");
-			$(".meta-callQuality").addClass("d-none");
+			animations.add("notifications-remote", () => {
+				$(".notifications-remote").removeClass("badge-primary");
+				$(".notifications-remote").removeClass("badge-warning");
+				$(".notifications-remote").removeClass("badge-info");
+				$(".notifications-remote").removeClass("badge-success");
+				$(".notifications-remote").removeClass("badge-secondary");
+				$(".notifications-remote").addClass("badge-danger");
+				$(".meta-callQuality").addClass("d-none");
+			});
 		}
 		window.ipc.process.send("remote", ["close"]);
 	});
@@ -2673,12 +2743,14 @@ Track: <strong>${request.trackname}</strong>`,
 			hosts.client.ID === meta.meta.hostCalling
 		) {
 			state.break({ problem: true });
-			$(".notifications-remote").removeClass("badge-primary");
-			$(".notifications-remote").removeClass("badge-warning");
-			$(".notifications-remote").removeClass("badge-info");
-			$(".notifications-remote").removeClass("badge-success");
-			$(".notifications-remote").removeClass("badge-secondary");
-			$(".notifications-remote").addClass("badge-danger");
+			animations.add("notifications-remote", () => {
+				$(".notifications-remote").removeClass("badge-primary");
+				$(".notifications-remote").removeClass("badge-warning");
+				$(".notifications-remote").removeClass("badge-info");
+				$(".notifications-remote").removeClass("badge-success");
+				$(".notifications-remote").removeClass("badge-secondary");
+				$(".notifications-remote").addClass("badge-danger");
+			});
 			window.ipc.main.send("makeNotification", [
 				{
 					title: "Bad Audio Quality!",
@@ -2688,24 +2760,29 @@ Track: <strong>${request.trackname}</strong>`,
 					body: `<p>The remote host reports the audio call quality was poor. The broadcast was sent to break. Please ensure your network connection is good, you are not running CPU-intensive apps, and your audio devices are not disconnected / very quiet.</p>`,
 				},
 			]);
+			sounds.callQuality.play();
 			window.ipc.process.send("remote", ["close"]);
 		}
 
-		$(".meta-callQuality-progress").css("width", `${quality}%`);
+		animations.add("callquality", () => {
+			$(".meta-callQuality-progress").css("width", `${quality}%`);
+		});
 
 		if (hosts.client.ID === meta.meta.hostCalling) {
-			$(".notifications-remote").removeClass("badge-primary");
-			$(".notifications-remote").removeClass("badge-warning");
-			$(".notifications-remote").removeClass("badge-info");
-			$(".notifications-remote").removeClass("badge-success");
-			$(".notifications-remote").removeClass("badge-secondary");
-			$(".notifications-remote").removeClass("badge-danger");
+			animations.add("notifications-remote", () => {
+				$(".notifications-remote").removeClass("badge-primary");
+				$(".notifications-remote").removeClass("badge-warning");
+				$(".notifications-remote").removeClass("badge-info");
+				$(".notifications-remote").removeClass("badge-success");
+				$(".notifications-remote").removeClass("badge-secondary");
+				$(".notifications-remote").removeClass("badge-danger");
+			});
 			if (quality <= 33) {
 				$(".notifications-remote").addClass("badge-danger");
 			} else if (quality <= 66) {
 				$(".notifications-remote").addClass("badge-warning");
 			} else {
-				$(".notifications-remote").removeClass("badge-success");
+				$(".notifications-remote").addClass("badge-success");
 			}
 
 			console.log(`Remote host reported call quality at ${quality}%.`);

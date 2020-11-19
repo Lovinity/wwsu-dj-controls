@@ -20,6 +20,9 @@
 
 ### Added
 
+- Remote broadcasting via Skyway.js
+- Audio call quality meter under the queue time in the top-bar (operations buttons) when doing a remote broadcast. Visible on the sending and receiving DJ Controls.
+- Audio limiter for remote broadcasts to help prevent peaks / clipping
 - Support for timesheet notes
 - Schema validation to config
 - Indications of the status for each audio process
