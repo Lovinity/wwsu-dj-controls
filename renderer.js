@@ -1111,6 +1111,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				$(".notifications-remote").removeClass("badge-info");
 				$(".notifications-remote").removeClass("badge-primary");
 				$(".notifications-remote").addClass("badge-secondary");
+				$(".meta-callQuality").addClass("d-none");
 
 				// Re-open the process after a 5-second delay if we are supposed to be in a call
 				if (
@@ -2507,6 +2508,7 @@ Track: <strong>${request.trackname}</strong>`,
 		$(".notifications-remote").removeClass("badge-info");
 		$(".notifications-remote").removeClass("badge-secondary");
 		$(".notifications-remote").addClass("badge-success");
+		$(".meta-callQuality").removeClass("d-none");
 		if (
 			!meta.meta.state.startsWith("remote_") &&
 			!meta.meta.state.startsWith("sportsremote_")
@@ -2535,6 +2537,7 @@ Track: <strong>${request.trackname}</strong>`,
 		$(".notifications-remote").removeClass("badge-success");
 		$(".notifications-remote").removeClass("badge-secondary");
 		$(".notifications-remote").addClass("badge-info");
+		$(".meta-callQuality").removeClass("d-none");
 	});
 
 	window.ipc.on("peerOutgoingSilence", (event, arg) => {
@@ -2578,6 +2581,7 @@ Track: <strong>${request.trackname}</strong>`,
 			$(".notifications-remote").removeClass("badge-success");
 			$(".notifications-remote").removeClass("badge-secondary");
 			$(".notifications-remote").addClass("badge-danger");
+			$(".meta-callQuality").addClass("d-none");
 		}
 	});
 
@@ -2595,6 +2599,7 @@ Track: <strong>${request.trackname}</strong>`,
 			$(".notifications-remote").removeClass("badge-success");
 			$(".notifications-remote").removeClass("badge-secondary");
 			$(".notifications-remote").addClass("badge-danger");
+			$(".meta-callQuality").addClass("d-none");
 			window.ipc.main.send("makeNotification", [
 				{
 					title: "Audio Call was Closed!",
@@ -2621,6 +2626,7 @@ Track: <strong>${request.trackname}</strong>`,
 			$(".notifications-remote").removeClass("badge-success");
 			$(".notifications-remote").removeClass("badge-secondary");
 			$(".notifications-remote").addClass("badge-danger");
+			$(".meta-callQuality").addClass("d-none");
 			window.ipc.main.send("makeNotification", [
 				{
 					title: "Audio Call was Closed!",
@@ -2643,6 +2649,7 @@ Track: <strong>${request.trackname}</strong>`,
 			$(".notifications-remote").removeClass("badge-success");
 			$(".notifications-remote").removeClass("badge-secondary");
 			$(".notifications-remote").addClass("badge-danger");
+			$(".meta-callQuality").addClass("d-none");
 		}
 		window.ipc.process.send("remote", ["close"]);
 	});
@@ -2683,6 +2690,8 @@ Track: <strong>${request.trackname}</strong>`,
 			]);
 			window.ipc.process.send("remote", ["close"]);
 		}
+
+		$(".meta-callQuality-progress").css("width", `${quality}%`);
 
 		if (hosts.client.ID === meta.meta.hostCalling) {
 			$(".notifications-remote").removeClass("badge-primary");
