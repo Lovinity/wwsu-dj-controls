@@ -2648,19 +2648,17 @@ Track: <strong>${request.trackname}</strong>`,
 	});
 
 	window.ipc.on("peerQualityProblem", (event, arg) => {
-		console.log(`Peer quality ${arg[0]}, ${arg[1]}, ${arg[2]}`);
 		remoteQuality.qualityProblem(arg[0], arg[1], arg[2]);
 	});
 
-	remoteQuality.on("quality", "renderer", (connection, value) => {
+	remoteQuality.on("quality", "renderer", (connection, reason, quality) => {
 		if (hosts.client.ID === meta.meta.hostCalled) {
-			console.log(`Reporting call quality on ${connection} to WWSU: ${value}%`)
-			remote.sendQuality({ quality: value });
+			console.log(`Call quality ${connection}: ${quality}% because ${reason}`);
+			remote.sendQuality({ quality });
 		}
 	});
 
 	remote.on("callQuality", "renderer", (quality) => {
-		console.log(`Call quality reported by remote: ${quality}%`)
 		if (
 			quality <= 0 &&
 			(meta.state.state.startsWith("remote_") ||
@@ -2701,7 +2699,7 @@ Track: <strong>${request.trackname}</strong>`,
 				$(".notifications-remote").removeClass("badge-success");
 			}
 
-			console.log(`Remote call quality: ${quality}%.`);
+			console.log(`Remote host reported call quality at ${quality}%.`);
 		}
 	});
 

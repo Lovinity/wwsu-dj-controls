@@ -8,22 +8,22 @@ class WWSUremoteQuality extends WWSUevents {
 	 * @param {WWSUmeta} meta Initialized WWSU meta class
 	 */
 	constructor(meta) {
-        super();
+		super();
 
 		this.connections = new Map();
 
 		this.meta = meta;
 
-        // Increase quality by 1% for all connections every 0.5 seconds; push quality event at 33%, 66%, and 100%.
+		// Increase quality by 1% for all connections every 0.5 seconds; push quality event at 33%, 66%, and 100%.
 		setInterval(() => {
 			this.connections.forEach((value, key) => {
 				if (value < 100) {
 					value += 1;
 					this.connections.set(key, value);
 
-					if (value === 33) this.emitEvent("quality", [key, value]);
-					if (value === 66) this.emitEvent("quality", [key, value]);
-					if (value === 100) this.emitEvent("quality", [key, value]);
+					if (value === 33) this.emitEvent("quality", [key, `improvedQuality`, value]);
+					if (value === 66) this.emitEvent("quality", [key, `improvedQuality`, value]);
+					if (value === 100) this.emitEvent("quality", [key, `improvedQuality`, value]);
 				}
 			});
 		}, 500);
@@ -48,28 +48,27 @@ class WWSUremoteQuality extends WWSUevents {
 			return;
 		}
 
-		let currentQuality =
-			this.connections.get(connection) || 100;
+		let currentQuality = this.connections.get(connection) || 100;
 		currentQuality -= value;
 		if (currentQuality < 0) currentQuality = 0;
-        this.connections.set(connection, currentQuality);
-        
-		this.emitEvent("quality", [connection, currentQuality]);
-    }
-    
-    /**
-     * Clear a connection when it is disconnected.
-     * 
-     * @param {string} connection The peer ID
-     */
-    callClosed(connection) {
-        this.connections.delete(connection);
-    }
+		this.connections.set(connection, currentQuality);
 
-    /**
-     * Call when the peer is destroyed to remove all connections.
-     */
-    peerDestroyed() {
-        this.connections.clear();
-    }
+		this.emitEvent("quality", [connection, reason, currentQuality]);
+	}
+
+	/**
+	 * Clear a connection when it is disconnected.
+	 *
+	 * @param {string} connection The peer ID
+	 */
+	callClosed(connection) {
+		this.connections.delete(connection);
+	}
+
+	/**
+	 * Call when the peer is destroyed to remove all connections.
+	 */
+	peerDestroyed() {
+		this.connections.clear();
+	}
 }
