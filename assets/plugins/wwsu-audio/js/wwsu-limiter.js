@@ -47,8 +47,8 @@ function Limiter(
 	this.postGain = postGain || 0; // dB
 	this.attackTime = attackTime || 0; // s
 	this.releaseTime = releaseTime || 1; // s
-	this.threshold = threshold || -0.05; // dB
-	this.lookAheadTime = lookAheadTime || 0.05; // s
+	this.threshold = threshold || -0.1; // dB
+	this.lookAheadTime = lookAheadTime || 0.1; // s
 	this.delayBuffer = [];
 	this.envelopeSample = 0;
 
