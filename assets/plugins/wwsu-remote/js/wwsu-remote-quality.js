@@ -49,8 +49,7 @@ class WWSUremoteQuality extends WWSUevents {
 		}
 
 		let currentQuality =
-			this.connections.get(connection) ||
-			this.connections.set(connection, 100);
+			this.connections.get(connection) || 100;
 		currentQuality -= value;
 		if (currentQuality < 0) currentQuality = 0;
         this.connections.set(connection, currentQuality);
