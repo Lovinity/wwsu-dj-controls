@@ -22,7 +22,7 @@ class WWSUremote extends WWSUevents {
 
 		this.recipients = recipients;
 
-		socket.on("call-quality", "WWSUremote", (quality) => {
+		socket.on("call-quality", (quality) => {
 			this.emitEvent("callQuality", [quality]);
 		});
 	}
