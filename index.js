@@ -687,7 +687,7 @@ ipcMain.on("main", (event, arg) => {
 						`${path.resolve(
 							path.dirname(`${config.get("recorder.recordPath")}/${args[0]}`)
 						)}/README.txt`,
-						`Audio files are recorded in webm/Opus format because the MP3 format is proprietary, and webm/opus works best with DJ Controls. If you need to convert these to another format for free, you can use a free online converter such as https://online-audio-convert.com/ or a downloadable converter application such as https://www.freac.org/ .` +
+						`Audio files are recorded in webm/Opus format because the MP3 format is proprietary, and webm/opus works best with DJ Controls. If you need to convert these to another format for free, you can use a free online converter such as https://anyconv.com/webm-to-mp3-converter/ or a downloadable application that can convert WEBM Opus files .` +
 							"\n\n" +
 							`BE AWARE recordings are only stored temporarily! WWSU reserves the right to delete, modify, and/or monitor any and all recordings at any time without notice. Be sure to save a copy of your recordings ASAP after each show.` +
 							"\n\n" +
