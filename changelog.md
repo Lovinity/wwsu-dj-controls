@@ -32,6 +32,8 @@
 - Ban / discipline management, and Mute/Ban functionality in the messages / chat
 - npx electron-builder install-app-deps in .travis.yml to rebuild node-serialport upon compilation of DJ Controls installers
 - Silence detection triggered notifications if this DJ Controls started the current broadcast
+- Add a Log and a box in the Dashboard that becomes visible, allowing a producer to click it to clear meta when talking
+- Live and remote sports broadcasting
 
 ### Updated
 

@@ -567,6 +567,9 @@ window.addEventListener("DOMContentLoaded", () => {
 	$(".btn-operation-sports").click(() => {
 		state.showSportsForm();
 	});
+	$(".btn-operation-sportsremote").click(() => {
+		state.showSportsRemoteForm();
+	});
 
 	// Initialize stuff
 	status.initReportForm(`DJ Controls`, `#section-report-form`);
