@@ -248,7 +248,7 @@ class WWSUmessages extends WWSUdb {
         this.recipients.find().forEach((recipient) => {
             recipient.unreadMessages = 0;
             this.find({ from: recipient.host, status: 'active' }).forEach((message) => {
-                if ((message.to === 'DJ' || message.to === 'DJ-private' || message.to === this.hosts.recipient.host) && this.read.indexOf(message.ID) === -1) {
+                if ((message.to === 'DJ' || message.to === 'DJ-private' || message.to === this.recipients.recipient.host) && this.read.indexOf(message.ID) === -1) {
                     recipient.unreadMessages++;
                     unreadMessages++;
 

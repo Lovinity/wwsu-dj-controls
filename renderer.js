@@ -296,14 +296,14 @@ window.addEventListener("DOMContentLoaded", () => {
 							type: "number",
 							title: "Delay (milliseconds)",
 							required: true,
-							minimum: 0
+							minimum: 0,
 						},
 						threshold: {
 							type: "number",
 							title: "Threshold (percentile 0.0 - 1.0)",
 							minimum: 0,
 							maximum: 1,
-							required: true
+							required: true,
 						},
 					},
 				},
@@ -325,7 +325,8 @@ window.addEventListener("DOMContentLoaded", () => {
 							},
 						},
 						threshold: {
-							helper: "At what volume percentile (0.0 - 1.0) should silence be considered detected when the combined volumes of input devices with silence checked drop below this value?",
+							helper:
+								"At what volume percentile (0.0 - 1.0) should silence be considered detected when the combined volumes of input devices with silence checked drop below this value?",
 							events: {
 								change: function () {
 									let value = this.getValue();
@@ -1273,6 +1274,19 @@ window.addEventListener("DOMContentLoaded", () => {
 		state.delayStatus({ seconds: args[0], bypass: args[1] });
 	});
 
+	// Error with delay system
+	window.ipc.on("delayError", (event, args) => {
+		if (hosts.client.delaySystem) {
+			$(document).Toasts("create", {
+				class: "bg-danger",
+				title: "Delay System Problem",
+				autoHide: true,
+				delay: 15000,
+				body: `There was an error connecting to the delay system. Please check the settings under "Serial" and ensure the delay system is on and functional.`,
+			});
+		}
+	});
+
 	// Construct serial port settings
 
 	function refreshSerialPorts() {
@@ -1292,6 +1306,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		$("#section-serial-delay-port").on("change", (e) => {
 			let val = $(e.target).val();
 			window.saveSettings.delay("port", val);
+			window.ipc.restartDelay(hosts.client.delaySystem);
 		});
 	}
 	refreshSerialPorts();

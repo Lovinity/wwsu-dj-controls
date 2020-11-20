@@ -15,16 +15,23 @@ window.addEventListener("DOMContentLoaded", () => {
 	// Silence states
 	var timer;
 
+	// Do not monitor for silence if there are no audio devices selected for silence monitoring
+	var silenceDeviceActive = false;
+
 	// Listen for when we receive available devices
 	audioManager.on("devices", "renderer", (devices) => {
+		silenceDeviceActive = false;
 		devices = devices.map((device) => {
 			// Retrieve device settings if they exist
 			let settings = window.settings
 				.audio()
-				.find((dev) => dev.deviceId === device.deviceId && dev.kind === device.kind);
+				.find(
+					(dev) => dev.deviceId === device.deviceId && dev.kind === device.kind
+				);
 
 			// Connect device to recorder if device has silence set to true
 			if (settings && settings.silence) {
+				silenceDeviceActive = true;
 				audioManager.connect(
 					device.deviceId,
 					device.kind,
@@ -40,7 +47,12 @@ window.addEventListener("DOMContentLoaded", () => {
 	window.ipc.renderer.send("silenceReady", []);
 
 	silence.on("audioVolume", "silence", (volume) => {
-		if (!silenceSettings) return;
+		if (!silenceSettings || !silenceDeviceActive) {
+			clearInterval(timer);
+			clearTimeout(timer);
+			timer = undefined;
+			return;
+		}
 
 		// If silence detected, start delay timer, else remove it
 		if (
