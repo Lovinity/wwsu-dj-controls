@@ -823,14 +823,13 @@ class WWSUstate extends WWSUevents {
 					fields: {
 						audioAcknowledgement: {
 							rightLabel: "Yes",
-							helper:
-								"Check this box to indicate you went into the Audio menu of DJ Controls and confirmed the devices and volumes you want for the remote broadcast are correct.",
+							helper: `You confirm you went into the Audio page of DJ Controls and ensured the devices you want broadcast have "Remote Broadcasts" checked, their volumes are set to where you want them, and you tested (via the VU meters) to ensure DJ Controls is receiving audio from those devices.`,
 							validator: function (callback) {
 								var value = this.getValue();
 								if (!value) {
 									callback({
 										status: false,
-										message: `You must acknowledge that you ensured the settings in the Audio menu are correct.`,
+										message: `You must acknowledge that you checked the Audio settings and ensured everything is set correctly and working.`,
 									});
 									return;
 								}
@@ -842,13 +841,13 @@ class WWSUstate extends WWSUevents {
 						acknowledge: {
 							rightLabel: "Yes",
 							helper:
-								"Please check this box to indicate you read the announcements on the announcements tab of DJ Controls.",
+								"Please check this box to indicate you read the announcements on the announcements tab of DJ Controls. Important information regarding DJs, shows/broadcasts, or WWSU might be posted here.",
 							validator: function (callback) {
 								var value = this.getValue();
 								if (!value) {
 									callback({
 										status: false,
-										message: `You must acknowledge that you read the announcements on the announcements tab of DJ Controls before doing a broadcast.`,
+										message: `You must acknowledge that you read the announcements on the announcements tab of DJ Controls.`,
 									});
 									return;
 								}
@@ -858,7 +857,10 @@ class WWSUstate extends WWSUevents {
 							},
 						},
 						djs: {
-							helper: `Each DJ handle should be separated with a "; " (semicolon-space) if providing multiple DJs.`,
+							helpers: [
+								`Each DJ handle should be separated with a "; " (semicolon-space) if providing multiple DJs.`,
+								`If this field is uneditable but incorrect, please contact a director ASAP.`,
+							],
 							validator: function (callback) {
 								var value = this.getValue();
 								if (value.includes(" -")) {
@@ -890,6 +892,7 @@ class WWSUstate extends WWSUevents {
 							},
 						},
 						name: {
+							helper: `If this field is uneditable but incorrect, please contact a director ASAP.`,
 							validator: function (callback) {
 								var value = this.getValue();
 								if (value.includes(" -")) {
@@ -937,7 +940,7 @@ class WWSUstate extends WWSUevents {
 							type: "select",
 							optionLabels: callableHosts.map((host) => host.friendlyname),
 							helper:
-								"Choose which host you want to establish an audio call with for the broadcast",
+								"Choose which host you want to establish an audio call with for the broadcast. Please contact a director for guidance or choose the first one (unless that one does not work).",
 						},
 					},
 					form: {

@@ -1706,8 +1706,8 @@
 												(but a limiter will be applied to help reduce that)
 											</li>
 											<li>
-												If the audio is too quiet (< 25%) for too long, the silence detection
-												alarm may trigger
+												If the audio is too quiet (< 25%) for too long when on
+												the air, the silence detection alarm may trigger
 											</li>
 										</ul>
 									</div>
@@ -1724,7 +1724,71 @@
 											device will be cleared.
 										</p>
 									</div>
+									<div class="callout callout-info">
+										<h5>Audio Queues for Remote Broadcasts</h5>
+										<p>
+											Currently, audio queue countdowns are played through your
+											default computer audio device and cannot be changed. In a
+											future version, you will be able to choose which device to
+											play queues on.
+										</p>
+									</div>
 									<div id="section-audio-devices-outputs"></div>
+								</div>
+							</div>
+							<!-- /.card-body -->
+						</div>
+
+						<div class="card card-success elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Recorder Settings</h3>
+								<div class="card-tools"></div>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body">
+								<div class="p-3">
+									<div class="callout callout-info">
+										<h5>Only Applicable When Recording</h5>
+										<p>
+											These settings are only applicable in the event someone
+											specifies (via the Hosts page in the administration menu)
+											this DJ Controls is responsible for recording on-air
+											programming.
+										</p>
+									</div>
+									<div id="section-audio-recorder-form"></div>
+								</div>
+							</div>
+							<!-- /.card-body -->
+						</div>
+
+						<div class="card card-danger elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Silence Detection Settings</h3>
+								<div class="card-tools"></div>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body">
+								<div class="p-3">
+									<div class="callout callout-info">
+										<h5>Only Applicable When Responsible</h5>
+										<p>
+											These settings are only applicable in the event someone
+											specifies (via the Hosts page in the administration menu)
+											this DJ Controls is responsible for monitoring and
+											reporting silence.
+										</p>
+									</div>
+									<div class="callout callout-danger">
+										<h5>Must Have at least One Input on "Silence"</h5>
+										<p>
+											If this DJ Controls is marked responsible for silence
+											detection, you must have at least one input device (see
+											above) with the "silence" box checked; check the device(s)
+											which feed live audio from the airwaves to the computer.
+										</p>
+									</div>
+									<div id="section-audio-silence-form"></div>
 								</div>
 							</div>
 							<!-- /.card-body -->

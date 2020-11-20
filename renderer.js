@@ -232,7 +232,117 @@ window.addEventListener("DOMContentLoaded", () => {
 		"#section-audio",
 		"Audio Settings - WWSU DJ Controls",
 		"/audio",
-		false
+		false,
+		() => {
+			$("#section-audio-recorder-form").alpaca({
+				schema: {
+					type: "object",
+					properties: {
+						delay: {
+							type: "number",
+							title: "Delay (milliseconds)",
+						},
+						recordPath: {
+							type: "string",
+							format: "uri",
+							title: "Path to audio recordings",
+						},
+					},
+				},
+				options: {
+					fields: {
+						delay: {
+							helper:
+								"How much time passes between a state change and when the input device receives the audio? For example, if the input device is subject to a delay system, you would put the amount of delay time in here.",
+							events: {
+								change: function () {
+									let value = this.getValue();
+									if (!this.handleValidate()) {
+										console.log(`invalid`);
+										return;
+									}
+									window.saveSettings.recorder("delay", value);
+								},
+							},
+						},
+						// TODO: re-compile alpaca with the capability of choosing a folder.
+						recordPath: {
+							helpers: [
+								`Write the full path to the directory you want audio files (webm format) to be saved`,
+								`Sub-directories for automation, remote, live, and sports will be created automatically after the first recording is saved.`,
+								`Additional sub-sub-directories will be created automatically to organize recordings by genre, show, or sport.`,
+							],
+							events: {
+								change: function () {
+									let value = this.getValue();
+									if (!this.handleValidate()) {
+										console.log(`invalid`);
+										return;
+									}
+									window.saveSettings.recorder("recordPath", value);
+									startRecording(0);
+								},
+							},
+						},
+					},
+				},
+				data: window.settings.recorder(),
+			});
+			$("#section-audio-silence-form").alpaca({
+				schema: {
+					type: "object",
+					properties: {
+						delay: {
+							type: "number",
+							title: "Delay (milliseconds)",
+							required: true,
+							minimum: 0
+						},
+						threshold: {
+							type: "number",
+							title: "Threshold (percentile 0.0 - 1.0)",
+							minimum: 0,
+							maximum: 1,
+							required: true
+						},
+					},
+				},
+				options: {
+					fields: {
+						delay: {
+							helper:
+								"How much time should elapse when the volume of the combined input devices for silence monitoring drops below the threshold before DJ Controls triggers the silence alarm in WWSU?",
+							events: {
+								change: function () {
+									let value = this.getValue();
+									if (!this.handleValidate()) {
+										console.log(`invalid`);
+										return;
+									}
+									window.saveSettings.silence("delay", value);
+									window.ipc.silence.send("silenceSetting", []);
+								},
+							},
+						},
+						threshold: {
+							helper: "At what volume percentile (0.0 - 1.0) should silence be considered detected when the combined volumes of input devices with silence checked drop below this value?",
+							events: {
+								change: function () {
+									let value = this.getValue();
+									if (!this.handleValidate()) {
+										console.log(`invalid`);
+										return;
+									}
+									window.saveSettings.silence("threshold", value);
+									window.ipc.silence.send("silenceSetting", []);
+								},
+							},
+						},
+					},
+				},
+				data: window.settings.silence(),
+			});
+		}
 	);
 
 	navigation.addItem(
@@ -1027,14 +1137,6 @@ window.addEventListener("DOMContentLoaded", () => {
 					}" ${device.settings.output ? `checked` : ``}>
     					<label class="form-check-label" for="audio-output-${index}">Remote Broadcast (Output)</label>
 					  </div>
-					<div class="form-check form-check-inline" title="If checked and doing a remote broadcast, audio queues of queue time and connection problems will be played through device ${
-						device.device.label
-					}.">
-    					<input type="checkbox" class="form-check-input form-check-devices-queue" id="audio-queue-${index}" data-id="${
-						device.device.deviceId
-					}" ${device.settings.queue ? `checked` : ``}>
-    					<label class="form-check-label" for="audio-queue-${index}">Audio Queues</label>
-					  </div>
   					</div>
 					</div>`;
 
@@ -1183,7 +1285,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 		$("#section-serial-delay-port").html(delayPorts);
 		window.requestAnimationFrame(() => {
-			let delaySettings = window.settings.delay;
+			let delaySettings = window.settings.delay();
 			$("#section-serial-delay-port").val(delaySettings.port);
 		});
 		$("#section-serial-delay-port").unbind("change");

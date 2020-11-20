@@ -106,4 +106,8 @@ window.addEventListener("DOMContentLoaded", () => {
 			`Silence: Changing silence setting for device ${arg[0]} to ${arg[2]}`,
 		]);
 	});
+
+	window.ipc.on("silenceSetting", (event) => {
+		silenceSettings = window.settings.silence();
+	});
 });

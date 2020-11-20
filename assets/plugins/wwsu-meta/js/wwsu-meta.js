@@ -43,8 +43,6 @@ class WWSUMeta extends WWSUevents {
       }
       this.emitEvent("newMeta", [data, this._meta]);
     });
-
-    this.init();
   }
 
   // Initialize function; should be called in socket.on('connect').

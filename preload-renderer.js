@@ -79,18 +79,19 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	// Getting settings
 	contextBridge.exposeInMainWorld("settings", {
-		audio: ipcRenderer.sendSync("settings", "audio"),
-		recorder: ipcRenderer.sendSync("settings", "recorder"),
-		silence: ipcRenderer.sendSync("settings", "silence"),
-		skyway: ipcRenderer.sendSync("settings", "skyway"),
-		delay: ipcRenderer.sendSync("settings", "delay"),
+		audio: () => ipcRenderer.sendSync("settings", "audio"),
+		recorder: () => ipcRenderer.sendSync("settings", "recorder"),
+		silence: () => ipcRenderer.sendSync("settings", "silence"),
+		skyway: () => ipcRenderer.sendSync("settings", "skyway"),
+		delay: () => ipcRenderer.sendSync("settings", "delay"),
 	});
 
 	// Saving settings
 	contextBridge.exposeInMainWorld("saveSettings", {
 		recorder: (key, value) =>
 			ipcRenderer.send("saveSettings", [`recorder.${key}`, value]),
-		silence: (object) => ipcRenderer.send("saveSettings", ["silence", object]),
+		silence: (key, value) =>
+			ipcRenderer.send("saveSettings", [`silence.${key}`, value]),
 		skyway: (object) => ipcRenderer.send("saveSettings", ["skyway", object]),
 		delay: (key, value) =>
 			ipcRenderer.send("saveSettings", [`delay.${key}`, value]),

@@ -10,7 +10,7 @@ module.exports = new Store({
 			recordPath: "./OnAir Recordings",
 		},
 		silence: {
-			threshold: 0.1,
+			threshold: 0.05,
 			delay: 15000,
 		},
 		delay: {

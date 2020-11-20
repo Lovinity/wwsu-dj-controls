@@ -231,11 +231,6 @@ class WWSUhosts extends WWSUdb {
 
 		var _djs = this.djs.find();
 		_djs.push({
-			ID: null,
-			name:
-				"(Anyone can start a broadcast at any time, including live and non-remote sports broadcasts)",
-		});
-		_djs.push({
 			ID: 0,
 			name: "(Do not allow anyone to start any kind of broadcast on this host)",
 		});
@@ -341,8 +336,10 @@ class WWSUhosts extends WWSUdb {
 					},
 					lockToDJ: {
 						type: "select",
-						helper:
-							"(wwsu-dj-controls only) If you lock this DJ Controls to a specific DJ, only that DJ can start a broadcast from this host and only when they have one scheduled at that moment (or within the next 5 minutes). Also, when you lock to a specific DJ, only remote broadcasts or remote sports broadcasts can be started from this host.",
+						helpers: [
+							"(wwsu-dj-controls only) Lock this host to a specific DJ (or to no one) to prevent starting live [in-studio] broadcasts from this host (remote broadcasts allowed only). Also, this prevents starting a remote broadcast unless a broadcast is on the schedule for that moment (or up to 5 minutes before start time) and this DJ is either a host or a co-host of that broadcast.",
+							"Setting this to None means anyone can start any kind of broadcast at any time from this host, including in-studio broadcasts and unscheduled broadcasts.",
+						],
 						optionLabels: _djs.map((dj) => dj.name),
 					},
 					makeCalls: {
@@ -394,6 +391,11 @@ class WWSUhosts extends WWSUdb {
 									return;
 								}
 								var value = form.getValue();
+
+								// Bug; when lockToDJ has no value, it should be set to null. Without this, it is undefined instead.
+								if (typeof value.lockToDJ === "undefined")
+									value.lockToDJ = null;
+
 								this.edit(value, (success) => {
 									if (success) {
 										this.hostModal.iziModal("close");
