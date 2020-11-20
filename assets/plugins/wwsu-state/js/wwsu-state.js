@@ -6,9 +6,10 @@ class WWSUstate extends WWSUevents {
 	 * @param {sails.io} socket Socket connection to WWSU
 	 * @param {WWSUhosts} hosts An instance of WWSUhosts to check for DJ locking and prompt if not a host.
 	 * @param {WWSUcalendar} calendar An instance of WWSUcalendar for checking what should be on the air now.
+	 * @param {WWSUconfig} config Initialized WWSU server configuration class.
 	 * @param {WWSUreq} hostReq Request with host authorization
 	 */
-	constructor(socket, hosts, calendar, hostReq) {
+	constructor(socket, hosts, calendar, config, hostReq) {
 		super();
 		this.endpoints = {
 			return: "/state/return",
@@ -21,6 +22,7 @@ class WWSUstate extends WWSUevents {
 			delayStatus: "/delay/status",
 			live: "/state/live",
 			remote: "/state/remote",
+			sports: "/state/sports"
 		};
 		this.requests = {
 			host: hostReq,
@@ -30,6 +32,7 @@ class WWSUstate extends WWSUevents {
 		};
 		this.hosts = hosts;
 		this.calendar = calendar;
+		this.config = config;
 
 		this.broadcastModal = new WWSUmodal(``, `operations`, ``, true, {
 			headerColor: "",
@@ -1054,6 +1057,199 @@ class WWSUstate extends WWSUevents {
 					"There was an error starting the remote broadcast. Please contact the engineer if you think you should be allowed to start a remote broadcast.",
 				autoHide: true,
 				delay: 15000,
+				icon: "fas fa-skull-crossbones fa-lg",
+			});
+			if (typeof cb === "function") {
+				cb(false);
+			}
+			console.error(e);
+		}
+	}
+
+	/**
+	 * Show a form for starting a live in-studio sports broadcast in a modal via Alpaca.
+	 */
+	showSportsForm() {
+		if (this.hosts.client.lockToDJ !== null) {
+			$(document).Toasts("create", {
+				class: "bg-warning",
+				title: "Action not allowed",
+				delay: 20000,
+				autohide: true,
+				body: `You are not allowed to start a live (in-studio) broadcast from this host. Please contact a director if you think this is an error.`,
+			});
+			return;
+		}
+
+		this.hosts.promptIfNotHost(`start a live in-studio sports broadcast`, () => {
+			this.broadcastModal.title = `Start Live (in-studio) Sports Broadcast`;
+			this.broadcastModal.body = ``;
+			this.broadcastModal.iziModal("open");
+
+			let whatShouldBePlaying = this.calendar
+				.whatShouldBePlaying()
+				.sort((a, b) => b.priority - a.priority);
+			whatShouldBePlaying = whatShouldBePlaying.find(
+				(record) => record.type === "sports"
+			);
+			let title = whatShouldBePlaying ? whatShouldBePlaying.name.split(" vs.")[0] : undefined;
+
+			let _sports = this.config.config.sports;
+
+			$(this.broadcastModal.body).alpaca({
+				schema: {
+					title: "Start Live (in-studio) Sports Broadcast",
+					type: "object",
+					properties: {
+						acknowledge: {
+							type: "boolean",
+							default: false,
+							title: "I read the announcements",
+						},
+						sport: {
+							type: "string",
+							title: "Sport",
+							enum: _sports,
+							required: true
+						},
+						topic: {
+							type: "string",
+							title: "Broadcast Description",
+							maxLength: 255,
+						},
+						webchat: {
+							type: "boolean",
+							default: true,
+							title: "Allow Listeners to Send Messages?",
+						},
+					},
+				},
+				options: {
+					fields: {
+						acknowledge: {
+							rightLabel: "Yes",
+							helper:
+								"Please check this box to indicate you read the announcements on the announcements tab of DJ Controls.",
+							validator: function (callback) {
+								var value = this.getValue();
+								if (!value) {
+									callback({
+										status: false,
+										message: `You must acknowledge that you read the announcements on the announcements tab of DJ Controls before doing a broadcast.`,
+									});
+									return;
+								}
+								callback({
+									status: true,
+								});
+							},
+						},
+						sport: {
+							type: "select",
+							validator: function (callback) {
+								var value = this.getValue();
+								if (
+									!title || title !== value
+								) {
+									callback({
+										status: true,
+										message: `Not on the immediate schedule (proceeding could result in the broadcast being flagged as unauthorized)`,
+									});
+									return;
+								}
+								callback({
+									status: true,
+								});
+							},
+						},
+						topic: {
+							helper:
+								"Limit: 256 characters. The topic will be displayed on the website and display signs.",
+							type: "textarea"
+						},
+						webchat: {
+							rightLabel: "Yes",
+							helper:
+								"You can mute/ban individual listeners from the chat if they send threatening or harassing messages.",
+						},
+					},
+					form: {
+						buttons: {
+							submit: {
+								title: "Start Broadcast",
+								click: (form, e) => {
+									form.refreshValidationState(true);
+									if (!form.isValid(true)) {
+										form.focus();
+										return;
+									}
+									var value = form.getValue();
+
+									value = {
+										topic: value.topic,
+										sport: value.sport,
+										webchat: value.webchat,
+									};
+
+									this.goSports(value, (success) => {
+										if (success) {
+											this.broadcastModal.iziModal("close");
+										}
+									});
+								},
+							},
+						},
+					},
+				},
+				data: {
+					sport: title ? title : "",
+					topic: whatShouldBePlaying ? whatShouldBePlaying.description : "",
+				},
+			});
+		});
+	}
+
+	/**
+	 * Tell the WWSU API to start a sports broadcast.
+	 *
+	 * @param {object} data Data to send to the endpoint
+	 * @param {?function} cb Callback executed when the request is completed
+	 */
+	goSports(data, cb) {
+		try {
+			this.hosts.promptIfNotHost(`start a live in-studio sports broadcast`, () => {
+				this.requests.host.request(
+					{ method: "post", url: this.endpoints.sports, data },
+					(response) => {
+						if (response !== "OK") {
+							$(document).Toasts("create", {
+								class: "bg-danger",
+								title: "Error starting live sports broadcast",
+								body:
+									"There was an error starting the live sports broadcast. Live sports broadcasts may only be started from the WWSU studio (otherwise, you must do a remote sports broadcast). If you are in the WWSU studio, please contact the engineer.",
+								autoHide: true,
+								delay: 15000,
+								icon: "fas fa-skull-crossbones fa-lg",
+							});
+							if (typeof cb === "function") {
+								cb(false);
+							}
+						} else {
+							if (typeof cb === "function") {
+								cb(true);
+							}
+						}
+					}
+				);
+			});
+		} catch (e) {
+			$(document).Toasts("create", {
+				class: "bg-danger",
+				title: "Error starting live sports broadcast",
+				body:
+					"There was an error starting the live sports broadcast. Please report this to the engineer.",
+				autoHide: true,
+				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
 			if (typeof cb === "function") {

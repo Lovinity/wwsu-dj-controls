@@ -11,9 +11,10 @@ class WWSUlogs extends WWSUevents {
 	 * @param {WWSUreq} noReq Request without authorization
 	 * @param {WWSUreq} hostReq Request with host authorization
 	 * @param {WWSUreq} directorReq Request with director authorization
+	 * @param {WWSUhosts} hosts Initialized hosts class
 	 * @param {WWSUmeta} meta WWSUmeta class
 	 */
-	constructor(socket, noReq, hostReq, directorReq, meta) {
+	constructor(socket, noReq, hostReq, directorReq, hosts, meta) {
 		super();
 		this.endpoints = {
 			edit: "/logs/edit",
@@ -46,6 +47,7 @@ class WWSUlogs extends WWSUevents {
 			}),
 		};
 
+		this.hosts = hosts;
 		this.meta = meta;
 
 		this.animations = new WWSUanimations();
@@ -369,8 +371,9 @@ class WWSUlogs extends WWSUevents {
 								class: "bg-success",
 								title: "log added",
 								autohide: true,
-								delay: 10000,
-								body: `The log was added.`,
+								delay: 15000,
+								body: `The log was added. 
+								<p>If you added a log, <strong>Be sure to click "I am Talking"</strong> on the Dashboard when you are done playing music, or click "Add Log" again when playing a different track.</p>`,
 							});
 						}
 						if (typeof cb === "function") {
@@ -1227,6 +1230,7 @@ class WWSUlogs extends WWSUevents {
 	 * Show a modal to add a log into the system.
 	 */
 	showLogForm() {
+		// TODO: Prompt for host (cannot do at this time because of circular requirement loop between logs, hosts, and djs; build a WWSU class manager to oversee all WWSU classes)
 		this.modals.addLog.body = ``;
 		this.modals.addLog.iziModal("open");
 

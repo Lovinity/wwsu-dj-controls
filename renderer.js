@@ -41,6 +41,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		"/auth/director",
 		"Director"
 	);
+	var config = new WWSUconfig(socket, directorReq, hostReq);
 	var logs = new WWSUlogs(socket, noReq, hostReq, directorReq, meta);
 	var djs = new WWSUdjs(socket, noReq, directorReq, hostReq, logs, meta);
 	var djReq = new WWSUreq(
@@ -108,7 +109,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		null,
 		hostReq
 	);
-	var state = new WWSUstate(socket, hosts, calendar, hostReq);
+	var state = new WWSUstate(socket, hosts, calendar, config, hostReq);
 	var climacell = new WWSUclimacell(socket, noReq, meta);
 	var inventory = new WWSUinventory(socket, meta, hostReq, directorReq);
 	var version = new WWSUversion(socket, `wwsu-dj-controls`, hostReq);
@@ -478,6 +479,28 @@ window.addEventListener("DOMContentLoaded", () => {
 			},
 		});
 	});
+	$(".chat-mute").click(() => {
+		if (recipients.activeRecipient)
+			discipline.simpleMuteForm(recipients.activeRecipient);
+	});
+	$(".chat-ban").click(() => {
+		if (recipients.activeRecipient)
+			discipline.simpleBanForm(recipients.activeRecipient);
+	});
+	$(".btn-dashboard-meta-clear").click(() => {
+		hosts.promptIfNotHost(`Mark DJ / Producer as talking`, () => {
+			logs.add(
+				{
+					logtype: "manual",
+					logsubtype: meta.meta ? meta.meta.show : "",
+					loglevel: "secondary",
+					logIcon: "fas fa-file",
+					title: "DJ / Producer began talking.",
+				},
+				true
+			);
+		});
+	});
 
 	// Operation click events
 	$(".btn-operation-resume").click(() => {
@@ -541,14 +564,8 @@ window.addEventListener("DOMContentLoaded", () => {
 	$(".btn-operation-log").click(() => {
 		logs.showLogForm();
 	});
-
-	$(".chat-mute").click(() => {
-		if (recipients.activeRecipient)
-			discipline.simpleMuteForm(recipients.activeRecipient);
-	});
-	$(".chat-ban").click(() => {
-		if (recipients.activeRecipient)
-			discipline.simpleBanForm(recipients.activeRecipient);
+	$(".btn-operation-sports").click(() => {
+		state.showSportsForm();
 	});
 
 	// Initialize stuff
@@ -1329,6 +1346,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		discipline.checkDiscipline(() => {
 			hosts.get((success) => {
 				if (success === 1) {
+					config.init();
 					meta.init();
 					directors.init();
 					djs.init();
@@ -1478,9 +1496,33 @@ window.addEventListener("DOMContentLoaded", () => {
 				});
 			}
 
-			// Determine which operation buttons should be visible depending on system state
-			// Also determine color of status info
-			if (typeof updated.state !== "undefined") {
+			animations.add("meta-clear", () => {
+				if (
+					typeof updated.playing !== "undefined" ||
+					typeof updated.trackArtist !== "undefined" ||
+					typeof updated.trackTitle !== "undefined" ||
+					typeof updated.state !== "undefined"
+				) {
+					if (
+						!fullMeta.state.endsWith("_on") ||
+						fullMeta.state.startsWith("automation_") ||
+						fullMeta.state.startsWith("playlist_") ||
+						fullMeta.state.startsWith("genre_") ||
+						fullMeta.state.startsWith("prerecord_") ||
+						fullMeta.playing ||
+						(!fullMeta.trackTitle && !fullMeta.trackArtist)
+					) {
+						$(".section-dashboard-meta").addClass("d-none");
+					} else {
+						$(".section-dashboard-meta").removeClass("d-none");
+					}
+				}
+			});
+
+			if (
+				typeof updated.state !== "undefined" ||
+				typeof updated.playing !== "undefined"
+			) {
 				remoteShouldBeMuted();
 				if (
 					updated.state === "remote_on" ||
@@ -1488,6 +1530,11 @@ window.addEventListener("DOMContentLoaded", () => {
 				) {
 					window.ipc.remote.send("restartSilenceTimer", []);
 				}
+			}
+
+			// Determine which operation buttons should be visible depending on system state
+			// Also determine color of status info
+			if (typeof updated.state !== "undefined") {
 				animations.add("meta-state", () => {
 					$(".operation-button").addClass("d-none");
 					$(".card-meta").removeClass("bg-gray-dark");
@@ -2722,7 +2769,8 @@ Track: <strong>${request.trackname}</strong>`,
 			arg[0] &&
 			(meta.meta.state === "remote_on" ||
 				meta.meta.state === "sportsremote_on") &&
-			hosts.client.ID === meta.meta.hostCalling
+			hosts.client.ID === meta.meta.hostCalling &&
+			!meta.meta.playing
 		) {
 			state.break({ problem: true });
 			animations.add("notifications-remote", () => {
