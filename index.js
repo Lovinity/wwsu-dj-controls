@@ -338,6 +338,7 @@ const createWindows = () => {
 
 	mainWindow.on("focus", () => mainWindow.flashFrame(false));
 
+	/* Electron v10
 	mainWindow.webContents.on("render-process-gone", (event, details) => {
 		console.log("Process gone!");
 		makeNotification({
@@ -347,6 +348,41 @@ const createWindows = () => {
 			flash: true,
 			body: `<p>Wuh oh! WWSU DJ Controls crashed, code ${details.reason}!</p><p>Please close and re-open DJ Controls.</p><p>If this problem continues, please contact the engineer or xanaftp@gmail.com.</p>`,
 		});
+		try {
+			// Recorder should be shut down gracefully to save current recording
+			if (recorderWindow) {
+				recorderWindow.webContents.send("shutDown");
+			}
+
+			calendarWindow.close();
+			calendarWindow = null;
+
+			audioWindow.close();
+			audioWindow = null;
+
+			if (silenceWindow) {
+				silenceWindow.close();
+				silenceWindow = null;
+			}
+
+			if (remoteWindow) {
+				remoteWindow.close();
+				remoteWindow = null;
+			}
+		} catch (eee) {}
+	});
+	*/
+
+	mainWindow.webContents.on("crashed", (event, killed) => {
+		console.log("Main UI gone!");
+		makeNotification({
+			title: "WWSU DJ Controls Crashed!",
+			bg: "danger",
+			header: "WWSU DJ Controls Crashed!",
+			flash: true,
+			body: `<p>WWSU DJ Controls either crashed or was forcefully terminated. Please restart WWSU DJ Controls if you were using it, especially if doing a broadcast.</p>`,
+		});
+
 		try {
 			// Recorder should be shut down gracefully to save current recording
 			if (recorderWindow) {
