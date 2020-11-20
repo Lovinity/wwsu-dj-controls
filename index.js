@@ -1117,3 +1117,13 @@ function updateAudioSettings(deviceId, kind, setting) {
 	}
 	config.set(`audio`, settings);
 }
+
+/**
+ * Convert hexadecimal value to binary
+ *
+ * @param {string} hex Hex value
+ * @returns {string} Binary value
+ */
+function hex2bin(hex) {
+	return parseInt(hex, 16).toString(2).padStart(8, "0");
+}

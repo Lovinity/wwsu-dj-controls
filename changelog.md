@@ -1,5 +1,10 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.19 - 2020-11-20
+
+### Fixed
+- hex2bin
+
 ## 8.0.0-alpha.18 - 2020-11-20
 
 ### Removed
