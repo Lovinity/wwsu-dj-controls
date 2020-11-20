@@ -33,11 +33,16 @@ class WWSUlogs extends WWSUevents {
 			attendance: undefined,
 			log: undefined,
 		};
-		this.models = {
+		this.modals = {
 			viewLog: new WWSUmodal(`Logs`, null, ``, true, {
 				headerColor: "",
 				zindex: 1200,
 				width: 800,
+			}),
+
+			addLog: new WWSUmodal(`Add a Log`, null, ``, true, {
+				headerColor: "",
+				zindex: 1100,
 			}),
 		};
 
@@ -103,6 +108,7 @@ class WWSUlogs extends WWSUevents {
 						"sign-off-early",
 						"sign-off-late",
 						"sign-off-problem",
+						"recipient-discipline",
 					].indexOf(data[key].logtype) !== -1
 				) {
 					if (!data[key].acknowledged) {
@@ -466,7 +472,7 @@ class WWSUlogs extends WWSUevents {
 								var id = parseInt($(e.currentTarget).data("id"));
 								console.log(`dismiss`);
 								util.confirmDialog(
-                  `Are you sure you want to dismiss ${id}?
+									`Are you sure you want to dismiss ${id}?
                   <ul>
                   <li>Please <strong>do not</strong> dismiss an issue until it is considered resolved.</li>
                   <li>When a record is dismissed, it is removed from the to-do window of all DJ Controls. It can still be accessed via the logs.</li>
@@ -798,22 +804,22 @@ class WWSUlogs extends WWSUevents {
 	 */
 	viewLog(id, name) {
 		var util = new WWSUutil();
-		this.models.viewLog.body = `<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
+		this.modals.viewLog.body = `<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
 			this.meta ? this.meta.meta.timezone : moment.tz.guess()
 		}.</p><canvas id="modal-${
-			this.models.viewLog.id
+			this.modals.viewLog.id
 		}-body-listeners" style="min-height: 200px; height: 200px; max-height: 350px; max-width: 100%;"></canvas><div id="modal-${
-			this.models.viewLog.id
+			this.modals.viewLog.id
 		}-body-info"></div><table id="modal-${
-			this.models.viewLog.id
+			this.modals.viewLog.id
 		}-body-log" class="table table-striped display responsive" style="width: 100%;"></table>`;
-		this.models.viewLog.iziModal("open");
+		this.modals.viewLog.iziModal("open");
 		this.getAttendance(`#section-logs-table`, { ID: id }, (attendance) => {
 			util.waitForElement(
-				`#modal-${this.models.viewLog.id}-body-listeners`,
+				`#modal-${this.modals.viewLog.id}-body-listeners`,
 				() => {
 					this.getListeners(
-						`#modal-${this.models.viewLog.id}-body-listeners`,
+						`#modal-${this.modals.viewLog.id}-body-listeners`,
 						{
 							start: moment(attendance.actualStart).toISOString(true),
 							end: moment(
@@ -837,7 +843,7 @@ class WWSUlogs extends WWSUevents {
 							});
 
 							var listenerChartCanvas = $(
-								`#modal-${this.models.viewLog.id}-body-listeners`
+								`#modal-${this.modals.viewLog.id}-body-listeners`
 							)
 								.get(0)
 								.getContext("2d");
@@ -914,16 +920,16 @@ class WWSUlogs extends WWSUevents {
 			);
 
 			util.waitForElement(
-				`#modal-${this.models.viewLog.id}-body-info`,
+				`#modal-${this.modals.viewLog.id}-body-info`,
 				() => {}
 			);
 
-			util.waitForElement(`#modal-${this.models.viewLog.id}-body-log`, () => {
+			util.waitForElement(`#modal-${this.modals.viewLog.id}-body-log`, () => {
 				var generateLog = (updateOnly) => {
 					this.getLogs({ attendanceID: id }, (logs) => {
 						if (!updateOnly) {
 							this.tables.log = $(
-								`#modal-${this.models.viewLog.id}-body-log`
+								`#modal-${this.modals.viewLog.id}-body-log`
 							).DataTable({
 								paging: false,
 								data: logs.map((log) => {
@@ -1215,5 +1221,97 @@ class WWSUlogs extends WWSUevents {
 			console.error(e);
 			cb(false);
 		}
+	}
+
+	/**
+	 * Show a modal to add a log into the system.
+	 */
+	showLogForm() {
+		this.modals.addLog.body = ``;
+		this.modals.addLog.iziModal("open");
+
+		$(this.modals.addLog.body).alpaca({
+			schema: {
+				type: "object",
+				properties: {
+					date: {
+						format: "datetime",
+						required: true,
+						title: "Air date/time",
+					},
+					trackArtist: {
+						format: "string",
+						title: "Track Artist",
+						required: true,
+					},
+					trackTitle: {
+						format: "string",
+						title: "Track Title",
+						required: true,
+					},
+					trackAlbum: {
+						type: "string",
+						title: "Album Name",
+					},
+					trackLabel: {
+						type: "string",
+						title: "Record Label",
+					},
+				},
+			},
+			options: {
+				fields: {
+					date: {
+						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
+							.parseZone(this.meta ? this.meta.meta.time : undefined)
+							.format("Z")}`,
+						picker: {
+							inline: true,
+							sideBySide: true,
+						},
+					},
+					trackLabel: {
+						helpers: [
+							"This is the record company / companies which the artist went through to publish this track.",
+							"Please search online if you do not know. If the internet does not help either, you can leave this blank.",
+							"Please put Independent if this track was published by the artist and not a company / record label.",
+						],
+					},
+				},
+				form: {
+					buttons: {
+						submit: {
+							title: "Add Log",
+							click: (form, e) => {
+								form.refreshValidationState(true);
+								if (!form.isValid(true)) {
+									form.focus();
+									return;
+								}
+								var value = form.getValue();
+
+								value.logtype = "manual";
+								value.loglevel = "secondary";
+								value.logsubtype = this.meta ? this.meta.meta.show : null;
+								value.logIcon = "fas fa-file";
+								value.title =
+									value.trackTitle && value.trackTitle.length > 0
+										? `DJ / Producer played a track.`
+										: `DJ / Producer started talking.`;
+
+								this.add(value, false, (success) => {
+									if (success) {
+										this.modals.addLog.iziModal("close");
+									}
+								});
+							},
+						},
+					},
+				},
+			},
+			data: {
+				date: moment(this.meta ? this.meta.meta.time : undefined),
+			},
+		});
 	}
 }

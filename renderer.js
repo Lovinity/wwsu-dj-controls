@@ -538,6 +538,9 @@ window.addEventListener("DOMContentLoaded", () => {
 	$(".btn-operation-remote").click(() => {
 		state.showRemoteForm();
 	});
+	$(".btn-operation-log").click(() => {
+		logs.showLogForm();
+	});
 
 	$(".chat-mute").click(() => {
 		if (recipients.activeRecipient)
