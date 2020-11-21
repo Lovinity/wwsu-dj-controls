@@ -114,7 +114,7 @@ class WWSUremoteaudio extends WWSUevents {
 	 *
 	 * @param {string} peerId The Peer ID to use. Must be what was authenticated via the credential parameter.
 	 * @param {string} apiKey The API Key for the Skyway.js app
-	 * @param {string} credential The authenticated credential string to ensure authorized use of this Skyway.js
+	 * @param {object} credential The authenticated credential object to ensure authorized use of this Skyway.js
 	 */
 	init(peerId, apiKey, credential) {
 		try {

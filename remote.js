@@ -151,6 +151,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		let peerId = arg[0];
 		let apiKey = arg[1];
 		let credential = arg[2];
+		console.dir(arg);
 
 		remote.init(peerId, apiKey, credential);
 	});

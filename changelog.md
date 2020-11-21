@@ -1,5 +1,7 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.20
+
 ## 8.0.0-alpha.19 - 2020-11-20
 
 ### Fixed
