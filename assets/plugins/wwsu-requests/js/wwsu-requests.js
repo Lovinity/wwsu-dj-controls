@@ -1,19 +1,23 @@
+'use strict';
+
 /* global WWSUdb */
 
 // This class manages WWSU track requests
 // Event emitter also supports 'trackRequested' with the request object as a parameter
+
+// REQUIRES these WWSUmodules: WWSUhosts, WWSUMeta, hostReq (WWSUreq), WWSUutil, WWSUanimations
 class WWSUrequests extends WWSUdb {
 
     /**
      * Create the announcements class.
      * 
-     * @param {sails.io} socket Socket connection to WWSU
-     * @param {WWSUhosts} hosts An instance of WWSUhosts to check for DJ locking and prompt if not a host.
-     * @param {WWSUreq} hostReq Request class with host authorization
-     * @param {WWSUmeta} meta WWSUmeta class
+	 * @param {WWSUmodules} manager The modules class which initiated this module
+	 * @param {object} options Options to be passed to this module
      */
-    constructor(socket, hosts, hostReq, meta) {
+    constructor(manager, options) {
         super(); // Create the db
+
+        this.manager = manager;
 
         this.endpoints = {
             get: '/requests/get',
@@ -22,11 +26,6 @@ class WWSUrequests extends WWSUdb {
         this.data = {
             get: {}
         };
-        this.requests = {
-            host: hostReq
-        };
-        this.hosts = hosts;
-        this.meta = meta;
 
         this.table = undefined;
         this.icon = undefined;
@@ -34,14 +33,12 @@ class WWSUrequests extends WWSUdb {
 
         this.IDs = [];
 
-        this.assignSocketEvent('requests', socket);
-
-        this.animations = new WWSUanimations();
+        this.assignSocketEvent('requests', this.manager.socket);
     }
 
     // Initialize the connection and get initial data; should be called on socket connect event.
     init () {
-        this.replaceData(this.requests.host, this.endpoints.get, this.data.get);
+        this.replaceData(this.manager.get("hostReq"), this.endpoints.get, this.data.get);
     }
 
     /**
@@ -55,13 +52,12 @@ class WWSUrequests extends WWSUdb {
         this.icon = icon;
         this.badge = badge;
 
-        this.animations.add('requests-init-table', () => {
-            var util = new WWSUutil();
+        this.manager.get("WWSUanimations").add('requests-init-table', () => {
 
             // Init html
-            $(table).html(`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${this.meta ? this.meta.meta.timezone : moment.tz.guess()}.</p><table id="section-requests-table" class="table table-striped display responsive" style="width: 100%;"></table>`);
+            $(table).html(`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()}.</p><table id="section-requests-table" class="table table-striped display responsive" style="width: 100%;"></table>`);
 
-            util.waitForElement(`#section-requests-table`, () => {
+            this.manager.get("WWSUutil").waitForElement(`#section-requests-table`, () => {
 
                 // Generate table
                 this.table = $(`#section-requests-table`).DataTable({
@@ -105,8 +101,8 @@ class WWSUrequests extends WWSUdb {
      */
     queue (dom, data, cb) {
         try {
-            this.hosts.promptIfNotHost(`queue a requested track`, () => {
-                this.requests.host.request({ dom: dom, method: 'post', url: this.endpoints.queue, data }, (response) => {
+            this.manager.get("WWSUhosts").promptIfNotHost(`queue a requested track`, () => {
+                this.manager.get("hostReq").request({ dom: dom, method: 'post', url: this.endpoints.queue, data }, (response) => {
                     if (response !== 'OK') {
                         $(document).Toasts('create', {
                             class: 'bg-danger',
@@ -154,15 +150,15 @@ class WWSUrequests extends WWSUdb {
      * Update the track requests table if it exists. Also update track request notification badge and icon.
      */
     updateTable () {
-        this.animations.add('requests-update-table', () => {
+        this.manager.get("WWSUanimations").add('requests-update-table', () => {
             if (this.table) {
                 this.table.clear();
-                var numRequests = 0;
+                let numRequests = 0;
                 this.find().forEach((request) => {
                     numRequests++;
                     this.table.row.add([
                         request.ID,
-                        moment.tz(request.createdAt, this.meta ? this.meta.meta.timezone : moment.tz.guess()).format('lll'),
+                        moment.tz(request.createdAt, this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()).format('lll'),
                         request.trackname,
                         request.username,
                         request.message,

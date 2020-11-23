@@ -1,21 +1,25 @@
+'use strict';
+
 /**
  * This class manages reporting silence to WWWSU.
  * For silence detection, use wwsu-audio/wwsu-silence (WWSUsilenceaudio class).
  */
+
+ // REQUIRES these WWSUmodules: hostReq (WWSUreq)
 class WWSUSilence extends WWSUevents {
 	/**
 	 * Construct the class
 	 *
-	 * @param {WWSUreq} hostReq WWSU request with host authorization
+	 * @param {WWSUmodules} manager The modules class which initiated this module
+	 * @param {object} options Options to be passed to this module
 	 */
-	constructor(hostReq) {
+	constructor(manager, options) {
 		super();
+		this.manager = manager;
+
 		this.endpoints = {
 			active: "/silence/active",
 			inactive: "/silence/inactive",
-		};
-		this.requests = {
-			host: hostReq,
 		};
 	}
 
@@ -26,7 +30,7 @@ class WWSUSilence extends WWSUevents {
 	 */
 	active(cb) {
 		try {
-			this.requests.host.request(
+			this.manager.get("hostReq").request(
 				{ method: "post", url: this.endpoints.active },
 				(response) => {
 					if (!response) {
@@ -67,7 +71,7 @@ class WWSUSilence extends WWSUevents {
 	 */
 	inactive(cb) {
 		try {
-			this.requests.host.request(
+			this.manager.get("hostReq").request(
 				{ method: "post", url: this.endpoints.inactive },
 				(response) => {
 					if (!response) {

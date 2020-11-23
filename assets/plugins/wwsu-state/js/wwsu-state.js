@@ -1,16 +1,20 @@
+'use strict';
+
 // This class handles states and operations.
+
+// REQUIRES these WWSUmodules: WWSUhosts, WWSUcalendar, WWSUconfig, hostReq (WWSureq)
 class WWSUstate extends WWSUevents {
 	/**
 	 * Construct the class
 	 *
-	 * @param {sails.io} socket Socket connection to WWSU
-	 * @param {WWSUhosts} hosts An instance of WWSUhosts to check for DJ locking and prompt if not a host.
-	 * @param {WWSUcalendar} calendar An instance of WWSUcalendar for checking what should be on the air now.
-	 * @param {WWSUconfig} config Initialized WWSU server configuration class.
-	 * @param {WWSUreq} hostReq Request with host authorization
+	 * @param {WWSUmodules} manager The modules class which initiated this module
+	 * @param {object} options Options to be passed to this module
 	 */
-	constructor(socket, hosts, calendar, config, hostReq) {
+	constructor(manager, options) {
 		super();
+
+		this.manager = manager;
+
 		this.endpoints = {
 			return: "/state/return",
 			queuePSA: "/songs/queue-psa",
@@ -25,15 +29,10 @@ class WWSUstate extends WWSUevents {
 			sports: "/state/sports",
 			sportsRemote: "/state/sports-remote",
 		};
-		this.requests = {
-			host: hostReq,
-		};
+
 		this.data = {
 			get: {},
 		};
-		this.hosts = hosts;
-		this.calendar = calendar;
-		this.config = config;
 
 		this.broadcastModal = new WWSUmodal(``, `operations`, ``, true, {
 			headerColor: "",
@@ -52,7 +51,7 @@ class WWSUstate extends WWSUevents {
 	 */
 	delayStatus(data, cb) {
 		try {
-			this.requests.host.request(
+			this.manager.get("hostReq").request(
 				{ method: "post", url: this.endpoints.delayStatus, data },
 				(response) => {
 					if (response !== "OK") {
@@ -82,8 +81,8 @@ class WWSUstate extends WWSUevents {
 	 */
 	return(data, cb) {
 		try {
-			this.hosts.promptIfNotHost(`return from break`, () => {
-				this.requests.host.request(
+			this.manager.get("WWSUhosts").promptIfNotHost(`return from break`, () => {
+				this.manager.get("hostReq").request(
 					{ method: "post", url: this.endpoints.return, data },
 					(response) => {
 						if (response !== "OK") {
@@ -132,10 +131,10 @@ class WWSUstate extends WWSUevents {
 	 */
 	queuePSA(data, cb) {
 		try {
-			this.hosts.promptIfNotHost(
+			this.manager.get("WWSUhosts").promptIfNotHost(
 				`queue a ${data && data.duration ? `${data.duration}-second` : ``} PSA`,
 				() => {
-					this.requests.host.request(
+					this.manager.get("hostReq").request(
 						{ method: "post", url: this.endpoints.queuePSA, data },
 						(response) => {
 							if (response !== "OK") {
@@ -192,12 +191,12 @@ class WWSUstate extends WWSUevents {
 	 */
 	automation(data, cb) {
 		try {
-			this.hosts.promptIfNotHost(
+			this.manager.get("WWSUhosts").promptIfNotHost(
 				`go to ${
 					data && data.transition ? `break for next show` : `automation`
 				}`,
 				() => {
-					this.requests.host.request(
+					this.manager.get("hostReq").request(
 						{ method: "post", url: this.endpoints.automation, data },
 						(response) => {
 							if (response !== "OK") {
@@ -248,7 +247,7 @@ class WWSUstate extends WWSUevents {
 	break(data, cb) {
 		try {
 			let apiRequest = () => {
-				this.requests.host.request(
+				this.manager.get("hostReq").request(
 					{ method: "post", url: this.endpoints.break, data },
 					(response) => {
 						if (response !== "OK") {
@@ -277,7 +276,7 @@ class WWSUstate extends WWSUevents {
 			if (data.problem) {
 				apiRequest();
 			} else {
-				this.hosts.promptIfNotHost(
+				this.manager.get("WWSUhosts").promptIfNotHost(
 					`go to ${data && data.halftime ? `extended ` : ``}break`,
 					() => {
 						apiRequest();
@@ -309,8 +308,8 @@ class WWSUstate extends WWSUevents {
 	 */
 	queueTopAdd(data, cb) {
 		try {
-			this.hosts.promptIfNotHost(`play a Top Add`, () => {
-				this.requests.host.request(
+			this.manager.get("WWSUhosts").promptIfNotHost(`play a Top Add`, () => {
+				this.manager.get("hostReq").request(
 					{ method: "post", url: this.endpoints.topAdd, data },
 					(response) => {
 						if (response !== "OK") {
@@ -366,8 +365,8 @@ class WWSUstate extends WWSUevents {
 	 */
 	queueLiner(data, cb) {
 		try {
-			this.hosts.promptIfNotHost(`play a liner`, () => {
-				this.requests.host.request(
+			this.manager.get("WWSUhosts").promptIfNotHost(`play a liner`, () => {
+				this.manager.get("hostReq").request(
 					{ method: "post", url: this.endpoints.liner, data },
 					(response) => {
 						if (response !== "OK") {
@@ -423,8 +422,8 @@ class WWSUstate extends WWSUevents {
 	 */
 	dump(data, cb) {
 		try {
-			this.hosts.promptIfNotHost(`dump audio on the delay system`, () => {
-				this.requests.host.request(
+			this.manager.get("WWSUhosts").promptIfNotHost(`dump audio on the delay system`, () => {
+				this.manager.get("hostReq").request(
 					{ method: "post", url: this.endpoints.dump, data },
 					(response) => {
 						if (response !== "OK") {
@@ -476,7 +475,7 @@ class WWSUstate extends WWSUevents {
 	 * Show a form for starting a live in-studio show in a modal via Alpaca.
 	 */
 	showLiveForm() {
-		if (this.hosts.client.lockToDJ !== null) {
+		if (this.manager.get("WWSUhosts").client.lockToDJ !== null) {
 			$(document).Toasts("create", {
 				class: "bg-warning",
 				title: "Action not allowed",
@@ -491,7 +490,7 @@ class WWSUstate extends WWSUevents {
 		this.broadcastModal.body = ``;
 		this.broadcastModal.iziModal("open");
 
-		let whatShouldBePlaying = this.calendar
+		let whatShouldBePlaying = this.manager.get("WWSUcalendar")
 			.whatShouldBePlaying()
 			.sort((a, b) => b.priority - a.priority);
 		whatShouldBePlaying = whatShouldBePlaying.find(
@@ -537,7 +536,7 @@ class WWSUstate extends WWSUevents {
 					djs: {
 						helper: `Each DJ handle should be separated with a "; " (semicolon-space) if providing multiple DJs.`,
 						validator: function (callback) {
-							var value = this.getValue();
+							let value = this.getValue();
 							if (value.includes(" -")) {
 								callback({
 									status: false,
@@ -559,7 +558,7 @@ class WWSUstate extends WWSUevents {
 					},
 					name: {
 						validator: function (callback) {
-							var value = this.getValue();
+							let value = this.getValue();
 							if (value.includes(" -")) {
 								callback({
 									status: false,
@@ -597,7 +596,7 @@ class WWSUstate extends WWSUevents {
 						helper:
 							"Please check this box to indicate you read the announcements on the announcements tab of DJ Controls.",
 						validator: function (callback) {
-							var value = this.getValue();
+							let value = this.getValue();
 							if (!value) {
 								callback({
 									status: false,
@@ -621,7 +620,7 @@ class WWSUstate extends WWSUevents {
 									form.focus();
 									return;
 								}
-								var value = form.getValue();
+								let value = form.getValue();
 
 								value = {
 									topic: value.topic,
@@ -655,8 +654,8 @@ class WWSUstate extends WWSUevents {
 	 */
 	goLive(data, cb) {
 		try {
-			this.hosts.promptIfNotHost(`start a live in-studio broadcast`, () => {
-				this.requests.host.request(
+			this.manager.get("WWSUhosts").promptIfNotHost(`start a live in-studio broadcast`, () => {
+				this.manager.get("hostReq").request(
 					{ method: "post", url: this.endpoints.live, data },
 					(response) => {
 						if (response !== "OK") {
@@ -702,7 +701,7 @@ class WWSUstate extends WWSUevents {
 	 */
 	showRemoteForm() {
 		// Reject if host does not have makeCalls permission
-		if (!this.hosts.client.makeCalls) {
+		if (!this.manager.get("WWSUhosts").client.makeCalls) {
 			$(document).Toasts("create", {
 				class: "bg-warning",
 				title: "Remote broadcasts not allowed",
@@ -714,7 +713,7 @@ class WWSUstate extends WWSUevents {
 		}
 
 		// Find what should be airing right now; filter to only the highest priority remote broadcast
-		let whatShouldBePlaying = this.calendar
+		let whatShouldBePlaying = this.manager.get("WWSUcalendar")
 			.whatShouldBePlaying()
 			.sort((a, b) => b.priority - a.priority);
 		whatShouldBePlaying = whatShouldBePlaying.find(
@@ -722,7 +721,7 @@ class WWSUstate extends WWSUevents {
 		);
 
 		// Reject if no remote broadcasts scheduled and this host is locked to a DJ.
-		if (this.hosts.client.lockToDJ !== null && !whatShouldBePlaying) {
+		if (this.manager.get("WWSUhosts").client.lockToDJ !== null && !whatShouldBePlaying) {
 			$(document).Toasts("create", {
 				class: "bg-warning",
 				title: "No remote broadcasts scheduled",
@@ -735,14 +734,14 @@ class WWSUstate extends WWSUevents {
 
 		// Reject if the DJ locked to this host is not part of the currently scheduled remote broadcast
 		if (
-			this.hosts.client.lockToDJ !== null &&
+			this.manager.get("WWSUhosts").client.lockToDJ !== null &&
 			whatShouldBePlaying &&
 			[
 				whatShouldBePlaying.hostDJ,
 				whatShouldBePlaying.cohostDJ1,
 				whatShouldBePlaying.cohostDJ2,
 				whatShouldBePlaying.cohostDJ3,
-			].indexOf(this.hosts.client.lockToDJ) === -1
+			].indexOf(this.manager.get("WWSUhosts").client.lockToDJ) === -1
 		) {
 			$(document).Toasts("create", {
 				class: "bg-warning",
@@ -758,11 +757,11 @@ class WWSUstate extends WWSUevents {
 		this.broadcastModal.body = ``;
 		this.broadcastModal.iziModal("open");
 
-		// Set lock to DJ to a local variable as Alpaca's validators do not use arrow functions
-		let lockToDJ = this.hosts.client.lockToDJ;
+		// Set lock to DJ to a local letiable as Alpaca's validators do not use arrow functions
+		let lockToDJ = this.manager.get("WWSUhosts").client.lockToDJ;
 
 		// Get the hosts that may be called for an audio broadcast
-		let callableHosts = this.hosts.find({
+		let callableHosts = this.manager.get("WWSUhosts").find({
 			answerCalls: true,
 			authorized: true,
 		});
@@ -791,14 +790,14 @@ class WWSUstate extends WWSUevents {
 					djs: {
 						type: "string",
 						required: true,
-						readonly: this.hosts.client.lockToDJ !== null,
+						readonly: this.manager.get("WWSUhosts").client.lockToDJ !== null,
 						title: "DJ handles",
 						maxLength: 255,
 					},
 					name: {
 						type: "string",
 						title: "Name of Show",
-						readonly: this.hosts.client.lockToDJ !== null,
+						readonly: this.manager.get("WWSUhosts").client.lockToDJ !== null,
 						required: true,
 						maxLength: 255,
 					},
@@ -820,7 +819,7 @@ class WWSUstate extends WWSUevents {
 						rightLabel: "Yes",
 						helper: `You confirm you went into the Audio page of DJ Controls and ensured the devices you want broadcast have "Remote Broadcasts" checked, their volumes are set to where you want them, and you tested (via the VU meters) to ensure DJ Controls is receiving audio from those devices.`,
 						validator: function (callback) {
-							var value = this.getValue();
+							let value = this.getValue();
 							if (!value) {
 								callback({
 									status: false,
@@ -838,7 +837,7 @@ class WWSUstate extends WWSUevents {
 						helper:
 							"Please check this box to indicate you read the announcements on the announcements tab of DJ Controls. Important information regarding DJs, shows/broadcasts, or WWSU might be posted here.",
 						validator: function (callback) {
-							var value = this.getValue();
+							let value = this.getValue();
 							if (!value) {
 								callback({
 									status: false,
@@ -857,7 +856,7 @@ class WWSUstate extends WWSUevents {
 							`If this field is uneditable but incorrect, please contact a director ASAP.`,
 						],
 						validator: function (callback) {
-							var value = this.getValue();
+							let value = this.getValue();
 							if (value.includes(" -")) {
 								callback({
 									status: false,
@@ -886,7 +885,7 @@ class WWSUstate extends WWSUevents {
 					name: {
 						helper: `If this field is uneditable but incorrect, please contact a director ASAP.`,
 						validator: function (callback) {
-							var value = this.getValue();
+							let value = this.getValue();
 							if (value.includes(" -")) {
 								callback({
 									status: false,
@@ -942,7 +941,7 @@ class WWSUstate extends WWSUevents {
 									form.focus();
 									return;
 								}
-								var value = form.getValue();
+								let value = form.getValue();
 
 								// The process of going remote requires a lot of back and forth between processes and the API.
 								// So, store the form data in memory and block the form while we are processing.
@@ -958,7 +957,7 @@ class WWSUstate extends WWSUevents {
 									},
 								};
 
-								this.hosts.promptIfNotHost(`start a remote broadcast`, () => {
+								this.manager.get("WWSUhosts").promptIfNotHost(`start a remote broadcast`, () => {
 									$(this.broadcastModal.body).block({
 										message: `<h1>Please wait...</h1><p class="remote-start-status">Initializing...</p>`,
 										css: { border: "3px solid #a00" },
@@ -1011,7 +1010,7 @@ class WWSUstate extends WWSUevents {
 	 */
 	goRemote(data, cb) {
 		try {
-			this.requests.host.request(
+			this.manager.get("hostReq").request(
 				{ method: "post", url: this.endpoints.remote, data },
 				(response) => {
 					if (response !== "OK") {
@@ -1055,7 +1054,7 @@ class WWSUstate extends WWSUevents {
 	 * Show a form for starting a live in-studio sports broadcast in a modal via Alpaca.
 	 */
 	showSportsForm() {
-		if (this.hosts.client.lockToDJ !== null) {
+		if (this.manager.get("WWSUhosts").client.lockToDJ !== null) {
 			$(document).Toasts("create", {
 				class: "bg-warning",
 				title: "Action not allowed",
@@ -1070,7 +1069,7 @@ class WWSUstate extends WWSUevents {
 		this.broadcastModal.body = ``;
 		this.broadcastModal.iziModal("open");
 
-		let whatShouldBePlaying = this.calendar
+		let whatShouldBePlaying = this.manager.get("WWSUcalendar")
 			.whatShouldBePlaying()
 			.sort((a, b) => b.priority - a.priority);
 		whatShouldBePlaying = whatShouldBePlaying.find(
@@ -1080,7 +1079,7 @@ class WWSUstate extends WWSUevents {
 			? whatShouldBePlaying.name.split(" vs.")[0]
 			: undefined;
 
-		let _sports = this.config.config.sports;
+		let _sports = this.manager.get("WWSUconfig").config.sports;
 
 		$(this.broadcastModal.body).alpaca({
 			schema: {
@@ -1117,7 +1116,7 @@ class WWSUstate extends WWSUevents {
 						helper:
 							"Please check this box to indicate you read the announcements on the announcements tab of DJ Controls.",
 						validator: function (callback) {
-							var value = this.getValue();
+							let value = this.getValue();
 							if (!value) {
 								callback({
 									status: false,
@@ -1133,7 +1132,7 @@ class WWSUstate extends WWSUevents {
 					sport: {
 						type: "select",
 						validator: function (callback) {
-							var value = this.getValue();
+							let value = this.getValue();
 							if (!title || title !== value) {
 								callback({
 									status: true,
@@ -1167,7 +1166,7 @@ class WWSUstate extends WWSUevents {
 									form.focus();
 									return;
 								}
-								var value = form.getValue();
+								let value = form.getValue();
 
 								value = {
 									topic: value.topic,
@@ -1200,10 +1199,10 @@ class WWSUstate extends WWSUevents {
 	 */
 	goSports(data, cb) {
 		try {
-			this.hosts.promptIfNotHost(
+			this.manager.get("WWSUhosts").promptIfNotHost(
 				`start a live in-studio sports broadcast`,
 				() => {
-					this.requests.host.request(
+					this.manager.get("hostReq").request(
 						{ method: "post", url: this.endpoints.sports, data },
 						(response) => {
 							if (response !== "OK") {
@@ -1250,7 +1249,7 @@ class WWSUstate extends WWSUevents {
 	 */
 	showSportsRemoteForm() {
 		// Reject if host does not have makeCalls permission
-		if (!this.hosts.client.makeCalls) {
+		if (!this.manager.get("WWSUhosts").client.makeCalls) {
 			$(document).Toasts("create", {
 				class: "bg-warning",
 				title: "Remote broadcasts not allowed",
@@ -1262,18 +1261,18 @@ class WWSUstate extends WWSUevents {
 		}
 
 		// Find what should be airing right now; filter to only the highest priority sports broadcast
-		let whatShouldBePlaying = this.calendar
+		let whatShouldBePlaying = this.manager.get("WWSUcalendar")
 			.whatShouldBePlaying()
 			.sort((a, b) => b.priority - a.priority);
 		whatShouldBePlaying = whatShouldBePlaying.find(
 			(record) => record.type === "sports"
 		);
 
-		// Set lock to DJ to a local variable as Alpaca's validators do not use arrow functions
-		let lockToDJ = this.hosts.client.lockToDJ;
+		// Set lock to DJ to a local letiable as Alpaca's validators do not use arrow functions
+		let lockToDJ = this.manager.get("WWSUhosts").client.lockToDJ;
 
 		// Reject if no remote broadcasts scheduled and this host is locked to a DJ.
-		if (this.hosts.client.lockToDJ !== null && !whatShouldBePlaying) {
+		if (this.manager.get("WWSUhosts").client.lockToDJ !== null && !whatShouldBePlaying) {
 			$(document).Toasts("create", {
 				class: "bg-warning",
 				title: "No sports broadcasts scheduled",
@@ -1294,10 +1293,10 @@ class WWSUstate extends WWSUevents {
 			? whatShouldBePlaying.name.split(" vs.")[0]
 			: undefined;
 
-		let _sports = this.config.config.sports;
+		let _sports = this.manager.get("WWSUconfig").config.sports;
 
 		// Get the hosts that may be called for an audio broadcast
-		let callableHosts = this.hosts.find({
+		let callableHosts = this.manager.get("WWSUhosts").find({
 			answerCalls: true,
 			authorized: true,
 		});
@@ -1328,7 +1327,7 @@ class WWSUstate extends WWSUevents {
 						title: "Sport",
 						enum: _sports,
 						required: true,
-						readonly: this.hosts.client.lockToDJ !== null,
+						readonly: this.manager.get("WWSUhosts").client.lockToDJ !== null,
 					},
 					topic: {
 						type: "string",
@@ -1348,7 +1347,7 @@ class WWSUstate extends WWSUevents {
 						rightLabel: "Yes",
 						helper: `You confirm you went into the Audio page of DJ Controls and ensured the devices you want broadcast have "Remote Broadcasts" checked, their volumes are set to where you want them, and you tested (via the VU meters) to ensure DJ Controls is receiving audio from those devices.`,
 						validator: function (callback) {
-							var value = this.getValue();
+							let value = this.getValue();
 							if (!value) {
 								callback({
 									status: false,
@@ -1366,7 +1365,7 @@ class WWSUstate extends WWSUevents {
 						helper:
 							"Please check this box to indicate you read the announcements on the announcements tab of DJ Controls.",
 						validator: function (callback) {
-							var value = this.getValue();
+							let value = this.getValue();
 							if (!value) {
 								callback({
 									status: false,
@@ -1388,7 +1387,7 @@ class WWSUstate extends WWSUevents {
 					sport: {
 						type: "select",
 						validator: function (callback) {
-							var value = this.getValue();
+							let value = this.getValue();
 							if (!title || title !== value) {
 								callback({
 									status: true,
@@ -1428,7 +1427,7 @@ class WWSUstate extends WWSUevents {
 									form.focus();
 									return;
 								}
-								var value = form.getValue();
+								let value = form.getValue();
 
 								// The process of going remote requires a lot of back and forth between processes and the API.
 								// So, store the form data in memory and block the form while we are processing.
@@ -1444,7 +1443,7 @@ class WWSUstate extends WWSUevents {
 									},
 								};
 
-								this.hosts.promptIfNotHost(
+								this.manager.get("WWSUhosts").promptIfNotHost(
 									`start a remote sports broadcast`,
 									() => {
 										$(this.broadcastModal.body).block({
@@ -1484,7 +1483,7 @@ class WWSUstate extends WWSUevents {
 	 */
 	goSportsRemote(data, cb) {
 		try {
-			this.requests.host.request(
+			this.manager.get("hostReq").request(
 				{ method: "post", url: this.endpoints.sportsRemote, data },
 				(response) => {
 					if (response !== "OK") {

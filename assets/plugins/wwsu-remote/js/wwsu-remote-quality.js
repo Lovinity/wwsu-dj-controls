@@ -1,29 +1,37 @@
+"use strict";
+
 /**
  * This class manages tracking remote audio call quality of various connections.
  */
+
+// REQUIRES these WWSUmodules: WWSUMeta
 class WWSUremoteQuality extends WWSUevents {
 	/**
 	 * Construct the class
 	 *
-	 * @param {WWSUmeta} meta Initialized WWSU meta class
+	 * @param {WWSUmodules} manager The modules class which initiated this module
+	 * @param {object} options Options to be passed to this module
 	 */
-	constructor(meta) {
+	constructor(manager, options) {
 		super();
+
+		this.manager = manager;
 
 		this.connections = new Map();
 
-		this.meta = meta;
-
 		// Increase quality by 1% for all connections every 0.5 seconds; push quality event at 33%, 66%, and 100%.
-		setInterval(() => {
+		this.rebuildQuality = setInterval(() => {
 			this.connections.forEach((value, key) => {
 				if (value < 100) {
 					value += 1;
 					this.connections.set(key, value);
 
-					if (value === 33) this.emitEvent("quality", [key, `improvedQuality`, value]);
-					if (value === 66) this.emitEvent("quality", [key, `improvedQuality`, value]);
-					if (value === 100) this.emitEvent("quality", [key, `improvedQuality`, value]);
+					if (value === 33)
+						this.emitEvent("quality", [key, `improvedQuality`, value]);
+					if (value === 66)
+						this.emitEvent("quality", [key, `improvedQuality`, value]);
+					if (value === 100)
+						this.emitEvent("quality", [key, `improvedQuality`, value]);
 				}
 			});
 		}, 500);
@@ -40,10 +48,10 @@ class WWSUremoteQuality extends WWSUevents {
 		// Do not account silence problems if we are not on the air right now
 		if (
 			reason === `incomingSilence` &&
-			(!this.meta ||
-				this.meta.meta.state !== "remote_on" ||
-				this.meta.meta.state !== "sportsremote_on" ||
-				this.meta.meta.playing)
+			(!this.manager.get("WWSUMeta") ||
+				this.manager.get("WWSUMeta").meta.state !== "remote_on" ||
+				this.manager.get("WWSUMeta").meta.state !== "sportsremote_on" ||
+				this.manager.get("WWSUMeta").meta.playing)
 		) {
 			return;
 		}

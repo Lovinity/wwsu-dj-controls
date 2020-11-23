@@ -1,53 +1,36 @@
+"use strict";
+
 // This class manages WWSU hosts
+
+// REQUIRES these WWSUmodules: WWSUMeta, WWSUrecipients, WWSUdjs, hostReq (WWSUreq), directorReq (WWSUreq), WWSUutil, WWSUanimations
 class WWSUhosts extends WWSUdb {
 	/**
 	 * Construct the class
 	 *
-	 * @param {sails.io} socket Socket connection to WWSU
-	 * @param {WWSUmeta} meta WWSUmeta class instance
-	 * @param {WWSUrecipients} recipients WWSUrecipients class instance
-	 * @param {string} machineID The ID of this machine / installation
-	 * @param {string} app The app name and version this host is running
-	 * @param {WWSUreq} hostReq Request with host authorization
-	 * @param {WWSUreq} directorReq Request with director authorization
-	 * @param {WWSUdjs} djs WWSUdjs class containing the DJs for WWSU (used for specifying a DJ to lock a host to)
+	 * @param {WWSUmodules} manager The modules class which initiated this module
+	 * @param {object} options Options to be passed to this module
+	 * @param {string} options.machineID The ID of this machine / host
+	 * @param {string} options.app The app name and version running on this host
 	 */
-	constructor(
-		socket,
-		meta,
-		recipients,
-		machineID,
-		app,
-		hostReq,
-		directorReq,
-		djs
-	) {
+	constructor(manager, options) {
 		super(); // Create the db
+		
+		this.manager = manager;
 
 		this.endpoints = {
 			edit: "/hosts/edit",
 			get: "/hosts/get",
 			remove: "/hosts/remove",
 		};
-		this.requests = {
-			host: hostReq,
-			director: directorReq,
-		};
 		this.data = {
-			get: { host: machineID, app: app },
+			get: { host: options.machineID, app: options.app },
 		};
-		this.meta = meta;
-		this.recipients = recipients;
 
-		this.host = machineID;
-
-		this.djs = djs;
+		this.host = options.machineID;
 
 		this.table;
 
-		this.animations = new WWSUanimations();
-
-		this.assignSocketEvent("hosts", socket);
+		this.assignSocketEvent("hosts", this.manager.socket);
 
 		// Contains information about the current host
 		this.client = {};
@@ -80,7 +63,7 @@ class WWSUhosts extends WWSUdb {
 	 * @param {function} cb Callback w/ parameter. 1 = authorized and connected. 0 = not authorized, -1 = authorized, but already connected
 	 */
 	get(cb) {
-		this.requests.host.request(
+		this.manager.get("hostReq").request(
 			{ method: "POST", url: this.endpoints.get, data: this.data.get },
 			(body) => {
 				try {
@@ -93,7 +76,7 @@ class WWSUhosts extends WWSUdb {
 							this.query(body.otherHosts, true);
 							delete this.client.otherHosts;
 						}
-						this.recipients.addRecipientComputer(
+						this.manager.get("WWSUrecipients").addRecipientComputer(
 							this.client.host,
 							(recipient, success) => {
 								if (success) {
@@ -120,7 +103,7 @@ class WWSUhosts extends WWSUdb {
 	 */
 	edit(data, cb) {
 		try {
-			this.requests.director.request(
+			this.manager.get("directorReq").request(
 				{
 					dom: `#modal-${this.hostModal.id}`,
 					method: "post",
@@ -175,7 +158,7 @@ class WWSUhosts extends WWSUdb {
 	 */
 	remove(data, cb) {
 		try {
-			this.requests.director.request(
+			this.manager.get("directorReq").request(
 				{
 					method: "post",
 					url: this.endpoints.remove,
@@ -229,16 +212,16 @@ class WWSUhosts extends WWSUdb {
 
 		this.hostModal.iziModal("open");
 
-		var _djs = this.djs.find();
+		let _djs = this.manager.get("WWSUdjs").find();
 		_djs.push({
 			ID: 0,
 			name: "(Do not allow anyone to start any kind of broadcast on this host)",
 		});
 
-		var rSilence = this.find({ silenceDetection: true }, true);
-		var rRecord = this.find({ recordAudio: true }, true);
-		var rDelay = this.find({ delaySystem: true }, true);
-		var rEAS = this.find({ EAS: true }, true);
+		let rSilence = this.find({ silenceDetection: true }, true);
+		let rRecord = this.find({ recordAudio: true }, true);
+		let rDelay = this.find({ delaySystem: true }, true);
+		let rEAS = this.find({ EAS: true }, true);
 
 		$(this.hostModal.body).alpaca({
 			schema: {
@@ -390,7 +373,7 @@ class WWSUhosts extends WWSUdb {
 									form.focus();
 									return;
 								}
-								var value = form.getValue();
+								let value = form.getValue();
 
 								// Bug; when lockToDJ has no value, it should be set to null. Without this, it is undefined instead.
 								if (typeof value.lockToDJ === "undefined")
@@ -416,7 +399,7 @@ class WWSUhosts extends WWSUdb {
 	 * @return {boolean} True if this host started the current broadcast, false otherwise
 	 */
 	get isHost() {
-		return this.client.ID === this.meta.meta.host;
+		return this.client.ID === this.manager.get("WWSUMeta").meta.host;
 	}
 
 	/**
@@ -426,9 +409,8 @@ class WWSUhosts extends WWSUdb {
 	 * @param {function} cb Callback when we are the host, or "yes" is chosen on the confirmation dialog.
 	 */
 	promptIfNotHost(action, cb) {
-		if (this.meta.meta.host && !this.isHost) {
-			var util = new WWSUutil();
-			util.confirmDialog(
+		if (this.manager.get("WWSUMeta").meta.host && !this.isHost) {
+			this.manager.get("WWSUutil").confirmDialog(
 				`<strong>Your host did not start the current broadcast</strong>. Are you sure you want to ${action}? You may be interfering with someone else's broadcast.`,
 				null,
 				() => {
@@ -446,17 +428,15 @@ class WWSUhosts extends WWSUdb {
 	 * @param {string} table DOM query string div container where the table should be placed.
 	 */
 	initTable(table) {
-		this.animations.add("hosts-init-table", () => {
-			var util = new WWSUutil();
-
+		this.manager.get("WWSUanimations").add("hosts-init-table", () => {
 			// Init html
 			$(table).html(
 				`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
-					this.meta ? this.meta.meta.timezone : moment.tz.guess()
+					this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 				}.</p><table id="section-hosts-table" class="table table-striped display responsive" style="width: 100%;"></table>`
 			);
 
-			util.waitForElement(`#section-hosts-table`, () => {
+			this.manager.get("WWSUutil").waitForElement(`#section-hosts-table`, () => {
 				// Generate table
 				this.table = $(`#section-hosts-table`).DataTable({
 					paging: false,
@@ -469,7 +449,7 @@ class WWSUhosts extends WWSUdb {
 						{ title: "Responsibilities" },
 						{ title: "Actions" },
 					],
-					columnDefs: [{ responsivePriority: 1, targets: 4 }],
+					columnDefs: [{ responsivePriority: 1, targets: 5 }],
 					order: [
 						[0, "asc"],
 						[1, "asc"],
@@ -481,18 +461,17 @@ class WWSUhosts extends WWSUdb {
 						$(".btn-host-delete").unbind("click");
 
 						$(".btn-host-edit").click((e) => {
-							var host = this.find().find(
+							let host = this.find().find(
 								(host) => host.ID === parseInt($(e.currentTarget).data("id"))
 							);
 							this.showHostForm(host);
 						});
 
 						$(".btn-host-delete").click((e) => {
-							var util = new WWSUutil();
-							var host = this.find().find(
+							let host = this.find().find(
 								(host) => host.ID === parseInt($(e.currentTarget).data("id"))
 							);
-							util.confirmDialog(
+							this.manager.get("WWSUutil").confirmDialog(
 								`Are you sure you want to remove the host "${host.friendlyname}"?
 							<ul>
 							<li>This host will no longer have access to WWSU.</li>
@@ -519,7 +498,7 @@ class WWSUhosts extends WWSUdb {
 	 * Update the host management table if it exists
 	 */
 	updateTable() {
-		this.animations.add("hosts-update-table", () => {
+		this.manager.get("WWSUanimations").add("hosts-update-table", () => {
 			if (this.table) {
 				this.table.clear();
 				this.find().forEach((host) => {

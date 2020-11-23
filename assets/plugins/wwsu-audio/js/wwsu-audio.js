@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Manager for audio devices
  */

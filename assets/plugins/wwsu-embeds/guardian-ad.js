@@ -1,9 +1,11 @@
-var audio = document.querySelector('#player')
-var playButton = document.querySelector('#play')
-var pauseButton = document.querySelector('#pause')
-var metaBox = document.querySelector('#meta')
-var Meta = { line1: '', line2: '' }
-var displayingLine1 = true
+'use strict';
+
+let audio = document.querySelector('#player')
+let playButton = document.querySelector('#play')
+let pauseButton = document.querySelector('#pause')
+let metaBox = document.querySelector('#meta')
+let Meta = { line1: '', line2: '' }
+let displayingLine1 = true
 
 
 

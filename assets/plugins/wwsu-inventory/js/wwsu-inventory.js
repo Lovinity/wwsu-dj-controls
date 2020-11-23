@@ -1,15 +1,19 @@
+'use strict';
+
 // This class manages the WWSU inventory and checking equipment in/out.
+
+// REQUIRES these WWSUmodules: WWSUMeta, hostReq (WWSureq), directorReq (WWSUreq), WWSUutil, WWSUanimations
 class WWSUinventory extends WWSUdb {
 	/**
 	 * Construct the class
 	 *
-	 * @param {sails.io} socket The socket connection to WWSU
-	 * @param {WWSUmeta} meta Initialized WWSUmeta class
-	 * @param {WWSUreq} hostReq Request with host authorization
-	 * @param {WWSUreq} directorReq Request with Director authorization
+	 * @param {WWSUmodules} manager The modules class which initiated this module
+	 * @param {object} options Options to be passed to this module
 	 */
-	constructor(socket, meta, hostReq, directorReq) {
+	constructor(manager, options) {
 		super(); // Create the db
+
+		this.manager = manager;
 
 		this.endpoints = {
 			add: "/inventory/add",
@@ -21,20 +25,14 @@ class WWSUinventory extends WWSUdb {
 			removeCheckout: "/inventory/remove-checkout",
 			remove: "/inventory/remove",
 		};
-		this.requests = {
-			host: hostReq,
-			director: directorReq,
-		};
+
 		this.data = {
 			get: {},
 		};
-		this.meta = meta;
-
-		this.animations = new WWSUanimations();
 
 		this.table;
 
-		this.assignSocketEvent("items", socket);
+		this.assignSocketEvent("items", this.manager.socket);
 
 		this.on("change", "WWSUinventory", () => {
 			this.updateTable();
@@ -62,7 +60,7 @@ class WWSUinventory extends WWSUdb {
 
 	// Initialize connection. Call this on socket connect event.
 	init() {
-		this.replaceData(this.requests.host, this.endpoints.get, this.data.get);
+		this.replaceData(this.manager.get("hostReq"), this.endpoints.get, this.data.get);
 	}
 
 	/**
@@ -71,8 +69,7 @@ class WWSUinventory extends WWSUdb {
 	 * @param {string} table DOM query string where the table should be created (should be a div).
 	 */
 	initTable(table) {
-		this.animations.add("inventory-init-table", () => {
-			var util = new WWSUutil();
+		this.manager.get("WWSUanimations").add("inventory-init-table", () => {
 
 			// Init html
 			$(table).html(
@@ -81,7 +78,7 @@ class WWSUinventory extends WWSUdb {
 				}.</p><p><button type="button" class="btn btn-block btn-success btn-inventory-new">New Item</button></p><table id="section-inventory-table" class="table table-striped display responsive" style="width: 100%;"></table>`
 			);
 
-			util.waitForElement(`#section-inventory-table`, () => {
+			this.manager.get("WWSUutil").waitForElement(`#section-inventory-table`, () => {
 				// Generate table
 				this.table = $(`#section-inventory-table`).DataTable({
 					paging: true,
@@ -113,18 +110,17 @@ class WWSUinventory extends WWSUdb {
 						});
 
 						$(".btn-inventory-edit").click((e) => {
-							var item = this.find().find(
+							let item = this.find().find(
 								(item) => item.ID === parseInt($(e.currentTarget).data("id"))
 							);
 							this.showItemForm(item);
 						});
 
 						$(".btn-inventory-delete").click((e) => {
-							var util = new WWSUutil();
-							var item = this.find().find(
+							let item = this.find().find(
 								(item) => item.ID === parseInt($(e.currentTarget).data("id"))
 							);
-							util.confirmDialog(
+							this.manager.get("WWSUutil").confirmDialog(
 								`Are you sure you want to <strong>permanently</strong> remove the item "${item.name}" in ${item.location} / ${item.subLocation} (ID: ${item.ID})?
                             <ul>
                             <li><strong>Do NOT permanently remove an item unless it is no longer in WWSU's possession permanently.</strong></li>
@@ -159,7 +155,7 @@ class WWSUinventory extends WWSUdb {
 	 */
 	add(data, cb) {
 		try {
-			this.requests.director.request(
+			this.manager.get("directorReq").request(
 				{
 					dom: `#modal-${this.newItemModal.id}`,
 					method: "post",
@@ -211,7 +207,7 @@ class WWSUinventory extends WWSUdb {
 	 */
 	checkIn(data, cb) {
 		try {
-			this.requests.director.request(
+			this.manager.get("directorReq").request(
 				{
 					dom: `#modal-${this.checkInOutModal.id}`,
 					method: "post",
@@ -287,7 +283,7 @@ class WWSUinventory extends WWSUdb {
 	 */
 	checkOut(data, cb) {
 		try {
-			this.requests.director.request(
+			this.manager.get("directorReq").request(
 				{
 					dom: `#modal-${this.checkInOutModal.id}`,
 					method: "post",
@@ -374,7 +370,7 @@ class WWSUinventory extends WWSUdb {
 	 */
 	edit(data, cb) {
 		try {
-			this.requests.director.request(
+			this.manager.get("directorReq").request(
 				{
 					dom: `#modal-${this.newItemModal.id}`,
 					method: "post",
@@ -426,7 +422,7 @@ class WWSUinventory extends WWSUdb {
 	 */
 	editCheckout(data, cb) {
 		try {
-			this.requests.director.request(
+			this.manager.get("directorReq").request(
 				{
 					dom: `#modal-${this.checkoutModal.id}`,
 					method: "post",
@@ -478,7 +474,7 @@ class WWSUinventory extends WWSUdb {
 	 */
 	get(data, cb) {
 		try {
-			this.requests.host.request(
+			this.manager.get("hostReq").request(
 				{
 					method: "post",
 					url: this.endpoints.get,
@@ -524,7 +520,7 @@ class WWSUinventory extends WWSUdb {
 	 */
 	remove(data, cb) {
 		try {
-			this.requests.director.request(
+			this.manager.get("directorReq").request(
 				{
 					method: "post",
 					url: this.endpoints.remove,
@@ -577,7 +573,7 @@ class WWSUinventory extends WWSUdb {
 	 */
 	removeCheckout(data, cb) {
 		try {
-			this.requests.director.request(
+			this.manager.get("directorReq").request(
 				{
 					method: "post",
 					url: this.endpoints.removeCheckout,
@@ -669,7 +665,7 @@ class WWSUinventory extends WWSUdb {
 	 * Update the inventory table if it exists
 	 */
 	updateTable() {
-		this.animations.add("inventory-update-table", () => {
+		this.manager.get("WWSUanimations").add("inventory-update-table", () => {
 			if (this.table) {
 				this.table.clear();
 				this.find().forEach((item) => {
@@ -796,7 +792,7 @@ class WWSUinventory extends WWSUdb {
 									form.focus();
 									return;
 								}
-								var value = form.getValue();
+								let value = form.getValue();
 								if (data) {
 									this.edit(value, (success) => {
 										if (success) {
@@ -830,7 +826,6 @@ class WWSUinventory extends WWSUdb {
 		this.itemInfoModal.iziModal("open");
 		this.get({ ID: item }, (response) => {
 			if (response) {
-				var util = new WWSUutil();
 
 				this.itemInfoModal.title = `Item ${response.name} (${response.ID})`;
 				this.itemInfoModal.body = `<table class="table table-striped">
@@ -892,7 +887,7 @@ class WWSUinventory extends WWSUdb {
 					this.meta ? this.meta.meta.timezone : moment.tz.guess()
 				}.</p><table id="section-inventory-checkout-table" class="table table-striped display responsive" style="width: 100%;"></table>`;
 
-				util.waitForElement(`#section-inventory-checkout-table`, () => {
+				this.manager.get("WWSUutil").waitForElement(`#section-inventory-checkout-table`, () => {
 					// Generate table
 
 					// Extra information
@@ -999,9 +994,8 @@ class WWSUinventory extends WWSUdb {
 							});
 
 							$(".btn-inventory-checkout-delete").click((e) => {
-								var id = parseInt($(e.currentTarget).data("id"));
-								var util = new WWSUutil();
-								util.confirmDialog(
+								let id = parseInt($(e.currentTarget).data("id"));
+								this.manager.get("WWSUutil").confirmDialog(
 									`Are you sure you want to <strong>permanently</strong> remove the checkout record ID ${id}?
                             <p><strong>Do NOT permanently remove a checkout record unless it was added by mistake.</strong></p>`,
 									`${id}`,
@@ -1024,8 +1018,8 @@ class WWSUinventory extends WWSUdb {
 						"click",
 						"td.details-control",
 						function () {
-							var tr = $(this).closest("tr");
-							var row = table.row(tr);
+							let tr = $(this).closest("tr");
+							let row = table.row(tr);
 
 							if (row.child.isShown()) {
 								// This row is already open - close it
@@ -1150,7 +1144,7 @@ class WWSUinventory extends WWSUdb {
 									form.focus();
 									return;
 								}
-								var value = form.getValue();
+								let value = form.getValue();
 								this.checkOut(value, (success) => {
 									if (success) {
 										this.checkInOutModal.iziModal("close");
@@ -1251,7 +1245,7 @@ class WWSUinventory extends WWSUdb {
 									form.focus();
 									return;
 								}
-								var value = form.getValue();
+								let value = form.getValue();
 								this.checkIn(value, (success) => {
 									if (success) {
 										this.checkInOutModal.iziModal("close");

@@ -1,20 +1,22 @@
+'use strict';
+
 // This class is a recipients helper for web-based recipients, such as listeners.
 
+// REQUIRES these WWSUmodules: noReq (WWSUreq)
 class WWSUrecipientsweb {
   /**
    * The class constructor.
    *
-   * @param {sails.io} socket The sails.io socket connected to the WWSU API.
-   * @param {WWSUreq} noReq Request with no authorization
+	 * @param {WWSUmodules} manager The modules class which initiated this module
+	 * @param {object} options Options to be passed to this module
    */
-  constructor(socket, noReq) {
+  constructor(manager, options) {
+    this.manager = manager;
+
     this.endpoints = {
       addDisplay: "/recipients/add-display",
       addWeb: "/recipients/add-web",
       editWeb: "/recipients/edit-web",
-    };
-    this.requests = {
-      no: noReq,
     };
 
     this.recipient = {};
@@ -27,7 +29,7 @@ class WWSUrecipientsweb {
    * @param {function} cb Callback; recipient data as first parameter, boolean true = success, false = no success as second parameter
    */
   addRecipientDisplay(host, cb) {
-    this.requests.no.request(
+    this.manager.get("noReq").request(
       {
         method: "post",
         url: this.endpoints.addDisplay,
@@ -55,7 +57,7 @@ class WWSUrecipientsweb {
    * @param {function} cb Callback; recipient data as first parameter, boolean true = success, false = no success as second parameter
    */
   addRecipientWeb(device, cb) {
-    this.requests.no.request(
+    this.manager.get("noReq").request(
       {
         method: "post",
         url: this.endpoints.addWeb,
@@ -85,7 +87,7 @@ class WWSUrecipientsweb {
    * @param {function} cb Callback.
    */
   editRecipientWeb(label, cb) {
-    this.requests.no.request(
+    this.manager.get("noReq").request(
       {
         method: "post",
         url: this.endpoints.editWeb,

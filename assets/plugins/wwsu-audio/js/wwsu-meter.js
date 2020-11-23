@@ -1,3 +1,5 @@
+'use strict';
+
 // Create an Audio node and meter/processor from the audio worklet
 
 const SMOOTHING_FACTOR = 0.94;

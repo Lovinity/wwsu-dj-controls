@@ -37,6 +37,7 @@ const {
 	ipcMain,
 	session,
 	shell,
+	contentTracing,
 } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const debug = require("electron-debug");
@@ -136,7 +137,7 @@ const createLoadingScreen = () => {
 	);
 	loadingScreen.setResizable(false);
 	loadingScreen.loadFile("splash.html");
-	loadingScreen.on("closed", () => (loadingScreen = null));
+	loadingScreen.on("closed", () => (loadingScreen = undefined));
 	loadingScreen.webContents.on("did-finish-load", () => {
 		loadingScreen.show();
 	});
@@ -248,7 +249,7 @@ const createRemoteWindow = () => {
 	remoteWindow = new BrowserWindow({
 		width: 1280,
 		height: 720,
-		show: true,
+		show: false,
 		title: `${app.name} - Remote Process`,
 		webPreferences: {
 			contextIsolation: true,
@@ -297,6 +298,7 @@ const createWindows = () => {
 
 		// Destroy loading screen
 		loadingScreen.destroy();
+		loadingScreen = undefined;
 
 		// TODO: Check for updates (disabled as it does not work)
 		// autoUpdater.checkForUpdates();
@@ -577,7 +579,7 @@ ipcMain.on("recorder", (event, arg) => {
 
 // Process tasks
 ipcMain.on("process", (event, arg) => {
-	var args = arg[1];
+	let args = arg[1];
 	switch (arg[0]) {
 		case "silence":
 			if (args[0] === "open" && !silenceWindow) {
@@ -615,7 +617,7 @@ ipcMain.on("process", (event, arg) => {
 
 // Tasks to be completed by the main process
 ipcMain.on("main", (event, arg) => {
-	var args = arg[1];
+	let args = arg[1];
 	switch (arg[0]) {
 		// Generate a notification window
 		case "makeNotification":
@@ -628,7 +630,7 @@ ipcMain.on("main", (event, arg) => {
 				// Enforce webm type
 				args[0] = `${args[0]}.webm`;
 
-				var arrayBuffer = Buffer.from(new Uint8Array(args[1]));
+				let arrayBuffer = Buffer.from(new Uint8Array(args[1]));
 
 				// If the base path does not exist, create it
 				if (
@@ -940,10 +942,10 @@ function restartDelay(arg) {
 					delayTimer = setTimeout(() => {
 						// Delay status
 						if (delayData.includes("000c")) {
-							var index = delayData.indexOf("000c");
-							var seconds =
+							let index = delayData.indexOf("000c");
+							let seconds =
 								parseInt(delayData.substring(index + 6, index + 8), 16) / 10;
-							var bypass = hex2bin(delayData.substring(index + 16, index + 18));
+							let bypass = hex2bin(delayData.substring(index + 16, index + 18));
 							bypass = parseInt(bypass.substring(7, 8)) === 1;
 							mainWindow.webContents.send("console", [
 								"log",
@@ -962,8 +964,10 @@ function restartDelay(arg) {
 						`Main: Delay System port opened.`,
 					]);
 
+					let buffer;
+
 					// Request status after opening
-					let buffer = new Buffer.alloc(6);
+					buffer = new Buffer.alloc(6);
 					buffer[0] = 0xfb;
 					buffer[1] = 0xff;
 					buffer[2] = 0x00;
@@ -978,7 +982,7 @@ function restartDelay(arg) {
 							"log",
 							`Main: Delay System querying status...`,
 						]);
-						let buffer = new Buffer.alloc(6);
+						buffer = new Buffer.alloc(6);
 						buffer[0] = 0xfb;
 						buffer[1] = 0xff;
 						buffer[2] = 0x00;
@@ -1010,7 +1014,9 @@ function dumpDelay() {
 			"log",
 			`Main: Delay System deactivating bypass (in case it is activated).`,
 		]);
-		var buffer = new Buffer.alloc(7);
+		let buffer;
+
+		buffer = new Buffer.alloc(7);
 		buffer[0] = 0xfb;
 		buffer[1] = 0xff;
 		buffer[2] = 0x00;
@@ -1025,7 +1031,7 @@ function dumpDelay() {
 			"log",
 			`Main: Delay System activating dump button.`,
 		]);
-		var buffer = new Buffer.alloc(7);
+		buffer = new Buffer.alloc(7);
 		buffer[0] = 0xfb;
 		buffer[1] = 0xff;
 		buffer[2] = 0x00;
@@ -1041,7 +1047,9 @@ function dumpDelay() {
 				"log",
 				`Main: Delay System activating start button to rebuild delay.`,
 			]);
-			var buffer = new Buffer.alloc(7);
+			let buffer;
+
+			buffer = new Buffer.alloc(7);
 			buffer[0] = 0xfb;
 			buffer[1] = 0xff;
 			buffer[2] = 0x00;
@@ -1056,7 +1064,7 @@ function dumpDelay() {
 				"log",
 				`Main: Delay System deactivating dump button.`,
 			]);
-			var buffer = new Buffer.alloc(7);
+			buffer = new Buffer.alloc(7);
 			buffer[0] = 0xfb;
 			buffer[1] = 0xff;
 			buffer[2] = 0x00;
@@ -1071,7 +1079,7 @@ function dumpDelay() {
 				"log",
 				`Main: Delay System querying new status.`,
 			]);
-			var buffer = new Buffer.alloc(6);
+			buffer = new Buffer.alloc(6);
 			buffer[0] = 0xfb;
 			buffer[1] = 0xff;
 			buffer[2] = 0x00;

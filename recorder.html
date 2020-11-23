@@ -5,25 +5,28 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 -->
 <html>
+	<head>
+		<script>
+			if (typeof module === "object") {
+				window.module = module;
+				module = undefined;
+			}
+		</script>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-    <script>if (typeof module === 'object') {
-            window.module = module;
-            module = undefined;
-        }
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<!-- MP3 Media Recorder -->
+		<!-- <script src="assets/plugins/mp3-mediarecorder/dist/index.umd.js"></script> -->
 
-    <!-- MP3 Media Recorder -->
-    <!-- <script src="assets/plugins/mp3-mediarecorder/dist/index.umd.js"></script> -->
+		<!-- WWSU -->
+		<script src="assets/plugins/wwsu-sails/js/wwsu.js"></script>
+		<script src="assets/plugins/wwsu-audio/js/wwsu-audio.js"></script>
+		<script src="assets/plugins/wwsu-audio/js/wwsu-recorder.js"></script>
 
-    <!-- WWSU -->
-    <script src="assets/plugins/wwsu-sails/js/wwsu.js"></script>
-    <script src="assets/plugins/wwsu-audio/js/wwsu-audio.js"></script>
-    <script src="assets/plugins/wwsu-audio/js/wwsu-recorder.js"></script>
-
-    <script src="recorder.js"></script>
-</head>
-
+		<title>Recorder Process - WWSU DJ Controls</title>
+	</head>
 </html>
+
+<body>
+	<script src="recorder.js"></script>
+</body>

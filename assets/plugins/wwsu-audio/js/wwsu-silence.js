@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * This class implements the silence detection system.
  * It is expected to handle silence via the audioVolume event.

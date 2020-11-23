@@ -1,28 +1,28 @@
+'use strict';
+
+// REQUIRES these WWSUmodules: hostReq (WWSUreq)
 class WWSUremote extends WWSUevents {
 	/**
 	 * Construct the class
 	 *
-	 * @param {sails.io} socket Socket connection to WWSU
-	 * @param {WWSUreq} hostReq Request with host authorization
-	 * @param {WWSUrecipients} recipients Initialized recipients module (uses recipients.recipient for Skyway credential authorization and peerId)
+	 * @param {WWSUmodules} manager The modules class which initiated this module
+	 * @param {object} options Options to be passed to this module
 	 */
-	constructor(socket, hostReq, recipients) {
+	constructor(manager, options) {
 		super();
+
+		this.manager = manager;
+
 		this.endpoints = {
 			request: "/call/request",
 			credentialComputer: "/call/credential-computer",
 			quality: "/call/quality",
 		};
-		this.requests = {
-			host: hostReq,
-		};
 		this.data = {
 			request: {},
 		};
 
-		this.recipients = recipients;
-
-		socket.on("call-quality", (quality) => {
+		this.manager.socket.on("call-quality", (quality) => {
 			this.emitEvent("callQuality", [quality]);
 		});
 	}
@@ -35,7 +35,7 @@ class WWSUremote extends WWSUevents {
 	 */
 	request(data, cb) {
 		try {
-			this.requests.host.request(
+			this.manager.get("hostReq").request(
 				{ method: "post", url: this.endpoints.request, data },
 				(response) => {
 					if (response !== "OK") {
@@ -84,7 +84,7 @@ class WWSUremote extends WWSUevents {
 	 */
 	credentialComputer(data, cb) {
 		try {
-			this.requests.host.request(
+			this.manager.get("hostReq").request(
 				{ method: "post", url: this.endpoints.credentialComputer, data },
 				(response) => {
 					if (response.authToken) {
@@ -131,7 +131,7 @@ class WWSUremote extends WWSUevents {
 	 */
 	sendQuality(data) {
 		try {
-			this.requests.host.request(
+			this.manager.get("hostReq").request(
 				{ method: "post", url: this.endpoints.quality, data },
 				(response) => {}
 			);

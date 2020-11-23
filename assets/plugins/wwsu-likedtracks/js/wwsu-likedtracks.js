@@ -1,3 +1,4 @@
+'use strict';
 
 // This class manages the track liking system
 class WWSUlikedtracks extends WWSUevents {

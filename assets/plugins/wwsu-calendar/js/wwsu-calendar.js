@@ -1,3 +1,5 @@
+'use strict';
+
 // This is intended for Node.js ONLY; use wwsu calendar web for web browsers.
 
 // Node require libraries
@@ -64,7 +66,7 @@ class CalendarDb {
 	 * @param {array} calendar Array of calendar entries to initialize with.
 	 * @param {array} schedule Array of schedule entries to initialize with.
 	 * @param {array} clockwheels Array of clockwheel records to initialize with.
-	 * @param {WWSUmeta} meta If provided, will use meta.time instead of current time, and meta.timezone instead of user timezone.
+	 * @param {WWSUMeta} meta If provided, will use meta.time instead of current time, and meta.timezone instead of user timezone.
 	 */
 	constructor(calendar = [], schedule = [], clockwheels = [], meta) {
 		this.meta = meta;
@@ -129,10 +131,10 @@ class CalendarDb {
 		progressCallback = () => {}
 	) {
 		// Event loop
-		var tasks = 0;
-		var tasksCompleted = 0;
+		let tasks = 0;
+		let tasksCompleted = 0;
 
-		var events = [];
+		let events = [];
 
 		/**
 		 * Extends this.processRecord by filtering out events that do not fall within start and end.
@@ -141,8 +143,8 @@ class CalendarDb {
 		 * @param {object} schedule Schedule record
 		 * @param {string} eventStart Start date/time of the event
 		 */
-		var _processRecord = (calendar, schedule, eventStart) => {
-			var criteria = this.processRecord(calendar, schedule, eventStart);
+		const _processRecord = (calendar, schedule, eventStart) => {
+			let criteria = this.processRecord(calendar, schedule, eventStart);
 
 			// This event is within our time range if one or more of the following is true:
 			// A. Calendar event start is same or before generated event start.
@@ -164,7 +166,7 @@ class CalendarDb {
 		};
 
 		// Define a sort function for schedule types that prioritizes certain types above others in the event of multiple overrides.
-		var scheduleCompare = (a, b) => {
+		const scheduleCompare = (a, b) => {
 			if (a.scheduleType === "canceled" && b.scheduleType !== "canceled")
 				return -1;
 			if (b.scheduleType === "canceled" && a.scheduleType !== "canceled")
@@ -209,7 +211,7 @@ class CalendarDb {
 		};
 
 		// Define a comparison function that will order calendar events by start time when we run the iteration
-		var compare = function (a, b) {
+		const compare = function (a, b) {
 			try {
 				if (moment(a.start).valueOf() < moment(b.start).valueOf()) {
 					return -1;
@@ -230,7 +232,7 @@ class CalendarDb {
 		};
 
 		// Called when a task has been completed, and fires progressCallback and eventually callback when all tasks are done.
-		var taskComplete = () => {
+		const taskComplete = () => {
 			tasksCompleted++;
 			progressCallback(tasksCompleted, tasks);
 			if (tasksCompleted === tasks && callback) {
@@ -244,9 +246,9 @@ class CalendarDb {
 		 * @param {object} calendar Calendar event the schedule belongs to.
 		 * @param {object} schedule Schedule record.
 		 */
-		var processScheduleEntry = (calendar, schedule) => {
+		const processScheduleEntry = (calendar, schedule) => {
 			// Polyfill any schedule overridden information with the main calendar event for use with schedule overrides
-			var tempCal = Object.assign({}, calendar);
+			let tempCal = Object.assign({}, calendar);
 			for (let stuff in schedule) {
 				if (Object.prototype.hasOwnProperty.call(schedule, stuff)) {
 					if (
@@ -260,11 +262,11 @@ class CalendarDb {
 			// First, process one-time dates/times
 			if (schedule.oneTime && schedule.oneTime.length > 0) {
 				schedule.oneTime.map((oneTime) => {
-					var tempSchedules = [];
-					var scheduleIDs = [];
+					let tempSchedules = [];
+					let scheduleIDs = [];
 					try {
 						// Get schedule overrides if they exist
-						var scheduleOverrides =
+						let scheduleOverrides =
 							scheduledb.find(function () {
 								return (
 									this.calendarID === calendar.ID &&
@@ -307,7 +309,7 @@ class CalendarDb {
 
 					// Merge all schedule overrides into one according to scheduleCompare priorities
 					if (tempSchedules.length > 0) {
-						var tempEvent = {};
+						let tempEvent = {};
 						tempSchedules.sort(scheduleCompare).reverse();
 						tempSchedules.map((ts) => {
 							for (let stuff in ts) {
@@ -327,7 +329,7 @@ class CalendarDb {
 			// Next, process recurring schedules if startTime is not null (we will never process filters if startTime is null)
 			if (schedule.startTime && moment(end).isSameOrAfter(moment(start))) {
 				// Construct the moment recurrence
-				var recur = moment.recur({
+				let recur = moment.recur({
 					start: start,
 					end: end,
 					rules: schedule.recurrenceRules
@@ -336,7 +338,7 @@ class CalendarDb {
 				});
 
 				// get all the matching dates
-				var allDates = recur.all("YYYY-MM-DD");
+				let allDates = recur.all("YYYY-MM-DD");
 
 				// loop through all dates
 				if (allDates && allDates.length > 0) {
@@ -349,7 +351,7 @@ class CalendarDb {
 							schedule.recurrenceInterval.unit &&
 							schedule.recurrenceInterval.unit > 1
 						) {
-							var startInterval;
+							let startInterval;
 							switch (schedule.recurrenceInterval.measure) {
 								case "days":
 									startInterval = moment(schedule.startDate).startOf("day");
@@ -396,13 +398,13 @@ class CalendarDb {
 							}
 						}
 
-						var tempSchedules = [];
-						var scheduleIDs = [];
+						let tempSchedules = [];
+						let scheduleIDs = [];
 
 						// Get schedule overrides if they exist
 						try {
-							var tempMeta = this.meta; // this.meta scope is not available in scheduledb.find; we must create a temp variable for it.
-							var scheduleOverrides =
+							let tempMeta = this.meta; // this.meta scope is not available in scheduledb.find; we must create a temp letiable for it.
+							let scheduleOverrides =
 								scheduledb.find(function () {
 									return (
 										this.calendarID === calendar.ID &&
@@ -456,7 +458,7 @@ class CalendarDb {
 
 						// Merge all schedule overrides into one according to scheduleCompare priorities
 						if (tempSchedules.length > 0) {
-							var tempEvent = {};
+							let tempEvent = {};
 							tempSchedules.sort(scheduleCompare).reverse();
 							tempSchedules.map((ts) => {
 								for (let stuff in ts) {
@@ -493,9 +495,9 @@ class CalendarDb {
 		 *
 		 * @param {object} calendar The calendar record.
 		 */
-		var processCalendarEntry = (calendar) => {
+		const processCalendarEntry = (calendar) => {
 			// Get regular and unscheduled events
-			var regularEvents = scheduledb.find({
+			let regularEvents = scheduledb.find({
 				calendarID: calendar.ID,
 				scheduleType: [null, "unscheduled", undefined],
 			});
@@ -514,7 +516,7 @@ class CalendarDb {
 		};
 
 		// Get all calendar events and process their schedules
-		var results = calendardb.find(query);
+		let results = calendardb.find(query);
 		results.map((calendar) => {
 			// Add to task queue
 			tasks++;
@@ -549,10 +551,10 @@ class CalendarDb {
 		 *
 		 * @param {array} events Array of events
 		 */
-		var afterFunction = (events) => {
+		const afterFunction = (events) => {
 			if (events.length > 0) {
 				// Order events by priority (priority value, then start time, then ID)
-				var compare = function (a, b) {
+				const compare = function (a, b) {
 					try {
 						if (a.priority > b.priority) {
 							return -1;
@@ -579,7 +581,7 @@ class CalendarDb {
 				};
 				events = events.sort(compare);
 
-				var returnData = [];
+				let returnData = [];
 
 				events
 					.filter((event) => {
@@ -676,28 +678,28 @@ class CalendarDb {
 	 */
 	checkConflicts(callback = null, _queries = [], progressCallback = () => {}) {
 		// We have to clone the queries or we accidentally modify mutable objects
-		var queries = _.cloneDeep(_queries);
+		let queries = _.cloneDeep(_queries);
 
-		var tasks = 0;
-		var tasksCompleted = 0;
+		let tasks = 0;
+		let tasksCompleted = 0;
 
 		// Prepare a copy of the current calendar
-		var vcalendar = new WWSUdb(TAFFY());
+		let vcalendar = new WWSUdb(TAFFY());
 		vcalendar.query(this.calendar.find(), true);
 
 		// Prepare a copy of the current schedule
-		var vschedule = new WWSUdb(TAFFY());
+		let vschedule = new WWSUdb(TAFFY());
 		vschedule.query(this.schedule.find(), true);
 
 		// prepare start and end detection
-		var start = null;
-		var end = null;
-		var timePeriods = [];
+		let start = null;
+		let end = null;
+		let timePeriods = [];
 
-		// Return data variables
-		var removals = [];
-		var additions = [];
-		var errors = [];
+		// Return data letiables
+		let removals = [];
+		let additions = [];
+		let errors = [];
 
 		/**
 		 * When we want to check if two events conflict, we call this function on them.
@@ -706,7 +708,7 @@ class CalendarDb {
 		 * @param {object} eventb Second event
 		 * @returns {number} -1 = eventb overrides eventa. 0 = no conflict. 1 = eventa overrides eventb.
 		 */
-		var conflicts = (eventa, eventb) => {
+		const conflicts = (eventa, eventb) => {
 			// If either event is a cancellation, there is no conflict
 			if (
 				(eventa.scheduleType && eventa.scheduleType.startsWith("canceled")) ||
@@ -762,15 +764,15 @@ class CalendarDb {
 		};
 
 		/**
-		 * Check if two events conflict, and if so, push to one of our return data variables what should be done to resolve it.
+		 * Check if two events conflict, and if so, push to one of our return data letiables what should be done to resolve it.
 		 *
 		 * @param {object} eventa First event
 		 * @param {object} eventb Second event
 		 */
-		var checkAndResolveConflicts = (eventa, eventb) => {
+		const checkAndResolveConflicts = (eventa, eventb) => {
 			// Determine which event overrides the other
-			var overrides; // This event overrides the overridden event.
-			var overridden;
+			let overrides; // This event overrides the overridden event.
+			let overridden;
 			switch (conflicts(eventa, eventb)) {
 				case -1:
 					overrides = eventb;
@@ -785,7 +787,7 @@ class CalendarDb {
 			}
 
 			// Initialize our conflict resolving schedule record with some defaults.
-			var newRecord = {
+			let newRecord = {
 				calendarID: overridden.calendarID,
 				scheduleID: overridden.scheduleID,
 				overriddenID: overrides.scheduleID || null,
@@ -794,11 +796,11 @@ class CalendarDb {
 				name: overridden.name,
 			};
 
-			var startdiff = moment(overrides.start).diff(
+			let startdiff = moment(overrides.start).diff(
 				moment(overridden.start),
 				"minutes"
 			);
-			var enddiff = moment(overridden.end).diff(
+			let enddiff = moment(overridden.end).diff(
 				moment(overrides.end),
 				"minutes"
 			);
@@ -848,9 +850,9 @@ class CalendarDb {
 		 *
 		 * @param {function} cb Callback fired when all tasks in this stage are complete.
 		 */
-		var taskComplete3 = (cb) => {
+		const taskComplete3 = (cb) => {
 			tasksCompleted++;
-			var newprogress = tasksCompleted > 0 ? tasksCompleted / tasks : 0;
+			let newprogress = tasksCompleted > 0 ? tasksCompleted / tasks : 0;
 			progressCallback(
 				`Stage 3 of 4: Intelligently filtering events (${parseInt(
 					newprogress * 100
@@ -866,9 +868,9 @@ class CalendarDb {
 		 *
 		 * @param {function} cb Callback fired when all tasks in this stage are complete.
 		 */
-		var taskComplete = (cb) => {
+		const taskComplete = (cb) => {
 			tasksCompleted++;
-			var newprogress = tasksCompleted > 0 ? tasksCompleted / tasks : 0;
+			let newprogress = tasksCompleted > 0 ? tasksCompleted / tasks : 0;
 			progressCallback(
 				`Stage 1 of 4: Processing Queries (${parseInt(newprogress * 100)}%)`
 			);
@@ -880,9 +882,9 @@ class CalendarDb {
 		/**
 		 * Called when a task in event conflict checking is completed. Fires main function callback when all tasks are done.
 		 */
-		var taskComplete2 = () => {
+		const taskComplete2 = () => {
 			tasksCompleted++;
-			var newprogress = tasksCompleted > 0 ? tasksCompleted / tasks : 0;
+			let newprogress = tasksCompleted > 0 ? tasksCompleted / tasks : 0;
 			progressCallback(
 				`Stage 4 of 4: Checking event conflicts (${parseInt(
 					newprogress * 100
@@ -898,7 +900,7 @@ class CalendarDb {
 		 *
 		 * @param {object} query Query to process
 		 */
-		var processQuery = (query) => {
+		const processQuery = (query) => {
 			// Run the query in our copied schedule db
 			if (typeof query.remove !== "undefined") {
 				query.remove = vschedule.find({ ID: query.remove }, true);
@@ -911,7 +913,7 @@ class CalendarDb {
 			for (let key in query) {
 				if (Object.prototype.hasOwnProperty.call(query, key)) {
 					// Polyfill calendar and schedule information
-					var event = this.scheduleToEvent(query[key], vcalendar, vschedule);
+					let event = this.scheduleToEvent(query[key], vcalendar, vschedule);
 
 					// Determine start and end times for conflict checking.
 					if (query[key].originalTime) {
@@ -1016,7 +1018,7 @@ class CalendarDb {
 
 						if (moment(end).isSameOrAfter(moment(start))) {
 							// Construct the moment recurrence
-							var recur = moment.recur({
+							let recur = moment.recur({
 								start: start,
 								end: end,
 								rules: event.recurrenceRules
@@ -1025,7 +1027,7 @@ class CalendarDb {
 							});
 
 							// get all the matching dates
-							var allDates = recur.all("YYYY-MM-DD");
+							let allDates = recur.all("YYYY-MM-DD");
 
 							// Loop through each schedule between start and end
 							if (allDates && allDates.length > 0) {
@@ -1037,7 +1039,7 @@ class CalendarDb {
 										event.recurrenceInterval.unit &&
 										event.recurrenceInterval.unit > 1
 									) {
-										var startInterval;
+										let startInterval;
 										switch (event.recurrenceInterval.measure) {
 											case "days":
 												startInterval = moment(start).startOf("day");
@@ -1116,11 +1118,11 @@ class CalendarDb {
 		 * @param {object} event Event to check for conflicts.
 		 * @param {number} index Start checking at this events index.
 		 */
-		var processEvent = (events, event, index) => {
+		const processEvent = (events, event, index) => {
 			// If this schedule was created as an override, we need to check to see if the override is still valid
 			if (event.overriddenID) {
 				// Find the original event
-				var record = events.find((eventb) => eventb.ID === event.overriddenID);
+				let record = events.find((eventb) => eventb.ID === event.overriddenID);
 
 				// If we could not find it, the override is invalid, so we can remove it and not continue beyond this point for the event.
 				if (!record) {
@@ -1159,7 +1161,7 @@ class CalendarDb {
 
 						// Now, we need to remove updateCalendar from the query and replace it with all of its schedules as update queries.
 						// That way, we can check all of its schedules for changes in conflicts resulting from changes in calendar defaults.
-						var schedules = vschedule.find({
+						let schedules = vschedule.find({
 							calendarID: query.updateCalendar.ID,
 						});
 						queries.splice(index, 1);
@@ -1172,7 +1174,7 @@ class CalendarDb {
 
 						// Remove the original removeCalendar query as we do not want to process it beyond this map.
 						// We need to add all of the calendar's schedule records as remove queries since they will get removed too.
-						var schedules = vschedule.find({
+						let schedules = vschedule.find({
 							calendarID: query.removeCalendar,
 						});
 						queries.splice(index, 1);
@@ -1192,7 +1194,7 @@ class CalendarDb {
 				}
 			}
 
-			var eventsCall2 = (events) => {
+			const eventsCall2 = (events) => {
 				// Now, go through every event for conflict checking
 				tasks = events.length;
 				tasksCompleted = 0;
@@ -1223,11 +1225,11 @@ class CalendarDb {
 			 *
 			 * @param {array} events Array of events
 			 */
-			var eventsCall = (events) => {
+			const eventsCall = (events) => {
 				progressCallback(`Stage 3 of 4: Intelligently filtering events`);
 				tasks = events.length;
 				tasksCompleted = 0;
-				var filteredEvents = [];
+				let filteredEvents = [];
 
 				// No events? we are done with conflict checking.
 				if (events.length === 0) {
@@ -1242,8 +1244,8 @@ class CalendarDb {
 				events.map((event) => {
 					// Called on each event to determine of its start/end times fall within any of the query times.
 					// This speeds up conflict checking by not checking events outside of the dates/times affected by the queries.
-					var _determineFilter = (_event) => {
-						var filter = timePeriods.find(
+					const _determineFilter = (_event) => {
+						let filter = timePeriods.find(
 							(period) =>
 								moment(_event.end).isAfter(moment(period.start)) &&
 								moment(_event.start).isSameOrBefore(moment(period.end))
@@ -1269,7 +1271,7 @@ class CalendarDb {
 			};
 
 			// Called after all queries have been processed.
-			var postQuery = () => {
+			const postQuery = () => {
 				// If no start detected, or start is before current time, then start should be current time.
 				// (We are bypassing conflict detection on events that have a start date over 24 hours ago; no need to check conflicts on past events)
 				if (
@@ -1293,7 +1295,7 @@ class CalendarDb {
 						vcalendar,
 						vschedule,
 						(_tasksCompleted, _tasks) => {
-							var newprogress =
+							let newprogress =
 								_tasksCompleted > 0 ? _tasksCompleted / _tasks : 0;
 							progressCallback(
 								`Stage 2 of 4: Finding events (${parseInt(newprogress * 100)}%)`
@@ -1367,10 +1369,10 @@ class CalendarDb {
 	 */
 	whoShouldBeIn(callback = null, progressCallback = () => {}) {
 		// Function called after running this.getEvents
-		var afterFunction = (events) => {
+		const afterFunction = (events) => {
 			if (events.length > 0) {
 				// Sort by start time
-				var compare = function (a, b) {
+				const compare = function (a, b) {
 					try {
 						if (moment(a.start).valueOf() < moment(b.start).valueOf()) {
 							return -1;
@@ -1442,11 +1444,11 @@ class CalendarDb {
 	 * @returns {object|string} Event object if valid with necessary modifications, or string with an error message if invalid.
 	 */
 	verify(event) {
-		var tempCal = {};
+		let tempCal = {};
 
 		// If calendarID is provided, we expect it to be a valid calendar ID, otherwise the event is invalid.
 		if (event.calendarID) {
-			var calendar = this.calendar.find({ ID: event.calendarID }, true);
+			let calendar = this.calendar.find({ ID: event.calendarID }, true);
 			if (!calendar) {
 				return "The provided calendarID does not exist.";
 			} else {
@@ -1465,7 +1467,7 @@ class CalendarDb {
 
 		// If scheduleID is provided, we expect it to be a valid schedule ID, otherwise the event is invalid.
 		if (event.scheduleID) {
-			var schedule = this.schedule.find({ ID: event.scheduleID }, true);
+			let schedule = this.schedule.find({ ID: event.scheduleID }, true);
 			if (!schedule) {
 				return "The provided scheduleID does not exist.";
 			} else {
@@ -1507,7 +1509,7 @@ class CalendarDb {
 
 		// Make sure start time is in the correct format if provided
 		if (tempCal.startTime) {
-			var splits = tempCal.startTime.split(":");
+			let splits = tempCal.startTime.split(":");
 			if (
 				splits.length !== 2 ||
 				splits[0].length !== 2 ||
@@ -1723,11 +1725,11 @@ class CalendarDb {
 	 */
 	processRecord(_calendar, _schedule, eventStart) {
 		// Clone these to avoid accidental modifications of mutable objects.
-		var calendar = _.cloneDeep(_calendar);
-		var schedule = _.cloneDeep(_schedule);
+		let calendar = _.cloneDeep(_calendar);
+		let schedule = _.cloneDeep(_schedule);
 
 		// Define an initial event record
-		var criteria = {
+		let criteria = {
 			calendarID: schedule.calendarID || calendar.ID, // ID of the main calendar event
 			scheduleID: schedule.ID || null, // ID of the schedule record to process
 			scheduleOverrideID: schedule.scheduleID || null, // If this schedule overrides another schedule, this is the ID of the schedule that this schedule overrides.
@@ -1924,9 +1926,9 @@ class CalendarDb {
 	 * @returns {string} Human readable representation of the schedule.
 	 */
 	generateScheduleText(event) {
-		var recurAt = [];
-		var oneTime = [];
-		var recurDayString = ``;
+		let recurAt = [];
+		let oneTime = [];
+		let recurDayString = ``;
 
 		// If this is an updated / rescheduled event, return the new date/time only.
 		if (event.newTime) {
@@ -1937,7 +1939,7 @@ class CalendarDb {
 				.format("h [hours], m [minutes]")}`;
 		}
 
-		// Add oneTime dates/times to the oneTime variable.
+		// Add oneTime dates/times to the oneTime letiable.
 		if (event.oneTime && event.oneTime.length > 0) {
 			oneTime = event.oneTime.map((onetime) =>
 				moment.parseZone(onetime).format("LLLL Z")
@@ -1961,6 +1963,7 @@ class CalendarDb {
 			}
 
 			event.recurrenceRules.map((rule) => {
+				let days;
 				if (!rule.measure || !rule.units || rule.units.length === 0) return;
 				switch (rule.measure) {
 					case "days":
@@ -1972,7 +1975,7 @@ class CalendarDb {
 							.join(", ")} ${rule.measure}, `;
 						break;
 					case "monthsOfYear":
-						var days = rule.units
+						days = rule.units
 							.sort((a, b) => a - b)
 							.map((unit) => {
 								switch (unit) {
@@ -2006,7 +2009,7 @@ class CalendarDb {
 						recurDayString += `in ${days.join(", ")}, `;
 						break;
 					case "daysOfWeek":
-						var days = rule.units
+						days = rule.units
 							.sort((a, b) => a - b)
 							.map((unit) => {
 								switch (unit) {
@@ -2031,7 +2034,7 @@ class CalendarDb {
 						break;
 					case "weeksOfMonth":
 					case "weeksOfMonthByDay":
-						var days = rule.units
+						days = rule.units
 							.sort((a, b) => a - b)
 							.map((unit) => {
 								switch (unit) {
@@ -2054,7 +2057,7 @@ class CalendarDb {
 						)} week(s) of the month, `;
 						break;
 					case "daysOfMonth":
-						var days = rule.units
+						days = rule.units
 							.sort((a, b) => a - b)
 							.map((unit) => {
 								switch (unit) {
@@ -2074,7 +2077,7 @@ class CalendarDb {
 						recurDayString += `on the ${days.join(", ")} day(s) of the month, `;
 						break;
 					case "weeksOfYear":
-						var days = rule.units
+						days = rule.units
 							.sort((a, b) => a - b)
 							.map((unit) => {
 								switch (unit) {
@@ -2143,14 +2146,15 @@ class CalendarDb {
 		calendardb = this.calendar,
 		scheduledb = this.schedule
 	) {
-		var tempCal = {};
-		var event;
-		var record = _.cloneDeep(_record); // Clone the record to avoid accidental mutable object editing.
+		let tempCal = {};
+		let event;
+		let schedule;
+		let record = _.cloneDeep(_record); // Clone the record to avoid accidental mutable object editing.
 		if (record.calendarID) {
-			var calendar = calendardb.find({ ID: record.calendarID }, true);
+			let calendar = calendardb.find({ ID: record.calendarID }, true);
 			tempCal = calendar || {};
 			if (record.scheduleID) {
-				var schedule = scheduledb.find({ ID: record.scheduleID }, true);
+				schedule = scheduledb.find({ ID: record.scheduleID }, true);
 			}
 			if (schedule) {
 				for (let stuff in schedule) {

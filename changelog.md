@@ -2,9 +2,31 @@
 
 ## 8.0.0-alpha.20
 
+### Changed
+
+- [BREAKING] Added module manager to manage each of WWSU's classes and hopefully reduce memory and other issues
+- [BUGS POSSIBLE] Switched all var variables to let and const variables in an attempt to reduce memory leaks
+- WWSUNavigation addItem and removeItem now returns this so they can be chained
+
+### Fixed
+
+- DJ Controls not auto-reconnecting audio call in remote broadcast when restarted or disconnected from internet
+- (admin) Hosts management responsive table not prioritizing actions buttons
+
+### Added
+
+- (admin) EAS management
+- "use strict" on all WWSU js files to prevent global variable memory leaks
+- Check when remote broadcasts go live to ensure a call is active; immediately go to break if not so
+
+### Removed
+
+- DOMContentLoaded, and moved renderer javascript to the bottom of the body. Maybe this listener was causing memory leaks?
+
 ## 8.0.0-alpha.19 - 2020-11-20
 
 ### Fixed
+
 - hex2bin
 
 ## 8.0.0-alpha.18 - 2020-11-20

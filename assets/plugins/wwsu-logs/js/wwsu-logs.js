@@ -1,21 +1,23 @@
+'use strict';
+
 /* global TAFFY */
 
 // This class manages logs, analytics, and attendance
-
 // NOTE: unlike most other WWSU models, this does not use traditional WWSUdb extends. Otherwise, memory can be quickly eaten up by logs.
+
+// REQUIRES these WWSUmodules: noReq (WWSUreq), hostReq (WWSUreq), directorReq (WWSUreq) (only when editing logs), WWSUhosts, WWSUMeta, WWSUutil, WWSUanimations
 class WWSUlogs extends WWSUevents {
 	/**
 	 * Construct the class.
 	 *
-	 * @param {sails.io} socket WWSU socket connection
-	 * @param {WWSUreq} noReq Request without authorization
-	 * @param {WWSUreq} hostReq Request with host authorization
-	 * @param {WWSUreq} directorReq Request with director authorization
-	 * @param {WWSUhosts} hosts Initialized hosts class
-	 * @param {WWSUmeta} meta WWSUmeta class
+	 * @param {WWSUmodules} manager The modules class which initiated this module
+	 * @param {object} options Options to be passed to this module
 	 */
-	constructor(socket, noReq, hostReq, directorReq, hosts, meta) {
+	constructor(manager, options) {
 		super();
+
+		this.manager = manager;
+
 		this.endpoints = {
 			edit: "/logs/edit",
 			get: "/logs/get",
@@ -24,16 +26,13 @@ class WWSUlogs extends WWSUevents {
 			getListeners: "/analytics/listeners",
 			getShowtime: "/analytics/showtime",
 		};
-		this.requests = {
-			no: noReq,
-			host: hostReq,
-			director: directorReq,
-		};
+
 		this.tables = {
 			issues: undefined,
 			attendance: undefined,
 			log: undefined,
 		};
+
 		this.modals = {
 			viewLog: new WWSUmodal(`Logs`, null, ``, true, {
 				headerColor: "",
@@ -46,11 +45,6 @@ class WWSUlogs extends WWSUevents {
 				zindex: 1100,
 			}),
 		};
-
-		this.hosts = hosts;
-		this.meta = meta;
-
-		this.animations = new WWSUanimations();
 
 		this.attendanceID = 0;
 
@@ -67,7 +61,7 @@ class WWSUlogs extends WWSUevents {
 			this.updateDashboardLogs();
 		});
 
-		socket.on("logs", (data) => {
+		this.manager.socket.on("logs", (data) => {
 			for (let key in data) {
 				if (key === "remove") {
 					this.emitEvent(`issues-remove`, [data[key]]);
@@ -133,7 +127,7 @@ class WWSUlogs extends WWSUevents {
 
 	// Initialize issues logs by fetching issues and subscribing to sockets
 	initIssues() {
-		this.issues.replaceData(this.requests.host, this.endpoints.get, {
+		this.issues.replaceData(this.manager.get("hostReq"), this.endpoints.get, {
 			subtype: "ISSUES",
 		});
 	}
@@ -167,7 +161,7 @@ class WWSUlogs extends WWSUevents {
 	 */
 	getAttendance(dom, data, cb) {
 		try {
-			this.requests.host.request(
+			this.manager.get("hostReq").request(
 				{ dom: dom, method: "post", url: this.endpoints.getAttendance, data },
 				(response) => {
 					if (!response) {
@@ -210,7 +204,7 @@ class WWSUlogs extends WWSUevents {
 	 */
 	getListeners(dom, data, cb) {
 		try {
-			this.requests.host.request(
+			this.manager.get("hostReq").request(
 				{ dom: dom, method: "post", url: this.endpoints.getListeners, data },
 				(response) => {
 					if (!response || typeof response.map !== "function") {
@@ -252,7 +246,7 @@ class WWSUlogs extends WWSUevents {
 	 */
 	getLogs(data, cb) {
 		try {
-			this.requests.host.request(
+			this.manager.get("hostReq").request(
 				{ method: "post", url: this.endpoints.get, data },
 				(response) => {
 					if (!response || typeof response.map !== "function") {
@@ -294,7 +288,7 @@ class WWSUlogs extends WWSUevents {
 	 */
 	edit(data, cb) {
 		try {
-			this.requests.director.request(
+			this.manager.get("directorReq").request(
 				{ method: "post", url: this.endpoints.edit, data },
 				(response) => {
 					if (response !== "OK") {
@@ -349,7 +343,7 @@ class WWSUlogs extends WWSUevents {
 	 */
 	add(data, silent = false, cb) {
 		try {
-			this.requests.host.request(
+			this.manager.get("hostReq").request(
 				{ method: "post", url: this.endpoints.add, data },
 				(response) => {
 					if (response !== "OK") {
@@ -405,17 +399,16 @@ class WWSUlogs extends WWSUevents {
 	 * @param {string} table DOM query string of the div container that should contain the table.
 	 */
 	initIssuesTable(table) {
-		this.animations.add("logs-init-issues-table", () => {
-			var util = new WWSUutil();
+		this.manager.get("WWSUanimations").add("logs-init-issues-table", () => {
 
 			// Init html
 			$(table).html(
 				`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
-					this.meta ? this.meta.meta.timezone : moment.tz.guess()
+					this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 				}.</p><table id="section-notifications-issues-table" class="table table-striped display responsive" style="width: 100%;"></table>`
 			);
 
-			util.waitForElement(`#section-notifications-issues-table`, () => {
+			this.manager.get("WWSUutil").waitForElement(`#section-notifications-issues-table`, () => {
 				// Generate table
 				this.tables.issues = $(`#section-notifications-issues-table`).DataTable(
 					{
@@ -438,8 +431,8 @@ class WWSUlogs extends WWSUevents {
 							$(".btn-issue-dismiss").unbind("click");
 
 							$(".btn-issue-unexcused").click((e) => {
-								var id = parseInt($(e.currentTarget).data("id"));
-								util.confirmDialog(
+								let id = parseInt($(e.currentTarget).data("id"));
+								this.manager.get("WWSUutil").confirmDialog(
 									`Are you sure you want to mark issue ${id} as <strong>unexcused</strong>?
                 <ul>
                 <li>Unexcused means this record <strong>will</strong> count against DJ/show reputation and show up in analytics.</li>
@@ -455,8 +448,8 @@ class WWSUlogs extends WWSUevents {
 							});
 
 							$(".btn-issue-excused").click((e) => {
-								var id = parseInt($(e.currentTarget).data("id"));
-								util.confirmDialog(
+								let id = parseInt($(e.currentTarget).data("id"));
+								this.manager.get("WWSUutil").confirmDialog(
 									`Are you sure you want to mark issue ${id} as <strong>excused</strong>?
                 <ul>
                 <li>Excused means this record <strong>will NOT</strong> count against DJ/show reputation nor analytics; excusing this means we pretend it never happened.</li>
@@ -472,9 +465,9 @@ class WWSUlogs extends WWSUevents {
 							});
 
 							$(".btn-issue-dismiss").click((e) => {
-								var id = parseInt($(e.currentTarget).data("id"));
+								let id = parseInt($(e.currentTarget).data("id"));
 								console.log(`dismiss`);
-								util.confirmDialog(
+								this.manager.get("WWSUutil").confirmDialog(
 									`Are you sure you want to dismiss ${id}?
                   <ul>
                   <li>Please <strong>do not</strong> dismiss an issue until it is considered resolved.</li>
@@ -528,8 +521,7 @@ class WWSUlogs extends WWSUevents {
 	 * Update the issues table if it exists. Also emits count event for notifications
 	 */
 	updateIssuesTable() {
-		this.animations.add("logs-update-issues-table", () => {
-			var util = new WWSUutil();
+		this.manager.get("WWSUanimations").add("logs-update-issues-table", () => {
 
 			if (this.tables.issues) {
 				this.tables.issues.clear();
@@ -544,7 +536,7 @@ class WWSUlogs extends WWSUevents {
 						moment
 							.tz(
 								log.createdAt,
-								this.meta ? this.meta.meta.timezone : moment.tz.guess()
+								this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 							)
 							.format("llll"),
 						`<strong>${log.title}</strong><br />${log.event}${
@@ -575,10 +567,10 @@ class WWSUlogs extends WWSUevents {
 				this.tables.issues.draw();
 
 				// Notification counters
-				var danger = this.issues.find({ loglevel: "danger" }).length;
-				var orange = this.issues.find({ loglevel: "orange" }).length;
-				var warning = this.issues.find({ loglevel: "warning" }).length;
-				var info = this.issues.find({ loglevel: "info" }).length;
+				let danger = this.issues.find({ loglevel: "danger" }).length;
+				let orange = this.issues.find({ loglevel: "orange" }).length;
+				let warning = this.issues.find({ loglevel: "warning" }).length;
+				let info = this.issues.find({ loglevel: "info" }).length;
 				this.emitEvent(`count`, [danger, orange, warning, info]);
 			}
 		});
@@ -590,17 +582,16 @@ class WWSUlogs extends WWSUevents {
 	 * @param {string} dom DOM query string where the table should be created in (div).
 	 */
 	initAttendanceTable(dom) {
-		this.animations.add("logs-init-attendance-table", () => {
-			var util = new WWSUutil();
+		this.manager.get("WWSUanimations").add("logs-init-attendance-table", () => {
 
 			// Init html
 			$(dom).html(
 				`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
-					this.meta ? this.meta.meta.timezone : moment.tz.guess()
+					this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 				}.</p><table id="section-logs-table" class="table table-striped display responsive" style="width: 100%;"></table>`
 			);
 
-			util.waitForElement(`#section-logs-table`, () => {
+			this.manager.get("WWSUutil").waitForElement(`#section-logs-table`, () => {
 				// Generate table
 				this.tables.attendance = $(`#section-logs-table`).DataTable({
 					paging: true,
@@ -619,7 +610,7 @@ class WWSUlogs extends WWSUevents {
 						// Add log buttons click event
 						$(".btn-logs-view").unbind("click");
 						$(".btn-logs-view").click((e) => {
-							var id = parseInt($(e.currentTarget).data("id"));
+							let id = parseInt($(e.currentTarget).data("id"));
 							this.viewLog(id);
 						});
 					},
@@ -640,7 +631,7 @@ class WWSUlogs extends WWSUevents {
 			(records) => {
 				this.tables.attendance.clear();
 				records.map((record) => {
-					var theClass = "secondary";
+					let theClass = "secondary";
 					if (
 						record.event.toLowerCase().startsWith("show: ") ||
 						record.event.toLowerCase().startsWith("prerecord: ")
@@ -669,13 +660,13 @@ class WWSUlogs extends WWSUevents {
 								moment
 									.tz(
 										record.actualStart,
-										this.meta ? this.meta.meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 									)
 									.format("h:mm A"),
 								moment
 									.tz(
 										record.actualEnd,
-										this.meta ? this.meta.meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 									)
 									.format("h:mm A"),
 								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`,
@@ -694,7 +685,7 @@ class WWSUlogs extends WWSUevents {
 								moment
 									.tz(
 										record.actualStart,
-										this.meta ? this.meta.meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 									)
 									.format("h:mm A"),
 								`ONGOING`,
@@ -714,13 +705,13 @@ class WWSUlogs extends WWSUevents {
 								`CANCELED (${moment
 									.tz(
 										record.scheduledStart,
-										this.meta ? this.meta.meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 									)
 									.format("h:mm A")})`,
 								`CANCELED (${moment
 									.tz(
 										record.scheduledEnd,
-										this.meta ? this.meta.meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 									)
 									.format("h:mm A")})`,
 								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`,
@@ -735,13 +726,13 @@ class WWSUlogs extends WWSUevents {
 								`ABSENT (${moment
 									.tz(
 										record.scheduledStart,
-										this.meta ? this.meta.meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 									)
 									.format("h:mm A")})`,
 								`ABSENT (${moment
 									.tz(
 										record.scheduledEnd,
-										this.meta ? this.meta.meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 									)
 									.format("h:mm A")})`,
 								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`,
@@ -756,14 +747,14 @@ class WWSUlogs extends WWSUevents {
 								moment
 									.tz(
 										record.actualStart,
-										this.meta ? this.meta.meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 									)
 									.format("h:mm A"),
 								record.actualEnd !== null
 									? moment
 											.tz(
 												record.actualEnd,
-												this.meta ? this.meta.meta.timezone : moment.tz.guess()
+												this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 											)
 											.format("h:mm A")
 									: `ONGOING`,
@@ -779,13 +770,13 @@ class WWSUlogs extends WWSUevents {
 								`SCHEDULED (${moment
 									.tz(
 										record.scheduledStart,
-										this.meta ? this.meta.meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 									)
 									.format("h:mm A")})`,
 								`SCHEDULED (${moment
 									.tz(
 										record.scheduledEnd,
-										this.meta ? this.meta.meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 									)
 									.format("h:mm A")})`,
 								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`,
@@ -806,9 +797,8 @@ class WWSUlogs extends WWSUevents {
 	 * @param {string} name Name of the event/log (to appear on modal title)
 	 */
 	viewLog(id, name) {
-		var util = new WWSUutil();
 		this.modals.viewLog.body = `<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
-			this.meta ? this.meta.meta.timezone : moment.tz.guess()
+			this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 		}.</p><canvas id="modal-${
 			this.modals.viewLog.id
 		}-body-listeners" style="min-height: 200px; height: 200px; max-height: 350px; max-width: 100%;"></canvas><div id="modal-${
@@ -818,7 +808,7 @@ class WWSUlogs extends WWSUevents {
 		}-body-log" class="table table-striped display responsive" style="width: 100%;"></table>`;
 		this.modals.viewLog.iziModal("open");
 		this.getAttendance(`#section-logs-table`, { ID: id }, (attendance) => {
-			util.waitForElement(
+			this.manager.get("WWSUutil").waitForElement(
 				`#modal-${this.modals.viewLog.id}-body-listeners`,
 				() => {
 					this.getListeners(
@@ -832,25 +822,25 @@ class WWSUlogs extends WWSUevents {
 							).toISOString(true),
 						},
 						(listeners) => {
-							var data = [];
+							let data = [];
 							data = listeners.map((listener) => {
 								return {
 									x: moment
 										.tz(
 											listener.createdAt,
-											this.meta ? this.meta.meta.timezone : moment.tz.guess()
+											this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 										)
 										.format(),
 									y: listener.listeners,
 								};
 							});
 
-							var listenerChartCanvas = $(
+							let listenerChartCanvas = $(
 								`#modal-${this.modals.viewLog.id}-body-listeners`
 							)
 								.get(0)
 								.getContext("2d");
-							var listenerChart = new Chart(listenerChartCanvas, {
+							let listenerChart = new Chart(listenerChartCanvas, {
 								type: "line",
 								data: {
 									datasets: [
@@ -886,16 +876,16 @@ class WWSUlogs extends WWSUevents {
 													min: moment
 														.tz(
 															attendance.actualStart,
-															this.meta
-																? this.meta.meta.timezone
+															this.manager.get("WWSUMeta")
+																? this.manager.get("WWSUMeta").meta.timezone
 																: moment.tz.guess()
 														)
 														.format(),
 													max: moment
 														.tz(
 															attendance.actualEnd,
-															this.meta
-																? this.meta.meta.timezone
+															this.manager.get("WWSUMeta")
+																? this.manager.get("WWSUMeta").meta.timezone
 																: moment.tz.guess()
 														)
 														.format(),
@@ -922,13 +912,13 @@ class WWSUlogs extends WWSUevents {
 				}
 			);
 
-			util.waitForElement(
+			this.manager.get("WWSUutil").waitForElement(
 				`#modal-${this.modals.viewLog.id}-body-info`,
 				() => {}
 			);
 
-			util.waitForElement(`#modal-${this.modals.viewLog.id}-body-log`, () => {
-				var generateLog = (updateOnly) => {
+			this.manager.get("WWSUutil").waitForElement(`#modal-${this.modals.viewLog.id}-body-log`, () => {
+				const generateLog = (updateOnly) => {
 					this.getLogs({ attendanceID: id }, (logs) => {
 						if (!updateOnly) {
 							this.tables.log = $(
@@ -941,7 +931,7 @@ class WWSUlogs extends WWSUevents {
 										moment
 											.tz(
 												log.createdAt,
-												this.meta ? this.meta.meta.timezone : moment.tz.guess()
+												this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 											)
 											.format("llll"),
 										`<i class="${
@@ -1007,8 +997,8 @@ class WWSUlogs extends WWSUevents {
 									$(".btn-log-excused").unbind("click");
 
 									$(".btn-log-unexcused").click((e) => {
-										var id = parseInt($(e.currentTarget).data("id"));
-										util.confirmDialog(
+										let id = parseInt($(e.currentTarget).data("id"));
+										this.manager.get("WWSUutil").confirmDialog(
 											`Are you sure you want to mark issue ${id} as <strong>unexcused</strong>?
                     <ul>
                     <li>Unexcused means this record <strong>will</strong> count against DJ/show reputation and show up in analytics.</li>
@@ -1031,8 +1021,8 @@ class WWSUlogs extends WWSUevents {
 									});
 
 									$(".btn-log-excused").click((e) => {
-										var id = parseInt($(e.currentTarget).data("id"));
-										util.confirmDialog(
+										let id = parseInt($(e.currentTarget).data("id"));
+										this.manager.get("WWSUutil").confirmDialog(
 											`Are you sure you want to mark issue ${id} as <strong>excused</strong>?
                       <ul>
                       <li>Excused means this record <strong>will NOT</strong> count against DJ/show reputation nor analytics; excusing this means we pretend it never happened.</li>
@@ -1064,7 +1054,7 @@ class WWSUlogs extends WWSUevents {
 										moment
 											.tz(
 												log.createdAt,
-												this.meta ? this.meta.meta.timezone : moment.tz.guess()
+												this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
 											)
 											.format("llll"),
 										`<i class="${
@@ -1127,7 +1117,7 @@ class WWSUlogs extends WWSUevents {
 
 	// Update the dashboard logs timeline
 	updateDashboardLogs() {
-		this.animations.add("logs-update-dashboard-logs", () => {
+		this.manager.get("WWSUanimations").add("logs-update-dashboard-logs", () => {
 			if (this.dashboardLogs) {
 				$(this.dashboardLogs).html("");
 				this.dashboard
@@ -1145,8 +1135,8 @@ class WWSUlogs extends WWSUevents {
                       <span class="time"><i class="fas fa-clock"></i> ${moment
 												.tz(
 													log.createdAt,
-													this.meta
-														? this.meta.meta.timezone
+													this.manager.get("WWSUMeta")
+														? this.manager.get("WWSUMeta").meta.timezone
 														: moment.tz.guess()
 												)
 												.format("LT")}</span>
@@ -1186,7 +1176,7 @@ class WWSUlogs extends WWSUevents {
 	 */
 	getShowtime(dom, data, cb) {
 		try {
-			this.requests.host.request(
+			this.manager.get("hostReq").request(
 				{
 					dom: dom,
 					method: "post",
@@ -1267,7 +1257,7 @@ class WWSUlogs extends WWSUevents {
 				fields: {
 					date: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
-							.parseZone(this.meta ? this.meta.meta.time : undefined)
+							.parseZone(this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.time : undefined)
 							.format("Z")}`,
 						picker: {
 							inline: true,
@@ -1292,11 +1282,11 @@ class WWSUlogs extends WWSUevents {
 									form.focus();
 									return;
 								}
-								var value = form.getValue();
+								let value = form.getValue();
 
 								value.logtype = "manual";
 								value.loglevel = "secondary";
-								value.logsubtype = this.meta ? this.meta.meta.show : null;
+								value.logsubtype = this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.show : null;
 								value.logIcon = "fas fa-file";
 								value.title =
 									value.trackTitle && value.trackTitle.length > 0
@@ -1314,7 +1304,7 @@ class WWSUlogs extends WWSUevents {
 				},
 			},
 			data: {
-				date: moment(this.meta ? this.meta.meta.time : undefined),
+				date: moment(this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.time : undefined),
 			},
 		});
 	}

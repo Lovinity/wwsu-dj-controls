@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * This class implements remote broadcasting.
  * For the module that hits the WWSU API, use wwsu-remote/wwsu-remote (the WWSURemote class) instead.
@@ -150,7 +152,8 @@ class WWSUremoteaudio extends WWSUevents {
 					// TODO
 				} catch (ee) {}
 			} else {
-				this.emitEvent("peerError", [err.type]);
+				// Other peer errors
+				this.emitEvent("peerError", [err]);
 			}
 		});
 

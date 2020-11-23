@@ -1,10 +1,13 @@
+'use strict';
+
 // This class manages the sidebar navigation menu on WWSU pages using AdminLTE
 
 class WWSUNavigation {
 	/**
 	 * Construct the class
 	 */
-	constructor() {
+	constructor(manager, options) {
+		this.manager = manager;
 		this.elements = [];
 		this.activeMenu = ``;
 
@@ -54,6 +57,8 @@ class WWSUNavigation {
 		if (this.activeMenu === dom) {
 			this.processMenu(dom);
 		}
+
+		return this;
 	}
 
 	/**
@@ -63,6 +68,7 @@ class WWSUNavigation {
 	 */
 	removeItem(dom) {
 		this.elements = this.elements.filter((ele) => ele.dom !== dom);
+		return this;
 	}
 
 	/**

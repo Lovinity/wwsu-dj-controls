@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
+		<title>Renderer Process - WWSU DJ Controls</title>
 		<script>
 			if (typeof module === "object") {
 				window.module = module;
@@ -251,6 +252,7 @@
 			environment="production"
 			reconnection="true"
 		></script>
+		<script src="assets/plugins/wwsu-modules/js/wwsu-modules.js"></script>
 		<script src="assets/plugins/wwsu-sails/js/wwsu.js"></script>
 		<script src="assets/plugins/wwsu-config/js/wwsu-config.js"></script>
 		<script src="assets/plugins/wwsu-api/js/wwsu-api.js"></script>
@@ -904,6 +906,19 @@
 								<a
 									href="#"
 									class="nav-link"
+									id="nav-eas"
+									title="Manage the internal Emergency Alert System for WWSU."
+								>
+									<i class="nav-icon fas fa-bolt"></i>
+									<p>
+										EAS
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
 									id="nav-hosts"
 									title="Manage the devices / DJ Controls allowed to connect to WWSU and their privileges."
 								>
@@ -1050,7 +1065,9 @@
 
 								<div class="row d-none section-dashboard-meta p-1 bg-primary">
 									<div class="col-lg-8 col-md-6 col-sm-12">
-										<h5>Click "I Am Talking" when you are no longer playing music</h5>
+										<h5>
+											Click "I Am Talking" when you are no longer playing music
+										</h5>
 									</div>
 									<div class="col-lg-4 col-md-6 col-sm-12">
 										<button
@@ -2405,6 +2422,55 @@
 								<h3 class="card-title">DJ Management</h3>
 							</div>
 							<div class="card-body" id="section-djs-content"></div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- EAS management -->
+			<section id="section-eas">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<!-- Content Header (Page header) -->
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0 text-dark">
+										Manage Internal Emergency Alert System
+									</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+					<!-- /.content-header -->
+
+					<!-- Main content -->
+					<div class="content">
+						<div class="callout callout-danger">
+							<h5>NOT the on-air EAS!</h5>
+							<p>
+								Be aware the internal EAS in DJ Controls does NOT manage the EAS
+								that broadcasts over the air. This EAS manages alerts in the
+								following areas:
+							</p>
+							<ul>
+								<li>Running instances of DJ Controls</li>
+								<li>Public Display Sign (/display/public)</li>
+								<li>Listener's Corner website</li>
+							</ul>
+							<p>
+								Alerts you add / edit here do not affect alerts broadcast over
+								the air.
+							</p>
+						</div>
+						<div class="card card-danger elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Internal EAS Management</h3>
+							</div>
+							<div class="card-body" id="section-eas-content"></div>
 						</div>
 					</div>
 				</div>

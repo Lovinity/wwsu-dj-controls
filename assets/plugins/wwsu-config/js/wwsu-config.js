@@ -1,15 +1,19 @@
+'use strict';
+
 // This class manages the WWSU server configuration
 
+// REQUIRES these WWSUmodules: hostReq (WWSUreq), directorReq (WWSUreq) (only if changing settings)
 class WWSUconfig extends WWSUevents {
 	/**
 	 * Construct the class
 	 *
-	 * @param {sails.io} socket Socket connection to WWSU
-	 * @param {WWSUreq} directorReq Request with director authorization
-	 * @param {WWSUreq} hostReq Request with host authorization
+	 * @param {WWSUmodules} manager The modules class which initiated this module
+	 * @param {object} options Options to be passed to this module
 	 */
-	constructor(socket, directorReq, hostReq) {
+	constructor(manager, options) {
 		super();
+
+		this.manager = manager;
 
 		this.endpoints = {
 			get: "/config/get",
@@ -17,15 +21,11 @@ class WWSUconfig extends WWSUevents {
 		this.data = {
 			get: {},
 		};
-		this.requests = {
-			director: directorReq,
-			host: hostReq,
-		};
 
 		this.config = {};
 
 		// Update internal config when websocket broadcasts a change
-		socket.on("config", (data) => {
+		this.manager.socket.on("config", (data) => {
 			Object.assign(this.config, data.update);
 			this.emitEvent("configChanged", [data.update, this.config]);
 		});
@@ -34,7 +34,7 @@ class WWSUconfig extends WWSUevents {
 	// Initialize the config class. Call this on socket connect event.
 	init() {
 		try {
-			this.requests.host.request(
+			this.manager.get("hostReq").request(
 				{
 					method: "post",
 					url: this.endpoints.get,

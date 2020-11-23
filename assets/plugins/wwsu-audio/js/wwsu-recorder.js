@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * This class constructs an input audio device and uses it as an audio recorder for on-air programming.
  *
@@ -35,7 +37,7 @@ class WWSUrecorder extends WWSUevents {
 	 * @param {number} delay Delay starting the new recording by this many milliseconds
 	 */
 	newRecording(file, delay = 0) {
-		var _newRecording = () => {
+		const _newRecording = () => {
 			// Stop current recording if active
 			try {
 				if (this.recorder && this.recorder.state === "recording") {
@@ -110,7 +112,7 @@ class WWSUrecorder extends WWSUevents {
 	 * @param {number} delay Number of milliseconds to delay until recording is stopped.
 	 */
 	stopRecording(delay = 0) {
-		var _stopRecording = () => {
+		let _stopRecording = () => {
 			try {
 				// Stop recording if not pending to start a new one
 				if (

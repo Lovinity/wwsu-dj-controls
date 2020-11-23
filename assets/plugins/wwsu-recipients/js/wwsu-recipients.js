@@ -1,16 +1,20 @@
+"use strict";
+
 // This class manages chat recipients from a host level.
 // NOTE: event also supports 'recipientChanged' emitted when a new recipient is selected. Parameter is the selected recipient.
 
+// REQUIRES these WWSUmodules: hostReq (WWSUreq), WWSUMeta, WWSUutil, WWSUanimations
 class WWSUrecipients extends WWSUdb {
 	/**
 	 * The class constructor.
 	 *
-	 * @param {sails.io} socket The sails.io socket connected to the WWSU API.
-	 * @param {WWSUmeta} meta Initialized WWSUmeta class
-	 * @param {WWSUreq} hostReq Request with host authorization
+	 * @param {WWSUmodules} manager The modules class which initiated this module
+	 * @param {object} options Options to be passed to this module
 	 */
-	constructor(socket, meta, hostReq) {
+	constructor(manager, options) {
 		super();
+
+		this.manager = manager;
 
 		this.endpoints = {
 			get: "/recipients/get",
@@ -21,13 +25,8 @@ class WWSUrecipients extends WWSUdb {
 			get: {},
 			addComputer: {},
 		};
-		this.requests = {
-			host: hostReq,
-		};
 
-		this.meta = meta;
-
-		this.assignSocketEvent("recipients", socket);
+		this.assignSocketEvent("recipients", this.manager.socket);
 
 		this.activeRecipient = null;
 
@@ -45,15 +44,17 @@ class WWSUrecipients extends WWSUdb {
 		// Contains info about the current recipient
 		this.recipient = {};
 
-		this.animations = new WWSUanimations();
-
 		this.table;
 		this.initTable();
 	}
 
 	// Initialize connection. Call this on socket connect event.
 	init() {
-		this.replaceData(this.requests.host, this.endpoints.get, this.data.get);
+		this.replaceData(
+			this.manager.get("hostReq"),
+			this.endpoints.get,
+			this.data.get
+		);
 	}
 
 	// Open the modal to choose a recipient.
@@ -68,7 +69,7 @@ class WWSUrecipients extends WWSUdb {
 	 * @param {function} cb Callback; response as first parameter, boolean true = success, false = no success (or another host is already connected) for second parameter
 	 */
 	addRecipientComputer(host, cb) {
-		this.requests.host.request(
+		this.manager.get("hostReq").request(
 			{
 				method: "post",
 				url: this.endpoints.addComputer,
@@ -103,15 +104,13 @@ class WWSUrecipients extends WWSUdb {
 	 * @param {string} table DOM query string of the div container which to place the table.
 	 */
 	initTable() {
-		this.animations.add("recipients-init-table", () => {
-			var util = new WWSUutil();
-
+		this.manager.get("WWSUanimations").add("recipients-init-table", () => {
 			// Init html
 			$(this.formModal.body).html(
 				`<table id="recipients-table" class="table table-striped display responsive" style="width: 100%;"></table>`
 			);
 
-			util.waitForElement(`#recipients-table`, () => {
+			this.manager.get("WWSUutil").waitForElement(`#recipients-table`, () => {
 				// Generate table
 				this.table = $(`#recipients-table`).DataTable({
 					paging: false,
@@ -135,7 +134,7 @@ class WWSUrecipients extends WWSUdb {
 						$(".btn-recipient-choose").unbind("click");
 
 						$(".btn-recipient-choose").click((e) => {
-							var recipient = this.find().find(
+							let recipient = this.find().find(
 								(recipient) =>
 									recipient.ID === parseInt($(e.currentTarget).data("id"))
 							);
@@ -154,13 +153,15 @@ class WWSUrecipients extends WWSUdb {
 	 * NOTE: You should call WWSUmessages.updateRecipientsTable instead.
 	 */
 	_updateTable(recipients) {
-		this.animations.add("recipients-update-table", () => {
+		this.manager.get("WWSUanimations").add("recipients-update-table", () => {
 			if (this.table) {
 				this.table.clear();
 				recipients.map((recipient) => {
 					this.table.row.add([
 						jdenticon.toSvg(recipient.host, 32),
-						(recipient.host === "website" && this.meta.meta.webchat) ||
+						(recipient.host === "website" &&
+							this.manager.get("WWSUMeta") &&
+							this.manager.get("WWSUMeta").meta.webchat) ||
 						recipient.status !== 0
 							? `<span class="text-success">ONLINE</span>`
 							: `<span class="text-danger">OFFLINE</span>`,
@@ -184,7 +185,7 @@ class WWSUrecipients extends WWSUdb {
 	 * @param {?function} cb Callback after API call made
 	 */
 	registerPeer(peer, cb) {
-		this.requests.host.request(
+		this.manager.get("hostReq").request(
 			{
 				method: "post",
 				url: this.endpoints.registerPeer,

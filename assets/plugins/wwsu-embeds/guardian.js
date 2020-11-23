@@ -1,7 +1,9 @@
+'use strict';
+
 /* global $ */
 
-var Meta = { line1: '', line2: '' }
-var nowPlaying = document.getElementById('nowplaying')
+let Meta = { line1: '', line2: '' }
+let nowPlaying = document.getElementById('nowplaying')
 
 function waitFor (check, callback, count = 0) {
   if (!check()) {
