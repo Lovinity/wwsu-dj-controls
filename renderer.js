@@ -1695,15 +1695,17 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 		// Remote broadcast stuff
 		if (typeof updated.hostCalled !== "undefined") {
 			// Close remote process if no longer doing a broadcast
-			if (updated.hostCalled === null) {
+			if (updated.hostCalled !== host.client.ID) {
 				window.ipc.process.send("remote", ["close"]);
+			} else {
+				window.ipc.process.send("remote", ["open"]);
 			}
 		}
 		if (typeof updated.hostCalling !== "undefined") {
 			// Close remote process if no longer doing a broadcast
-			if (updated.hostCalling === null) {
+			if (updated.hostCalling !== hosts.client.ID) {
 				window.ipc.process.send("remote", ["close"]);
-			} else if (updated.hostCalling === hosts.client.ID) {
+			} else {
 				window.ipc.process.send("remote", ["open"]);
 			}
 		}
