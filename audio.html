@@ -5,22 +5,23 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 -->
 <html>
+	<head>
+		<script>
+			if (typeof module === "object") {
+				window.module = module;
+				module = undefined;
+			}
+		</script>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-    <script>if (typeof module === 'object') {
-            window.module = module;
-            module = undefined;
-        }
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<!-- WWSU -->
+		<script src="assets/plugins/wwsu-sails/js/wwsu.js"></script>
+		<script src="assets/plugins/wwsu-audio/js/wwsu-audio.js"></script>
 
-    <!-- WWSU -->
-    <script src="assets/plugins/wwsu-sails/js/wwsu.js"></script>
-    <script src="assets/plugins/wwsu-audio/js/wwsu-audio.js"></script>
-
-    <script src="audio.js"></script>
-    <title>Audio Process - WWSU DJ Controls</title>
-</head>
-
+		<title>Audio Process - WWSU DJ Controls</title>
+	</head>
+	<body>
+		<script src="audio.js"></script>
+	</body>
 </html>

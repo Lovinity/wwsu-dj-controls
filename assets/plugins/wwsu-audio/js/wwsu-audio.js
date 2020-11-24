@@ -13,6 +13,7 @@ class WWSUAudioManager extends WWSUevents {
 
 		this.inputs = new Map();
 		this.outputs = new Map();
+		this.volumes = new Map();
 
 		// Create audio context
 		window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -25,6 +26,10 @@ class WWSUAudioManager extends WWSUevents {
 				this.worklet = new AudioWorkletNode(this.audioContext, "wwsu-limiter");
 			});
 		}
+
+		this.volumeSend = setInterval(() => {
+			this.emitEvent("audioVolume", [this.volumes]);
+		}, 100);
 
 		// Load available devices
 		this.loadDevices();
@@ -48,6 +53,7 @@ class WWSUAudioManager extends WWSUevents {
 		}
 		this.inputs = new Map();
 		this.outputs = new Map();
+		this.volumes = new Map();
 
 		// Grab available devices
 		navigator.mediaDevices.enumerateDevices().then((devices) => {
@@ -60,7 +66,7 @@ class WWSUAudioManager extends WWSUevents {
 						this.destination
 					);
 					wwsuaudio.on("audioVolume", "WWSUAudioManager", (volume) => {
-						this.emitEvent("audioVolume", [device.deviceId, volume]);
+						this.volumes.set(device.deviceId, volume);
 					});
 
 					this.inputs.set(device.deviceId, wwsuaudio);

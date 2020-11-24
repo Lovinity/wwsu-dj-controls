@@ -1,20 +1,19 @@
 "use strict";
-window.addEventListener("DOMContentLoaded", () => {
   window.ipc.renderer.send("console", ["log", "Calendar: Process is ready"]);
 
   /**
    *  Update the clockwheel
    *  TODO: Find a better calculation method
    *
-   *  @var {array} arg[0] Array of calendar events (WWSUcalendar.getEvents) between 24 hours before now and 24 hours after now.
-   *  @var {object} arg[1] WWSUMeta.meta
+   *  @let {array} arg[0] Array of calendar events (WWSUcalendar.getEvents) between 24 hours before now and 24 hours after now.
+   *  @let {object} arg[1] WWSUMeta.meta
    */
   window.ipc.on("update-clockwheel", (event, arg) => {
     console.dir(arg);
-    var events = arg[0];
-    var meta = arg[1];
-    var outer = [];
-    var inner = [];
+    let events = arg[0];
+    let meta = arg[1];
+    let outer = [];
+    let inner = [];
 
     // Initialize inner array
     for (let i = 0; i < 720; i++) {
@@ -28,7 +27,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     if (events.length > 0) {
       // Determine what the exact date/time is for the "12" (start of the doughnut chart) on the clock
-      var topOfClock = moment
+      let topOfClock = moment
         .parseZone(meta.time)
         .startOf("day")
         .add(1, "days");
@@ -37,7 +36,7 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       // Determine number of minutes from current time to topOfClock
-      var untilTopOfClock = moment(topOfClock).diff(
+      let untilTopOfClock = moment(topOfClock).diff(
         moment(meta.time),
         "minutes"
       );
@@ -110,7 +109,7 @@ window.addEventListener("DOMContentLoaded", () => {
                 "minutes"
               )
             ) {
-              var correction = moment(event.end).diff(
+              let correction = moment(event.end).diff(
                 moment.parseZone(meta.time).add(12, "hours"),
                 "minutes"
               );
@@ -142,7 +141,7 @@ window.addEventListener("DOMContentLoaded", () => {
     };
 
     // Start with outer ring
-    var currentSegment = {
+    let currentSegment = {
       id: ``,
       minutes: 0,
       backgroundColor: `#000000`,
@@ -216,4 +215,3 @@ window.addEventListener("DOMContentLoaded", () => {
     // Finally, send this data back to renderer
     window.ipc.renderer.send("update-clockwheel", [clockwheelDonutData]);
   });
-});

@@ -5,27 +5,28 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 -->
 <html>
+	<head>
+		<script>
+			if (typeof module === "object") {
+				window.module = module;
+				module = undefined;
+			}
+		</script>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-    <script>if (typeof module === 'object') {
-            window.module = module;
-            module = undefined;
-        }
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<!-- Moment -->
+		<script src="assets/plugins/moment/moment.min.js"></script>
+		<!-- Moment Duration Format -->
+		<script src="assets/plugins/moment-duration-format/js/moment-duration-format.js"></script>
+		<!-- Moment Recur ts -->
+		<script src="assets/plugins/moment-recur-ts/js/moment-recur-ts.js"></script>
+		<!-- lodash -->
+		<script src="assets/plugins/lodash/js/lodash.min.js"></script>
 
-    <!-- Moment -->
-    <script src="assets/plugins/moment/moment.min.js"></script>
-    <!-- Moment Duration Format -->
-    <script src="assets/plugins/moment-duration-format/js/moment-duration-format.js"></script>
-    <!-- Moment Recur ts -->
-    <script src="assets/plugins/moment-recur-ts/js/moment-recur-ts.js"></script>
-    <!-- lodash -->
-    <script src="assets/plugins/lodash/js/lodash.min.js"></script>
-
-    <script src="calendar.js"></script>
-    <title>Calendar Process - WWSU DJ Controls</title>
-</head>
-
+		<title>Calendar Process - WWSU DJ Controls</title>
+	</head>
+	<body>
+		<script src="calendar.js"></script>
+	</body>
 </html>

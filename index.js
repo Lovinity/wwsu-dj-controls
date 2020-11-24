@@ -38,6 +38,7 @@ const {
 	session,
 	shell,
 	contentTracing,
+	webFrame,
 } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const debug = require("electron-debug");
@@ -169,6 +170,7 @@ const createCalendarWindow = () => {
 
 // Process for audio
 const createAudioWindow = () => {
+
 	// Create the audio process
 	audioWindow = new BrowserWindow({
 		width: 1280,
@@ -743,20 +745,6 @@ ipcMain.on("main", (event, arg) => {
 			if (recorderWindow) recorderWindow.webContents.send("shutDown");
 			break;
 
-		// Send volume information (from audio process)
-		case "audioVolume":
-			try {
-				// Send new volume info to other audio processes and to the renderer
-				mainWindow.webContents.send("audioVolume", args);
-				if (remoteWindow) remoteWindow.webContents.send("audioVolume", args);
-				if (silenceWindow) silenceWindow.webContents.send("audioVolume", args);
-				if (recorderWindow)
-					recorderWindow.webContents.send("audioVolume", args);
-			} catch (eee) {
-				// Ignore errors
-			}
-			break;
-
 		// Change the gain on a device
 		case "audioChangeVolume":
 			try {
@@ -1135,3 +1123,22 @@ function updateAudioSettings(deviceId, kind, setting) {
 function hex2bin(hex) {
 	return parseInt(hex, 16).toString(2).padStart(8, "0");
 }
+
+function getMemory() {
+	console.dir(process.getHeapStatistics());
+	console.log("------");
+
+	console.dir(process.getBlinkMemoryInfo());
+	console.log("------");
+
+	process.getProcessMemoryInfo().then((info) => {
+		console.log(`PROCESS`);
+		console.dir(info);
+		console.log("------");
+	});
+
+	console.dir(process.getSystemMemoryInfo());
+	console.log("------");
+}
+
+setInterval(getMemory, 5000);
