@@ -1,5 +1,11 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.22.1 - 2020-11-30
+
+### Fixed
+
+- Bug in meta newMeta event introduced from bug fix attempt in 8.0.0-alpha.22
+
 ## 8.0.0-alpha.22 - 2020-11-30
 
 ### Fixed
