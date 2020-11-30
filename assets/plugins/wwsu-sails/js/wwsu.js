@@ -825,6 +825,23 @@ class WWSUutil {
 			});
 		});
 	}
+
+	/**
+	 * Truncate a string to the specified length.
+	 * 
+	 * @param {string} str String to truncate
+	 * @param {number} strLength Number of characters the returned string should contain at maximum (including ending string)
+	 * @param {string} ending What should be appended to the end when the string is truncated
+	 */
+	truncateText(str, strLength = 256, ending = "...") {
+		if (str === null) return "";
+	
+		if (str.length > strLength) {
+			return `${str.substring(0, strLength - ending.length)}${ending}`;
+		} else {
+			return str;
+		}
+	}
 }
 
 class WWSUqueue {

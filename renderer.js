@@ -1318,14 +1318,16 @@ window.ipc.on("processClosed", (event, arg) => {
 				$(".meta-callQuality").addClass("d-none");
 			});
 
-			// Re-open the process after a 5-second delay if we are supposed to be in a call
+			// Re-open the process if we are supposed to be in a call
 			if (
-				meta.meta.hostCalled === hosts.client.ID ||
-				meta.meta.hostCalling === hosts.client.ID
+				(meta.meta.hostCalled === hosts.client.ID ||
+					meta.meta.hostCalling === hosts.client.ID) &&
+				(meta.meta.state.endsWith("_sportsremote") ||
+					meta.meta.state.endsWith("_remote") ||
+					meta.meta.state.startsWith("remote_") ||
+					meta.meta.state.endsWith("sportsremote_"))
 			) {
-				setTimeout(() => {
-					window.ipc.process.send("remote", ["open"]);
-				}, 5000);
+				window.ipc.process.send("remote", ["open"]);
 			}
 			break;
 	}
@@ -1725,25 +1727,26 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 		}
 
 		// Recorder stuff
-		if (typeof updated.state !== "undefined") {
+		if (
+			typeof updated.state !== "undefined" ||
+			updated.genre !== "undefined" ||
+			updated.show !== "undefined"
+		) {
 			startRecording();
 		}
 
 		// Remote broadcast stuff
-		if (typeof updated.hostCalled !== "undefined") {
-			// Close remote process if no longer doing a broadcast
-			if (updated.hostCalled !== hosts.client.ID) {
-				window.ipc.process.send("remote", ["close"]);
-			} else {
+		if (
+			typeof updated.hostCalled !== "undefined" ||
+			typeof updated.hostCalling !== "undefined"
+		) {
+			if (
+				meta.meta.hostCalled === hosts.client.ID ||
+				meta.meta.hostCalling === hosts.client.ID
+			) {
 				window.ipc.process.send("remote", ["open"]);
-			}
-		}
-		if (typeof updated.hostCalling !== "undefined") {
-			// Close remote process if no longer doing a broadcast
-			if (updated.hostCalling !== hosts.client.ID) {
-				window.ipc.process.send("remote", ["close"]);
 			} else {
-				window.ipc.process.send("remote", ["open"]);
+				window.ipc.process.send("remote", ["close"]);
 			}
 		}
 	} catch (e) {

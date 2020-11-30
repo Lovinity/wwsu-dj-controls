@@ -1,8 +1,8 @@
-'use strict';
+"use strict";
 
 // This class handles states and operations.
 
-// REQUIRES these WWSUmodules: WWSUhosts, WWSUcalendar, WWSUconfig, hostReq (WWSureq)
+// REQUIRES these WWSUmodules: WWSUhosts, WWSUcalendar, WWSUconfig, hostReq (WWSureq), WWSUutil
 class WWSUstate extends WWSUevents {
 	/**
 	 * Construct the class
@@ -51,20 +51,22 @@ class WWSUstate extends WWSUevents {
 	 */
 	delayStatus(data, cb) {
 		try {
-			this.manager.get("hostReq").request(
-				{ method: "post", url: this.endpoints.delayStatus, data },
-				(response) => {
-					if (response !== "OK") {
-						if (typeof cb === "function") {
-							cb(false);
-						}
-					} else {
-						if (typeof cb === "function") {
-							cb(true);
+			this.manager
+				.get("hostReq")
+				.request(
+					{ method: "post", url: this.endpoints.delayStatus, data },
+					(response) => {
+						if (response !== "OK") {
+							if (typeof cb === "function") {
+								cb(false);
+							}
+						} else {
+							if (typeof cb === "function") {
+								cb(true);
+							}
 						}
 					}
-				}
-			);
+				);
 		} catch (e) {
 			if (typeof cb === "function") {
 				cb(false);
@@ -82,29 +84,31 @@ class WWSUstate extends WWSUevents {
 	return(data, cb) {
 		try {
 			this.manager.get("WWSUhosts").promptIfNotHost(`return from break`, () => {
-				this.manager.get("hostReq").request(
-					{ method: "post", url: this.endpoints.return, data },
-					(response) => {
-						if (response !== "OK") {
-							$(document).Toasts("create", {
-								class: "bg-danger",
-								title: "Error returning",
-								body:
-									"There was an error returning from break. Either you are not in a break, or your DJ controls prevents you from returning when you are not on the air. If neither of these are true, please contact the engineer.",
-								autoHide: true,
-								delay: 15000,
-								icon: "fas fa-skull-crossbones fa-lg",
-							});
-							if (typeof cb === "function") {
-								cb(false);
-							}
-						} else {
-							if (typeof cb === "function") {
-								cb(true);
+				this.manager
+					.get("hostReq")
+					.request(
+						{ method: "post", url: this.endpoints.return, data },
+						(response) => {
+							if (response !== "OK") {
+								$(document).Toasts("create", {
+									class: "bg-danger",
+									title: "Error returning",
+									body:
+										"There was an error returning from break. Either you are not in a break, or your DJ controls prevents you from returning when you are not on the air. If neither of these are true, please contact the engineer.",
+									autoHide: true,
+									delay: 15000,
+									icon: "fas fa-skull-crossbones fa-lg",
+								});
+								if (typeof cb === "function") {
+									cb(false);
+								}
+							} else {
+								if (typeof cb === "function") {
+									cb(true);
+								}
 							}
 						}
-					}
-				);
+					);
 			});
 		} catch (e) {
 			$(document).Toasts("create", {
@@ -131,41 +135,47 @@ class WWSUstate extends WWSUevents {
 	 */
 	queuePSA(data, cb) {
 		try {
-			this.manager.get("WWSUhosts").promptIfNotHost(
-				`queue a ${data && data.duration ? `${data.duration}-second` : ``} PSA`,
-				() => {
-					this.manager.get("hostReq").request(
-						{ method: "post", url: this.endpoints.queuePSA, data },
-						(response) => {
-							if (response !== "OK") {
-								$(document).Toasts("create", {
-									class: "bg-danger",
-									title: "Error adding PSA",
-									body:
-										"There was an error adding the PSA. Your DJ Controls might not allow you to do this when you are not on the air. If this is not the case, please contact the engineer.",
-									autoHide: true,
-									delay: 15000,
-									icon: "fas fa-skull-crossbones fa-lg",
-								});
-								if (typeof cb === "function") {
-									cb(false);
+			this.manager
+				.get("WWSUhosts")
+				.promptIfNotHost(
+					`queue a ${
+						data && data.duration ? `${data.duration}-second` : ``
+					} PSA`,
+					() => {
+						this.manager
+							.get("hostReq")
+							.request(
+								{ method: "post", url: this.endpoints.queuePSA, data },
+								(response) => {
+									if (response !== "OK") {
+										$(document).Toasts("create", {
+											class: "bg-danger",
+											title: "Error adding PSA",
+											body:
+												"There was an error adding the PSA. Your DJ Controls might not allow you to do this when you are not on the air. If this is not the case, please contact the engineer.",
+											autoHide: true,
+											delay: 15000,
+											icon: "fas fa-skull-crossbones fa-lg",
+										});
+										if (typeof cb === "function") {
+											cb(false);
+										}
+									} else {
+										$(document).Toasts("create", {
+											class: "bg-success",
+											title: "PSA Added",
+											autohide: true,
+											delay: 5000,
+											body: `PSA was added to the queue`,
+										});
+										if (typeof cb === "function") {
+											cb(true);
+										}
+									}
 								}
-							} else {
-								$(document).Toasts("create", {
-									class: "bg-success",
-									title: "PSA Added",
-									autohide: true,
-									delay: 5000,
-									body: `PSA was added to the queue`,
-								});
-								if (typeof cb === "function") {
-									cb(true);
-								}
-							}
-						}
-					);
-				}
-			);
+							);
+					}
+				);
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -191,36 +201,40 @@ class WWSUstate extends WWSUevents {
 	 */
 	automation(data, cb) {
 		try {
-			this.manager.get("WWSUhosts").promptIfNotHost(
-				`go to ${
-					data && data.transition ? `break for next show` : `automation`
-				}`,
-				() => {
-					this.manager.get("hostReq").request(
-						{ method: "post", url: this.endpoints.automation, data },
-						(response) => {
-							if (response !== "OK") {
-								$(document).Toasts("create", {
-									class: "bg-danger",
-									title: "Error ending broadcast",
-									body:
-										"There was an error ending the broadcast. Your DJ Controls might not allow you to end broadcasts you did not start. If this is not the case, please contact the engineer.",
-									autoHide: true,
-									delay: 15000,
-									icon: "fas fa-skull-crossbones fa-lg",
-								});
-								if (typeof cb === "function") {
-									cb(false);
+			this.manager
+				.get("WWSUhosts")
+				.promptIfNotHost(
+					`go to ${
+						data && data.transition ? `break for next show` : `automation`
+					}`,
+					() => {
+						this.manager
+							.get("hostReq")
+							.request(
+								{ method: "post", url: this.endpoints.automation, data },
+								(response) => {
+									if (response !== "OK") {
+										$(document).Toasts("create", {
+											class: "bg-danger",
+											title: "Error ending broadcast",
+											body:
+												"There was an error ending the broadcast. Your DJ Controls might not allow you to end broadcasts you did not start. If this is not the case, please contact the engineer.",
+											autoHide: true,
+											delay: 15000,
+											icon: "fas fa-skull-crossbones fa-lg",
+										});
+										if (typeof cb === "function") {
+											cb(false);
+										}
+									} else {
+										if (typeof cb === "function") {
+											cb(response);
+										}
+									}
 								}
-							} else {
-								if (typeof cb === "function") {
-									cb(response);
-								}
-							}
-						}
-					);
-				}
-			);
+							);
+					}
+				);
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -247,41 +261,45 @@ class WWSUstate extends WWSUevents {
 	break(data, cb) {
 		try {
 			let apiRequest = () => {
-				this.manager.get("hostReq").request(
-					{ method: "post", url: this.endpoints.break, data },
-					(response) => {
-						if (response !== "OK") {
-							$(document).Toasts("create", {
-								class: "bg-danger",
-								title: "Error going to break",
-								body:
-									"There was an error going to break. Your DJ Controls might not allow you to go to break when you are not on the air. If this is not the case, please contact the engineer.",
-								autoHide: true,
-								delay: 15000,
-								icon: "fas fa-skull-crossbones fa-lg",
-							});
-							if (typeof cb === "function") {
-								cb(false);
-							}
-						} else {
-							if (typeof cb === "function") {
-								cb(true);
+				this.manager
+					.get("hostReq")
+					.request(
+						{ method: "post", url: this.endpoints.break, data },
+						(response) => {
+							if (response !== "OK") {
+								$(document).Toasts("create", {
+									class: "bg-danger",
+									title: "Error going to break",
+									body:
+										"There was an error going to break. Your DJ Controls might not allow you to go to break when you are not on the air. If this is not the case, please contact the engineer.",
+									autoHide: true,
+									delay: 15000,
+									icon: "fas fa-skull-crossbones fa-lg",
+								});
+								if (typeof cb === "function") {
+									cb(false);
+								}
+							} else {
+								if (typeof cb === "function") {
+									cb(true);
+								}
 							}
 						}
-					}
-				);
+					);
 			};
 
 			// Skip host prompting if going to break because of a problem
 			if (data.problem) {
 				apiRequest();
 			} else {
-				this.manager.get("WWSUhosts").promptIfNotHost(
-					`go to ${data && data.halftime ? `extended ` : ``}break`,
-					() => {
-						apiRequest();
-					}
-				);
+				this.manager
+					.get("WWSUhosts")
+					.promptIfNotHost(
+						`go to ${data && data.halftime ? `extended ` : ``}break`,
+						() => {
+							apiRequest();
+						}
+					);
 			}
 		} catch (e) {
 			$(document).Toasts("create", {
@@ -309,36 +327,38 @@ class WWSUstate extends WWSUevents {
 	queueTopAdd(data, cb) {
 		try {
 			this.manager.get("WWSUhosts").promptIfNotHost(`play a Top Add`, () => {
-				this.manager.get("hostReq").request(
-					{ method: "post", url: this.endpoints.topAdd, data },
-					(response) => {
-						if (response !== "OK") {
-							$(document).Toasts("create", {
-								class: "bg-danger",
-								title: "Error queuing Top Add",
-								body:
-									"There was an error queuing a Top Add. Your DJ Controls might not allow you to do this when you are not on the air. If this is not the case, please contact the engineer.",
-								autoHide: true,
-								delay: 15000,
-								icon: "fas fa-skull-crossbones fa-lg",
-							});
-							if (typeof cb === "function") {
-								cb(false);
-							}
-						} else {
-							$(document).Toasts("create", {
-								class: "bg-success",
-								title: "Top Add Queued",
-								autohide: true,
-								delay: 5000,
-								body: `Top Add was added to the queue`,
-							});
-							if (typeof cb === "function") {
-								cb(true);
+				this.manager
+					.get("hostReq")
+					.request(
+						{ method: "post", url: this.endpoints.topAdd, data },
+						(response) => {
+							if (response !== "OK") {
+								$(document).Toasts("create", {
+									class: "bg-danger",
+									title: "Error queuing Top Add",
+									body:
+										"There was an error queuing a Top Add. Your DJ Controls might not allow you to do this when you are not on the air. If this is not the case, please contact the engineer.",
+									autoHide: true,
+									delay: 15000,
+									icon: "fas fa-skull-crossbones fa-lg",
+								});
+								if (typeof cb === "function") {
+									cb(false);
+								}
+							} else {
+								$(document).Toasts("create", {
+									class: "bg-success",
+									title: "Top Add Queued",
+									autohide: true,
+									delay: 5000,
+									body: `Top Add was added to the queue`,
+								});
+								if (typeof cb === "function") {
+									cb(true);
+								}
 							}
 						}
-					}
-				);
+					);
 			});
 		} catch (e) {
 			$(document).Toasts("create", {
@@ -366,36 +386,38 @@ class WWSUstate extends WWSUevents {
 	queueLiner(data, cb) {
 		try {
 			this.manager.get("WWSUhosts").promptIfNotHost(`play a liner`, () => {
-				this.manager.get("hostReq").request(
-					{ method: "post", url: this.endpoints.liner, data },
-					(response) => {
-						if (response !== "OK") {
-							$(document).Toasts("create", {
-								class: "bg-danger",
-								title: "Error queuing liner",
-								body:
-									"There was an error queuing a liner. Your DJ Controls might not allow you to do this when you are not on the air. If this is not the case, please contact the engineer.",
-								autoHide: true,
-								delay: 15000,
-								icon: "fas fa-skull-crossbones fa-lg",
-							});
-							if (typeof cb === "function") {
-								cb(false);
-							}
-						} else {
-							$(document).Toasts("create", {
-								class: "bg-success",
-								title: "Liner Queued",
-								autohide: true,
-								delay: 5000,
-								body: `Liner was added to the queue`,
-							});
-							if (typeof cb === "function") {
-								cb(true);
+				this.manager
+					.get("hostReq")
+					.request(
+						{ method: "post", url: this.endpoints.liner, data },
+						(response) => {
+							if (response !== "OK") {
+								$(document).Toasts("create", {
+									class: "bg-danger",
+									title: "Error queuing liner",
+									body:
+										"There was an error queuing a liner. Your DJ Controls might not allow you to do this when you are not on the air. If this is not the case, please contact the engineer.",
+									autoHide: true,
+									delay: 15000,
+									icon: "fas fa-skull-crossbones fa-lg",
+								});
+								if (typeof cb === "function") {
+									cb(false);
+								}
+							} else {
+								$(document).Toasts("create", {
+									class: "bg-success",
+									title: "Liner Queued",
+									autohide: true,
+									delay: 5000,
+									body: `Liner was added to the queue`,
+								});
+								if (typeof cb === "function") {
+									cb(true);
+								}
 							}
 						}
-					}
-				);
+					);
 			});
 		} catch (e) {
 			$(document).Toasts("create", {
@@ -422,38 +444,42 @@ class WWSUstate extends WWSUevents {
 	 */
 	dump(data, cb) {
 		try {
-			this.manager.get("WWSUhosts").promptIfNotHost(`dump audio on the delay system`, () => {
-				this.manager.get("hostReq").request(
-					{ method: "post", url: this.endpoints.dump, data },
-					(response) => {
-						if (response !== "OK") {
-							$(document).Toasts("create", {
-								class: "bg-danger",
-								title: "Error dumping",
-								body:
-									"There was an error triggering the dump on the delay system. Your DJ Controls might not allow you to do this when you are not on the air. If this is not the case, please contact the engineer.",
-								autoHide: true,
-								delay: 15000,
-								icon: "fas fa-skull-crossbones fa-lg",
-							});
-							if (typeof cb === "function") {
-								cb(false);
+			this.manager
+				.get("WWSUhosts")
+				.promptIfNotHost(`dump audio on the delay system`, () => {
+					this.manager
+						.get("hostReq")
+						.request(
+							{ method: "post", url: this.endpoints.dump, data },
+							(response) => {
+								if (response !== "OK") {
+									$(document).Toasts("create", {
+										class: "bg-danger",
+										title: "Error dumping",
+										body:
+											"There was an error triggering the dump on the delay system. Your DJ Controls might not allow you to do this when you are not on the air. If this is not the case, please contact the engineer.",
+										autoHide: true,
+										delay: 15000,
+										icon: "fas fa-skull-crossbones fa-lg",
+									});
+									if (typeof cb === "function") {
+										cb(false);
+									}
+								} else {
+									$(document).Toasts("create", {
+										class: "bg-success",
+										title: "Dump command sent",
+										autohide: true,
+										delay: 10000,
+										body: `Dump command was sent to the delay system. If successful, the number of seconds on the dump button will go down shortly.`,
+									});
+									if (typeof cb === "function") {
+										cb(true);
+									}
+								}
 							}
-						} else {
-							$(document).Toasts("create", {
-								class: "bg-success",
-								title: "Dump command sent",
-								autohide: true,
-								delay: 10000,
-								body: `Dump command was sent to the delay system. If successful, the number of seconds on the dump button will go down shortly.`,
-							});
-							if (typeof cb === "function") {
-								cb(true);
-							}
-						}
-					}
-				);
-			});
+						);
+				});
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -490,7 +516,8 @@ class WWSUstate extends WWSUevents {
 		this.broadcastModal.body = ``;
 		this.broadcastModal.iziModal("open");
 
-		let whatShouldBePlaying = this.manager.get("WWSUcalendar")
+		let whatShouldBePlaying = this.manager
+			.get("WWSUcalendar")
 			.whatShouldBePlaying()
 			.sort((a, b) => b.priority - a.priority);
 		whatShouldBePlaying = whatShouldBePlaying.find(
@@ -511,18 +538,18 @@ class WWSUstate extends WWSUevents {
 						type: "string",
 						required: true,
 						title: "DJ handles",
-						maxLength: 255,
+						maxLength: 256,
 					},
 					name: {
 						type: "string",
 						title: "Name of Show",
 						required: true,
-						maxLength: 255,
+						maxLength: 256,
 					},
 					topic: {
 						type: "string",
 						title: "Episode Topic / Description",
-						maxLength: 255,
+						maxLength: 256,
 					},
 					webchat: {
 						type: "boolean",
@@ -580,7 +607,7 @@ class WWSUstate extends WWSUevents {
 					},
 					topic: {
 						helper:
-							"Limit: 256 characters. The topic will be displayed on the website and display signs.",
+							"Limit: 256 characters. The topic will be displayed on the website and display signs. It will also be posted in the WWSU Discord.",
 						type: "textarea",
 						placeholder: whatShouldBePlaying
 							? whatShouldBePlaying.description
@@ -639,9 +666,21 @@ class WWSUstate extends WWSUevents {
 				},
 			},
 			data: {
-				djs: whatShouldBePlaying ? whatShouldBePlaying.hosts : "",
-				name: whatShouldBePlaying ? whatShouldBePlaying.name : "",
-				topic: whatShouldBePlaying ? whatShouldBePlaying.description : "",
+				djs: whatShouldBePlaying
+					? this.manager
+							.get("WWSUutil")
+							.truncateText(whatShouldBePlaying.hosts, 256)
+					: "",
+				name: whatShouldBePlaying
+					? this.manager
+							.get("WWSUutil")
+							.truncateText(whatShouldBePlaying.name, 256)
+					: "",
+				topic: whatShouldBePlaying
+					? this.manager
+							.get("WWSUutil")
+							.truncateText(whatShouldBePlaying.description, 256)
+					: "",
 			},
 		});
 	}
@@ -654,31 +693,35 @@ class WWSUstate extends WWSUevents {
 	 */
 	goLive(data, cb) {
 		try {
-			this.manager.get("WWSUhosts").promptIfNotHost(`start a live in-studio broadcast`, () => {
-				this.manager.get("hostReq").request(
-					{ method: "post", url: this.endpoints.live, data },
-					(response) => {
-						if (response !== "OK") {
-							$(document).Toasts("create", {
-								class: "bg-danger",
-								title: "Error starting live broadcast",
-								body:
-									"There was an error starting the live broadcast. Live broadcasts may only be started from the WWSU studio (otherwise, you must do a remote broadcast). If you are in the WWSU studio, please contact the engineer.",
-								autoHide: true,
-								delay: 15000,
-								icon: "fas fa-skull-crossbones fa-lg",
-							});
-							if (typeof cb === "function") {
-								cb(false);
+			this.manager
+				.get("WWSUhosts")
+				.promptIfNotHost(`start a live in-studio broadcast`, () => {
+					this.manager
+						.get("hostReq")
+						.request(
+							{ method: "post", url: this.endpoints.live, data },
+							(response) => {
+								if (response !== "OK") {
+									$(document).Toasts("create", {
+										class: "bg-danger",
+										title: "Error starting live broadcast",
+										body:
+											"There was an error starting the live broadcast. Live broadcasts may only be started from the WWSU studio (otherwise, you must do a remote broadcast). If you are in the WWSU studio, please contact the engineer.",
+										autoHide: true,
+										delay: 15000,
+										icon: "fas fa-skull-crossbones fa-lg",
+									});
+									if (typeof cb === "function") {
+										cb(false);
+									}
+								} else {
+									if (typeof cb === "function") {
+										cb(true);
+									}
+								}
 							}
-						} else {
-							if (typeof cb === "function") {
-								cb(true);
-							}
-						}
-					}
-				);
-			});
+						);
+				});
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -713,7 +756,8 @@ class WWSUstate extends WWSUevents {
 		}
 
 		// Find what should be airing right now; filter to only the highest priority remote broadcast
-		let whatShouldBePlaying = this.manager.get("WWSUcalendar")
+		let whatShouldBePlaying = this.manager
+			.get("WWSUcalendar")
 			.whatShouldBePlaying()
 			.sort((a, b) => b.priority - a.priority);
 		whatShouldBePlaying = whatShouldBePlaying.find(
@@ -721,7 +765,10 @@ class WWSUstate extends WWSUevents {
 		);
 
 		// Reject if no remote broadcasts scheduled and this host is locked to a DJ.
-		if (this.manager.get("WWSUhosts").client.lockToDJ !== null && !whatShouldBePlaying) {
+		if (
+			this.manager.get("WWSUhosts").client.lockToDJ !== null &&
+			!whatShouldBePlaying
+		) {
 			$(document).Toasts("create", {
 				class: "bg-warning",
 				title: "No remote broadcasts scheduled",
@@ -761,9 +808,9 @@ class WWSUstate extends WWSUevents {
 		let lockToDJ = this.manager.get("WWSUhosts").client.lockToDJ;
 
 		// Get the hosts that may be called for an audio broadcast
-		let callableHosts = this.manager.get("WWSUhosts").find({
+		let callableHosts = this.manager.get("WWSUrecipients").find({
 			answerCalls: true,
-			authorized: true,
+			status: 5,
 		});
 
 		$(this.broadcastModal.body).alpaca({
@@ -792,19 +839,19 @@ class WWSUstate extends WWSUevents {
 						required: true,
 						readonly: this.manager.get("WWSUhosts").client.lockToDJ !== null,
 						title: "DJ handles",
-						maxLength: 255,
+						maxLength: 256,
 					},
 					name: {
 						type: "string",
 						title: "Name of Show",
 						readonly: this.manager.get("WWSUhosts").client.lockToDJ !== null,
 						required: true,
-						maxLength: 255,
+						maxLength: 256,
 					},
 					topic: {
 						type: "string",
 						title: "Episode Topic / Description",
-						maxLength: 255,
+						maxLength: 256,
 					},
 					webchat: {
 						type: "boolean",
@@ -913,7 +960,7 @@ class WWSUstate extends WWSUevents {
 					},
 					topic: {
 						helper:
-							"Limit: 256 characters. The topic will be displayed on the website and display signs.",
+							"Limit: 256 characters. The topic will be displayed on the website and display signs. It will also be posted in the WWSU Discord.",
 						type: "textarea",
 						placeholder: whatShouldBePlaying
 							? whatShouldBePlaying.description
@@ -957,26 +1004,40 @@ class WWSUstate extends WWSUevents {
 									},
 								};
 
-								this.manager.get("WWSUhosts").promptIfNotHost(`start a remote broadcast`, () => {
-									$(this.broadcastModal.body).block({
-										message: `<h1>Please wait...</h1><p class="remote-start-status">Initializing...</p>`,
-										css: { border: "3px solid #a00" },
-										timeout: 30000,
-										onBlock: () => {
-											// You should listen for this event and start the process of remote audio calling when called.
-											this.emitEvent("startRemote", [value.hostCall]);
-										},
+								this.manager
+									.get("WWSUhosts")
+									.promptIfNotHost(`start a remote broadcast`, () => {
+										$(this.broadcastModal.body).block({
+											message: `<h1>Please wait...</h1><p class="remote-start-status">Initializing...</p>`,
+											css: { border: "3px solid #a00" },
+											timeout: 30000,
+											onBlock: () => {
+												// You should listen for this event and start the process of remote audio calling when called.
+												this.emitEvent("startRemote", [value.hostCall]);
+											},
+										});
 									});
-								});
 							},
 						},
 					},
 				},
 			},
 			data: {
-				djs: whatShouldBePlaying ? whatShouldBePlaying.hosts : "",
-				name: whatShouldBePlaying ? whatShouldBePlaying.name : "",
-				topic: whatShouldBePlaying ? whatShouldBePlaying.description : "",
+				djs: whatShouldBePlaying
+					? this.manager
+							.get("WWSUutil")
+							.truncateText(whatShouldBePlaying.hosts, 256)
+					: "",
+				name: whatShouldBePlaying
+					? this.manager
+							.get("WWSUutil")
+							.truncateText(whatShouldBePlaying.name, 256)
+					: "",
+				topic: whatShouldBePlaying
+					? this.manager
+							.get("WWSUutil")
+							.truncateText(whatShouldBePlaying.description, 256)
+					: "",
 			},
 		});
 	}
@@ -1010,29 +1071,31 @@ class WWSUstate extends WWSUevents {
 	 */
 	goRemote(data, cb) {
 		try {
-			this.manager.get("hostReq").request(
-				{ method: "post", url: this.endpoints.remote, data },
-				(response) => {
-					if (response !== "OK") {
-						$(document).Toasts("create", {
-							class: "bg-danger",
-							title: "Error starting remote broadcast",
-							body:
-								"There was an error starting the remote broadcast. Please contact the engineer if you think you should be allowed to start a remote broadcast.",
-							autoHide: true,
-							delay: 15000,
-							icon: "fas fa-skull-crossbones fa-lg",
-						});
-						if (typeof cb === "function") {
-							cb(false);
-						}
-					} else {
-						if (typeof cb === "function") {
-							cb(true);
+			this.manager
+				.get("hostReq")
+				.request(
+					{ method: "post", url: this.endpoints.remote, data },
+					(response) => {
+						if (response !== "OK") {
+							$(document).Toasts("create", {
+								class: "bg-danger",
+								title: "Error starting remote broadcast",
+								body:
+									"There was an error starting the remote broadcast. Please contact the engineer if you think you should be allowed to start a remote broadcast.",
+								autoHide: true,
+								delay: 15000,
+								icon: "fas fa-skull-crossbones fa-lg",
+							});
+							if (typeof cb === "function") {
+								cb(false);
+							}
+						} else {
+							if (typeof cb === "function") {
+								cb(true);
+							}
 						}
 					}
-				}
-			);
+				);
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -1069,7 +1132,8 @@ class WWSUstate extends WWSUevents {
 		this.broadcastModal.body = ``;
 		this.broadcastModal.iziModal("open");
 
-		let whatShouldBePlaying = this.manager.get("WWSUcalendar")
+		let whatShouldBePlaying = this.manager
+			.get("WWSUcalendar")
 			.whatShouldBePlaying()
 			.sort((a, b) => b.priority - a.priority);
 		whatShouldBePlaying = whatShouldBePlaying.find(
@@ -1100,7 +1164,7 @@ class WWSUstate extends WWSUevents {
 					topic: {
 						type: "string",
 						title: "Broadcast Description",
-						maxLength: 255,
+						maxLength: 256,
 					},
 					webchat: {
 						type: "boolean",
@@ -1147,7 +1211,7 @@ class WWSUstate extends WWSUevents {
 					},
 					topic: {
 						helper:
-							"Limit: 256 characters. The topic will be displayed on the website and display signs.",
+							"Limit: 256 characters. The topic will be displayed on the website and display signs. It will also be posted in the WWSU Discord.",
 						type: "textarea",
 					},
 					webchat: {
@@ -1186,7 +1250,11 @@ class WWSUstate extends WWSUevents {
 			},
 			data: {
 				sport: title ? title : "",
-				topic: whatShouldBePlaying ? whatShouldBePlaying.description : "",
+				topic: whatShouldBePlaying
+					? this.manager
+							.get("WWSUutil")
+							.truncateText(whatShouldBePlaying.description, 256)
+					: "",
 			},
 		});
 	}
@@ -1199,34 +1267,35 @@ class WWSUstate extends WWSUevents {
 	 */
 	goSports(data, cb) {
 		try {
-			this.manager.get("WWSUhosts").promptIfNotHost(
-				`start a live in-studio sports broadcast`,
-				() => {
-					this.manager.get("hostReq").request(
-						{ method: "post", url: this.endpoints.sports, data },
-						(response) => {
-							if (response !== "OK") {
-								$(document).Toasts("create", {
-									class: "bg-danger",
-									title: "Error starting live sports broadcast",
-									body:
-										"There was an error starting the live sports broadcast. Live sports broadcasts may only be started from the WWSU studio (otherwise, you must do a remote sports broadcast). If you are in the WWSU studio, please contact the engineer.",
-									autoHide: true,
-									delay: 15000,
-									icon: "fas fa-skull-crossbones fa-lg",
-								});
-								if (typeof cb === "function") {
-									cb(false);
-								}
-							} else {
-								if (typeof cb === "function") {
-									cb(true);
+			this.manager
+				.get("WWSUhosts")
+				.promptIfNotHost(`start a live in-studio sports broadcast`, () => {
+					this.manager
+						.get("hostReq")
+						.request(
+							{ method: "post", url: this.endpoints.sports, data },
+							(response) => {
+								if (response !== "OK") {
+									$(document).Toasts("create", {
+										class: "bg-danger",
+										title: "Error starting live sports broadcast",
+										body:
+											"There was an error starting the live sports broadcast. Live sports broadcasts may only be started from the WWSU studio (otherwise, you must do a remote sports broadcast). If you are in the WWSU studio, please contact the engineer.",
+										autoHide: true,
+										delay: 15000,
+										icon: "fas fa-skull-crossbones fa-lg",
+									});
+									if (typeof cb === "function") {
+										cb(false);
+									}
+								} else {
+									if (typeof cb === "function") {
+										cb(true);
+									}
 								}
 							}
-						}
-					);
-				}
-			);
+						);
+				});
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -1261,7 +1330,8 @@ class WWSUstate extends WWSUevents {
 		}
 
 		// Find what should be airing right now; filter to only the highest priority sports broadcast
-		let whatShouldBePlaying = this.manager.get("WWSUcalendar")
+		let whatShouldBePlaying = this.manager
+			.get("WWSUcalendar")
 			.whatShouldBePlaying()
 			.sort((a, b) => b.priority - a.priority);
 		whatShouldBePlaying = whatShouldBePlaying.find(
@@ -1272,7 +1342,10 @@ class WWSUstate extends WWSUevents {
 		let lockToDJ = this.manager.get("WWSUhosts").client.lockToDJ;
 
 		// Reject if no remote broadcasts scheduled and this host is locked to a DJ.
-		if (this.manager.get("WWSUhosts").client.lockToDJ !== null && !whatShouldBePlaying) {
+		if (
+			this.manager.get("WWSUhosts").client.lockToDJ !== null &&
+			!whatShouldBePlaying
+		) {
 			$(document).Toasts("create", {
 				class: "bg-warning",
 				title: "No sports broadcasts scheduled",
@@ -1296,9 +1369,9 @@ class WWSUstate extends WWSUevents {
 		let _sports = this.manager.get("WWSUconfig").config.sports;
 
 		// Get the hosts that may be called for an audio broadcast
-		let callableHosts = this.manager.get("WWSUhosts").find({
+		let callableHosts = this.manager.get("WWSUrecipients").find({
 			answerCalls: true,
-			authorized: true,
+			status: 5,
 		});
 
 		$(this.broadcastModal.body).alpaca({
@@ -1332,7 +1405,7 @@ class WWSUstate extends WWSUevents {
 					topic: {
 						type: "string",
 						title: "Broadcast Description",
-						maxLength: 255,
+						maxLength: 256,
 					},
 					webchat: {
 						type: "boolean",
@@ -1408,7 +1481,7 @@ class WWSUstate extends WWSUevents {
 					},
 					topic: {
 						helper:
-							"Limit: 256 characters. The topic will be displayed on the website and display signs.",
+							"Limit: 256 characters. The topic will be displayed on the website and display signs. It will also be posted in the WWSU Discord.",
 						type: "textarea",
 					},
 					webchat: {
@@ -1443,9 +1516,9 @@ class WWSUstate extends WWSUevents {
 									},
 								};
 
-								this.manager.get("WWSUhosts").promptIfNotHost(
-									`start a remote sports broadcast`,
-									() => {
+								this.manager
+									.get("WWSUhosts")
+									.promptIfNotHost(`start a remote sports broadcast`, () => {
 										$(this.broadcastModal.body).block({
 											message: `<h1>Please wait...</h1><p class="remote-start-status">Initializing...</p>`,
 											css: { border: "3px solid #a00" },
@@ -1455,8 +1528,7 @@ class WWSUstate extends WWSUevents {
 												this.emitEvent("startRemote", [value.hostCall]);
 											},
 										});
-									}
-								);
+									});
 
 								this.goSports(value, (success) => {
 									if (success) {
@@ -1470,7 +1542,11 @@ class WWSUstate extends WWSUevents {
 			},
 			data: {
 				sport: title ? title : "",
-				topic: whatShouldBePlaying ? whatShouldBePlaying.description : "",
+				topic: whatShouldBePlaying
+					? this.manager
+							.get("WWSUutil")
+							.truncateText(whatShouldBePlaying.description, 256)
+					: "",
 			},
 		});
 	}
@@ -1483,29 +1559,31 @@ class WWSUstate extends WWSUevents {
 	 */
 	goSportsRemote(data, cb) {
 		try {
-			this.manager.get("hostReq").request(
-				{ method: "post", url: this.endpoints.sportsRemote, data },
-				(response) => {
-					if (response !== "OK") {
-						$(document).Toasts("create", {
-							class: "bg-danger",
-							title: "Error starting remote sports broadcast",
-							body:
-								"There was an error starting the remote sports broadcast. Please contact the engineer if you think you should be allowed to start a remote sports broadcast.",
-							autoHide: true,
-							delay: 15000,
-							icon: "fas fa-skull-crossbones fa-lg",
-						});
-						if (typeof cb === "function") {
-							cb(false);
-						}
-					} else {
-						if (typeof cb === "function") {
-							cb(true);
+			this.manager
+				.get("hostReq")
+				.request(
+					{ method: "post", url: this.endpoints.sportsRemote, data },
+					(response) => {
+						if (response !== "OK") {
+							$(document).Toasts("create", {
+								class: "bg-danger",
+								title: "Error starting remote sports broadcast",
+								body:
+									"There was an error starting the remote sports broadcast. Please contact the engineer if you think you should be allowed to start a remote sports broadcast.",
+								autoHide: true,
+								delay: 15000,
+								icon: "fas fa-skull-crossbones fa-lg",
+							});
+							if (typeof cb === "function") {
+								cb(false);
+							}
+						} else {
+							if (typeof cb === "function") {
+								cb(true);
+							}
 						}
 					}
-				}
-			);
+				);
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",

@@ -1,12 +1,20 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.21
+
+### Fixed
+
+- Host to Call field (remote broadcasts) empty on non-admin hosts
+- Recorder does not start new recordings on genre changes
+- Broadcast descriptions not truncating to 256 character maximum when loading "start broadcast" window
+
 ## 8.0.0-alpha.20 - 2020-11-23
 
 ### Changed
 
 - [BREAKING] Added module manager to manage each of WWSU's classes
 - [BUGS POSSIBLE] Switched all var variables to let and const variables
-- WWSUNavigation addItem and removeItem now returns this so they can be chained
+- WWSUNavigation addItem and removeItem now returns "this" so they can be chained
 
 ### Fixed
 
