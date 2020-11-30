@@ -1749,6 +1749,17 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 				window.ipc.process.send("remote", ["close"]);
 			}
 		}
+
+		// Remove pulsing indication that remote host is connected when not doing a remote broadcast
+		if (
+			typeof updated.state !== "undefined" &&
+			!updated.state.endsWith("_remote") &&
+			!updated.state.endsWith("_sportsremote") &&
+			!updated.state.startsWith("remote_") &&
+			!updated.state.startsWith("sportsremote_")
+		) {
+			$(".btn-operation-resume").removeClass("pulse-success");
+		}
 	} catch (e) {
 		console.error(e);
 		$(document).Toasts("create", {
@@ -2671,6 +2682,8 @@ state.on("startRemote", "renderer", (host) => {
 			autohide: true,
 			body: `The host you selected to call is not online. Please try using a different host.`,
 		});
+		window.ipc.process.send("remote", ["close"]);
+		pendingHostCall = null;
 	}
 
 	pendingHostCall = host;
@@ -2766,6 +2779,9 @@ window.ipc.on("remotePeerUnavailable", (event, arg) => {
 		autohide: true,
 		body: `The host you selected to call did not answer the call. Please try using a different host.`,
 	});
+	window.ipc.process.send("remote", ["close"]);
+	pendingHostCall = null;
+	remote.request({ ID: null });
 });
 
 window.ipc.on("remoteIncomingCall", (event, arg) => {
@@ -2808,6 +2824,8 @@ window.ipc.on("peerCallEstablished", (event, arg) => {
 			if (success) {
 				pendingHostCall = undefined;
 				state.broadcastModal.iziModal("close");
+			} else {
+				remote.request({ ID: null });
 			}
 		});
 	} else {

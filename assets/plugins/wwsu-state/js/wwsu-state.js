@@ -830,7 +830,7 @@ class WWSUstate extends WWSUevents {
 					},
 					hostCall: {
 						type: "number",
-						enum: callableHosts.map((host) => host.ID),
+						enum: callableHosts.map((host) => host.hostID),
 						required: true,
 						title: "Host to call",
 					},
@@ -973,7 +973,7 @@ class WWSUstate extends WWSUevents {
 					},
 					hostCall: {
 						type: "select",
-						optionLabels: callableHosts.map((host) => host.friendlyname),
+						optionLabels: callableHosts.map((host) => host.label),
 						helper:
 							"Choose which host you want to establish an audio call with for the broadcast. Please contact a director for guidance or choose the first one (unless that one does not work).",
 					},
@@ -1391,7 +1391,7 @@ class WWSUstate extends WWSUevents {
 					},
 					hostCall: {
 						type: "number",
-						enum: callableHosts.map((host) => host.ID),
+						enum: callableHosts.map((host) => host.hostID),
 						required: true,
 						title: "Host to call",
 					},
@@ -1453,7 +1453,7 @@ class WWSUstate extends WWSUevents {
 					},
 					hostCall: {
 						type: "select",
-						optionLabels: callableHosts.map((host) => host.friendlyname),
+						optionLabels: callableHosts.map((host) => host.label),
 						helper:
 							"Choose which host you want to establish an audio call with for the broadcast. Please contact a director for guidance or choose the first one (unless that one does not work).",
 					},
