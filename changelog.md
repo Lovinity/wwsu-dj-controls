@@ -7,6 +7,7 @@
 - Host to Call field (remote broadcasts) empty on non-admin hosts
 - Recorder does not start new recordings on genre changes
 - Broadcast descriptions not truncating to 256 character maximum when loading "start broadcast" window
+- Calendar schedule removing does nothing (errors with schedule not being defined)
 
 ## 8.0.0-alpha.20 - 2020-11-23
 

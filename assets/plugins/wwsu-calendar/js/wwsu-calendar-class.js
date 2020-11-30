@@ -676,8 +676,9 @@ class WWSUcalendar extends CalendarDb {
 	 * @param {function} cb Function called after the request. True = success, false = failure.
 	 */
 	removeSchedule(modal, data, cb) {
+		let schedule;
 		try {
-			let schedule = this.schedule.find({ ID: data.ID }, true);
+			schedule = this.schedule.find({ ID: data.ID }, true);
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -689,6 +690,7 @@ class WWSUcalendar extends CalendarDb {
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
 			cb(false);
+			return;
 		}
 		this.doConflictCheck(modal, schedule, "remove", () => {
 			try {
