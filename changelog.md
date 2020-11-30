@@ -1,5 +1,11 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.22 - 2020-11-30
+
+### Fixed
+
+- Nasty bug where the recorder was creating new recordings every 20-30 seconds
+
 ## 8.0.0-alpha.21 - 2020-11-30
 
 ### Fixed

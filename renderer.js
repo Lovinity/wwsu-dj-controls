@@ -1728,9 +1728,10 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 
 		// Recorder stuff
 		if (
-			typeof updated.state !== "undefined" ||
-			updated.genre !== "undefined" ||
-			updated.show !== "undefined"
+			updated.state.endsWith("_break") ||
+			updated.state.endsWith("_halftime") ||
+			updated.state.endsWith("_on") ||
+			typeof updated.calendarUnique !== "undefined"
 		) {
 			startRecording();
 		}
