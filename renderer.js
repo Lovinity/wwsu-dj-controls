@@ -76,10 +76,10 @@ wwsumodules
 	})
 	.add("WWSUrequests", WWSUrequests)
 	.add("WWSUtimesheet", WWSUtimesheet)
-	.add("WWSUmessages", WWSUmessages)
 	.add("WWSUstate", WWSUstate)
 	.add("WWSUclimacell", WWSUclimacell)
 	.add("WWSUinventory", WWSUinventory)
+	// .add("WWSUmessages", WWSUmessages)
 	.add("WWSUversion", WWSUversion, { app: "wwsu-dj-controls" })
 	.add("WWSUSilence", WWSUSilence)
 	.add("WWSUremote", WWSUremote)
@@ -105,9 +105,9 @@ let recipients = wwsumodules.get("WWSUrecipients");
 let hosts = wwsumodules.get("WWSUhosts");
 let requests = wwsumodules.get("WWSUrequests");
 let timesheets = wwsumodules.get("WWSUtimesheet");
-let messages = wwsumodules.get("WWSUmessages");
 let state = wwsumodules.get("WWSUstate");
 let climacell = wwsumodules.get("WWSUclimacell");
+// let messages = wwsumodules.get("WWSUmessages");
 let inventory = wwsumodules.get("WWSUinventory");
 let _version = wwsumodules.get("WWSUversion"); // "version" is already declared
 let silence = wwsumodules.get("WWSUSilence");
@@ -588,6 +588,8 @@ timesheets.init(
 	`#section-timesheets-end`,
 	`#section-timesheets-browse`
 );
+
+/*
 messages.initComponents(
 	".chat-active-recipient",
 	".chat-status",
@@ -598,6 +600,7 @@ messages.initComponents(
 	".messages-new-all",
 	"#nav-messages"
 );
+*/
 
 // CLOCKWHEEL
 
@@ -1403,7 +1406,7 @@ socket.on("connect", () => {
 				announcements.init();
 				requests.init();
 				recipients.init();
-				messages.init();
+				// messages.init();
 				climacell.init();
 				inventory.init();
 				_version.init();
@@ -1483,6 +1486,12 @@ socket.on("error", () => {
 			$("#content").addClass("d-none");
 		});
 		window.ipc.flashMain(true);
+	}
+});
+
+socket.on("delay-system-dump", () => {
+	if (hosts.client.delaySystem) {
+		window.ipc.dumpDelay();
 	}
 });
 
@@ -2546,7 +2555,7 @@ directors.on("change", "renderer", (db) => {
     */
 
 recipients.on("change", "renderer", (db) => {
-	messages.updateRecipientsTable();
+	// messages.updateRecipientsTable();
 
 	// If this host wants to make a call, and the host we want to call is online and has a peer, start a call.
 	if (
@@ -2571,12 +2580,14 @@ recipients.on("change", "renderer", (db) => {
 	}
 });
 recipients.on("recipientChanged", "renderer", (recipient) => {
-	messages.changeRecipient(recipient);
+	// messages.changeRecipient(recipient);
 });
 
 /*
         MESSAGES FUNCTIONS
     */
+
+/*
 messages.on("remove", "renderer", (query, db) => {
 	messages.read = messages.read.filter((value) => value !== query);
 	messages.notified = messages.notified.filter((value) => value !== query);
@@ -2597,6 +2608,7 @@ messages.on("newMessage", (message) => {
 		position: "bottomRight",
 	});
 });
+*/
 
 /*
 		HOSTS FUNCTIONS
@@ -3095,9 +3107,9 @@ remote.on("callQuality", "renderer", (quality) => {
 		} else {
 			$(".notifications-remote").addClass("badge-success");
 		}
-
-		console.log(`Remote host reported call quality at ${quality}%.`);
 	}
+
+	console.log(`Remote host reported call quality at ${quality}%.`);
 });
 
 function remoteShouldBeMuted() {

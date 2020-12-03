@@ -1,5 +1,15 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.23 - 2020-12-03
+
+### Changed
+
+- Replaced chat system with a widget to the WWSU Discord server, which can be used to chat with people in Discord (and those listening from the website also have a widget to chat in Discord).
+
+### Added
+
+- Delay system dumping (whoops, that was supposed to be added in 8.0.0-alpha.18 but wasn't)
+
 ## 8.0.0-alpha.22.1 - 2020-11-30
 
 ### Fixed

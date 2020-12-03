@@ -287,6 +287,7 @@ const createWindows = () => {
 		webPreferences: {
 			contextIsolation: true,
 			enableRemoteModule: false, // electron's remote module is insecure
+			nativeWindowOpen: true, // Needed for Discord WidgetBot.io
 			preload: path.join(__dirname, "preload-renderer.js"),
 			zoomFactor: 1.25,
 		},
@@ -470,6 +471,8 @@ app.on("activate", () => {
 });
 
 // Prevent opening new windows in the app browsers; use the default browser instead
+// DISABLED as it interferes with WidgetBot.io
+/*
 app.on("web-contents-created", (event, contents) => {
 	contents.on("new-window", async (event, navigationUrl) => {
 		// In this example, we'll ask the operating system
@@ -479,6 +482,7 @@ app.on("web-contents-created", (event, contents) => {
 		await shell.openExternal(navigationUrl);
 	});
 });
+*/
 
 // Start loading the app
 app
