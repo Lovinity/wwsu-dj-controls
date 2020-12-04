@@ -92,6 +92,7 @@ let audioWindow;
 let silenceWindow;
 let recorderWindow;
 let remoteWindow;
+let discordWindow;
 
 const enforceCORS = () => {
 	// On requests to skyway.js, we must use the WWSU server as the Origin so skyway can verify us.
@@ -116,6 +117,7 @@ const enforceCORS = () => {
 				"Content-Security-Policy": !is.development
 					? [
 							`script-src 'self' https://server.wwsu1069.org https://webrtc.ecl.ntt.com`,
+							`Access-Control-Allow-Origin: https://stonks.widgetbot.io wss://stonks.widgetbot.io`
 					  ]
 					: [],
 			},
@@ -146,6 +148,7 @@ const createLoadingScreen = () => {
 
 // Calendar process
 const createCalendarWindow = () => {
+	if (calendarWindow) return;
 	// Create the calendar process
 	calendarWindow = new BrowserWindow({
 		width: 1280,
@@ -170,6 +173,7 @@ const createCalendarWindow = () => {
 
 // Process for audio
 const createAudioWindow = () => {
+	if (audioWindow) return;
 
 	// Create the audio process
 	audioWindow = new BrowserWindow({
@@ -195,6 +199,8 @@ const createAudioWindow = () => {
 
 // Process for silence detection
 const createSilenceWindow = () => {
+	if (silenceWindow) return;
+
 	// Create the audio process
 	silenceWindow = new BrowserWindow({
 		width: 1280,
@@ -221,6 +227,8 @@ const createSilenceWindow = () => {
 
 // Process for recorder
 const createRecorderWindow = () => {
+	if (recorderWindow) return;
+
 	// Create the audio process
 	recorderWindow = new BrowserWindow({
 		width: 1280,
@@ -247,6 +255,8 @@ const createRecorderWindow = () => {
 
 // Process for remote broadcasts
 const createRemoteWindow = () => {
+	if (remoteWindow) return;
+
 	// Create the audio process
 	remoteWindow = new BrowserWindow({
 		width: 1280,
@@ -269,6 +279,33 @@ const createRemoteWindow = () => {
 	});
 
 	remoteWindow.loadFile("remote.html");
+};
+
+// Process for recorder
+const createDiscordWindow = (inviteLink) => {
+	if (discordWindow) return;
+
+	// Create the audio process
+	discordWindow = new BrowserWindow({
+		width: 1280,
+		height: 720,
+		show: true,
+		webPreferences: {
+			contextIsolation: true,
+			enableRemoteModule: false, // electron's remote module is insecure
+			backgroundThrottling: true,
+		},
+	});
+
+	discordWindow.on("closed", function () {
+		discordWindow = null;
+	});
+
+	if (!inviteLink) {
+		discordWindow.loadURL("https://discord.com/channels/742819639096246383");
+	} else {
+		discordWindow.loadURL("https://discord.gg/cKjtnWXPhz");
+	}
 };
 
 // Create the main window, and also create the other renderer processes
@@ -839,6 +876,10 @@ ipcMain.on("main", (event, arg) => {
 // use sanitize-filename
 ipcMain.on("sanitize", (event, arg) => {
 	event.returnValue = Sanitize(arg);
+});
+
+ipcMain.on("loadDiscord", (event, arg) => {
+	createDiscordWindow(arg);
 });
 
 /*

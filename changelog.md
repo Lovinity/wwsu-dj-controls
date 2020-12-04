@@ -1,5 +1,23 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.24 - 2020-12-04
+
+### Changed
+
+- When call quality drops to 0, instead of sending the broadcast to break, DJ Controls will pop up a call quality warning (but will not do so again for 5 minutes). If user goes to break within 5 minutes, the remote process and audio call is restarted during the break.
+- End Time no longer required on calendar schedules if not using recurring rules.
+
+### Fixed
+
+- CallQuality termination was not working; fixed and changed behavior (see changed section).
+
+### Added
+
+- "Updating user interface" message when DJ Controls was hidden and the UI is catching up elements (intentional defer)
+- Link to open Discord in another window in the Discord chat page; recommended to use that instead of the widget
+- Ability to add occurrences and schedules to the calendar by click-dragging and selecting a time frame.
+- Ability to re-schedule occurrences by resizing or dragging them on the calendar.
+
 ## 8.0.0-alpha.23 - 2020-12-03
 
 ### Changed

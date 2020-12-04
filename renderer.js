@@ -148,6 +148,8 @@ let audioDevices = [];
 // Remote calls
 let pendingHostCall;
 
+let badQualityTimer;
+
 let todos = {
 	status: {
 		danger: 0,
@@ -777,15 +779,14 @@ let fullCalendar = new FullCalendar.Calendar(calendarEl, {
 	},
 	initialView: "timeGridWeek",
 	navLinks: true, // can click day/week names to navigate views
-	selectable: false,
+	selectable: true,
 	selectMirror: true,
 	nowIndicator: true,
-	editable: false,
-	eventStartEditable: false,
-	eventDurationEditable: false,
+	editable: true,
 	eventResourceEditable: false,
 	themeSystem: "bootstrap",
 	dayMaxEvents: 5,
+	slotDuration: "00:15:00",
 	events: function (info, successCallback, failureCallback) {
 		animations.add("calendar-update", () => {
 			$("#calendar").block({
@@ -833,7 +834,6 @@ let fullCalendar = new FullCalendar.Calendar(calendarEl, {
 									}
 									return {
 										id: event.unique,
-										groupId: event.calendarID,
 										start: moment.parseZone(event.start).toISOString(true),
 										end: moment.parseZone(event.end).toISOString(true),
 										title: title,
@@ -866,6 +866,52 @@ let fullCalendar = new FullCalendar.Calendar(calendarEl, {
 
 	eventClick: function (info) {
 		calendar.showClickedEvent(info.event.extendedProps.event);
+	},
+
+	select: function (info) {
+		calendar.newOccurrence(info.startStr, info.endStr);
+	},
+
+	eventDrop: function (info) {
+		let duration = moment(info.event.end).diff(info.event.start, "minutes");
+		if (duration > 60 * 24) {
+			$(document).Toasts("create", {
+				class: "bg-warning",
+				title: "Multi-day Events Not Allowed",
+				body:
+					"Occurrences may not last more than 24 hours. Consider setting up a recurring schedule.",
+				autoHide: true,
+				delay: 15000,
+			});
+			return;
+		}
+		calendar.showOccurrenceForm(
+			info.event.extendedProps.event,
+			info.event.startStr,
+			duration
+		);
+		info.revert();
+	},
+
+	eventResize: function (info) {
+		let duration = moment(info.event.end).diff(info.event.start, "minutes");
+		if (duration > 60 * 24) {
+			$(document).Toasts("create", {
+				class: "bg-warning",
+				title: "Multi-day Events Not Allowed",
+				body:
+					"Occurrences may not last more than 24 hours. Consider setting up a recurring schedule.",
+				autoHide: true,
+				delay: 15000,
+			});
+			return;
+		}
+		calendar.showOccurrenceForm(
+			info.event.extendedProps.event,
+			info.event.startStr,
+			duration
+		);
+		info.revert();
 	},
 });
 fullCalendar.render();
@@ -1495,6 +1541,14 @@ socket.on("delay-system-dump", () => {
 	}
 });
 
+animations.on("updateStatus", "renderer", (updating) => {
+	if (updating) {
+		$("#animation-refreshing").removeClass("d-none");
+	} else {
+		$("#animation-refreshing").addClass("d-none");
+	}
+});
+
 /*
         META EVENTS
     */
@@ -1656,6 +1710,8 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 					case "sports_break":
 					case "sports_halftime":
 					case "sportsremote_break":
+					case "sportsremote_on":
+					case "sports_on":
 					case "sportsremote_halftime":
 						$(".card-meta").addClass("bg-success");
 						break;
@@ -1744,6 +1800,22 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 			typeof updated.calendarUnique !== "undefined"
 		) {
 			startRecording();
+		}
+
+		// Close / re-open remote process if bad call quality and doing something other than going live or returning from break
+		if (
+			typeof updated.state !== "undefined" &&
+			badQualityTimer &&
+			[
+				"sports_on",
+				"sportsremote_on",
+				"sports_returning",
+				"sportsremote_returning",
+			].indexOf(updated.state) === -1
+		) {
+			window.ipc.process.send("remote", ["close"]);
+			clearTimeout(badQualityTimer);
+			badQualityTimer = undefined;
 		}
 
 		// Remote broadcast stuff
@@ -3061,11 +3133,10 @@ remoteQuality.on("quality", "renderer", (connection, reason, quality) => {
 remote.on("callQuality", "renderer", (quality) => {
 	if (
 		quality <= 0 &&
-		(meta.state.state.startsWith("remote_") ||
-			meta.state.state.startsWith("sportsremote_")) &&
+		(meta.meta.state.startsWith("remote_") ||
+			meta.meta.state.startsWith("sportsremote_")) &&
 		hosts.client.ID === meta.meta.hostCalling
 	) {
-		state.break({ problem: true });
 		animations.add("notifications-remote", () => {
 			$(".notifications-remote").removeClass("badge-primary");
 			$(".notifications-remote").removeClass("badge-warning");
@@ -3074,17 +3145,20 @@ remote.on("callQuality", "renderer", (quality) => {
 			$(".notifications-remote").removeClass("badge-secondary");
 			$(".notifications-remote").addClass("badge-danger");
 		});
-		window.ipc.main.send("makeNotification", [
-			{
-				title: "Bad Audio Quality!",
-				bg: "danger",
-				header: "Bad Audio Quality",
-				flash: true,
-				body: `<p>The remote host reports the audio call quality was poor. The broadcast was sent to break. Please ensure your network connection is good, you are not running CPU-intensive apps, and your audio devices are not disconnected / very quiet.</p>`,
-			},
-		]);
-		sounds.callQuality.play();
-		window.ipc.process.send("remote", ["close"]);
+		if (!badQualityTimer) {
+			window.ipc.main.send("makeNotification", [
+				{
+					title: "Poor Audio Call Quality",
+					bg: "warning",
+					header: "Poor Audio Call Quality",
+					flash: true,
+					body: `<p>Remote broadcast audio call quality is poor. Please check your network connection. <strong>Your remote broadcast continues despite this warning.</strong></p>`,
+				},
+			]);
+			badQualityTimer = setTimeout(() => {
+				badQualityTimer = undefined;
+			}, 300000);
+		}
 	}
 
 	animations.add("callquality", () => {
@@ -3099,14 +3173,14 @@ remote.on("callQuality", "renderer", (quality) => {
 			$(".notifications-remote").removeClass("badge-success");
 			$(".notifications-remote").removeClass("badge-secondary");
 			$(".notifications-remote").removeClass("badge-danger");
+			if (quality <= 33) {
+				$(".notifications-remote").addClass("badge-danger");
+			} else if (quality <= 66) {
+				$(".notifications-remote").addClass("badge-warning");
+			} else {
+				$(".notifications-remote").addClass("badge-success");
+			}
 		});
-		if (quality <= 33) {
-			$(".notifications-remote").addClass("badge-danger");
-		} else if (quality <= 66) {
-			$(".notifications-remote").addClass("badge-warning");
-		} else {
-			$(".notifications-remote").addClass("badge-success");
-		}
 	}
 
 	console.log(`Remote host reported call quality at ${quality}%.`);

@@ -551,11 +551,6 @@ class WWSUstate extends WWSUevents {
 						title: "Episode Topic / Description",
 						maxLength: 256,
 					},
-					webchat: {
-						type: "boolean",
-						default: true,
-						title: "Allow Listeners to Send Messages?",
-					},
 				},
 			},
 			options: {
@@ -613,11 +608,6 @@ class WWSUstate extends WWSUevents {
 							? whatShouldBePlaying.description
 							: "",
 					},
-					webchat: {
-						rightLabel: "Yes",
-						helper:
-							"You can mute/ban individual listeners from the chat if they send threatening or harassing messages.",
-					},
 					acknowledge: {
 						rightLabel: "Yes",
 						helper:
@@ -651,8 +641,7 @@ class WWSUstate extends WWSUevents {
 
 								value = {
 									topic: value.topic,
-									showname: `${value.djs} - ${value.name}`,
-									webchat: value.webchat,
+									showname: `${value.djs} - ${value.name}`
 								};
 
 								this.goLive(value, (success) => {
@@ -853,11 +842,6 @@ class WWSUstate extends WWSUevents {
 						title: "Episode Topic / Description",
 						maxLength: 256,
 					},
-					webchat: {
-						type: "boolean",
-						default: true,
-						title: "Allow Listeners to Send Messages?",
-					},
 				},
 			},
 			options: {
@@ -966,11 +950,6 @@ class WWSUstate extends WWSUevents {
 							? whatShouldBePlaying.description
 							: "",
 					},
-					webchat: {
-						rightLabel: "Yes",
-						helper:
-							"You can mute/ban individual listeners from the chat if they send threatening or harassing messages.",
-					},
 					hostCall: {
 						type: "select",
 						optionLabels: callableHosts.map((host) => host.label),
@@ -999,7 +978,6 @@ class WWSUstate extends WWSUevents {
 									data: {
 										topic: value.topic,
 										showname: `${value.djs} - ${value.name}`,
-										webchat: value.webchat,
 										host: value.hostCall,
 									},
 								};
@@ -1166,11 +1144,6 @@ class WWSUstate extends WWSUevents {
 						title: "Broadcast Description",
 						maxLength: 256,
 					},
-					webchat: {
-						type: "boolean",
-						default: true,
-						title: "Allow Listeners to Send Messages?",
-					},
 				},
 			},
 			options: {
@@ -1214,11 +1187,6 @@ class WWSUstate extends WWSUevents {
 							"Limit: 256 characters. The topic will be displayed on the website and display signs. It will also be posted in the WWSU Discord.",
 						type: "textarea",
 					},
-					webchat: {
-						rightLabel: "Yes",
-						helper:
-							"You can mute/ban individual listeners from the chat if they send threatening or harassing messages.",
-					},
 				},
 				form: {
 					buttons: {
@@ -1235,7 +1203,6 @@ class WWSUstate extends WWSUevents {
 								value = {
 									topic: value.topic,
 									sport: value.sport,
-									webchat: value.webchat,
 								};
 
 								this.goSports(value, (success) => {
@@ -1407,11 +1374,6 @@ class WWSUstate extends WWSUevents {
 						title: "Broadcast Description",
 						maxLength: 256,
 					},
-					webchat: {
-						type: "boolean",
-						default: true,
-						title: "Allow Listeners to Send Messages?",
-					},
 				},
 			},
 			options: {
@@ -1484,11 +1446,6 @@ class WWSUstate extends WWSUevents {
 							"Limit: 256 characters. The topic will be displayed on the website and display signs. It will also be posted in the WWSU Discord.",
 						type: "textarea",
 					},
-					webchat: {
-						rightLabel: "Yes",
-						helper:
-							"You can mute/ban individual listeners from the chat if they send threatening or harassing messages.",
-					},
 				},
 				form: {
 					buttons: {
@@ -1511,7 +1468,6 @@ class WWSUstate extends WWSUevents {
 									data: {
 										topic: value.topic,
 										sport: value.sport,
-										webchat: value.webchat,
 										host: value.hostCall,
 									},
 								};

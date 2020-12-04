@@ -23,6 +23,9 @@ contextBridge.exposeInMainWorld("ipc", {
 	restartDelay: (status) => ipcRenderer.send("delayRestart", status),
 	dumpDelay: () => ipcRenderer.send("delayDump"),
 
+	// Discord window
+	loadDiscord: (inviteLink) => ipcRenderer.send("loadDiscord", inviteLink),
+
 	// Listen for messages
 	on: (event, fn) => ipcRenderer.on(event, fn),
 

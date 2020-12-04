@@ -1279,6 +1279,26 @@
 					</div>
 
 					<div class="card card-success card-outline p-1 m-3">
+						<div class="callout callout-danger">
+							<h5>Do Not Forget to Log Out!</h5>
+							<p>
+								<strong
+									>If you log in to the widget with your Discord account, do not
+									forget to log out if using a public computer!</strong
+								>
+							</p>
+							<p>
+								<a href="#" onclick="window.ipc.loadDiscord(true)"
+									>Click here to use Discord in a window</a
+								>
+								(highly recommended over using the widget below, but requires
+								you have a Discord account).
+								<strong
+									>You still need to log out of Discord when you are done if
+									using a public computer!</strong
+								>
+							</p>
+						</div>
 						<div class="content">
 							<widgetbot
 								server="742819639096246383"
@@ -2659,6 +2679,20 @@
 				<!-- Control sidebar content goes here -->
 			</aside>
 			<!-- /.control-sidebar -->
+
+			<section
+				id="animation-refreshing"
+				class="bg-warning d-none"
+				style="
+					max-width: 200px;
+					position: fixed;
+					bottom: 0;
+					right: 0;
+					z-index: 9999;
+				"
+			>
+				Updating user interface...
+			</section>
 
 			<!-- Main Footer -->
 			<footer class="main-footer">

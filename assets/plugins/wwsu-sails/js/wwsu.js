@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /* global moment, TAFFY */
 
@@ -209,10 +209,7 @@ class WWSUreq {
 	 * @param {?string} options.authPath URL path in WWSU's API for authorization and getting a token, if applicable
 	 * @param {?string} options.authName Human friendly name of the type of person (eg. "Director") that must authorize themselves for this request
 	 */
-	constructor(
-		manager,
-		options
-	) {
+	constructor(manager, options) {
 		this.manager = manager;
 		this.socket = this.manager.socket;
 		this.host = options.host || null;
@@ -828,14 +825,14 @@ class WWSUutil {
 
 	/**
 	 * Truncate a string to the specified length.
-	 * 
+	 *
 	 * @param {string} str String to truncate
 	 * @param {number} strLength Number of characters the returned string should contain at maximum (including ending string)
 	 * @param {string} ending What should be appended to the end when the string is truncated
 	 */
 	truncateText(str, strLength = 256, ending = "...") {
 		if (str === null) return "";
-	
+
 		if (str.length > strLength) {
 			return `${str.substring(0, strLength - ending.length)}${ending}`;
 		} else {
@@ -989,8 +986,10 @@ class WWSUmodal {
  *  it freeze the UI momentarily, but it is unnecessary; we only need to process the most recently queued
  *  frame of each animation, which is what this class does.
  */
-class WWSUanimations {
+class WWSUanimations extends WWSUevents {
 	constructor() {
+		super();
+
 		// Hidden window detection
 		this.hidden;
 		if (typeof document.hidden !== "undefined") {
@@ -1005,24 +1004,28 @@ class WWSUanimations {
 		// Animation queue object: key is animation id, value is function to process the animation.
 		this.animations = {};
 
+		this.processing = false;
+
 		// Process queued animations every second
 		// Once an inactive window becomes active, process one animation every 0.1 seconds to avoid sharp CPU spikes
 		setInterval(() => {
-			if (!document[this.hidden]) {
-				let index = 1;
-				for (let key in this.animations) {
-					if (Object.prototype.hasOwnProperty.call(this.animations, key)) {
-						((_key) => {
-							setTimeout(() => {
-								if (this.animations[_key]) this.animations[_key]();
-								delete this.animations[_key];
-							}, 100 * index);
-						})(key);
-						index++;
-					}
+			if (document[this.hidden]) return;
+			let _processing = false;
+			for (let key in this.animations) {
+				if (Object.prototype.hasOwnProperty.call(this.animations, key)) {
+					if (!this.processing) this.emitEvent("updateStatus", [true]);
+					_processing = true;
+					this.processing = true;
+					if (this.animations[key]) this.animations[key]();
+					delete this.animations[key];
+					break;
 				}
 			}
-		}, 1000);
+			if (this.processing && !_processing) {
+				this.processing = false;
+				this.emitEvent("updateStatus", [false]);
+			}
+		}, 100);
 	}
 
 	/**

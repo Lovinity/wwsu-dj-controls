@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /**
  * This class extends CalendarDb to use WWSU's calendar API and build the calendar interface.
@@ -12,8 +12,8 @@
  * @requires $.alpaca Alpaca forms custom WWSU build
  */
 
- // REQUIRES the following WWSUmodules: noReq (WWSUreq), directorReq (WWSUreq) (only if managing calendar), djReq (WWSUreq) (Only on DJ web panel), WWSUMeta, WWSUthis.manager.get("WWSUutil")
- // WWSUMeta MUST be loaded before WWSUcalendar is loaded!
+// REQUIRES the following WWSUmodules: noReq (WWSUreq), directorReq (WWSUreq) (only if managing calendar), djReq (WWSUreq) (Only on DJ web panel), WWSUMeta, WWSUthis.manager.get("WWSUutil")
+// WWSUMeta MUST be loaded before WWSUcalendar is loaded!
 class WWSUcalendar extends CalendarDb {
 	/**
 	 * Create the calendar class.
@@ -108,6 +108,11 @@ class WWSUcalendar extends CalendarDb {
 
 		// Generate other modals
 		this.occurrenceModal = new WWSUmodal(``, null, ``, true, {
+			headerColor: "",
+			zindex: 1100,
+			// openFullscreen: true,
+		});
+		this.newOccurrenceModal = new WWSUmodal(``, null, ``, true, {
 			headerColor: "",
 			zindex: 1100,
 			// openFullscreen: true,
@@ -520,25 +525,27 @@ class WWSUcalendar extends CalendarDb {
 	 */
 	getEventsPlaylists(cb) {
 		try {
-			this.manager.get("noReq").request(
-				{ method: "post", url: this.endpoints.getEventsPlaylists, data: {} },
-				(response) => {
-					if (!response.playlists || !response.events) {
-						$(document).Toasts("create", {
-							class: "bg-danger",
-							title: "Error loading events and playlists",
-							body:
-								"There was an error loading events and playlists. Please report this to the engineer.",
-							autoHide: true,
-							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
-						});
-						cb([], []);
-					} else {
-						cb(response.events, response.playlists);
+			this.manager
+				.get("noReq")
+				.request(
+					{ method: "post", url: this.endpoints.getEventsPlaylists, data: {} },
+					(response) => {
+						if (!response.playlists || !response.events) {
+							$(document).Toasts("create", {
+								class: "bg-danger",
+								title: "Error loading events and playlists",
+								body:
+									"There was an error loading events and playlists. Please report this to the engineer.",
+								autoHide: true,
+								delay: 10000,
+								icon: "fas fa-skull-crossbones fa-lg",
+							});
+							cb([], []);
+						} else {
+							cb(response.events, response.playlists);
+						}
 					}
-				}
-			);
+				);
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -1707,8 +1714,10 @@ class WWSUcalendar extends CalendarDb {
 	 * Show form to edit an occurrence.
 	 *
 	 * @param {object} event Original event data
+	 * @param {?string} newStart Pre-fill a new start date/time for the reschedule
+	 * @param {?number} newDuration Pre-fill a new duration for the reschedule
 	 */
-	showOccurrenceForm(event) {
+	showOccurrenceForm(event, newStart, newDuration) {
 		this.occurrenceActionModal.title = `Edit occurrence ${event.type}: ${
 			event.hosts
 		} - ${event.name} on ${moment(event.start).format("LLLL")}`;
@@ -2161,6 +2170,8 @@ class WWSUcalendar extends CalendarDb {
 					scheduleID: event.scheduleID,
 					scheduleType: "updated",
 					originalTime: moment.parseZone(event.start).toISOString(true),
+					newTime: newStart,
+					duration: newDuration / 60
 				},
 			});
 
@@ -2178,7 +2189,7 @@ class WWSUcalendar extends CalendarDb {
 		let event = this.calendar.db({ ID: calendarID }, true).first();
 
 		this.scheduleModal.title = `${
-			schedule
+			schedule && schedule.ID
 				? `Edit schedule ${event.type}: ${event.hosts} - ${event.name}`
 				: `New schedule for ${event.type}: ${event.hosts} - ${event.name}`
 		}`;
@@ -2255,7 +2266,6 @@ class WWSUcalendar extends CalendarDb {
 						},
 						endDate: {
 							title: "End Date",
-							required: true,
 							format: "date",
 						},
 						recurDW: {
@@ -2399,7 +2409,7 @@ class WWSUcalendar extends CalendarDb {
 							type: "hidden",
 						},
 						oneTime: {
-							helper: `Specify specific non-recurring dates/times you would like the event to occur. Note that all oneTime occurrences use the same duration you provide. Also, times you provide are in the station timezone (${
+							helper: `Specify specific non-recurring dates/times you would like the event to occur. Note that all oneTime occurrences use the same duration and overrides you provide below. Also, times you provide are in the station timezone (${
 								this.meta ? this.meta.meta.timezone : "Unknown zone"
 							}) by default.`,
 							fields: {
@@ -2455,6 +2465,23 @@ class WWSUcalendar extends CalendarDb {
 							picker: {
 								inline: true,
 								sideBySide: true,
+							},
+							validator: function (callback) {
+								let value = this.getValue();
+								let startTime = this.getParent().childrenByPropertyId[
+									"startTime"
+								].getValue();
+
+								if ((!value || value === "") && startTime && startTime !== "") {
+									callback({
+										status: false,
+										message: "endDate is required for recurring schedules.",
+									});
+									return;
+								}
+								callback({
+									status: true,
+								});
 							},
 						},
 						recurDW: {
@@ -2727,7 +2754,7 @@ class WWSUcalendar extends CalendarDb {
 					form: {
 						buttons: {
 							submit: {
-								title: `${schedule ? `Edit` : `Add`} Schedule`,
+								title: `${schedule && schedule.ID ? `Edit` : `Add`} Schedule`,
 								click: (form, e) => {
 									form.refreshValidationState(true);
 									if (!form.isValid(true)) {
@@ -2740,6 +2767,27 @@ class WWSUcalendar extends CalendarDb {
 									value.recurDM = value.recurDM.map((val) => val.value);
 									value.recurWM = value.recurWM.map((val) => val.value);
 									value.recurDW = value.recurDW.map((val) => val.value);
+
+									// Determine latest one-time and set endDate to that +2 days if not provided
+									if (
+										value.oneTime &&
+										value.oneTime.length > 0 &&
+										(!value.endDate || value.endDate === "")
+									) {
+										let oneTimes = value.oneTime
+											.map((ot) => moment(ot).valueOf())
+											.sort((a, b) => b - a);
+
+										value.endDate = moment
+											.tz(
+												oneTimes[0],
+												this.manager.get("WWSUmeta")
+													? this.manager.get("WWSUmeta").meta.timezone
+													: moment.tz.guess()
+											)
+											.add(2, "days")
+											.toISOString(true);
+									}
 
 									// Prepare fields for database
 									value = Object.assign(
@@ -2768,7 +2816,7 @@ class WWSUcalendar extends CalendarDb {
 									}
 
 									// Add or edit the schedule
-									if (!schedule) {
+									if (!schedule || !schedule.ID) {
 										this.addSchedule(this.scheduleModal, value, (success) => {
 											if (success) {
 												this.scheduleModal.iziModal("close");
@@ -2795,9 +2843,10 @@ class WWSUcalendar extends CalendarDb {
 					},
 				},
 
-				data: schedule
-					? Object.assign(schedule, this.recurrenceRulesToFields(schedule))
-					: { calendarID: calendarID },
+				data:
+					schedule && schedule.ID
+						? Object.assign(schedule, this.recurrenceRulesToFields(schedule))
+						: Object.assign(schedule || {}, { calendarID: calendarID }),
 			});
 
 			this.scheduleModal.iziModal("open");
@@ -3084,5 +3133,116 @@ class WWSUcalendar extends CalendarDb {
 		}
 
 		return criteria;
+	}
+
+	newOccurrence(start, end) {
+		let duration = moment(end).diff(start, "minutes");
+
+		// Duration check; do not allow events more than 1 day long
+		if (duration > 60 * 24) {
+			$(document).Toasts("create", {
+				class: "bg-warning",
+				title: "Multi-day Events Not Allowed",
+				body:
+					"Occurrences may not last more than 24 hours. Consider setting up a recurring schedule.",
+				autoHide: true,
+				delay: 15000,
+			});
+			return;
+		}
+
+		this.newOccurrenceModal.title = `New Occurrence`;
+		this.newOccurrenceModal.footer = `${moment(start).format("lll")} - ${moment(
+			end
+		).format("lll")}`;
+		this.newOccurrenceModal.body = ``;
+
+		$(this.newOccurrenceModal.body).alpaca({
+			schema: {
+				type: "object",
+				properties: {
+					event: {
+						title: "Choose Event",
+						type: "number",
+						required: true,
+						enum: this.calendar
+							.db()
+							.get()
+							.map((cal) => cal.ID),
+					},
+					recur: {
+						type: "boolean",
+						title: "Recurs / Repeats?",
+					},
+				},
+			},
+			options: {
+				fields: {
+					event: {
+						type: "select",
+						optionLabels: this.calendar
+							.db()
+							.get()
+							.map((cal) => `${cal.type}: ${cal.hosts} - ${cal.name}`),
+						helper:
+							"If the event you want is not listed, you may need to add it first under the Manage Events button on the calendar.",
+					},
+					recur: {
+						rightLabel: "Yes",
+						helpers: [
+							`If unchecked, the time of ${moment(start).format(
+								"lll"
+							)} - ${moment(end).format(
+								"lll"
+							)} will be filled in as a one-time occurrence on the next screen.`,
+							`If checked, the time of ${moment(start).format(
+								"dddd h:mm A"
+							)} - ${moment(end).format(
+								"dddd h:mm A"
+							)} will be filled in as a weekly recurring schedule on the next screen (but you can change recurrence settings).`,
+						],
+					},
+				},
+
+				form: {
+					buttons: {
+						submit: {
+							title: `Continue`,
+							click: (form, e) => {
+								form.refreshValidationState(true);
+								if (!form.isValid(true)) {
+									form.focus();
+									return;
+								}
+								let value = form.getValue();
+
+								if (value.recur) {
+									this.showScheduleForm(
+										{
+											recurDW: parseInt(moment(start).format("e")),
+											startDate: moment(start).subtract(1, "days"),
+											startTime: moment(start).format("HH:mm"),
+											duration: duration,
+										},
+										value.event
+									);
+								} else {
+									this.showScheduleForm(
+										{
+											oneTime: [moment(start).toISOString(true)],
+											startDate: moment(start).subtract(1, "days"),
+											duration: duration,
+										},
+										value.event
+									);
+								}
+							},
+						},
+					},
+				},
+			},
+		});
+
+		this.newOccurrenceModal.iziModal("open");
 	}
 }
