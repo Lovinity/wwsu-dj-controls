@@ -50,6 +50,7 @@ const { machineIdSync } = require("./assets/wwsu-host-id");
 const Sanitize = require("sanitize-filename");
 const semver = require("semver");
 const serialport = require("serialport");
+const { URL } = require("url");
 
 // Initialize debug tools
 debug();
@@ -109,20 +110,7 @@ const enforceCORS = () => {
 		}
 	);
 
-	// Apply content security policy to all responses when not in development mode
-	session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-		callback({
-			responseHeaders: {
-				...details.responseHeaders,
-				"Content-Security-Policy": !is.development
-					? [
-							`script-src 'self' https://server.wwsu1069.org https://webrtc.ecl.ntt.com`,
-							`Access-Control-Allow-Origin: https://stonks.widgetbot.io wss://stonks.widgetbot.io`
-					  ]
-					: [],
-			},
-		});
-	});
+	// TODO: Add access-control-allow-origin when it can be figured out
 };
 
 const createLoadingScreen = () => {

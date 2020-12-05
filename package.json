@@ -1,7 +1,7 @@
 {
 	"name": "wwsu-dj-controls",
 	"productName": "wwsu-dj-controls",
-	"version": "8.0.0-alpha.24",
+	"version": "8.0.0-alpha.24.1",
 	"appId": "com.Lovinity.wwsu-dj-controls",
 	"description": "Front-end application for the WWSU API / radio system, used by the DJs and staff of WWSU.",
 	"license": "MIT",
@@ -32,6 +32,7 @@
 		"serialport": "^9.0.2"
 	},
 	"devDependencies": {
+		"cross-env": "^7.0.3",
 		"electron": "^9.0.0",
 		"electron-builder": "^22.9.1",
 		"np": "^6.5.0",

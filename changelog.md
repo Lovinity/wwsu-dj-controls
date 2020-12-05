@@ -1,5 +1,11 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.24.1 - 2020-12-04
+
+### Changed
+
+- Disabled access-control-allow-origin for now; it was blocking Widgetbot.
+
 ## 8.0.0-alpha.24 - 2020-12-04
 
 ### Changed
