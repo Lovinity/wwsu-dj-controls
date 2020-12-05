@@ -1485,12 +1485,6 @@ class WWSUstate extends WWSUevents {
 											},
 										});
 									});
-
-								this.goSports(value, (success) => {
-									if (success) {
-										this.broadcastModal.iziModal("close");
-									}
-								});
 							},
 						},
 					},

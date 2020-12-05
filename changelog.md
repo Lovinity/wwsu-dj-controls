@@ -1,5 +1,11 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.25 - 2020-12-05
+
+### Fixed
+
+- Nasty sports remote bug
+
 ## 8.0.0-alpha.24.1 - 2020-12-04
 
 ### Changed
