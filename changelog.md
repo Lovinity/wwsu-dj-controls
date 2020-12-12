@@ -1,5 +1,11 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.25 - 2020-12-11
+
+### Fixed
+
+- Nasty memory info bug
+
 ## 8.0.0-alpha.25 - 2020-12-05
 
 ### Fixed

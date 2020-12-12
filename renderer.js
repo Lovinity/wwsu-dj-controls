@@ -1024,19 +1024,28 @@ window.ipc.on("silenceState", (event, arg) => {
 
 // Volume for audio
 window.ipc.on("audioVolume", (event, arg) => {
-	if (navigation.activeMenu !== `#nav-audio`) return;
-	animations.add("audio-volume", () => {
-		if (arg[0].size > 0) {
-			arg[0].forEach((volume, device) => {
-				$(`.vu-left-input-${device}`).width(`${volume[0] * 100}%`);
-				$(`.vu-right-input-${device}`).width(
-					`${
-						typeof volume[1] !== "undefined" ? volume[1] * 100 : volume[0] * 100
-					}%`
-				);
+	((volumes) => {
+		if (navigation.activeMenu !== `#nav-audio`) {
+			return;
+		}
+		if (volumes.length > 0) {
+			animations.add("audio-volume", () => {
+				volumes.forEach((device) => {
+					$(`.vu-left-input-${device.device}`).width(
+						`${device.volume[0] * 100}%`
+					);
+					$(`.vu-right-input-${device.device}`).width(
+						`${
+							typeof device.volume[1] !== "undefined"
+								? device.volume[1] * 100
+								: device.volume[0] * 100
+						}%`
+					);
+				});
 			});
 		}
-	});
+	})(arg[0]);
+	arg = undefined;
 });
 
 // Add a log in WWSU when a recording was saved

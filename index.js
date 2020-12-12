@@ -124,6 +124,7 @@ const createLoadingScreen = () => {
 			frame: false,
 			/// and set the transparency, to remove any window background color
 			transparent: true,
+			title: "Loading..."
 		})
 	);
 	loadingScreen.setResizable(false);
@@ -298,6 +299,8 @@ const createDiscordWindow = (inviteLink) => {
 
 // Create the main window, and also create the other renderer processes
 const createWindows = () => {
+	if (mainWindow) return;
+	
 	createLoadingScreen();
 
 	// Create the browser window.
@@ -1174,4 +1177,4 @@ function getMemory() {
 	console.log("------");
 }
 
-setInterval(getMemory, 5000);
+// setInterval(getMemory, 5000);
