@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld("ipc", {
 
 	// Listen for messages
 	on: (event, fn) => ipcRenderer.on(event, fn),
+	invoke: (event, args) => ipcRenderer.invoke(event, args),
 
 	// Calendar process
 	calendar: {

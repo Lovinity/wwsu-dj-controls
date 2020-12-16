@@ -45,11 +45,7 @@ audioManager.on("devices", "renderer", (devices) => {
 
 // When a device reports volume information, send this to the main process to be sent out to other audio processes and the renderer
 audioManager.on("audioVolume", "renderer", (volumes) => {
-	console.log(`Sending volume`);
-	volumes = Array.from(volumes, ([device, volume]) => {
-		return { device, volume };
-	});
-	window.ipc.renderer.send("audioVolume", [volumes]);
+	window.ipc.invoke("setAudioVolume", volumes);
 });
 
 /*

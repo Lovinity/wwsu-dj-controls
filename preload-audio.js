@@ -5,6 +5,8 @@ const { ipcRenderer, contextBridge } = require("electron");
 
 contextBridge.exposeInMainWorld("ipc", {
 	on: (event, fn) => ipcRenderer.on(event, fn),
+	invoke: (event, args) => ipcRenderer.invoke(event, args),
+	
 	renderer: {
 		send: (task, args) => ipcRenderer.send("renderer", [task, args]),
 	},

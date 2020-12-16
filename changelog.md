@@ -1,6 +1,16 @@
 # Changelog for wwsu-dj-controls
 
-## 8.0.0-alpha.25 - 2020-12-11
+## 8.0.0-alpha.27 - 2020-12-15
+
+### Added
+
+- More security checks in app
+
+### Changed
+
+- Another memory leak fix attempt using invoke/handle for VU meters instead of send/on
+
+## 8.0.0-alpha.26 - 2020-12-11
 
 ### Fixed
 

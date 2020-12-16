@@ -95,6 +95,9 @@ let recorderWindow;
 let remoteWindow;
 let discordWindow;
 
+// Local copy of audio volume information
+let volumes;
+
 const enforceCORS = () => {
 	// On requests to skyway.js, we must use the WWSU server as the Origin so skyway can verify us.
 	// For all other requests, we can use the default file origin (which we should, especially for the WWSU server)
@@ -110,28 +113,49 @@ const enforceCORS = () => {
 		}
 	);
 
+	// Only ever allow media permissions, and from the local Electron app or from Discord
+	session.defaultSession.setPermissionRequestHandler(
+		(webContents, permission, callback) => {
+			if (
+				["media"].indexOf(permission) === -1 ||
+				(!webContents.getURL().startsWith("https://discord.com") &&
+					!webContents.getURL().startsWith("file://"))
+			) {
+				return callback(false); // denied.
+			}
+			callback(true);
+		}
+	);
+
 	// TODO: Add access-control-allow-origin when it can be figured out
 };
 
 const createLoadingScreen = () => {
 	/// create a browser window
-	loadingScreen = new BrowserWindow(
-		Object.assign({
-			/// define width and height for the window
-			width: 200,
-			height: 400,
-			/// remove the window frame, so it will become a frameless window
-			frame: false,
-			/// and set the transparency, to remove any window background color
-			transparent: true,
-			title: "Loading..."
-		})
-	);
+	loadingScreen = new BrowserWindow({
+		/// define width and height for the window
+		width: 200,
+		height: 400,
+		/// remove the window frame, so it will become a frameless window
+		frame: false,
+		/// and set the transparency, to remove any window background color
+		transparent: true,
+		title: "Loading...",
+		webPreferences: {
+			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
+			contextIsolation: true,
+			enableRemoteModule: false, // electron's remote module is insecure
+			sandbox: true,
+		},
+	});
 	loadingScreen.setResizable(false);
 	loadingScreen.loadFile("splash.html");
 	loadingScreen.on("closed", () => (loadingScreen = undefined));
 	loadingScreen.webContents.on("did-finish-load", () => {
 		loadingScreen.show();
+	});
+	loadingScreen.webContents.on("will-navigate", (event, newURL) => {
+		event.preventDefault(); // AUXCLICK_JS_CHECK
 	});
 };
 
@@ -149,6 +173,8 @@ const createCalendarWindow = () => {
 			enableRemoteModule: false, // electron's remote module is insecure
 			preload: path.join(__dirname, "preload-calendar.js"),
 			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
+			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
+			sandbox: true,
 		},
 	});
 
@@ -158,6 +184,9 @@ const createCalendarWindow = () => {
 		}
 	});
 	calendarWindow.loadFile("calendar.html");
+	calendarWindow.webContents.on("will-navigate", (event, newURL) => {
+		event.preventDefault(); // AUXCLICK_JS_CHECK
+	});
 };
 
 // Process for audio
@@ -175,6 +204,8 @@ const createAudioWindow = () => {
 			enableRemoteModule: false, // electron's remote module is insecure
 			preload: path.join(__dirname, "preload-audio.js"),
 			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
+			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
+			sandbox: true,
 		},
 	});
 
@@ -184,6 +215,9 @@ const createAudioWindow = () => {
 		}
 	});
 	audioWindow.loadFile("audio.html");
+	audioWindow.webContents.on("will-navigate", (event, newURL) => {
+		event.preventDefault(); // AUXCLICK_JS_CHECK
+	});
 };
 
 // Process for silence detection
@@ -201,6 +235,8 @@ const createSilenceWindow = () => {
 			enableRemoteModule: false, // electron's remote module is insecure
 			preload: path.join(__dirname, "preload-audio.js"),
 			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
+			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
+			sandbox: true,
 		},
 	});
 
@@ -212,6 +248,10 @@ const createSilenceWindow = () => {
 	});
 
 	silenceWindow.loadFile("silence.html");
+
+	silenceWindow.webContents.on("will-navigate", (event, newURL) => {
+		event.preventDefault(); // AUXCLICK_JS_CHECK
+	});
 };
 
 // Process for recorder
@@ -229,6 +269,8 @@ const createRecorderWindow = () => {
 			enableRemoteModule: false, // electron's remote module is insecure
 			preload: path.join(__dirname, "preload-audio.js"),
 			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
+			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
+			sandbox: true,
 		},
 	});
 
@@ -240,6 +282,10 @@ const createRecorderWindow = () => {
 	});
 
 	recorderWindow.loadFile("recorder.html");
+
+	recorderWindow.webContents.on("will-navigate", (event, newURL) => {
+		event.preventDefault(); // AUXCLICK_JS_CHECK
+	});
 };
 
 // Process for remote broadcasts
@@ -257,6 +303,8 @@ const createRemoteWindow = () => {
 			enableRemoteModule: false, // electron's remote module is insecure
 			preload: path.join(__dirname, "preload-audio.js"),
 			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
+			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
+			sandbox: true,
 		},
 	});
 
@@ -268,6 +316,10 @@ const createRemoteWindow = () => {
 	});
 
 	remoteWindow.loadFile("remote.html");
+
+	remoteWindow.webContents.on("will-navigate", (event, newURL) => {
+		event.preventDefault(); // AUXCLICK_JS_CHECK
+	});
 };
 
 // Process for recorder
@@ -283,6 +335,8 @@ const createDiscordWindow = (inviteLink) => {
 			contextIsolation: true,
 			enableRemoteModule: false, // electron's remote module is insecure
 			backgroundThrottling: true,
+			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
+			sandbox: true,
 		},
 	});
 
@@ -295,12 +349,17 @@ const createDiscordWindow = (inviteLink) => {
 	} else {
 		discordWindow.loadURL("https://discord.gg/cKjtnWXPhz");
 	}
+
+	discordWindow.webContents.on("will-navigate", (event, newURL) => {
+		if (!discordWindow.webContents.getURL().startsWith("https://discord.com"))
+			event.preventDefault(); // AUXCLICK_JS_CHECK
+	});
 };
 
 // Create the main window, and also create the other renderer processes
 const createWindows = () => {
 	if (mainWindow) return;
-	
+
 	createLoadingScreen();
 
 	// Create the browser window.
@@ -318,6 +377,8 @@ const createWindows = () => {
 			nativeWindowOpen: true, // Needed for Discord WidgetBot.io
 			preload: path.join(__dirname, "preload-renderer.js"),
 			zoomFactor: 1.25,
+			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
+			sandbox: true,
 		},
 	});
 
@@ -439,6 +500,10 @@ const createWindows = () => {
 			}
 		} catch (eee) {}
 	});
+
+	mainWindow.webContents.on("will-navigate", (event, newURL) => {
+		event.preventDefault(); // AUXCLICK_JS_CHECK
+	});
 };
 
 const makeNotification = (data) => {
@@ -458,6 +523,8 @@ const makeNotification = (data) => {
 			preload: path.join(__dirname, "preload-notification.js"),
 			backgroundThrottling: false, // Do not throttle this process.
 			zoomFactor: 1.25,
+			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
+			sandbox: true,
 		},
 	});
 	notificationWindow.once("ready-to-show", () => {
@@ -465,6 +532,9 @@ const makeNotification = (data) => {
 		notificationWindow.webContents.send("notificationData", data);
 	});
 	notificationWindow.loadFile("notification.html");
+	notificationWindow.webContents.on("will-navigate", (event, newURL) => {
+		event.preventDefault(); // AUXCLICK_JS_CHECK
+	});
 };
 
 // Enforce sandboxing for security
@@ -522,6 +592,15 @@ app
 /*
 	IPC COMMUNICATIONS
 */
+
+ipcMain.handle("setAudioVolume", async (event, vol) => {
+	volumes = vol;
+	return true;
+});
+
+ipcMain.handle("getAudioVolume", async (event, args) => {
+	return volumes;
+});
 
 // Sync get the machine ID string for this installation
 ipcMain.on("get-machine-id", (event) => {

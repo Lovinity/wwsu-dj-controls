@@ -15,7 +15,7 @@ registerProcessor(
 		constructor() {
 			super();
 			this._volume = [-1, -1];
-			this._updateIntervalInMS = 100;
+			this._updateIntervalInMS = 60;
 			this._nextUpdateFrame = this._updateIntervalInMS;
 			this.port.onmessage = (event) => {
 				if (event.data.updateIntervalInMS)

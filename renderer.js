@@ -1048,6 +1048,33 @@ window.ipc.on("audioVolume", (event, arg) => {
 	arg = undefined;
 });
 
+// Update VU meters
+const checkVUMeters = () => {
+	window.requestAnimationFrame(async () => {
+		if (navigation.activeMenu !== `#nav-audio`) {
+			checkVUMeters();
+			return;
+		}
+		let volumes = await window.ipc.invoke("getAudioVolume");
+		if (volumes.size > 0) {
+			animations.add("audio-volume", () => {
+				volumes.forEach((volume, device) => {
+					$(`.vu-left-input-${device}`).width(`${volume[0] * 100}%`);
+					$(`.vu-right-input-${device}`).width(
+						`${
+							typeof volume[1] !== "undefined"
+								? volume[1] * 100
+								: volume[0] * 100
+						}%`
+					);
+				});
+			});
+		}
+		checkVUMeters();
+	});
+};
+checkVUMeters();
+
 // Add a log in WWSU when a recording was saved
 window.ipc.on("recorderSaved", (event, arg) => {
 	logs.add(
@@ -1730,12 +1757,18 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 
 				switch (updated.state) {
 					case "automation_on":
-					case "automation_break":
 					case "automation_playlist":
 					case "automation_genre":
 					case "automation_prerecord":
 					case "prerecord_on":
 					case "prerecord_break":
+						$(".operation-live").removeClass("d-none");
+						$(".operation-remote").removeClass("d-none");
+						$(".operation-sports").removeClass("d-none");
+						$(".operation-sportsremote").removeClass("d-none");
+						break;
+					case "automation_break":
+						$(".operation-automation").removeClass("d-none");
 						$(".operation-live").removeClass("d-none");
 						$(".operation-remote").removeClass("d-none");
 						$(".operation-sports").removeClass("d-none");

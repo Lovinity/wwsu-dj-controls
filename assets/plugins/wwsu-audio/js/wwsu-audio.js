@@ -29,7 +29,7 @@ class WWSUAudioManager extends WWSUevents {
 
 		this.volumeSend = setInterval(() => {
 			this.emitEvent("audioVolume", [this.volumes]);
-		}, 100);
+		}, 60);
 
 		// Load available devices
 		this.loadDevices();
