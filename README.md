@@ -1,7 +1,7 @@
-# WWSU DJ Controls v9
+# WWSU DJ Controls v8
 This application is the frontend GUI for connecting to WWSU Radio's server (Lovinity/wwsu) and managing many aspects of the radio station.
 
-**Version 9 is still in ALPHA. Many things do not work yet**.
+**Version 8 is still in ALPHA. Many things do not work yet**.
 
 ## Not for public use
 This application is only meant for use within WWSU Radio (but the code is available publicly for anyone who wishes to build something similar for their radio station). This application is used in conjunction with the server in the "wwsu" repository.

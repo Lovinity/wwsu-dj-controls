@@ -1,5 +1,11 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.29 - 2020-12-17
+
+### Fixed
+
+- More stupid unacceptable bugs on my part: null paths for recording.
+
 ## 8.0.0-alpha.28.3 - 2020-12-17
 
 ### Changed

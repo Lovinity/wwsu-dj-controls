@@ -883,6 +883,7 @@ ipcMain.handle("recorderEncoded", (event, args) => {
 				`${config.get("recorder.recordPath")}/${args[0]}`,
 				arrayBuffer,
 				function (err) {
+					arrayBuffer = undefined;
 					if (err) {
 						console.error(err);
 						if (mainWindow)
@@ -890,7 +891,7 @@ ipcMain.handle("recorderEncoded", (event, args) => {
 						reject(err);
 					} else {
 						console.log(`File saved`);
-						return resolve(`${config.get("recorder.recordPath")}/${args[0]}`);
+						resolve(`${config.get("recorder.recordPath")}/${args[0]}`);
 					}
 				}
 			);
@@ -1086,7 +1087,7 @@ function restartDelay(arg) {
 
 function dumpDelay() {
 	return;
-	
+
 	if (delaySerial) {
 		mainWindow.webContents.send("console", [
 			"log",
