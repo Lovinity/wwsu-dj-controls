@@ -293,12 +293,12 @@ const createRemoteWindow = () => {
 	remoteWindow = new BrowserWindow({
 		width: 1280,
 		height: 720,
-		show: false,
+		show: true,
 		title: `${app.name} - Remote Process`,
 		webPreferences: {
 			contextIsolation: true,
 			enableRemoteModule: false, // electron's remote module is insecure
-			preload: path.join(__dirname, "preload-skyway.js"),
+			preload: path.join(__dirname, "preload-audio.js"),
 			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
 			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
 			sandbox: true,
