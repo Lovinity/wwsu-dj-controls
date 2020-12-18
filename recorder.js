@@ -106,7 +106,7 @@ recorder.on("recorderEncoded", "recorder", (file, reader) => {
 		`Recorder: Recording ${file} finished encoding.`,
 	]);
 	window.ipc.recorderEncoded([file, reader], (path) => {
-		console.log(`Recorder: Audio file saved to ${arg[0]}`);
+		console.log(`Recorder: Audio file saved to ${path}`);
 		window.ipc.renderer.console([
 			"log",
 			`Recorder: Audio file saved to ${path}`,
