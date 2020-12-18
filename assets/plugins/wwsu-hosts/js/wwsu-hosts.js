@@ -275,22 +275,22 @@ class WWSUhosts extends WWSUdb {
 					silenceDetection: {
 						type: "boolean",
 						title: "Monitor / Report Silence?",
-						readonly: rSilence && rSilence.ID !== this.client.ID,
+						readonly: rSilence && data && rSilence.ID !== data.ID,
 					},
 					recordAudio: {
 						type: "boolean",
 						title: "Record audio?",
-						readonly: rRecord && rRecord.ID !== this.client.ID,
+						readonly: rRecord && data && rRecord.ID !== data.ID,
 					},
 					delaySystem: {
 						type: "boolean",
 						title: "Delay System Connected?",
-						readonly: rDelay && rDelay.ID !== this.client.ID,
+						readonly: rDelay && data && rDelay.ID !== data.ID,
 					},
 					EAS: {
 						type: "boolean",
 						title: "Emergency Alert System (EAS) Connected?",
-						readonly: rEAS && rEAS.ID !== this.client.ID,
+						readonly: rEAS && data && rEAS.ID !== data.ID,
 					},
 				},
 			},

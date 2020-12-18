@@ -1592,7 +1592,8 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 				$(".operation-dump-time").html(
 					`${
 						updated.delaySystem === null
-							? `Turn On`
+							// TODO: Reactivate when serialport works again; ? `Turn On`
+							? `DISABLED`
 							: `${updated.delaySystem} sec`
 					}`
 				);

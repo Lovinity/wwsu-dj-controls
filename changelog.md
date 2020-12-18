@@ -1,12 +1,16 @@
 # Changelog for wwsu-dj-controls
 
-## 8.0.0-alpha.28.2 - 2020-12-17
+## 8.0.0-alpha.28.3 - 2020-12-17
+
+### Changed
+
+- [BREAKING] Temporarily disabled delay system capabilities due to a blocking bug in @serialport/bindings@9.0.4
 
 ### Fixed
 
 - Fixes to errors I made that were unacceptable and should have been tested prior to release.
 
-## 8.0.0-alpha.28 - 2020-12-17
+## 8.0.0-alpha.28 - 2020-12-17 - BROKEN
 
 ### Fixed
 
