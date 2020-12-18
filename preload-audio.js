@@ -116,7 +116,13 @@ contextBridge.exposeInMainWorld("ipc", {
 	},
 
 	recorderEncoded: (args, cb) =>
-		ipcRenderer.invoke("recorderEncoded", args).then(cb),
+		ipcRenderer.invoke("recorderEncoded", args).then(() => {
+			cb();
+			ipcRenderer.send("renderer", [
+				"console",
+				["log", "recorderEncoded resolved."],
+			]);
+		}),
 });
 
 contextBridge.exposeInMainWorld("settings", {
