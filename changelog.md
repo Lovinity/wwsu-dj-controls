@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- Wrong preload script for remote process
+- Wrong preload script for remote process.
 
 ## 8.0.0-alpha.28 - 2020-12-17
 
