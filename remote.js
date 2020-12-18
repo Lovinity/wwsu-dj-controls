@@ -163,7 +163,7 @@ window.ipc.on.remotePeerCredential((event, arg) => {
 		AUDIO DEVICES
 	*/
 
-window.ipc.audioChangeVolume((event, arg) => {
+window.ipc.on.audioChangeVolume((event, arg) => {
 	console.log(`remote: Changing volume for device ${arg[0]} to ${arg[2]}`);
 	audioManager.changeVolume(arg[0], arg[1], arg[2]);
 	if (arg[1] === "audiooutput") remote.changeVolume(arg[2]);
