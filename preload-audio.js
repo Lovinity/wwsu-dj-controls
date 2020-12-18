@@ -91,6 +91,7 @@ contextBridge.exposeInMainWorld("ipc", {
 			ipcRenderer.send("renderer", ["silenceState", args]),
 		peerOutgoingSilence: (args) =>
 			ipcRenderer.send("renderer", ["peerOutgoingSilence", args]),
+		remoteReady: (args) => ipcRenderer.send("renderer", ["remoteReady", args]),
 		remotePeerReady: (args) =>
 			ipcRenderer.send("renderer", ["remotePeerReady", args]),
 		remotePeerUnavailable: (args) =>

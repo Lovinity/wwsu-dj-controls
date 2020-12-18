@@ -194,7 +194,7 @@ const createAudioWindow = () => {
 	audioWindow = new BrowserWindow({
 		width: 1280,
 		height: 720,
-		show: false,
+		show: true,
 		title: `${app.name} - Audio Process`,
 		webPreferences: {
 			contextIsolation: true,
@@ -225,7 +225,7 @@ const createSilenceWindow = () => {
 	silenceWindow = new BrowserWindow({
 		width: 1280,
 		height: 720,
-		show: false,
+		show: true,
 		title: `${app.name} - Silence Detection Process`,
 		webPreferences: {
 			contextIsolation: true,
@@ -293,7 +293,7 @@ const createRemoteWindow = () => {
 	remoteWindow = new BrowserWindow({
 		width: 1280,
 		height: 720,
-		show: false,
+		show: true,
 		title: `${app.name} - Remote Process`,
 		webPreferences: {
 			contextIsolation: true,
@@ -878,6 +878,7 @@ ipcMain.handle("recorderEncoded", (event, args) => {
 			}
 
 			console.log(`audio save file ${args[0]}`);
+
 			fs.writeFile(
 				`${config.get("recorder.recordPath")}/${args[0]}`,
 				arrayBuffer,
@@ -888,7 +889,8 @@ ipcMain.handle("recorderEncoded", (event, args) => {
 							mainWindow.webContents.send("console", ["error", err]);
 						reject(err);
 					} else {
-						resolve(`${config.get("recorder.recordPath")}/${args[0]}`);
+						console.log(`File saved`);
+						return resolve(`${config.get("recorder.recordPath")}/${args[0]}`);
 					}
 				}
 			);
