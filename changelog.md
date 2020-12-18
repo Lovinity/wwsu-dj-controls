@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- Wrong preload script for remote process.
+- Fixes to errors I made that were unacceptable and should have been tested prior to release.
 
 ## 8.0.0-alpha.28 - 2020-12-17
 
