@@ -1,5 +1,11 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.28.1 - 2020-12-17
+
+### Fixed
+
+- Wrong preload script for remote process
+
 ## 8.0.0-alpha.28 - 2020-12-17
 
 ### Fixed
