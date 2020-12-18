@@ -293,7 +293,7 @@ const createRemoteWindow = () => {
 	remoteWindow = new BrowserWindow({
 		width: 1280,
 		height: 720,
-		show: true,
+		show: false,
 		title: `${app.name} - Remote Process`,
 		webPreferences: {
 			contextIsolation: true,
