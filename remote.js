@@ -43,8 +43,8 @@ audioManager.on("devices", "renderer", (devices) => {
 	});
 });
 
-window.ipc.renderer.send("console", ["log", "remote: Process is ready"]);
-window.ipc.renderer.send("remoteReady", []);
+window.ipc.renderer.console(["log", "remote: Process is ready"]);
+window.ipc.renderer.remoteReady([]);
 
 /*
 		REMOTE TASKS
@@ -56,56 +56,50 @@ remote.on("audioVolume", "remote", (volume) => {
 	if (volume[0] <= 0.001 || (volume[1] > -1 && volume[1] <= 0.001)) {
 		if (!timer) {
 			timer = setTimeout(() => {
-				window.ipc.renderer.send("peerOutgoingSilence", [true]);
+				window.ipc.renderer.peerOutgoingSilence([true]);
 				timer = undefined;
 			}, 15000);
 		}
 	} else if (timer) {
 		clearTimeout(timer);
 		timer = undefined;
-		window.ipc.renderer.send("peerOutgoingSilence", [false]);
+		window.ipc.renderer.peerOutgoingSilence([false]);
 	}
 	console.log(`Peer outgoing volume: ${volume[0]}, ${volume[1]}.`);
 });
 
 remote.on("peerReady", "remote", (id) => {
-	window.ipc.renderer.send("console", [
+	window.ipc.renderer.console([
 		"log",
 		`Remote: Peer is connected with id ${id}.`,
 	]);
-	window.ipc.renderer.send("remotePeerReady", [id]);
+	window.ipc.renderer.remotePeerReady([id]);
 });
 
 remote.on("peerUnavailable", "remote", (id) => {
-	window.ipc.renderer.send("console", [
+	window.ipc.renderer.console([
 		"log",
 		`Remote: Peer ${id} is unavailable to take the call.`,
 	]);
-	window.ipc.renderer.send("remotePeerUnavailable", [id]);
+	window.ipc.renderer.remotePeerUnavailable([id]);
 });
 
 remote.on("peerCall", "remote", (id) => {
-	window.ipc.renderer.send("console", [
-		"log",
-		`Remote: Incoming call from peer ${id}`,
-	]);
-	window.ipc.renderer.send("remoteIncomingCall", [id]);
+	window.ipc.renderer.console(["log", `Remote: Incoming call from peer ${id}`]);
+	window.ipc.renderer.remoteIncomingCall([id]);
 });
 
 remote.on("peerCallEstablished", "remote", (id) => {
-	window.ipc.renderer.send("console", [
+	window.ipc.renderer.console([
 		"log",
 		`Remote: Call with ${id} was established.`,
 	]);
-	window.ipc.renderer.send("peerCallEstablished", [id]);
+	window.ipc.renderer.peerCallEstablished([id]);
 });
 
 remote.on("peerCallAnswered", "remote", (id) => {
-	window.ipc.renderer.send("console", [
-		"log",
-		`Remote: Call with ${id} was answered.`,
-	]);
-	window.ipc.renderer.send("peerCallAnswered", [id]);
+	window.ipc.renderer.console(["log", `Remote: Call with ${id} was answered.`]);
+	window.ipc.renderer.peerCallAnswered([id]);
 });
 
 remote.on("peerIncomingCallVolume", "renderer", (peer, volume) => {
@@ -113,11 +107,7 @@ remote.on("peerIncomingCallVolume", "renderer", (peer, volume) => {
 	if (volume[0] <= 0.001 || (volume[1] > -1 && volume[1] <= 0.001)) {
 		if (!timer2) {
 			timer2 = setTimeout(() => {
-				window.ipc.renderer.send("peerQualityProblem", [
-					peer,
-					10,
-					`incomingSilence`,
-				]);
+				window.ipc.renderer.peerQualityProblem([peer, 10, `incomingSilence`]);
 				timer2 = undefined;
 			}, 1000);
 		}
@@ -125,45 +115,42 @@ remote.on("peerIncomingCallVolume", "renderer", (peer, volume) => {
 });
 
 remote.on("peerIncomingCallClosed", "renderer", (id) => {
-	window.ipc.renderer.send("console", [
+	window.ipc.renderer.console([
 		"log",
 		`Remote: Incoming call ${id} was closed!`,
 	]);
-	window.ipc.renderer.send("peerIncomingCallClosed", [id]);
+	window.ipc.renderer.peerIncomingCallClosed([id]);
 });
 
 remote.on("peerCallClosed", "renderer", (id) => {
-	window.ipc.renderer.send("console", [
+	window.ipc.renderer.console([
 		"log",
 		`Remote: Outgoing call ${id} was closed!`,
 	]);
-	window.ipc.renderer.send("peerCallClosed", [id]);
+	window.ipc.renderer.peerCallClosed([id]);
 });
 
 remote.on("peerDestroyed", "renderer", () => {
-	window.ipc.renderer.send("console", ["log", `Remote: Peer was destroyed!`]);
-	window.ipc.renderer.send("peerDestroyed", [true]);
+	window.ipc.renderer.console(["log", `Remote: Peer was destroyed!`]);
+	window.ipc.renderer.peerDestroyed([true]);
 });
 
 remote.on("peerDisconnected", "renderer", () => {
-	window.ipc.renderer.send("console", [
-		"log",
-		`Remote: Peer was disconnected!`,
-	]);
+	window.ipc.renderer.console(["log", `Remote: Peer was disconnected!`]);
 });
 
 remote.on("peerError", "renderer", (err) => {
-	window.ipc.renderer.send("console", ["error", err]);
-	window.ipc.renderer.send("peerDestroyed", [true]); // Do the same as destroyed peer when there is an error
+	window.ipc.renderer.console(["error", err]);
+	window.ipc.renderer.peerDestroyed([true]); // Do the same as destroyed peer when there is an error
 });
 
 remote.on("peerPLC", "renderer", (connection, value) => {
 	console.log(`PeerPLC ${connection}: ${value}`);
-	window.ipc.renderer.send("peerQualityProblem", [connection, value, `PLC`]);
+	window.ipc.renderer.peerQualityProblem([connection, value, `PLC`]);
 });
 
 // Init Skyway.js with credentials
-window.ipc.on("remotePeerCredential", (event, arg) => {
+window.ipc.on.remotePeerCredential((event, arg) => {
 	let peerId = arg[0];
 	let apiKey = arg[1];
 	let credential = arg[2];
@@ -176,22 +163,22 @@ window.ipc.on("remotePeerCredential", (event, arg) => {
 		AUDIO DEVICES
 	*/
 
-window.ipc.on("audioChangeVolume", (event, arg) => {
+window.ipc.audioChangeVolume((event, arg) => {
 	console.log(`remote: Changing volume for device ${arg[0]} to ${arg[2]}`);
 	audioManager.changeVolume(arg[0], arg[1], arg[2]);
 	if (arg[1] === "audiooutput") remote.changeVolume(arg[2]);
-	window.ipc.renderer.send("console", [
+	window.ipc.renderer.console([
 		"log",
 		`remote: Changed audio volume for ${arg[0]} to ${arg[2]}`,
 	]);
 });
 
-window.ipc.on("audioRefreshDevices", (event, arg) => {
+window.ipc.on.audioRefreshDevices((event, arg) => {
 	console.log(`remote: Refreshing available audio devices`);
 	audioManager.loadDevices();
 });
 
-window.ipc.on("audioRemoteSetting", (event, arg) => {
+window.ipc.on.audioRemoteSetting((event, arg) => {
 	console.log(
 		`remote: Changing remote setting for device ${arg[0]} to ${arg[2]}`
 	);
@@ -204,17 +191,17 @@ window.ipc.on("audioRemoteSetting", (event, arg) => {
 	} else {
 		audioManager.disconnect(arg[0], arg[1]);
 	}
-	window.ipc.renderer.send("console", [
+	window.ipc.renderer.console([
 		"log",
 		`remote: Changing remote setting for device ${arg[0]} to ${arg[2]}`,
 	]);
 });
 
-window.ipc.on("audioOutputSetting", (event, arg) => {
+window.ipc.on.audioOutputSetting((event, arg) => {
 	if (arg[2]) {
 		console.log(`remote: setting output device to ${arg[0]}`);
 		remote.changeOutputDevice(arg[0]);
-		window.ipc.renderer.send("console", [
+		window.ipc.renderer.console([
 			"log",
 			`remote: setting output device to ${arg[0]}`,
 		]);
@@ -225,32 +212,32 @@ window.ipc.on("audioOutputSetting", (event, arg) => {
 		REMOTE TASKS
 	*/
 
-window.ipc.on("remoteStartCall", (event, arg) => {
+window.ipc.on.remoteStartCall((event, arg) => {
 	console.log(`Received request to start a call with ${arg[0]}`);
 	remote.call(arg[0]);
 });
 
-window.ipc.on("remoteAnswerCall", (event, arg) => {
+window.ipc.on.remoteAnswerCall((event, arg) => {
 	console.log(`Received request to answer a call from ${arg[0]}`);
 	remote.answer(arg[0]);
 });
 
-window.ipc.on("remoteMute", (event, arg) => {
+window.ipc.on.remoteMute((event, arg) => {
 	console.log(`Setting incoming call audio mute status to ${arg[0]}`);
 	remote.mute(arg[0]);
 });
 
-window.ipc.on("restartSilenceTimer", (event, arg) => {
+window.ipc.on.restartSilenceTimer((event, arg) => {
 	clearTimeout(timer);
 	timer = undefined;
 });
 
-window.ipc.on("confirmActiveCall", (event, arg) => {
+window.ipc.on.confirmActiveCall((event, arg) => {
 	if (
 		!remote.outgoingCall &&
 		(!remote.incomingCalls || remote.incomingCalls.size === 0)
 	) {
-		window.ipc.renderer.send("console", ["log", `Remote: No active calls!`]);
-		window.ipc.renderer.send("peerNoCalls", []);
+		window.ipc.renderer.console(["log", `Remote: No active calls!`]);
+		window.ipc.renderer.peerNoCalls([]);
 	}
 });

@@ -318,7 +318,7 @@ navigation
 										return;
 									}
 									window.saveSettings.silence("delay", value);
-									window.ipc.silence.send("silenceSetting", []);
+									window.ipc.silence.setting([]);
 								},
 							},
 						},
@@ -333,7 +333,7 @@ navigation
 										return;
 									}
 									window.saveSettings.silence("threshold", value);
-									window.ipc.silence.send("silenceSetting", []);
+									window.ipc.silence.setting([]);
 								},
 							},
 						},
@@ -466,7 +466,7 @@ $("#section-audio-devices-refresh").click(() => {
 		css: { border: "3px solid #a00" },
 		timeout: 30000,
 		onBlock: () => {
-			window.ipc.main.send("audioRefreshDevices", [true]);
+			window.ipc.audioRefreshDevices(true);
 		},
 	});
 });
@@ -712,13 +712,16 @@ function startRecording(delay) {
 	let preText2 = ``;
 	let temp = ``;
 
-	if (meta.meta.state === "live_on" || meta.meta.state === `prerecord_on`) {
+	if (meta.meta.state === "live_on") {
 		startRecording = "live";
 		temp = meta.meta.show.split(" - ");
 		preText = window.sanitize.string(temp[1]);
-		preText2 = `${window.sanitize.string(meta.meta.show)}${
-			meta.meta.state === `prerecord_on` ? ` PRERECORDED` : ``
-		}`;
+		preText2 = `${window.sanitize.string(meta.meta.show)}`;
+	} else if (meta.meta.state === "prerecord_on") {
+		startRecording = "prerecord";
+		temp = meta.meta.show.split(" - ");
+		preText = window.sanitize.string(temp[1]);
+		preText2 = `${window.sanitize.string(meta.meta.show)}`;
 	} else if (meta.meta.state === "remote_on") {
 		startRecording = "remote";
 		temp = meta.meta.show.split(" - ");
@@ -746,7 +749,7 @@ function startRecording(delay) {
 		meta.meta.state.includes("_returning") ||
 		meta.meta.state.includes("_halftime")
 	) {
-		window.ipc.recorder.send("recorderStop", [delay]);
+		window.ipc.recorder.stop([delay]);
 	} else {
 		startRecording = "automation";
 		preText = window.sanitize.string(meta.meta.genre);
@@ -754,14 +757,14 @@ function startRecording(delay) {
 	}
 	if (startRecording !== null) {
 		if (hosts.client.recordAudio) {
-			window.ipc.recorder.send("recorderStart", [
+			window.ipc.recorder.start([
 				`${startRecording}/${preText}/${preText2} (${moment().format(
 					"YYYY_MM_DD HH_mm_ss"
 				)})`,
 				delay,
 			]);
 		} else {
-			window.ipc.recorder.send("recorderStop", [-1]);
+			window.ipc.recorder.stop([-1]);
 		}
 	}
 }
@@ -937,7 +940,7 @@ fullCalendar.render();
 	}
 });
 
-window.ipc.on("console", (event, arg) => {
+window.ipc.on.console((event, arg) => {
 	switch (arg[0]) {
 		case "log":
 			console.log(arg[1]);
@@ -952,7 +955,7 @@ window.ipc.on("console", (event, arg) => {
 });
 
 // When the recorder is ready, determine if a recording should be started
-window.ipc.on("recorderReady", (event, arg) => {
+window.ipc.on.recorderReady((event, arg) => {
 	animations.add("notifications-recorder", () => {
 		$(".notifications-recorder").removeClass("badge-secondary");
 		$(".notifications-recorder").addClass("badge-warning");
@@ -961,20 +964,20 @@ window.ipc.on("recorderReady", (event, arg) => {
 });
 
 // Update recorder process status indication
-window.ipc.on("recorderStarted", (event, arg) => {
+window.ipc.on.recorderStarted((event, arg) => {
 	animations.add("notifications-recorder", () => {
 		$(".notifications-recorder").removeClass("badge-warning");
 		$(".notifications-recorder").addClass("badge-success");
 	});
 });
-window.ipc.on("recorderStopped", (event, arg) => {
+window.ipc.on.recorderStopped((event, arg) => {
 	animations.add("notifications-recorder", () => {
 		$(".notifications-recorder").removeClass("badge-success");
 		$(".notifications-recorder").addClass("badge-warning");
 	});
 });
 
-window.ipc.on("silenceReady", (event, arg) => {
+window.ipc.on.silenceReady((event, arg) => {
 	animations.add("notifications-silence", () => {
 		$(".notifications-silence").removeClass("badge-secondary");
 		$(".notifications-silence").removeClass("badge-warning");
@@ -984,7 +987,7 @@ window.ipc.on("silenceReady", (event, arg) => {
 });
 
 // Do things depending on state of silence detected
-window.ipc.on("silenceState", (event, arg) => {
+window.ipc.on.silenceState((event, arg) => {
 	let triggered = false;
 
 	animations.add("notifications-silence", () => {
@@ -1022,40 +1025,12 @@ window.ipc.on("silenceState", (event, arg) => {
 	}
 });
 
-// Volume for audio
-window.ipc.on("audioVolume", (event, arg) => {
+// Update VU meters
+window.ipc.on.audioVolume((event, arg) => {
 	((volumes) => {
 		if (navigation.activeMenu !== `#nav-audio`) {
 			return;
 		}
-		if (volumes.length > 0) {
-			animations.add("audio-volume", () => {
-				volumes.forEach((device) => {
-					$(`.vu-left-input-${device.device}`).width(
-						`${device.volume[0] * 100}%`
-					);
-					$(`.vu-right-input-${device.device}`).width(
-						`${
-							typeof device.volume[1] !== "undefined"
-								? device.volume[1] * 100
-								: device.volume[0] * 100
-						}%`
-					);
-				});
-			});
-		}
-	})(arg[0]);
-	arg = undefined;
-});
-
-// Update VU meters
-const checkVUMeters = () => {
-	window.requestAnimationFrame(async () => {
-		if (navigation.activeMenu !== `#nav-audio`) {
-			checkVUMeters();
-			return;
-		}
-		let volumes = await window.ipc.invoke("getAudioVolume");
 		if (volumes.size > 0) {
 			animations.add("audio-volume", () => {
 				volumes.forEach((volume, device) => {
@@ -1070,13 +1045,12 @@ const checkVUMeters = () => {
 				});
 			});
 		}
-		checkVUMeters();
-	});
-};
-checkVUMeters();
+	})(arg[0]);
+	arg = undefined;
+});
 
 // Add a log in WWSU when a recording was saved
-window.ipc.on("recorderSaved", (event, arg) => {
+window.ipc.on.recorderSaved((event, arg) => {
 	logs.add(
 		{
 			logtype: "recorder",
@@ -1090,7 +1064,7 @@ window.ipc.on("recorderSaved", (event, arg) => {
 	);
 });
 
-window.ipc.on("audioDevices", (event, arg) => {
+window.ipc.on.audioDevices((event, arg) => {
 	console.log(`Audio: Received audio devices`);
 
 	$("#section-audio-devices").unblock();
@@ -1208,7 +1182,7 @@ window.ipc.on("audioDevices", (event, arg) => {
 					$(`#audio-volume-input-${device.device.deviceId}`).on(
 						"change",
 						(obj) => {
-							window.ipc.main.send("audioChangeVolume", [
+							window.ipc.audioChangeVolume([
 								device.device.deviceId,
 								"audioinput",
 								obj.value.newValue,
@@ -1221,7 +1195,7 @@ window.ipc.on("audioDevices", (event, arg) => {
 					$(`#audio-remote-input-${device.device.deviceId}`).on(
 						"change",
 						(e) => {
-							window.ipc.main.send("audioRemoteSetting", [
+							window.ipc.audioRemoteSetting([
 								device.device.deviceId,
 								"audioinput",
 								e.target.checked,
@@ -1232,7 +1206,7 @@ window.ipc.on("audioDevices", (event, arg) => {
 					$(`#audio-recorder-input-${device.device.deviceId}`).on(
 						"change",
 						(e) => {
-							window.ipc.main.send("audioRecorderSetting", [
+							window.ipc.audioRecorderSetting([
 								device.device.deviceId,
 								"audioinput",
 								e.target.checked,
@@ -1243,7 +1217,7 @@ window.ipc.on("audioDevices", (event, arg) => {
 					$(`#audio-silence-input-${device.device.deviceId}`).on(
 						"change",
 						(e) => {
-							window.ipc.main.send("audioSilenceSetting", [
+							window.ipc.audioSilenceSetting([
 								device.device.deviceId,
 								"audioinput",
 								e.target.checked,
@@ -1306,7 +1280,7 @@ window.ipc.on("audioDevices", (event, arg) => {
 					$(`#audio-volume-output-${device.device.deviceId}`).on(
 						"change",
 						(obj) => {
-							window.ipc.main.send("audioChangeVolume", [
+							window.ipc.audioChangeVolume([
 								device.device.deviceId,
 								"audiooutput",
 								obj.value.newValue,
@@ -1323,7 +1297,7 @@ window.ipc.on("audioDevices", (event, arg) => {
 									$(element).prop({ checked: false });
 								}
 							});
-							window.ipc.main.send("audioOutputSetting", [
+							window.ipc.audioOutputSetting([
 								device.device.deviceId,
 								"audiooutput",
 								true,
@@ -1348,7 +1322,7 @@ window.ipc.on("audioDevices", (event, arg) => {
 										$(element).prop({ checked: false });
 									}
 								});
-								window.ipc.main.send("audioQueueSetting", [
+								window.ipc.audioQueueSetting([
 									device.device.deviceId,
 									"audiooutput",
 									true,
@@ -1366,7 +1340,7 @@ window.ipc.on("audioDevices", (event, arg) => {
 });
 
 // Crash checking
-window.ipc.on("processClosed", (event, arg) => {
+window.ipc.on.processClosed((event, arg) => {
 	switch (arg[0]) {
 		case "silence":
 			animations.add("notifications-silence", () => {
@@ -1376,7 +1350,7 @@ window.ipc.on("processClosed", (event, arg) => {
 				$(".notifications-silence").addClass("badge-secondary");
 			});
 			if (hosts.client.silenceDetection) {
-				window.ipc.process.send("silence", ["open"]);
+				window.ipc.process.silence(["open"]);
 			}
 			break;
 		case "recorder":
@@ -1386,7 +1360,7 @@ window.ipc.on("processClosed", (event, arg) => {
 				$(".notifications-recorder").removeClass("badge-danger");
 				$(".notifications-recorder").addClass("badge-secondary");
 				if (hosts.client.recordAudio) {
-					window.ipc.process.send("recorder", ["open"]);
+					window.ipc.process.recorder(["open"]);
 				}
 			});
 			break;
@@ -1412,19 +1386,19 @@ window.ipc.on("processClosed", (event, arg) => {
 					meta.meta.state.startsWith("remote_") ||
 					meta.meta.state.endsWith("sportsremote_"))
 			) {
-				window.ipc.process.send("remote", ["open"]);
+				window.ipc.process.remote(["open"]);
 			}
 			break;
 	}
 });
 
 // Delay system status returned from main process
-window.ipc.on("delay", (event, args) => {
+window.ipc.on.delay((event, args) => {
 	state.delayStatus({ seconds: args[0], bypass: args[1] });
 });
 
 // Error with delay system
-window.ipc.on("delayError", (event, args) => {
+window.ipc.on.delayError((event, args) => {
 	if (hosts.client.delaySystem) {
 		$(document).Toasts("create", {
 			class: "bg-danger",
@@ -1508,16 +1482,16 @@ socket.on("connect", () => {
 
 				// If this DJ Controls is supposed to monitor/report silence, open the silence process, else close it.
 				if (hosts.client.silenceDetection) {
-					window.ipc.process.send("silence", ["open"]);
+					window.ipc.process.silence(["open"]);
 				} else {
-					window.ipc.process.send("silence", ["close"]);
+					window.ipc.process.silence(["close"]);
 				}
 
 				// If this DJ Controls is supposed to record, open the recorder process, else close it.
 				if (hosts.client.recordAudio) {
-					window.ipc.process.send("recorder", ["open"]);
+					window.ipc.process.recorder(["open"]);
 				} else {
-					window.ipc.process.send("recorder", ["close"]);
+					window.ipc.process.recorder(["close"]);
 				}
 
 				// Delay system
@@ -1689,8 +1663,8 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 				updated.state &&
 				(updated.state === "remote_on" || updated.state === "sportsremote_on")
 			) {
-				window.ipc.remote.send("restartSilenceTimer", []);
-				window.ipc.remote.send("confirmActiveCall", []);
+				window.ipc.remote.restartSilenceTimer([]);
+				window.ipc.remote.confirmActiveCall([]);
 			}
 		}
 
@@ -1855,7 +1829,7 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 				"sportsremote_returning",
 			].indexOf(updated.state) === -1
 		) {
-			window.ipc.process.send("remote", ["close"]);
+			window.ipc.process.remote(["close"]);
 			clearTimeout(badQualityTimer);
 			badQualityTimer = undefined;
 		}
@@ -1869,9 +1843,9 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 				meta.meta.hostCalled === hosts.client.ID ||
 				meta.meta.hostCalling === hosts.client.ID
 			) {
-				window.ipc.process.send("remote", ["open"]);
+				window.ipc.process.remote(["open"]);
 			} else {
-				window.ipc.process.send("remote", ["close"]);
+				window.ipc.process.remote(["close"]);
 			}
 		}
 
@@ -1960,12 +1934,12 @@ meta.on("metaTick", "renderer", (fullMeta) => {
 			// Queue length and first track
 			$(".meta-queueLength").html(
 				fullMeta.queueCalculating
-					? `<i class="fas fa-hourglass-half"></i>`
+					? `${moment.duration(queueLength, "seconds").format("HH:mm:ss")}<i class="fas fa-hourglass-half" title="Might be inaccurate"></i>`
 					: moment.duration(queueLength, "seconds").format("HH:mm:ss")
 			);
 			$(".meta-firstTrack").html(
 				fullMeta.queueCalculating || fullMeta.countdown === null
-					? `<i class="fas fa-hourglass-half"></i>`
+					? `${moment.duration(queueLength, "seconds").format("HH:mm:ss")}<i class="fas fa-hourglass-half" title="Might be inaccurate"></i>`
 					: moment.duration(countDown, "seconds").format("HH:mm:ss")
 			);
 			if (
@@ -1989,7 +1963,7 @@ meta.on("metaTick", "renderer", (fullMeta) => {
 				$(".operations-bar").removeClass("navbar-gray-dark");
 				$(".operations-bar").addClass("navbar-fuchsia");
 				setTimeout(function () {
-					$(".operations-bar").removeClass("navbar-fuchsia");
+					$(".operations-bar").removeClass("navbar-orange");
 					$(".operations-bar").addClass("navbar-gray-dark");
 				}, 500);
 			}
@@ -2136,7 +2110,7 @@ meta.on("metaTick", "renderer", (fullMeta) => {
 		) {
 			if (!breakNotified) {
 				breakNotified = true;
-				window.ipc.main.send("makeNotification", [
+				window.ipc.makeNotification([
 					{
 						title: "Top of Hour Break",
 						bg: "warning",
@@ -2208,7 +2182,7 @@ function processStatus(db) {
 		.map((record) => {
 			// Notifications on silence detection
 			if (record.name === `silence` && hosts.isHost) {
-				window.ipc.main.send("makeNotification", [
+				window.ipc.makeNotification([
 					{
 						title: "Silence Detected",
 						bg: "danger",
@@ -2533,7 +2507,7 @@ function updateCalendar() {
 function updateClockwheel() {
 	// Ask the calendar process to recalculate clockwheel segments
 	calendar.getEvents((events) => {
-		window.ipc.calendar.send("update-clockwheel", [events, meta.meta]);
+		window.ipc.calendar.updateClockwheel([events, meta.meta]);
 	});
 }
 
@@ -2542,7 +2516,7 @@ function updateClockwheel() {
  *
  * @let {object} arg[0] New data object for the clockwheel Chart.js
  */
-window.ipc.on("update-clockwheel", (event, arg) => {
+window.ipc.on.updateClockwheel((event, arg) => {
 	animations.add("update-clockwheel", () => {
 		clockwheelDonut.data = arg[0];
 		clockwheelDonut.update();
@@ -2687,7 +2661,7 @@ recipients.on("change", "renderer", (db) => {
 				`Host ${called.hostID} is ready to take the call. Asking remote process to start audio call if not already in one.`
 			);
 			$(".remote-start-status").html("Starting audio call");
-			window.ipc.remote.send("remoteStartCall", [called.peer]);
+			window.ipc.remote.startCall([called.peer]);
 		} else {
 			$(".btn-operation-resume").removeClass("pulse-success");
 		}
@@ -2731,17 +2705,17 @@ messages.on("newMessage", (message) => {
 hosts.on("clientChanged", "renderer", (newClient) => {
 	// If this DJ Controls is supposed to monitor/report silence, open the silence process, else close it.
 	if (newClient.silenceDetection) {
-		window.ipc.process.send("silence", ["open"]);
+		window.ipc.process.silence(["open"]);
 	} else {
-		window.ipc.process.send("silence", ["close"]);
+		window.ipc.process.silence(["close"]);
 	}
 
 	// If this DJ Controls is supposed to record, open the recorder process, else close it.
 	if (newClient.recordAudio) {
-		window.ipc.process.send("recorder", ["open"]);
+		window.ipc.process.recorder(["open"]);
 		startRecording(-1);
 	} else {
-		window.ipc.process.send("recorder", ["close"]);
+		window.ipc.process.recorder(["close"]);
 	}
 
 	// Delay system
@@ -2764,7 +2738,7 @@ _version.on("change", "renderer", (db) => {
 		newestVersion = record.version;
 		let isNewVersion = window.ipc.checkVersion(record.version);
 		if (isNewVersion) {
-			window.ipc.main.send("makeNotification", [
+			window.ipc.makeNotification([
 				{
 					title: "New Version Available",
 					bg: "success",
@@ -2810,7 +2784,7 @@ state.on("startRemote", "renderer", (host) => {
 			autohide: true,
 			body: `The host you selected to call is not online. Please try using a different host.`,
 		});
-		window.ipc.process.send("remote", ["close"]);
+		window.ipc.process.remote(["close"]);
 		pendingHostCall = null;
 	}
 
@@ -2818,11 +2792,11 @@ state.on("startRemote", "renderer", (host) => {
 
 	// Close and re-open the remote process
 	$(".remote-start-status").html("Starting audio call process");
-	window.ipc.process.send("remote", ["close"]);
-	window.ipc.process.send("remote", ["open"]);
+	window.ipc.process.remote(["close"]);
+	window.ipc.process.remote(["open"]);
 });
 
-window.ipc.on("remoteReady", (event, arg) => {
+window.ipc.on.remoteReady((event, arg) => {
 	console.log(`Remote process ready. Grabbing a Skyway.js credential.`);
 	$(".remote-start-status").html("Getting a Skyway.js credential");
 	remote.credentialComputer({}, (credential) => {
@@ -2830,7 +2804,7 @@ window.ipc.on("remoteReady", (event, arg) => {
 		if (!credential) {
 			pendingHostCall = undefined;
 			state.unblockBroadcastModal();
-			window.ipc.process.send("remote", ["close"]);
+			window.ipc.process.remote(["close"]);
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Remote broadcast failed",
@@ -2843,7 +2817,7 @@ window.ipc.on("remoteReady", (event, arg) => {
 				`Credential received. Sending to remote to establish peer connection.`
 			);
 			$(".remote-start-status").html("Establishing skyway.js connection");
-			window.ipc.remote.send("remotePeerCredential", [
+			window.ipc.remote.peerCredential([
 				credential.peerId,
 				credential.apiKey,
 				credential.authToken,
@@ -2852,7 +2826,7 @@ window.ipc.on("remoteReady", (event, arg) => {
 	});
 });
 
-window.ipc.on("remotePeerReady", (event, arg) => {
+window.ipc.on.remotePeerReady((event, arg) => {
 	animations.add("notifications-remote", () => {
 		$(".notifications-remote").removeClass("badge-success");
 		$(".notifications-remote").removeClass("badge-warning");
@@ -2887,7 +2861,7 @@ window.ipc.on("remotePeerReady", (event, arg) => {
 			if (meta.meta.hostCalled !== pendingHostCall)
 				remote.request({ ID: pendingHostCall });
 			$(".remote-start-status").html("Starting audio call");
-			window.ipc.remote.send("remoteStartCall", [called.peer]);
+			window.ipc.remote.startCall([called.peer]);
 		} else {
 			console.log(
 				`Asking host ${pendingHostCall} to load remote process and peer (via WWSU API).`
@@ -2898,7 +2872,7 @@ window.ipc.on("remotePeerReady", (event, arg) => {
 	}
 });
 
-window.ipc.on("remotePeerUnavailable", (event, arg) => {
+window.ipc.on.remotePeerUnavailable((event, arg) => {
 	state.unblockBroadcastModal();
 	$(document).Toasts("create", {
 		class: "bg-danger",
@@ -2907,12 +2881,12 @@ window.ipc.on("remotePeerUnavailable", (event, arg) => {
 		autohide: true,
 		body: `The host you selected to call did not answer the call. Please try using a different host.`,
 	});
-	window.ipc.process.send("remote", ["close"]);
+	window.ipc.process.remote(["close"]);
 	pendingHostCall = null;
 	remote.request({ ID: null });
 });
 
-window.ipc.on("remoteIncomingCall", (event, arg) => {
+window.ipc.on.remoteIncomingCall((event, arg) => {
 	let recipient = recipients.find({
 		peer: arg[0],
 		makeCalls: true,
@@ -2922,7 +2896,7 @@ window.ipc.on("remoteIncomingCall", (event, arg) => {
 		console.log(
 			`Peer ${arg[0]} is allowed to call. Requesting to auto-answer.`
 		);
-		window.ipc.remote.send("remoteAnswerCall", [arg[0]]);
+		window.ipc.remote.answerCall([arg[0]]);
 	} else {
 		console.log(
 			`Peer ${arg[0]} does not match any authorized recipients who can make calls. Rejected.`
@@ -2930,7 +2904,7 @@ window.ipc.on("remoteIncomingCall", (event, arg) => {
 	}
 });
 
-window.ipc.on("peerCallEstablished", (event, arg) => {
+window.ipc.on.peerCallEstablished((event, arg) => {
 	animations.add("notifications-remote", () => {
 		$(".notifications-remote").removeClass("badge-primary");
 		$(".notifications-remote").removeClass("badge-warning");
@@ -2974,7 +2948,7 @@ window.ipc.on("peerCallEstablished", (event, arg) => {
 	}
 });
 
-window.ipc.on("peerCallAnswered", (event, arg) => {
+window.ipc.on.peerCallAnswered((event, arg) => {
 	animations.add("notifications-remote", () => {
 		$(".notifications-remote").removeClass("badge-primary");
 		$(".notifications-remote").removeClass("badge-warning");
@@ -2986,7 +2960,7 @@ window.ipc.on("peerCallAnswered", (event, arg) => {
 	});
 });
 
-window.ipc.on("peerOutgoingSilence", (event, arg) => {
+window.ipc.on.peerOutgoingSilence((event, arg) => {
 	if (
 		arg[0] &&
 		(meta.meta.state === "remote_on" ||
@@ -3003,7 +2977,7 @@ window.ipc.on("peerOutgoingSilence", (event, arg) => {
 			$(".notifications-remote").removeClass("badge-secondary");
 			$(".notifications-remote").addClass("badge-danger");
 		});
-		window.ipc.main.send("makeNotification", [
+		window.ipc.makeNotification([
 			{
 				title: "Silence on Outgoing Audio",
 				bg: "danger",
@@ -3013,11 +2987,11 @@ window.ipc.on("peerOutgoingSilence", (event, arg) => {
 			},
 		]);
 		sounds.callSilence.play();
-		window.ipc.process.send("remote", ["close"]); // Restart process in case it is a process problem
+		window.ipc.process.remote(["close"]); // Restart process in case it is a process problem
 	}
 });
 
-window.ipc.on("peerIncomingCallClosed", (event, arg) => {
+window.ipc.on.peerIncomingCallClosed((event, arg) => {
 	remoteQuality.callClosed(arg[0]);
 	if (
 		(meta.state.state.startsWith("remote_") ||
@@ -3037,7 +3011,7 @@ window.ipc.on("peerIncomingCallClosed", (event, arg) => {
 	}
 });
 
-window.ipc.on("peerCallClosed", (event, arg) => {
+window.ipc.on.peerCallClosed((event, arg) => {
 	remoteQuality.callClosed(arg[0]);
 	if (
 		(meta.state.state.startsWith("remote_") ||
@@ -3054,7 +3028,7 @@ window.ipc.on("peerCallClosed", (event, arg) => {
 			$(".notifications-remote").addClass("badge-danger");
 			$(".meta-callQuality").addClass("d-none");
 		});
-		window.ipc.main.send("makeNotification", [
+		window.ipc.makeNotification([
 			{
 				title: "Audio Call was Closed!",
 				bg: "danger",
@@ -3067,7 +3041,7 @@ window.ipc.on("peerCallClosed", (event, arg) => {
 	}
 });
 
-window.ipc.on("peerDestroyed", (event, arg) => {
+window.ipc.on.peerDestroyed((event, arg) => {
 	remoteQuality.peerDestroyed();
 	if (
 		(meta.state.state.startsWith("remote_") ||
@@ -3084,7 +3058,7 @@ window.ipc.on("peerDestroyed", (event, arg) => {
 			$(".notifications-remote").addClass("badge-danger");
 			$(".meta-callQuality").addClass("d-none");
 		});
-		window.ipc.main.send("makeNotification", [
+		window.ipc.makeNotification([
 			{
 				title: "Audio Call was Closed!",
 				bg: "danger",
@@ -3111,10 +3085,10 @@ window.ipc.on("peerDestroyed", (event, arg) => {
 			$(".meta-callQuality").addClass("d-none");
 		});
 	}
-	window.ipc.process.send("remote", ["close"]);
+	window.ipc.process.remote(["close"]);
 });
 
-window.ipc.on("peerNoCalls", (event, arg) => {
+window.ipc.on.peerNoCalls((event, arg) => {
 	remoteQuality.peerDestroyed();
 	if (
 		(meta.state.state.startsWith("remote_") ||
@@ -3131,7 +3105,7 @@ window.ipc.on("peerNoCalls", (event, arg) => {
 			$(".notifications-remote").addClass("badge-danger");
 			$(".meta-callQuality").addClass("d-none");
 		});
-		window.ipc.main.send("makeNotification", [
+		window.ipc.makeNotification([
 			{
 				title: "Audio Call was Closed!",
 				bg: "danger",
@@ -3158,10 +3132,10 @@ window.ipc.on("peerNoCalls", (event, arg) => {
 			$(".meta-callQuality").addClass("d-none");
 		});
 	}
-	window.ipc.process.send("remote", ["close"]);
+	window.ipc.process.remote(["close"]);
 });
 
-window.ipc.on("peerQualityProblem", (event, arg) => {
+window.ipc.on.peerQualityProblem((event, arg) => {
 	remoteQuality.qualityProblem(arg[0], arg[1], arg[2]);
 });
 
@@ -3188,7 +3162,7 @@ remote.on("callQuality", "renderer", (quality) => {
 			$(".notifications-remote").addClass("badge-danger");
 		});
 		if (!badQualityTimer) {
-			window.ipc.main.send("makeNotification", [
+			window.ipc.makeNotification([
 				{
 					title: "Poor Audio Call Quality",
 					bg: "warning",
@@ -3235,9 +3209,9 @@ function remoteShouldBeMuted() {
 		meta.meta.playing
 	) {
 		console.log(`Muting remote audio`);
-		window.ipc.remote.send("remoteMute", [true]);
+		window.ipc.remote.mute([true]);
 	} else {
 		console.log(`Un-muting remote audio`);
-		window.ipc.remote.send("remoteMute", [false]);
+		window.ipc.remote.mute([false]);
 	}
 }

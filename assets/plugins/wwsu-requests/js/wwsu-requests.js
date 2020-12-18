@@ -75,7 +75,7 @@ class WWSUrequests extends WWSUdb {
                         { responsivePriority: 1, targets: 5 },
                     ],
                     "order": [ [ 0, 'desc' ] ],
-                    pageLength: 10,
+                    pageLength: 25,
                     drawCallback: () => {
                         // Action button click events
                         $('.btn-request-queue').unbind('click');

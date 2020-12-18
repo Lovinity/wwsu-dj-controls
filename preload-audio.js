@@ -4,15 +4,63 @@
 const { ipcRenderer, contextBridge } = require("electron");
 
 contextBridge.exposeInMainWorld("ipc", {
-	on: (event, fn) => ipcRenderer.on(event, fn),
-	invoke: (event, args) => ipcRenderer.invoke(event, args),
-	
+	on: {
+		audioChangeVolume: (fn) =>
+			ipcRenderer.on("audioChangeVolume", (event, ...args) => {
+				fn(null, ...args);
+			}),
+		audioRefreshDevices: (fn) =>
+			ipcRenderer.on("audioRefreshDevices", (event, ...args) => {
+				fn(null, ...args);
+			}),
+		audioRecorderSetting: (fn) =>
+			ipcRenderer.on("audioRecorderSetting", (event, ...args) => {
+				fn(null, ...args);
+			}),
+		audioSilenceSetting: (fn) =>
+			ipcRenderer.on("audioSilenceSetting", (event, ...args) => {
+				fn(null, ...args);
+			}),
+		recorderStart: (fn) =>
+			ipcRenderer.on("recorderStart", (event, ...args) => {
+				fn(null, ...args);
+			}),
+		recorderStop: (fn) =>
+			ipcRenderer.on("recorderStop", (event, ...args) => {
+				fn(null, ...args);
+			}),
+		shutDown: (fn) =>
+			ipcRenderer.on("shutDown", (event, ...args) => {
+				fn(null, ...args);
+			}),
+		silenceSetting: (fn) =>
+			ipcRenderer.on("silenceSetting", (event, ...args) => {
+				fn(null, ...args);
+			}),
+	},
+
 	renderer: {
-		send: (task, args) => ipcRenderer.send("renderer", [task, args]),
+		audioDevices: (args) =>
+			ipcRenderer.send("renderer", ["audioDevices", args]),
+		audioVolume: (args) => ipcRenderer.send("renderer", ["audioVolume", args]),
+		console: (args) => ipcRenderer.send("renderer", ["console", args]),
+		audioReady: (args) => ipcRenderer.send("renderer", ["audioReady", args]),
+		recorderReady: (args) =>
+			ipcRenderer.send("renderer", ["recorderReady", args]),
+		recorderStarted: (args) =>
+			ipcRenderer.send("renderer", ["recorderStarted", args]),
+		recorderStopped: (args) =>
+			ipcRenderer.send("renderer", ["recorderStopped", args]),
+		recorderSaved: (args) =>
+			ipcRenderer.send("renderer", ["recorderSaved", args]),
+		silenceReady: (args) =>
+			ipcRenderer.send("renderer", ["silenceReady", args]),
+		silenceState: (args) =>
+			ipcRenderer.send("renderer", ["silenceState", args]),
 	},
-	main: {
-		send: (task, args) => ipcRenderer.send("main", [task, args]),
-	},
+
+	recorderEncoded: (args, cb) =>
+		ipcRenderer.invoke("recorderEncoded", args).then(cb),
 });
 
 contextBridge.exposeInMainWorld("settings", {

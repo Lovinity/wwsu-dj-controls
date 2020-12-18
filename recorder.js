@@ -35,28 +35,28 @@ audioManager.on("devices", "renderer", (devices) => {
 	});
 });
 
-window.ipc.renderer.send("console", ["log", "Recorder: Process is ready"]);
-window.ipc.renderer.send("recorderReady", []);
+window.ipc.renderer.console(["log", "Recorder: Process is ready"]);
+window.ipc.renderer.recorderReady([]);
 
 /*
 		AUDIO DEVICES
 	*/
 
-window.ipc.on("audioChangeVolume", (event, arg) => {
+window.ipc.on.audioChangeVolume((event, arg) => {
 	console.log(`Audio: Changing volume for device ${arg[0]} to ${arg[2]}`);
 	audioManager.changeVolume(arg[0], arg[1], arg[2]);
-	window.ipc.renderer.send("console", [
+	window.ipc.renderer.console([
 		"log",
 		`Recorder: Changed audio volume for ${arg[0]} to ${arg[2]}`,
 	]);
 });
 
-window.ipc.on("audioRefreshDevices", (event, arg) => {
+window.ipc.on.audioRefreshDevices((event, arg) => {
 	console.log(`Recorder: Refreshing available audio devices`);
 	audioManager.loadDevices();
 });
 
-window.ipc.on("audioRecorderSetting", (event, arg) => {
+window.ipc.on.audioRecorderSetting((event, arg) => {
 	console.log(
 		`Recorder: Changing recorder setting for device ${arg[0]} to ${arg[2]}`
 	);
@@ -70,7 +70,7 @@ window.ipc.on("audioRecorderSetting", (event, arg) => {
 	} else {
 		audioManager.disconnect(arg[0], arg[1]);
 	}
-	window.ipc.renderer.send("console", [
+	window.ipc.renderer.console([
 		"log",
 		`Recorder: Changing recorder setting for device ${arg[0]} to ${arg[2]}`,
 	]);
@@ -82,12 +82,9 @@ window.ipc.on("audioRecorderSetting", (event, arg) => {
 
 recorder.on("recorderStopped", "recorder", (file) => {
 	console.log(`Recorder: Recording ${file} ended.`);
-	window.ipc.renderer.send("console", [
-		"log",
-		`Recorder: Recording ${file} ended.`,
-	]);
+	window.ipc.renderer.console(["log", `Recorder: Recording ${file} ended.`]);
 
-	window.ipc.renderer.send("recorderStopped", []);
+	window.ipc.renderer.recorderStopped([]);
 
 	// Close the process if we are pending closing and no file was returned (aka no file to save).
 	if (!file && closingDown) {
@@ -97,41 +94,36 @@ recorder.on("recorderStopped", "recorder", (file) => {
 
 recorder.on("recorderStarted", "recorder", (file) => {
 	console.log(`Recorder: Recording ${file} started.`);
-	window.ipc.renderer.send("console", [
-		"log",
-		`Recorder: Recording ${file} started.`,
-	]);
-	window.ipc.renderer.send("recorderStarted", []);
+	window.ipc.renderer.console(["log", `Recorder: Recording ${file} started.`]);
+	window.ipc.renderer.recorderStarted([]);
 });
 
 // Pass encoded info to main process to be saved
 recorder.on("recorderEncoded", "recorder", (file, reader) => {
 	console.log(`Recorder: Recording ${file} finished encoding.`);
-	window.ipc.renderer.send("console", [
+	window.ipc.renderer.console([
 		"log",
 		`Recorder: Recording ${file} finished encoding.`,
 	]);
-	window.ipc.main.send("recorderEncoded", [file, reader]);
-});
+	window.ipc.recorderEncoded([file, reader], (path) => {
+		console.log(`Recorder: Audio file saved to ${arg[0]}`);
+		window.ipc.renderer.console([
+			"log",
+			`Recorder: Audio file saved to ${path}`,
+		]);
+		window.ipc.renderer.recorderSaved([path]);
 
-// listen for audio recordings saved
-window.ipc.on("recorderSaved", (event, arg) => {
-	console.log(`Recorder: Audio file saved to ${arg[0]}`);
-	window.ipc.renderer.send("console", [
-		"log",
-		`Recorder: Audio file saved to ${arg[0]}`,
-	]);
-
-	// Close the process if we are pending closing
-	if (closingDown) {
-		window.close();
-	}
+		// Close the process if we are pending closing
+		if (closingDown) {
+			window.close();
+		}
+	});
 });
 
 // Start a new recording
-window.ipc.on("recorderStart", (event, arg) => {
+window.ipc.on.recorderStart((event, arg) => {
 	recorder.newRecording(arg[0], arg[1] || window.settings.recorder().delay);
-	window.ipc.renderer.send("console", [
+	window.ipc.renderer.console([
 		"log",
 		`Recorder: Recording ${arg[0]} will start in ${
 			arg[1] || window.settings.recorder().delay
@@ -140,9 +132,9 @@ window.ipc.on("recorderStart", (event, arg) => {
 });
 
 // Stop current recording
-window.ipc.on("recorderStop", (arg) => {
+window.ipc.on.recorderStop((event, arg) => {
 	recorder.stopRecording(arg[0] || window.settings.recorder().delay);
-	window.ipc.renderer.send("console", [
+	window.ipc.renderer.console([
 		"log",
 		`Recorder: Recording ${arg[0]} will stop in ${
 			arg[0] || window.settings.recorder().delay
@@ -150,7 +142,7 @@ window.ipc.on("recorderStop", (arg) => {
 	]);
 });
 
-window.ipc.on("shutDown", (arg) => {
+window.ipc.on.shutDown((event, arg) => {
 	closingDown = true;
 	console.log(`Recorder: shut down requested.`);
 	recorder.stopRecording(-1);

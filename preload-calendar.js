@@ -4,8 +4,15 @@
 const { ipcRenderer, contextBridge } = require("electron");
 
 contextBridge.exposeInMainWorld("ipc", {
-	on: (event, fn) => ipcRenderer.on(event, fn),
+	on: {
+		updateClockwheel: (fn) =>
+			ipcRenderer.on("update-clockwheel", (event, ...args) => {
+				fn(null, ...args);
+			}),
+	},
 	renderer: {
-		send: (task, args) => ipcRenderer.send("renderer", [task, args]),
+		console: (args) => ipcRenderer.send("renderer", ["console", args]),
+		updateClockwheel: (args) =>
+			ipcRenderer.send("renderer", ["update-clockwheel", args]),
 	},
 });

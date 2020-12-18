@@ -309,7 +309,7 @@ class WWSUeas extends WWSUdb {
 			this.manager.get("WWSUutil").waitForElement(`#section-eas-table`, () => {
 				// Generate table
 				this.table = $(`#section-eas-table`).DataTable({
-					paging: false,
+					paging: true,
 					data: [],
 					columns: [
 						{ title: "Source" },
@@ -320,7 +320,7 @@ class WWSUeas extends WWSUdb {
 						{ title: "Actions" },
 					],
 					columnDefs: [{ responsivePriority: 1, targets: 5 }],
-					pageLength: 10,
+					pageLength: 25,
 					drawCallback: () => {
 						// Action button click events
 						$(".btn-eas-edit").unbind("click");

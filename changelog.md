@@ -1,5 +1,30 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.28 - 2020-12-17
+
+### Fixed
+
+- More memory leak fix attempts
+- Several request bugs
+
+### Updated
+
+- Electron to v11
+- node-serialport
+- AdminLTE to 3.1.0-rc1
+- Node packages/plugins
+
+### Added
+
+- More security in preload scripts
+- Exporting data on some relevant datatables in CSV, PDF, or print formats
+
+### Changed
+
+- Prerecorded shows save in a "Prerecord" folder instead of "live"
+- Keep displaying queue time even if inaccurate; display hourglass beside the time instead of only the hourglass
+- Queue time slightly smaller size text
+
 ## 8.0.0-alpha.27 - 2020-12-15
 
 ### Added

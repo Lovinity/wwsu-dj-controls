@@ -40,7 +40,11 @@ class WWSUannouncements extends WWSUdb {
 
 	// Initialize the connection and get initial data; should be called on socket connect event.
 	init() {
-		this.replaceData(this.manager.get("noReq"), this.endpoints.get, this.data.get);
+		this.replaceData(
+			this.manager.get("noReq"),
+			this.endpoints.get,
+			this.data.get
+		);
 	}
 
 	/**
@@ -53,67 +57,79 @@ class WWSUannouncements extends WWSUdb {
 			// Init html
 			$(table).html(
 				`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
-					this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+					this.manager.get("WWSUMeta")
+						? this.manager.get("WWSUMeta").meta.timezone
+						: moment.tz.guess()
 				}.</p><p><button type="button" class="btn btn-block btn-success btn-announcement-new">New Announcement</button></p><table id="section-announcements-table" class="table table-striped display responsive" style="width: 100%;"></table>`
 			);
 
-			this.manager.get("WWSUutil").waitForElement(`#section-announcements-table`, () => {
-				// Generate table
-				this.table = $(`#section-announcements-table`).DataTable({
-					paging: false,
-					data: [],
-					columns: [
-						{ title: "Title" },
-						{ title: "Type" },
-						{ title: "Start" },
-						{ title: "End" },
-						{ title: "Priority" },
-						{ title: "Actions" },
-					],
-					columnDefs: [{ responsivePriority: 1, targets: 5 }],
-					order: [
-						[3, "asc"],
-						[2, "asc"],
-					],
-					pageLength: 10,
-					drawCallback: () => {
-						// Action button click events
-						$(".btn-announcement-edit").unbind("click");
-						$(".btn-announcement-delete").unbind("click");
+			this.manager
+				.get("WWSUutil")
+				.waitForElement(`#section-announcements-table`, () => {
+					// Generate table
+					this.table = $(`#section-announcements-table`).DataTable({
+						paging: true,
+						data: [],
+						columns: [
+							{ title: "Title" },
+							{ title: "Type" },
+							{ title: "Start" },
+							{ title: "End" },
+							{ title: "Priority" },
+							{ title: "Actions" },
+						],
+						columnDefs: [{ responsivePriority: 1, targets: 5 }],
+						order: [
+							[3, "asc"],
+							[2, "asc"],
+						],
+						buttons: ["colvis"],
+						pageLength: 25,
+						drawCallback: () => {
+							// Action button click events
+							$(".btn-announcement-edit").unbind("click");
+							$(".btn-announcement-delete").unbind("click");
 
-						$(".btn-announcement-edit").click((e) => {
-							let announcement = this.find().find(
-								(announcement) =>
-									announcement.ID === parseInt($(e.currentTarget).data("id"))
-							);
-							this.showForm(announcement);
-						});
+							$(".btn-announcement-edit").click((e) => {
+								let announcement = this.find().find(
+									(announcement) =>
+										announcement.ID === parseInt($(e.currentTarget).data("id"))
+								);
+								this.showForm(announcement);
+							});
 
-						$(".btn-announcement-delete").click((e) => {
-							let announcement = this.find().find(
-								(announcement) =>
-									announcement.ID === parseInt($(e.currentTarget).data("id"))
-							);
-							this.manager.get("WWSUutil").confirmDialog(
-								`Are you sure you want to <strong>permanently</strong> remove the ${announcement.type} announcement "${announcement.title}"?`,
-								null,
-								() => {
-									this.remove({ ID: announcement.ID });
-								}
-							);
-						});
-					},
+							$(".btn-announcement-delete").click((e) => {
+								let announcement = this.find().find(
+									(announcement) =>
+										announcement.ID === parseInt($(e.currentTarget).data("id"))
+								);
+								this.manager
+									.get("WWSUutil")
+									.confirmDialog(
+										`Are you sure you want to <strong>permanently</strong> remove the ${announcement.type} announcement "${announcement.title}"?`,
+										null,
+										() => {
+											this.remove({ ID: announcement.ID });
+										}
+									);
+							});
+						},
+					});
+
+					this.table
+						.buttons()
+						.container()
+						.appendTo(`#section-announcements-table_wrapper .col-md-6:eq(0)`);
+
+					// Add click event for new announcement button
+					$(".btn-announcement-new").unbind("click");
+					$(".btn-announcement-new").click(() => {
+						this.showForm();
+					});
+
+					// Update with information
+					this.updateTable();
 				});
-
-				// Add click event for new announcement button
-				$(".btn-announcement-new").unbind("click");
-				$(".btn-announcement-new").click(() => {
-					this.showForm();
-				});
-
-				// Update with information
-				this.updateTable();
-			});
 		});
 	}
 
@@ -245,36 +261,38 @@ class WWSUannouncements extends WWSUdb {
 	 */
 	remove(data, cb) {
 		try {
-			this.manager.get("directorReq").request(
-				{ method: "post", url: this.endpoints.remove, data },
-				(response) => {
-					if (response !== "OK") {
-						$(document).Toasts("create", {
-							class: "bg-danger",
-							title: "Error removing announcement",
-							body:
-								"There was an error removing the announcement. Please report this to the engineer.",
-							autoHide: true,
-							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
-						});
-						if (typeof cb === "function") {
-							cb(false);
-						}
-					} else {
-						$(document).Toasts("create", {
-							class: "bg-success",
-							title: "Announcement removed",
-							autohide: true,
-							delay: 10000,
-							body: `The announcement was removed.`,
-						});
-						if (typeof cb === "function") {
-							cb(true);
+			this.manager
+				.get("directorReq")
+				.request(
+					{ method: "post", url: this.endpoints.remove, data },
+					(response) => {
+						if (response !== "OK") {
+							$(document).Toasts("create", {
+								class: "bg-danger",
+								title: "Error removing announcement",
+								body:
+									"There was an error removing the announcement. Please report this to the engineer.",
+								autoHide: true,
+								delay: 10000,
+								icon: "fas fa-skull-crossbones fa-lg",
+							});
+							if (typeof cb === "function") {
+								cb(false);
+							}
+						} else {
+							$(document).Toasts("create", {
+								class: "bg-success",
+								title: "Announcement removed",
+								autohide: true,
+								delay: 10000,
+								body: `The announcement was removed.`,
+							});
+							if (typeof cb === "function") {
+								cb(true);
+							}
 						}
 					}
-				}
-			);
+				);
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -306,13 +324,17 @@ class WWSUannouncements extends WWSUdb {
 						moment
 							.tz(
 								announcement.starts,
-								this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+								this.manager.get("WWSUMeta")
+									? this.manager.get("WWSUMeta").meta.timezone
+									: moment.tz.guess()
 							)
 							.format("LLLL"),
 						moment
 							.tz(
 								announcement.expires,
-								this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+								this.manager.get("WWSUMeta")
+									? this.manager.get("WWSUMeta").meta.timezone
+									: moment.tz.guess()
 							)
 							.format("LLLL"),
 						`<span class="text-${announcement.level}"><i class="fas fa-dot-circle"></i></span>`,
@@ -449,26 +471,38 @@ class WWSUannouncements extends WWSUdb {
 					},
 					starts: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
-							.parseZone(this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.time : undefined)
+							.parseZone(
+								this.manager.get("WWSUMeta")
+									? this.manager.get("WWSUMeta").meta.time
+									: undefined
+							)
 							.format("Z")}`,
 						picker: {
 							inline: true,
 							sideBySide: true,
 						},
 						helper: `Defaults to the timezone ${
-							this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+							this.manager.get("WWSUMeta")
+								? this.manager.get("WWSUMeta").meta.timezone
+								: moment.tz.guess()
 						}`,
 					},
 					expires: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
-							.parseZone(this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.time : undefined)
+							.parseZone(
+								this.manager.get("WWSUMeta")
+									? this.manager.get("WWSUMeta").meta.time
+									: undefined
+							)
 							.format("Z")}`,
 						picker: {
 							inline: true,
 							sideBySide: true,
 						},
 						helper: `Defaults to the timezone ${
-							this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+							this.manager.get("WWSUMeta")
+								? this.manager.get("WWSUMeta").meta.timezone
+								: moment.tz.guess()
 						}`,
 					},
 				},

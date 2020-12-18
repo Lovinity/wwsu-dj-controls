@@ -40,32 +40,32 @@ audioManager.on("devices", "renderer", (devices) => {
 	console.dir(devices);
 
 	// Emit devices to renderer
-	window.ipc.renderer.send("audioDevices", [devices]);
+	window.ipc.renderer.audioDevices([devices]);
 });
 
 // When a device reports volume information, send this to the main process to be sent out to other audio processes and the renderer
 audioManager.on("audioVolume", "renderer", (volumes) => {
-	window.ipc.invoke("setAudioVolume", volumes);
+	window.ipc.renderer.audioVolume([volumes]);
 });
 
 /*
 		AUDIO DEVICES
 	*/
 
-window.ipc.on("audioChangeVolume", (event, arg) => {
+window.ipc.on.audioChangeVolume((event, arg) => {
 	console.log(`Audio: Changing volume for device ${arg[0]} to ${arg[2]}`);
 	audioManager.changeVolume(arg[0], arg[1], arg[2]);
-	window.ipc.renderer.send("console", [
+	window.ipc.renderer.console([
 		"log",
 		`Audio: Changed audio volume for ${arg[0]} to ${arg[2]}`,
 	]);
 });
 
-window.ipc.on("audioRefreshDevices", (event, arg) => {
+window.ipc.on.audioRefreshDevices((event, arg) => {
 	console.log(`Audio: Refreshing available audio devices`);
 	audioManager.loadDevices();
 });
 
 // READY
-window.ipc.renderer.send("console", ["log", "Audio: Process is ready"]);
-window.ipc.renderer.send("audioReady", []);
+window.ipc.renderer.console(["log", "Audio: Process is ready"]);
+window.ipc.renderer.audioReady([]);

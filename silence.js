@@ -41,8 +41,8 @@ audioManager.on("devices", "renderer", (devices) => {
 	});
 });
 
-window.ipc.renderer.send("console", ["log", "Silence: Process is ready"]);
-window.ipc.renderer.send("silenceReady", []);
+window.ipc.renderer.console(["log", "Silence: Process is ready"]);
+window.ipc.renderer.silenceReady([]);
 
 silence.on("audioVolume", "silence", (volume) => {
 	if (!silenceSettings || !silenceDeviceActive) {
@@ -58,22 +58,22 @@ silence.on("audioVolume", "silence", (volume) => {
 		volume[1] <= silenceSettings.threshold
 	) {
 		if (!timer) {
-			window.ipc.renderer.send("silenceState", [1]);
+			window.ipc.renderer.silenceState([1]);
 			console.log(`Silence`);
 
 			// Delay timer should trigger active silence and then keep triggering it every minute until silence no longer detected.
 			timer = setTimeout(() => {
-				window.ipc.renderer.send("silenceState", [2]);
+				window.ipc.renderer.silenceState([2]);
 				console.log(`Silence trigger activated`);
 				timer = setInterval(() => {
-					window.ipc.renderer.send("silenceState", [2]);
+					window.ipc.renderer.silenceState([2]);
 					console.log(`Silence re-triggered`);
 				}, 60000);
 			}, silenceSettings.delay);
 		}
 	} else if (timer) {
 		console.log(`No more silence`);
-		window.ipc.renderer.send("silenceState", [0]);
+		window.ipc.renderer.silenceState([0]);
 		clearInterval(timer);
 		clearTimeout(timer);
 		timer = undefined;
@@ -84,21 +84,21 @@ silence.on("audioVolume", "silence", (volume) => {
 		AUDIO DEVICES
 	*/
 
-window.ipc.on("audioChangeVolume", (event, arg) => {
+window.ipc.on.audioChangeVolume((event, arg) => {
 	console.log(`Silence: Changing volume for device ${arg[0]} to ${arg[2]}`);
 	audioManager.changeVolume(arg[0], arg[1], arg[2]);
-	window.ipc.renderer.send("console", [
+	window.ipc.renderer.console([
 		"log",
 		`Silence: Changed audio volume for ${arg[0]} to ${arg[2]}`,
 	]);
 });
 
-window.ipc.on("audioRefreshDevices", (event, arg) => {
+window.ipc.on.audioRefreshDevices((event, arg) => {
 	console.log(`Silence: Refreshing available audio devices`);
 	audioManager.loadDevices();
 });
 
-window.ipc.on("audioSilenceSetting", (event, arg) => {
+window.ipc.on.audioSilenceSetting((event, arg) => {
 	console.log(
 		`Silence: Changing silence setting for device ${arg[0]} to ${arg[2]}`
 	);
@@ -111,12 +111,12 @@ window.ipc.on("audioSilenceSetting", (event, arg) => {
 	} else {
 		audioManager.disconnect(arg[0], arg[1]);
 	}
-	window.ipc.renderer.send("console", [
+	window.ipc.renderer.console([
 		"log",
 		`Silence: Changing silence setting for device ${arg[0]} to ${arg[2]}`,
 	]);
 });
 
-window.ipc.on("silenceSetting", (event) => {
+window.ipc.on.silenceSetting((event) => {
 	silenceSettings = window.settings.silence();
 });

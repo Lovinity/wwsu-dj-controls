@@ -215,7 +215,9 @@ class WWSUdirectors extends WWSUdb {
 			// Init html
 			$(table).html(
 				`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
-					this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+					this.manager.get("WWSUMeta")
+						? this.manager.get("WWSUMeta").meta.timezone
+						: moment.tz.guess()
 				}.</p><p><button type="button" class="btn btn-block btn-success btn-director-new">New Director</button></p><table id="section-directors-table" class="table table-striped display responsive" style="width: 100%;"></table>`
 			);
 
@@ -224,7 +226,7 @@ class WWSUdirectors extends WWSUdb {
 				.waitForElement(`#section-directors-table`, () => {
 					// Generate table
 					this.table = $(`#section-directors-table`).DataTable({
-						paging: false,
+						paging: true,
 						data: [],
 						columns: [
 							{ title: "Name" },
@@ -237,7 +239,8 @@ class WWSUdirectors extends WWSUdb {
 						],
 						columnDefs: [{ responsivePriority: 1, targets: 4 }],
 						order: [[0, "asc"]],
-						pageLength: 10,
+						buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"],
+						pageLength: 100,
 						drawCallback: () => {
 							// Action button click events
 							$(".btn-director-edit").unbind("click");
@@ -287,6 +290,11 @@ class WWSUdirectors extends WWSUdb {
 							});
 						},
 					});
+
+					this.table
+						.buttons()
+						.container()
+						.appendTo(`#section-directors-table_wrapper .col-md-6:eq(0)`);
 
 					// Add click event for new DJ button
 					$(".btn-director-new").unbind("click");

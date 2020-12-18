@@ -14,7 +14,7 @@ class WWSUhosts extends WWSUdb {
 	 */
 	constructor(manager, options) {
 		super(); // Create the db
-		
+
 		this.manager = manager;
 
 		this.endpoints = {
@@ -63,36 +63,40 @@ class WWSUhosts extends WWSUdb {
 	 * @param {function} cb Callback w/ parameter. 1 = authorized and connected. 0 = not authorized, -1 = authorized, but already connected
 	 */
 	get(cb) {
-		this.manager.get("hostReq").request(
-			{ method: "POST", url: this.endpoints.get, data: this.data.get },
-			(body) => {
-				try {
-					this.client = body;
+		this.manager
+			.get("hostReq")
+			.request(
+				{ method: "POST", url: this.endpoints.get, data: this.data.get },
+				(body) => {
+					try {
+						this.client = body;
 
-					if (!this.client.authorized) {
-						cb(0);
-					} else {
-						if (body.otherHosts) {
-							this.query(body.otherHosts, true);
-							delete this.client.otherHosts;
-						}
-						this.manager.get("WWSUrecipients").addRecipientComputer(
-							this.client.host,
-							(recipient, success) => {
-								if (success) {
-									cb(1);
-								} else {
-									cb(-1);
-								}
+						if (!this.client.authorized) {
+							cb(0);
+						} else {
+							if (body.otherHosts) {
+								this.query(body.otherHosts, true);
+								delete this.client.otherHosts;
 							}
-						);
+							this.manager
+								.get("WWSUrecipients")
+								.addRecipientComputer(
+									this.client.host,
+									(recipient, success) => {
+										if (success) {
+											cb(1);
+										} else {
+											cb(-1);
+										}
+									}
+								);
+						}
+					} catch (e) {
+						cb(0);
+						console.error(e);
 					}
-				} catch (e) {
-					cb(0);
-					console.error(e);
 				}
-			}
-		);
+			);
 	}
 
 	/**
@@ -410,13 +414,15 @@ class WWSUhosts extends WWSUdb {
 	 */
 	promptIfNotHost(action, cb) {
 		if (this.manager.get("WWSUMeta").meta.host && !this.isHost) {
-			this.manager.get("WWSUutil").confirmDialog(
-				`<strong>Your host did not start the current broadcast</strong>. Are you sure you want to ${action}? You may be interfering with someone else's broadcast.`,
-				null,
-				() => {
-					cb();
-				}
-			);
+			this.manager
+				.get("WWSUutil")
+				.confirmDialog(
+					`<strong>Your host did not start the current broadcast</strong>. Are you sure you want to ${action}? You may be interfering with someone else's broadcast.`,
+					null,
+					() => {
+						cb();
+					}
+				);
 		} else {
 			cb();
 		}
@@ -432,65 +438,75 @@ class WWSUhosts extends WWSUdb {
 			// Init html
 			$(table).html(
 				`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
-					this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+					this.manager.get("WWSUMeta")
+						? this.manager.get("WWSUMeta").meta.timezone
+						: moment.tz.guess()
 				}.</p><table id="section-hosts-table" class="table table-striped display responsive" style="width: 100%;"></table>`
 			);
 
-			this.manager.get("WWSUutil").waitForElement(`#section-hosts-table`, () => {
-				// Generate table
-				this.table = $(`#section-hosts-table`).DataTable({
-					paging: false,
-					data: [],
-					columns: [
-						{ title: "Name" },
-						{ title: "Authorized?" },
-						{ title: "Admin Menu?" },
-						{ title: "Remote Audio" },
-						{ title: "Responsibilities" },
-						{ title: "Actions" },
-					],
-					columnDefs: [{ responsivePriority: 1, targets: 5 }],
-					order: [
-						[0, "asc"],
-						[1, "asc"],
-					],
-					pageLength: 10,
-					drawCallback: () => {
-						// Action button click events
-						$(".btn-host-edit").unbind("click");
-						$(".btn-host-delete").unbind("click");
+			this.manager
+				.get("WWSUutil")
+				.waitForElement(`#section-hosts-table`, () => {
+					// Generate table
+					this.table = $(`#section-hosts-table`).DataTable({
+						paging: true,
+						data: [],
+						columns: [
+							{ title: "Name" },
+							{ title: "Authorized?" },
+							{ title: "Admin Menu?" },
+							{ title: "Remote Audio" },
+							{ title: "Responsibilities" },
+							{ title: "Actions" },
+						],
+						columnDefs: [{ responsivePriority: 1, targets: 5 }],
+						order: [
+							[0, "asc"],
+							[1, "asc"],
+						],
+						pageLength: 100,
+						buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"],
+						drawCallback: () => {
+							// Action button click events
+							$(".btn-host-edit").unbind("click");
+							$(".btn-host-delete").unbind("click");
 
-						$(".btn-host-edit").click((e) => {
-							let host = this.find().find(
-								(host) => host.ID === parseInt($(e.currentTarget).data("id"))
-							);
-							this.showHostForm(host);
-						});
+							$(".btn-host-edit").click((e) => {
+								let host = this.find().find(
+									(host) => host.ID === parseInt($(e.currentTarget).data("id"))
+								);
+								this.showHostForm(host);
+							});
 
-						$(".btn-host-delete").click((e) => {
-							let host = this.find().find(
-								(host) => host.ID === parseInt($(e.currentTarget).data("id"))
-							);
-							this.manager.get("WWSUutil").confirmDialog(
-								`Are you sure you want to remove the host "${host.friendlyname}"?
+							$(".btn-host-delete").click((e) => {
+								let host = this.find().find(
+									(host) => host.ID === parseInt($(e.currentTarget).data("id"))
+								);
+								this.manager.get("WWSUutil").confirmDialog(
+									`Are you sure you want to remove the host "${host.friendlyname}"?
 							<ul>
 							<li>This host will no longer have access to WWSU.</li>
 							<li>If the host is connected to WWSU, they will be disconnected.</li>
 							<li>All options for this host will be removed.</li>
 							<li>This host will be removed from the list. However, should this host try to connect to WWSU again, it will re-appear in the list but with all settings erased (as if it was a new host without authorization to connect).</li>
                             </ul>`,
-								null,
-								() => {
-									this.remove({ ID: host.ID });
-								}
-							);
-						});
-					},
-				});
+									null,
+									() => {
+										this.remove({ ID: host.ID });
+									}
+								);
+							});
+						},
+					});
 
-				// Update with information
-				this.updateTable();
-			});
+					this.table
+						.buttons()
+						.container()
+						.appendTo(`#section-hosts-table_wrapper .col-md-6:eq(0)`);
+
+					// Update with information
+					this.updateTable();
+				});
 		});
 	}
 

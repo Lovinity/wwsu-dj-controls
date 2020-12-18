@@ -113,7 +113,7 @@ class WWSUrecipients extends WWSUdb {
 			this.manager.get("WWSUutil").waitForElement(`#recipients-table`, () => {
 				// Generate table
 				this.table = $(`#recipients-table`).DataTable({
-					paging: false,
+					paging: true,
 					data: [],
 					columns: [
 						{ title: "Icon" },
@@ -128,7 +128,7 @@ class WWSUrecipients extends WWSUdb {
 						{ responsivePriority: 2, targets: 3 },
 					],
 					order: [[2, "desc"]],
-					pageLength: 10,
+					pageLength: 50,
 					drawCallback: () => {
 						// Action button click events
 						$(".btn-recipient-choose").unbind("click");

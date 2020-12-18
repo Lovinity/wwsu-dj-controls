@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /* global TAFFY */
 
@@ -161,26 +161,28 @@ class WWSUlogs extends WWSUevents {
 	 */
 	getAttendance(dom, data, cb) {
 		try {
-			this.manager.get("hostReq").request(
-				{ dom: dom, method: "post", url: this.endpoints.getAttendance, data },
-				(response) => {
-					if (!response) {
-						$(document).Toasts("create", {
-							class: "bg-danger",
-							title: "Error getting attendance records",
-							body:
-								"There was an error getting attendance records. Please report this to the engineer.",
-							autoHide: true,
-							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
-						});
-					} else {
-						if (typeof cb === "function") {
-							cb(response);
+			this.manager
+				.get("hostReq")
+				.request(
+					{ dom: dom, method: "post", url: this.endpoints.getAttendance, data },
+					(response) => {
+						if (!response) {
+							$(document).Toasts("create", {
+								class: "bg-danger",
+								title: "Error getting attendance records",
+								body:
+									"There was an error getting attendance records. Please report this to the engineer.",
+								autoHide: true,
+								delay: 10000,
+								icon: "fas fa-skull-crossbones fa-lg",
+							});
+						} else {
+							if (typeof cb === "function") {
+								cb(response);
+							}
 						}
 					}
-				}
-			);
+				);
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -204,26 +206,28 @@ class WWSUlogs extends WWSUevents {
 	 */
 	getListeners(dom, data, cb) {
 		try {
-			this.manager.get("hostReq").request(
-				{ dom: dom, method: "post", url: this.endpoints.getListeners, data },
-				(response) => {
-					if (!response || typeof response.map !== "function") {
-						$(document).Toasts("create", {
-							class: "bg-danger",
-							title: "Error getting listener analytics",
-							body:
-								"There was an error getting listener analytics. Please report this to the engineer.",
-							autoHide: true,
-							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
-						});
-					} else {
-						if (typeof cb === "function") {
-							cb(response);
+			this.manager
+				.get("hostReq")
+				.request(
+					{ dom: dom, method: "post", url: this.endpoints.getListeners, data },
+					(response) => {
+						if (!response || typeof response.map !== "function") {
+							$(document).Toasts("create", {
+								class: "bg-danger",
+								title: "Error getting listener analytics",
+								body:
+									"There was an error getting listener analytics. Please report this to the engineer.",
+								autoHide: true,
+								delay: 10000,
+								icon: "fas fa-skull-crossbones fa-lg",
+							});
+						} else {
+							if (typeof cb === "function") {
+								cb(response);
+							}
 						}
 					}
-				}
-			);
+				);
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -246,26 +250,28 @@ class WWSUlogs extends WWSUevents {
 	 */
 	getLogs(data, cb) {
 		try {
-			this.manager.get("hostReq").request(
-				{ method: "post", url: this.endpoints.get, data },
-				(response) => {
-					if (!response || typeof response.map !== "function") {
-						$(document).Toasts("create", {
-							class: "bg-danger",
-							title: "Error getting logs",
-							body:
-								"There was an error getting logs. Please report this to the engineer.",
-							autoHide: true,
-							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
-						});
-					} else {
-						if (typeof cb === "function") {
-							cb(response);
+			this.manager
+				.get("hostReq")
+				.request(
+					{ method: "post", url: this.endpoints.get, data },
+					(response) => {
+						if (!response || typeof response.map !== "function") {
+							$(document).Toasts("create", {
+								class: "bg-danger",
+								title: "Error getting logs",
+								body:
+									"There was an error getting logs. Please report this to the engineer.",
+								autoHide: true,
+								delay: 10000,
+								icon: "fas fa-skull-crossbones fa-lg",
+							});
+						} else {
+							if (typeof cb === "function") {
+								cb(response);
+							}
 						}
 					}
-				}
-			);
+				);
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -288,36 +294,38 @@ class WWSUlogs extends WWSUevents {
 	 */
 	edit(data, cb) {
 		try {
-			this.manager.get("directorReq").request(
-				{ method: "post", url: this.endpoints.edit, data },
-				(response) => {
-					if (response !== "OK") {
-						$(document).Toasts("create", {
-							class: "bg-danger",
-							title: "Error editing log",
-							body:
-								"There was an error editing the log. Please report this to the engineer.",
-							autoHide: true,
-							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
-						});
-						if (typeof cb === "function") {
-							cb(false);
-						}
-					} else {
-						$(document).Toasts("create", {
-							class: "bg-success",
-							title: "log edited",
-							autohide: true,
-							delay: 10000,
-							body: `The log was edited.`,
-						});
-						if (typeof cb === "function") {
-							cb(true);
+			this.manager
+				.get("directorReq")
+				.request(
+					{ method: "post", url: this.endpoints.edit, data },
+					(response) => {
+						if (response !== "OK") {
+							$(document).Toasts("create", {
+								class: "bg-danger",
+								title: "Error editing log",
+								body:
+									"There was an error editing the log. Please report this to the engineer.",
+								autoHide: true,
+								delay: 10000,
+								icon: "fas fa-skull-crossbones fa-lg",
+							});
+							if (typeof cb === "function") {
+								cb(false);
+							}
+						} else {
+							$(document).Toasts("create", {
+								class: "bg-success",
+								title: "log edited",
+								autohide: true,
+								delay: 10000,
+								body: `The log was edited.`,
+							});
+							if (typeof cb === "function") {
+								cb(true);
+							}
 						}
 					}
-				}
-			);
+				);
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -343,39 +351,41 @@ class WWSUlogs extends WWSUevents {
 	 */
 	add(data, silent = false, cb) {
 		try {
-			this.manager.get("hostReq").request(
-				{ method: "post", url: this.endpoints.add, data },
-				(response) => {
-					if (response !== "OK") {
-						$(document).Toasts("create", {
-							class: "bg-danger",
-							title: "Error adding log",
-							body:
-								"There was an error adding the log. Please report this to the engineer.",
-							autoHide: true,
-							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
-						});
-						if (typeof cb === "function") {
-							cb(false);
-						}
-					} else {
-						if (!silent) {
+			this.manager
+				.get("hostReq")
+				.request(
+					{ method: "post", url: this.endpoints.add, data },
+					(response) => {
+						if (response !== "OK") {
 							$(document).Toasts("create", {
-								class: "bg-success",
-								title: "log added",
-								autohide: true,
-								delay: 15000,
-								body: `The log was added. 
-								<p>If you added a log, <strong>Be sure to click "I am Talking"</strong> on the Dashboard when you are done playing music, or click "Add Log" again when playing a different track.</p>`,
+								class: "bg-danger",
+								title: "Error adding log",
+								body:
+									"There was an error adding the log. Please report this to the engineer.",
+								autoHide: true,
+								delay: 10000,
+								icon: "fas fa-skull-crossbones fa-lg",
 							});
-						}
-						if (typeof cb === "function") {
-							cb(true);
+							if (typeof cb === "function") {
+								cb(false);
+							}
+						} else {
+							if (!silent) {
+								$(document).Toasts("create", {
+									class: "bg-success",
+									title: "log added",
+									autohide: true,
+									delay: 15000,
+									body: `The log was added. 
+								<p>If you added a log, <strong>Be sure to click "I am Talking"</strong> on the Dashboard when you are done playing music, or click "Add Log" again when playing a different track.</p>`,
+								});
+							}
+							if (typeof cb === "function") {
+								cb(true);
+							}
 						}
 					}
-				}
-			);
+				);
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -400,18 +410,22 @@ class WWSUlogs extends WWSUevents {
 	 */
 	initIssuesTable(table) {
 		this.manager.get("WWSUanimations").add("logs-init-issues-table", () => {
-
 			// Init html
 			$(table).html(
 				`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
-					this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+					this.manager.get("WWSUMeta")
+						? this.manager.get("WWSUMeta").meta.timezone
+						: moment.tz.guess()
 				}.</p><table id="section-notifications-issues-table" class="table table-striped display responsive" style="width: 100%;"></table>`
 			);
 
-			this.manager.get("WWSUutil").waitForElement(`#section-notifications-issues-table`, () => {
-				// Generate table
-				this.tables.issues = $(`#section-notifications-issues-table`).DataTable(
-					{
+			this.manager
+				.get("WWSUutil")
+				.waitForElement(`#section-notifications-issues-table`, () => {
+					// Generate table
+					this.tables.issues = $(
+						`#section-notifications-issues-table`
+					).DataTable({
 						paging: true,
 						data: [],
 						columns: [
@@ -423,7 +437,8 @@ class WWSUlogs extends WWSUevents {
 						],
 						columnDefs: [{ responsivePriority: 1, targets: 4 }],
 						order: [[0, "asc"]],
-						pageLength: 25,
+						pageLength: 50,
+						buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"],
 						drawCallback: () => {
 							// Action button click events
 							$(".btn-issue-unexcused").unbind("click");
@@ -480,12 +495,18 @@ class WWSUlogs extends WWSUevents {
 								);
 							});
 						},
-					}
-				);
+					});
 
-				// Update with information
-				this.updateIssuesTable();
-			});
+					this.tables.issues
+						.buttons()
+						.container()
+						.appendTo(
+							$(`#section-notifications-issues-table_wrapper .col-md-6:eq(0)`)
+						);
+
+					// Update with information
+					this.updateIssuesTable();
+				});
 		});
 	}
 
@@ -522,7 +543,6 @@ class WWSUlogs extends WWSUevents {
 	 */
 	updateIssuesTable() {
 		this.manager.get("WWSUanimations").add("logs-update-issues-table", () => {
-
 			if (this.tables.issues) {
 				this.tables.issues.clear();
 				this.issues.find().forEach((log) => {
@@ -536,7 +556,9 @@ class WWSUlogs extends WWSUevents {
 						moment
 							.tz(
 								log.createdAt,
-								this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+								this.manager.get("WWSUMeta")
+									? this.manager.get("WWSUMeta").meta.timezone
+									: moment.tz.guess()
 							)
 							.format("llll"),
 						`<strong>${log.title}</strong><br />${log.event}${
@@ -583,11 +605,12 @@ class WWSUlogs extends WWSUevents {
 	 */
 	initAttendanceTable(dom) {
 		this.manager.get("WWSUanimations").add("logs-init-attendance-table", () => {
-
 			// Init html
 			$(dom).html(
 				`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
-					this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+					this.manager.get("WWSUMeta")
+						? this.manager.get("WWSUMeta").meta.timezone
+						: moment.tz.guess()
 				}.</p><table id="section-logs-table" class="table table-striped display responsive" style="width: 100%;"></table>`
 			);
 
@@ -605,7 +628,8 @@ class WWSUlogs extends WWSUevents {
 						{ title: "Actions" },
 					],
 					columnDefs: [{ responsivePriority: 1, targets: 5 }],
-					pageLength: 25,
+					pageLength: 50,
+					buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"],
 					drawCallback: () => {
 						// Add log buttons click event
 						$(".btn-logs-view").unbind("click");
@@ -615,6 +639,13 @@ class WWSUlogs extends WWSUevents {
 						});
 					},
 				});
+
+				this.tables.attendance
+					.buttons()
+					.container()
+					.appendTo(
+						$(`#section-logs-table_wrapper .col-md-6:eq(0)`)
+					);
 			});
 		});
 	}
@@ -660,13 +691,17 @@ class WWSUlogs extends WWSUevents {
 								moment
 									.tz(
 										record.actualStart,
-										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta")
+											? this.manager.get("WWSUMeta").meta.timezone
+											: moment.tz.guess()
 									)
 									.format("h:mm A"),
 								moment
 									.tz(
 										record.actualEnd,
-										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta")
+											? this.manager.get("WWSUMeta").meta.timezone
+											: moment.tz.guess()
 									)
 									.format("h:mm A"),
 								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`,
@@ -685,7 +720,9 @@ class WWSUlogs extends WWSUevents {
 								moment
 									.tz(
 										record.actualStart,
-										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta")
+											? this.manager.get("WWSUMeta").meta.timezone
+											: moment.tz.guess()
 									)
 									.format("h:mm A"),
 								`ONGOING`,
@@ -705,13 +742,17 @@ class WWSUlogs extends WWSUevents {
 								`CANCELED (${moment
 									.tz(
 										record.scheduledStart,
-										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta")
+											? this.manager.get("WWSUMeta").meta.timezone
+											: moment.tz.guess()
 									)
 									.format("h:mm A")})`,
 								`CANCELED (${moment
 									.tz(
 										record.scheduledEnd,
-										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta")
+											? this.manager.get("WWSUMeta").meta.timezone
+											: moment.tz.guess()
 									)
 									.format("h:mm A")})`,
 								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`,
@@ -726,13 +767,17 @@ class WWSUlogs extends WWSUevents {
 								`ABSENT (${moment
 									.tz(
 										record.scheduledStart,
-										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta")
+											? this.manager.get("WWSUMeta").meta.timezone
+											: moment.tz.guess()
 									)
 									.format("h:mm A")})`,
 								`ABSENT (${moment
 									.tz(
 										record.scheduledEnd,
-										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta")
+											? this.manager.get("WWSUMeta").meta.timezone
+											: moment.tz.guess()
 									)
 									.format("h:mm A")})`,
 								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`,
@@ -747,14 +792,18 @@ class WWSUlogs extends WWSUevents {
 								moment
 									.tz(
 										record.actualStart,
-										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta")
+											? this.manager.get("WWSUMeta").meta.timezone
+											: moment.tz.guess()
 									)
 									.format("h:mm A"),
 								record.actualEnd !== null
 									? moment
 											.tz(
 												record.actualEnd,
-												this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+												this.manager.get("WWSUMeta")
+													? this.manager.get("WWSUMeta").meta.timezone
+													: moment.tz.guess()
 											)
 											.format("h:mm A")
 									: `ONGOING`,
@@ -770,13 +819,17 @@ class WWSUlogs extends WWSUevents {
 								`SCHEDULED (${moment
 									.tz(
 										record.scheduledStart,
-										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta")
+											? this.manager.get("WWSUMeta").meta.timezone
+											: moment.tz.guess()
 									)
 									.format("h:mm A")})`,
 								`SCHEDULED (${moment
 									.tz(
 										record.scheduledEnd,
-										this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta")
+											? this.manager.get("WWSUMeta").meta.timezone
+											: moment.tz.guess()
 									)
 									.format("h:mm A")})`,
 								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`,
@@ -798,7 +851,9 @@ class WWSUlogs extends WWSUevents {
 	 */
 	viewLog(id, name) {
 		this.modals.viewLog.body = `<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
-			this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+			this.manager.get("WWSUMeta")
+				? this.manager.get("WWSUMeta").meta.timezone
+				: moment.tz.guess()
 		}.</p><canvas id="modal-${
 			this.modals.viewLog.id
 		}-body-listeners" style="min-height: 200px; height: 200px; max-height: 350px; max-width: 100%;"></canvas><div id="modal-${
@@ -808,310 +863,327 @@ class WWSUlogs extends WWSUevents {
 		}-body-log" class="table table-striped display responsive" style="width: 100%;"></table>`;
 		this.modals.viewLog.iziModal("open");
 		this.getAttendance(`#section-logs-table`, { ID: id }, (attendance) => {
-			this.manager.get("WWSUutil").waitForElement(
-				`#modal-${this.modals.viewLog.id}-body-listeners`,
-				() => {
-					this.getListeners(
-						`#modal-${this.modals.viewLog.id}-body-listeners`,
-						{
-							start: moment(attendance.actualStart).toISOString(true),
-							end: moment(
-								attendance.actualEnd
-									? attendance.actualEnd
-									: moment(attendance.actualStart).add(1, "days")
-							).toISOString(true),
-						},
-						(listeners) => {
-							let data = [];
-							data = listeners.map((listener) => {
-								return {
-									x: moment
-										.tz(
-											listener.createdAt,
-											this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
-										)
-										.format(),
-									y: listener.listeners,
-								};
-							});
-
-							let listenerChartCanvas = $(
-								`#modal-${this.modals.viewLog.id}-body-listeners`
-							)
-								.get(0)
-								.getContext("2d");
-							let listenerChart = new Chart(listenerChartCanvas, {
-								type: "line",
-								data: {
-									datasets: [
-										{
-											label: "Online Listeners",
-											data: data,
-											steppedLine: true,
-											fill: false,
-											borderColor: `#17a2b8`,
-										},
-									],
-								},
-								options: {
-									responsive: true,
-									title: {
-										display: true,
-										text: "Online Listeners",
-									},
-									scales: {
-										xAxes: [
-											{
-												type: "time",
-												display: true,
-												scaleLabel: {
-													display: true,
-													labelString: "Date",
-												},
-												ticks: {
-													major: {
-														fontStyle: "bold",
-														fontColor: "#FF0000",
-													},
-													min: moment
-														.tz(
-															attendance.actualStart,
-															this.manager.get("WWSUMeta")
-																? this.manager.get("WWSUMeta").meta.timezone
-																: moment.tz.guess()
-														)
-														.format(),
-													max: moment
-														.tz(
-															attendance.actualEnd,
-															this.manager.get("WWSUMeta")
-																? this.manager.get("WWSUMeta").meta.timezone
-																: moment.tz.guess()
-														)
-														.format(),
-												},
-											},
-										],
-										yAxes: [
-											{
-												display: true,
-												scaleLabel: {
-													display: true,
-													labelString: "value",
-												},
-												ticks: {
-													min: 0,
-												},
-											},
-										],
-									},
-								},
-							});
-						}
-					);
-				}
-			);
-
-			this.manager.get("WWSUutil").waitForElement(
-				`#modal-${this.modals.viewLog.id}-body-info`,
-				() => {}
-			);
-
-			this.manager.get("WWSUutil").waitForElement(`#modal-${this.modals.viewLog.id}-body-log`, () => {
-				const generateLog = (updateOnly) => {
-					this.getLogs({ attendanceID: id }, (logs) => {
-						if (!updateOnly) {
-							this.tables.log = $(
-								`#modal-${this.modals.viewLog.id}-body-log`
-							).DataTable({
-								paging: false,
-								data: logs.map((log) => {
-									return [
-										log.ID,
-										moment
+			this.manager
+				.get("WWSUutil")
+				.waitForElement(
+					`#modal-${this.modals.viewLog.id}-body-listeners`,
+					() => {
+						this.getListeners(
+							`#modal-${this.modals.viewLog.id}-body-listeners`,
+							{
+								start: moment(attendance.actualStart).toISOString(true),
+								end: moment(
+									attendance.actualEnd
+										? attendance.actualEnd
+										: moment(attendance.actualStart).add(1, "days")
+								).toISOString(true),
+							},
+							(listeners) => {
+								let data = [];
+								data = listeners.map((listener) => {
+									return {
+										x: moment
 											.tz(
-												log.createdAt,
-												this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+												listener.createdAt,
+												this.manager.get("WWSUMeta")
+													? this.manager.get("WWSUMeta").meta.timezone
+													: moment.tz.guess()
 											)
-											.format("llll"),
-										`<i class="${
-											log.logIcon !== "" ? log.logIcon : `fas fa-dot-circle`
-										} bg-${
-											log.loglevel
-										}" style="border-radius: 50%; font-size: 15px; height: 30px; line-height: 30px; text-align: center; width: 30px;"></i>`,
-										`<strong>${log.title}</strong><br />${log.event}${
-											log.trackArtist ||
-											log.trackTitle ||
-											log.trackAlbum ||
-											log.trackRecordLabel
-												? `${
-														log.trackArtist || log.trackTitle
-															? `<br />Track: ${
-																	log.trackArtist
-																		? log.trackArtist
-																		: `Unknown Artist`
-															  } - ${
-																	log.trackTitle
-																		? log.trackTitle
-																		: `Unknown Title`
-															  }`
-															: ``
-												  }${
-														log.trackAlbum
-															? `<br />Album: ${log.trackAlbum}`
-															: ``
-												  }${
-														log.trackLabel
-															? `<br />Label: ${log.trackLabel}`
-															: ``
-												  }`
-												: ``
-										}`,
-										`${
-											this.isAccountable(log) && log.attendanceID
-												? `<div class="btn-group"><button class="btn btn-sm btn-danger btn-log-unexcused" data-id="${
-														log.ID
-												  }" title="Mark Unexcused (counts in analytics)"><i class="fas fa-thumbs-down"></i></button><button class="btn btn-sm btn-success btn-log-excused" data-id="${
-														log.ID
-												  }" title="Mark Excused (does not count in analytics)"><i class="fas fa-thumbs-up"></i></button></div>${
-														log.excused
-															? `<div class="text-success">EXCUSED</div>`
-															: `<div class="text-danger">UN-EXCUSED</div>`
-												  }`
-												: ``
-										}`,
-									];
-								}),
-								columns: [
-									{ title: "ID" },
-									{ title: "Time" },
-									{ title: "Icon" },
-									{ title: "Event" },
-									{ title: "Actions" },
-								],
-								columnDefs: [{ responsivePriority: 1, targets: 4 }],
-								pageLength: 25,
-								drawCallback: () => {
-									// Action button click events
-									$(".btn-log-unexcused").unbind("click");
-									$(".btn-log-excused").unbind("click");
+											.format(),
+										y: listener.listeners,
+									};
+								});
 
-									$(".btn-log-unexcused").click((e) => {
-										let id = parseInt($(e.currentTarget).data("id"));
-										this.manager.get("WWSUutil").confirmDialog(
-											`Are you sure you want to mark issue ${id} as <strong>unexcused</strong>?
+								let listenerChartCanvas = $(
+									`#modal-${this.modals.viewLog.id}-body-listeners`
+								)
+									.get(0)
+									.getContext("2d");
+								let listenerChart = new Chart(listenerChartCanvas, {
+									type: "line",
+									data: {
+										datasets: [
+											{
+												label: "Online Listeners",
+												data: data,
+												steppedLine: true,
+												fill: false,
+												borderColor: `#17a2b8`,
+											},
+										],
+									},
+									options: {
+										responsive: true,
+										title: {
+											display: true,
+											text: "Online Listeners",
+										},
+										scales: {
+											xAxes: [
+												{
+													type: "time",
+													display: true,
+													scaleLabel: {
+														display: true,
+														labelString: "Date",
+													},
+													ticks: {
+														major: {
+															fontStyle: "bold",
+															fontColor: "#FF0000",
+														},
+														min: moment
+															.tz(
+																attendance.actualStart,
+																this.manager.get("WWSUMeta")
+																	? this.manager.get("WWSUMeta").meta.timezone
+																	: moment.tz.guess()
+															)
+															.format(),
+														max: moment
+															.tz(
+																attendance.actualEnd,
+																this.manager.get("WWSUMeta")
+																	? this.manager.get("WWSUMeta").meta.timezone
+																	: moment.tz.guess()
+															)
+															.format(),
+													},
+												},
+											],
+											yAxes: [
+												{
+													display: true,
+													scaleLabel: {
+														display: true,
+														labelString: "value",
+													},
+													ticks: {
+														min: 0,
+													},
+												},
+											],
+										},
+									},
+								});
+							}
+						);
+					}
+				);
+
+			this.manager
+				.get("WWSUutil")
+				.waitForElement(`#modal-${this.modals.viewLog.id}-body-info`, () => {});
+
+			this.manager
+				.get("WWSUutil")
+				.waitForElement(`#modal-${this.modals.viewLog.id}-body-log`, () => {
+					const generateLog = (updateOnly) => {
+						this.getLogs({ attendanceID: id }, (logs) => {
+							if (!updateOnly) {
+								this.tables.log = $(
+									`#modal-${this.modals.viewLog.id}-body-log`
+								).DataTable({
+									paging: false,
+									data: logs.map((log) => {
+										return [
+											log.ID,
+											moment
+												.tz(
+													log.createdAt,
+													this.manager.get("WWSUMeta")
+														? this.manager.get("WWSUMeta").meta.timezone
+														: moment.tz.guess()
+												)
+												.format("llll"),
+											`<i class="${
+												log.logIcon !== "" ? log.logIcon : `fas fa-dot-circle`
+											} bg-${
+												log.loglevel
+											}" style="border-radius: 50%; font-size: 15px; height: 30px; line-height: 30px; text-align: center; width: 30px;"></i>`,
+											`<strong>${log.title}</strong><br />${log.event}${
+												log.trackArtist ||
+												log.trackTitle ||
+												log.trackAlbum ||
+												log.trackRecordLabel
+													? `${
+															log.trackArtist || log.trackTitle
+																? `<br />Track: ${
+																		log.trackArtist
+																			? log.trackArtist
+																			: `Unknown Artist`
+																  } - ${
+																		log.trackTitle
+																			? log.trackTitle
+																			: `Unknown Title`
+																  }`
+																: ``
+													  }${
+															log.trackAlbum
+																? `<br />Album: ${log.trackAlbum}`
+																: ``
+													  }${
+															log.trackLabel
+																? `<br />Label: ${log.trackLabel}`
+																: ``
+													  }`
+													: ``
+											}`,
+											`${
+												this.isAccountable(log) && log.attendanceID
+													? `<div class="btn-group"><button class="btn btn-sm btn-danger btn-log-unexcused" data-id="${
+															log.ID
+													  }" title="Mark Unexcused (counts in analytics)"><i class="fas fa-thumbs-down"></i></button><button class="btn btn-sm btn-success btn-log-excused" data-id="${
+															log.ID
+													  }" title="Mark Excused (does not count in analytics)"><i class="fas fa-thumbs-up"></i></button></div>${
+															log.excused
+																? `<div class="text-success">EXCUSED</div>`
+																: `<div class="text-danger">UN-EXCUSED</div>`
+													  }`
+													: ``
+											}`,
+										];
+									}),
+									columns: [
+										{ title: "ID" },
+										{ title: "Time" },
+										{ title: "Icon" },
+										{ title: "Event" },
+										{ title: "Actions" },
+									],
+									columnDefs: [{ responsivePriority: 1, targets: 4 }],
+									pageLength: 25,
+									buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"],
+									drawCallback: () => {
+										// Action button click events
+										$(".btn-log-unexcused").unbind("click");
+										$(".btn-log-excused").unbind("click");
+
+										$(".btn-log-unexcused").click((e) => {
+											let id = parseInt($(e.currentTarget).data("id"));
+											this.manager.get("WWSUutil").confirmDialog(
+												`Are you sure you want to mark issue ${id} as <strong>unexcused</strong>?
                     <ul>
                     <li>Unexcused means this record <strong>will</strong> count against DJ/show reputation and show up in analytics.</li>
                     <li>You should mark records as unexcused when the issue was caused by the DJ and not WWSU, and the issue (such as cancellations / absences) does not fall within an "optional" clause / timeframe.</li>
                     <li>Once you proceed, the issue will be marked unexcused and dismissed from the to-do window on all DJ Controls. You will need to access the specific log for this issue if you later decide to change it to excused.</li>
                     </ul>
                     `,
-											null,
-											() => {
-												this.edit(
-													{ ID: id, acknowledged: true, excused: false },
-													(success) => {
-														if (success) {
-															generateLog(true);
+												null,
+												() => {
+													this.edit(
+														{ ID: id, acknowledged: true, excused: false },
+														(success) => {
+															if (success) {
+																generateLog(true);
+															}
 														}
-													}
-												);
-											}
-										);
-									});
+													);
+												}
+											);
+										});
 
-									$(".btn-log-excused").click((e) => {
-										let id = parseInt($(e.currentTarget).data("id"));
-										this.manager.get("WWSUutil").confirmDialog(
-											`Are you sure you want to mark issue ${id} as <strong>excused</strong>?
+										$(".btn-log-excused").click((e) => {
+											let id = parseInt($(e.currentTarget).data("id"));
+											this.manager.get("WWSUutil").confirmDialog(
+												`Are you sure you want to mark issue ${id} as <strong>excused</strong>?
                       <ul>
                       <li>Excused means this record <strong>will NOT</strong> count against DJ/show reputation nor analytics; excusing this means we pretend it never happened.</li>
                       <li>You should mark records as excused when the issue was caused by WWSU and not the DJ (such as a bug or a higher-priority broadcast conflict, such as sports), or the issue fell under an "optional" clause or timeframe.</li>
                       <li>Once you proceed, the issue will be marked excused and dismissed from the to-do window on all DJ Controls. You will need to access the specific log for this issue if you later decide to change it to unexcused.</li>
                       </ul>
                       `,
-											null,
-											() => {
-												this.edit(
-													{ ID: id, acknowledged: true, excused: true },
-													(success) => {
-														if (success) {
-															generateLog(true);
+												null,
+												() => {
+													this.edit(
+														{ ID: id, acknowledged: true, excused: true },
+														(success) => {
+															if (success) {
+																generateLog(true);
+															}
 														}
-													}
-												);
-											}
-										);
-									});
-								},
-							});
-						} else {
-							this.tables.log.clear();
-							this.tables.log.rows.add(
-								logs.map((log) => {
-									return [
-										log.ID,
-										moment
-											.tz(
-												log.createdAt,
-												this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
-											)
-											.format("llll"),
-										`<i class="${
-											log.logIcon !== "" ? log.logIcon : `fas fa-dot-circle`
-										} bg-${
-											log.loglevel
-										}" style="border-radius: 50%; font-size: 15px; height: 30px; line-height: 30px; text-align: center; width: 30px;"></i>`,
-										`<strong>${log.title}</strong><br />${log.event}${
-											log.trackArtist ||
-											log.trackTitle ||
-											log.trackAlbum ||
-											log.trackRecordLabel
-												? `${
-														log.trackArtist || log.trackTitle
-															? `<br />Track: ${
-																	log.trackArtist
-																		? log.trackArtist
-																		: `Unknown Artist`
-															  } - ${
-																	log.trackTitle
-																		? log.trackTitle
-																		: `Unknown Title`
-															  }`
-															: ``
-												  }${
-														log.trackAlbum
-															? `<br />Album: ${log.trackAlbum}`
-															: ``
-												  }${
-														log.trackLabel
-															? `<br />Label: ${log.trackLabel}`
-															: ``
-												  }`
-												: ``
-										}`,
-										`${
-											this.isAccountable(log) && log.attendanceID
-												? `<div class="btn-group"><button class="btn btn-sm btn-danger btn-log-unexcused" data-id="${
-														log.ID
-												  }" title="Mark Unexcused (counts in analytics)"><i class="fas fa-thumbs-down"></i></button><button class="btn btn-sm btn-success btn-log-excused" data-id="${
-														log.ID
-												  }" title="Mark Excused (does not count in analytics)"><i class="fas fa-thumbs-up"></i></button></div>${
-														log.excused
-															? `<div class="text-success">EXCUSED</div>`
-															: `<div class="text-danger">UN-EXCUSED</div>`
-												  }`
-												: ``
-										}`,
-									];
-								})
-							);
-							this.tables.log.draw();
-						}
-					});
-				};
-				generateLog(false);
-			});
+													);
+												}
+											);
+										});
+									},
+								});
+
+								this.tables.log
+									.buttons()
+									.container()
+									.appendTo(
+										$(`#modal-${this.modals.viewLog.id}-body-log_wrapper .col-md-6:eq(0)`)
+									);
+							} else {
+								this.tables.log.clear();
+								this.tables.log.rows.add(
+									logs.map((log) => {
+										return [
+											log.ID,
+											moment
+												.tz(
+													log.createdAt,
+													this.manager.get("WWSUMeta")
+														? this.manager.get("WWSUMeta").meta.timezone
+														: moment.tz.guess()
+												)
+												.format("llll"),
+											`<i class="${
+												log.logIcon !== "" ? log.logIcon : `fas fa-dot-circle`
+											} bg-${
+												log.loglevel
+											}" style="border-radius: 50%; font-size: 15px; height: 30px; line-height: 30px; text-align: center; width: 30px;"></i>`,
+											`<strong>${log.title}</strong><br />${log.event}${
+												log.trackArtist ||
+												log.trackTitle ||
+												log.trackAlbum ||
+												log.trackRecordLabel
+													? `${
+															log.trackArtist || log.trackTitle
+																? `<br />Track: ${
+																		log.trackArtist
+																			? log.trackArtist
+																			: `Unknown Artist`
+																  } - ${
+																		log.trackTitle
+																			? log.trackTitle
+																			: `Unknown Title`
+																  }`
+																: ``
+													  }${
+															log.trackAlbum
+																? `<br />Album: ${log.trackAlbum}`
+																: ``
+													  }${
+															log.trackLabel
+																? `<br />Label: ${log.trackLabel}`
+																: ``
+													  }`
+													: ``
+											}`,
+											`${
+												this.isAccountable(log) && log.attendanceID
+													? `<div class="btn-group"><button class="btn btn-sm btn-danger btn-log-unexcused" data-id="${
+															log.ID
+													  }" title="Mark Unexcused (counts in analytics)"><i class="fas fa-thumbs-down"></i></button><button class="btn btn-sm btn-success btn-log-excused" data-id="${
+															log.ID
+													  }" title="Mark Excused (does not count in analytics)"><i class="fas fa-thumbs-up"></i></button></div>${
+															log.excused
+																? `<div class="text-success">EXCUSED</div>`
+																: `<div class="text-danger">UN-EXCUSED</div>`
+													  }`
+													: ``
+											}`,
+										];
+									})
+								);
+								this.tables.log.draw();
+							}
+						});
+					};
+					generateLog(false);
+				});
 		});
 	}
 
@@ -1257,7 +1329,11 @@ class WWSUlogs extends WWSUevents {
 				fields: {
 					date: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
-							.parseZone(this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.time : undefined)
+							.parseZone(
+								this.manager.get("WWSUMeta")
+									? this.manager.get("WWSUMeta").meta.time
+									: undefined
+							)
 							.format("Z")}`,
 						picker: {
 							inline: true,
@@ -1286,7 +1362,9 @@ class WWSUlogs extends WWSUevents {
 
 								value.logtype = "manual";
 								value.loglevel = "secondary";
-								value.logsubtype = this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.show : null;
+								value.logsubtype = this.manager.get("WWSUMeta")
+									? this.manager.get("WWSUMeta").meta.show
+									: null;
 								value.logIcon = "fas fa-file";
 								value.title =
 									value.trackTitle && value.trackTitle.length > 0
@@ -1304,7 +1382,11 @@ class WWSUlogs extends WWSUevents {
 				},
 			},
 			data: {
-				date: moment(this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.time : undefined),
+				date: moment(
+					this.manager.get("WWSUMeta")
+						? this.manager.get("WWSUMeta").meta.time
+						: undefined
+				),
 			},
 		});
 	}

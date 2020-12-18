@@ -246,7 +246,7 @@ class WWSUcalendar extends CalendarDb {
 			onBlock: () => {
 				// Generate the data table
 				let table = $(`#modal-${this.eventsModal.id}-table`).DataTable({
-					paging: false,
+					paging: true,
 					data: [],
 					columns: [
 						{ title: "Type" },
@@ -410,10 +410,10 @@ class WWSUcalendar extends CalendarDb {
 				// Generate the table
 				let table = $(`#modal-${this.schedulesModal.id}-table`).DataTable({
 					scrollCollapse: true,
-					paging: false,
+					paging: true,
 					data: [],
 					columns: [{ title: "Schedule" }, { title: "Actions" }],
-					pageLength: 10,
+					pageLength: 25,
 					drawCallback: () => {
 						// Action button click events
 						$(".btn-schedule-edit").unbind("click");

@@ -66,7 +66,7 @@ class WWSUtimesheet extends WWSUevents {
 	 */
 	clockForm(directorID) {
 		// Find the director
-		let director = this.requests.director.db.find({ ID: directorID }, true);
+		let director = this.manager.get(this.manager.get("directorReq").db).find({ ID: directorID }, true);
 
 		this.modals.clock.title = `${director.name} - Clock ${
 			!director.present
@@ -169,7 +169,7 @@ class WWSUtimesheet extends WWSUevents {
 									return;
 								}
 								let value = form.getValue();
-								this.requests.director._authorize(
+								this.manager.get("directorReq")._authorize(
 									value.name,
 									value.password,
 									(body) => {
@@ -183,7 +183,7 @@ class WWSUtimesheet extends WWSUevents {
 												autoHide: true,
 											});
 										} else {
-											this.requests.director._tryRequest(
+											this.manager.get("directorReq")._tryRequest(
 												{
 													method: "POST",
 													url: "/timesheet/add",
@@ -253,7 +253,7 @@ class WWSUtimesheet extends WWSUevents {
 	 */
 	edit(data, cb) {
 		try {
-			this.requests.admin.request(
+			this.manager.get("adminDirectorReq").request(
 				{ method: "post", url: this.endpoints.edit, data },
 				(response) => {
 					if (response !== "OK") {
@@ -308,7 +308,7 @@ class WWSUtimesheet extends WWSUevents {
 	 */
 	remove(data, cb) {
 		try {
-			this.requests.admin.request(
+			this.manager.get("adminDirectorReq").request(
 				{ method: "post", url: this.endpoints.remove, data },
 				(response) => {
 					if (response !== "OK") {
@@ -403,7 +403,15 @@ class WWSUtimesheet extends WWSUevents {
 							{ title: "Total Hours" },
 						],
 						order: [[0, "asc"]],
+						buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"],
 					});
+
+					this.tables.hours
+						.buttons()
+						.container()
+						.appendTo(
+							$(`#section-timesheets-hours-table_wrapper .col-md-6:eq(0)`)
+						);
 				});
 
 			// Setup records table
@@ -440,7 +448,8 @@ class WWSUtimesheet extends WWSUevents {
 						],
 						columnDefs: [{ responsivePriority: 1, targets: 6 }],
 						order: [[1, "asc"]],
-						pageLength: 25,
+						pageLength: 100,
+						buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"],
 						drawCallback: () => {
 							// Action button click events
 							$(".btn-timesheet-edit").unbind("click");
@@ -482,6 +491,13 @@ class WWSUtimesheet extends WWSUevents {
 						},
 					});
 
+					this.tables.records
+						.buttons()
+						.container()
+						.appendTo(
+							$(`#section-timesheets-records-table_wrapper .col-md-6:eq(0)`)
+						);
+
 					// Additional info rows
 					$("#section-timesheets-records-table tbody").on(
 						"click",
@@ -513,7 +529,7 @@ class WWSUtimesheet extends WWSUevents {
 	 * @param {?function} cb Callback function to execute with records
 	 */
 	getRecords(cb) {
-		this.requests.no.request(
+		this.manager.get("noReq").request(
 			{
 				method: "post",
 				url: this.endpoints.get,

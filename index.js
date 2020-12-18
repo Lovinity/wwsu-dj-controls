@@ -95,9 +95,6 @@ let recorderWindow;
 let remoteWindow;
 let discordWindow;
 
-// Local copy of audio volume information
-let volumes;
-
 const enforceCORS = () => {
 	// On requests to skyway.js, we must use the WWSU server as the Origin so skyway can verify us.
 	// For all other requests, we can use the default file origin (which we should, especially for the WWSU server)
@@ -412,11 +409,15 @@ const createWindows = () => {
 				recorderWindow.webContents.send("shutDown");
 			}
 
-			calendarWindow.close();
-			calendarWindow = null;
+			if (calendarWindow) {
+				calendarWindow.close();
+				calendarWindow = null;
+			}
 
-			audioWindow.close();
-			audioWindow = null;
+			if (audioWindow) {
+				audioWindow.close();
+				audioWindow = null;
+			}
 
 			if (silenceWindow) {
 				silenceWindow.close();
@@ -427,12 +428,16 @@ const createWindows = () => {
 				remoteWindow.close();
 				remoteWindow = null;
 			}
+
+			if (discordWindow) {
+				discordWindow.close();
+				discordWindow = null;
+			}
 		} catch (eee) {}
 	});
 
 	mainWindow.on("focus", () => mainWindow.flashFrame(false));
 
-	/* Electron v10
 	mainWindow.webContents.on("render-process-gone", (event, details) => {
 		console.log("Process gone!");
 		makeNotification({
@@ -440,7 +445,7 @@ const createWindows = () => {
 			bg: "danger",
 			header: "WWSU DJ Controls Crashed!",
 			flash: true,
-			body: `<p>Wuh oh! WWSU DJ Controls crashed, code ${details.reason}!</p><p>Please close and re-open DJ Controls.</p><p>If this problem continues, please contact the engineer or xanaftp@gmail.com.</p>`,
+			body: `<p>Wuh oh! WWSU DJ Controls crashed, code ${details.reason}!</p><p>Please close and re-open DJ Controls.</p><p>If this problem continues, please contact the engineer or xanaftp@gmail.com.</p><p>If Discord is open in DJ Controls, please log out before closing the window.</p>`,
 		});
 		try {
 			// Recorder should be shut down gracefully to save current recording
@@ -448,11 +453,15 @@ const createWindows = () => {
 				recorderWindow.webContents.send("shutDown");
 			}
 
-			calendarWindow.close();
-			calendarWindow = null;
+			if (calendarWindow) {
+				calendarWindow.close();
+				calendarWindow = null;
+			}
 
-			audioWindow.close();
-			audioWindow = null;
+			if (audioWindow) {
+				audioWindow.close();
+				audioWindow = null;
+			}
 
 			if (silenceWindow) {
 				silenceWindow.close();
@@ -463,41 +472,8 @@ const createWindows = () => {
 				remoteWindow.close();
 				remoteWindow = null;
 			}
-		} catch (eee) {}
-	});
-	*/
 
-	mainWindow.webContents.on("crashed", (event, killed) => {
-		console.log("Main UI gone!");
-		makeNotification({
-			title: "WWSU DJ Controls Crashed!",
-			bg: "danger",
-			header: "WWSU DJ Controls Crashed!",
-			flash: true,
-			body: `<p>WWSU DJ Controls either crashed or was forcefully terminated. Please restart WWSU DJ Controls if you were using it, especially if doing a broadcast.</p>`,
-		});
-
-		try {
-			// Recorder should be shut down gracefully to save current recording
-			if (recorderWindow) {
-				recorderWindow.webContents.send("shutDown");
-			}
-
-			calendarWindow.close();
-			calendarWindow = null;
-
-			audioWindow.close();
-			audioWindow = null;
-
-			if (silenceWindow) {
-				silenceWindow.close();
-				silenceWindow = null;
-			}
-
-			if (remoteWindow) {
-				remoteWindow.close();
-				remoteWindow = null;
-			}
+			// Do not close discordWindow; user needs to be able to log out
 		} catch (eee) {}
 	});
 
@@ -593,15 +569,6 @@ app
 	IPC COMMUNICATIONS
 */
 
-ipcMain.handle("setAudioVolume", async (event, vol) => {
-	volumes = vol;
-	return true;
-});
-
-ipcMain.handle("getAudioVolume", async (event, args) => {
-	return volumes;
-});
-
 // Sync get the machine ID string for this installation
 ipcMain.on("get-machine-id", (event) => {
 	event.returnValue = machineIdSync();
@@ -675,6 +642,7 @@ ipcMain.on("audio", (event, arg) => {
 	}
 });
 
+// Messages to be sent to the remote process
 ipcMain.on("remote", (event, arg) => {
 	try {
 		if (remoteWindow) remoteWindow.webContents.send(arg[0], arg[1]);
@@ -728,219 +696,213 @@ ipcMain.on("process", (event, arg) => {
 	}
 });
 
-// Tasks to be completed by the main process
-ipcMain.on("main", (event, arg) => {
-	let args = arg[1];
-	switch (arg[0]) {
-		// Generate a notification window
-		case "makeNotification":
-			makeNotification(arg[1][0]);
-			break;
+// Refresh available audio devices and re-connect active ones
+ipcMain.on("audioRefreshDevices", (event, arg) => {
+	try {
+		if (audioWindow) audioWindow.webContents.send("audioRefreshDevices", arg);
+		if (remoteWindow) remoteWindow.webContents.send("audioRefreshDevices", arg);
+		if (silenceWindow)
+			silenceWindow.webContents.send("audioRefreshDevices", arg);
+		if (recorderWindow)
+			recorderWindow.webContents.send("audioRefreshDevices", arg);
+	} catch (e) {}
+});
 
-		// When a file reader is ready to be saved to an audio file
-		case "recorderEncoded":
-			try {
-				// Enforce webm type
-				args[0] = `${args[0]}.webm`;
+// Change the volume of a device on all audio processes
+ipcMain.on("audioChangeVolume", (event, args) => {
+	try {
+		// Update settings
+		updateAudioSettings(args[0], args[1], { volume: args[2] });
 
-				let arrayBuffer = Buffer.from(new Uint8Array(args[1]));
+		// Send new volume gain info to audio processes
+		if (audioWindow) audioWindow.webContents.send("audioChangeVolume", args);
+		if (remoteWindow) remoteWindow.webContents.send("audioChangeVolume", args);
+		if (silenceWindow)
+			silenceWindow.webContents.send("audioChangeVolume", args);
+		if (recorderWindow)
+			recorderWindow.webContents.send("audioChangeVolume", args);
+	} catch (eee) {
+		// Ignore errors
+		console.error(eee);
+	}
+});
 
-				// If the base path does not exist, create it
+// Save remote settings for a device
+ipcMain.on("audioRemoteSetting", (event, args) => {
+	try {
+		// Update settings
+		updateAudioSettings(args[0], args[1], { remote: args[2] });
+
+		// Send new volume gain info to relevant audio processes
+		if (remoteWindow) remoteWindow.webContents.send("audioRemoteSetting", args);
+	} catch (eee) {
+		// Ignore errors
+		console.error(eee);
+	}
+});
+
+// Save recorder settings for a device
+ipcMain.on("audioRecorderSetting", (event, args) => {
+	try {
+		// Update settings
+		updateAudioSettings(args[0], args[1], { recorder: args[2] });
+
+		// Send new volume gain info to relevant audio processes
+		if (recorderWindow)
+			recorderWindow.webContents.send("audioRecorderSetting", args);
+	} catch (eee) {
+		// Ignore errors
+		console.error(eee);
+	}
+});
+
+// Save silence detection settings for a device
+ipcMain.on("audioSilenceSetting", (event, args) => {
+	try {
+		// Update settings
+		updateAudioSettings(args[0], args[1], { silence: args[2] });
+
+		// Send new volume gain info to relevant audio processes
+		if (silenceWindow)
+			silenceWindow.webContents.send("audioSilenceSetting", args);
+	} catch (eee) {
+		// Ignore errors
+		console.error(eee);
+	}
+});
+
+// Save settings for output devices
+ipcMain.on("audioOutputSetting", (event, args) => {
+	try {
+		// Update settings; only one device should be allowed to have output as true
+		let settings = config.get(`audio`);
+		settings = settings.map((set) =>
+			updateAudioSettings(set.deviceId, set.kind, { output: false })
+		);
+		updateAudioSettings(args[0], args[1], { output: args[2] });
+
+		// Send new volume gain info to relevant audio processes
+		if (remoteWindow) remoteWindow.webContents.send("audioOutputSetting", args);
+	} catch (eee) {
+		// Ignore errors
+		console.error(eee);
+	}
+});
+
+// Save queue settings for device
+ipcMain.on("audioQueueSetting", (event, args) => {
+	try {
+		// Update settings; only one device should be allowed to have queue as true
+		let settings = config.get(`audio`);
+		settings = settings.map((set) =>
+			updateAudioSettings(set.deviceId, set.kind, { queue: false })
+		);
+		updateAudioSettings(args[0], args[1], { output: args[2] });
+
+		// Send new queue info to relevant audio processes
+		if (remoteWindow) remoteWindow.webContents.send("audioQueueSetting", args);
+	} catch (eee) {
+		// Ignore errors
+		console.error(eee);
+	}
+});
+
+// Save a recording
+ipcMain.handle("recorderEncoded", (event, args) => {
+	return new Promise(async (resolve, reject) => {
+		try {
+			// Enforce webm type
+			args[0] = `${args[0]}.webm`;
+
+			let arrayBuffer = Buffer.from(new Uint8Array(args[1]));
+
+			// If the base path does not exist, create it
+			if (
+				!fs.existsSync(path.resolve(`${config.get("recorder.recordPath")}/`))
+			) {
+				console.log(`base does not exist`);
+				fs.mkdirSync(path.resolve(`${config.get("recorder.recordPath")}/`));
+			}
+
+			// Make subdirectories if they do not exist
+			["live", "remote", "sports", "automation", "prerecord"].map((subdir) => {
 				if (
-					!fs.existsSync(path.resolve(`${config.get("recorder.recordPath")}/`))
+					!fs.existsSync(
+						path.resolve(`${config.get("recorder.recordPath")}/${subdir}/`)
+					)
 				) {
-					console.log(`base does not exist`);
-					fs.mkdirSync(path.resolve(`${config.get("recorder.recordPath")}/`));
+					console.log(`Subdirectory ${subdir} does not exist`);
+					fs.mkdirSync(
+						path.resolve(`${config.get("recorder.recordPath")}/${subdir}/`)
+					);
 				}
+			});
 
-				// Make subdirectories if they do not exist
-				["live", "remote", "sports", "automation"].map((subdir) => {
-					if (
-						!fs.existsSync(
-							path.resolve(`${config.get("recorder.recordPath")}/${subdir}/`)
-						)
-					) {
-						console.log(`Subdirectory ${subdir} does not exist`);
-						fs.mkdirSync(
-							path.resolve(`${config.get("recorder.recordPath")}/${subdir}/`)
-						);
-					}
-				});
-
-				// If the specialized sub subdirectory does not exist, make it.
-				console.log(
+			// If the specialized sub subdirectory does not exist, make it.
+			console.log(
+				path.resolve(
+					path.dirname(`${config.get("recorder.recordPath")}/${args[0]}`)
+				)
+			);
+			if (
+				!fs.existsSync(
+					path.resolve(
+						path.dirname(`${config.get("recorder.recordPath")}/${args[0]}`)
+					)
+				)
+			) {
+				console.log(`Special directory does not exist.`);
+				fs.mkdirSync(
 					path.resolve(
 						path.dirname(`${config.get("recorder.recordPath")}/${args[0]}`)
 					)
 				);
-				if (
-					!fs.existsSync(
-						path.resolve(
-							path.dirname(`${config.get("recorder.recordPath")}/${args[0]}`)
-						)
-					)
-				) {
-					console.log(`Special directory does not exist.`);
-					fs.mkdirSync(
-						path.resolve(
-							path.dirname(`${config.get("recorder.recordPath")}/${args[0]}`)
-						)
-					);
 
-					// Write a README file
-					fs.writeFile(
-						`${path.resolve(
-							path.dirname(`${config.get("recorder.recordPath")}/${args[0]}`)
-						)}/README.txt`,
-						`Audio files are recorded in webm/Opus format because the MP3 format is proprietary, and webm/opus works best with DJ Controls. If you need to convert these to another format for free, you can use a free online converter such as https://anyconv.com/webm-to-mp3-converter/ or a downloadable application that can convert WEBM Opus files .` +
-							"\n\n" +
-							`BE AWARE recordings are only stored temporarily! WWSU reserves the right to delete, modify, and/or monitor any and all recordings at any time without notice. Be sure to save a copy of your recordings ASAP after each show.` +
-							"\n\n" +
-							`WWSU does not guarantee the reliability of automatic recordings! You should always make your own recordings as well, especially if you want your recordings to be higher than 128kbps.`,
-						(err) => {
-							console.error(err);
-						}
-					);
-				}
-
-				console.log(`audio save file ${args[0]}`);
+				// Write a README file
 				fs.writeFile(
-					`${config.get("recorder.recordPath")}/${args[0]}`,
-					arrayBuffer,
-					function (err) {
-						if (err) {
-							console.error(err);
-						} else {
-							recorderWindow.webContents.send(
-								`recorderSaved`,
-								`${config.get("recorder.recordPath")}/${args[0]}`
-							);
-							if (mainWindow) {
-								mainWindow.webContents.send("console", [
-									"log",
-									`Audio: Recording ${config.get("recorder.recordPath")}/${
-										args[0]
-									} saved.`,
-								]);
-								mainWindow.webContents.send(
-									`recorderSaved`,
-									`${config.get("recorder.recordPath")}/${args[0]}`
-								);
-							}
-						}
+					`${path.resolve(
+						path.dirname(`${config.get("recorder.recordPath")}/${args[0]}`)
+					)}/README.txt`,
+					`Audio files are recorded in webm/Opus format because the MP3 format is proprietary, and webm/opus works best with DJ Controls. If you need to convert these to another format for free, you can use a free online converter such as https://anyconv.com/webm-to-mp3-converter/ or a downloadable application that can convert WEBM Opus files .` +
+						"\n\n" +
+						`BE AWARE recordings are only stored temporarily! WWSU reserves the right to delete, modify, and/or monitor any and all recordings at any time without notice. Be sure to save a copy of your recordings ASAP after each show.` +
+						"\n\n" +
+						`WWSU does not guarantee the reliability of automatic recordings! You should always make your own recordings as well, especially if you want your recordings to be higher than 128kbps.`,
+					(err) => {
+						console.error(err);
+						if (mainWindow)
+							mainWindow.webContents.send("console", ["error", err]);
+						reject(err);
 					}
 				);
-			} catch (e) {
-				console.error(e);
-				if (mainWindow) mainWindow.webContents.send("console", ["error", e]);
 			}
-			break;
 
-		// Call to refresh audio devices in all audio processes
-		case "audioRefreshDevices":
-			if (audioWindow)
-				audioWindow.webContents.send("audioRefreshDevices", args);
-			if (remoteWindow)
-				remoteWindow.webContents.send("audioRefreshDevices", args);
-			if (silenceWindow)
-				silenceWindow.webContents.send("audioRefreshDevices", args);
-			if (recorderWindow)
-				recorderWindow.webContents.send("audioRefreshDevices", args);
-			break;
+			console.log(`audio save file ${args[0]}`);
+			fs.writeFile(
+				`${config.get("recorder.recordPath")}/${args[0]}`,
+				arrayBuffer,
+				function (err) {
+					if (err) {
+						console.error(err);
+						if (mainWindow)
+							mainWindow.webContents.send("console", ["error", err]);
+						reject(err);
+					} else {
+						resolve(`${config.get("recorder.recordPath")}/${args[0]}`);
+					}
+				}
+			);
+		} catch (e) {
+			console.error(e);
+			if (mainWindow) mainWindow.webContents.send("console", ["error", e]);
+			reject(err);
+		}
+	});
+});
 
-		// Reload audio processes
-		case "audioReload":
-			if (audioWindow) audioWindow.reload();
-			if (remoteWindow) remoteWindow.reload();
-			if (silenceWindow) silenceWindow.reload();
-			if (recorderWindow) recorderWindow.webContents.send("shutDown");
-			break;
-
-		// Change the gain on a device
-		case "audioChangeVolume":
-			try {
-				// Update settings
-				updateAudioSettings(args[0], args[1], { volume: args[2] });
-
-				// Send new volume gain info to audio processes
-				if (audioWindow)
-					audioWindow.webContents.send("audioChangeVolume", args);
-				if (remoteWindow)
-					remoteWindow.webContents.send("audioChangeVolume", args);
-				if (silenceWindow)
-					silenceWindow.webContents.send("audioChangeVolume", args);
-				if (recorderWindow)
-					recorderWindow.webContents.send("audioChangeVolume", args);
-			} catch (eee) {
-				// Ignore errors
-				console.error(eee);
-			}
-			break;
-
-		// Change whether or not a device should be recorded
-		case "audioRecorderSetting":
-			try {
-				// Update settings
-				updateAudioSettings(args[0], args[1], { recorder: args[2] });
-
-				// Send new volume gain info to relevant audio processes
-				if (recorderWindow)
-					recorderWindow.webContents.send("audioRecorderSetting", args);
-			} catch (eee) {
-				// Ignore errors
-				console.error(eee);
-			}
-			break;
-
-		// Change whether or not a device should be recorded
-		case "audioSilenceSetting":
-			try {
-				// Update settings
-				updateAudioSettings(args[0], args[1], { silence: args[2] });
-
-				// Send new volume gain info to relevant audio processes
-				if (silenceWindow)
-					silenceWindow.webContents.send("audioSilenceSetting", args);
-			} catch (eee) {
-				// Ignore errors
-				console.error(eee);
-			}
-			break;
-
-		// Change whether or not a device should be broadcast on a remote stream
-		case "audioRemoteSetting":
-			try {
-				// Update settings
-				updateAudioSettings(args[0], args[1], { remote: args[2] });
-
-				// Send new volume gain info to relevant audio processes
-				if (remoteWindow)
-					remoteWindow.webContents.send("audioRemoteSetting", args);
-			} catch (eee) {
-				// Ignore errors
-				console.error(eee);
-			}
-			break;
-
-		// Change which device is the output device for incoming remote calls
-		case "audioOutputSetting":
-			try {
-				// Update settings; only one device should be allowed to have output as true
-				let settings = config.get(`audio`);
-				settings = settings.map((set) =>
-					updateAudioSettings(set.deviceId, set.kind, { output: false })
-				);
-				updateAudioSettings(args[0], args[1], { output: args[2] });
-
-				// Send new volume gain info to relevant audio processes
-				if (remoteWindow)
-					remoteWindow.webContents.send("audioOutputSetting", args);
-			} catch (eee) {
-				// Ignore errors
-				console.error(eee);
-			}
-			break;
-	}
+// Make a notification window
+ipcMain.on("makeNotification", (event, args) => {
+	makeNotification(arg[1][0]);
 });
 
 // use sanitize-filename
@@ -948,6 +910,7 @@ ipcMain.on("sanitize", (event, arg) => {
 	event.returnValue = Sanitize(arg);
 });
 
+// Load Discord webpage in a new window
 ipcMain.on("loadDiscord", (event, arg) => {
 	createDiscordWindow(arg);
 });
@@ -1227,6 +1190,11 @@ function updateAudioSettings(deviceId, kind, setting) {
 		);
 	}
 	config.set(`audio`, settings);
+
+	console.log(`Audio settings change`);
+	console.log(deviceId);
+	console.log(kind);
+	console.dir(setting);
 }
 
 /**

@@ -4,5 +4,10 @@
 const { ipcRenderer, contextBridge } = require("electron");
 
 contextBridge.exposeInMainWorld("ipc", {
-	on: (event, fn) => ipcRenderer.on(event, fn),
+	on: {
+		notificationData: (fn) =>
+			ipcRenderer.on("notificationData", (event, ...args) => {
+				fn(null, ...args);
+			}),
+	},
 });

@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /* global WWSUdb */
 
@@ -46,7 +46,13 @@ class WWSUdiscipline extends WWSUdb {
 				(discipline.action !== "dayban" ||
 					moment(discipline.createdAt)
 						.add(1, "days")
-						.isAfter(moment(this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.time : undefined)));
+						.isAfter(
+							moment(
+								this.manager.get("WWSUMeta")
+									? this.manager.get("WWSUMeta").meta.time
+									: undefined
+							)
+						));
 			if (activeDiscipline || !discipline.acknowledged) {
 				this.addDiscipline(discipline);
 			}
@@ -97,19 +103,22 @@ class WWSUdiscipline extends WWSUdb {
 
 		this.modals.discipline.footer = `<button type="button" class="btn btn-success" id="modal-${this.modals.discipline.id}-acknowledge">Acknowledge</button>`;
 
-		this.manager.get("WWSUutil").waitForElement(
-			`#modal-${this.modals.discipline.id}-acknowledge`,
-			() => {
+		this.manager
+			.get("WWSUutil")
+			.waitForElement(`#modal-${this.modals.discipline.id}-acknowledge`, () => {
 				$(`#modal-${this.modals.discipline.id}-acknowledge`).click(() => {
 					this.acknowledgeDiscipline(this.activeDiscipline);
 				});
-			}
-		);
+			});
 	}
 
 	// Initialize ONLY if this client will be allowed to manage discipline.
 	init() {
-		this.replaceData(this.manager.get("hostReq"), this.endpoints.get, this.data.get);
+		this.replaceData(
+			this.manager.get("hostReq"),
+			this.endpoints.get,
+			this.data.get
+		);
 	}
 
 	/**
@@ -119,33 +128,39 @@ class WWSUdiscipline extends WWSUdb {
 	 */
 	checkDiscipline(cb) {
 		try {
-			this.manager.get("noReq").request(
-				{ method: "post", url: this.endpoints.getWeb, data: {} },
-				(body) => {
-					let docb = true;
-					if (body.length > 0) {
-						body.map((discipline) => {
-							let activeDiscipline =
-								discipline.active &&
-								(discipline.action !== "dayban" ||
-									moment(discipline.createdAt)
-										.add(1, "days")
-										.isAfter(
-											moment(this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.time : undefined)
-										));
-							if (activeDiscipline) {
-								docb = false;
-							}
-							if (activeDiscipline || !discipline.acknowledged) {
-								this.addDiscipline(discipline);
-							}
-						});
+			this.manager
+				.get("noReq")
+				.request(
+					{ method: "post", url: this.endpoints.getWeb, data: {} },
+					(body) => {
+						let docb = true;
+						if (body.length > 0) {
+							body.map((discipline) => {
+								let activeDiscipline =
+									discipline.active &&
+									(discipline.action !== "dayban" ||
+										moment(discipline.createdAt)
+											.add(1, "days")
+											.isAfter(
+												moment(
+													this.manager.get("WWSUMeta")
+														? this.manager.get("WWSUMeta").meta.time
+														: undefined
+												)
+											));
+								if (activeDiscipline) {
+									docb = false;
+								}
+								if (activeDiscipline || !discipline.acknowledged) {
+									this.addDiscipline(discipline);
+								}
+							});
+						}
+						if (docb) {
+							cb();
+						}
 					}
-					if (docb) {
-						cb();
-					}
-				}
-			);
+				);
 		} catch (e) {
 			console.error(e);
 			$(document).Toasts("create", {
@@ -174,7 +189,13 @@ class WWSUdiscipline extends WWSUdb {
 			(discipline.action !== "dayban" ||
 				moment(discipline.createdAt)
 					.add(1, "days")
-					.isAfter(moment(this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.time : undefined)));
+					.isAfter(
+						moment(
+							this.manager.get("WWSUMeta")
+								? this.manager.get("WWSUMeta").meta.time
+								: undefined
+						)
+					));
 
 		if (discipline.acknowledged && !activeDiscipline) return;
 
@@ -196,7 +217,13 @@ class WWSUdiscipline extends WWSUdb {
 			(discipline.action !== "dayban" ||
 				moment(discipline.createdAt)
 					.add(1, "days")
-					.isAfter(moment(this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.time : undefined)));
+					.isAfter(
+						moment(
+							this.manager.get("WWSUMeta")
+								? this.manager.get("WWSUMeta").meta.time
+								: undefined
+						)
+					));
 
 		this.modals.discipline.title = `Disciplinary action ${
 			activeDiscipline
@@ -340,7 +367,7 @@ class WWSUdiscipline extends WWSUdb {
 	 */
 	edit(dom, data, cb) {
 		try {
-			this.requests.director.request(
+			this.manager.get("directorReq").request(
 				{
 					dom: dom,
 					method: "post",
@@ -394,7 +421,7 @@ class WWSUdiscipline extends WWSUdb {
 	 */
 	remove(data, cb) {
 		try {
-			this.requests.director.request(
+			this.manager.get("directorReq").request(
 				{
 					method: "post",
 					url: this.endpoints.remove,
@@ -446,11 +473,12 @@ class WWSUdiscipline extends WWSUdb {
 	 */
 	initTable(table) {
 		this.manager.get("WWSUanimations").add("bans-init-table", () => {
-
 			// Init html
 			$(table).html(
 				`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
-					this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+					this.manager.get("WWSUMeta")
+						? this.manager.get("WWSUMeta").meta.timezone
+						: moment.tz.guess()
 				}.</p><p><button type="button" class="btn btn-block btn-success btn-bans-new">New Ban / Discipline</button></p><table id="section-bans-table" class="table table-striped display responsive" style="width: 100%;"></table>`
 			);
 
@@ -476,7 +504,8 @@ class WWSUdiscipline extends WWSUdb {
 					],
 					columnDefs: [{ responsivePriority: 1, targets: 7 }],
 					order: [[1, "desc"]],
-					pageLength: 25,
+					pageLength: 100,
+					buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"],
 					drawCallback: () => {
 						// Action button click events
 						$(".btn-bans-edit").unbind("click");
@@ -509,6 +538,11 @@ class WWSUdiscipline extends WWSUdb {
 						});
 					},
 				});
+
+				this.table
+					.buttons()
+					.container()
+					.appendTo(`#section-bans-table_wrapper .col-md-6:eq(0)`);
 
 				// Additional info rows
 				let format = (d) => {
@@ -574,7 +608,9 @@ class WWSUdiscipline extends WWSUdb {
 							createdAt: moment
 								.tz(
 									record.createdAt,
-									this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+									this.manager.get("WWSUMeta")
+										? this.manager.get("WWSUMeta").meta.timezone
+										: moment.tz.guess()
 								)
 								.format("LLL"),
 							actions: `<div class="btn-group">
