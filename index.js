@@ -910,7 +910,7 @@ ipcMain.handle("recorderEncoded", (event, args) => {
 
 // Make a notification window
 ipcMain.on("makeNotification", (event, args) => {
-	makeNotification(arg[1][0]);
+	makeNotification(args[1][0]);
 });
 
 // use sanitize-filename
