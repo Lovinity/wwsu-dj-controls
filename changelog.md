@@ -2,9 +2,9 @@
 
 ## 8.0.0-alpha.30 - 2020-12-19
 
-### Added
+### Fixed
 
-- Quick links to WSU Guardian, WSU Newsroom, WSU Raiders, and Horizon League.
+- Null errors on audio saving
 
 ### Changed
 
@@ -12,6 +12,10 @@
 - Re-enabled serialport, however it is still not working at this time. Instead, changed Lovinity/wwsu to not critical-error if no devices are selected to monitor for delay system. Will be disabling that until serialport works again.
 - WWSUanimations uses requestAnimationFrame instead of intervals/timeouts.
 - WWSUqueue utilizes an idle callback like interface instead of making a bunch of setTimeouts.
+
+### Added
+
+- Quick links to WSU Guardian, WSU Newsroom, WSU Raiders, and Horizon League.
 
 ## 8.0.0-alpha.29 - 2020-12-17
 

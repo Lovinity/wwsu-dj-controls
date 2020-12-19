@@ -869,10 +869,12 @@ ipcMain.handle("recorderEncoded", (event, args) => {
 						"\n\n" +
 						`WWSU does not guarantee the reliability of automatic recordings! You should always make your own recordings as well, especially if you want your recordings to be higher than 128kbps.`,
 					(err) => {
-						console.error(err);
-						if (mainWindow)
-							mainWindow.webContents.send("console", ["error", err]);
-						reject(err);
+						if (err) {
+							console.error(err);
+							if (mainWindow)
+								mainWindow.webContents.send("console", ["error", err]);
+							reject(err);
+						}
 					}
 				);
 			}
@@ -886,6 +888,7 @@ ipcMain.handle("recorderEncoded", (event, args) => {
 					arrayBuffer = undefined;
 					args[1] = undefined;
 					if (err) {
+						console.log(`Audio file error`);
 						console.error(err);
 						if (mainWindow)
 							mainWindow.webContents.send("console", ["error", err]);
@@ -897,9 +900,10 @@ ipcMain.handle("recorderEncoded", (event, args) => {
 				}
 			);
 		} catch (e) {
-			console.error(e);
+			console.log(`General error`);
+			console.dir(e);
 			if (mainWindow) mainWindow.webContents.send("console", ["error", e]);
-			reject(err);
+			reject(e);
 		}
 	});
 });
