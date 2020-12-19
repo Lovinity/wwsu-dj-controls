@@ -844,35 +844,49 @@ class WWSUutil {
 class WWSUqueue {
 	constructor() {
 		this.timer = null;
-		this.queue = [];
+		this.taskList = [];
+	}
+
+	idleCallback(handler) {
+		let startTime = Date.now();
+
+		return setTimeout(() => {
+			handler({
+				didTimeout: false,
+				timeRemaining: () => {
+					return Math.max(0, 50.0 - (Date.now() - startTime));
+				},
+			});
+		}, 1);
+	}
+
+	handleTaskQueue(deadline) {
+		while (
+			(deadline.timeRemaining() > 0 || deadline.didTimeout) &&
+			this.taskList.length
+		) {
+			let task = this.taskList.shift();
+			task();
+		}
+
+		if (this.taskList.length) {
+			this.timer = this.idleCallback((deadline) => {
+				this.handleTaskQueue(deadline);
+			});
+		} else {
+			this.timer = undefined;
+		}
 	}
 
 	add(fn, time) {
-		const setTimer = (time) => {
-			this.timer = setTimeout(() => {
-				time = this.add();
-				if (this.queue.length) {
-					setTimer(time);
-				} else {
-					clearTimeout(this.timer);
-				}
-			}, time || 2);
-		};
-
 		if (fn) {
-			this.queue.push([fn, time]);
-			if (this.queue.length == 1) {
-				setTimer(time);
+			this.taskList.push(fn);
+			if (this.taskList.length === 1 || !this.timer) {
+				this.timer = this.idleCallback((deadline) => {
+					this.handleTaskQueue(deadline);
+				});
 			}
-			return;
 		}
-
-		let next = this.queue.shift();
-		if (!next) {
-			return 0;
-		}
-		next[0]();
-		return next[1];
 	}
 }
 
@@ -1004,28 +1018,32 @@ class WWSUanimations extends WWSUevents {
 		// Animation queue object: key is animation id, value is function to process the animation.
 		this.animations = {};
 
+		this.processed = true;
 		this.processing = false;
+	}
 
-		// Process queued animations every second
-		// Once an inactive window becomes active, process one animation every 0.1 seconds to avoid sharp CPU spikes
-		setInterval(() => {
-			if (document[this.hidden]) return;
-			let _processing = false;
-			for (let key in this.animations) {
-				if (Object.prototype.hasOwnProperty.call(this.animations, key)) {
-					if (!this.processing) this.emitEvent("updateStatus", [true]);
-					_processing = true;
-					this.processing = true;
-					if (this.animations[key]) this.animations[key]();
-					delete this.animations[key];
-					break;
-				}
+	processAnimations() {
+		let processedAnimation = false;
+		for (let key in this.animations) {
+			if (Object.prototype.hasOwnProperty.call(this.animations, key)) {
+				if (this.animations[key]) this.animations[key]();
+				delete this.animations[key];
+				if (!this.processing) this.emitEvent("updateStatus", [true]);
+				this.processing = true;
+				processedAnimation = true;
+				break;
 			}
-			if (this.processing && !_processing) {
-				this.processing = false;
-				this.emitEvent("updateStatus", [false]);
-			}
-		}, 100);
+		}
+		if (!processedAnimation) {
+			if (this.processing) this.emitEvent("updateStatus", [false]);
+			this.processing = false;
+			this.processed = true;
+			this.animations = {};
+		} else {
+			window.requestAnimationFrame(() => {
+				this.processAnimations();
+			});
+		}
 	}
 
 	/**
@@ -1041,6 +1059,12 @@ class WWSUanimations extends WWSUevents {
 		} else {
 			// If a function for the same name is already queued, it is overwritten; we only need to process the most recent frame.
 			this.animations[name] = fn;
+			if (this.processed) {
+				this.processed = false;
+				window.requestAnimationFrame(() => {
+					this.processAnimations();
+				});
+			}
 		}
 	}
 }

@@ -439,28 +439,28 @@ navigation
 	);
 
 // Click events
-$(".status-more").click(() => {
+$(".status-more").on("click", () => {
 	status.statusModal.iziModal("open");
 });
-$(".eas-more").click(() => {
+$(".eas-more").on("click", () => {
 	eas.easModal.iziModal("open");
 });
-$(".btn-calendar-definitions").click(() => {
+$(".btn-calendar-definitions").on("click", () => {
 	calendar.definitionsModal.iziModal("open");
 });
-$(".btn-calendar-prerequisites").click(() => {
+$(".btn-calendar-prerequisites").on("click", () => {
 	calendar.prerequisitesModal.iziModal("open");
 });
-$(".btn-manage-events").click(() => {
+$(".btn-manage-events").on("click", () => {
 	calendar.showSimpleEvents();
 });
-$("#section-logs-date-browse").click(() => {
+$("#section-logs-date-browse").on("click", () => {
 	logs.showAttendance($("#section-logs-date").val());
 });
-$(".chat-recipients").click(() => {
+$(".chat-recipients").on("click", () => {
 	recipients.openRecipients();
 });
-$("#section-audio-devices-refresh").click(() => {
+$("#section-audio-devices-refresh").on("click", () => {
 	$("#section-audio-devices").block({
 		message: "<h1>Refreshing audio process...</h1>",
 		css: { border: "3px solid #a00" },
@@ -470,7 +470,7 @@ $("#section-audio-devices-refresh").click(() => {
 		},
 	});
 });
-$("#section-serial-delay-refresh").click(() => {
+$("#section-serial-delay-refresh").on("click", () => {
 	$("#section-serial-delay").block({
 		message: "<h1>Refreshing serial ports...</h1>",
 		css: { border: "3px solid #a00" },
@@ -481,15 +481,15 @@ $("#section-serial-delay-refresh").click(() => {
 		},
 	});
 });
-$(".chat-mute").click(() => {
+$(".chat-mute").on("click", () => {
 	if (recipients.activeRecipient)
 		discipline.simpleMuteForm(recipients.activeRecipient);
 });
-$(".chat-ban").click(() => {
+$(".chat-ban").on("click", () => {
 	if (recipients.activeRecipient)
 		discipline.simpleBanForm(recipients.activeRecipient);
 });
-$(".btn-dashboard-meta-clear").click(() => {
+$(".btn-dashboard-meta-clear").on("click", () => {
 	hosts.promptIfNotHost(`Mark DJ / Producer as talking`, () => {
 		logs.add(
 			{
@@ -505,7 +505,7 @@ $(".btn-dashboard-meta-clear").click(() => {
 });
 
 // Operation click events
-$(".btn-operation-resume").click(() => {
+$(".btn-operation-resume").on("click", () => {
 	if (
 		meta.meta.hostCalling !== null &&
 		hosts.client.ID === meta.meta.hostCalling &&
@@ -530,46 +530,46 @@ $(".btn-operation-resume").click(() => {
 	}
 	state.return({});
 });
-$(".btn-operation-15-psa").click(() => {
+$(".btn-operation-15-psa").on("click", () => {
 	state.queuePSA({ duration: 15 });
 });
-$(".btn-operation-30-psa").click(() => {
+$(".btn-operation-30-psa").on("click", () => {
 	state.queuePSA({ duration: 30 });
 });
-$(".btn-operation-automation").click(() => {
+$(".btn-operation-automation").on("click", () => {
 	state.automation({ transition: false });
 });
-$(".btn-operation-switch").click(() => {
+$(".btn-operation-switch").on("click", () => {
 	state.automation({ transition: true });
 });
-$(".btn-operation-break").click(() => {
+$(".btn-operation-break").on("click", () => {
 	state.break({ halftime: false, problem: false });
 });
-$(".btn-operation-extended-break").click(() => {
+$(".btn-operation-extended-break").on("click", () => {
 	state.break({ halftime: true, problem: false });
 });
-$(".btn-operation-top-add").click(() => {
+$(".btn-operation-top-add").on("click", () => {
 	state.queueTopAdd({});
 });
-$(".btn-operation-liner").click(() => {
+$(".btn-operation-liner").on("click", () => {
 	state.queueLiner({});
 });
-$(".btn-operation-dump").click(() => {
+$(".btn-operation-dump").on("click", () => {
 	state.dump({});
 });
-$(".btn-operation-live").click(() => {
+$(".btn-operation-live").on("click", () => {
 	state.showLiveForm();
 });
-$(".btn-operation-remote").click(() => {
+$(".btn-operation-remote").on("click", () => {
 	state.showRemoteForm();
 });
-$(".btn-operation-log").click(() => {
+$(".btn-operation-log").on("click", () => {
 	logs.showLogForm();
 });
-$(".btn-operation-sports").click(() => {
+$(".btn-operation-sports").on("click", () => {
 	state.showSportsForm();
 });
-$(".btn-operation-sportsremote").click(() => {
+$(".btn-operation-sportsremote").on("click", () => {
 	state.showSportsRemoteForm();
 });
 
@@ -1440,12 +1440,10 @@ refreshSerialPorts();
 
 // Connected to WWSU
 socket.on("connect", () => {
-	animations.add("socket-connect", () => {
-		$("#reconnecting").addClass("d-none");
-		$("#connecting").addClass("d-none");
-		$("#unauthorized").addClass("d-none");
-		$("#content").removeClass("d-none");
-	});
+	$("#reconnecting").addClass("d-none");
+	$("#connecting").addClass("d-none");
+	$("#unauthorized").addClass("d-none");
+	$("#content").removeClass("d-none");
 
 	socket._raw.io._reconnectionAttempts = Infinity;
 
@@ -1496,6 +1494,15 @@ socket.on("connect", () => {
 
 				// Delay system
 				window.ipc.restartDelay(hosts.client.delaySystem);
+
+				// Discord iframe
+				$("#section-chat-iframe").attr(
+					"src",
+					`https://titanembeds.com/embed/742819639096246383?defaultchannel=782073518606647297&theme=DiscordDark&username=${hosts.client.friendlyname.replace(
+						/[^a-zA-Z0-9\d\-_\s]+/gi,
+						""
+					)}`
+				);
 			} else if (success === -1) {
 				animations.add("socket-connect-2", () => {
 					$("#content").addClass("d-none");
@@ -1513,34 +1520,28 @@ socket.on("connect", () => {
 
 // Disconnected from WWSU
 socket.on("disconnect", () => {
-	animations.add("socket-connect", () => {
-		$("#reconnecting").removeClass("d-none");
-		$("#connecting").addClass("d-none");
-		$("#unauthorized").addClass("d-none");
-		$("#content").addClass("d-none");
-	});
+	$("#reconnecting").removeClass("d-none");
+	$("#connecting").addClass("d-none");
+	$("#unauthorized").addClass("d-none");
+	$("#content").addClass("d-none");
 	window.ipc.flashMain(true);
 });
 
 // Connection error
 socket.on("reconnect_failed", (error) => {
-	animations.add("socket-connect", () => {
-		$("#unauthorized").removeClass("d-none");
-		$("#connecting").addClass("d-none");
-		$("#reconnecting").addClass("d-none");
-		$("#content").addClass("d-none");
-	});
+	$("#unauthorized").removeClass("d-none");
+	$("#connecting").addClass("d-none");
+	$("#reconnecting").addClass("d-none");
+	$("#content").addClass("d-none");
 	window.ipc.flashMain(true);
 });
 
 socket.on("error", () => {
 	if (!hosts.connectedBefore) {
-		animations.add("socket-connect", () => {
-			$("#unauthorized").removeClass("d-none");
-			$("#connecting").addClass("d-none");
-			$("#reconnecting").addClass("d-none");
-			$("#content").addClass("d-none");
-		});
+		$("#unauthorized").removeClass("d-none");
+		$("#connecting").addClass("d-none");
+		$("#reconnecting").addClass("d-none");
+		$("#content").addClass("d-none");
 		window.ipc.flashMain(true);
 	}
 });
@@ -1592,8 +1593,7 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 				$(".operation-dump-time").html(
 					`${
 						updated.delaySystem === null
-							// TODO: Reactivate when serialport works again; ? `Turn On`
-							? `DISABLED`
+							? `Turn On`
 							: `${updated.delaySystem} sec`
 					}`
 				);
@@ -1935,12 +1935,20 @@ meta.on("metaTick", "renderer", (fullMeta) => {
 			// Queue length and first track
 			$(".meta-queueLength").html(
 				fullMeta.queueCalculating
-					? `${moment.duration(queueLength, "seconds").format("HH:mm:ss")}<i class="fas fa-hourglass-half" title="Might be inaccurate"></i>`
+					? `${moment
+							.duration(queueLength, "seconds")
+							.format(
+								"HH:mm:ss"
+							)}<i class="fas fa-hourglass-half" title="Might be inaccurate"></i>`
 					: moment.duration(queueLength, "seconds").format("HH:mm:ss")
 			);
 			$(".meta-firstTrack").html(
 				fullMeta.queueCalculating || fullMeta.countdown === null
-					? `${moment.duration(queueLength, "seconds").format("HH:mm:ss")}<i class="fas fa-hourglass-half" title="Might be inaccurate"></i>`
+					? `${moment
+							.duration(queueLength, "seconds")
+							.format(
+								"HH:mm:ss"
+							)}<i class="fas fa-hourglass-half" title="Might be inaccurate"></i>`
 					: moment.duration(countDown, "seconds").format("HH:mm:ss")
 			);
 			if (
@@ -2705,14 +2713,14 @@ messages.on("newMessage", (message) => {
 
 hosts.on("clientChanged", "renderer", (newClient) => {
 	// If this DJ Controls is supposed to monitor/report silence, open the silence process, else close it.
-	if (newClient.silenceDetection) {
+	if (newClient && newClient.silenceDetection) {
 		window.ipc.process.silence(["open"]);
 	} else {
 		window.ipc.process.silence(["close"]);
 	}
 
 	// If this DJ Controls is supposed to record, open the recorder process, else close it.
-	if (newClient.recordAudio) {
+	if (newClient && newClient.recordAudio) {
 		window.ipc.process.recorder(["open"]);
 		startRecording(-1);
 	} else {
@@ -2720,7 +2728,16 @@ hosts.on("clientChanged", "renderer", (newClient) => {
 	}
 
 	// Delay system
-	window.ipc.restartDelay(newClient.delaySystem);
+	window.ipc.restartDelay(newClient ? newClient.delaySystem : false);
+
+	if (newClient)
+		$("#section-chat-iframe").attr(
+			"src",
+			`https://titanembeds.com/embed/742819639096246383?defaultchannel=782073518606647297&theme=DiscordDark&username=${hosts.client.friendlyname.replace(
+				/[^a-zA-Z0-9\d\-_\s]+/gi,
+				""
+			)}`
+		);
 });
 
 hosts.on("change", "renderer", (db) => {

@@ -49,7 +49,7 @@ const packageJson = require("./package.json");
 const { machineIdSync } = require("./assets/wwsu-host-id");
 const Sanitize = require("sanitize-filename");
 const semver = require("semver");
-// const serialport = require("serialport");
+const serialport = require("serialport");
 const { URL } = require("url");
 
 // Initialize debug tools
@@ -884,6 +884,7 @@ ipcMain.handle("recorderEncoded", (event, args) => {
 				arrayBuffer,
 				function (err) {
 					arrayBuffer = undefined;
+					args[1] = undefined;
 					if (err) {
 						console.error(err);
 						if (mainWindow)
@@ -929,7 +930,6 @@ let delayStatusTimer;
 
 // Sync get available serial ports
 ipcMain.on("getSerialPorts", (event) => {
-	/*
 	serialport
 		.list()
 		.then((ports) => {
@@ -943,8 +943,6 @@ ipcMain.on("getSerialPorts", (event) => {
 			console.error(err);
 			event.returnValue = [];
 		});
-		*/
-		event.returnValue = [];
 });
 
 // Restart delay system
@@ -958,8 +956,6 @@ ipcMain.on("delayDump", (event) => {
 });
 
 function restartDelay(arg) {
-	return;
-
 	console.log("Restarting Delay Serial connection");
 	mainWindow.webContents.send("console", [
 		"log",
@@ -1001,15 +997,9 @@ function restartDelay(arg) {
 						}, 15000);
 					}
 				};
-				delaySerial = new serialport(
-					device,
-					{
-						baudRate: 38400,
-					},
-					(err) => {
-						serialError(err);
-					}
-				);
+				delaySerial = new serialport(device, {
+					baudRate: 38400,
+				});
 
 				delaySerial.on("error", (err) => {
 					serialError(err);
@@ -1086,8 +1076,6 @@ function restartDelay(arg) {
 }
 
 function dumpDelay() {
-	return;
-
 	if (delaySerial) {
 		mainWindow.webContents.send("console", [
 			"log",
