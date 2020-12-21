@@ -37,8 +37,16 @@ audioManager.on("devices", "renderer", (devices) => {
 				device.kind,
 				"assets/plugins/wwsu-audio/js/wwsu-meter.js"
 			);
+			window.ipc.renderer.console([
+				"log",
+				`Remote: Connected device ${device.kind} / ${device.deviceId}`,
+			]);
 		} else {
 			audioManager.disconnect(device.deviceId, device.kind);
+			window.ipc.renderer.console([
+				"log",
+				`Remote: Disconnected device ${device.kind} / ${device.deviceId}`,
+			]);
 		}
 	});
 });
@@ -188,8 +196,16 @@ window.ipc.on.audioRemoteSetting((event, arg) => {
 			arg[1],
 			"assets/plugins/wwsu-audio/js/wwsu-meter.js"
 		);
+		window.ipc.renderer.console([
+			"log",
+			`Remote: Connected device ${arg[1]} / ${arg[0]}`,
+		]);
 	} else {
 		audioManager.disconnect(arg[0], arg[1]);
+		window.ipc.renderer.console([
+			"log",
+			`Remote: Disconnected device ${arg[1]} / ${arg[0]}`,
+		]);
 	}
 	window.ipc.renderer.console([
 		"log",
@@ -214,20 +230,33 @@ window.ipc.on.audioOutputSetting((event, arg) => {
 
 window.ipc.on.remoteStartCall((event, arg) => {
 	console.log(`Received request to start a call with ${arg[0]}`);
+	window.ipc.renderer.console([
+		"log",
+		`Remote: Starting call with peer ${arg[0]}`,
+	]);
 	remote.call(arg[0]);
 });
 
 window.ipc.on.remoteAnswerCall((event, arg) => {
 	console.log(`Received request to answer a call from ${arg[0]}`);
+	window.ipc.renderer.console([
+		"log",
+		`Remote: Answering incoming call with peer ${arg[0]}`,
+	]);
 	remote.answer(arg[0]);
 });
 
 window.ipc.on.remoteMute((event, arg) => {
 	console.log(`Setting incoming call audio mute status to ${arg[0]}`);
+	window.ipc.renderer.console([
+		"log",
+		`remote: muting incoming audio? ${arg[0]}`,
+	]);
 	remote.mute(arg[0]);
 });
 
 window.ipc.on.restartSilenceTimer((event, arg) => {
+	window.ipc.renderer.console(["log", `Remote: Restarting silence timer`]);
 	clearTimeout(timer);
 	timer = undefined;
 });
@@ -239,5 +268,7 @@ window.ipc.on.confirmActiveCall((event, arg) => {
 	) {
 		window.ipc.renderer.console(["log", `Remote: No active calls!`]);
 		window.ipc.renderer.peerNoCalls([]);
+	} else {
+		window.ipc.renderer.console(["log", `Remote: A call is active`]);
 	}
 });

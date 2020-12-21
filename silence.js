@@ -35,8 +35,16 @@ audioManager.on("devices", "renderer", (devices) => {
 				device.kind,
 				"assets/plugins/wwsu-audio/js/wwsu-meter.js"
 			);
+			window.ipc.renderer.console([
+				"log",
+				`Silence: Connected device ${device.kind} / ${device.deviceId}`,
+			]);
 		} else {
 			audioManager.disconnect(device.deviceId, device.kind);
+			window.ipc.renderer.console([
+				"log",
+				`Silence: Disconnected device ${device.kind} / ${device.deviceId}`,
+			]);
 		}
 	});
 });
@@ -95,6 +103,10 @@ window.ipc.on.audioChangeVolume((event, arg) => {
 
 window.ipc.on.audioRefreshDevices((event, arg) => {
 	console.log(`Silence: Refreshing available audio devices`);
+	window.ipc.renderer.console([
+		"log",
+		`Silence: Received request to refresh devices`,
+	]);
 	audioManager.loadDevices();
 });
 
@@ -108,8 +120,16 @@ window.ipc.on.audioSilenceSetting((event, arg) => {
 			arg[1],
 			"assets/plugins/wwsu-audio/js/wwsu-meter.js"
 		);
+		window.ipc.renderer.console([
+			"log",
+			`Silence: Connected device ${arg[1]} / ${arg[0]}`,
+		]);
 	} else {
 		audioManager.disconnect(arg[0], arg[1]);
+		window.ipc.renderer.console([
+			"log",
+			`Silence: Disconnected device ${arg[1]} / ${arg[0]}`,
+		]);
 	}
 	window.ipc.renderer.console([
 		"log",
@@ -118,5 +138,9 @@ window.ipc.on.audioSilenceSetting((event, arg) => {
 });
 
 window.ipc.on.silenceSetting((event) => {
+	window.ipc.renderer.console([
+		"log",
+		`Silence: Updating settings`,
+	]);
 	silenceSettings = window.settings.silence();
 });

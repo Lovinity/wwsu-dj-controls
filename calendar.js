@@ -9,6 +9,7 @@ window.ipc.renderer.console(["log", "Calendar: Process is ready"]);
  *  @let {object} arg[1] WWSUMeta.meta
  */
 window.ipc.on.updateClockwheel((event, arg) => {
+	window.ipc.renderer.console(["log", `Calendar: Updating clockwheel`]);
 	console.dir(arg);
 	let events = arg[0];
 	let meta = arg[1];
@@ -205,5 +206,6 @@ window.ipc.on.updateClockwheel((event, arg) => {
 	clockwheelDonutData.datasets[0].backgroundColor.push(`#ffffff`);
 
 	// Finally, send this data back to renderer
+	window.ipc.renderer.console(["log", `Calendar: New Clockwheel data sent`]);
 	window.ipc.renderer.updateClockwheel([clockwheelDonutData]);
 });

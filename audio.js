@@ -37,6 +37,10 @@ audioManager.on("devices", "renderer", (devices) => {
 	});
 
 	console.log(`Audio: Sending audio devices to renderer`);
+	window.ipc.renderer.console([
+		"log",
+		`Audio: Device information sent to renderer`,
+	]);
 	console.dir(devices);
 
 	// Emit devices to renderer
@@ -63,6 +67,10 @@ window.ipc.on.audioChangeVolume((event, arg) => {
 
 window.ipc.on.audioRefreshDevices((event, arg) => {
 	console.log(`Audio: Refreshing available audio devices`);
+	window.ipc.renderer.console([
+		"log",
+		`Audio: Received request to refresh devices`,
+	]);
 	audioManager.loadDevices();
 });
 

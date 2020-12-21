@@ -29,8 +29,10 @@ audioManager.on("devices", "renderer", (devices) => {
 				device.kind,
 				"assets/plugins/wwsu-audio/js/wwsu-meter.js"
 			);
+			window.ipc.renderer.console(["log", `Recorder: connected device ${device.kind} / ${device.deviceId}`]);
 		} else {
 			audioManager.disconnect(device.deviceId, device.kind);
+			window.ipc.renderer.console(["log", `Recorder: Disconnected device ${device.kind} / ${device.deviceId}`]);
 		}
 	});
 });
@@ -53,6 +55,7 @@ window.ipc.on.audioChangeVolume((event, arg) => {
 
 window.ipc.on.audioRefreshDevices((event, arg) => {
 	console.log(`Recorder: Refreshing available audio devices`);
+	window.ipc.renderer.console(["log", `Recorder: Received request to refresh devices`]);
 	audioManager.loadDevices();
 });
 
@@ -67,8 +70,10 @@ window.ipc.on.audioRecorderSetting((event, arg) => {
 			arg[1],
 			"assets/plugins/wwsu-audio/js/wwsu-meter.js"
 		);
+		window.ipc.renderer.console(["log", `Recorder: connected device ${arg[1]} / ${arg[0]}`]);
 	} else {
 		audioManager.disconnect(arg[0], arg[1]);
+		window.ipc.renderer.console(["log", `Recorder: Disconnected device ${arg[1]} / ${arg[0]}`]);
 	}
 	window.ipc.renderer.console([
 		"log",
@@ -145,5 +150,6 @@ window.ipc.on.recorderStop((event, arg) => {
 window.ipc.on.shutDown((event, arg) => {
 	closingDown = true;
 	console.log(`Recorder: shut down requested.`);
+	window.ipc.renderer.console(["log", `Recorder: Shut-down requested`]);
 	recorder.stopRecording(-1);
 });

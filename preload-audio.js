@@ -110,8 +110,6 @@ contextBridge.exposeInMainWorld("ipc", {
 			ipcRenderer.send("renderer", ["peerCallClosed", args]),
 		peerDestroyed: (args) =>
 			ipcRenderer.send("renderer", ["peerDestroyed", args]),
-		peerQualityProblem: (args) =>
-			ipcRenderer.send("renderer", ["peerQualityProblem", args]),
 		peerNoCalls: (args) => ipcRenderer.send("renderer", ["peerNoCalls", args]),
 	},
 
