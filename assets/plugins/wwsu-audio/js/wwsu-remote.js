@@ -266,6 +266,9 @@ class WWSUremoteaudio extends WWSUevents {
 		let incomingCall = this.incomingCalls.get(peer);
 		if (!incomingCall) return;
 
+		// Hang the call up if we do not have an output device set
+		if (!this.device) return;
+
 		// Answer the call
 		incomingCall.answer(stream, {
 			audioBandwidth: 128,
