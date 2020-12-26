@@ -1,5 +1,12 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.31 - 2020-12-26
+
+### Fixed
+
+- Unnecessary extra clockwheel updates when DJ Controls becomes active from inactivity.
+- Remote process not closing when remote call drops when it should
+
 ## 8.0.0-alpha.30.1 - 2020-12-19
 
 ### Fixed

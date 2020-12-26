@@ -2515,8 +2515,10 @@ function updateCalendar() {
 
 function updateClockwheel() {
 	// Ask the calendar process to recalculate clockwheel segments
-	calendar.getEvents((events) => {
-		window.ipc.calendar.updateClockwheel([events, meta.meta]);
+	animations.add("clockwheel-update", () => {
+		calendar.getEvents((events) => {
+			window.ipc.calendar.updateClockwheel([events, meta.meta]);
+		});
 	});
 }
 
@@ -2526,7 +2528,7 @@ function updateClockwheel() {
  * @let {object} arg[0] New data object for the clockwheel Chart.js
  */
 window.ipc.on.updateClockwheel((event, arg) => {
-	animations.add("update-clockwheel", () => {
+	animations.add("clockwheel-update-2", () => {
 		clockwheelDonut.data = arg[0];
 		clockwheelDonut.update();
 	});
@@ -3012,8 +3014,8 @@ window.ipc.on.peerOutgoingSilence((event, arg) => {
 window.ipc.on.peerIncomingCallClosed((event, arg) => {
 	remoteQuality.callClosed(arg[0]);
 	if (
-		(meta.state.state.startsWith("remote_") ||
-			meta.state.state.startsWith("sportsremote_")) &&
+		(meta.meta.state.startsWith("remote_") ||
+			meta.meta.state.startsWith("sportsremote_")) &&
 		hosts.client.ID === meta.meta.hostCalled
 	) {
 		state.break({ problem: true });
@@ -3027,6 +3029,7 @@ window.ipc.on.peerIncomingCallClosed((event, arg) => {
 			$(".meta-callQuality").addClass("d-none");
 		});
 	}
+	window.ipc.process.remote(["close"]);
 });
 
 window.ipc.on.peerCallClosed((event, arg) => {
@@ -3057,6 +3060,7 @@ window.ipc.on.peerCallClosed((event, arg) => {
 		]);
 		sounds.callTerminated.play();
 	}
+	window.ipc.process.remote(["close"]);
 });
 
 window.ipc.on.peerDestroyed((event, arg) => {
