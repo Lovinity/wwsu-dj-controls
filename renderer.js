@@ -3035,8 +3035,8 @@ window.ipc.on.peerIncomingCallClosed((event, arg) => {
 window.ipc.on.peerCallClosed((event, arg) => {
 	remoteQuality.callClosed(arg[0]);
 	if (
-		(meta.state.state.startsWith("remote_") ||
-			meta.state.state.startsWith("sportsremote_")) &&
+		(meta.meta.state.startsWith("remote_") ||
+			meta.meta.state.startsWith("sportsremote_")) &&
 		hosts.client.ID === meta.meta.hostCalling
 	) {
 		state.break({ problem: true });
@@ -3066,8 +3066,8 @@ window.ipc.on.peerCallClosed((event, arg) => {
 window.ipc.on.peerDestroyed((event, arg) => {
 	remoteQuality.peerDestroyed();
 	if (
-		(meta.state.state.startsWith("remote_") ||
-			meta.state.state.startsWith("sportsremote_")) &&
+		(meta.meta.state.startsWith("remote_") ||
+			meta.meta.state.startsWith("sportsremote_")) &&
 		hosts.client.ID === meta.meta.hostCalling
 	) {
 		state.break({ problem: true });
@@ -3092,8 +3092,8 @@ window.ipc.on.peerDestroyed((event, arg) => {
 		sounds.callTerminated.play();
 	}
 	if (
-		(meta.state.state.startsWith("remote_") ||
-			meta.state.state.startsWith("sportsremote_")) &&
+		(meta.meta.state.startsWith("remote_") ||
+			meta.meta.state.startsWith("sportsremote_")) &&
 		hosts.client.ID === meta.meta.hostCalled
 	) {
 		state.break({ problem: true });
@@ -3113,8 +3113,8 @@ window.ipc.on.peerDestroyed((event, arg) => {
 window.ipc.on.peerNoCalls((event, arg) => {
 	remoteQuality.peerDestroyed();
 	if (
-		(meta.state.state.startsWith("remote_") ||
-			meta.state.state.startsWith("sportsremote_")) &&
+		(meta.meta.state.startsWith("remote_") ||
+			meta.meta.state.startsWith("sportsremote_")) &&
 		hosts.client.ID === meta.meta.hostCalling
 	) {
 		state.break({ problem: true });
@@ -3139,8 +3139,8 @@ window.ipc.on.peerNoCalls((event, arg) => {
 		sounds.callTerminated.play();
 	}
 	if (
-		(meta.state.state.startsWith("remote_") ||
-			meta.state.state.startsWith("sportsremote_")) &&
+		(meta.meta.state.startsWith("remote_") ||
+			meta.meta.state.startsWith("sportsremote_")) &&
 		hosts.client.ID === meta.meta.hostCalled
 	) {
 		state.break({ problem: true });
