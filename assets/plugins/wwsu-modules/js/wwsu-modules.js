@@ -37,6 +37,8 @@ class WWSUmodules {
 	 * @param {string} name name of module to return
 	 */
 	get(name) {
+		if (!this.modules.has(name))
+			throw new Error(`The specified module ${name} was not added yet.`);
 		return this.modules.get(name);
 	}
 }

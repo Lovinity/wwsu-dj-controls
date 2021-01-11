@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 // This is intended for Node.js ONLY; use wwsu calendar web for web browsers.
 
@@ -833,10 +833,7 @@ class CalendarDb {
 			}
 
 			// Duplicate schedule for the same event? That's a problem! Throw an error.
-			if (
-				!overridden.scheduleType &&
-				overridden.calendarID === overrides.calendarID
-			) {
+			if (overridden.calendarID === overrides.calendarID) {
 				throw new Error(
 					`There is a schedule for calendar ID ${overridden.calendarID} that would overlap another schedule for the same calendar ID. This is not allowed.`
 				);

@@ -1,7 +1,7 @@
 {
 	"name": "wwsu-dj-controls",
 	"productName": "wwsu-dj-controls",
-	"version": "8.0.0-alpha.31",
+	"version": "8.0.0-alpha.32",
 	"appId": "com.Lovinity.wwsu-dj-controls",
 	"description": "Front-end application for the WWSU API / radio system, used by the DJs and staff of WWSU.",
 	"license": "MIT",
@@ -20,8 +20,8 @@
 		"release": "electron-builder --macos --linux --windows -p always"
 	},
 	"dependencies": {
-		"electron-context-menu": "^2.3.0",
-		"electron-debug": "^3.1.0",
+		"electron-context-menu": "^2.4.0",
+		"electron-debug": "^3.2.0",
 		"electron-store": "^6.0.1",
 		"electron-unhandled": "^3.0.2",
 		"electron-updater": "^4.3.5",
@@ -34,7 +34,7 @@
 	"devDependencies": {
 		"@doyensec/electronegativity": "^1.7.0",
 		"cross-env": "^7.0.3",
-		"electron": "^11.1.0",
+		"electron": "^11.1.1",
 		"electron-builder": "^22.9.1",
 		"np": "^6.5.0",
 		"xo": "^0.33.1"

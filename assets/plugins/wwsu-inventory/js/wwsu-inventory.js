@@ -77,7 +77,9 @@ class WWSUinventory extends WWSUdb {
 			// Init html
 			$(table).html(
 				`<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
-					this.meta ? this.meta.meta.timezone : moment.tz.guess()
+					this.manager.get("WWSUMeta")
+						? this.manager.get("WWSUMeta").meta.timezone
+						: moment.tz.guess()
 				}.</p><p><button type="button" class="btn btn-block btn-success btn-inventory-new">New Item</button></p><table id="section-inventory-table" class="table table-striped display responsive" style="width: 100%;"></table>`
 			);
 
@@ -894,7 +896,9 @@ class WWSUinventory extends WWSUdb {
 			</table>
 			<h2>Check-out Records</h2>
 				<p class="wwsumeta-timezone-display">Times are shown in the timezone ${
-					this.meta ? this.meta.meta.timezone : moment.tz.guess()
+					this.manager.get("WWSUMeta")
+						? this.manager.get("WWSUMeta").meta.timezone
+						: moment.tz.guess()
 				}.</p><table id="section-inventory-checkout-table" class="table table-striped display responsive" style="width: 100%;"></table>`;
 
 				this.manager
@@ -924,7 +928,9 @@ class WWSUinventory extends WWSUdb {
 									? moment
 											.tz(
 												d.checkInDue,
-												this.meta ? this.meta.meta.timezone : moment.tz.guess()
+												this.manager.get("WWSUMeta")
+													? this.manager.get("WWSUMeta").meta.timezone
+													: moment.tz.guess()
 											)
 											.format("llll")
 									: `Not Set`
@@ -954,14 +960,18 @@ class WWSUinventory extends WWSUdb {
 								record.checkOutDate = moment
 									.tz(
 										record.checkOutDate,
-										this.meta ? this.meta.meta.timezone : moment.tz.guess()
+										this.manager.get("WWSUMeta")
+											? this.manager.get("WWSUMeta").meta.timezone
+											: moment.tz.guess()
 									)
 									.format("lll");
 								record.checkInDate = record.checkInDate
 									? moment
 											.tz(
 												record.checkInDate,
-												this.meta ? this.meta.meta.timezone : moment.tz.guess()
+												this.manager.get("WWSUMeta")
+													? this.manager.get("WWSUMeta").meta.timezone
+													: moment.tz.guess()
 											)
 											.format("lll")
 									: `Checked Out`;
@@ -1029,7 +1039,9 @@ class WWSUinventory extends WWSUdb {
 						table
 							.buttons()
 							.container()
-							.appendTo(`#section-inventory-checkout-table_wrapper .col-md-6:eq(0)`);
+							.appendTo(
+								`#section-inventory-checkout-table_wrapper .col-md-6:eq(0)`
+							);
 
 						// Additional info rows
 						$("#section-inventory-checkout-table tbody").on(
@@ -1122,7 +1134,11 @@ class WWSUinventory extends WWSUdb {
 					},
 					checkOutDate: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
-							.parseZone(this.meta ? this.meta.meta.time : undefined)
+							.parseZone(
+								this.manager.get("WWSUMeta")
+									? this.manager.get("WWSUMeta").meta.time
+									: undefined
+							)
 							.format("Z")}`,
 						picker: {
 							inline: true,
@@ -1137,7 +1153,11 @@ class WWSUinventory extends WWSUdb {
 					},
 					checkInDue: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
-							.parseZone(this.meta ? this.meta.meta.time : undefined)
+							.parseZone(
+								this.manager.get("WWSUMeta")
+									? this.manager.get("WWSUMeta").meta.time
+									: undefined
+							)
 							.format("Z")}`,
 						picker: {
 							inline: true,
@@ -1176,7 +1196,9 @@ class WWSUinventory extends WWSUdb {
 			},
 			data: {
 				item: itemID,
-				checkOutDate: moment(this.meta.meta.time).toISOString(true),
+				checkOutDate: moment(
+					this.manager.get("WWSUMeta").meta.time
+				).toISOString(true),
 			},
 		});
 	}
@@ -1234,7 +1256,11 @@ class WWSUinventory extends WWSUdb {
 					},
 					checkInDate: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
-							.parseZone(this.meta ? this.meta.meta.time : undefined)
+							.parseZone(
+								this.manager.get("WWSUMeta")
+									? this.manager.get("WWSUMeta").meta.time
+									: undefined
+							)
 							.format("Z")}`,
 						picker: {
 							inline: true,
@@ -1277,7 +1303,9 @@ class WWSUinventory extends WWSUdb {
 			},
 			data: {
 				ID: checkoutID,
-				checkInDate: moment(this.meta.meta.time).toISOString(true),
+				checkInDate: moment(this.manager.get("WWSUMeta").meta.time).toISOString(
+					true
+				),
 			},
 		});
 	}

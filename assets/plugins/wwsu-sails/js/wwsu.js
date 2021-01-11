@@ -115,7 +115,7 @@ class WWSUdb extends WWSUevents {
 				this._db().remove();
 				this._db.insert(query);
 				this.emitEvent("replace", [this._db()]);
-				this.emitEvent("change", [this._db()]);
+				this.emitEvent("change", [this._db(), query]);
 			}
 			return null;
 		} else {
@@ -135,7 +135,7 @@ class WWSUdb extends WWSUevents {
 							this.emitEvent("remove", [query[key], this._db()]);
 							break;
 					}
-					this.emitEvent("change", [this._db()]);
+					this.emitEvent("change", [this._db(), query]);
 				}
 			}
 		}

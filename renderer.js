@@ -523,8 +523,9 @@ $(".btn-operation-resume").on("click", () => {
 				title: "Remote host not connected",
 				delay: 30000,
 				autohide: true,
-				body: `The remote host you started this remote broadcast with is currently experiencing problems. The resume button will pulse when the host is back online. If the host does not return online, end the broadcast and restart it, calling a different host instead.`,
+				body: `The host receiving the audio for the broadcast is not connected. Please wait until the resume button flashes to indicate it re-connected, or end and restart the remote broadcast with a different host.`,
 			});
+			remote.request({ ID: meta.meta.hostCalled || pendingHostCall });
 			return;
 		}
 	}
@@ -1064,6 +1065,7 @@ window.ipc.on.recorderSaved((event, arg) => {
 	);
 });
 
+// Process audio devices when the audio process returns them
 window.ipc.on.audioDevices((event, arg) => {
 	console.log(`Audio: Received audio devices`);
 
@@ -1384,7 +1386,7 @@ window.ipc.on.processClosed((event, arg) => {
 				(meta.meta.state.endsWith("_sportsremote") ||
 					meta.meta.state.endsWith("_remote") ||
 					meta.meta.state.startsWith("remote_") ||
-					meta.meta.state.endsWith("sportsremote_"))
+					meta.meta.state.startsWith("sportsremote_"))
 			) {
 				window.ipc.process.remote(["open"]);
 			}
@@ -1804,10 +1806,6 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 			});
 		}
 
-		if (typeof updated.playing !== "undefined") {
-			remoteShouldBeMuted();
-		}
-
 		// Recorder stuff
 		if (
 			(typeof updated.state !== "undefined" &&
@@ -1844,7 +1842,7 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 				meta.meta.hostCalled === hosts.client.ID ||
 				meta.meta.hostCalling === hosts.client.ID
 			) {
-				window.ipc.process.remote(["open"]);
+				window.ipc.process.remote(["reload"]);
 			} else {
 				window.ipc.process.remote(["close"]);
 			}
@@ -1970,7 +1968,7 @@ meta.on("metaTick", "renderer", (fullMeta) => {
 					fullMeta.state.startsWith("automation_"))
 			) {
 				$(".operations-bar").removeClass("navbar-gray-dark");
-				$(".operations-bar").addClass("navbar-fuchsia");
+				$(".operations-bar").addClass("navbar-orange");
 				setTimeout(function () {
 					$(".operations-bar").removeClass("navbar-orange");
 					$(".operations-bar").addClass("navbar-gray-dark");
@@ -2195,7 +2193,8 @@ function processStatus(db) {
 					{
 						title: "Silence Detected",
 						bg: "danger",
-						header: "Silence detection triggered!",
+						header:
+							"Silence detection triggered! Please ensure your audio levels are good and not too quiet.",
 						flash: true,
 						body: record.data,
 					},
@@ -2796,6 +2795,7 @@ state.on("startRemote", "renderer", (host) => {
 
 	// Reject if the host recipient reports offline.
 	if (!recipient || recipient.status !== 5) {
+		$(".remote-start-status").html("");
 		state.unblockBroadcastModal();
 		$(document).Toasts("create", {
 			class: "bg-danger",
@@ -2812,17 +2812,19 @@ state.on("startRemote", "renderer", (host) => {
 
 	// Close and re-open the remote process
 	$(".remote-start-status").html("Starting audio call process");
-	window.ipc.process.remote(["close"]);
-	window.ipc.process.remote(["open"]);
+	window.ipc.process.remote(["reload"]);
 });
 
 window.ipc.on.remoteReady((event, arg) => {
-	console.log(`Remote process ready. Grabbing a Skyway.js credential.`);
+	console.log(
+		`Remote process ready. Grabbing a Skyway.js credential from WWSU.`
+	);
 	$(".remote-start-status").html("Getting a Skyway.js credential");
 	remote.credentialComputer({}, (credential) => {
 		console.dir(credential);
 		if (!credential) {
 			pendingHostCall = undefined;
+			$(".remote-start-status").html("");
 			state.unblockBroadcastModal();
 			window.ipc.process.remote(["close"]);
 			$(document).Toasts("create", {
@@ -2836,7 +2838,7 @@ window.ipc.on.remoteReady((event, arg) => {
 			console.log(
 				`Credential received. Sending to remote to establish peer connection.`
 			);
-			$(".remote-start-status").html("Establishing skyway.js connection");
+			$(".remote-start-status").html("Establishing Skyway.js connection");
 			window.ipc.remote.peerCredential([
 				credential.peerId,
 				credential.apiKey,
@@ -2874,12 +2876,15 @@ window.ipc.on.remotePeerReady((event, arg) => {
 			.db()
 			.get()
 			.find((rec) => rec.hostID === pendingHostCall);
-		if (called && called.peer && called.status === 5) {
+		if (
+			called &&
+			called.peer &&
+			called.status === 5 &&
+			meta.meta.hostCalled === pendingHostCall
+		) {
 			console.log(
 				`Host ${called.hostID} is already connected and ready to take the call. Asking remote process to start audio call if not already in one.`
 			);
-			if (meta.meta.hostCalled !== pendingHostCall)
-				remote.request({ ID: pendingHostCall });
 			$(".remote-start-status").html("Starting audio call");
 			window.ipc.remote.startCall([called.peer]);
 		} else {
@@ -2893,6 +2898,7 @@ window.ipc.on.remotePeerReady((event, arg) => {
 });
 
 window.ipc.on.remotePeerUnavailable((event, arg) => {
+	$(".remote-start-status").html("");
 	state.unblockBroadcastModal();
 	$(document).Toasts("create", {
 		class: "bg-danger",
@@ -2944,6 +2950,7 @@ window.ipc.on.peerCallEstablished((event, arg) => {
 		state.finalizeRemote((success) => {
 			state.unblockBroadcastModal();
 			if (success) {
+				$(".remote-start-status").html("");
 				pendingHostCall = undefined;
 				state.broadcastModal.iziModal("close");
 			} else {
@@ -3133,7 +3140,7 @@ window.ipc.on.peerNoCalls((event, arg) => {
 				bg: "danger",
 				header: "Audio Call was Closed",
 				flash: true,
-				body: `<p>The audio call for the remote broadcast closed. The broadcast was sent to break. Please check your network settings and resume the broadcast when things are stable.</p><p>This could also be a network issue on WWSU's end. If so, please report this under "report a problem".</p>`,
+				body: `<p>You tried to start / resume a broadcast when an audio call was not ongoing. The broadcast was sent to break. Please check your network settings and wait for the resume button to start pulsing.</p>`,
 			},
 		]);
 		sounds.callTerminated.play();
@@ -3190,13 +3197,18 @@ remote.on("callQuality", "renderer", (quality) => {
 					bg: "warning",
 					header: "Poor Audio Call Quality",
 					flash: true,
-					body: `<p>Remote broadcast audio call quality is poor. Please check your network connection. <strong>Your remote broadcast continues despite this warning.</strong></p>`,
+					body: `<p>Audio call quality is poor; call will be restarted the next time you take a break (unless it improves). Please check your network connection and ensure you are not running CPU-heavy programs.</p>`,
 				},
 			]);
 			badQualityTimer = setTimeout(() => {
 				badQualityTimer = undefined;
 			}, 300000);
 		}
+	}
+
+	if (quality >= 100 && badQualityTimer) {
+		clearTimeout(badQualityTimer);
+		badQualityTimer = undefined;
 	}
 
 	animations.add("callquality", () => {
@@ -3221,7 +3233,7 @@ remote.on("callQuality", "renderer", (quality) => {
 		});
 	}
 
-	console.log(`Remote host reported call quality at ${quality}%.`);
+	console.log(`Remote host: Call quality reported at ${quality}%.`);
 });
 
 function remoteShouldBeMuted() {

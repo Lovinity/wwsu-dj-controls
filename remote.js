@@ -269,9 +269,9 @@ window.ipc.on.confirmActiveCall((event, arg) => {
 		!remote.outgoingCall &&
 		(!remote.incomingCalls || remote.incomingCalls.size === 0)
 	) {
-		window.ipc.renderer.console(["log", `Remote: No active calls!`]);
+		window.ipc.renderer.console(["log", `Remote: No active calls! Called peerNoCalls.`]);
 		window.ipc.renderer.peerNoCalls([]);
 	} else {
-		window.ipc.renderer.console(["log", `Remote: A call is active`]);
+		window.ipc.renderer.console(["log", `Remote: A call is active; no action taken.`]);
 	}
 });

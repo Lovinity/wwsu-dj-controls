@@ -669,8 +669,12 @@ ipcMain.on("process", (event, arg) => {
 			if (args[0] === "close" && silenceWindow) {
 				silenceWindow.close();
 			}
-			if (args[0] === "reload" && silenceWindow) {
-				silenceWindow.reload();
+			if (args[0] === "reload") {
+				if (silenceWindow) {
+					silenceWindow.reload();
+				} else {
+					createSilenceWindow();
+				}
 			}
 			break;
 		case "recorder":
@@ -689,8 +693,12 @@ ipcMain.on("process", (event, arg) => {
 			if (args[0] === "close" && remoteWindow) {
 				remoteWindow.close();
 			}
-			if (args[0] === "reload" && remoteWindow) {
-				remoteWindow.reload();
+			if (args[0] === "reload") {
+				if (remoteWindow) {
+					remoteWindow.reload();
+				} else {
+					createRemoteWindow();
+				}
 			}
 			break;
 	}

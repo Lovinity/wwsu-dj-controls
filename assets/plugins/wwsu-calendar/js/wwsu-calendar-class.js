@@ -69,6 +69,15 @@ class WWSUcalendar extends CalendarDb {
 			this.calendarUpdated();
 		});
 
+		this.calendar.on("change", "stoopid", (db, query) => {
+			console.log(`Calendar change`);
+			console.dir(query);
+		});
+		this.schedule.on("change", "stoopid", (db, query) => {
+			console.log(`schedule change`);
+			console.dir(query);
+		});
+
 		// Generate a modal for displaying event conflicts
 		this.conflictModal = new WWSUmodal(
 			`Event Conflicts`,

@@ -1,6 +1,30 @@
 # Changelog for wwsu-dj-controls
 
-## 8.0.0-alpha.31 - 2020-12-26
+## 8.0.0-alpha.32
+
+### Added
+
+- Throw error if trying to load a WWSU module that was not yet added
+- Try re-requesting remote call if remote host is not connected when someone wants to resume broadcast
+
+### Changed
+
+- [UNTESTED] Disconnect audio call during remote broadcast when on extended break; reconnect when resuming.
+- "reload" process command for silence and remote will now open the process if it is not opened instead of ignoring.
+- Changes in meta hostCalled or hostCalling will now trigger remote process reloading instead of open (which is ignored if it is already opened, which it should not; it should re-load the process).
+- Audio call, if dropped to 0 but later goes up to 100, will not be restarted at next break.
+- Made poor audio quality notification message more clear.
+
+### Fixed
+
+- Inventory management bug with meta not defined
+- Typo in check to see if remote process should be re-opened when closed, specifically when in sportsremote state.
+
+### Updated
+
+- NPM packages
+
+## 8.0.0-alpha.31 - 2020-12-26 - BROKEN
 
 ### Fixed
 
