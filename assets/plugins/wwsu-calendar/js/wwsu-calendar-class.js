@@ -2790,8 +2790,8 @@ class WWSUcalendar extends CalendarDb {
 										value.endDate = moment
 											.tz(
 												oneTimes[0],
-												this.manager.get("WWSUmeta")
-													? this.manager.get("WWSUmeta").meta.timezone
+												this.manager.get("WWSUMeta")
+													? this.manager.get("WWSUMeta").meta.timezone
 													: moment.tz.guess()
 											)
 											.add(2, "days")
