@@ -1,6 +1,6 @@
 # Changelog for wwsu-dj-controls
 
-## 8.0.0-alpha.32
+## 8.0.0-alpha.32 - 2021-01-11
 
 ### Added
 
@@ -19,6 +19,8 @@
 
 - Inventory management bug with meta not defined
 - Typo in check to see if remote process should be re-opened when closed, specifically when in sportsremote state.
+- Typo in calendar-class
+- Typo in remote process
 
 ### Updated
 

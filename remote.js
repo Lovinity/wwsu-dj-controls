@@ -9,7 +9,7 @@ let audioManager = new WWSUAudioManager(
 
 let audioSettings = window.settings.audio();
 let outputDevice = audioSettings ? audioSettings.find((dev) => dev.output) : undefined;
-window.ipc.renderer.console(["log", `Remote: Output device set to ${outputDevice.deviceId}`]);
+if (outputDevice) window.ipc.renderer.console(["log", `Remote: Output device set to ${outputDevice.deviceId}`]);
 
 
 // Remote audio is initialized after remoteReady is emitted by this process to renderer, renderer queries for a credential, and renderer passes the credential here via remotePeerCredential.
