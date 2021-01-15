@@ -1,5 +1,22 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.33
+
+### Added
+
+- [UNTESTED] Process restarting until memory leaks are resolved (recorder restarts after every recording; audio and silence restart every hour)
+- [UNTESTED] Maximum recording duration of 3 hours. After that, recorder triggers a new recording.
+
+### Fixed
+
+- Notification windows... again...
+- [UNTESTED] Remote process is restarting/reloading once when initiating a remote broadcast; it should not do that
+- [WORKING ON IT] Calendar conflict checking bugs
+
+### Changed
+
+- We are no longer creating a new MediaRecorder for every new recording; audio recorder class creates a single MediaRecorder that is used for the lifetime of the process.
+
 ## 8.0.0-alpha.32 - 2021-01-11
 
 ### Added

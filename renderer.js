@@ -976,6 +976,8 @@ window.ipc.on.recorderStopped((event, arg) => {
 		$(".notifications-recorder").removeClass("badge-success");
 		$(".notifications-recorder").addClass("badge-warning");
 	});
+	// Sometimes a recording is stopped if it runs too long; restart a new recording if we need to
+	startRecording(-1);
 });
 
 window.ipc.on.silenceReady((event, arg) => {
@@ -1343,6 +1345,7 @@ window.ipc.on.audioDevices((event, arg) => {
 
 // Crash checking
 window.ipc.on.processClosed((event, arg) => {
+	console.log(`Process closed: ${arg[0]}`);
 	switch (arg[0]) {
 		case "silence":
 			animations.add("notifications-silence", () => {
@@ -1829,6 +1832,7 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 			].indexOf(updated.state) === -1
 		) {
 			window.ipc.process.remote(["close"]);
+			pendingHostCall = undefined;
 			clearTimeout(badQualityTimer);
 			badQualityTimer = undefined;
 		}
@@ -1842,7 +1846,7 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 				meta.meta.hostCalled === hosts.client.ID ||
 				meta.meta.hostCalling === hosts.client.ID
 			) {
-				window.ipc.process.remote(["reload"]);
+				if (!pendingHostCall) window.ipc.process.remote(["reload"]);
 			} else {
 				window.ipc.process.remote(["close"]);
 			}
@@ -2806,6 +2810,7 @@ state.on("startRemote", "renderer", (host) => {
 		});
 		window.ipc.process.remote(["close"]);
 		pendingHostCall = null;
+		return;
 	}
 
 	pendingHostCall = host;
@@ -3066,6 +3071,8 @@ window.ipc.on.peerCallClosed((event, arg) => {
 			},
 		]);
 		sounds.callTerminated.play();
+
+		pendingHostCall = undefined;
 	}
 	window.ipc.process.remote(["close"]);
 });
@@ -3097,6 +3104,7 @@ window.ipc.on.peerDestroyed((event, arg) => {
 			},
 		]);
 		sounds.callTerminated.play();
+		pendingHostCall = undefined;
 	}
 	if (
 		(meta.meta.state.startsWith("remote_") ||
@@ -3144,6 +3152,7 @@ window.ipc.on.peerNoCalls((event, arg) => {
 			},
 		]);
 		sounds.callTerminated.play();
+		pendingHostCall = undefined;
 	}
 	if (
 		(meta.meta.state.startsWith("remote_") ||

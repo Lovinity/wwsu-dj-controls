@@ -4,13 +4,15 @@
 let closingDown = false;
 
 // Initialize the audio manager
-var audioManager = new WWSUAudioManager();
+let audioManager = new WWSUAudioManager();
 
 // Initialize recorder
-var recorder = new WWSUrecorder(
+let recorder = new WWSUrecorder(
 	audioManager.destination,
 	"assets/plugins/wwsu-audio/js/wwsu-recorder-worker.js"
 );
+
+let newRecordTimeout;
 
 // Listen for when we receive available devices
 audioManager.on("devices", "renderer", (devices) => {
@@ -29,10 +31,16 @@ audioManager.on("devices", "renderer", (devices) => {
 				device.kind,
 				"assets/plugins/wwsu-audio/js/wwsu-meter.js"
 			);
-			window.ipc.renderer.console(["log", `Recorder: connected device ${device.kind} / ${device.deviceId}`]);
+			window.ipc.renderer.console([
+				"log",
+				`Recorder: connected device ${device.kind} / ${device.deviceId}`,
+			]);
 		} else {
 			audioManager.disconnect(device.deviceId, device.kind);
-			window.ipc.renderer.console(["log", `Recorder: Disconnected device ${device.kind} / ${device.deviceId}`]);
+			window.ipc.renderer.console([
+				"log",
+				`Recorder: Disconnected device ${device.kind} / ${device.deviceId}`,
+			]);
 		}
 	});
 });
@@ -55,7 +63,10 @@ window.ipc.on.audioChangeVolume((event, arg) => {
 
 window.ipc.on.audioRefreshDevices((event, arg) => {
 	console.log(`Recorder: Refreshing available audio devices`);
-	window.ipc.renderer.console(["log", `Recorder: Received request to refresh devices`]);
+	window.ipc.renderer.console([
+		"log",
+		`Recorder: Received request to refresh devices`,
+	]);
 	audioManager.loadDevices();
 });
 
@@ -70,10 +81,16 @@ window.ipc.on.audioRecorderSetting((event, arg) => {
 			arg[1],
 			"assets/plugins/wwsu-audio/js/wwsu-meter.js"
 		);
-		window.ipc.renderer.console(["log", `Recorder: connected device ${arg[1]} / ${arg[0]}`]);
+		window.ipc.renderer.console([
+			"log",
+			`Recorder: connected device ${arg[1]} / ${arg[0]}`,
+		]);
 	} else {
 		audioManager.disconnect(arg[0], arg[1]);
-		window.ipc.renderer.console(["log", `Recorder: Disconnected device ${arg[1]} / ${arg[0]}`]);
+		window.ipc.renderer.console([
+			"log",
+			`Recorder: Disconnected device ${arg[1]} / ${arg[0]}`,
+		]);
 	}
 	window.ipc.renderer.console([
 		"log",
@@ -88,6 +105,7 @@ window.ipc.on.audioRecorderSetting((event, arg) => {
 recorder.on("recorderStopped", "recorder", (file) => {
 	console.log(`Recorder: Recording ${file} ended.`);
 	window.ipc.renderer.console(["log", `Recorder: Recording ${file} ended.`]);
+	clearTimeout(newRecordTimeout);
 
 	window.ipc.renderer.recorderStopped([]);
 
@@ -101,6 +119,12 @@ recorder.on("recorderStarted", "recorder", (file) => {
 	console.log(`Recorder: Recording ${file} started.`);
 	window.ipc.renderer.console(["log", `Recorder: Recording ${file} started.`]);
 	window.ipc.renderer.recorderStarted([]);
+	clearTimeout(newRecordTimeout);
+
+	// Force a max recording time of 3 hours; renderer should appropriately trigger a new recording when recorderStopped event is sent.
+	newRecorderTimeout = setTimeout(() => {
+		recorder.stopRecording(-1);
+	}, 1000 * 60 * 60 * 3);
 });
 
 // Pass encoded info to main process to be saved
@@ -119,9 +143,10 @@ recorder.on("recorderEncoded", "recorder", (file, reader) => {
 		window.ipc.renderer.recorderSaved([path]);
 
 		// Close the process if we are pending closing
-		if (closingDown) {
-			window.close();
-		}
+		// TODO: Remove the check condition when we know recorder is not leaking memory anymore; otherwise, process should close (and auto re-open) after every save
+		// if (closingDown) {
+		window.close();
+		// }
 	});
 });
 

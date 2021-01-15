@@ -27,7 +27,29 @@ class WWSUrecorder extends WWSUevents {
 		// this.worker = new Worker(worker);
 		this.blobs = [];
 
-		this.recorder;
+		// Construct the recorder
+		this.recorder = new MediaRecorder(this.destination.stream, {
+			mimeType: "audio/webm;codecs=opus",
+			bitsPerSecond: (128000 * 2)
+		});
+		this.recorder.onstart = (e) => {
+			this.blobs = [];
+		};
+		this.recorder.ondataavailable = (e) => {
+			this.blobs.push(e.data);
+		};
+		this.recorder.onstop = (e) => {
+			// let blob = new Blob(this.blobs, { type: "audio/mpeg" });
+			let blob = new Blob(this.blobs, { type: "audio/webm;codecs=opus" });
+			let fileReader = new FileReader();
+			fileReader.onload = (e2) => {
+				this.emitEvent("recorderEncoded", [
+					this.encodingTitle,
+					e2.target.result,
+				]);
+			};
+			fileReader.readAsArrayBuffer(blob);
+		};
 	}
 
 	/**
@@ -59,33 +81,8 @@ class WWSUrecorder extends WWSUevents {
 						{ worker: this.worker }
 					);
 					*/
-					this.recorder = new MediaRecorder(this.destination.stream, {
-						mimeType: "audio/webm;codecs=opus",
-						bitsPerSecond: (128000 * 2)
-					});
 					this.recorder.start();
 					this.emitEvent("recorderStarted", [this.pendingTitle]);
-
-					this.recorder.onstart = (e) => {
-						this.blobs = [];
-					};
-
-					this.recorder.ondataavailable = (e) => {
-						this.blobs.push(e.data);
-					};
-
-					this.recorder.onstop = (e) => {
-						// let blob = new Blob(this.blobs, { type: "audio/mpeg" });
-						let blob = new Blob(this.blobs, { type: "audio/webm;codecs=opus" });
-						let fileReader = new FileReader();
-						fileReader.onload = (e2) => {
-							this.emitEvent("recorderEncoded", [
-								this.encodingTitle,
-								e2.target.result,
-							]);
-						};
-						fileReader.readAsArrayBuffer(blob);
-					};
 				}
 			} catch (e) {
 				console.log(e);

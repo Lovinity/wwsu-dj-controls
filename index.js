@@ -188,6 +188,7 @@ const createCalendarWindow = () => {
 
 // Process for audio
 const createAudioWindow = () => {
+	let restartInterval;
 	if (audioWindow) return;
 
 	// Create the audio process
@@ -207,18 +208,27 @@ const createAudioWindow = () => {
 	});
 
 	audioWindow.on("closed", function () {
+		clearInterval(restartInterval);
+		audioWindow = undefined;
 		if (mainWindow !== null) {
 			createAudioWindow();
 		}
 	});
+
 	audioWindow.loadFile("audio.html");
 	audioWindow.webContents.on("will-navigate", (event, newURL) => {
 		event.preventDefault(); // AUXCLICK_JS_CHECK
 	});
+
+	// TODO: Until we know why this process is leaking memory, restart it every hour
+	restartInterval = setInterval(() => {
+		if (audioWindow) audioWindow.reload();
+	}, 1000 * 60 * 60);
 };
 
 // Process for silence detection
 const createSilenceWindow = () => {
+	let restartInterval;
 	if (silenceWindow) return;
 
 	// Create the audio process
@@ -238,6 +248,7 @@ const createSilenceWindow = () => {
 	});
 
 	silenceWindow.on("closed", function () {
+		clearInterval(restartInterval);
 		silenceWindow = null;
 		if (mainWindow !== null) {
 			mainWindow.webContents.send("processClosed", ["silence"]);
@@ -249,6 +260,11 @@ const createSilenceWindow = () => {
 	silenceWindow.webContents.on("will-navigate", (event, newURL) => {
 		event.preventDefault(); // AUXCLICK_JS_CHECK
 	});
+
+	// TODO: Until we know why audio is leaking memory, restart process every hour
+	restartInterval = setInterval(() => {
+		if (silenceWindow) silenceWindow.reload();
+	}, 1000 * 60 * 60);
 };
 
 // Process for recorder
@@ -373,7 +389,7 @@ const createWindows = () => {
 			enableRemoteModule: false, // electron's remote module is insecure
 			nativeWindowOpen: true, // Needed for Discord WidgetBot.io
 			preload: path.join(__dirname, "preload-renderer.js"),
-			zoomFactor: 1.25,
+			zoomFactor: 1.25, // Make text bigger since this is used in OnAir studio
 			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
 			sandbox: true,
 		},
@@ -918,7 +934,7 @@ ipcMain.handle("recorderEncoded", (event, args) => {
 
 // Make a notification window
 ipcMain.on("makeNotification", (event, args) => {
-	makeNotification(args[1][0]);
+	makeNotification(args[0]);
 });
 
 // use sanitize-filename
