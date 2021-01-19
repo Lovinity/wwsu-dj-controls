@@ -977,7 +977,7 @@ window.ipc.on.recorderStopped((event, arg) => {
 		$(".notifications-recorder").addClass("badge-warning");
 	});
 	// Sometimes a recording is stopped if it runs too long; restart a new recording if we need to
-	startRecording(-1);
+	if (arg[0]) startRecording(-1);
 });
 
 window.ipc.on.silenceReady((event, arg) => {
@@ -3000,7 +3000,7 @@ window.ipc.on.peerOutgoingSilence((event, arg) => {
 		hosts.client.ID === meta.meta.hostCalling &&
 		!meta.meta.playing
 	) {
-		state.break({ problem: true });
+		if (socket.isConnected()) state.break({ problem: true });
 		animations.add("notifications-remote", () => {
 			$(".notifications-remote").removeClass("badge-primary");
 			$(".notifications-remote").removeClass("badge-warning");
@@ -3030,7 +3030,11 @@ window.ipc.on.peerIncomingCallClosed((event, arg) => {
 			meta.meta.state.startsWith("sportsremote_")) &&
 		hosts.client.ID === meta.meta.hostCalled
 	) {
-		state.break({ problem: true });
+		if (
+			!meta.meta.state.endsWith("_break") &&
+			!meta.meta.state.endsWith("_halftime")
+		)
+			state.break({ problem: true });
 		animations.add("notifications-remote", () => {
 			$(".notifications-remote").removeClass("badge-primary");
 			$(".notifications-remote").removeClass("badge-warning");
@@ -3051,7 +3055,7 @@ window.ipc.on.peerCallClosed((event, arg) => {
 			meta.meta.state.startsWith("sportsremote_")) &&
 		hosts.client.ID === meta.meta.hostCalling
 	) {
-		state.break({ problem: true });
+		if (socket.isConnected()) state.break({ problem: true });
 		animations.add("notifications-remote", () => {
 			$(".notifications-remote").removeClass("badge-primary");
 			$(".notifications-remote").removeClass("badge-warning");
@@ -3084,7 +3088,12 @@ window.ipc.on.peerDestroyed((event, arg) => {
 			meta.meta.state.startsWith("sportsremote_")) &&
 		hosts.client.ID === meta.meta.hostCalling
 	) {
-		state.break({ problem: true });
+		if (
+			socket.isConnected() &&
+			!meta.meta.state.endsWith("_break") &&
+			!meta.meta.state.endsWith("_halftime")
+		)
+			state.break({ problem: true });
 		animations.add("notifications-remote", () => {
 			$(".notifications-remote").removeClass("badge-primary");
 			$(".notifications-remote").removeClass("badge-warning");
@@ -3111,7 +3120,12 @@ window.ipc.on.peerDestroyed((event, arg) => {
 			meta.meta.state.startsWith("sportsremote_")) &&
 		hosts.client.ID === meta.meta.hostCalled
 	) {
-		state.break({ problem: true });
+		if (
+			socket.isConnected() &&
+			!meta.meta.state.endsWith("_break") &&
+			!meta.meta.state.endsWith("_halftime")
+		)
+			state.break({ problem: true });
 		animations.add("notifications-remote", () => {
 			$(".notifications-remote").removeClass("badge-primary");
 			$(".notifications-remote").removeClass("badge-warning");
@@ -3132,7 +3146,12 @@ window.ipc.on.peerNoCalls((event, arg) => {
 			meta.meta.state.startsWith("sportsremote_")) &&
 		hosts.client.ID === meta.meta.hostCalling
 	) {
-		state.break({ problem: true });
+		if (
+			socket.isConnected() &&
+			!meta.meta.state.endsWith("_break") &&
+			!meta.meta.state.endsWith("_halftime")
+		)
+			state.break({ problem: true });
 		animations.add("notifications-remote", () => {
 			$(".notifications-remote").removeClass("badge-primary");
 			$(".notifications-remote").removeClass("badge-warning");
@@ -3159,7 +3178,12 @@ window.ipc.on.peerNoCalls((event, arg) => {
 			meta.meta.state.startsWith("sportsremote_")) &&
 		hosts.client.ID === meta.meta.hostCalled
 	) {
-		state.break({ problem: true });
+		if (
+			socket.isConnected() &&
+			!meta.meta.state.endsWith("_break") &&
+			!meta.meta.state.endsWith("_halftime")
+		)
+			state.break({ problem: true });
 		animations.add("notifications-remote", () => {
 			$(".notifications-remote").removeClass("badge-primary");
 			$(".notifications-remote").removeClass("badge-warning");

@@ -1,21 +1,33 @@
 # Changelog for wwsu-dj-controls
 
-## 8.0.0-alpha.33
+## 8.0.0-alpha.33 - 2021-01-19
+
+### Removed
+
+- [BREAKING] This version does NOT support delay system / serial ports. This feature has been disabled until Electron 12 / Chrome 89 / Web Serial API is ready. Node-serialport has become too unstable for our standards.
+
+### Changed
+
+- We are no longer creating a new MediaRecorder for every new recording; audio recorder class creates a single MediaRecorder that is used for the lifetime of the process.
+- Recorder now dumps blobs every 5 minutes into blob array before saving
 
 ### Added
 
-- [UNTESTED] Process restarting until memory leaks are resolved (recorder restarts after every recording; audio and silence restart every hour)
+- Process restarting until memory leaks are resolved (recorder restarts after every recording; audio and silence restart every hour)
 - [UNTESTED] Maximum recording duration of 3 hours. After that, recorder triggers a new recording.
 
 ### Fixed
 
 - Notification windows... again...
 - [UNTESTED] Remote process is restarting/reloading once when initiating a remote broadcast; it should not do that
-- [WORKING ON IT] Calendar conflict checking bugs
+- [PARTIAL] Calendar conflict checking bugs (Still does not work when un-cancelling a recurring event that overrode other events; this will require an API change which will be done in a later version).
+- Calls to send to break during remote broadcast no longer queued when DJ Controls is disconnected from WWSU (it should not have done this).
+- Recorder was going over the max allowed Opus bitrate; fixed to 128kbps
+- Potential infinite loop scenario when recorder closes/restarts after a DJ goes to break
 
-### Changed
+### Updated
 
-- We are no longer creating a new MediaRecorder for every new recording; audio recorder class creates a single MediaRecorder that is used for the lifetime of the process.
+- Electron 11.2.0
 
 ## 8.0.0-alpha.32 - 2021-01-11
 

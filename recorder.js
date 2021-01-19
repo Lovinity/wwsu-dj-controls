@@ -107,7 +107,7 @@ recorder.on("recorderStopped", "recorder", (file) => {
 	window.ipc.renderer.console(["log", `Recorder: Recording ${file} ended.`]);
 	clearTimeout(newRecordTimeout);
 
-	window.ipc.renderer.recorderStopped([]);
+	window.ipc.renderer.recorderStopped([file]);
 
 	// Close the process if we are pending closing and no file was returned (aka no file to save).
 	if (!file && closingDown) {
@@ -122,7 +122,7 @@ recorder.on("recorderStarted", "recorder", (file) => {
 	clearTimeout(newRecordTimeout);
 
 	// Force a max recording time of 3 hours; renderer should appropriately trigger a new recording when recorderStopped event is sent.
-	newRecorderTimeout = setTimeout(() => {
+	newRecordTimeout = setTimeout(() => {
 		recorder.stopRecording(-1);
 	}, 1000 * 60 * 60 * 3);
 });
@@ -166,7 +166,7 @@ window.ipc.on.recorderStop((event, arg) => {
 	recorder.stopRecording(arg[0] || window.settings.recorder().delay);
 	window.ipc.renderer.console([
 		"log",
-		`Recorder: Recording ${arg[0]} will stop in ${
+		`Recorder: Recording will stop in ${
 			arg[0] || window.settings.recorder().delay
 		} milliseconds.`,
 	]);

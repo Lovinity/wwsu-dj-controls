@@ -30,17 +30,8 @@ unhandled({
 // Require other constants
 const fs = require("fs");
 const path = require("path");
-const {
-	app,
-	BrowserWindow,
-	Menu,
-	ipcMain,
-	session,
-	shell,
-	contentTracing,
-	webFrame,
-} = require("electron");
-const { autoUpdater } = require("electron-updater");
+const { app, BrowserWindow, Menu, ipcMain, session } = require("electron");
+// const { autoUpdater } = require("electron-updater");
 const debug = require("electron-debug");
 const contextMenu = require("electron-context-menu");
 const config = require("./config.js");
@@ -49,8 +40,6 @@ const packageJson = require("./package.json");
 const { machineIdSync } = require("./assets/wwsu-host-id");
 const Sanitize = require("sanitize-filename");
 const semver = require("semver");
-const serialport = require("serialport");
-const { URL } = require("url");
 
 // Initialize debug tools
 debug();
@@ -832,7 +821,10 @@ ipcMain.on("audioQueueSetting", (event, args) => {
 });
 
 // Save a recording
-ipcMain.handle("recorderEncoded", (event, args) => {
+ipcMain.handle("recorderEncoded", async (event, args) => {
+	return saveAudioFile(args);
+});
+function saveAudioFile(args) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			// Enforce webm type
@@ -930,7 +922,7 @@ ipcMain.handle("recorderEncoded", (event, args) => {
 			reject(e);
 		}
 	});
-});
+}
 
 // Make a notification window
 ipcMain.on("makeNotification", (event, args) => {
@@ -958,19 +950,11 @@ let delayStatusTimer;
 
 // Sync get available serial ports
 ipcMain.on("getSerialPorts", (event) => {
-	serialport
-		.list()
-		.then((ports) => {
-			if (!ports) {
-				event.returnValue = [];
-			} else {
-				event.returnValue = ports;
-			}
-		})
-		.catch((err) => {
-			console.error(err);
-			event.returnValue = [];
-		});
+	// TODO: Populate with Web Serial API in Electron 12
+	event.returnValue = [];
+	console.log(
+		`Serial port functionality was removed temporarily until Electron 12.`
+	);
 });
 
 // Restart delay system
@@ -984,217 +968,22 @@ ipcMain.on("delayDump", (event) => {
 });
 
 function restartDelay(arg) {
-	console.log("Restarting Delay Serial connection");
-	mainWindow.webContents.send("console", [
-		"log",
-		`Restarting Delay System serial, device ${config.get(
-			"delay.port"
-		)}, active = ${arg}`,
-	]);
-	try {
-		delaySerial.close();
-	} catch (e) {}
-
-	delaySerial = undefined;
-	delayData = ``;
-	clearTimeout(delayTimer);
-	clearInterval(delayStatusTimer);
-
-	if (arg) {
-		// Delay connecting to port 5 seconds to accommodate close method
-		setTimeout(() => {
-			let device = config.get("delay.port");
-
-			if (device && device !== null && device !== ``) {
-				const serialError = (err) => {
-					console.error(err);
-					mainWindow.webContents.send("console", ["error", err]);
-					mainWindow.webContents.send("delayError", [err]);
-					if (
-						err.disconnected ||
-						typeof delaySerial === "undefined" ||
-						typeof delaySerial.isOpen === "undefined" ||
-						!delaySerial.isOpen
-					) {
-						mainWindow.webContents.send("console", [
-							"log",
-							`Delay system serial disconnected. Trying to reconnect in 15 seconds.`,
-						]);
-						setTimeout(() => {
-							restartDelay();
-						}, 15000);
-					}
-				};
-				delaySerial = new serialport(device, {
-					baudRate: 38400,
-				});
-
-				delaySerial.on("error", (err) => {
-					serialError(err);
-				});
-
-				delaySerial.on("data", (data) => {
-					mainWindow.webContents.send("console", [
-						"log",
-						`Main: Delay system data received: ${data.toString("hex")}`,
-					]);
-					delayData += data.toString("hex");
-					clearTimeout(delayTimer);
-					delayTimer = setTimeout(() => {
-						// Delay status
-						if (delayData.includes("000c")) {
-							let index = delayData.indexOf("000c");
-							let seconds =
-								parseInt(delayData.substring(index + 6, index + 8), 16) / 10;
-							let bypass = hex2bin(delayData.substring(index + 16, index + 18));
-							bypass = parseInt(bypass.substring(7, 8)) === 1;
-							mainWindow.webContents.send("console", [
-								"log",
-								`Main: Delay System status is ${seconds} seconds, bypass = ${bypass}`,
-							]);
-							mainWindow.webContents.send("delay", [seconds, bypass]);
-						}
-
-						delayData = ``;
-					}, 1000);
-				});
-
-				delaySerial.on("open", () => {
-					mainWindow.webContents.send("console", [
-						"log",
-						`Main: Delay System port opened.`,
-					]);
-
-					let buffer;
-
-					// Request status after opening
-					buffer = new Buffer.alloc(6);
-					buffer[0] = 0xfb;
-					buffer[1] = 0xff;
-					buffer[2] = 0x00;
-					buffer[3] = 0x02;
-					buffer[4] = 0x11;
-					buffer[5] = 0xed;
-					delaySerial.write(buffer);
-
-					clearInterval(delayStatusTimer);
-					delayStatusTimer = setInterval(() => {
-						mainWindow.webContents.send("console", [
-							"log",
-							`Main: Delay System querying status...`,
-						]);
-						buffer = new Buffer.alloc(6);
-						buffer[0] = 0xfb;
-						buffer[1] = 0xff;
-						buffer[2] = 0x00;
-						buffer[3] = 0x02;
-						buffer[4] = 0x11;
-						buffer[5] = 0xed;
-						delaySerial.write(buffer);
-					}, 15000);
-				});
-			} else {
-				mainWindow.webContents.send("console", [
-					"log",
-					`Main: Delay System no devices selected / ports opened.`,
-				]);
-			}
-		}, 5000);
-	}
+	// TODO: Populate with Web Serial API in Electron 12
+	console.log(
+		`Serial port functionality was removed temporarily until Electron 12.`
+	);
 }
 
 function dumpDelay() {
-	if (delaySerial) {
-		mainWindow.webContents.send("console", [
-			"log",
-			`Main: Received request to dump delay system.`,
-		]);
-
-		// Deactivate bypass
-		mainWindow.webContents.send("console", [
-			"log",
-			`Main: Delay System deactivating bypass (in case it is activated).`,
-		]);
-		let buffer;
-
-		buffer = new Buffer.alloc(7);
-		buffer[0] = 0xfb;
-		buffer[1] = 0xff;
-		buffer[2] = 0x00;
-		buffer[3] = 0x03;
-		buffer[4] = 0x91;
-		buffer[5] = 0x00;
-		buffer[6] = 0x6c;
-		delaySerial.write(buffer);
-
-		// Activate Delay
-		mainWindow.webContents.send("console", [
-			"log",
-			`Main: Delay System activating dump button.`,
-		]);
-		buffer = new Buffer.alloc(7);
-		buffer[0] = 0xfb;
-		buffer[1] = 0xff;
-		buffer[2] = 0x00;
-		buffer[3] = 0x03;
-		buffer[4] = 0x90;
-		buffer[5] = 0x08;
-		buffer[6] = 0x65;
-		delaySerial.write(buffer);
-
-		setTimeout(() => {
-			// Push the start button
-			mainWindow.webContents.send("console", [
-				"log",
-				`Main: Delay System activating start button to rebuild delay.`,
-			]);
-			let buffer;
-
-			buffer = new Buffer.alloc(7);
-			buffer[0] = 0xfb;
-			buffer[1] = 0xff;
-			buffer[2] = 0x00;
-			buffer[3] = 0x03;
-			buffer[4] = 0x90;
-			buffer[5] = 0x02;
-			buffer[6] = 0x6b;
-			delaySerial.write(buffer);
-
-			// Deactivate buttons
-			mainWindow.webContents.send("console", [
-				"log",
-				`Main: Delay System deactivating dump button.`,
-			]);
-			buffer = new Buffer.alloc(7);
-			buffer[0] = 0xfb;
-			buffer[1] = 0xff;
-			buffer[2] = 0x00;
-			buffer[3] = 0x03;
-			buffer[4] = 0x90;
-			buffer[5] = 0x00;
-			buffer[6] = 0x6d;
-			delaySerial.write(buffer);
-
-			// Request status after dumping
-			mainWindow.webContents.send("console", [
-				"log",
-				`Main: Delay System querying new status.`,
-			]);
-			buffer = new Buffer.alloc(6);
-			buffer[0] = 0xfb;
-			buffer[1] = 0xff;
-			buffer[2] = 0x00;
-			buffer[3] = 0x02;
-			buffer[4] = 0x11;
-			buffer[5] = 0xed;
-			delaySerial.write(buffer);
-		}, 200);
-	}
+	// TODO: Populate with Web Serial API in Electron 12
+	console.log(
+		`Serial port functionality was removed temporarily until Electron 12.`
+	);
 }
 
 /*
 		FUNCTIONS
-	*/
+*/
 
 /**
  * Update config for an audio device.

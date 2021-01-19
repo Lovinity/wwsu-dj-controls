@@ -30,13 +30,14 @@ class WWSUrecorder extends WWSUevents {
 		// Construct the recorder
 		this.recorder = new MediaRecorder(this.destination.stream, {
 			mimeType: "audio/webm;codecs=opus",
-			bitsPerSecond: (128000 * 2)
+			bitsPerSecond: (64000 * 2) // Opus has a maximum allowed bitrate of 128000, so do 64kbps per channel
 		});
 		this.recorder.onstart = (e) => {
 			this.blobs = [];
 		};
 		this.recorder.ondataavailable = (e) => {
 			this.blobs.push(e.data);
+			console.log(`Recorder blob stored`);
 		};
 		this.recorder.onstop = (e) => {
 			// let blob = new Blob(this.blobs, { type: "audio/mpeg" });
@@ -49,6 +50,7 @@ class WWSUrecorder extends WWSUevents {
 				]);
 			};
 			fileReader.readAsArrayBuffer(blob);
+			this.blobs = [];
 		};
 	}
 
@@ -81,7 +83,7 @@ class WWSUrecorder extends WWSUevents {
 						{ worker: this.worker }
 					);
 					*/
-					this.recorder.start();
+					this.recorder.start((1000 * 60 * 5)); // Create a new blob every 5 minutes
 					this.emitEvent("recorderStarted", [this.pendingTitle]);
 				}
 			} catch (e) {
