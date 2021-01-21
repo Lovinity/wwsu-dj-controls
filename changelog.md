@@ -1,5 +1,11 @@
 # Changelog for wwsu-dj-controls
 
+## 8.0.0-alpha.34 - 2021-01-21
+
+### Fixed
+
+- Recorder sometimes did not start if UI was inactive.
+
 ## 8.0.0-alpha.33 - 2021-01-19
 
 ### Removed

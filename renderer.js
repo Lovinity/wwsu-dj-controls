@@ -708,23 +708,23 @@ computeTimePositions($h, $m, $s);
 
 // Define recorder function
 function startRecording(delay) {
-	let startRecording = null;
+	let recordState = null;
 	let preText = ``;
 	let preText2 = ``;
 	let temp = ``;
 
 	if (meta.meta.state === "live_on") {
-		startRecording = "live";
+		recordState = "live";
 		temp = meta.meta.show.split(" - ");
 		preText = window.sanitize.string(temp[1]);
 		preText2 = `${window.sanitize.string(meta.meta.show)}`;
 	} else if (meta.meta.state === "prerecord_on") {
-		startRecording = "prerecord";
+		recordState = "prerecord";
 		temp = meta.meta.show.split(" - ");
 		preText = window.sanitize.string(temp[1]);
 		preText2 = `${window.sanitize.string(meta.meta.show)}`;
 	} else if (meta.meta.state === "remote_on") {
-		startRecording = "remote";
+		recordState = "remote";
 		temp = meta.meta.show.split(" - ");
 		preText = window.sanitize.string(temp[1]);
 		preText2 = `${window.sanitize.string(meta.meta.show)}${
@@ -734,7 +734,7 @@ function startRecording(delay) {
 		meta.meta.state === "sports_on" ||
 		meta.meta.state === "sportsremote_on"
 	) {
-		startRecording = "sports";
+		recordState = "sports";
 		preText = window.sanitize.string(meta.meta.show);
 		preText2 = window.sanitize.string(meta.meta.show);
 	} else if (
@@ -742,7 +742,7 @@ function startRecording(delay) {
 		meta.meta.state === `automation_genre` ||
 		meta.meta.state === `automation_playlist`
 	) {
-		startRecording = "automation";
+		recordState = "automation";
 		preText = window.sanitize.string(meta.meta.genre);
 		preText2 = window.sanitize.string(meta.meta.genre);
 	} else if (
@@ -752,14 +752,14 @@ function startRecording(delay) {
 	) {
 		window.ipc.recorder.stop([delay]);
 	} else {
-		startRecording = "automation";
+		recordState = "automation";
 		preText = window.sanitize.string(meta.meta.genre);
 		preText2 = window.sanitize.string(meta.meta.genre);
 	}
-	if (startRecording !== null) {
+	if (recordState !== null) {
 		if (hosts.client.recordAudio) {
 			window.ipc.recorder.start([
-				`${startRecording}/${preText}/${preText2} (${moment().format(
+				`${recordState}/${preText}/${preText2} (${moment().format(
 					"YYYY_MM_DD HH_mm_ss"
 				)})`,
 				delay,
@@ -1364,10 +1364,10 @@ window.ipc.on.processClosed((event, arg) => {
 				$(".notifications-recorder").removeClass("badge-warning");
 				$(".notifications-recorder").removeClass("badge-danger");
 				$(".notifications-recorder").addClass("badge-secondary");
-				if (hosts.client.recordAudio) {
-					window.ipc.process.recorder(["open"]);
-				}
 			});
+			if (hosts.client.recordAudio) {
+				window.ipc.process.recorder(["open"]);
+			}
 			break;
 		case "remote":
 			recipients.registerPeer(null);
@@ -2727,7 +2727,6 @@ hosts.on("clientChanged", "renderer", (newClient) => {
 	// If this DJ Controls is supposed to record, open the recorder process, else close it.
 	if (newClient && newClient.recordAudio) {
 		window.ipc.process.recorder(["open"]);
-		startRecording(-1);
 	} else {
 		window.ipc.process.recorder(["close"]);
 	}

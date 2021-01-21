@@ -1123,7 +1123,7 @@ class CalendarDb {
 			if (event.overriddenID) {
 				// Find the original event via the unfiltered events
 				let record = unfilteredEvents.find(
-					(eventb) => eventb.ID === event.overriddenID
+					(eventb) => eventb.scheduleID === event.overriddenID
 				);
 
 				// If we could not find it, the override is invalid, so we can remove it and not continue beyond this point for the event.
@@ -1230,6 +1230,7 @@ class CalendarDb {
 			const eventsCall = (events) => {
 				progressCallback(`Stage 3 of 4: Intelligently filtering events`);
 				unfilteredEvents = _.cloneDeep(events); // Set unfiltered events to the variable; used for some conflict checks
+				console.dir(unfilteredEvents);
 				tasks = events.length;
 				tasksCompleted = 0;
 				let filteredEvents = [];
@@ -1246,7 +1247,7 @@ class CalendarDb {
 
 				events.map((event) => {
 					// Called on each event to determine of its start/end times fall within any of the query times.
-					// This speeds up conflict checking by not checking events outside of the dates/times affected by the queries.
+					// This speeds up conflict checking by not checking events outside of the dates/times affected by the queries (unless the event overrides another event within the time frame; those are included too).
 					const _determineFilter = (_event) => {
 						let filter = timePeriods.find(
 							(period) =>
@@ -1287,6 +1288,9 @@ class CalendarDb {
 
 				// Make start 1 day sooner to account for any ongoing events
 				start = moment(start).subtract(1, "days");
+
+				// Make end 1 day later
+				end = moment(end).add(1, "days");
 
 				// Get events with virtual schedule
 				if (callback) {
