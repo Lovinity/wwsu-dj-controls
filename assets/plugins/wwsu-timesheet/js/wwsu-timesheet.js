@@ -66,7 +66,9 @@ class WWSUtimesheet extends WWSUevents {
 	 */
 	clockForm(directorID) {
 		// Find the director
-		let director = this.manager.get(this.manager.get("directorReq").db).find({ ID: directorID }, true);
+		let director = this.manager
+			.get(this.manager.get("directorReq").db)
+			.find({ ID: directorID }, true);
 
 		this.modals.clock.title = `${director.name} - Clock ${
 			!director.present
@@ -169,10 +171,9 @@ class WWSUtimesheet extends WWSUevents {
 									return;
 								}
 								let value = form.getValue();
-								this.manager.get("directorReq")._authorize(
-									value.name,
-									value.password,
-									(body) => {
+								this.manager
+									.get("directorReq")
+									._authorize(value.name, value.password, (body) => {
 										if (body === 0 || typeof body.token === `undefined`) {
 											$(document).Toasts("create", {
 												class: "bg-warning",
@@ -229,8 +230,7 @@ class WWSUtimesheet extends WWSUevents {
 												}
 											);
 										}
-									}
-								);
+									});
 							},
 						},
 					},
@@ -239,7 +239,9 @@ class WWSUtimesheet extends WWSUevents {
 			data: {
 				name: director.name,
 				password: ``,
-				timestamp: moment().toISOString(true),
+				timestamp: moment(this.manager.get("WWSUMeta").meta.time).toISOString(
+					true
+				),
 				notes: ``,
 			},
 		});
@@ -253,36 +255,38 @@ class WWSUtimesheet extends WWSUevents {
 	 */
 	edit(data, cb) {
 		try {
-			this.manager.get("adminDirectorReq").request(
-				{ method: "post", url: this.endpoints.edit, data },
-				(response) => {
-					if (response !== "OK") {
-						$(document).Toasts("create", {
-							class: "bg-danger",
-							title: "Error editing timesheet",
-							body:
-								"There was an error editing the timesheet. Please report this to the engineer.",
-							autoHide: true,
-							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
-						});
-						if (typeof cb === "function") {
-							cb(false);
-						}
-					} else {
-						$(document).Toasts("create", {
-							class: "bg-success",
-							title: "timesheet edited",
-							autohide: true,
-							delay: 15000,
-							body: `The timesheet was edited.`,
-						});
-						if (typeof cb === "function") {
-							cb(true);
+			this.manager
+				.get("adminDirectorReq")
+				.request(
+					{ method: "post", url: this.endpoints.edit, data },
+					(response) => {
+						if (response !== "OK") {
+							$(document).Toasts("create", {
+								class: "bg-danger",
+								title: "Error editing timesheet",
+								body:
+									"There was an error editing the timesheet. Please report this to the engineer.",
+								autoHide: true,
+								delay: 10000,
+								icon: "fas fa-skull-crossbones fa-lg",
+							});
+							if (typeof cb === "function") {
+								cb(false);
+							}
+						} else {
+							$(document).Toasts("create", {
+								class: "bg-success",
+								title: "timesheet edited",
+								autohide: true,
+								delay: 15000,
+								body: `The timesheet was edited.`,
+							});
+							if (typeof cb === "function") {
+								cb(true);
+							}
 						}
 					}
-				}
-			);
+				);
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -308,36 +312,38 @@ class WWSUtimesheet extends WWSUevents {
 	 */
 	remove(data, cb) {
 		try {
-			this.manager.get("adminDirectorReq").request(
-				{ method: "post", url: this.endpoints.remove, data },
-				(response) => {
-					if (response !== "OK") {
-						$(document).Toasts("create", {
-							class: "bg-danger",
-							title: "Error removing timesheet",
-							body:
-								"There was an error removing the timesheet. Please report this to the engineer.",
-							autoHide: true,
-							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
-						});
-						if (typeof cb === "function") {
-							cb(false);
-						}
-					} else {
-						$(document).Toasts("create", {
-							class: "bg-success",
-							title: "timesheet removed",
-							autohide: true,
-							delay: 10000,
-							body: `The timesheet was removed.`,
-						});
-						if (typeof cb === "function") {
-							cb(true);
+			this.manager
+				.get("adminDirectorReq")
+				.request(
+					{ method: "post", url: this.endpoints.remove, data },
+					(response) => {
+						if (response !== "OK") {
+							$(document).Toasts("create", {
+								class: "bg-danger",
+								title: "Error removing timesheet",
+								body:
+									"There was an error removing the timesheet. Please report this to the engineer.",
+								autoHide: true,
+								delay: 10000,
+								icon: "fas fa-skull-crossbones fa-lg",
+							});
+							if (typeof cb === "function") {
+								cb(false);
+							}
+						} else {
+							$(document).Toasts("create", {
+								class: "bg-success",
+								title: "timesheet removed",
+								autohide: true,
+								delay: 10000,
+								body: `The timesheet was removed.`,
+							});
+							if (typeof cb === "function") {
+								cb(true);
+							}
 						}
 					}
-				}
-			);
+				);
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
@@ -825,6 +831,42 @@ class WWSUtimesheet extends WWSUevents {
 	timesheetForm(data) {
 		this.modals.edit.body = ``;
 		this.modals.edit.iziModal("open");
+
+		// Correct timezones in data
+		if (data) {
+			data.scheduledIn = moment
+				.tz(
+					data.scheduledIn,
+					this.manager.get("WWSUMeta")
+						? this.manager.get("WWSUMeta").meta.timezone
+						: moment.tz.guess()
+				)
+				.toISOString(true);
+			data.scheduledOut = moment
+				.tz(
+					data.scheduledOut,
+					this.manager.get("WWSUMeta")
+						? this.manager.get("WWSUMeta").meta.timezone
+						: moment.tz.guess()
+				)
+				.toISOString(true);
+			data.timeIn = moment
+				.tz(
+					data.timeIn,
+					this.manager.get("WWSUMeta")
+						? this.manager.get("WWSUMeta").meta.timezone
+						: moment.tz.guess()
+				)
+				.toISOString(true);
+			data.timeOut = moment
+				.tz(
+					data.timeOut,
+					this.manager.get("WWSUMeta")
+						? this.manager.get("WWSUMeta").meta.timezone
+						: moment.tz.guess()
+				)
+				.toISOString(true);
+		}
 
 		$(this.modals.edit.body).alpaca({
 			schema: {

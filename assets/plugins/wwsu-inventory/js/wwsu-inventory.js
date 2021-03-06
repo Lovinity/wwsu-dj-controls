@@ -2,6 +2,8 @@
 
 // This class manages the WWSU inventory and checking equipment in/out.
 
+// TODO: Add checkout record editing form
+
 // REQUIRES these WWSUmodules: WWSUMeta, hostReq (WWSureq), directorReq (WWSUreq), WWSUutil, WWSUanimations
 class WWSUinventory extends WWSUdb {
 	/**
@@ -439,7 +441,7 @@ class WWSUinventory extends WWSUdb {
 				{
 					dom: `#modal-${this.checkoutModal.id}`,
 					method: "post",
-					url: this.endpoints.edit,
+					url: this.endpoints.editCheckpot,
 					data: data,
 				},
 				(response) => {

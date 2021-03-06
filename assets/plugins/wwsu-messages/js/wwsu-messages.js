@@ -191,13 +191,20 @@ class WWSUmessages extends WWSUdb {
 								body:
 									"There was an error sending the message. Your DJ Controls might not be allowed to send messages to website visitors or display signs when you are not on the air. If this is not the case, please contact the engineer.",
 								autoHide: true,
-								delay: 15000,
+								delay: 20000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
 							if (typeof cb === "function") {
 								cb(false);
 							}
 						} else {
+							$(document).Toasts("create", {
+								class: "bg-success",
+								title: "Message sent",
+								body: "Your message was sent.",
+								autoHide: true,
+								delay: 10000,
+							});
 							if (typeof cb === "function") {
 								cb(true);
 							}

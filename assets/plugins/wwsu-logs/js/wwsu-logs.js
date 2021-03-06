@@ -643,9 +643,7 @@ class WWSUlogs extends WWSUevents {
 				this.tables.attendance
 					.buttons()
 					.container()
-					.appendTo(
-						$(`#section-logs-table_wrapper .col-md-6:eq(0)`)
-					);
+					.appendTo($(`#section-logs-table_wrapper .col-md-6:eq(0)`));
 			});
 		});
 	}
@@ -1113,7 +1111,9 @@ class WWSUlogs extends WWSUevents {
 									.buttons()
 									.container()
 									.appendTo(
-										$(`#modal-${this.modals.viewLog.id}-body-log_wrapper .col-md-6:eq(0)`)
+										$(
+											`#modal-${this.modals.viewLog.id}-body-log_wrapper .col-md-6:eq(0)`
+										)
 									);
 							} else {
 								this.tables.log.clear();
@@ -1386,7 +1386,7 @@ class WWSUlogs extends WWSUevents {
 					this.manager.get("WWSUMeta")
 						? this.manager.get("WWSUMeta").meta.time
 						: undefined
-				),
+				).toISOString(true),
 			},
 		});
 	}

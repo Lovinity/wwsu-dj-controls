@@ -551,6 +551,11 @@ class WWSUstate extends WWSUevents {
 						title: "Episode Topic / Description",
 						maxLength: 256,
 					},
+					webchat: {
+						type: "boolean",
+						title: "Allow messages from the web?",
+						default: true,
+					},
 				},
 			},
 			options: {
@@ -626,6 +631,13 @@ class WWSUstate extends WWSUevents {
 							});
 						},
 					},
+					webchat: {
+						rightLabel: "Yes",
+						helpers: [
+							"If you un-check this box, website visitors will not be allowed to send messages to you during your broadcast (they can still send messages through Discord, but you will not be notified in DJ Controls).",
+							"Remember that you can mute/ban visitors who send harassing or threatening messages. You can also delete messages.",
+						],
+					},
 				},
 				form: {
 					buttons: {
@@ -641,7 +653,7 @@ class WWSUstate extends WWSUevents {
 
 								value = {
 									topic: value.topic,
-									showname: `${value.djs} - ${value.name}`
+									showname: `${value.djs} - ${value.name}`,
 								};
 
 								this.goLive(value, (success) => {
@@ -842,6 +854,11 @@ class WWSUstate extends WWSUevents {
 						title: "Episode Topic / Description",
 						maxLength: 256,
 					},
+					webchat: {
+						type: "boolean",
+						title: "Allow messages from the web?",
+						default: true,
+					},
 				},
 			},
 			options: {
@@ -955,6 +972,13 @@ class WWSUstate extends WWSUevents {
 						optionLabels: callableHosts.map((host) => host.label),
 						helper:
 							"Choose which host you want to establish an audio call with for the broadcast. Please contact a director for guidance or choose the first one (unless that one does not work).",
+					},
+					webchat: {
+						rightLabel: "Yes",
+						helpers: [
+							"If you un-check this box, website visitors will not be allowed to send messages to you during your broadcast. (they can still send messages through Discord, but you will not be notified in DJ Controls)",
+							"Remember that you can mute/ban visitors who send harassing or threatening messages. You can also delete messages.",
+						],
 					},
 				},
 				form: {
@@ -1144,6 +1168,11 @@ class WWSUstate extends WWSUevents {
 						title: "Broadcast Description",
 						maxLength: 256,
 					},
+					webchat: {
+						type: "boolean",
+						title: "Allow messages from the web?",
+						default: true,
+					},
 				},
 			},
 			options: {
@@ -1186,6 +1215,13 @@ class WWSUstate extends WWSUevents {
 						helper:
 							"Limit: 256 characters. The topic will be displayed on the website and display signs. It will also be posted in the WWSU Discord.",
 						type: "textarea",
+					},
+					webchat: {
+						rightLabel: "Yes",
+						helpers: [
+							"If you un-check this box, website visitors will not be allowed to send messages to you during your broadcast. (they can still send messages through Discord, but you will not be notified in DJ Controls)",
+							"Remember that you can mute/ban visitors who send harassing or threatening messages. You can also delete messages.",
+						],
 					},
 				},
 				form: {
@@ -1374,6 +1410,11 @@ class WWSUstate extends WWSUevents {
 						title: "Broadcast Description",
 						maxLength: 256,
 					},
+					webchat: {
+						type: "boolean",
+						title: "Allow messages from the web?",
+						default: true,
+					},
 				},
 			},
 			options: {
@@ -1445,6 +1486,13 @@ class WWSUstate extends WWSUevents {
 						helper:
 							"Limit: 256 characters. The topic will be displayed on the website and display signs. It will also be posted in the WWSU Discord.",
 						type: "textarea",
+					},
+					webchat: {
+						rightLabel: "Yes",
+						helpers: [
+							"If you un-check this box, website visitors will not be allowed to send messages to you during your broadcast. (they can still send messages through Discord, but you will not be notified in DJ Controls)",
+							"Remember that you can mute/ban visitors who send harassing or threatening messages. You can also delete messages.",
+						],
 					},
 				},
 				form: {

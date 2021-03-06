@@ -79,11 +79,13 @@ wwsumodules
 	.add("WWSUstate", WWSUstate)
 	.add("WWSUclimacell", WWSUclimacell)
 	.add("WWSUinventory", WWSUinventory)
-	// .add("WWSUmessages", WWSUmessages)
+	.add("WWSUmessages", WWSUmessages)
 	.add("WWSUversion", WWSUversion, { app: "wwsu-dj-controls" })
 	.add("WWSUSilence", WWSUSilence)
 	.add("WWSUremote", WWSUremote)
-	.add("WWSUremoteQuality", WWSUremoteQuality);
+	.add("WWSUremoteQuality", WWSUremoteQuality)
+	.add("WWSUunderwritings", WWSUunderwritings)
+	.add("WWSUsongs", WWSUsongs);
 
 // Reference modules to variables
 let animations = wwsumodules.get("WWSUanimations");
@@ -107,12 +109,14 @@ let requests = wwsumodules.get("WWSUrequests");
 let timesheets = wwsumodules.get("WWSUtimesheet");
 let state = wwsumodules.get("WWSUstate");
 let climacell = wwsumodules.get("WWSUclimacell");
-// let messages = wwsumodules.get("WWSUmessages");
+let messages = wwsumodules.get("WWSUmessages");
 let inventory = wwsumodules.get("WWSUinventory");
-let _version = wwsumodules.get("WWSUversion"); // "version" is already declared
+let _version = wwsumodules.get("WWSUversion"); // "version" is already declared; use underscore
 let silence = wwsumodules.get("WWSUSilence");
 let remote = wwsumodules.get("WWSUremote");
 let remoteQuality = wwsumodules.get("WWSUremoteQuality");
+let underwritings = wwsumodules.get("WWSUunderwritings");
+let songs = wwsumodules.get("WWSUsongs");
 
 // Sound alerts
 let sounds = {
@@ -202,6 +206,13 @@ navigation
 		"#section-chat",
 		"Messages / Chat - WWSU DJ Controls",
 		"/chat",
+		false
+	)
+	.addItem(
+		"#nav-discord",
+		"#section-discord",
+		"Discord Chat - WWSU DJ Controls",
+		"/discord",
 		false
 	)
 	.addItem(
@@ -436,6 +447,13 @@ navigation
 		"Director timesheets - WWSU DJ Controls",
 		"/timesheets",
 		false
+	)
+	.addItem(
+		"#nav-underwritings",
+		"#section-underwritings",
+		"Manage Underwritings - WWSU DJ Controls",
+		"/underwritings",
+		false
 	);
 
 // Click events
@@ -592,7 +610,6 @@ timesheets.init(
 	`#section-timesheets-browse`
 );
 
-/*
 messages.initComponents(
 	".chat-active-recipient",
 	".chat-status",
@@ -601,9 +618,8 @@ messages.initComponents(
 	".chat-mute",
 	".chat-ban",
 	".messages-new-all",
-	"#nav-messages"
+	"#nav-chat"
 );
-*/
 
 // CLOCKWHEEL
 
@@ -1457,7 +1473,6 @@ socket.on("connect", () => {
 			if (success === 1) {
 				config.init();
 				meta.init();
-				directors.init();
 				djs.init();
 				calendar.init();
 				status.init();
@@ -1465,12 +1480,12 @@ socket.on("connect", () => {
 				announcements.init();
 				requests.init();
 				recipients.init();
-				// messages.init();
+				messages.init();
 				climacell.init();
-				inventory.init();
 				_version.init();
 				if (hosts.client.admin) {
 					$(".nav-admin").removeClass("d-none");
+					directors.init();
 					discipline.init();
 					discipline.initTable(`#section-bans-content`);
 					announcements.initTable("#section-announcements-content");
@@ -1478,9 +1493,14 @@ socket.on("connect", () => {
 					directors.initTable("#section-directors-content");
 					eas.initTable("#section-eas-content");
 					hosts.initTable("#section-hosts-content");
+					inventory.init();
 					inventory.initTable("#section-inventory-content");
+					underwritings.init();
+					underwritings.initTable("#section-underwritings-content");
 					logs.initIssues();
 					logs.initIssuesTable("#section-notifications-issues");
+				} else {
+					$(".nav-admin").addClass("d-none");
 				}
 
 				// If this DJ Controls is supposed to monitor/report silence, open the silence process, else close it.
@@ -2494,12 +2514,6 @@ function processAnnouncements(db) {
               </div>`;
 		});
 		$(".announcements").html(html);
-
-		// Then, if admin, process announcements for the announcements options menu.
-		if (hosts.client.admin) {
-			announcements.updateTable();
-			djs.updateTable();
-		}
 	});
 }
 
@@ -2619,9 +2633,6 @@ function recountTodos() {
         TRACK REQUESTS FUNCTIONS
     */
 
-requests.on("change", "renderer", (db) => {
-	requests.updateTable();
-});
 requests.on("trackRequested", "renderer", (request) => {
 	$(document).Toasts("create", {
 		class: "bg-primary",
@@ -2637,27 +2648,11 @@ Track: <strong>${request.trackname}</strong>`,
 });
 
 /*
-        DJ FUNCTIONS
-    */
-
-djs.on("change", "renderer", (db) => {
-	djs.updateTable();
-});
-
-/*
-		DIRECTOR FUNCTIONS
-	*/
-
-directors.on("change", "renderer", (db) => {
-	directors.updateTable();
-});
-
-/*
         RECIPIENTS FUNCTIONS
     */
 
 recipients.on("change", "renderer", (db) => {
-	// messages.updateRecipientsTable();
+	messages.updateRecipientsTable();
 
 	// If this host wants to make a call, and the host we want to call is online and has a peer, start a call.
 	if (
@@ -2682,14 +2677,13 @@ recipients.on("change", "renderer", (db) => {
 	}
 });
 recipients.on("recipientChanged", "renderer", (recipient) => {
-	// messages.changeRecipient(recipient);
+	messages.changeRecipient(recipient);
 });
 
 /*
         MESSAGES FUNCTIONS
     */
 
-/*
 messages.on("remove", "renderer", (query, db) => {
 	messages.read = messages.read.filter((value) => value !== query);
 	messages.notified = messages.notified.filter((value) => value !== query);
@@ -2705,47 +2699,22 @@ messages.on("newMessage", (message) => {
 		title: `New Message from ${message.fromFriendly}`,
 		autohide: true,
 		delay: 30000,
-		body: message.message,
+		body: `${message.message}<p><strong>To reply:</strong> Click "Messages / Chat" in the left menu and select the recipient.</p>`,
 		icon: "fas fa-comment fa-lg",
 		position: "bottomRight",
 	});
 });
-*/
 
 /*
 		HOSTS FUNCTIONS
 	*/
 
 hosts.on("clientChanged", "renderer", (newClient) => {
-	// If this DJ Controls is supposed to monitor/report silence, open the silence process, else close it.
-	if (newClient && newClient.silenceDetection) {
-		window.ipc.process.silence(["open"]);
-	} else {
-		window.ipc.process.silence(["close"]);
-	}
-
-	// If this DJ Controls is supposed to record, open the recorder process, else close it.
-	if (newClient && newClient.recordAudio) {
-		window.ipc.process.recorder(["open"]);
-	} else {
-		window.ipc.process.recorder(["close"]);
-	}
-
-	// Delay system
-	window.ipc.restartDelay(newClient ? newClient.delaySystem : false);
-
-	if (newClient)
-		$("#section-chat-iframe").attr(
-			"src",
-			`https://titanembeds.com/embed/742819639096246383?defaultchannel=782073518606647297&theme=DiscordDark&username=${hosts.client.friendlyname.replace(
-				/[^a-zA-Z0-9\d\-_\s]+/gi,
-				""
-			)}`
-		);
-});
-
-hosts.on("change", "renderer", (db) => {
-	hosts.updateTable();
+	// Refresh the socket
+	socket.disconnect();
+	setTimeout(() => {
+		socket.reconnect();
+	}, 5000);
 });
 
 /*

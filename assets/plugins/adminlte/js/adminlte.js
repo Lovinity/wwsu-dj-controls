@@ -1,6 +1,6 @@
 /*!
  * AdminLTE v3.1.0-rc (https://adminlte.io)
- * Copyright 2014-2020 Colorlib <https://colorlib.com>
+ * Copyright 2014-2021 Colorlib <https://colorlib.com>
  * Licensed under MIT (https://github.com/ColorlibHQ/AdminLTE/blob/master/LICENSE)
  */
 (function (global, factory) {
@@ -127,7 +127,7 @@
         $__default['default'](this).data(DATA_KEY, typeof config === 'string' ? data : config);
       }
 
-      if (typeof config === 'string' && config.match(/load/)) {
+      if (typeof config === 'string' && /load/.test(config)) {
         data[config]();
       } else {
         data._init($__default['default'](this));
@@ -344,7 +344,7 @@
         $__default['default'](this).data(DATA_KEY$1, typeof config === 'string' ? data : config);
       }
 
-      if (typeof config === 'string' && config.match(/collapse|expand|remove|toggle|maximize|minimize|toggleMaximize/)) {
+      if (typeof config === 'string' && /collapse|expand|remove|toggle|maximize|minimize|toggleMaximize/.test(config)) {
         data[config]();
       } else if (typeof config === 'object') {
         data._init($__default['default'](this));
@@ -452,12 +452,12 @@
     _proto.collapse = function collapse() {
       var $body = $__default['default']('body');
       var $html = $__default['default']('html');
-      var that = this; // Show the control sidebar
+      var target = this._config.target; // Show the control sidebar
 
       if (this._config.controlsidebarSlide) {
         $html.addClass(CLASS_NAME_CONTROL_SIDEBAR_ANIMATE);
         $body.removeClass(CLASS_NAME_CONTROL_SIDEBAR_SLIDE).delay(300).queue(function () {
-          $__default['default'](that._config.target).hide();
+          $__default['default'](target).hide();
           $html.removeClass(CLASS_NAME_CONTROL_SIDEBAR_ANIMATE);
           $__default['default'](this).dequeue();
         });
@@ -623,10 +623,8 @@
       };
       var sidebarHeight = heights.window - heights.header;
 
-      if (this._isFooterFixed()) {
-        if ($__default['default'](SELECTOR_FOOTER).css('position') === 'fixed') {
-          sidebarHeight = heights.window - heights.header - heights.footer;
-        }
+      if (this._isFooterFixed() && $__default['default'](SELECTOR_FOOTER).css('position') === 'fixed') {
+        sidebarHeight = heights.window - heights.header - heights.footer;
       }
 
       $controlSidebar.css('height', sidebarHeight);
@@ -991,7 +989,7 @@
           $__default['default'](this).data(DATA_KEY$5, data);
         }
 
-        if (typeof operation === 'string' && operation.match(/init|toggleRow/)) {
+        if (typeof operation === 'string' && /init|toggleRow/.test(operation)) {
           data[operation]();
         }
       });
@@ -1103,7 +1101,7 @@
       var plugin = new Fullscreen($__default['default'](this), _options);
       $__default['default'](this).data(DATA_KEY$6, typeof config === 'object' ? config : data);
 
-      if (typeof config === 'string' && config.match(/toggle|fullscreen|windowed/)) {
+      if (typeof config === 'string' && /toggle|fullscreen|windowed/.test(config)) {
         plugin[config]();
       } else {
         plugin.init();
@@ -1162,6 +1160,7 @@
   var SELECTOR_TAB_EMPTY = SELECTOR_TAB_CONTENT + " .tab-empty";
   var SELECTOR_TAB_LOADING = SELECTOR_TAB_CONTENT + " .tab-loading";
   var SELECTOR_SIDEBAR_MENU_ITEM = '.main-sidebar .nav-item > a.nav-link';
+  var SELECTOR_SIDEBAR_SEARCH_ITEM = '.sidebar-search-results .list-group-item';
   var SELECTOR_HEADER_MENU_ITEM = '.main-header .nav-item a.nav-link';
   var SELECTOR_HEADER_DROPDOWN_ITEM = '.main-header a.dropdown-item';
   var CLASS_NAME_IFRAME_MODE = 'iframe-mode';
@@ -1220,9 +1219,9 @@
       var tabId = "panel-" + uniqueName + "-" + Math.floor(Math.random() * 1000);
       var navId = "tab-" + uniqueName + "-" + Math.floor(Math.random() * 1000);
       var newNavItem = "<li class=\"nav-item\" role=\"presentation\"><a class=\"nav-link\" data-toggle=\"row\" id=\"" + navId + "\" href=\"#" + tabId + "\" role=\"tab\" aria-controls=\"" + tabId + "\" aria-selected=\"false\">" + title + "</a></li>";
-      $__default['default'](SELECTOR_TAB_NAVBAR_NAV).append(newNavItem);
+      $__default['default'](SELECTOR_TAB_NAVBAR_NAV).append(unescape(escape(newNavItem)));
       var newTabItem = "<div class=\"tab-pane fade\" id=\"" + tabId + "\" role=\"tabpanel\" aria-labelledby=\"" + navId + "\"><iframe src=\"" + link + "\"></iframe></div>";
-      $__default['default'](SELECTOR_TAB_CONTENT).append(newTabItem);
+      $__default['default'](SELECTOR_TAB_CONTENT).append(unescape(escape(newTabItem)));
 
       if (autoOpen) {
         if (this._config.loadingScreen) {
@@ -1260,7 +1259,7 @@
         $item = $__default['default'](item).parent('a').clone();
       }
 
-      $item.find('.right').remove();
+      $item.find('.right, .search-path').remove();
       var title = $item.find('p').text();
 
       if (title === '') {
@@ -1273,7 +1272,7 @@
         return;
       }
 
-      this.createTab(title, link, link.replace('.html', '').replace('./', '').replaceAll('/', '-'), autoOpen);
+      this.createTab(title, link, link.replace('.html', '').replace('./', '').replace(/["&'./=?[\]]/gi, '-').replace(/(--)/gi, ''), autoOpen);
     };
 
     _proto.switchTab = function switchTab(item) {
@@ -1351,7 +1350,7 @@
           _this2._fixHeight();
         }, 1);
       });
-      $__default['default'](document).on('click', SELECTOR_SIDEBAR_MENU_ITEM, function (e) {
+      $__default['default'](document).on('click', SELECTOR_SIDEBAR_MENU_ITEM + ", " + SELECTOR_SIDEBAR_SEARCH_ITEM, function (e) {
         e.preventDefault();
 
         _this2.openTabSidebar(e.target);
@@ -1456,7 +1455,7 @@
         $__default['default'](SELECTOR_CONTENT_WRAPPER).height(windowHeight);
         $__default['default'](SELECTOR_CONTENT_IFRAME).height(windowHeight);
       } else {
-        var contentWrapperHeight = parseFloat($__default['default'](SELECTOR_CONTENT_WRAPPER).css('min-height'));
+        var contentWrapperHeight = parseFloat($__default['default'](SELECTOR_CONTENT_WRAPPER).css('height'));
         var navbarHeight = $__default['default'](SELECTOR_TAB_NAV).outerHeight();
 
         if (tabEmpty == true) {
@@ -1480,7 +1479,7 @@
         $__default['default'](this).data(DATA_KEY$7, data);
       }
 
-      if (typeof operation === 'string' && operation.match(/createTab|openTabSidebar|switchTab|removeActiveTab/)) {
+      if (typeof operation === 'string' && /createTab|openTabSidebar|switchTab|removeActiveTab/.test(operation)) {
         var _data;
 
         for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
@@ -1539,6 +1538,7 @@
   var SELECTOR_PUSHMENU_BTN = '[data-widget="pushmenu"]';
   var SELECTOR_LOGIN_BOX = '.login-box';
   var SELECTOR_REGISTER_BOX = '.register-box';
+  var SELECTOR_PRELOADER = '.preloader';
   var CLASS_NAME_SIDEBAR_COLLAPSED = 'sidebar-collapse';
   var CLASS_NAME_SIDEBAR_FOCUSED = 'sidebar-focused';
   var CLASS_NAME_LAYOUT_FIXED$1 = 'layout-fixed';
@@ -1549,6 +1549,7 @@
     scrollbarAutoHide: 'l',
     panelAutoHeight: true,
     panelAutoHeightMode: 'min-height',
+    preloadDuration: 200,
     loginRegisterAutoHeight: true
   };
   /**
@@ -1560,8 +1561,6 @@
     function Layout(element, config) {
       this._config = config;
       this._element = element;
-
-      this._init();
     } // Public
 
 
@@ -1606,10 +1605,6 @@
           $contentSelector.css(this._config.panelAutoHeightMode, max + offset - heights.header);
         }
 
-        if (heights.controlSidebar + heights.footer >= heights.sidebar && heights.controlSidebar != 0) {
-          $contentSelector.css(this._config.panelAutoHeightMode, heights.controlSidebar + offset);
-        }
-
         if (this._isFooterFixed()) {
           $contentSelector.css(this._config.panelAutoHeightMode, parseFloat($contentSelector.css(this._config.panelAutoHeightMode)) + heights.footer);
         }
@@ -1617,10 +1612,6 @@
 
       if (!$body.hasClass(CLASS_NAME_LAYOUT_FIXED$1)) {
         return;
-      }
-
-      if (offset !== false) {
-        $contentSelector.css(this._config.panelAutoHeightMode, max + offset - heights.header - heights.footer);
       }
 
       if (typeof $__default['default'].fn.overlayScrollbars !== 'undefined') {
@@ -1687,12 +1678,19 @@
       $__default['default'](window).resize(function () {
         _this.fixLayoutHeight();
       });
-      $__default['default'](document).ready(function () {
-        _this.fixLayoutHeight();
-      });
       setTimeout(function () {
         $__default['default']('body.hold-transition').removeClass('hold-transition');
       }, 50);
+      setTimeout(function () {
+        var $preloader = $__default['default'](SELECTOR_PRELOADER);
+
+        if ($preloader) {
+          $preloader.css('height', 0);
+          setTimeout(function () {
+            $preloader.children().hide();
+          }, 200);
+        }
+      }, this._config.preloadDuration);
     };
 
     _proto._max = function _max(numbers) {
@@ -1747,8 +1745,7 @@
   });
   $__default['default'](SELECTOR_SIDEBAR + " a").on('focusin', function () {
     $__default['default'](SELECTOR_MAIN_SIDEBAR).addClass(CLASS_NAME_SIDEBAR_FOCUSED);
-  });
-  $__default['default'](SELECTOR_SIDEBAR + " a").on('focusout', function () {
+  }).on('focusout', function () {
     $__default['default'](SELECTOR_MAIN_SIDEBAR).removeClass(CLASS_NAME_SIDEBAR_FOCUSED);
   });
   /**
@@ -1817,10 +1814,8 @@
     _proto.expand = function expand() {
       var $bodySelector = $__default['default'](SELECTOR_BODY);
 
-      if (this._options.autoCollapseSize) {
-        if ($__default['default'](window).width() <= this._options.autoCollapseSize) {
-          $bodySelector.addClass(CLASS_NAME_OPEN);
-        }
+      if (this._options.autoCollapseSize && $__default['default'](window).width() <= this._options.autoCollapseSize) {
+        $bodySelector.addClass(CLASS_NAME_OPEN);
       }
 
       $bodySelector.addClass(CLASS_NAME_IS_OPENING).removeClass(CLASS_NAME_COLLAPSED$1 + " " + CLASS_NAME_CLOSED).delay(50).queue(function () {
@@ -1838,10 +1833,8 @@
     _proto.collapse = function collapse() {
       var $bodySelector = $__default['default'](SELECTOR_BODY);
 
-      if (this._options.autoCollapseSize) {
-        if ($__default['default'](window).width() <= this._options.autoCollapseSize) {
-          $bodySelector.removeClass(CLASS_NAME_OPEN).addClass(CLASS_NAME_CLOSED);
-        }
+      if (this._options.autoCollapseSize && $__default['default'](window).width() <= this._options.autoCollapseSize) {
+        $bodySelector.removeClass(CLASS_NAME_OPEN).addClass(CLASS_NAME_CLOSED);
       }
 
       $bodySelector.addClass(CLASS_NAME_COLLAPSED$1);
@@ -1947,7 +1940,7 @@
           $__default['default'](this).data(DATA_KEY$9, data);
         }
 
-        if (typeof operation === 'string' && operation.match(/collapse|expand|toggle/)) {
+        if (typeof operation === 'string' && /collapse|expand|toggle/.test(operation)) {
           data[operation]();
         }
       });
@@ -2045,17 +2038,17 @@
     _proto.init = function init() {
       var _this = this;
 
-      if ($__default['default'](SELECTOR_DATA_WIDGET$1).length == 0) {
+      if ($__default['default'](SELECTOR_DATA_WIDGET$1).length === 0) {
         return;
       }
 
-      if ($__default['default'](SELECTOR_DATA_WIDGET$1).next(SELECTOR_SEARCH_RESULTS).length == 0) {
+      if ($__default['default'](SELECTOR_DATA_WIDGET$1).next(SELECTOR_SEARCH_RESULTS).length === 0) {
         $__default['default'](SELECTOR_DATA_WIDGET$1).after($__default['default']('<div />', {
           class: CLASS_NAME_SEARCH_RESULTS
         }));
       }
 
-      if ($__default['default'](SELECTOR_SEARCH_RESULTS).children(SELECTOR_SEARCH_LIST_GROUP).length == 0) {
+      if ($__default['default'](SELECTOR_SEARCH_RESULTS).children(SELECTOR_SEARCH_LIST_GROUP).length === 0) {
         $__default['default'](SELECTOR_SEARCH_RESULTS).append($__default['default']('<div />', {
           class: CLASS_NAME_LIST_GROUP
         }));
@@ -2206,7 +2199,7 @@
       var plugin = new SidebarSearch($__default['default'](this), _options);
       $__default['default'](this).data(DATA_KEY$a, typeof config === 'object' ? config : data);
 
-      if (typeof config === 'string' && config.match(/init|toggle|close|open|search/)) {
+      if (typeof config === 'string' && /init|toggle|close|open|search/.test(config)) {
         plugin[config]();
       } else {
         plugin.init();
@@ -2751,7 +2744,7 @@
     var _proto = Treeview.prototype;
 
     _proto.init = function init() {
-      $__default['default']("" + SELECTOR_LI + SELECTOR_OPEN + " " + SELECTOR_TREEVIEW_MENU).css('display', 'block');
+      $__default['default']("" + SELECTOR_LI + SELECTOR_OPEN + " " + SELECTOR_TREEVIEW_MENU + SELECTOR_OPEN).css('display', 'block');
 
       this._setupListeners();
     };

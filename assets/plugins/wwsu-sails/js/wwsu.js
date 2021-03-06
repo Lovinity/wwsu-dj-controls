@@ -220,7 +220,7 @@ class WWSUreq {
 		this.usernameField = options.usernameField || null;
 		this.loginID = null;
 
-		// Storing authorization tokens in memory
+		// Storing authorization tokens in memory (instead of cookies or localStorage, which is insecure)
 		this._token = null;
 		this._time = null;
 		this._expiration = null;
@@ -478,7 +478,7 @@ class WWSUreq {
 			{
 				headerColor: "",
 				overlayClose: false,
-				zindex: 5000,
+				zindex: 10000,
 				timeout: false,
 				closeOnEscape: true,
 				closeButton: true,
@@ -776,7 +776,7 @@ class WWSUutil {
 							hidden: confirmText ? false : true,
 							validator: function (callback) {
 								let value = this.getValue();
-								if (confirmText && value !== confirmText) {
+								if (confirmText && value !== `${confirmText}`) {
 									callback({
 										status: false,
 										message: `You must type <strong>${confirmText}</strong> to confirm your action.`,

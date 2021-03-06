@@ -347,9 +347,9 @@ const createDiscordWindow = (inviteLink) => {
 	});
 
 	if (!inviteLink) {
-		discordWindow.loadURL("https://discord.com/channels/742819639096246383");
+		discordWindow.loadURL("https://discord.com/channels/742819639096246383"); // Keep up to date
 	} else {
-		discordWindow.loadURL("https://discord.gg/cKjtnWXPhz");
+		discordWindow.loadURL("https://discord.gg/KbAcQhF5Y5"); // Keep up to date
 	}
 
 	discordWindow.webContents.on("will-navigate", (event, newURL) => {

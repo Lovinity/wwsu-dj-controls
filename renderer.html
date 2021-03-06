@@ -287,13 +287,15 @@
 		<script src="assets/plugins/wwsu-hosts/js/wwsu-hosts.js"></script>
 		<script src="assets/plugins/wwsu-recipients/js/wwsu-recipients.js"></script>
 		<script src="assets/plugins/wwsu-discipline/js/wwsu-discipline.js"></script>
-		<!-- <script src="assets/plugins/wwsu-messages/js/wwsu-messages.js"></script> -->
+		<script src="assets/plugins/wwsu-messages/js/wwsu-messages.js"></script>
 		<script src="assets/plugins/wwsu-climacell/js/wwsu-climacell.js"></script>
 		<script src="assets/plugins/wwsu-version/js/wwsu-version.js"></script>
 		<script src="assets/plugins/wwsu-inventory/js/wwsu-inventory.js"></script>
 		<script src="assets/plugins/wwsu-silence/js/wwsu-silence.js"></script>
 		<script src="assets/plugins/wwsu-remote/js/wwsu-remote.js"></script>
 		<script src="assets/plugins/wwsu-remote/js/wwsu-remote-quality.js"></script>
+		<script src="assets/plugins/wwsu-underwritings/js/wwsu-underwritings.js"></script>
+		<script src="assets/plugins/wwsu-songs/js/wwsu-songs.js"></script>
 		<link
 			rel="stylesheet"
 			href="assets/plugins/wwsu-navigation/css/wwsu-navigation-flash.css"
@@ -481,7 +483,8 @@
 							style="height: 6em; font-size: 1em;"
 							title="Add a 15-second PSA to the queue"
 						>
-							<i class="fas fa-plus"></i> +15-sec PSA
+							<i class="fas fa-plus"></i> +15-sec <br />
+							PSA
 						</button>
 					</li>
 					<li class="nav-item operation-button operation-30-psa d-none">
@@ -490,7 +493,8 @@
 							style="height: 6em; font-size: 1em;"
 							title="Add a 30-second PSA to the queue"
 						>
-							<i class="fas fa-plus"></i> +30-sec PSA
+							<i class="fas fa-plus"></i> +30-sec <br />
+							PSA
 						</button>
 					</li>
 					<li class="nav-item operation-button operation-live d-none">
@@ -553,7 +557,8 @@
 							style="height: 6em; font-size: 1em;"
 							title="Play underwritings and PSAs until you resume the broadcast"
 						>
-							<i class="fas fa-coffee"></i> Take a Break
+							<i class="fas fa-coffee"></i> Take a <br />
+							Break
 						</button>
 					</li>
 					<li class="nav-item operation-button operation-extended-break d-none">
@@ -562,7 +567,8 @@
 							style="height: 6em; font-size: 1em;"
 							title="Play music and suspend audio streaming until you resume the broadcast"
 						>
-							<i class="fas fa-hourglass"></i> Extended Break
+							<i class="fas fa-hourglass"></i> Extended <br />
+							Break
 						</button>
 					</li>
 					<li class="nav-item operation-button operation-top-add d-none">
@@ -571,7 +577,8 @@
 							style="height: 6em; font-size: 1em;"
 							title="Play a random top add music track immediately"
 						>
-							<i class="fas fa-headphones"></i> Play Top Add
+							<i class="fas fa-headphones"></i> Play <br />
+							Top Add
 						</button>
 					</li>
 					<li class="nav-item operation-button operation-liner d-none">
@@ -589,7 +596,8 @@
 							style="height: 6em; font-size: 1em;"
 							title="Log something you played on the air, such as music."
 						>
-							<i class="fas fa-file"></i> Add a Log
+							<i class="fas fa-file"></i> Add a <br />
+							Log
 						</button>
 					</li>
 					<li class="nav-item operation-button operation-dump d-none">
@@ -742,11 +750,27 @@
 									href="#"
 									class="nav-link"
 									id="nav-chat"
-									title="Send and view messages from others in the Discord server (listeners on the website can also send / receive messages)"
+									title="Send and receive messages between other DJ Controls and those tuned in to WWSU online."
 								>
-									<i class="nav-icon nav-icon-messages fab fa-discord"></i>
+									<i class="nav-icon nav-icon-messages fas fa-comments"></i>
 									<p>
-										Discord Chat
+										Messages / Chat
+										<span class="badge badge-secondary right messages-new-all"
+											>0</span
+										>
+									</p>
+								</a>
+							</li>
+							<li class="nav-item">
+								<a
+									href="#"
+									class="nav-link"
+									id="nav-discord"
+									title="Send and view messages from others in the Discord server"
+								>
+									<i class="nav-icon fab fa-discord"></i>
+									<p>
+										Discord
 									</p>
 								</a>
 							</li>
@@ -1036,6 +1060,19 @@
 								<a
 									href="#"
 									class="nav-link"
+									id="nav-passwords"
+									title="Manage and view passwords for WWSU-related accounts."
+								>
+									<i class="nav-icon fas fa-key text-danger"></i>
+									<p>
+										Password Manager
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
 									id="nav-configuration"
 									title="Manage system-wide configuration for WWSU."
 								>
@@ -1065,7 +1102,7 @@
 									id="nav-underwritings"
 									title="Manage the underwritings (commercials) in the system and when they should air."
 								>
-									<i class="nav-icon fas fa-hand-holding-usd text-danger"></i>
+									<i class="nav-icon fas fa-hand-holding-usd"></i>
 									<p>
 										Underwritings
 									</p>
@@ -1160,6 +1197,9 @@
 											<div class="icon">
 												<i class="fas fa-headphones"></i>
 											</div>
+											<div class="small-box-footer">
+												Excludes FM
+											</div>
 										</div>
 									</div>
 									<!-- ./col -->
@@ -1173,8 +1213,13 @@
 												<h3 class="meta-remaining">???</h3>
 
 												<p>Scheduled Time Left</p>
+											</div>
+											<div class="icon">
+												<i class="fas fa-stopwatch"></i>
+											</div>
+											<div class="small-box-footer">
 												<div
-													class="progress progress-xs"
+													class="progress progress-xs m-2"
 													style="background-color: rgba(0, 0, 0, 0.125);"
 												>
 													<div
@@ -1183,9 +1228,6 @@
 														style="width: 0%;"
 													></div>
 												</div>
-											</div>
-											<div class="icon">
-												<i class="fas fa-stopwatch"></i>
 											</div>
 										</div>
 									</div>
@@ -1330,6 +1372,70 @@
 			<!--Chat--->
 			<section id="section-chat">
 				<div class="content-wrapper" style="padding-top: 8em;">
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-12">
+									<h1 class="m-0 text-dark">Messages / Chat</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+
+					<div class="content">
+						<div class="card card-success card-outline p-1 m-3">
+							<div class="card-header">
+								<h3 class="card-title chat-active-recipient">
+									(Select a recipient)
+								</h3>
+								<div class="card-tools">
+									<button
+										type="button"
+										class="btn btn-outline-primary chat-recipients"
+									>
+										Recipients
+									</button>
+								</div>
+							</div>
+							<div class="card-body">
+								<div class="callout callout-info chat-status">
+									<h5>Select a Recipient</h5>
+									<p>Please select a recipient to send a message.</p>
+								</div>
+								<p>
+									Unread messages are in red. Click a message to mark as read.
+									Sending a message marks all messages as read. Click the trash
+									can to delete a message from everyone's screen.
+								</p>
+								<div
+									class="chat-messages"
+									style="height: 33vh; overflow-x: auto;"
+								>
+									<!--Chat messages go here-->
+								</div>
+								<div class="chat-form">
+									<!--Chat Alpaca form goes here-->
+								</div>
+							</div>
+							<div class="card-footer">
+								<button type="button" class="btn btn-warning chat-mute d-none">
+									Mute
+								</button>
+								<button type="button" class="btn btn-danger chat-ban d-none">
+									Ban
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!--Discord--->
+			<section id="section-discord">
+				<div class="content-wrapper" style="padding-top: 8em;">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -1347,6 +1453,28 @@
 
 					<!-- Main content -->
 					<div class="content">
+						<div class="callout callout-warning">
+							<h5>No notifications for new messages</h5>
+							<p>
+								You will not be notified in DJ Controls when you get new
+								messages in Discord. Only messages sent through "Chat with DJ"
+								on the website will notify you (via Messages / Chat in DJ
+								Controls).
+							</p>
+						</div>
+						<div class="callout callout-warning">
+							<h5>Use main Discord client where possible</h5>
+							<p>
+								We <strong>highly recommend</strong> using Discord directly
+								opposed to the widget below; the widget does not always work and
+								does not support voice channel use.
+							</p>
+							<p>
+								<a href="#" onclick="window.ipc.loadDiscord(true);"
+									>Click here to open Discord in a new window.</a
+								>
+							</p>
+						</div>
 						<div class="embed-responsive embed-responsive-16by9">
 							<iframe
 								class="embed-responsive-item"
@@ -2716,6 +2844,64 @@
 							<!-- /.card-header -->
 							<div class="card-body" id="section-timesheets-records"></div>
 							<!-- /.card-body -->
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Underwritings management -->
+			<section id="section-underwritings">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<!-- Content Header (Page header) -->
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0 text-dark">Manage Underwritings</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+					<!-- /.content-header -->
+
+					<!-- Main content -->
+					<div class="content">
+						<div class="callout callout-info">
+							<h5>What are Underwritings?</h5>
+							<p>
+								Underwritings are paid or unpaid sponsorship messages that have
+								a specific date/time schedule, spin count, and/or start and end
+								date to air. Unlike PSAs which air randomly during breaks and
+								have no spin checking, the WWSU system uses complex algorithms
+								to ensure to the best of its ability underwritings air all their
+								spins by the set end date/time (if applicable). The system can
+								also adjust the frequency depending on the number of online
+								listeners currently tuned in, or to air underwritings during
+								specific calendar events. The system will also alert you via
+								system status if it finds it will not be able to air an
+								underwriting the specified number of times before the end
+								date/time.
+							</p>
+							<p>
+								<strong>Before adding an underwriting here, </strong>make sure
+								to import it into RadioDJ in the commercials category, set track
+								type to Commercial, and set the start/end date/time, priority,
+								and number of spins when applicable.
+							</p>
+							<p>
+								Please be sure to click "How Underwritings Work" and read the
+								info if you do not yet know how the WWSU system handles
+								underwritings.
+							</p>
+						</div>
+						<div class="card card-danger elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Underwriting Management</h3>
+							</div>
+							<div class="card-body" id="section-underwritings-content"></div>
 						</div>
 					</div>
 				</div>

@@ -34,6 +34,10 @@ class WWSUdirectors extends WWSUdb {
 			overlayClose: false,
 			zindex: 1110,
 		});
+
+		this.on("change", "WWSUdirectors", () => {
+			this.updateTable();
+		});
 	}
 
 	// Initialize the directors class. Call this on socket connect event.
@@ -140,7 +144,7 @@ class WWSUdirectors extends WWSUdb {
 		} catch (e) {
 			$(document).Toasts("create", {
 				class: "bg-danger",
-				title: "Error adding Director",
+				title: "Error editing Director",
 				body:
 					"There was an error editing the Director. Please report this to the engineer.",
 				autoHide: true,

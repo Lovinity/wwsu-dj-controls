@@ -1,5 +1,37 @@
 # Changelog for wwsu-dj-controls
 
+## 8.15.0-alpha
+
+### Fixed
+
+- Editing anything with a date/time would cause the date/time to load up in UTC but save in ET (causing times to advance 4-5 hours).
+- this.meta in wwsu-calendar-class was undefined; it should have been using this.manager.get("WWSUMeta").
+- Duration bug where re-scheduling / editing an event displayed "NaN" for duration when it should have been empty.
+- Event name validation fails when editing a sports occurrance (you had to type it in again). There should be no validation if the box is empty and we are editing.
+- Event conflict window should not allow clicking "continue" button if an error occurred (aka. trying to schedule the same event more than once in the same time frame).
+- WWSU confirmDialog did not force a string comparison; passing a number in for confirmation resulted in the inability to confirm an action.
+
+### Changed
+
+- [BREAKING] We've been in alpha for a long time and plan to take a while longer. Decided to make versions easier by modifying this version according to major.minor.patch schema (and will continue going forward, just with an alpha tag and we will not be bumping major until we reach stable and then make a breaking change [API should be considered unstable for now]).
+- Styling tweaks on dashboard
+- Table updating events etc moved to the modules script instead of the renderer one.
+
+### Updated
+
+- AdminLTE and packages
+- Electron.js to version 12
+    - Serial Port / Delay system functionality is scheduled to be re-implemented once Electron updates their docs for web serial API
+
+### Added
+
+- Underwritings management
+- Songs module
+- Re-activated main messages system alongside Discord chat; Discord chat was not popular.
+- Re-added setting on live, remote, sports, and sports remote forms allowing to disable the web chat during the show.
+- "Message sent" toast message on successful sending of a message
+- Bulletins on Discord tab to indicate messages are not notified in DJ Controls and to use the main Discord app where possible.
+
 ## 8.0.0-alpha.34 - 2021-01-21
 
 ### Fixed

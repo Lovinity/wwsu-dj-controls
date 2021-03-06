@@ -36,6 +36,10 @@ class WWSUannouncements extends WWSUdb {
 			headerColor: "",
 			zindex: 1100,
 		});
+
+		this.on("change", "WWSUannouncements", () => {
+			this.updateTable();
+		})
 	}
 
 	// Initialize the connection and get initial data; should be called on socket connect event.
@@ -356,6 +360,26 @@ class WWSUannouncements extends WWSUdb {
 		this.formModal.title = data ? `Edit Announcement` : `New Announcement`;
 		this.formModal.footer = ``;
 		this.formModal.body = ``;
+
+		// Make timezone corrections in initial data
+		if (data) {
+			data.starts = moment
+				.tz(
+					data.starts,
+					this.manager.get("WWSUMeta")
+						? this.manager.get("WWSUMeta").meta.timezone
+						: moment.tz.guess()
+				)
+				.toISOString(true);
+			data.expires = moment
+				.tz(
+					data.expires,
+					this.manager.get("WWSUMeta")
+						? this.manager.get("WWSUMeta").meta.timezone
+						: moment.tz.guess()
+				)
+				.toISOString(true);
+		}
 
 		// Create form
 		$(this.formModal.body).alpaca({

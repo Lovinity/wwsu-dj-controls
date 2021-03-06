@@ -54,6 +54,10 @@ class WWSUdjs extends WWSUdb {
 			overlayClose: false,
 			zindex: 1110,
 		});
+
+		this.on("change", "WWSUdjs", () => {
+			this.updateTable();
+		});
 	}
 
 	// Initialize connection. Call this on socket connect event.

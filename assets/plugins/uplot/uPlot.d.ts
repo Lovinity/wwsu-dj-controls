@@ -71,7 +71,7 @@ declare class uPlot {
 
 	// TODO: include other series style opts which are dynamically pulled?
 	/** toggles series visibility or focus */
-	setSeries(seriesIdx: number, opts: {show?: boolean, focus?: boolean}): void;
+	setSeries(seriesIdx: number | null, opts: {show?: boolean, focus?: boolean}): void;
 
 	/** adds a series */
 	addSeries(opts: Series, seriesIdx?: number): void;
@@ -100,7 +100,7 @@ declare class uPlot {
 	/** updates getBoundingClientRect() cache for cursor positioning. use when plot's position changes (excluding window scroll & resize) */
 	syncRect(): void;
 
-	/** uPlot's default line path builder (handles nulls/gaps & data decimation) */
+	/** uPlot's path-builder factories */
 	static paths: Series.PathBuilderFactories;
 
 	/** a deep merge util fn */
@@ -122,19 +122,54 @@ declare class uPlot {
 	static tzDate(date: Date, tzName: string): Date;
 
 	/** outerJoins multiple data tables on table[0] values */
-	static join(tables: AlignedData[], nullModes?: JoinNullMode[][]): AlignedDataWithGapTest;
+	static join(tables: AlignedData[], nullModes?: JoinNullMode[][]): AlignedData;
 
 	static addGap: Series.AddGap;
 
 	static clipGaps: Series.ClipPathBuilder;
+
+	/** helper function for grabbing proper drawing orientation vars and fns for a plot instance (all dims in canvas pixels) */
+	static orient: (u: uPlot, seriesIdx: number, callback: OrientCallback) => any;
 }
 
+type OrientCallback = (
+	series: Series,
+	dataX: number[],
+	dataY: (number | null)[],
+	scaleX: Scale,
+	scaleY: Scale,
+	valToPosX: ValToPos,
+	valToPosY: ValToPos,
+	xOff: number,
+	yOff: number,
+	xDim: number,
+	yDim: number,
+	moveTo: MoveToH | MoveToV,
+	lineTo: LineToH | LineToV,
+	rect:   RectH   | RectV,
+	arc:    ArcH    | ArcV,
+	bezierCurveTo: BezierCurveToH | BezierCurveToV,
+) => any;
+
+type ValToPos = (val: number, scale: Scale, fullDim: number, offset: number) => number;
+
+type MoveToH = (p: Path2D, x: number, y: number) => void;
+type MoveToV = (p: Path2D, y: number, x: number) => void;
+type LineToH = (p: Path2D, x: number, y: number) => void;
+type LineToV = (p: Path2D, y: number, x: number) => void;
+type RectH   = (p: Path2D, x: number, y: number, w: number, h: number) => void;
+type RectV   = (p: Path2D, y: number, x: number, h: number, w: number) => void;
+type ArcH    = (p: Path2D, x: number, y: number, r: number, startAngle: number, endAngle: number) => void;
+type ArcV    = (p: Path2D, y: number, x: number, r: number, startAngle: number, endAngle: number) => void;
+type BezierCurveToH = (p: Path2D, bp1x: number, bp1y: number, bp2x: number, bp2y: number, p2x: number, p2y: number) => void;
+type BezierCurveToV = (p: Path2D, bp1y: number, bp1x: number, bp2y: number, bp2x: number, p2y: number, p2x: number) => void;
+
 export const enum JoinNullMode {
-	/** use for series with spanGaps = true */
+	/** use for series with spanGaps: true */
 	Ignore = 0,
-	/** default */
+	/** retain explicit nulls gaps (default) */
 	Gaps   = 1,
-	/** expand explicit null gaps to include adjacent alignment nulls */
+	/** expand explicit null gaps to include adjacent alignment artifacts (undefined values) */
 	Expand = 2,
 }
 
@@ -147,13 +182,6 @@ export type AlignedData = [
 	xValues: number[],
 	...yValues: (number | null)[][],
 ]
-
-export interface AlignedDataWithGapTest {
-	data: AlignedData | null,
-	isGap: Series.isGap,
-}
-
-export type Data = AlignedData | AlignedDataWithGapTest;
 
 export interface DateNames {
 	/** long month names */
@@ -174,11 +202,7 @@ export namespace Range {
 
 	export type Function = (self: uPlot, initMin: number, initMax: number, scaleKey: string) => MinMax;
 
-	export const enum SoftMode {
-		Off    = 0,
-		Always = 1,
-		Near   = 2,
-	}
+	export type SoftMode = 0 | 1 | 2 | 3;
 
 	export interface Limit {
 		/** initial multiplier for dataMax-dataMin delta */
@@ -187,8 +211,8 @@ export namespace Range {
 		/** soft limit */
 		soft?: number; // 0
 
-		/** soft mode - 0: off, 1: if data extreme falls within soft limit, 2: if data extreme & padding exceeds soft limit */
-		mode?: SoftMode; // 2
+		/** soft limit active if... 0: never, 1: data <= limit, 2: data + padding <= limit, 3: data <= limit <= data + padding */
+		mode?: SoftMode; // 3
 
 		/** hard limit */
 		hard?: number;
@@ -214,16 +238,24 @@ export interface Legend {
 	show?: boolean;	// true
 	/** show series values at current cursor.idx */
 	live?: boolean;	// true
-	/** series indicator stroke */
+	/** series indicator line width */
+	width?: Legend.Width;
+	/** series indicator stroke (CSS borderColor) */
 	stroke?: Legend.Stroke;
+	/** series indicator stroke style (CSS borderStyle) */
+	dash?: Legend.Dash;
 	/** series indicator fill */
 	fill?: Legend.Fill;
 }
 
 export namespace Legend {
-	export type Stroke = (self: uPlot, seriesIdx: number) => Series.Stroke | null;
+	export type Width  = number | ((self: uPlot, seriesIdx: number) => number);
 
-	export type Fill = (self: uPlot, seriesIdx: number) => Series.Fill | null;
+	export type Stroke = CSSStyleDeclaration['borderColor'] | ((self: uPlot, seriesIdx: number) => CSSStyleDeclaration['borderColor']);
+
+	export type Dash   = CSSStyleDeclaration['borderStyle'] | ((self: uPlot, seriesIdx: number) => CSSStyleDeclaration['borderStyle']);
+
+	export type Fill   = CSSStyleDeclaration['background']  | ((self: uPlot, seriesIdx: number) => CSSStyleDeclaration['background']);
 }
 
 export type DateFormatterFactory = (tpl: string) => (date: Date) => string;
@@ -267,6 +299,8 @@ export interface Options {
 	drawOrder?: DrawOrderKey[];
 
 	series: Series[];
+
+	bands?: Band[],
 
 	scales?: Scales;
 
@@ -466,11 +500,15 @@ export interface Scale {
 
 	/** current max scale value */
 	max?: number,
+
+	/** scale direction */
+	dir?: 1 | -1;
+
+	/** scale orientation - 0: hz, 1: vt */
+	ori?: 0 | 1;
 }
 
 export namespace Series {
-	export type isGap = (self: uPlot, seriesIdx: number, idx: number) => boolean;
-
 	export interface Paths {
 		/** path to stroke */
 		stroke?: Path2D | null;
@@ -485,7 +523,7 @@ export namespace Series {
 	export type LinearPathBuilderFactory  = () => Series.PathBuilder;
 	export type SplinePathBuilderFactory  = () => Series.PathBuilder;
 	export type SteppedPathBuilderFactory = (opts?: {align?: -1 | 1}) => Series.PathBuilder;
-	export type BarsPathBuilderFactory    = (opts?: {size?: [factor?: number, max?: number]}) => Series.PathBuilder;
+	export type BarsPathBuilderFactory    = (opts?: {align?: -1 | 0 | 1, size?: [factor?: number, max?: number]}) => Series.PathBuilder;
 
 	export interface PathBuilderFactories {
 		linear?:  LinearPathBuilderFactory;
@@ -497,6 +535,8 @@ export namespace Series {
 	export type Stroke = CanvasRenderingContext2D['strokeStyle'] | ((self: uPlot, seriesIdx: number) => CanvasRenderingContext2D['strokeStyle']);
 
 	export type Fill = CanvasRenderingContext2D['fillStyle'] | ((self: uPlot, seriesIdx: number) => CanvasRenderingContext2D['fillStyle']);
+
+	export type Cap = CanvasRenderingContext2D['lineCap'];
 
 	export namespace Points {
 		export type Show = boolean | ((self: uPlot, seriesIdx: number, idx0: number, idx1: number) => boolean | undefined);
@@ -517,6 +557,12 @@ export namespace Series {
 
 		/** line color of circle outline (defaults to series.stroke) */
 		stroke?: Stroke;
+
+		/** line dash segment array */
+		dash?: number[];
+
+		/** line cap */
+		cap?: Series.Cap;
 
 		/** fill color of circle (defaults to #fff) */
 		fill?: Fill;
@@ -566,9 +612,6 @@ export interface Series {
 	/** when true, null data values will not cause line breaks */
 	spanGaps?: boolean;
 
-	/** tests a datapoint for inclusion in gap array and path clipping */
-	isGap?: Series.isGap;
-
 	/** legend label */
 	label?: string;
 
@@ -583,9 +626,6 @@ export interface Series {
 	/** rendered datapoints */
 	points?: Series.Points;
 
-	/** any two adjacent series with band: true, are filled as a single low/high band */
-	band?: boolean;
-
 	/** line width in CSS pixels */
 	width?: number;
 
@@ -599,7 +639,10 @@ export interface Series {
 	fillTo?: Series.FillTo;
 
 	/** line dash segment array */
-	dash?: number[];					// CanvasRenderingContext2D['setLineDash'];
+	dash?: number[];
+
+	/** line cap */
+	cap?: Series.Cap;
 
 	/** alpha-transparancy */
 	alpha?: number;
@@ -612,6 +655,23 @@ export interface Series {
 
 	/** current max rendered value */
 	max?: number,
+}
+
+export namespace Band {
+	export type Fill = CanvasRenderingContext2D['fillStyle'] | ((self: uPlot, bandIdx: number, highSeriesFill: CanvasRenderingContext2D['fillStyle']) => CanvasRenderingContext2D['fillStyle']);
+
+	export type Bounds = [highSeriesIdx: number, lowSeriesIdx: number];
+}
+
+export interface Band {
+	/** band on/off */
+//	show?: boolean;
+
+	/** series indices of upper and lower band edges */
+	series: Band.Bounds;
+
+	/** area fill style */
+	fill?: Band.Fill;
 }
 
 export namespace Axis {
@@ -627,6 +687,8 @@ export namespace Axis {
 	export type Splits = number[] | ((self: uPlot, axisIdx: number, scaleMin: number, scaleMax: number, foundIncr: number, pctSpace: number) => number[]);
 
 	export type Values = ((self: uPlot, splits: number[], axisIdx: number, foundSpace: number, foundIncr: number) => (string | number | null)[]) | (string | number | null)[][] | string;
+
+	export type Stroke = CanvasRenderingContext2D['strokeStyle'] | ((self: uPlot, axisIdx: number) => CanvasRenderingContext2D['strokeStyle']);
 
 	export const enum Side {
 		Top    = 0,
@@ -647,16 +709,19 @@ export namespace Axis {
 		show?: boolean; // true
 
 		/** can filter which splits render lines. e.g splits.map(v => v % 2 == 0 ? v : null) */
-		filter?: Axis.Filter;
+		filter?: Filter;
 
 		/** line color */
-		stroke?: CanvasRenderingContext2D['strokeStyle'];
+		stroke?: Stroke;
 
 		/** line width in CSS pixels */
 		width?: number;
 
-		/** line dash array */
-		dash?: number[];					// CanvasRenderingContext2D['setLineDash'];
+		/** line dash segment array */
+		dash?: number[];
+
+		/** line cap */
+		cap?: Series.Cap;
 	}
 
 	export interface Ticks extends Grid {
@@ -685,7 +750,7 @@ export interface Axis {
 	font?: CanvasRenderingContext2D['font'];
 
 	/** color of axis label & values */
-	stroke?: CanvasRenderingContext2D['strokeStyle'];
+	stroke?: Axis.Stroke;
 
 	/** axis label text */
 	label?: string;
@@ -739,7 +804,7 @@ export namespace Hooks {
 		setSelect?:  (self: uPlot) => void;
 
 		/** fires after a series is toggled or focused */
-		setSeries?:  (self: uPlot, seriesIdx: number, opts: Series) => void;
+		setSeries?:  (self: uPlot, seriesIdx: number | null, opts: Series) => void;
 
 		/** fires after data is updated updated */
 		setData?:    (self: uPlot) => void;

@@ -54,6 +54,10 @@ class WWSUhosts extends WWSUdb {
 			overlayClose: false,
 			zindex: 1100,
 		});
+
+		this.on("change", "WWSUhosts", (db) => {
+			this.updateTable();
+		});
 	}
 
 	/**

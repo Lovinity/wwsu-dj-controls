@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 // This class is a recipients helper for web-based recipients, such as listeners.
 
@@ -7,8 +7,8 @@ class WWSUrecipientsweb {
   /**
    * The class constructor.
    *
-	 * @param {WWSUmodules} manager The modules class which initiated this module
-	 * @param {object} options Options to be passed to this module
+   * @param {WWSUmodules} manager The modules class which initiated this module
+   * @param {object} options Options to be passed to this module
    */
   constructor(manager, options) {
     this.manager = manager;
@@ -72,7 +72,7 @@ class WWSUrecipientsweb {
             cb(response2, false);
           }
         } catch (e) {
-            this.recipient = {};
+          this.recipient = {};
           cb({}, false);
           console.error(e);
         }
@@ -84,7 +84,7 @@ class WWSUrecipientsweb {
    * Edit the nickname for a web recipient.
    *
    * @param {string} label The new nickname for this recipient
-   * @param {function} cb Callback.
+   * @param {?function} cb Callback.
    */
   editRecipientWeb(label, cb) {
     this.manager.get("noReq").request(
@@ -94,7 +94,7 @@ class WWSUrecipientsweb {
         data: { label: label },
       },
       (response2) => {
-        cb();
+        if (typeof cb === "function") cb();
       }
     );
   }
