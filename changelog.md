@@ -1,6 +1,7 @@
 # Changelog for wwsu-dj-controls
 
 ## 8.16.0-alpha
+
 THIS CANNOT BE RELEASED UNTIL ELECTRON FIXES https://github.com/electron/electron/issues/27625
 
 ### Added
@@ -14,6 +15,13 @@ THIS CANNOT BE RELEASED UNTIL ELECTRON FIXES https://github.com/electron/electro
 - Meta updates sometimes did not update on the UI if inactive and later active.
 - WWSUreq token error handling was inconsistent; should always check for errToken (not tokenErr).
 - Notification for new message was not displaying.
+
+### Updated
+
+- AdminLTE
+- Plugins
+- NPM packages
+- Electron.js
 
 ## 8.15.0-alpha
 
@@ -36,7 +44,7 @@ THIS CANNOT BE RELEASED UNTIL ELECTRON FIXES https://github.com/electron/electro
 
 - AdminLTE and packages
 - Electron.js to version 12
-    - Serial Port / Delay system functionality is scheduled to be re-implemented once Electron updates their docs for web serial API
+  - Serial Port / Delay system functionality is scheduled to be re-implemented once Electron updates their docs for web serial API
 
 ### Added
 
