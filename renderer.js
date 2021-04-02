@@ -1442,11 +1442,9 @@ window.ipc.on.delay((event, args) => {
 function refreshSerialPorts() {
 	// Get available ports (via custom Electron event in index.js)
 
-	/*
 	navigator.serial.requestPort().then(() => {
 		// Always returns empty; available serial ports are sent using the serialPorts event
 	});
-	*/
 }
 refreshSerialPorts();
 
@@ -1480,18 +1478,6 @@ window.ipc.on.serialPorts((event, ports) => {
 		window.saveSettings.delay("port", val);
 		// Restart delay system by closing the process so we can use the new port
 		window.ipc.process.delay(["close"]);
-
-		// TEMP until Electron fixes the click bug
-		disconnectSerial().then(() => {
-			if (hosts.client.delaySystem) {
-				connectSerial().then(() => {
-					// READY
-					window.ipc.renderer.console(["log", "Delay: Process is ready"]);
-					console.log(`Process is ready`);
-					window.ipc.renderer.delayReady([]);
-				});
-			}
-		});
 	});
 });
 
@@ -1560,17 +1546,7 @@ socket.on("connect", () => {
 				// If this DJ Controls is responsible for the delay system, open the process, else close it.
 				if (hosts.client.delaySystem) {
 					window.ipc.process.delay(["open"]);
-
-					disconnectSerial().then(() => {
-						connectSerial().then(() => {
-							// READY
-							window.ipc.renderer.console(["log", "Delay: Process is ready"]);
-							console.log(`Process is ready`);
-							window.ipc.renderer.delayReady([]);
-						});
-					});
 				} else {
-					disconnectSerial().then(() => {});
 					window.ipc.process.delay(["close"]);
 				}
 

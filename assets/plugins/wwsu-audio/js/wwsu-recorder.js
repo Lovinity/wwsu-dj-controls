@@ -34,6 +34,7 @@ class WWSUrecorder extends WWSUevents {
 		});
 		this.recorder.onstart = (e) => {
 			this.blobs = [];
+			console.log(`Recorder blob memory emptied`);
 		};
 		this.recorder.ondataavailable = (e) => {
 			this.blobs.push(e.data);

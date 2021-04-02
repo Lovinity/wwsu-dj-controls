@@ -1,7 +1,7 @@
 "use strict";
 
 // Initialize unhandled exceptions handler first
-const { is, openNewGitHubIssue, debugInfo } = require("electron-util");
+const { openNewGitHubIssue, debugInfo } = require("electron-util");
 const unhandled = require("electron-unhandled");
 unhandled({
 	reportButton: (error) => {
@@ -81,7 +81,7 @@ autoUpdater.on("update-available", (info) => {
 });
 */
 
-// Prevent windows from being garbage collected
+// Prevent windows from being garbage collected, so declare their variables in the outer scope
 let loadingScreen;
 let mainWindow;
 let calendarWindow;
@@ -92,8 +92,8 @@ let remoteWindow;
 let delayWindow;
 let discordWindow;
 
-const enforceCORS = () => {
-	// On requests to skyway.js, we must use the WWSU server as the Origin so skyway can verify us.
+const loadSession = () => {
+	// On requests to skyway.js, we must use the WWSU server URL as the Origin so skyway can verify us.
 	// For all other requests, we can use the default file origin (which we should, especially for the WWSU server)
 	session.defaultSession.webRequest.onBeforeSendHeaders(
 		{ urls: [`https://*.webrtc.ecl.ntt.com/*`] },
@@ -135,9 +135,28 @@ const enforceCORS = () => {
 		}
 	);
 
+	// Web Serial API (mainWindow does not actually use serial ports; it allows config / selection)
+	session.defaultSession.on(
+		"select-serial-port",
+		(event, portList, webContents, callback) => {
+			event.preventDefault();
+			mainWindow.webContents.send("serialPorts", portList);
+
+			ports = portList;
+
+			// Return saved port for delay system
+			let settings = config.get(`delay`);
+			let portToUse = ports.find(
+				(port) => port.deviceInstanceId === settings.port
+			);
+			callback(portToUse ? portToUse.portId : "");
+		}
+	);
+
 	// TODO: Add access-control-allow-origin when it can be figured out
 };
 
+// Loading splash screen
 const createLoadingScreen = () => {
 	/// create a browser window
 	loadingScreen = new BrowserWindow({
@@ -167,7 +186,7 @@ const createLoadingScreen = () => {
 	});
 };
 
-// Calendar process
+// Calendar process; used to process calendar and weather data
 const createCalendarWindow = () => {
 	if (calendarWindow) return;
 	// Create the calendar process
@@ -186,21 +205,26 @@ const createCalendarWindow = () => {
 		},
 	});
 
+	// If the calendar process closes for whatever reason, but the renderer is still loaded, re-load the calendar process
 	calendarWindow.on("closed", function () {
 		if (mainWindow !== null) {
 			createCalendarWindow();
 		}
 	});
+
 	calendarWindow.loadFile("calendar.html");
+
+	// Do not allow navigating to any websites in the process
 	calendarWindow.webContents.on("will-navigate", (event, newURL) => {
 		event.preventDefault(); // AUXCLICK_JS_CHECK
 	});
 };
 
-// Process for audio
+// Process for audio; used to report available audio devices, report VU volume, and manage audio settings
 const createAudioWindow = () => {
-	let restartInterval;
 	if (audioWindow) return;
+
+	let restartInterval;
 
 	// Create the audio process
 	audioWindow = new BrowserWindow({
@@ -218,6 +242,7 @@ const createAudioWindow = () => {
 		},
 	});
 
+	// If the audio process closes, but the renderer is still loaded, re-load the audio process and clear the restart timer.
 	audioWindow.on("closed", function () {
 		clearInterval(restartInterval);
 		audioWindow = undefined;
@@ -227,20 +252,23 @@ const createAudioWindow = () => {
 	});
 
 	audioWindow.loadFile("audio.html");
+
+	// Do not allow external URL navigation
 	audioWindow.webContents.on("will-navigate", (event, newURL) => {
 		event.preventDefault(); // AUXCLICK_JS_CHECK
 	});
 
-	// TODO: Until we know why this process is leaking memory, restart it every hour
+	// Trigger a re-load on the audio process every hour; this helps clear out memory leaks and maintain stability
 	restartInterval = setInterval(() => {
 		if (audioWindow) audioWindow.reload();
 	}, 1000 * 60 * 60);
 };
 
-// Process for silence detection
+// Process for silence detection; monitors selected input devices for silence and reports to the renderer when silence is detected
 const createSilenceWindow = () => {
-	let restartInterval;
 	if (silenceWindow) return;
+
+	let restartInterval;
 
 	// Create the audio process
 	silenceWindow = new BrowserWindow({
@@ -258,6 +286,7 @@ const createSilenceWindow = () => {
 		},
 	});
 
+	// If the process closes, report this as an event to the renderer; the renderer should decide if the silence process should be restarted.
 	silenceWindow.on("closed", function () {
 		clearInterval(restartInterval);
 		silenceWindow = null;
@@ -268,17 +297,18 @@ const createSilenceWindow = () => {
 
 	silenceWindow.loadFile("silence.html");
 
+	// Prevent external URL navigation
 	silenceWindow.webContents.on("will-navigate", (event, newURL) => {
 		event.preventDefault(); // AUXCLICK_JS_CHECK
 	});
 
-	// TODO: Until we know why audio is leaking memory, restart process every hour
+	// Trigger a re-load on the silence process every hour; this helps clear out memory leaks and maintain stability
 	restartInterval = setInterval(() => {
 		if (silenceWindow) silenceWindow.reload();
 	}, 1000 * 60 * 60);
 };
 
-// Process for recorder
+// Process for recorder; records selected input audio devices and saves as webm files to configured save directory
 const createRecorderWindow = () => {
 	if (recorderWindow) return;
 
@@ -298,6 +328,7 @@ const createRecorderWindow = () => {
 		},
 	});
 
+	// If the recorder process closes, report this as an event to the renderer. The renderer should decide what to do.
 	recorderWindow.on("closed", function () {
 		recorderWindow = null;
 		if (mainWindow !== null) {
@@ -307,12 +338,15 @@ const createRecorderWindow = () => {
 
 	recorderWindow.loadFile("recorder.html");
 
+	// Prevent external URL navigation
 	recorderWindow.webContents.on("will-navigate", (event, newURL) => {
 		event.preventDefault(); // AUXCLICK_JS_CHECK
 	});
+
+	// Note: recorder process should be reloaded programmatically after every recording to clear memory leaks and ensure stability
 };
 
-// Process for remote broadcasts
+// Process for remote broadcasts; skyway.js is used in here to stablish peer-to-peer audio streaming with other DJ Controls to remotely broadcast shows
 const createRemoteWindow = () => {
 	if (remoteWindow) return;
 
@@ -332,6 +366,7 @@ const createRemoteWindow = () => {
 		},
 	});
 
+	// If the remote process closes, report this to the renderer. Renderer should decide what to do (re-loading the process, sending the DJ to break, etc)
 	remoteWindow.on("closed", function () {
 		remoteWindow = null;
 		if (mainWindow !== null) {
@@ -341,12 +376,13 @@ const createRemoteWindow = () => {
 
 	remoteWindow.loadFile("remote.html");
 
+	// Do not allow external URL navigation
 	remoteWindow.webContents.on("will-navigate", (event, newURL) => {
 		event.preventDefault(); // AUXCLICK_JS_CHECK
 	});
 };
 
-// Process for delay system
+// Process for delay system; used to monitor a configured delay system on the configured serial port and to request audio dumping
 const createDelayWindow = () => {
 	if (delayWindow) return;
 
@@ -367,6 +403,7 @@ const createDelayWindow = () => {
 		},
 	});
 
+	// If the delay process closes, report this to the renderer. The renderer should decide whether or not to restart the process.
 	delayWindow.on("closed", function () {
 		delayWindow = null;
 		if (mainWindow !== null) {
@@ -376,12 +413,13 @@ const createDelayWindow = () => {
 
 	delayWindow.loadFile("delay.html");
 
+	// Prevent navigation to other URLs
 	delayWindow.webContents.on("will-navigate", (event, newURL) => {
 		event.preventDefault(); // AUXCLICK_JS_CHECK
 	});
 };
 
-// Process for recorder
+// Discord window
 const createDiscordWindow = (inviteLink) => {
 	if (discordWindow) return;
 
@@ -403,6 +441,7 @@ const createDiscordWindow = (inviteLink) => {
 		discordWindow = null;
 	});
 
+	// When loaded, navigate either to the main text channel in the server or to the invite link for the server.
 	if (!inviteLink) {
 		discordWindow.loadURL("https://discord.com/channels/742819639096246383"); // Keep up to date
 	} else {
@@ -459,6 +498,7 @@ const createWindows = () => {
 		// TODO: Check for updates (disabled as it does not work)
 		// autoUpdater.checkForUpdates();
 
+		// Load calendar and audio processes
 		createCalendarWindow();
 		createAudioWindow();
 	});
@@ -471,7 +511,7 @@ const createWindows = () => {
 		mainWindow = null;
 
 		try {
-			// Recorder should be shut down gracefully to save current recording
+			// Recorder should be shut down gracefully to save current recording first
 			if (recorderWindow) {
 				recorderWindow.webContents.send("shutDown");
 			}
@@ -500,12 +540,17 @@ const createWindows = () => {
 				discordWindow.close();
 				discordWindow = null;
 			}
+
+			if (delayWindow) {
+				delayWindow.close();
+				delayWindow = null;
+			}
 		} catch (eee) {}
 	});
 
 	mainWindow.on("focus", () => mainWindow.flashFrame(false));
 
-	// Crash notification
+	// Crash notification for renderer process
 	mainWindow.webContents.on("render-process-gone", (event, details) => {
 		console.log("Process gone!");
 		makeNotification({
@@ -541,34 +586,31 @@ const createWindows = () => {
 				remoteWindow = null;
 			}
 
+			if (delayWindow) {
+				delayWindow.close();
+				delayWindow = null;
+			}
+
 			// Do not close discordWindow; user needs to be able to log out
 		} catch (eee) {}
 	});
 
-	// Prevent navigation to other pages
+	// Renderer should not allow navigation to any external websites
 	mainWindow.webContents.on("will-navigate", (event, newURL) => {
 		event.preventDefault(); // AUXCLICK_JS_CHECK
 	});
-
-	// Web Serial API (mainWindow does not actually use serial ports; it allows config / selection)
-	mainWindow.webContents.session.on(
-		"select-serial-port",
-		(event, portList, webContents, callback) => {
-			event.preventDefault();
-			mainWindow.webContents.send("serialPorts", portList);
-
-			ports = portList;
-
-			// Return saved port for delay system
-			let settings = config.get(`delay`);
-			let portToUse = ports.find(
-				(port) => port.deviceInstanceId === settings.port
-			);
-			callback(portToUse ? portToUse.portId : "");
-		}
-	);
 };
 
+/**
+ * Make a notification via a browser window
+ * 
+ * @param {Object} data Notification data
+ * @param {string} data.title The title of the notification shown on the actual window
+ * @param {string} data.bg The bg-* color class to use for the background color of the notification
+ * @param {string} data.header The title of the notification shown on the notification itself
+ * @param {string} data.body The contents of the notification
+ * @param {boolean} data.flash If true, the background will flash between bg-black and data.bg to draw attention
+ */
 const makeNotification = (data) => {
 	let notificationWindow = new BrowserWindow({
 		width: 640,
@@ -590,25 +632,30 @@ const makeNotification = (data) => {
 			sandbox: true,
 		},
 	});
+
+	// When the notification is ready to appear, make it visible and send notification data to the process
 	notificationWindow.once("ready-to-show", () => {
 		notificationWindow.show();
 		notificationWindow.webContents.send("notificationData", data);
 	});
+
 	notificationWindow.loadFile("notification.html");
+
+	// Prevent URL navigation
 	notificationWindow.webContents.on("will-navigate", (event, newURL) => {
 		event.preventDefault(); // AUXCLICK_JS_CHECK
 	});
 };
 
-// Enforce sandboxing for security
+// Enforce sandboxing for security (every process is in its own isolated environment)
 app.enableSandbox();
 
-// Prevent multiple instances of the app
+// Prevent multiple instances of the app from running
 if (!app.requestSingleInstanceLock()) {
 	app.quit();
 }
 
-// If a second instance is spawned, show the current instance
+// If a second instance is spawned, show the current instance in the event it is minimized or hidden
 app.on("second-instance", () => {
 	if (mainWindow) {
 		if (mainWindow.isMinimized()) {
@@ -624,7 +671,7 @@ app.on("window-all-closed", () => {
 	app.quit();
 });
 
-// If we do not have a mainWindow for whatever reason, restart the windows
+// If we do not have a mainWindow for whatever reason when the app is activated, restart the main processes and windows
 app.on("activate", () => {
 	if (!mainWindow) {
 		createWindows();
@@ -632,8 +679,6 @@ app.on("activate", () => {
 });
 
 // Prevent opening new windows in the app browsers; use the default browser instead
-// DISABLED as it interferes with WidgetBot.io
-/*
 app.on("web-contents-created", (event, contents) => {
 	contents.on("new-window", async (event, navigationUrl) => {
 		// In this example, we'll ask the operating system
@@ -643,14 +688,13 @@ app.on("web-contents-created", (event, contents) => {
 		await shell.openExternal(navigationUrl);
 	});
 });
-*/
 
 // Start loading the app
 app
 	.whenReady()
-	.then(enforceCORS)
-	.then(Menu.setApplicationMenu(menu))
-	.then(createWindows);
+	.then(loadSession) // Configure default sessions
+	.then(Menu.setApplicationMenu(menu)) // Create menu
+	.then(createWindows); // Create main windows
 
 /*
 	IPC COMMUNICATIONS
