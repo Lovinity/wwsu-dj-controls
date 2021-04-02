@@ -41,13 +41,20 @@ const { machineIdSync } = require("./assets/wwsu-host-id");
 const Sanitize = require("sanitize-filename");
 const semver = require("semver");
 
+// Because portId changes each time DJ Controls is booted up (ugggghhhhh), we have to store ports in memory when accessed.
+let ports = [];
+
 // Initialize debug tools
 debug();
 
 // Initialize context menu
 contextMenu();
 
+// Set app ID
 app.setAppUserModelId(packageJson.appId);
+
+// Enable experimental Web Serial API
+app.commandLine.appendSwitch("enable-features", "ElectronSerialChooser");
 
 /*
 // Use custom update config
@@ -82,6 +89,7 @@ let audioWindow;
 let silenceWindow;
 let recorderWindow;
 let remoteWindow;
+let delayWindow;
 let discordWindow;
 
 const enforceCORS = () => {
@@ -99,17 +107,31 @@ const enforceCORS = () => {
 		}
 	);
 
-	// Only ever allow media permissions, and from the local Electron app or from Discord
+	// Only ever allow media and serial permissions, and from the local Electron app or from Discord
 	session.defaultSession.setPermissionRequestHandler(
 		(webContents, permission, callback) => {
 			if (
-				["media"].indexOf(permission) === -1 ||
+				["media", "serial"].indexOf(permission) === -1 ||
 				(!webContents.getURL().startsWith("https://discord.com") &&
 					!webContents.getURL().startsWith("file://"))
 			) {
 				return callback(false); // denied.
 			}
 			callback(true);
+		}
+	);
+
+	// Only ever allow media and serial permissions, and from the local Electron app or from Discord
+	session.defaultSession.setPermissionCheckHandler(
+		(webContents, permission) => {
+			if (
+				["media", "serial"].indexOf(permission) === -1 ||
+				(!webContents.getURL().startsWith("https://discord.com") &&
+					!webContents.getURL().startsWith("file://"))
+			) {
+				return false; // denied.
+			}
+			return true;
 		}
 	);
 
@@ -324,6 +346,41 @@ const createRemoteWindow = () => {
 	});
 };
 
+// Process for delay system
+const createDelayWindow = () => {
+	if (delayWindow) return;
+
+	// Create the process
+	delayWindow = new BrowserWindow({
+		width: 1280,
+		height: 720,
+		show: false,
+		title: `${app.name} - Delay Process`,
+		webPreferences: {
+			contextIsolation: true,
+			enableRemoteModule: false, // electron's remote module is insecure
+			preload: path.join(__dirname, "preload-audio.js"),
+			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
+			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
+			sandbox: true,
+			enableBlinkFeatures: "Serial", // Enable experimental Web Serial API
+		},
+	});
+
+	delayWindow.on("closed", function () {
+		delayWindow = null;
+		if (mainWindow !== null) {
+			mainWindow.webContents.send("processClosed", ["delay"]);
+		}
+	});
+
+	delayWindow.loadFile("delay.html");
+
+	delayWindow.webContents.on("will-navigate", (event, newURL) => {
+		event.preventDefault(); // AUXCLICK_JS_CHECK
+	});
+};
+
 // Process for recorder
 const createDiscordWindow = (inviteLink) => {
 	if (discordWindow) return;
@@ -352,8 +409,12 @@ const createDiscordWindow = (inviteLink) => {
 		discordWindow.loadURL("https://discord.gg/KbAcQhF5Y5"); // Keep up to date
 	}
 
+	// Do not allow navigation to any pages that are not on the discord.com or discord.gg domains
 	discordWindow.webContents.on("will-navigate", (event, newURL) => {
-		if (!discordWindow.webContents.getURL().startsWith("https://discord.com"))
+		if (
+			!discordWindow.webContents.getURL().startsWith("https://discord.com") &&
+			!discordWindow.webContents.getURL().startsWith("https://discord.gg")
+		)
 			event.preventDefault(); // AUXCLICK_JS_CHECK
 	});
 };
@@ -381,6 +442,7 @@ const createWindows = () => {
 			zoomFactor: 1.25, // Make text bigger since this is used in OnAir studio
 			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
 			sandbox: true,
+			enableBlinkFeatures: "Serial", // Enable experimental Web Serial API
 		},
 	});
 
@@ -443,6 +505,7 @@ const createWindows = () => {
 
 	mainWindow.on("focus", () => mainWindow.flashFrame(false));
 
+	// Crash notification
 	mainWindow.webContents.on("render-process-gone", (event, details) => {
 		console.log("Process gone!");
 		makeNotification({
@@ -482,9 +545,28 @@ const createWindows = () => {
 		} catch (eee) {}
 	});
 
+	// Prevent navigation to other pages
 	mainWindow.webContents.on("will-navigate", (event, newURL) => {
 		event.preventDefault(); // AUXCLICK_JS_CHECK
 	});
+
+	// Web Serial API (mainWindow does not actually use serial ports; it allows config / selection)
+	mainWindow.webContents.session.on(
+		"select-serial-port",
+		(event, portList, webContents, callback) => {
+			event.preventDefault();
+			mainWindow.webContents.send("serialPorts", portList);
+
+			ports = portList;
+
+			// Return saved port for delay system
+			let settings = config.get(`delay`);
+			let portToUse = ports.find(
+				(port) => port.deviceInstanceId === settings.port
+			);
+			callback(portToUse ? portToUse.portId : "");
+		}
+	);
 };
 
 const makeNotification = (data) => {
@@ -663,6 +745,13 @@ ipcMain.on("recorder", (event, arg) => {
 	} catch (e) {}
 });
 
+// Messages to be sent to the delay process
+ipcMain.on("delay", (event, arg) => {
+	try {
+		if (delayWindow) delayWindow.webContents.send(arg[0], arg[1]);
+	} catch (e) {}
+});
+
 // Process tasks
 ipcMain.on("process", (event, arg) => {
 	let args = arg[1];
@@ -703,6 +792,21 @@ ipcMain.on("process", (event, arg) => {
 					remoteWindow.reload();
 				} else {
 					createRemoteWindow();
+				}
+			}
+			break;
+		case "delay":
+			if (args[0] === "open" && !delayWindow) {
+				createDelayWindow();
+			}
+			if (args[0] === "close" && delayWindow) {
+				delayWindow.close();
+			}
+			if (args[0] === "reload") {
+				if (delayWindow) {
+					delayWindow.reload();
+				} else {
+					createDelayWindow();
 				}
 			}
 			break;
@@ -938,48 +1042,6 @@ ipcMain.on("sanitize", (event, arg) => {
 ipcMain.on("loadDiscord", (event, arg) => {
 	createDiscordWindow(arg);
 });
-
-/*
-		SERIAL PORTS
-	*/
-
-let delaySerial;
-let delayData = ``;
-let delayTimer;
-let delayStatusTimer;
-
-// Sync get available serial ports
-ipcMain.on("getSerialPorts", (event) => {
-	// TODO: Populate with Web Serial API in Electron 12
-	event.returnValue = [];
-	console.log(
-		`Serial port functionality was removed temporarily until Electron 12.`
-	);
-});
-
-// Restart delay system
-ipcMain.on("delayRestart", (event, arg) => {
-	restartDelay(arg);
-});
-
-// Dump delay system (or deactivate bypass)
-ipcMain.on("delayDump", (event) => {
-	dumpDelay();
-});
-
-function restartDelay(arg) {
-	// TODO: Populate with Web Serial API in Electron 12
-	console.log(
-		`Serial port functionality was removed temporarily until Electron 12.`
-	);
-}
-
-function dumpDelay() {
-	// TODO: Populate with Web Serial API in Electron 12
-	console.log(
-		`Serial port functionality was removed temporarily until Electron 12.`
-	);
-}
 
 /*
 		FUNCTIONS

@@ -87,15 +87,37 @@ contextBridge.exposeInMainWorld("ipc", {
 		mute: (args) => ipcRenderer.send("remote", ["remoteMute", args]),
 	},
 
+	// TEMP until Electron fixes the click bug
+	renderer: {
+        delayError: (args) => ipcRenderer.send("renderer", ["delayError", args]),
+        console: (args) => ipcRenderer.send("renderer", ["console", args]),
+        delayReady: (args) => ipcRenderer.send("renderer", ["delayReady", args]),
+        delay: (args) => ipcRenderer.send("renderer", ["delay", args]),
+	},
+
+	// delay process
+	delay: {
+		dump: (args) => ipcRenderer.send("delay", ["dump", args]),
+	},
+
 	// Process control
 	process: {
 		silence: (args) => ipcRenderer.send("process", ["silence", args]),
 		recorder: (args) => ipcRenderer.send("process", ["recorder", args]),
 		remote: (args) => ipcRenderer.send("process", ["remote", args]),
+		delay: (args) => ipcRenderer.send("process", ["delay", args]),
 	},
 
 	// On events; specifying specific ones to prevent security issues. Also, stripping "event" to prevent memory leaks.
 	on: {
+
+		// TEMP until Electron fixes the click bug
+		dump: (fn) =>
+		ipcRenderer.on("dump", (event, ...args) => {
+			fn(null, ...args);
+		}),
+
+
 		console: (fn) =>
 			ipcRenderer.on("console", (event, ...args) => {
 				fn(null, ...args);
@@ -140,8 +162,8 @@ contextBridge.exposeInMainWorld("ipc", {
 			ipcRenderer.on("delay", (event, ...args) => {
 				fn(null, ...args);
 			}),
-		delayError: (fn) =>
-			ipcRenderer.on("delayError", (event, ...args) => {
+		delayReady: (fn) =>
+			ipcRenderer.on("delayReady", (event, ...args) => {
 				fn(null, ...args);
 			}),
 		updateClockwheel: (fn) =>
@@ -194,6 +216,10 @@ contextBridge.exposeInMainWorld("ipc", {
 			}),
 		peerQualityProblem: (fn) =>
 			ipcRenderer.on("peerQualityProblem", (event, ...args) => {
+				fn(null, ...args);
+			}),
+		serialPorts: (fn) =>
+			ipcRenderer.on("serialPorts", (event, ...args) => {
 				fn(null, ...args);
 			}),
 	},

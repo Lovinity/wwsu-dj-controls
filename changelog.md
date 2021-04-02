@@ -1,5 +1,20 @@
 # Changelog for wwsu-dj-controls
 
+## 8.16.0-alpha
+THIS CANNOT BE RELEASED UNTIL ELECTRON FIXES https://github.com/electron/electron/issues/27625
+
+### Added
+
+- Serial support / delay system monitoring re-enabled using new Web Serial API.
+
+### Fixed
+
+- Discord window did not allow discord.gg navigation
+- Force sports selection when a sports is not scheduled (instead of defaulting in error to Men's Baseball).
+- Meta updates sometimes did not update on the UI if inactive and later active.
+- WWSUreq token error handling was inconsistent; should always check for errToken (not tokenErr).
+- Notification for new message was not displaying.
+
 ## 8.15.0-alpha
 
 ### Fixed

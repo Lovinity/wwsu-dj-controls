@@ -399,6 +399,25 @@
 			<h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
 		</div>
 
+		<!-- Click-me screen -->
+		<!--
+		<div
+			class="wrapper bg-black text-danger"
+			id="clickme"
+			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999;"
+		>
+			<i class="text-info fas fa-mouse-pointer" style="font-size: 33vw;"></i>
+			<h1>Click me to activate!</h1>
+			<h3>
+				Please click anywhere inside here to activate DJ Controls.
+			</h3>
+			<small
+				>This is required for the Web Serial API to work. In a future version, a
+				click will no longer be required.</small
+			>
+		</div>
+		-->
+
 		<!-- All other content -->
 		<div class="wrapper d-none" id="content">
 			<!-- Navbar (broadcast operations buttons and times) -->
@@ -849,6 +868,14 @@
 									<i class="nav-icon fas fa-stream"></i>
 									<p>
 										Serial Ports
+										<span class="right">
+											<span
+												style="margin-left: 0rem;"
+												class="badge badge-secondary notifications-delay"
+												title="Delay System Status: Gray = off, Green = on/connected"
+												><i class="fas fa-hourglass-start"></i
+											></span>
+										</span>
 									</p>
 								</a>
 							</li>
@@ -1843,12 +1870,11 @@
 
 					<!-- Main content -->
 					<div class="content">
-						<div class="callout callout-info">
-							<h5>Settings are specific to this DJ Controls</h5>
+						<div class="callout callout-warning">
+							<h5>Do not see your device / Device not responding?</h5>
 							<p>
-								The settings you apply here are specific to this DJ Controls.
-								The settings are not shared with other DJ Controls instances on
-								other computers.
+								Click the refresh icon in the top right corner of "Audio
+								Settings" to refresh available devices.
 							</p>
 						</div>
 						<div class="callout callout-info">

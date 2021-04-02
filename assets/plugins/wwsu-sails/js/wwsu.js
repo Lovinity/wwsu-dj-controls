@@ -323,7 +323,9 @@ class WWSUreq {
 			// Otherwise, try the request, and for safe measures, prompt for login if we end up getting an auth error
 		} else {
 			this._tryRequest(opts, (body) => {
-				if (body === -1) {
+				if (body === -1 || typeof body.errToken !== "undefined") {
+
+					// For auth/host paths, we want to get a new token immediately; there is no login form for host authorization
 					if (this.authPath !== "/auth/host") {
 						this.token = null;
 						this._promptLogin((username, password) =>
@@ -365,7 +367,7 @@ class WWSUreq {
 					if (!body) {
 						// eslint-disable-next-line standard/no-callback-literal
 						cb(0);
-					} else if (typeof body.tokenErr !== `undefined`) {
+					} else if (typeof body.errToken !== `undefined`) {
 						// eslint-disable-next-line standard/no-callback-literal
 						cb(-1);
 					} else {

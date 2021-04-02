@@ -495,7 +495,6 @@ $("#section-serial-delay-refresh").on("click", () => {
 		timeout: 30000,
 		onBlock: () => {
 			refreshSerialPorts();
-			$("#section-serial-delay").unblock();
 		},
 	});
 });
@@ -980,6 +979,15 @@ window.ipc.on.recorderReady((event, arg) => {
 	startRecording(-1);
 });
 
+window.ipc.on.delayReady((event, arg) => {
+	animations.add("notifications-delay", () => {
+		$(".notifications-delay").removeClass("badge-secondary");
+		$(".notifications-delay").removeClass("badge-warning");
+		$(".notifications-delay").removeClass("badge-danger");
+		$(".notifications-delay").addClass("badge-success");
+	});
+});
+
 // Update recorder process status indication
 window.ipc.on.recorderStarted((event, arg) => {
 	animations.add("notifications-recorder", () => {
@@ -1410,6 +1418,17 @@ window.ipc.on.processClosed((event, arg) => {
 				window.ipc.process.remote(["open"]);
 			}
 			break;
+		case "delay":
+			animations.add("notifications-delay", () => {
+				$(".notifications-delay").removeClass("badge-success");
+				$(".notifications-delay").removeClass("badge-warning");
+				$(".notifications-delay").removeClass("badge-danger");
+				$(".notifications-delay").addClass("badge-secondary");
+			});
+			if (hosts.client.delaySystem) {
+				window.ipc.process.delay(["open"]);
+			}
+			break;
 	}
 });
 
@@ -1418,42 +1437,63 @@ window.ipc.on.delay((event, args) => {
 	state.delayStatus({ seconds: args[0], bypass: args[1] });
 });
 
-// Error with delay system
-window.ipc.on.delayError((event, args) => {
-	if (hosts.client.delaySystem) {
-		$(document).Toasts("create", {
-			class: "bg-danger",
-			title: "Delay System Problem",
-			autoHide: true,
-			delay: 15000,
-			body: `There was an error connecting to the delay system. Please check the settings under "Serial" and ensure the delay system is on and functional.`,
-		});
-	}
-});
-
 // Construct serial port settings
 
 function refreshSerialPorts() {
-	let serialPorts = window.ipc.getSerialPorts();
+	// Get available ports (via custom Electron event in index.js)
+
+	/*
+	navigator.serial.requestPort().then(() => {
+		// Always returns empty; available serial ports are sent using the serialPorts event
+	});
+	*/
+}
+refreshSerialPorts();
+
+// Available serial ports returned by index.js
+window.ipc.on.serialPorts((event, ports) => {
+	/*
+		Delay System
+	*/
+
+	// Populate selection box with available serial ports
 	let delayPorts = `<option value="">(NONE)</option>`;
-	if (serialPorts.constructor === Array) {
-		serialPorts.map((port) => {
-			delayPorts += `<option value="${port.path}">${port.path}</option>`;
+	if (ports.constructor === Array && ports.length > 0) {
+		ports.map((port) => {
+			delayPorts += `<option value="${port.deviceInstanceId}">${port.displayName} (${port.portName})</option>`;
 		});
 	}
 	$("#section-serial-delay-port").html(delayPorts);
+
+	$("#section-serial-delay").unblock();
+
+	// On next frame, select the port currently chosen for delay system as default
 	window.requestAnimationFrame(() => {
 		let delaySettings = window.settings.delay();
 		$("#section-serial-delay-port").val(delaySettings.port);
 	});
+
+	// Add select box change handler for setting new port when changed
 	$("#section-serial-delay-port").unbind("change");
 	$("#section-serial-delay-port").on("change", (e) => {
 		let val = $(e.target).val();
 		window.saveSettings.delay("port", val);
-		window.ipc.restartDelay(hosts.client.delaySystem);
+		// Restart delay system by closing the process so we can use the new port
+		window.ipc.process.delay(["close"]);
+
+		// TEMP until Electron fixes the click bug
+		disconnectSerial().then(() => {
+			if (hosts.client.delaySystem) {
+				connectSerial().then(() => {
+					// READY
+					window.ipc.renderer.console(["log", "Delay: Process is ready"]);
+					console.log(`Process is ready`);
+					window.ipc.renderer.delayReady([]);
+				});
+			}
+		});
 	});
-}
-refreshSerialPorts();
+});
 
 /*
         SOCKET EVENTS AND FUNCTIONS
@@ -1517,8 +1557,22 @@ socket.on("connect", () => {
 					window.ipc.process.recorder(["close"]);
 				}
 
-				// Delay system
-				window.ipc.restartDelay(hosts.client.delaySystem);
+				// If this DJ Controls is responsible for the delay system, open the process, else close it.
+				if (hosts.client.delaySystem) {
+					window.ipc.process.delay(["open"]);
+
+					disconnectSerial().then(() => {
+						connectSerial().then(() => {
+							// READY
+							window.ipc.renderer.console(["log", "Delay: Process is ready"]);
+							console.log(`Process is ready`);
+							window.ipc.renderer.delayReady([]);
+						});
+					});
+				} else {
+					disconnectSerial().then(() => {});
+					window.ipc.process.delay(["close"]);
+				}
 
 				// Discord iframe
 				$("#section-chat-iframe").attr(
@@ -1571,9 +1625,10 @@ socket.on("error", () => {
 	}
 });
 
+// When socket receives request to execute the dump button on the delay, we should do so if we are responsible
 socket.on("delay-system-dump", () => {
 	if (hosts.client.delaySystem) {
-		window.ipc.dumpDelay();
+		window.ipc.delay.dump();
 	}
 });
 
@@ -1593,23 +1648,23 @@ animations.on("updateStatus", "renderer", (updating) => {
 meta.on("newMeta", "renderer", (updated, fullMeta) => {
 	try {
 		// handle changingState blocking operations buttons
-		animations.add("meta-changingState", () => {
-			if (typeof updated.changingState !== "undefined") {
-				if (updated.changingState !== null) {
+		if (typeof updated.changingState !== "undefined") {
+			animations.add("meta-changingState", () => {
+				if (fullMeta.changingState !== null) {
 					$(".operations").block({
-						message: `<h4>${updated.changingState}</h4>`,
+						message: `<h4>${fullMeta.changingState}</h4>`,
 						css: { border: "3px solid #a00" },
 						timeout: 60000,
 					});
 				} else {
 					$(".operations").unblock();
 				}
-			}
-		});
+			});
+		}
 
 		// Changes in attendance ID? Update logs.
 		if (typeof updated.attendanceID !== "undefined") {
-			logs.setAttendanceID(updated.attendanceID);
+			logs.setAttendanceID(fullMeta.attendanceID);
 		}
 
 		// Update dump button seconds
@@ -1617,9 +1672,9 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 			animations.add("meta-delaySystem", () => {
 				$(".operation-dump-time").html(
 					`${
-						updated.delaySystem === null
+						fullMeta.delaySystem === null
 							? `Turn On`
-							: `${updated.delaySystem} sec`
+							: `${fullMeta.delaySystem} sec`
 					}`
 				);
 			});
@@ -1641,29 +1696,29 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 		// Update now playing info
 		if (typeof updated.line1 !== "undefined") {
 			animations.add("meta-line1", () => {
-				$(".meta-line1").html(updated.line1);
+				$(".meta-line1").html(fullMeta.line1);
 			});
 		}
 		if (typeof updated.line2 !== "undefined") {
 			animations.add("meta-line2", () => {
-				$(".meta-line2").html(updated.line2);
+				$(".meta-line2").html(fullMeta.line2);
 			});
 		}
 
 		// Update online listeners
 		if (typeof updated.listeners !== "undefined") {
 			animations.add("meta-listeners", () => {
-				$(".meta-listeners").html(updated.listeners);
+				$(".meta-listeners").html(fullMeta.listeners);
 			});
 		}
 
-		animations.add("meta-clear", () => {
-			if (
-				typeof updated.playing !== "undefined" ||
-				typeof updated.trackArtist !== "undefined" ||
-				typeof updated.trackTitle !== "undefined" ||
-				typeof updated.state !== "undefined"
-			) {
+		if (
+			typeof updated.playing !== "undefined" ||
+			typeof updated.trackArtist !== "undefined" ||
+			typeof updated.trackTitle !== "undefined" ||
+			typeof updated.state !== "undefined"
+		) {
+			animations.add("meta-clear", () => {
 				if (
 					!fullMeta.state.endsWith("_on") ||
 					fullMeta.state.startsWith("automation_") ||
@@ -1677,8 +1732,8 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 				} else {
 					$(".section-dashboard-meta").removeClass("d-none");
 				}
-			}
-		});
+			});
+		}
 
 		if (
 			typeof updated.state !== "undefined" ||
@@ -1709,7 +1764,7 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 				$(".card-meta").removeClass("bg-secondary");
 				$(".card-meta").removeClass("bg-pink");
 
-				switch (updated.state) {
+				switch (fullMeta.state) {
 					case "automation_on":
 					case "automation_break":
 						$(".card-meta").addClass("bg-secondary");
@@ -1755,7 +1810,7 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 						$(".card-meta").addClass("bg-secondary");
 				}
 
-				switch (updated.state) {
+				switch (fullMeta.state) {
 					case "automation_on":
 					case "automation_playlist":
 					case "automation_genre":
@@ -2692,7 +2747,7 @@ messages.on("change", "renderer", (db) => {
 	messages.updateRecipient();
 	messages.updateRecipientsTable();
 });
-messages.on("newMessage", (message) => {
+messages.on("newMessage", "renderer", (message) => {
 	window.ipc.flashMain(true);
 	$(document).Toasts("create", {
 		class: "bg-primary",
