@@ -134,6 +134,10 @@ contextBridge.exposeInMainWorld("ipc", {
 			ipcRenderer.on("recorderStopped", (event, ...args) => {
 				fn(null, ...args);
 			}),
+		recorderFailed: (fn) =>
+			ipcRenderer.on("recorderFailed", (event, ...args) => {
+				fn(null, ...args);
+			}),
 		silenceReady: (fn) =>
 			ipcRenderer.on("silenceReady", (event, ...args) => {
 				fn(null, ...args);

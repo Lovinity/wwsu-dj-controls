@@ -181,7 +181,7 @@ class WWSUtimesheet extends WWSUevents {
 												body:
 													"There was an error authorizing you. Did you type your password in correctly? Please contact the engineer if this is a bug.",
 												delay: 15000,
-												autoHide: true,
+												autohide: true,
 											});
 										} else {
 											this.manager.get("directorReq")._tryRequest(
@@ -266,7 +266,7 @@ class WWSUtimesheet extends WWSUevents {
 								title: "Error editing timesheet",
 								body:
 									"There was an error editing the timesheet. Please report this to the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -293,7 +293,7 @@ class WWSUtimesheet extends WWSUevents {
 				title: "Error editing timesheet",
 				body:
 					"There was an error editing the timesheet. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -323,7 +323,7 @@ class WWSUtimesheet extends WWSUevents {
 								title: "Error removing timesheet",
 								body:
 									"There was an error removing the timesheet. Please report this to the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -350,7 +350,7 @@ class WWSUtimesheet extends WWSUevents {
 				title: "Error removing timesheet",
 				body:
 					"There was an error removing the timesheet. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -472,7 +472,7 @@ class WWSUtimesheet extends WWSUevents {
 										title: "Error accessing timesheet edit form",
 										body:
 											"There was an error loading the form to edit that timesheet. Please report this to the engineer.",
-										autoHide: true,
+										autohide: true,
 										delay: 10000,
 										icon: "fas fa-skull-crossbones fa-lg",
 									});
@@ -551,7 +551,7 @@ class WWSUtimesheet extends WWSUevents {
 						title: "Error getting timesheet records",
 						body:
 							"There was an error getting timesheet records. Please report this to the engineer.",
-						autoHide: true,
+						autohide: true,
 						delay: 10000,
 						icon: "fas fa-skull-crossbones fa-lg",
 					});

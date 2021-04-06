@@ -205,7 +205,7 @@ class WWSUinventory extends WWSUdb {
 				title: "Error adding item",
 				body:
 					"There was an error adding a new item. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -245,7 +245,7 @@ class WWSUinventory extends WWSUdb {
 							title: "Error checking item in",
 							body:
 								"There was an error checking the item in: checkout record not found. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -256,7 +256,7 @@ class WWSUinventory extends WWSUdb {
 							title: "Error checking item in",
 							body:
 								"There was an error checking the item in: item not found in the inventory. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -267,7 +267,7 @@ class WWSUinventory extends WWSUdb {
 							title: "Error checking item in",
 							body:
 								"There was an error checking the item in. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -281,7 +281,7 @@ class WWSUinventory extends WWSUdb {
 				title: "Error checking item in",
 				body:
 					"There was an error checking the item in. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -321,7 +321,7 @@ class WWSUinventory extends WWSUdb {
 							title: "Error checking item out",
 							body:
 								"There was an error checking the item out: item not found in the inventory. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -332,7 +332,7 @@ class WWSUinventory extends WWSUdb {
 							title: "Error checking item out",
 							body:
 								"There was an error checking the item out: that item is not available for checking out via its settings.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -343,7 +343,7 @@ class WWSUinventory extends WWSUdb {
 							title: "Error checking item out",
 							body:
 								"There was an error checking the item out: you tried to check out more of that item (quantity) than is available for checking out.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -354,7 +354,7 @@ class WWSUinventory extends WWSUdb {
 							title: "Error checking item out",
 							body:
 								"There was an error checking the item out. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -368,7 +368,7 @@ class WWSUinventory extends WWSUdb {
 				title: "Error checking item out",
 				body:
 					"There was an error checking the item out. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -420,7 +420,7 @@ class WWSUinventory extends WWSUdb {
 				title: "Error editing item",
 				body:
 					"There was an error editing that item. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -472,7 +472,7 @@ class WWSUinventory extends WWSUdb {
 				title: "Error editing checkout record",
 				body:
 					"There was an error editing that checkout record. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -502,7 +502,7 @@ class WWSUinventory extends WWSUdb {
 							title: "Error fetching items",
 							body:
 								"There was an error fetching that item. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -518,7 +518,7 @@ class WWSUinventory extends WWSUdb {
 				title: "Error fetching items",
 				body:
 					"There was an error fetching that item. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -548,7 +548,7 @@ class WWSUinventory extends WWSUdb {
 							title: "Error removing item",
 							body:
 								"There was an error removing that item. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -571,7 +571,7 @@ class WWSUinventory extends WWSUdb {
 				title: "Error removing item",
 				body:
 					"There was an error removing that item. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -601,7 +601,7 @@ class WWSUinventory extends WWSUdb {
 							title: "Error removing checkout record",
 							body:
 								"There was an error removing that checkout record. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -624,7 +624,7 @@ class WWSUinventory extends WWSUdb {
 				title: "Error removing checkout record",
 				body:
 					"There was an error removing that checkout record. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});

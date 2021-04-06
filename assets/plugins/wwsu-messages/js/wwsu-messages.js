@@ -134,7 +134,7 @@ class WWSUmessages extends WWSUdb {
 										title: "Error sending message",
 										body:
 											"You must select a recipient before you can send a message.",
-										autoHide: true,
+										autohide: true,
 										delay: 10000,
 										icon: "",
 									});
@@ -190,7 +190,7 @@ class WWSUmessages extends WWSUdb {
 								title: "Error sending message",
 								body:
 									"There was an error sending the message. Your DJ Controls might not be allowed to send messages to website visitors or display signs when you are not on the air. If this is not the case, please contact the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 20000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -202,7 +202,7 @@ class WWSUmessages extends WWSUdb {
 								class: "bg-success",
 								title: "Message sent",
 								body: "Your message was sent.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 							});
 							if (typeof cb === "function") {
@@ -217,7 +217,7 @@ class WWSUmessages extends WWSUdb {
 				title: "Error sending message",
 				body:
 					"There was an error sending the message. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -247,7 +247,7 @@ class WWSUmessages extends WWSUdb {
 								title: "Error removing message",
 								body:
 									"There was an error removing the message. Your DJ Controls might not be allowed to remove messages when you are not on the air. If this is not the case, please contact the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 15000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -267,7 +267,7 @@ class WWSUmessages extends WWSUdb {
 				title: "Error removing message",
 				body:
 					"There was an error removing the message. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});

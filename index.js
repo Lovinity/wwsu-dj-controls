@@ -603,7 +603,7 @@ const createWindows = () => {
 
 /**
  * Make a notification via a browser window
- * 
+ *
  * @param {Object} data Notification data
  * @param {string} data.title The title of the notification shown on the actual window
  * @param {string} data.bg The bg-* color class to use for the background color of the notification
@@ -1037,6 +1037,11 @@ function saveAudioFile(args) {
 							console.error(err);
 							if (mainWindow)
 								mainWindow.webContents.send("console", ["error", err]);
+							if (mainWindow)
+								mainWindow.webContents.send("recorderFailed", [
+									args[0],
+									"Error creating README file in directory.",
+								]);
 							reject(err);
 						}
 					}
@@ -1056,6 +1061,11 @@ function saveAudioFile(args) {
 						console.error(err);
 						if (mainWindow)
 							mainWindow.webContents.send("console", ["error", err]);
+						if (mainWindow)
+							mainWindow.webContents.send("recorderFailed", [
+								args[0],
+								err.message,
+							]);
 						reject(err);
 					} else {
 						console.log(`File saved`);
@@ -1067,6 +1077,8 @@ function saveAudioFile(args) {
 			console.log(`General error`);
 			console.dir(e);
 			if (mainWindow) mainWindow.webContents.send("console", ["error", e]);
+			if (mainWindow)
+				mainWindow.webContents.send("recorderFailed", [args[0], e.message]);
 			reject(e);
 		}
 	});

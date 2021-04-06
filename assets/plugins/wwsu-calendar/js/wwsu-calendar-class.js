@@ -536,7 +536,7 @@ class WWSUcalendar extends CalendarDb {
 								title: "Error loading events and playlists",
 								body:
 									"There was an error loading events and playlists. Please report this to the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -552,7 +552,7 @@ class WWSUcalendar extends CalendarDb {
 				title: "Error loading events and playlists",
 				body:
 					"There was an error loading events and playlists. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -585,7 +585,7 @@ class WWSUcalendar extends CalendarDb {
 								title: "Error adding schedule",
 								body:
 									"There was an error adding the schedule. Please report this to the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -608,7 +608,7 @@ class WWSUcalendar extends CalendarDb {
 					title: "Error adding schedule",
 					body:
 						"There was an error adding the schedule. Please report this to the engineer.",
-					autoHide: true,
+					autohide: true,
 					delay: 10000,
 					icon: "fas fa-skull-crossbones fa-lg",
 				});
@@ -642,7 +642,7 @@ class WWSUcalendar extends CalendarDb {
 								title: "Error editing schedule",
 								body:
 									"There was an error editing the schedule. Please report this to the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -665,7 +665,7 @@ class WWSUcalendar extends CalendarDb {
 					title: "Error editing schedule",
 					body:
 						"There was an error editing the schedule. Please report this to the engineer.",
-					autoHide: true,
+					autohide: true,
 					delay: 10000,
 					icon: "fas fa-skull-crossbones fa-lg",
 				});
@@ -692,7 +692,7 @@ class WWSUcalendar extends CalendarDb {
 				title: "Error removing/reversing schedule",
 				body:
 					"There was an error removing/reversing the schedule. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -715,7 +715,7 @@ class WWSUcalendar extends CalendarDb {
 								title: "Error removing/reversing schedule",
 								body:
 									"There was an error removing/reversing the schedule. Please report this to the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -738,7 +738,7 @@ class WWSUcalendar extends CalendarDb {
 					title: "Error removing/reversing schedule",
 					body:
 						"There was an error removing/reversing the schedule. Please report this to the engineer.",
-					autoHide: true,
+					autohide: true,
 					delay: 10000,
 					icon: "fas fa-skull-crossbones fa-lg",
 				});
@@ -772,7 +772,7 @@ class WWSUcalendar extends CalendarDb {
 							title: "Error adding event",
 							body:
 								"There was an error adding the event. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -795,7 +795,7 @@ class WWSUcalendar extends CalendarDb {
 				title: "Error adding event",
 				body:
 					"There was an error adding the event. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -829,7 +829,7 @@ class WWSUcalendar extends CalendarDb {
 								title: "Error editing event",
 								body:
 									"There was an error editing the event. Please report this to the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -852,7 +852,7 @@ class WWSUcalendar extends CalendarDb {
 					title: "Error editing event",
 					body:
 						"There was an error editing the event. Please report this to the engineer.",
-					autoHide: true,
+					autohide: true,
 					delay: 10000,
 					icon: "fas fa-skull-crossbones fa-lg",
 				});
@@ -888,7 +888,7 @@ class WWSUcalendar extends CalendarDb {
 								title: "Error removing event",
 								body:
 									"There was an error removing the event. Please report this to the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -911,7 +911,7 @@ class WWSUcalendar extends CalendarDb {
 					title: "Error removing event",
 					body:
 						"There was an error removing the event. Please report this to the engineer.",
-					autoHide: true,
+					autohide: true,
 					delay: 10000,
 					icon: "fas fa-skull-crossbones fa-lg",
 				});
@@ -2922,7 +2922,7 @@ class WWSUcalendar extends CalendarDb {
 						class: "bg-danger",
 						title: "Error resolving schedule conflicts",
 						body: `Event is invalid: ${event}`,
-						autoHide: true,
+						autohide: true,
 						delay: 10000,
 						icon: "fas fa-skull-crossbones fa-lg",
 					});
@@ -3203,7 +3203,7 @@ class WWSUcalendar extends CalendarDb {
 				title: "Multi-day Events Not Allowed",
 				body:
 					"Occurrences may not last more than 24 hours. Consider setting up a recurring schedule.",
-				autoHide: true,
+				autohide: true,
 				delay: 15000,
 			});
 			return;

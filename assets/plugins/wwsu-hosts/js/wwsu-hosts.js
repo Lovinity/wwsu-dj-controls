@@ -125,7 +125,7 @@ class WWSUhosts extends WWSUdb {
 							title: "Error editing host",
 							body:
 								"There was an error editing the host. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -149,7 +149,7 @@ class WWSUhosts extends WWSUdb {
 				title: "Error editing host",
 				body:
 					"There was an error editing the host. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -179,7 +179,7 @@ class WWSUhosts extends WWSUdb {
 							title: "Error removing host",
 							body:
 								"There was an error removing the host. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -203,7 +203,7 @@ class WWSUhosts extends WWSUdb {
 				title: "Error removing host",
 				body:
 					"There was an error removing the host. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});

@@ -87,7 +87,7 @@ class WWSUeas extends WWSUdb {
 							title: "Error sending alert",
 							body:
 								"There was an error sending the alert. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -110,7 +110,7 @@ class WWSUeas extends WWSUdb {
 				title: "Error sending alert",
 				body:
 					"There was an error sending the alert. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -138,7 +138,7 @@ class WWSUeas extends WWSUdb {
 								title: "Error sending test alert",
 								body:
 									"There was an error sending the test alert. Please report this to the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -161,7 +161,7 @@ class WWSUeas extends WWSUdb {
 				title: "Error sending test alert",
 				body:
 					"There was an error sending the test alert. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -193,7 +193,7 @@ class WWSUeas extends WWSUdb {
 							title: "Error editing alert",
 							body:
 								"There was an error editing the alert. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -216,7 +216,7 @@ class WWSUeas extends WWSUdb {
 				title: "Error editing alert",
 				body:
 					"There was an error editing the alert. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -248,7 +248,7 @@ class WWSUeas extends WWSUdb {
 							title: "Error remove alert",
 							body:
 								"There was an error removing the alert. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -271,7 +271,7 @@ class WWSUeas extends WWSUdb {
 				title: "Error removing alert",
 				body:
 					"There was an error removing the alert. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});

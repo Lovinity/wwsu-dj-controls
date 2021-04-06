@@ -92,7 +92,7 @@ class WWSUdirectors extends WWSUdb {
 				title: "Error adding Director",
 				body:
 					"There was an error adding a new Director. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -147,7 +147,7 @@ class WWSUdirectors extends WWSUdb {
 				title: "Error editing Director",
 				body:
 					"There was an error editing the Director. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -177,7 +177,7 @@ class WWSUdirectors extends WWSUdb {
 							title: "Error removing Director",
 							body:
 								"There was an error removing the Director. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -200,7 +200,7 @@ class WWSUdirectors extends WWSUdb {
 				title: "Error removing Director",
 				body:
 					"There was an error removing the Director. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});

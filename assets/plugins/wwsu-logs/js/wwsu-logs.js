@@ -172,7 +172,7 @@ class WWSUlogs extends WWSUevents {
 								title: "Error getting attendance records",
 								body:
 									"There was an error getting attendance records. Please report this to the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -189,7 +189,7 @@ class WWSUlogs extends WWSUevents {
 				title: "Error getting attendance records",
 				body:
 					"There was an error getting attendance records. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -217,7 +217,7 @@ class WWSUlogs extends WWSUevents {
 								title: "Error getting listener analytics",
 								body:
 									"There was an error getting listener analytics. Please report this to the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -234,7 +234,7 @@ class WWSUlogs extends WWSUevents {
 				title: "Error getting listener analytics",
 				body:
 					"There was an error getting listener analytics. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -261,7 +261,7 @@ class WWSUlogs extends WWSUevents {
 								title: "Error getting logs",
 								body:
 									"There was an error getting logs. Please report this to the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -278,7 +278,7 @@ class WWSUlogs extends WWSUevents {
 				title: "Error getting logs",
 				body:
 					"There was an error getting logs. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -305,7 +305,7 @@ class WWSUlogs extends WWSUevents {
 								title: "Error editing log",
 								body:
 									"There was an error editing the log. Please report this to the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -332,7 +332,7 @@ class WWSUlogs extends WWSUevents {
 				title: "Error editing log",
 				body:
 					"There was an error editing the log. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -362,7 +362,7 @@ class WWSUlogs extends WWSUevents {
 								title: "Error adding log",
 								body:
 									"There was an error adding the log. Please report this to the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -392,7 +392,7 @@ class WWSUlogs extends WWSUevents {
 				title: "Error adding log",
 				body:
 					"There was an error adding the log. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -1264,7 +1264,7 @@ class WWSUlogs extends WWSUevents {
 							title: "Error getting analytics",
 							body:
 								"There was an error getting analytics. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -1279,7 +1279,7 @@ class WWSUlogs extends WWSUevents {
 				title: "Error getting analytics",
 				body:
 					"There was an error getting analytics. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});

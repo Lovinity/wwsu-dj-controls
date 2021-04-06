@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /**
  * This class constructs an input audio device and uses it as an audio recorder for on-air programming.
@@ -30,7 +30,7 @@ class WWSUrecorder extends WWSUevents {
 		// Construct the recorder
 		this.recorder = new MediaRecorder(this.destination.stream, {
 			mimeType: "audio/webm;codecs=opus",
-			bitsPerSecond: (64000 * 2) // Opus has a maximum allowed bitrate of 128000, so do 64kbps per channel
+			bitsPerSecond: 64000 * 2, // Opus has a maximum allowed bitrate of 128000, so do 64kbps per channel
 		});
 		this.recorder.onstart = (e) => {
 			this.blobs = [];
@@ -43,6 +43,14 @@ class WWSUrecorder extends WWSUevents {
 		this.recorder.onstop = (e) => {
 			// let blob = new Blob(this.blobs, { type: "audio/mpeg" });
 			let blob = new Blob(this.blobs, { type: "audio/webm;codecs=opus" });
+			this.emitEvent("recorderSize", [this.encodingTitle, blob.size]);
+
+			// Do not continue if the blob is empty
+			if (!blob.size) {
+				this.blobs = [];
+				return;
+			}
+
 			let fileReader = new FileReader();
 			fileReader.onload = (e2) => {
 				this.emitEvent("recorderEncoded", [
@@ -84,7 +92,7 @@ class WWSUrecorder extends WWSUevents {
 						{ worker: this.worker }
 					);
 					*/
-					this.recorder.start((1000 * 60 * 5)); // Create a new blob every 5 minutes
+					this.recorder.start(1000 * 60 * 5); // Create a new blob every 5 minutes
 					this.emitEvent("recorderStarted", [this.pendingTitle]);
 				}
 			} catch (e) {

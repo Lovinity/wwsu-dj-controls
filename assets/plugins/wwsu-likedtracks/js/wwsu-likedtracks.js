@@ -84,7 +84,7 @@ class WWSUlikedtracks extends WWSUevents {
                         class: 'bg-danger',
                         title: 'Error sending message',
                         body: 'There was an error telling the DJ you liked that track. Please report this to the engineer.',
-                        autoHide: true,
+                        autohide: true,
                         delay: 10000,
                         icon: 'fas fa-skull-crossbones fa-lg',
                     });

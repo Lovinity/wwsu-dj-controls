@@ -214,7 +214,7 @@ class WWSUmessagesweb extends WWSUdb {
                 title: "Error sending message",
                 body:
                   "There was an error sending the message. Either you are sending too many messages too quickly (no more than 3 per minute allowed), or the DJ opted to disallow messages during their show. If neither are true, please contact the engineer at wwsu4@wright.edu.",
-                autoHide: true,
+                autohide: true,
                 delay: 30000,
                 icon: "fas fa-skull-crossbones fa-lg",
               });
@@ -226,7 +226,7 @@ class WWSUmessagesweb extends WWSUdb {
                 class: "bg-success",
                 title: "Message sent",
                 body: "Your message was sent.",
-                autoHide: true,
+                autohide: true,
                 delay: 10000,
               });
               if (typeof cb === "function") {
@@ -241,7 +241,7 @@ class WWSUmessagesweb extends WWSUdb {
         title: "Error sending message",
         body:
           "There was an error sending the message. Please report this to the engineer at wwsu4@wright.edu.",
-        autoHide: true,
+        autohide: true,
         delay: 10000,
         icon: "fas fa-skull-crossbones fa-lg",
       });

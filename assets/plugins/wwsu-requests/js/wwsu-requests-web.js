@@ -116,7 +116,7 @@ class WWSUrequestsweb extends WWSUevents {
                 class: "bg-danger",
                 title: "Error placing request",
                 body: `There was an error placing the request. Maybe this track cannot be requested right now?`,
-                autoHide: true,
+                autohide: true,
                 delay: 10000,
                 icon: "fas fa-skull-crossbones fa-lg",
               });
@@ -143,7 +143,7 @@ class WWSUrequestsweb extends WWSUevents {
         title: "Error placing request",
         body:
           "There was an error placing the request. Please report this to the engineer.",
-        autoHide: true,
+        autohide: true,
         delay: 10000,
         icon: "fas fa-skull-crossbones fa-lg",
       });
@@ -198,7 +198,7 @@ class WWSUrequestsweb extends WWSUevents {
           } else {
             $(document).Toasts("create", {
                 class: "bg-warning",
-                autoHide: true,
+                autohide: true,
                 delay: 5000,
                 title: "No more tracks",
                 body:

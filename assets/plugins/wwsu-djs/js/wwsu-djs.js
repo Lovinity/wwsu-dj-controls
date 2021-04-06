@@ -304,7 +304,7 @@ class WWSUdjs extends WWSUdb {
 				title: "Error adding DJ",
 				body:
 					"There was an error adding a new DJ. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -357,7 +357,7 @@ class WWSUdjs extends WWSUdb {
 				title: "Error adding DJ",
 				body:
 					"There was an error editing the DJ. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -388,7 +388,7 @@ class WWSUdjs extends WWSUdb {
 							title: "Error removing DJ",
 							body:
 								"There was an error removing the DJ. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -411,7 +411,7 @@ class WWSUdjs extends WWSUdb {
 				title: "Error removing DJ",
 				body:
 					"There was an error removing the DJ. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});

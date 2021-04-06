@@ -899,7 +899,7 @@ let fullCalendar = new FullCalendar.Calendar(calendarEl, {
 				title: "Multi-day Events Not Allowed",
 				body:
 					"Occurrences may not last more than 24 hours. Consider setting up a recurring schedule.",
-				autoHide: true,
+				autohide: true,
 				delay: 15000,
 			});
 			return;
@@ -920,7 +920,7 @@ let fullCalendar = new FullCalendar.Calendar(calendarEl, {
 				title: "Multi-day Events Not Allowed",
 				body:
 					"Occurrences may not last more than 24 hours. Consider setting up a recurring schedule.",
-				autoHide: true,
+				autohide: true,
 				delay: 15000,
 			});
 			return;
@@ -1003,6 +1003,24 @@ window.ipc.on.recorderStopped((event, arg) => {
 	// Sometimes a recording is stopped if it runs too long; restart a new recording if we need to
 	if (arg[0]) startRecording(-1);
 });
+window.ipc.on.recorderFailed((event, arg) => {
+	// If there was a failure with the recording, log it and report it
+	logs.add(
+		{
+			logtype: "recorder-failed",
+			logsubtype: "automation",
+			loglevel: "orange",
+			logIcon: `fas fa-file-audio`,
+			title: `A recording failed!`,
+			event: `File: ${arg[0]}<br />Error: ${arg[1]}`,
+		},
+		true
+	);
+	status.recorder({
+		status: 2,
+		data: `There was an error saving the file ${arg[0]}<br />Error: ${arg[1]}<br /><strong>Be prepared to record your broadcasts manually</strong> until the recorder is fixed.`,
+	});
+});
 
 window.ipc.on.silenceReady((event, arg) => {
 	animations.add("notifications-silence", () => {
@@ -1030,12 +1048,8 @@ window.ipc.on.silenceState((event, arg) => {
 				$(".notifications-silence").addClass("badge-success");
 			});
 
-			// Deactivate silence if the alarm is active
-			let silenceStatus = status.find({ name: "silence" }, true);
-			if (!silenceStatus || silenceStatus.status < 4 || triggered) {
-				silence.inactive();
-				triggered = false;
-			}
+			silence.inactive();
+			triggered = false;
 			break;
 		case 1:
 			animations.add("notifications-silence-2", () => {
@@ -1089,6 +1103,10 @@ window.ipc.on.recorderSaved((event, arg) => {
 		},
 		true
 	);
+	status.recorder({
+		status: 5,
+		data: `Most recent file ${arg} was successfully saved.`,
+	});
 });
 
 // Process audio devices when the audio process returns them
@@ -1920,7 +1938,7 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 			title: "Error newMeta",
 			body:
 				"There was an error in meta.newMeta. Please report this to the engineer.",
-			autoHide: true,
+			autohide: true,
 			delay: 10000,
 			icon: "fas fa-skull-crossbones fa-lg",
 		});
@@ -2210,7 +2228,7 @@ meta.on("metaTick", "renderer", (fullMeta) => {
 			title: "Error metaTick",
 			body:
 				"There was an error in meta.metaTick. Please report this to the engineer.",
-			autoHide: true,
+			autohide: true,
 			delay: 10000,
 			icon: "fas fa-skull-crossbones fa-lg",
 		});

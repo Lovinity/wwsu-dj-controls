@@ -130,6 +130,7 @@ recorder.on("recorderStarted", "recorder", (file) => {
 // Pass encoded info to main process to be saved
 recorder.on("recorderEncoded", "recorder", (file, reader) => {
 	console.log(`Recorder: Recording ${file} finished encoding.`);
+	console.dir(reader);
 	window.ipc.renderer.console([
 		"log",
 		`Recorder: Recording ${file} finished encoding.`,
@@ -142,12 +143,22 @@ recorder.on("recorderEncoded", "recorder", (file, reader) => {
 		]);
 		window.ipc.renderer.recorderSaved([path]);
 
-		// Close the process if we are pending closing
-		// TODO: Remove the check condition when we know recorder is not leaking memory anymore; otherwise, process should close (and auto re-open) after every save
-		// if (closingDown) {
+		// If we are closing down, close the process, else re-load it
 		window.close();
-		// }
 	});
+});
+
+// Emitted during the encoding process when a blob is created... size is the blob size in bytes.
+recorder.on("recorderSize", "recorder", (file, size) => {
+	window.ipc.renderer.console([
+		"log",
+		`Recorder: Recording size was ${size} bytes`,
+	]);
+	if (!size)
+		window.ipc.renderer.recorderFailed([
+			file,
+			"The size of the recording was 0 bytes. Check the host responsible for audio recording and ensure at least one input device is set for recording.",
+		]);
 });
 
 // Start a new recording

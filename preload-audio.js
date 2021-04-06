@@ -85,6 +85,8 @@ contextBridge.exposeInMainWorld("ipc", {
 			ipcRenderer.send("renderer", ["recorderStopped", args]),
 		recorderSaved: (args) =>
 			ipcRenderer.send("renderer", ["recorderSaved", args]),
+		recorderFailed: (args) =>
+			ipcRenderer.send("renderer", ["recorderFailed", args]),
 		silenceReady: (args) =>
 			ipcRenderer.send("renderer", ["silenceReady", args]),
 		silenceState: (args) =>

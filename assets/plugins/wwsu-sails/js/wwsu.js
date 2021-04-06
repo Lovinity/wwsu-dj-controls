@@ -277,7 +277,7 @@ class WWSUreq {
 						title: "Error Authorizing",
 						body:
 							"There was an error authorizing. Did you type your password in correctly?",
-						autoHide: true,
+						autohide: true,
 						delay: 10000,
 						icon: "fas fa-skull-crossbones fa-lg",
 					});
@@ -293,7 +293,7 @@ class WWSUreq {
 								? `Failed to authenticate; please try again. ${token.errToken}`
 								: `Failed to authenticate; unknown error.`
 						}`,
-						autoHide: true,
+						autohide: true,
 						delay: 10000,
 						icon: "fas fa-skull-crossbones fa-lg",
 					});
@@ -453,7 +453,7 @@ class WWSUreq {
 				class: "bg-danger",
 				title: "Authorization error",
 				body: `There is no ${this.authName} available to authorize. Please report this to the engineer.`,
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -465,7 +465,7 @@ class WWSUreq {
 				class: "bg-danger",
 				title: "Authorization error",
 				body: `A username field was not specified for ${this.authName} authorization. Please report this to the engineer.`,
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -605,7 +605,7 @@ class WWSUutil {
 				title: "Error in getUrlParameter function",
 				body:
 					"There was an error in the getUrlParameter function. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -668,7 +668,7 @@ class WWSUutil {
 				title: "hexrgb error",
 				body:
 					"There was an error in the hexrgb function. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});

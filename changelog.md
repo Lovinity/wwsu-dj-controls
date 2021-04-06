@@ -1,12 +1,12 @@
 # Changelog for wwsu-dj-controls
 
-## 8.16.0-alpha
-
-THIS CANNOT BE RELEASED UNTIL ELECTRON FIXES https://github.com/electron/electron/issues/27625
+## 8.16.0-alpha - 2021-04-06
 
 ### Added
 
 - Serial support / delay system monitoring re-enabled using new Web Serial API.
+  - Does not currently work due to an Electron.js bug!
+- Added recorder error reporting and status checking to WWSU.
 
 ### Fixed
 
@@ -15,6 +15,7 @@ THIS CANNOT BE RELEASED UNTIL ELECTRON FIXES https://github.com/electron/electro
 - Meta updates sometimes did not update on the UI if inactive and later active.
 - WWSUreq token error handling was inconsistent; should always check for errToken (not tokenErr).
 - Notification for new message was not displaying.
+- "autoHide" property of Bootstrap toasts was invalid; it was supposed to be "autohide".
 
 ### Updated
 
@@ -22,6 +23,10 @@ THIS CANNOT BE RELEASED UNTIL ELECTRON FIXES https://github.com/electron/electro
 - Plugins
 - NPM packages
 - Electron.js
+
+### Changed
+
+- Silence detection inactive will be triggered every minute silence is not detected. That way, WWSU knows silence monitoring is still active.
 
 ## 8.15.0-alpha
 

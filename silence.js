@@ -12,6 +12,7 @@ let silenceSettings = window.settings.silence();
 
 // Silence states
 let timer;
+let timer2;
 
 // Do not monitor for silence if there are no audio devices selected for silence monitoring
 let silenceDeviceActive = false;
@@ -72,6 +73,7 @@ silence.on("audioVolume", "silence", (volume) => {
 			// Delay timer should trigger active silence and then keep triggering it every minute until silence no longer detected.
 			timer = setTimeout(() => {
 				window.ipc.renderer.silenceState([2]);
+				clearTimeout(timer2);
 				console.log(`Silence trigger activated`);
 				timer = setInterval(() => {
 					window.ipc.renderer.silenceState([2]);
@@ -82,6 +84,13 @@ silence.on("audioVolume", "silence", (volume) => {
 	} else if (timer) {
 		console.log(`No more silence`);
 		window.ipc.renderer.silenceState([0]);
+
+		// Trigger good status every minute so the system knows silence detection is still running / active
+		timer2 = setInterval(() => {
+			window.ipc.renderer.silenceState([0]);
+			console.log(`Silence good`);
+		}, 60000);
+		
 		clearInterval(timer);
 		clearTimeout(timer);
 		timer = undefined;

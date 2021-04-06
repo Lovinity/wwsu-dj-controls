@@ -159,7 +159,7 @@ class WWSUannouncements extends WWSUdb {
 							title: "Error adding announcement",
 							body:
 								"There was an error adding the announcement. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -186,7 +186,7 @@ class WWSUannouncements extends WWSUdb {
 				title: "Error adding announcement",
 				body:
 					"There was an error adding the announcement. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -219,7 +219,7 @@ class WWSUannouncements extends WWSUdb {
 							title: "Error editing announcement",
 							body:
 								"There was an error editing the announcement. Please report this to the engineer.",
-							autoHide: true,
+							autohide: true,
 							delay: 10000,
 							icon: "fas fa-skull-crossbones fa-lg",
 						});
@@ -246,7 +246,7 @@ class WWSUannouncements extends WWSUdb {
 				title: "Error editing announcement",
 				body:
 					"There was an error editing the announcement. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
@@ -276,7 +276,7 @@ class WWSUannouncements extends WWSUdb {
 								title: "Error removing announcement",
 								body:
 									"There was an error removing the announcement. Please report this to the engineer.",
-								autoHide: true,
+								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg",
 							});
@@ -303,7 +303,7 @@ class WWSUannouncements extends WWSUdb {
 				title: "Error removing announcement",
 				body:
 					"There was an error removing the announcement. Please report this to the engineer.",
-				autoHide: true,
+				autohide: true,
 				delay: 10000,
 				icon: "fas fa-skull-crossbones fa-lg",
 			});
