@@ -927,6 +927,7 @@ class WWSUcalendar extends CalendarDb {
 	 * @param {object} event Calendardb event
 	 */
 	showClickedEvent(event) {
+		console.dir(event);
 		this.occurrenceModal.title = `${event.type}: ${event.hosts} - ${event.name}`;
 		this.occurrenceModal.body = this.generateFullEventCard(event);
 
@@ -958,11 +959,9 @@ class WWSUcalendar extends CalendarDb {
 				"canceled-system",
 				"canceled-changed",
 				"unscheduled",
-				"updated",
-				"updated-system",
 			].indexOf(event.scheduleType) === -1
 		) {
-			choices.push(`Occurrence: Edit and/or reschedule`);
+			choices.push(`Occurrence: Update or Reschedule`);
 		}
 		choices.push(`Event Schedules: Add / Edit / Delete`);
 		if (

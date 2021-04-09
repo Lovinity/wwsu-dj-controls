@@ -30,7 +30,7 @@ unhandled({
 // Require other constants
 const fs = require("fs");
 const path = require("path");
-const { app, BrowserWindow, Menu, ipcMain, session } = require("electron");
+const { app, BrowserWindow, Menu, ipcMain, session, shell } = require("electron");
 // const { autoUpdater } = require("electron-updater");
 const debug = require("electron-debug");
 const contextMenu = require("electron-context-menu");

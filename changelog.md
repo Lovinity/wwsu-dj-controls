@@ -1,5 +1,15 @@
 # Changelog for wwsu-dj-controls
 
+## 8.17.0-alpha
+
+### Fixed
+
+- Calendar system was not accounting for multiple schedule overrides correctly.
+- Calendar system was not properly adding "canceled-changed" occurrences at original times when occurrences are rescheduled (does not apply in DJ Controls calendar page; this is mainly for the online calendar system).
+- Calendar system did not properly list events where the original date/time was outside selected range, but re-scheduled time was.
+- [TODO] Calendar system did not update conflict overrides if the override time for the conflict should be changed (but not removed).
+- Shell is not defined in index.js.
+
 ## 8.16.0-alpha - 2021-04-06
 
 ### Added
