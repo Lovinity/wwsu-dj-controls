@@ -443,9 +443,9 @@ const createDiscordWindow = (inviteLink) => {
 
 	// When loaded, navigate either to the main text channel in the server or to the invite link for the server.
 	if (!inviteLink) {
-		discordWindow.loadURL("https://discord.com/channels/742819639096246383"); // Keep up to date
+		discordWindow.loadURL("https://discord.com/channels/830253279166464042"); // Keep up to date
 	} else {
-		discordWindow.loadURL("https://discord.gg/KbAcQhF5Y5"); // Keep up to date
+		discordWindow.loadURL("https://discord.gg/n8npUEp2RA"); // Keep up to date
 	}
 
 	// Do not allow navigation to any pages that are not on the discord.com or discord.gg domains

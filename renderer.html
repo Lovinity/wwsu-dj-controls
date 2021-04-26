@@ -558,16 +558,7 @@
 							style="height: 6em; font-size: 1em;"
 							title="End the broadcast and go to automation"
 						>
-							<i class="fas fa-microphone-slash"></i> Automation
-						</button>
-					</li>
-					<li class="nav-item operation-button operation-switch d-none">
-						<button
-							class="btn btn-app bg-danger btn-operation-switch"
-							style="height: 6em; font-size: 1em;"
-							title="End the broadcast and go to break for the next DJ"
-						>
-							<i class="fas fa-microphone-slash"></i> Next Show
+							<i class="fas fa-microphone-slash"></i> End Broadcast
 						</button>
 					</li>
 					<li class="nav-item operation-button operation-break d-none">
@@ -2317,6 +2308,17 @@
 										</div>
 										<div class="card-body container-fluid">
 											<div class="row p-2">
+												<div class="col-lg-4 col-md-6 col-12">
+													<button class="btn btn-danger" id="filter-group-broadcasts" title="Turn all filters off except broadcasts">All Broadcasts</button>
+												</div>
+												<div class="col-lg-4 col-md-6 col-12">
+													<button class="btn bg-teal" id="filter-group-bookings" title="Turn all filters off except on-air and prod studio bookings">All Bookings</button>
+												</div>
+												<div class="col-lg-4 col-md-6 col-12">
+													<button class="btn btn-secondary" id="filter-group-clear" title="Turn all filter switches off">Clear All</button>
+												</div>
+											</div>
+											<div class="row p-2">
 												<div
 													class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-danger"
 													title="Show live shows on calendar?"
@@ -2434,19 +2436,6 @@
 														class="custom-control-label"
 														for="filter-office-hours"
 														>Director Office Hours</label
-													>
-												</div>
-												<div
-													class="col-md-4 col-sm-6 custom-control custom-switch custom-switch-on-orange"
-													title="Show tasks on calendar?"
-												>
-													<input
-														type="checkbox"
-														class="custom-control-input"
-														id="filter-task"
-													/>
-													<label class="custom-control-label" for="filter-task"
-														>Director Tasks</label
 													>
 												</div>
 												<div

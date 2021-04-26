@@ -557,9 +557,6 @@ $(".btn-operation-30-psa").on("click", () => {
 $(".btn-operation-automation").on("click", () => {
 	state.automation({ transition: false });
 });
-$(".btn-operation-switch").on("click", () => {
-	state.automation({ transition: true });
-});
 $(".btn-operation-break").on("click", () => {
 	state.break({ halftime: false, problem: false });
 });
@@ -956,6 +953,52 @@ fullCalendar.render();
 	}
 });
 
+// Add click events to filter group buttons
+$("#filter-group-broadcasts").on("click", (e) => {
+	[
+		"genre",
+		"event",
+		"onair-booking",
+		"prod-booking",
+		"office-hours",
+	].map((type) => $(`#filter-${type}`).prop("checked", false));
+	["show", "sports", "remote", "prerecord", "playlist"].map((type) =>
+		$(`#filter-${type}`).prop("checked", true)
+	);
+	fullCalendar.refetchEvents();
+});
+$("#filter-group-bookings").on("click", (e) => {
+	[
+		"show",
+		"sports",
+		"remote",
+		"prerecord",
+		"genre",
+		"playlist",
+		"event",
+		"office-hours",
+	].map((type) => $(`#filter-${type}`).prop("checked", false));
+	["onair-booking", "prod-booking"].map((type) =>
+		$(`#filter-${type}`).prop("checked", true)
+	);
+	fullCalendar.refetchEvents();
+});
+$("#filter-group-clear").on("click", (e) => {
+	[
+		"show",
+		"sports",
+		"remote",
+		"prerecord",
+		"genre",
+		"playlist",
+		"event",
+		"office-hours",
+		"onair-booking",
+		"prod-booking",
+	].map((type) => $(`#filter-${type}`).prop("checked", false));
+	fullCalendar.refetchEvents();
+});
+
 window.ipc.on.console((event, arg) => {
 	switch (arg[0]) {
 		case "log":
@@ -1048,7 +1091,12 @@ window.ipc.on.silenceState((event, arg) => {
 				$(".notifications-silence").addClass("badge-success");
 			});
 
-			silence.inactive();
+			let silenceStatus = status.find({ name: "silence" }, true);
+
+			// Trigger inactive call if silence is active according to memory or system status
+			if (triggered || !silenceStatus || silenceStatus.status !== 5)
+				silence.inactive();
+
 			triggered = false;
 			break;
 		case 1:
@@ -1571,7 +1619,7 @@ socket.on("connect", () => {
 				// Discord iframe
 				$("#section-chat-iframe").attr(
 					"src",
-					`https://titanembeds.com/embed/742819639096246383?defaultchannel=782073518606647297&theme=DiscordDark&username=${hosts.client.friendlyname.replace(
+					`https://titanembeds.com/embed/830253278465097758?defaultchannel=830253279166464042&theme=DiscordDark&username=${hosts.client.friendlyname.replace(
 						/[^a-zA-Z0-9\d\-_\s]+/gi,
 						""
 					)}`
@@ -1842,25 +1890,21 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 					case "sportsremote_halftime":
 						$(".operation-resume").removeClass("d-none");
 						$(".operation-automation").removeClass("d-none");
-						$(".operation-switch").removeClass("d-none");
 						break;
 					case "live_on":
 						$(".operation-automation").removeClass("d-none");
-						$(".operation-switch").removeClass("d-none");
 						$(".operation-break").removeClass("d-none");
 						$(".operation-top-add").removeClass("d-none");
 						$(".operation-log").removeClass("d-none");
 						break;
 					case "sports_on":
 						$(".operation-automation").removeClass("d-none");
-						$(".operation-switch").removeClass("d-none");
 						$(".operation-break").removeClass("d-none");
 						$(".operation-extended-break").removeClass("d-none");
 						$(".operation-liner").removeClass("d-none");
 						break;
 					case "remote_on":
 						$(".operation-automation").removeClass("d-none");
-						$(".operation-switch").removeClass("d-none");
 						$(".operation-break").removeClass("d-none");
 						$(".operation-top-add").removeClass("d-none");
 						$(".operation-log").removeClass("d-none");
@@ -1868,7 +1912,6 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 						break;
 					case "sportsremote_on":
 						$(".operation-automation").removeClass("d-none");
-						$(".operation-switch").removeClass("d-none");
 						$(".operation-break").removeClass("d-none");
 						$(".operation-extended-break").removeClass("d-none");
 						$(".operation-liner").removeClass("d-none");

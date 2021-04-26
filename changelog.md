@@ -1,28 +1,39 @@
 # Changelog for wwsu-dj-controls
 
+## 8.18.0-alpha - UNRELEASED
+
+### Added
+- [TODO] Notifications when a broadcast is running into the scheduled time of another broadcast.
+
+### Fixed
+- [TODO] Calendar system did not update conflict overrides if the override time for the conflict should be changed (but not removed).
+
 ## 8.17.0-alpha
 
 ### Added
 
-- [TODO] A few quick buttons on the calendar filters: "Broadcasts" which will turn all filters off except live/remote/sports/prerecord/playlist, "Bookings" which turns everything off except on-air and prod bookings, and "clear all" which turns everything off.
+- A few quick buttons on the calendar filters: "Broadcasts" which will turn all filters off except live/remote/sports/prerecord/playlist, "Bookings" which turns everything off except on-air and prod bookings, and "clear all" which turns everything off.
 
 ### Removed
 
-- Switch show button (see changed section for more info).
+- Next show button (see changed section for more info).
 
 ### Fixed
 
 - Calendar system was not accounting for multiple schedule overrides correctly.
 - Calendar system was not properly adding "canceled-changed" occurrences at original times when occurrences are rescheduled (does not apply in DJ Controls calendar page; this is mainly for the online calendar system).
 - Calendar system did not properly list events where the original date/time was outside selected range, but re-scheduled time was.
-- [TODO] Calendar system did not update conflict overrides if the override time for the conflict should be changed (but not removed).
 - Shell is not defined in index.js.
+- silence/inactive was being called literally every time audio was detected; it should only be called if silence was detected and is no longer detected.
 
 ### Changed
 
 - [BREAKING] CalendarDb.whatIsPlaying(): added "isCanceled" parameter as third parameter. When true, function will also returned canceled events normally scheduled to take place now.
 - Made human readable schedule text easier to read.
-- [TODO] The "switch show" button was removed. Instead, DJs should always click "Automation" to end their show. If a live show is on the schedule, system will go into automation_break and a prompt will ask if the next DJ is in the station. If no is clicked, system will go back to automation_on.
+- "Automation" button is now "End Broadcast"
+- The "end show" button was removed. Instead, DJs should always click "End Broadcast" to end their show. 
+  - In a future version, if a live show is on the schedule, system will go into automation_break and a prompt will ask if the next DJ is in the station. If no is clicked, system will go back to automation_on.
+- WWSU moved Discord servers; updated this in DJ Controls.
 
 ## 8.16.0-alpha - 2021-04-06
 
