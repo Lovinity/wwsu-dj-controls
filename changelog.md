@@ -3,12 +3,22 @@
 ## 8.18.0-alpha - UNRELEASED
 
 ### Added
+
 - [TODO] Notifications when a broadcast is running into the scheduled time of another broadcast.
 
 ### Fixed
+
 - [TODO] Calendar system did not update conflict overrides if the override time for the conflict should be changed (but not removed).
 
-## 8.17.0-alpha
+## 8.17.1-alpha - 2021-04-26
+
+### Fixed
+
+- Silence inactive was not triggering every minute silence was inactive like it should have been.
+
+## 8.17.0-alpha - 2021-04-26
+
+BROKEN
 
 ### Added
 
@@ -31,7 +41,7 @@
 - [BREAKING] CalendarDb.whatIsPlaying(): added "isCanceled" parameter as third parameter. When true, function will also returned canceled events normally scheduled to take place now.
 - Made human readable schedule text easier to read.
 - "Automation" button is now "End Broadcast"
-- The "end show" button was removed. Instead, DJs should always click "End Broadcast" to end their show. 
+- The "end show" button was removed. Instead, DJs should always click "End Broadcast" to end their show.
   - In a future version, if a live show is on the schedule, system will go into automation_break and a prompt will ask if the next DJ is in the station. If no is clicked, system will go back to automation_on.
 - WWSU moved Discord servers; updated this in DJ Controls.
 

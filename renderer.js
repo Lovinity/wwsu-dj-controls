@@ -1075,9 +1075,8 @@ window.ipc.on.silenceReady((event, arg) => {
 });
 
 // Do things depending on state of silence detected
+let prevSilenceState = -1;
 window.ipc.on.silenceState((event, arg) => {
-	let triggered = false;
-
 	animations.add("notifications-silence", () => {
 		$(".notifications-silence").removeClass("badge-secondary");
 		$(".notifications-silence").removeClass("badge-warning");
@@ -1091,13 +1090,9 @@ window.ipc.on.silenceState((event, arg) => {
 				$(".notifications-silence").addClass("badge-success");
 			});
 
-			let silenceStatus = status.find({ name: "silence" }, true);
+			// Trigger inactive call only if re-calling or going from active silence to inactive silence
+			if (prevSilenceState !== 1) silence.inactive();
 
-			// Trigger inactive call if silence is active according to memory or system status
-			if (triggered || !silenceStatus || silenceStatus.status !== 5)
-				silence.inactive();
-
-			triggered = false;
 			break;
 		case 1:
 			animations.add("notifications-silence-2", () => {
@@ -1109,9 +1104,10 @@ window.ipc.on.silenceState((event, arg) => {
 				$(".notifications-silence").addClass("badge-danger");
 			});
 			silence.active();
-			triggered = true;
 			break;
 	}
+
+	prevSilenceState = arg[0];
 });
 
 // Update VU meters
