@@ -10,6 +10,12 @@
 
 - [TODO] Calendar system did not update conflict overrides if the override time for the conflict should be changed (but not removed).
 
+## 8.17.2-alpha - 2021-04-29
+
+### Fixed
+
+- Critical bug in the calendar system: cannot set start date later than end date.
+
 ## 8.17.1-alpha - 2021-04-26
 
 ### Fixed
