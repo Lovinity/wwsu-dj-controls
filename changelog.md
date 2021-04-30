@@ -10,6 +10,12 @@
 
 - [TODO] Calendar system did not update conflict overrides if the override time for the conflict should be changed (but not removed).
 
+## 8.18.0-alpha
+
+### Changed
+
+- Updated renderer and WWSUclimacell with new climacell API data
+
 ## 8.17.2-alpha - 2021-04-29
 
 ### Fixed

@@ -20,6 +20,56 @@ class WWSUclimacell extends WWSUdb {
 	constructor(manager, options) {
 		super();
 
+		// Map weather code to condition string
+		this.weatherCodeString = {
+			0: "Unknown",
+			1000: "Clear",
+			1001: "Cloudy",
+			1100: "Mostly Clear",
+			1101: "Partly Cloudy",
+			1102: "Mostly Cloudy",
+			2000: "Fog",
+			2100: "Light Fog",
+			3000: "Light Wind",
+			3001: "Wind",
+			3002: "Strong Wind",
+			4000: "Drizzle",
+			4001: "Rain",
+			4200: "Light Rain",
+			4201: "Heavy Rain",
+			5000: "Snow",
+			5001: "Flurries",
+			5100: "Light Snow",
+			5101: "Heavy Snow",
+			6000: "Freezing Drizzle",
+			6001: "Freezing Rain",
+			6200: "Light Freezing Rain",
+			6201: "Heavy Freezing Rain",
+			7000: "Ice Pellets",
+			7101: "Heavy Ice Pellets",
+			7102: "Light Ice Pellets",
+			8000: "Thunderstorm",
+		};
+
+		// Map precipitation type to string
+		this.precipitationTypeString = {
+			0: "N/A",
+			1: "Rain",
+			2: "Snow",
+			3: "Freezing Rain",
+			4: "Ice Pellets",
+		};
+
+		// Map epaHealthConcern to string
+		this.epaHealthConcernString = {
+			0: "Good [-----]",
+			1: "Moderate [+----]",
+			2: "Unhealthy for Sensitive Groups [++---]",
+			3: "Unhealthy [+++--]",
+			4: "Very Unhealthy [++++-]",
+			5: "Hazardous [+++++]",
+		};
+
 		this.manager = manager;
 
 		this.endpoints = {
@@ -35,35 +85,31 @@ class WWSUclimacell extends WWSUdb {
 
 		// Data operations
 		super.on("insert", "WWSUclimacell", (query) => {
-			this.updateData(query);
 			clearTimeout(this.ncTimer);
 			this.ncTimer = setTimeout(() => {
+				this.updateData();
 				this.recalculateNowcast();
 			}, 1000);
 		});
 		super.on("update", "WWSUclimacell", (query) => {
-			this.updateData(query);
 			clearTimeout(this.ncTimer);
 			this.ncTimer = setTimeout(() => {
+				this.updateData();
 				this.recalculateNowcast();
 			}, 1000);
 		});
 		super.on("remove", "WWSUclimacell", (query) => {
 			let record = this.find({ ID: query }, true);
-			if (record) {
-				this.updateData({ dataClass: record.dataClass, data: `???` });
-			}
 			clearTimeout(this.ncTimer);
 			this.ncTimer = setTimeout(() => {
+				this.updateData();
 				this.recalculateNowcast();
 			}, 1000);
 		});
 		super.on("replace", "WWSUclimacell", (db) => {
-			db.get().forEach((record) => {
-				this.updateData(record);
-			});
 			clearTimeout(this.ncTimer);
 			this.ncTimer = setTimeout(() => {
+				this.updateData();
 				this.recalculateNowcast();
 			}, 1000);
 		});
@@ -79,21 +125,36 @@ class WWSUclimacell extends WWSUdb {
 	}
 
 	/**
-	 * Update a piece of text data by div class.
-	 *
-	 * @param {object} query climacell weather record that contains at least dataClass and data.
+	 * Refresh all data on DOM.
 	 */
-	updateData(query) {
-		this.manager
-			.get("WWSUanimations")
-			.add(`update-climacell-${query.dataClass}`, () => {
-				$(`.climacell-${query.dataClass}`).html(query.data);
-				if (query.dataClass === "realtime-wind-direction") {
-					$(`.climacell-realtime-wind-direction-code`).html(
-						this.degToCard(query.data.split(" ")[0])
-					);
-				}
-			});
+	updateData() {
+		this.manager.get("WWSUanimations").add(`update-climacell`, () => {
+			this.db()
+				.get()
+				.map((query) => {
+					$(`.climacell-${query.dataClass}`).html(query.data);
+					if (query.dataClass.endsWith("windDirection")) {
+						$(`.climacell-${query.dataClass}-card`).html(
+							this.degToCard(query.data.split(" ")[0])
+						);
+					}
+					if (query.dataClass.endsWith("weatherCode")) {
+						$(`.climacell-${query.dataClass}-string`).html(
+							this.weatherCodeString[query.data]
+						);
+					}
+					if (query.dataClass.endsWith("precipitationType")) {
+						$(`.climacell-${query.dataClass}-string`).html(
+							this.precipitationTypeString[query.data]
+						);
+					}
+					if (query.dataClass.endsWith("epaHealthConcern")) {
+						$(`.climacell-${query.dataClass}-string`).html(
+							this.epaHealthConcernString[query.data]
+						);
+					}
+				});
+		});
 	}
 
 	// Recalculate when precipitation is expected
@@ -103,7 +164,7 @@ class WWSUclimacell extends WWSUdb {
 		// Populate precip
 		this.db()
 			.get()
-			.filter((record) => record.dataClass.startsWith("nc-"))
+			.filter((record) => record.dataClass.startsWith("5m-"))
 			.map((record) => {
 				let splits = record.dataClass.split("-");
 				let ncNumber = parseInt(splits[1]);
@@ -111,12 +172,12 @@ class WWSUclimacell extends WWSUdb {
 					precip[ncNumber] = { type: null, rate: null, time: null };
 				}
 
-				if (record.dataClass.endsWith("precipitation-type")) {
+				if (record.dataClass.endsWith("precipitationType")) {
 					precip[ncNumber].type = record.data;
-				} else if (record.dataClass.endsWith("precipitation")) {
-					precip[ncNumber].rate = record.data;
-				} else if (record.dataClass.endsWith("observation-time")) {
-					precip[ncNumber].time = record.data;
+					precip[ncNumber].time = record.dataTime;
+				}
+				if (record.dataClass.endsWith("precipitationIntensity")) {
+					precip[ncNumber].rate = parseInt(record.data);
 				}
 			});
 
@@ -130,18 +191,20 @@ class WWSUclimacell extends WWSUdb {
 		});
 
 		// Figure out the next chance of precipitation, and update cards
-		let precipExpected = precip.find(
-			(record) => record.type && record.type !== "none"
-		);
+		let precipExpected = precip.find((record) => record.rate);
 		let realtimePrecipType = this.db({
-			dataClass: `realtime-precipitation-type`,
+			dataClass: `current-0-precipitationType`,
 		}).first();
-		let realtimePrecip = this.db({
-			dataClass: `realtime-precipitation`,
+		let realtimePrecipIntensity = this.db({
+			dataClass: `current-0-precipitationIntensity`,
 		}).first();
 		if (
 			precipExpected &&
-			(!realtimePrecipType || realtimePrecipType.data === "none")
+			(!realtimePrecipType ||
+				!realtimePrecipType.data ||
+				!realtimePrecipIntensity ||
+				!realtimePrecipIntensity.data ||
+				!parseInt(realtimePrecipIntensity.data))
 		) {
 			$(".climacell-nowcast-color").removeClass(`bg-gray`);
 			$(".climacell-nowcast-color").removeClass(`bg-danger`);
@@ -151,11 +214,15 @@ class WWSUclimacell extends WWSUdb {
 				moment
 					.tz(
 						precipExpected.time,
-						this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+						this.manager.get("WWSUMeta")
+							? this.manager.get("WWSUMeta").meta.timezone
+							: moment.tz.guess()
 					)
 					.format("h:mm A")
 			);
-			$(".climacell-nowcast-text").html(`${precipExpected.type} possible`);
+			$(".climacell-nowcast-text").html(
+				`${this.precipitationTypeString[precipExpected.type]} possible`
+			);
 		} else if (!precipExpected) {
 			$(".climacell-nowcast-color").removeClass(`bg-gray`);
 			$(".climacell-nowcast-color").removeClass(`bg-danger`);
@@ -170,15 +237,15 @@ class WWSUclimacell extends WWSUdb {
 			$(".climacell-nowcast-color").addClass(`bg-danger`);
 
 			// Determine when the precip is expected to end
-			let precipEnd = precip.find(
-				(record) => record.type && record.type === "none"
-			);
+			let precipEnd = precip.find((record) => !record.rate);
 			$(".climacell-nowcast-time").html(
 				precipEnd
 					? moment
 							.tz(
 								precipEnd.time,
-								this.manager.get("WWSUMeta") ? this.manager.get("WWSUMeta").meta.timezone : moment.tz.guess()
+								this.manager.get("WWSUMeta")
+									? this.manager.get("WWSUMeta").meta.timezone
+									: moment.tz.guess()
 							)
 							.format("h:mm A")
 					: `Next >6 Hours`
@@ -186,7 +253,8 @@ class WWSUclimacell extends WWSUdb {
 			$(".climacell-nowcast-text").html(
 				`${
 					realtimePrecipType
-						? realtimePrecipType.data || `Unknown Precip`
+						? this.precipitationTypeString[realtimePrecipType.data] ||
+						  `Unknown Precip`
 						: `Unknown Precip`
 				} ending`
 			);
