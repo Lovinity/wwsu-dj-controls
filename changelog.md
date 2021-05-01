@@ -1,6 +1,6 @@
 # Changelog for wwsu-dj-controls
 
-## 8.18.0-alpha - UNRELEASED
+## TODO
 
 ### Added
 
@@ -11,6 +11,15 @@
 - [TODO] Calendar system did not update conflict overrides if the override time for the conflict should be changed (but not removed).
 
 ## 8.18.0-alpha
+
+### Added
+
+- Email tab for writing and sending emails to DJs or directors in the system.
+- Callout info boxes indicating logs/records are deleted after 2 years.
+
+### Fixed
+
+- Calendar actions dropdown did not proceed for editing / rescheduling an occurrance.
 
 ### Changed
 

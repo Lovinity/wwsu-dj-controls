@@ -296,6 +296,7 @@
 		<script src="assets/plugins/wwsu-remote/js/wwsu-remote-quality.js"></script>
 		<script src="assets/plugins/wwsu-underwritings/js/wwsu-underwritings.js"></script>
 		<script src="assets/plugins/wwsu-songs/js/wwsu-songs.js"></script>
+		<script src="assets/plugins/wwsu-email/js/wwsu-email.js"></script>
 		<link
 			rel="stylesheet"
 			href="assets/plugins/wwsu-navigation/css/wwsu-navigation-flash.css"
@@ -1026,6 +1027,19 @@
 								<a
 									href="#"
 									class="nav-link"
+									id="nav-email"
+									title="Send emails out to DJs / directors in the system"
+								>
+									<i class="nav-icon fas fa-envelope-open-text"></i>
+									<p>
+										Email
+									</p>
+								</a>
+							</li>
+							<li class="nav-item nav-admin d-none">
+								<a
+									href="#"
+									class="nav-link"
 									id="nav-hosts"
 									title="Manage the devices / DJ Controls allowed to connect to WWSU and their privileges."
 								>
@@ -1603,7 +1617,8 @@
 												<span
 													class="climacell-current-0-precipitationIntensity text-danger"
 													>???</span
-												> inches/hour of
+												>
+												inches/hour of
 												<span
 													class="climacell-current-0-precipitationType-string text-danger"
 													>???</span
@@ -1611,11 +1626,12 @@
 											</li>
 											<li>
 												Temperature:
-												<span class="climacell-current-0-temperature text-danger"
+												<span
+													class="climacell-current-0-temperature text-danger"
 													>???</span
-												>°F
-												(feels like
-												<span class="climacell-current-0-temperatureApparent text-danger"
+												>°F (feels like
+												<span
+													class="climacell-current-0-temperatureApparent text-danger"
 													>???</span
 												>°F)
 											</li>
@@ -1628,19 +1644,18 @@
 												at
 												<span class="climacell-current-0-windSpeed text-danger"
 													>???</span
-												> MPH
-												(gusting to
+												>
+												MPH (gusting to
 												<span
 													class="climacell-current-0-windGust text-danger"
-												></span
-												> MPH)
+												></span>
+												MPH)
 											</li>
 											<li>
 												Humidity:
 												<span class="climacell-current-0-humidity text-danger"
 													>???</span
-												>%
-												(Dew point
+												>% (Dew point
 												<span class="climacell-current-0-dewPoint text-danger"
 													>???</span
 												>°F)
@@ -1649,7 +1664,8 @@
 												Visibility:
 												<span class="climacell-current-0-visibility text-danger"
 													>???</span
-												> miles
+												>
+												miles
 											</li>
 											<li>
 												Air Quality:
@@ -2301,13 +2317,31 @@
 										<div class="card-body container-fluid">
 											<div class="row p-2">
 												<div class="col-lg-4 col-md-6 col-12">
-													<button class="btn btn-danger" id="filter-group-broadcasts" title="Turn all filters off except broadcasts">All Broadcasts</button>
+													<button
+														class="btn btn-danger"
+														id="filter-group-broadcasts"
+														title="Turn all filters off except broadcasts"
+													>
+														All Broadcasts
+													</button>
 												</div>
 												<div class="col-lg-4 col-md-6 col-12">
-													<button class="btn bg-teal" id="filter-group-bookings" title="Turn all filters off except on-air and prod studio bookings">All Bookings</button>
+													<button
+														class="btn bg-teal"
+														id="filter-group-bookings"
+														title="Turn all filters off except on-air and prod studio bookings"
+													>
+														All Bookings
+													</button>
 												</div>
 												<div class="col-lg-4 col-md-6 col-12">
-													<button class="btn btn-secondary" id="filter-group-clear" title="Turn all filter switches off">Clear All</button>
+													<button
+														class="btn btn-secondary"
+														id="filter-group-clear"
+														title="Turn all filter switches off"
+													>
+														Clear All
+													</button>
 												</div>
 											</div>
 											<div class="row p-2">
@@ -2584,6 +2618,14 @@
 								Otherwise, they might have unintended access to WWSU.
 							</p>
 						</div>
+						<div class="callout callout-info">
+							<h5>Analytics and Logs Lifespan</h5>
+							<p>
+								General DJ analytics only go up to one year in the past.
+								Operation logs are deleted automatically after 2 years. This is
+								to keep the system running fast and smooth.
+							</p>
+						</div>
 						<div class="card card-danger elevation-2">
 							<div class="card-header">
 								<h3 class="card-title">DJ Management</h3>
@@ -2625,8 +2667,8 @@
 							</p>
 							<ul>
 								<li>Running instances of DJ Controls</li>
-								<li>Public Display Sign (/display/public)</li>
-								<li>Listener's Corner website</li>
+								<li>Display Signs</li>
+								<li>Listener's Corner Website</li>
 							</ul>
 							<p>
 								Alerts you add / edit here do not affect alerts broadcast over
@@ -2638,6 +2680,47 @@
 								<h3 class="card-title">Internal EAS Management</h3>
 							</div>
 							<div class="card-body" id="section-eas-content"></div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Emailing -->
+			<section id="section-email">
+				<div class="content-wrapper" style="padding-top: 8em;">
+					<!-- Content Header (Page header) -->
+					<div class="content-header">
+						<div class="container-fluid">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0 text-dark">Send Emails</h1>
+								</div>
+								<!-- /.col -->
+							</div>
+							<!-- /.row -->
+						</div>
+						<!-- /.container-fluid -->
+					</div>
+					<!-- /.content-header -->
+
+					<!-- Main content -->
+					<div class="content">
+						<div class="callout callout-info">
+							<h5>Email Queue</h5>
+							<p>
+								When you send an email, it is put in the email queue; it is not
+								immediately sent. The email queue ensures the WWSU server is not
+								rate-limited or flagged for email spamming. Generally, emails
+								will only take a few minutes before they are sent.
+							</p>
+						</div>
+						<div class="card card-primary elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">Send an Email</h3>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body" id="section-email-form"></div>
+							<!-- /.card-body -->
 						</div>
 					</div>
 				</div>
@@ -2765,6 +2848,13 @@
 					</div>
 
 					<div class="content">
+						<div class="callout callout-info">
+							<h5>Logs Lifespan</h5>
+							<p>
+								Operation logs are deleted automatically after 2 years. This is
+								to keep the system running fast and smooth.
+							</p>
+						</div>
 						<div class="card card-primary elevation-2">
 							<div class="card-header">
 								<h3 class="card-title">Date Selection</h3>
@@ -2814,6 +2904,13 @@
 					</div>
 
 					<div class="content">
+						<div class="callout callout-info">
+							<h5>Timesheets Lifespan</h5>
+							<p>
+								Timesheet records are deleted automatically after 2 years. This
+								is to keep the system running fast and smooth.
+							</p>
+						</div>
 						<div class="card card-primary elevation-2">
 							<div class="card-header">
 								<h3 class="card-title">Choose Date Range</h3>
@@ -2902,6 +2999,14 @@
 								Please be sure to click "How Underwritings Work" and read the
 								info if you do not yet know how the WWSU system handles
 								underwritings.
+							</p>
+						</div>
+						<div class="callout callout-info">
+							<h5>Spin Counts Lifespan</h5>
+							<p>
+								Spin Counts for RadioDJ tracks are only tallied for the past
+								year, and automatically deleted after 2 years. This is to keep
+								the system running smooth and fast.
 							</p>
 						</div>
 						<div class="card card-danger elevation-2">

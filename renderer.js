@@ -85,7 +85,8 @@ wwsumodules
 	.add("WWSUremote", WWSUremote)
 	.add("WWSUremoteQuality", WWSUremoteQuality)
 	.add("WWSUunderwritings", WWSUunderwritings)
-	.add("WWSUsongs", WWSUsongs);
+	.add("WWSUsongs", WWSUsongs)
+	.add("WWSUemail", WWSUemail);
 
 // Reference modules to variables
 let animations = wwsumodules.get("WWSUanimations");
@@ -117,6 +118,7 @@ let remote = wwsumodules.get("WWSUremote");
 let remoteQuality = wwsumodules.get("WWSUremoteQuality");
 let underwritings = wwsumodules.get("WWSUunderwritings");
 let songs = wwsumodules.get("WWSUsongs");
+let email = wwsumodules.get("WWSUemail");
 
 // Sound alerts
 let sounds = {
@@ -421,6 +423,13 @@ navigation
 		false
 	)
 	.addItem(
+		"#nav-email",
+		"#section-email",
+		"Email DJs or Directors - WWSU DJ Controls",
+		"/eas",
+		false
+	)
+	.addItem(
 		"#nav-hosts",
 		"#section-hosts",
 		"Manage Hosts - WWSU DJ Controls",
@@ -593,6 +602,7 @@ status.initReportForm(`DJ Controls`, `#section-report-form`);
 logs.initAttendanceTable(`#section-logs-table-div`);
 logs.initDashboardLogs(`#section-dashboard-logs`);
 api.initApiForm("#section-api-form");
+email.initForm("#section-email-form");
 requests.initTable(
 	"#section-requests-table-div",
 	"#nav-requests",
