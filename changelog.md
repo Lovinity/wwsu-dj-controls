@@ -29,6 +29,10 @@
 - Event removal now involves marking the event inactive first instead of immediately removing it
 - Remote dump button is now visible for live and sports broadcasts just in case someone is more used to clicking that than pushing the physical button in the studio.
 
+### Removed
+
+- Scheduled Hours tally in timesheets; it was buggy and not necessary since we expect every director to have a set number of scheduled hours.
+
 ## 8.17.2-alpha - 2021-04-29
 
 ### Fixed

@@ -403,7 +403,6 @@ class WWSUtimesheet extends WWSUevents {
 						data: [],
 						columns: [
 							{ title: "Director" },
-							{ title: "Scheduled Hours" },
 							{ title: "In-Office Hours" },
 							{ title: "Remote Hours" },
 							{ title: "Total Hours" },
@@ -571,25 +570,10 @@ class WWSUtimesheet extends WWSUevents {
 							// Set up tamplate if new director
 							if (typeof directors[record.name] === "undefined") {
 								directors[record.name] = {
-									scheduled: { office: 0, remote: 0, total: 0 },
 									office: { approved: 0, unapproved: 0, total: 0 },
 									remote: { approved: 0, unapproved: 0, total: 0 },
 									total: { approved: 0, unapproved: 0, total: 0 },
 								};
-							}
-
-							// Add scheduled hours
-							if (record.scheduledIn && record.scheduledOut) {
-								directors[record.name].scheduled[
-									record.remote ? "remote" : "office"
-								] += moment(record.scheduledOut).diff(
-									record.scheduledIn,
-									"hours",
-									true
-								);
-								directors[record.name].scheduled.total += moment(
-									record.scheduledOut
-								).diff(record.scheduledIn, "hours", true);
 							}
 
 							// Add actual hours
@@ -637,28 +621,6 @@ class WWSUtimesheet extends WWSUevents {
 								this.tables.hours.rows.add([
 									[
 										director,
-										`<ul>
-										<li>In-Office: ${
-											Math.round(
-												(directors[director].scheduled.office +
-													Number.EPSILON) *
-													100
-											) / 100
-										}</li>
-										<li>Remote: ${
-											Math.round(
-												(directors[director].scheduled.remote +
-													Number.EPSILON) *
-													100
-											) / 100
-										}</li>
-										<li>Total: ${
-											Math.round(
-												(directors[director].scheduled.total + Number.EPSILON) *
-													100
-											) / 100
-										}</li>
-										</ul>`,
 										`<ul>
 										<li>Approved: ${
 											Math.round(
