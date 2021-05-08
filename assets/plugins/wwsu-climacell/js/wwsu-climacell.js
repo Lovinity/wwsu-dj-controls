@@ -55,6 +55,41 @@ class WWSUclimacell extends WWSUdb {
 			8101: "Heavy Thunderstorms"
 		};
 
+		// Map weather codes to colors
+		this.weatherCodeColor = {
+			0: "#000000",
+			1000: "#FFD700",
+			1001: "#665600",
+			1100: "#FFD700",
+			1101: "#B29600",
+			1102: "#B29600",
+			2000: "#665600",
+			2100: "#665600",
+			3000: "#7FBF7F",
+			3001: "#008000",
+			3002: "#004000",
+			4000: "#B2B2FF",
+			4001: "#6666FF",
+			4200: "#B2B2FF",
+			4201: "#0000FF",
+			5000: "#787878",
+			5001: "#AEAEAE",
+			5100: "#AEAEAE",
+			5101: "#484848",
+			6000: "#E2A3FF",
+			6001: "#CF66FF",
+			6200: "#E2A3FF",
+			6201: "#B000FF",
+			7000: "#CF66FF",
+			7101: "#B000FF",
+			7102: "#E2A3FF",
+			8000: "#FF0000",
+
+			// Custom
+			8100: "#FF6666",
+			8101: "#990000"
+		};
+
 		// Map precipitation type to string
 		this.precipitationTypeString = {
 			0: "N/A",
@@ -340,10 +375,6 @@ class WWSUclimacell extends WWSUdb {
 					data: [],
 					backgroundColor: []
 				},
-				{
-					data: [],
-					backgroundColor: []
-				}
 			]
 		};
 
@@ -356,9 +387,7 @@ class WWSUclimacell extends WWSUdb {
 					this.weatherCodeString[currentSegment.weatherCode]
 				);
 				clockwheelDonutData.datasets[0].data.push(currentSegment.minutes);
-				clockwheelDonutData.datasets[0].backgroundColor.push("#00ff00");
-				clockwheelDonutData.datasets[1].data.push(0);
-				clockwheelDonutData.datasets[1].backgroundColor.push(`#ffffff`);
+				clockwheelDonutData.datasets[0].backgroundColor.push(this.weatherCodeColor[currentSegment.weatherCode]);
 				currentSegment = Object.assign({ minutes: 1 }, segment);
 			} else {
 				currentSegment.minutes++;
@@ -369,9 +398,7 @@ class WWSUclimacell extends WWSUdb {
 			this.weatherCodeString[currentSegment.weatherCode]
 		);
 		clockwheelDonutData.datasets[0].data.push(currentSegment.minutes);
-		clockwheelDonutData.datasets[0].backgroundColor.push("#00ff00");
-		clockwheelDonutData.datasets[1].data.push(0);
-		clockwheelDonutData.datasets[1].backgroundColor.push(`#ffffff`);
+		clockwheelDonutData.datasets[0].backgroundColor.push(this.weatherCodeColor[currentSegment.weatherCode]);
 
 		// Update the donut
 		this.chart.data = clockwheelDonutData;
