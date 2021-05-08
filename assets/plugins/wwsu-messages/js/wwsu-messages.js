@@ -19,10 +19,10 @@ class WWSUmessages extends WWSUdb {
 		this.endpoints = {
 			get: "/messages/get",
 			remove: "/messages/remove",
-			send: "/messages/send",
+			send: "/messages/send"
 		};
 		this.data = {
-			get: {},
+			get: {}
 		};
 
 		this.assignSocketEvent("messages", this.manager.socket);
@@ -41,7 +41,7 @@ class WWSUmessages extends WWSUdb {
 
 		// Prune old messages (over 1 hour old) every minute.
 		this.prune = setInterval(() => {
-			this.find().forEach((message) => {
+			this.find().forEach(message => {
 				if (
 					moment(
 						this.manager.get("WWSUMeta")
@@ -100,9 +100,9 @@ class WWSUmessages extends WWSUdb {
 						type: "string",
 						title: "Message",
 						default: "",
-						required: true,
-					},
-				},
+						required: true
+					}
+				}
 			},
 			options: {
 				fields: {
@@ -113,9 +113,9 @@ class WWSUmessages extends WWSUdb {
 								"undo redo | bold italic underline strikethrough | fontselect fontsizeselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | fullscreen preview | link | ltr rtl",
 							plugins:
 								"autoresize preview paste searchreplace autolink save directionality visualblocks visualchars fullscreen link table hr pagebreak nonbreaking toc insertdatetime advlist lists wordcount textpattern noneditable help",
-							menubar: "file edit view insert format tools table help",
-						},
-					},
+							menubar: "file edit view insert format tools table help"
+						}
+					}
 				},
 				form: {
 					buttons: {
@@ -136,7 +136,7 @@ class WWSUmessages extends WWSUdb {
 											"You must select a recipient before you can send a message.",
 										autohide: true,
 										delay: 10000,
-										icon: "",
+										icon: ""
 									});
 									return;
 								}
@@ -149,16 +149,21 @@ class WWSUmessages extends WWSUdb {
 									"WWSUrecipients"
 								).activeRecipient.label;
 
-								this.send(value, (success) => {
+								this.send(value, success => {
 									if (success) {
 										form.clear();
 									}
 								});
-							},
-						},
-					},
-				},
-			},
+							}
+						}
+					}
+				}
+			}
+		});
+
+		// Call updateRecipient whenever a recipient changes. This is in case an actively-selected recipient goes offline/online; we must update the message in the message window.
+		this.manager.get("WWSUrecipients").on("change", "WWSUmessages", () => {
+			this.updateRecipient();
 		});
 	}
 
@@ -183,7 +188,7 @@ class WWSUmessages extends WWSUdb {
 				.get("hostReq")
 				.request(
 					{ method: "post", url: this.endpoints.send, data },
-					(response) => {
+					response => {
 						if (response !== "OK") {
 							$(document).Toasts("create", {
 								class: "bg-danger",
@@ -192,7 +197,7 @@ class WWSUmessages extends WWSUdb {
 									"There was an error sending the message. Your DJ Controls might not be allowed to send messages to website visitors or display signs when you are not on the air. If this is not the case, please contact the engineer.",
 								autohide: true,
 								delay: 20000,
-								icon: "fas fa-skull-crossbones fa-lg",
+								icon: "fas fa-skull-crossbones fa-lg"
 							});
 							if (typeof cb === "function") {
 								cb(false);
@@ -201,9 +206,10 @@ class WWSUmessages extends WWSUdb {
 							$(document).Toasts("create", {
 								class: "bg-success",
 								title: "Message sent",
-								body: "Your message was sent.",
+								body:
+									"Your message was sent! <strong>You may need to erase the contents of the message field</strong> before sending a new message.",
 								autohide: true,
-								delay: 10000,
+								delay: 10000
 							});
 							if (typeof cb === "function") {
 								cb(true);
@@ -219,7 +225,7 @@ class WWSUmessages extends WWSUdb {
 					"There was an error sending the message. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			if (typeof cb === "function") {
 				cb(false);
@@ -240,7 +246,7 @@ class WWSUmessages extends WWSUdb {
 				.get("hostReq")
 				.request(
 					{ method: "post", url: this.endpoints.remove, data },
-					(response) => {
+					response => {
 						if (response !== "OK") {
 							$(document).Toasts("create", {
 								class: "bg-danger",
@@ -249,7 +255,7 @@ class WWSUmessages extends WWSUdb {
 									"There was an error removing the message. Your DJ Controls might not be allowed to remove messages when you are not on the air. If this is not the case, please contact the engineer.",
 								autohide: true,
 								delay: 15000,
-								icon: "fas fa-skull-crossbones fa-lg",
+								icon: "fas fa-skull-crossbones fa-lg"
 							});
 							if (typeof cb === "function") {
 								cb(false);
@@ -269,7 +275,7 @@ class WWSUmessages extends WWSUdb {
 					"There was an error removing the message. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			if (typeof cb === "function") {
 				cb(false);
@@ -287,10 +293,10 @@ class WWSUmessages extends WWSUdb {
 		this.manager
 			.get("WWSUrecipients")
 			.find()
-			.forEach((recipient) => {
+			.forEach(recipient => {
 				recipient.unreadMessages = 0;
 				this.find({ from: recipient.host, status: "active" }).forEach(
-					(message) => {
+					message => {
 						if (
 							(message.to === "DJ" ||
 								message.to === "DJ-private" ||
@@ -412,10 +418,10 @@ class WWSUmessages extends WWSUdb {
 							this.manager.get("WWSUhosts").client.host,
 							"DJ",
 							"DJ-private",
-							this.manager.get("WWSUrecipients").recipient.host,
-						],
+							this.manager.get("WWSUrecipients").recipient.host
+						]
 					},
-					{ to: recipient.host },
+					{ to: recipient.host }
 				];
 				if (recipient.host === "website") {
 					query = [{ to: ["DJ", "website"] }];
@@ -428,7 +434,7 @@ class WWSUmessages extends WWSUdb {
 						(a, b) =>
 							moment(a.createdAt).valueOf() - moment(b.createdAt).valueOf()
 					)
-					.map((message) => {
+					.map(message => {
 						chatHTML += `<div class="message" id="message-${message.ID}">
                 ${this.messageHTML(message)}
                 </div>`;

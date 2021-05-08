@@ -24,7 +24,7 @@ wwsumodules
 		host: machineID,
 		usernameField: "host",
 		authPath: "/auth/host",
-		authName: "Host",
+		authName: "Host"
 	})
 	.add("WWSUdirectors", WWSUdirectors, { host: machineID })
 	.add("directorReq", WWSUreq, {
@@ -33,7 +33,7 @@ wwsumodules
 		filter: null,
 		usernameField: "name",
 		authPath: "/auth/director",
-		authName: "Director",
+		authName: "Director"
 	})
 	.add("adminDirectorReq", WWSUreq, {
 		host: machineID,
@@ -41,7 +41,7 @@ wwsumodules
 		filter: { admin: true },
 		usernameField: "name",
 		authPath: "/auth/admin-director",
-		authName: "Administrator Director",
+		authName: "Administrator Director"
 	})
 	.add("masterDirectorReq", WWSUreq, {
 		host: machineID,
@@ -49,7 +49,7 @@ wwsumodules
 		filter: { ID: 1 },
 		usernameField: "name",
 		authPath: "/auth/admin-director",
-		authName: "Master Director",
+		authName: "Master Director"
 	})
 	.add("WWSUconfig", WWSUconfig)
 	.add("WWSUlogs", WWSUlogs)
@@ -57,10 +57,10 @@ wwsumodules
 	.add("djReq", WWSUreq, {
 		host: machineID,
 		db: "WWSUdjs",
-		filter: null,
+		filter: { active: true },
 		usernameField: "name",
 		authPath: "/auth/dj",
-		authName: "DJ",
+		authName: "DJ"
 	})
 	.add("WWSUstatus", WWSUstatus)
 	.add("WWSUeas", WWSUeas)
@@ -72,7 +72,7 @@ wwsumodules
 	.add("WWSUrecipients", WWSUrecipients)
 	.add("WWSUhosts", WWSUhosts, {
 		machineID: machineID,
-		app: window.ipc.getAppVersion(),
+		app: window.ipc.getAppVersion()
 	})
 	.add("WWSUrequests", WWSUrequests)
 	.add("WWSUtimesheet", WWSUtimesheet)
@@ -125,10 +125,10 @@ let sounds = {
 	onBreak: new Howl({ src: ["assets/voice-queues/break.mp3"] }),
 	oneMinute: new Howl({ src: ["assets/voice-queues/oneMinute.mp3"] }),
 	thirtySeconds: new Howl({
-		src: ["assets/voice-queues/thirtySeconds.mp3"],
+		src: ["assets/voice-queues/thirtySeconds.mp3"]
 	}),
 	fifteenSeconds: new Howl({
-		src: ["assets/voice-queues/fifteenSeconds.mp3"],
+		src: ["assets/voice-queues/fifteenSeconds.mp3"]
 	}),
 	tenSeconds: new Howl({ src: ["assets/voice-queues/tenSeconds.mp3"] }),
 	fiveSeconds: new Howl({ src: ["assets/voice-queues/fiveSeconds.mp3"] }),
@@ -138,8 +138,8 @@ let sounds = {
 	callQuality: new Howl({ src: ["assets/voice-queues/callQuality.mp3"] }),
 	callSilence: new Howl({ src: ["assets/voice-queues/callSilence.mp3"] }),
 	callTerminated: new Howl({
-		src: ["assets/voice-queues/callTerminated.mp3"],
-	}),
+		src: ["assets/voice-queues/callTerminated.mp3"]
+	})
 };
 
 // letiables
@@ -162,29 +162,29 @@ let todos = {
 		orange: 0,
 		warning: 0,
 		info: 0,
-		primary: 0,
+		primary: 0
 	},
 	accountability: {
 		danger: 0,
 		orange: 0,
 		warning: 0,
 		info: 0,
-		primary: 0,
+		primary: 0
 	},
 	timesheets: {
 		danger: 0,
 		orange: 0,
 		warning: 0,
 		info: 0,
-		primary: 0,
+		primary: 0
 	},
 	DJs: {
 		danger: 0,
 		orange: 0,
 		warning: 0,
 		info: 0,
-		primary: 0,
-	},
+		primary: 0
+	}
 };
 
 // Navigation
@@ -251,14 +251,14 @@ navigation
 					properties: {
 						delay: {
 							type: "number",
-							title: "Delay (milliseconds)",
+							title: "Delay (milliseconds)"
 						},
 						recordPath: {
 							type: "string",
 							format: "uri",
-							title: "Path to audio recordings",
-						},
-					},
+							title: "Path to audio recordings"
+						}
+					}
 				},
 				options: {
 					fields: {
@@ -266,25 +266,25 @@ navigation
 							helper:
 								"How much time passes between a state change and when the input device receives the audio? For example, if the input device is subject to a delay system, you would put the amount of delay time in here.",
 							events: {
-								change: function () {
+								change: function() {
 									let value = this.getValue();
 									if (!this.handleValidate()) {
 										console.log(`invalid`);
 										return;
 									}
 									window.saveSettings.recorder("delay", value);
-								},
-							},
+								}
+							}
 						},
 						// TODO: re-compile alpaca with the capability of choosing a folder.
 						recordPath: {
 							helpers: [
 								`Write the full path to the directory you want audio files (webm format) to be saved`,
 								`Sub-directories for automation, remote, live, and sports will be created automatically after the first recording is saved.`,
-								`Additional sub-sub-directories will be created automatically to organize recordings by genre, show, or sport.`,
+								`Additional sub-sub-directories will be created automatically to organize recordings by genre, show, or sport.`
 							],
 							events: {
-								change: function () {
+								change: function() {
 									let value = this.getValue();
 									if (!this.handleValidate()) {
 										console.log(`invalid`);
@@ -292,12 +292,12 @@ navigation
 									}
 									window.saveSettings.recorder("recordPath", value);
 									startRecording(0);
-								},
-							},
-						},
-					},
+								}
+							}
+						}
+					}
 				},
-				data: window.settings.recorder(),
+				data: window.settings.recorder()
 			});
 			$("#section-audio-silence-form").alpaca({
 				schema: {
@@ -307,16 +307,16 @@ navigation
 							type: "number",
 							title: "Delay (milliseconds)",
 							required: true,
-							minimum: 0,
+							minimum: 0
 						},
 						threshold: {
 							type: "number",
 							title: "Threshold (percentile 0.0 - 1.0)",
 							minimum: 0,
 							maximum: 1,
-							required: true,
-						},
-					},
+							required: true
+						}
+					}
 				},
 				options: {
 					fields: {
@@ -324,7 +324,7 @@ navigation
 							helper:
 								"How much time should elapse when the volume of the combined input devices for silence monitoring drops below the threshold before DJ Controls triggers the silence alarm in WWSU?",
 							events: {
-								change: function () {
+								change: function() {
 									let value = this.getValue();
 									if (!this.handleValidate()) {
 										console.log(`invalid`);
@@ -332,14 +332,14 @@ navigation
 									}
 									window.saveSettings.silence("delay", value);
 									window.ipc.silence.setting([]);
-								},
-							},
+								}
+							}
 						},
 						threshold: {
 							helper:
 								"At what volume percentile (0.0 - 1.0) should silence be considered detected when the combined volumes of input devices with silence checked drop below this value?",
 							events: {
-								change: function () {
+								change: function() {
 									let value = this.getValue();
 									if (!this.handleValidate()) {
 										console.log(`invalid`);
@@ -347,12 +347,12 @@ navigation
 									}
 									window.saveSettings.silence("threshold", value);
 									window.ipc.silence.setting([]);
-								},
-							},
-						},
-					},
+								}
+							}
+						}
+					}
 				},
-				data: window.settings.silence(),
+				data: window.settings.silence()
 			});
 		}
 	)
@@ -494,7 +494,7 @@ $("#section-audio-devices-refresh").on("click", () => {
 		timeout: 30000,
 		onBlock: () => {
 			window.ipc.audioRefreshDevices(true);
-		},
+		}
 	});
 });
 $("#section-serial-delay-refresh").on("click", () => {
@@ -504,7 +504,7 @@ $("#section-serial-delay-refresh").on("click", () => {
 		timeout: 30000,
 		onBlock: () => {
 			refreshSerialPorts();
-		},
+		}
 	});
 });
 $(".chat-mute").on("click", () => {
@@ -523,7 +523,7 @@ $(".btn-dashboard-meta-clear").on("click", () => {
 				logsubtype: meta.meta ? meta.meta.show : "",
 				loglevel: "secondary",
 				logIcon: "fas fa-file",
-				title: "DJ / Producer began talking.",
+				title: "DJ / Producer began talking."
 			},
 			true
 		);
@@ -542,14 +542,14 @@ $(".btn-operation-resume").on("click", () => {
 		let called = recipients
 			.db()
 			.get()
-			.find((rec) => rec.hostID === meta.meta.hostCalled);
+			.find(rec => rec.hostID === meta.meta.hostCalled);
 		if (!called || !called.peer || called.status !== 5) {
 			$(document).Toasts("create", {
 				class: "bg-warning",
 				title: "Remote host not connected",
 				delay: 30000,
 				autohide: true,
-				body: `The host receiving the audio for the broadcast is not connected. Please wait until the resume button flashes to indicate it re-connected, or end and restart the remote broadcast with a different host.`,
+				body: `The host receiving the audio for the broadcast is not connected. Please wait until the resume button flashes to indicate it re-connected, or end and restart the remote broadcast with a different host.`
 			});
 			remote.request({ ID: meta.meta.hostCalled || pendingHostCall });
 			return;
@@ -615,7 +615,6 @@ timesheets.init(
 	`#section-timesheets-end`,
 	`#section-timesheets-browse`
 );
-
 messages.initComponents(
 	".chat-active-recipient",
 	".chat-status",
@@ -626,46 +625,49 @@ messages.initComponents(
 	".messages-new-all",
 	"#nav-chat"
 );
+climacell.initClockForecast("#weather-forecast-donut");
 
 // CLOCKWHEEL
 
 // Initialize clockwheel
-let clockwheelDonutCanvas = $("#clockwheel-donut").get(0).getContext("2d");
+let clockwheelDonutCanvas = $("#clockwheel-donut")
+	.get(0)
+	.getContext("2d");
 let clockwheelDonutData = {
 	labels: ["Not Yet Loaded"],
 	datasets: [
 		{
 			data: [60],
-			backgroundColor: ["#000000"],
+			backgroundColor: ["#000000"]
 		},
 		{
 			data: [720],
-			backgroundColor: ["#000000"],
-		},
-	],
+			backgroundColor: ["#000000"]
+		}
+	]
 };
 let clockwheelDonutOptions = {
 	maintainAspectRatio: false,
 	responsive: true,
 	cutoutPercentage: 66,
 	legend: {
-		display: false,
+		display: false
 	},
 	animation: {
 		animateRotate: false,
-		animateScale: false,
-	},
+		animateScale: false
+	}
 };
 let clockwheelDonut = new Chart(clockwheelDonutCanvas, {
 	type: "doughnut",
 	data: clockwheelDonutData,
-	options: clockwheelDonutOptions,
+	options: clockwheelDonutOptions
 });
 
 // Clockwheel Clock and functions
-let $h = $("#hour"),
-	$m = $("#minute"),
-	$s = $("#second");
+let $h = $(".clock-hour"),
+	$m = $(".clock-minute"),
+	$s = $(".clock-second");
 
 function computeTimePositions($h, $m, $s) {
 	let now = moment.parseZone(meta.meta.time),
@@ -712,17 +714,26 @@ function setUpFace() {
 			.css({ transform: "rotate(" + n * 6 + "deg)" });
 		tickBox.append(tickNum);
 
-		$("#clock").append(tickBox);
+		$(".clock").append(tickBox);
 	}
 }
 
-function setSize(width, height) {
+function setClockwheelSize(width, height) {
 	let size = Math.min(width, height);
 	size = size * 0.63;
-	$(".clock").css("width", `${size}px`);
-	$(".clock").css("height", `${size}px`);
-	$(".clock").css("margin-top", `-${size / 2}px`);
-	$(".clock").css("margin-left", `-${size / 2}px`);
+	$("#clockwheel-clock").css("width", `${size}px`);
+	$("#clockwheel-clock").css("height", `${size}px`);
+	$("#clockwheel-clock").css("margin-top", `-${size / 2}px`);
+	$("#clockwheel-clock").css("margin-left", `-${size / 2}px`);
+}
+
+function setForecastClockSize(width, height) {
+	let size = Math.min(width, height);
+	size = size * 0.77;
+	$("#weather-forecast-clock").css("width", `${size}px`);
+	$("#weather-forecast-clock").css("height", `${size}px`);
+	$("#weather-forecast-clock").css("margin-top", `-${size / 2}px`);
+	$("#weather-forecast-clock").css("margin-left", `-${size / 2}px`);
 }
 
 setUpFace();
@@ -784,7 +795,7 @@ function startRecording(delay) {
 				`${recordState}/${preText}/${preText2} (${moment().format(
 					"YYYY_MM_DD HH_mm_ss"
 				)})`,
-				delay,
+				delay
 			]);
 		} else {
 			window.ipc.recorder.stop([-1]);
@@ -801,7 +812,7 @@ let fullCalendar = new FullCalendar.Calendar(calendarEl, {
 	headerToolbar: {
 		start: "prev,next today",
 		center: "title",
-		end: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+		end: "dayGridMonth,timeGridWeek,timeGridDay,listWeek"
 	},
 	initialView: "timeGridWeek",
 	navLinks: true, // can click day/week names to navigate views
@@ -813,7 +824,7 @@ let fullCalendar = new FullCalendar.Calendar(calendarEl, {
 	themeSystem: "bootstrap",
 	dayMaxEvents: 5,
 	slotDuration: "00:15:00",
-	events: function (info, successCallback, failureCallback) {
+	events: function(info, successCallback, failureCallback) {
 		animations.add("calendar-update", () => {
 			$("#calendar").block({
 				message: "<h1>Loading...</h1>",
@@ -821,9 +832,9 @@ let fullCalendar = new FullCalendar.Calendar(calendarEl, {
 				timeout: 30000,
 				onBlock: () => {
 					calendar.getEvents(
-						(events) => {
+						events => {
 							events = events
-								.filter((event) => {
+								.filter(event => {
 									// Filter out events by filters
 									if (event.scheduleType === "canceled-changed") return false;
 									let temp = document.getElementById(`filter-${event.type}`);
@@ -833,7 +844,7 @@ let fullCalendar = new FullCalendar.Calendar(calendarEl, {
 										return false;
 									}
 								})
-								.map((event) => {
+								.map(event => {
 									let borderColor;
 									let title = `${event.type}: ${event.hosts} - ${event.name}`;
 									if (
@@ -874,31 +885,33 @@ let fullCalendar = new FullCalendar.Calendar(calendarEl, {
 											: "#e6e6e6",
 										borderColor: borderColor,
 										extendedProps: {
-											event: event,
-										},
+											event: event
+										}
 									};
 								});
 							successCallback(events);
 							fullCalendar.updateSize();
 							$("#calendar").unblock();
 						},
-						moment(info.start).subtract(1, "days").toISOString(true),
+						moment(info.start)
+							.subtract(1, "days")
+							.toISOString(true),
 						moment(info.end).toISOString(true)
 					);
-				},
+				}
 			});
 		});
 	},
 
-	eventClick: function (info) {
+	eventClick: function(info) {
 		calendar.showClickedEvent(info.event.extendedProps.event);
 	},
 
-	select: function (info) {
+	select: function(info) {
 		calendar.newOccurrence(info.startStr, info.endStr);
 	},
 
-	eventDrop: function (info) {
+	eventDrop: function(info) {
 		let duration = moment(info.event.end).diff(info.event.start, "minutes");
 		if (duration > 60 * 24) {
 			$(document).Toasts("create", {
@@ -907,7 +920,7 @@ let fullCalendar = new FullCalendar.Calendar(calendarEl, {
 				body:
 					"Occurrences may not last more than 24 hours. Consider setting up a recurring schedule.",
 				autohide: true,
-				delay: 15000,
+				delay: 15000
 			});
 			return;
 		}
@@ -919,7 +932,7 @@ let fullCalendar = new FullCalendar.Calendar(calendarEl, {
 		info.revert();
 	},
 
-	eventResize: function (info) {
+	eventResize: function(info) {
 		let duration = moment(info.event.end).diff(info.event.start, "minutes");
 		if (duration > 60 * 24) {
 			$(document).Toasts("create", {
@@ -928,7 +941,7 @@ let fullCalendar = new FullCalendar.Calendar(calendarEl, {
 				body:
 					"Occurrences may not last more than 24 hours. Consider setting up a recurring schedule.",
 				autohide: true,
-				delay: 15000,
+				delay: 15000
 			});
 			return;
 		}
@@ -938,7 +951,7 @@ let fullCalendar = new FullCalendar.Calendar(calendarEl, {
 			duration
 		);
 		info.revert();
-	},
+	}
 });
 fullCalendar.render();
 
@@ -953,31 +966,47 @@ fullCalendar.render();
 	"event",
 	"onair-booking",
 	"prod-booking",
-	"office-hours",
-].map((type) => {
+	"office-hours"
+].map(type => {
 	let temp = document.getElementById(`filter-${type}`);
 	if (temp !== null) {
-		temp.addEventListener("click", (e) => {
+		temp.addEventListener("click", e => {
 			fullCalendar.refetchEvents();
 		});
 	}
 });
 
 // Add click events to filter group buttons
-$("#filter-group-broadcasts").on("click", (e) => {
+$("#filter-group-broadcasts").on("click", e => {
 	[
 		"genre",
 		"event",
 		"onair-booking",
 		"prod-booking",
-		"office-hours",
-	].map((type) => $(`#filter-${type}`).prop("checked", false));
-	["show", "sports", "remote", "prerecord", "playlist"].map((type) =>
+		"office-hours"
+	].map(type => $(`#filter-${type}`).prop("checked", false));
+	["show", "sports", "remote", "prerecord", "playlist"].map(type =>
 		$(`#filter-${type}`).prop("checked", true)
 	);
 	fullCalendar.refetchEvents();
 });
-$("#filter-group-bookings").on("click", (e) => {
+$("#filter-group-bookings").on("click", e => {
+	[
+		"show",
+		"sports",
+		"remote",
+		"prerecord",
+		"genre",
+		"playlist",
+		"event",
+		"office-hours"
+	].map(type => $(`#filter-${type}`).prop("checked", false));
+	["onair-booking", "prod-booking"].map(type =>
+		$(`#filter-${type}`).prop("checked", true)
+	);
+	fullCalendar.refetchEvents();
+});
+$("#filter-group-clear").on("click", e => {
 	[
 		"show",
 		"sports",
@@ -987,25 +1016,9 @@ $("#filter-group-bookings").on("click", (e) => {
 		"playlist",
 		"event",
 		"office-hours",
-	].map((type) => $(`#filter-${type}`).prop("checked", false));
-	["onair-booking", "prod-booking"].map((type) =>
-		$(`#filter-${type}`).prop("checked", true)
-	);
-	fullCalendar.refetchEvents();
-});
-$("#filter-group-clear").on("click", (e) => {
-	[
-		"show",
-		"sports",
-		"remote",
-		"prerecord",
-		"genre",
-		"playlist",
-		"event",
-		"office-hours",
 		"onair-booking",
-		"prod-booking",
-	].map((type) => $(`#filter-${type}`).prop("checked", false));
+		"prod-booking"
+	].map(type => $(`#filter-${type}`).prop("checked", false));
 	fullCalendar.refetchEvents();
 });
 
@@ -1065,13 +1078,13 @@ window.ipc.on.recorderFailed((event, arg) => {
 			loglevel: "orange",
 			logIcon: `fas fa-file-audio`,
 			title: `A recording failed!`,
-			event: `File: ${arg[0]}<br />Error: ${arg[1]}`,
+			event: `File: ${arg[0]}<br />Error: ${arg[1]}`
 		},
 		true
 	);
 	status.recorder({
 		status: 2,
-		data: `There was an error saving the file ${arg[0]}<br />Error: ${arg[1]}<br /><strong>Be prepared to record your broadcasts manually</strong> until the recorder is fixed.`,
+		data: `There was an error saving the file ${arg[0]}<br />Error: ${arg[1]}<br /><strong>Be prepared to record your broadcasts manually</strong> until the recorder is fixed.`
 	});
 });
 
@@ -1122,7 +1135,7 @@ window.ipc.on.silenceState((event, arg) => {
 
 // Update VU meters
 window.ipc.on.audioVolume((event, arg) => {
-	((volumes) => {
+	(volumes => {
 		if (navigation.activeMenu !== `#nav-audio`) {
 			return;
 		}
@@ -1153,13 +1166,13 @@ window.ipc.on.recorderSaved((event, arg) => {
 			loglevel: "info",
 			logIcon: `fas fa-file-audio`,
 			title: `A recording was saved.`,
-			event: `Path: ${arg}`,
+			event: `Path: ${arg}`
 		},
 		true
 	);
 	status.recorder({
 		status: 5,
-		data: `Most recent file ${arg} was successfully saved.`,
+		data: `Most recent file ${arg} was successfully saved.`
 	});
 });
 
@@ -1257,7 +1270,7 @@ window.ipc.on.audioDevices((event, arg) => {
 							100 * (5 / 8),
 							100 * (6 / 8),
 							100 * (7 / 8),
-							100,
+							100
 						],
 						ticks_labels: [
 							"OFF",
@@ -1268,59 +1281,56 @@ window.ipc.on.audioDevices((event, arg) => {
 							"125%",
 							"150%",
 							"175%",
-							"200%",
+							"200%"
 						],
 						ticks_snap_bounds: 0.025,
 						value: device.settings.volume,
 						orientation: "horizontal",
 						selection: "before",
-						tooltip: "show",
+						tooltip: "show"
 					});
 
 					// Volume slider listener
 					$(`#audio-volume-input-${device.device.deviceId}`).off("change");
 					$(`#audio-volume-input-${device.device.deviceId}`).on(
 						"change",
-						(obj) => {
+						obj => {
 							window.ipc.audioChangeVolume([
 								device.device.deviceId,
 								"audioinput",
-								obj.value.newValue,
+								obj.value.newValue
 							]);
 						}
 					);
 
 					// Checkbox listeners
 					$(`#audio-remote-input-${device.device.deviceId}`).off("change");
-					$(`#audio-remote-input-${device.device.deviceId}`).on(
-						"change",
-						(e) => {
-							window.ipc.audioRemoteSetting([
-								device.device.deviceId,
-								"audioinput",
-								e.target.checked,
-							]);
-						}
-					);
+					$(`#audio-remote-input-${device.device.deviceId}`).on("change", e => {
+						window.ipc.audioRemoteSetting([
+							device.device.deviceId,
+							"audioinput",
+							e.target.checked
+						]);
+					});
 					$(`#audio-recorder-input-${device.device.deviceId}`).off("change");
 					$(`#audio-recorder-input-${device.device.deviceId}`).on(
 						"change",
-						(e) => {
+						e => {
 							window.ipc.audioRecorderSetting([
 								device.device.deviceId,
 								"audioinput",
-								e.target.checked,
+								e.target.checked
 							]);
 						}
 					);
 					$(`#audio-silence-input-${device.device.deviceId}`).off("change");
 					$(`#audio-silence-input-${device.device.deviceId}`).on(
 						"change",
-						(e) => {
+						e => {
 							window.ipc.audioSilenceSetting([
 								device.device.deviceId,
 								"audioinput",
-								e.target.checked,
+								e.target.checked
 							]);
 						}
 					);
@@ -1365,32 +1375,32 @@ window.ipc.on.audioDevices((event, arg) => {
 							100 * (1 / 4),
 							100 * (2 / 4),
 							100 * (3 / 4),
-							100 * (4 / 4),
+							100 * (4 / 4)
 						],
 						ticks_labels: ["OFF", "25%", "50%", "75%", "100%"],
 						ticks_snap_bounds: 0.025,
 						value: device.settings.volume,
 						orientation: "horizontal",
 						selection: "before",
-						tooltip: "show",
+						tooltip: "show"
 					});
 
 					// Volume slider listener
 					$(`#audio-volume-output-${device.device.deviceId}`).off("change");
 					$(`#audio-volume-output-${device.device.deviceId}`).on(
 						"change",
-						(obj) => {
+						obj => {
 							window.ipc.audioChangeVolume([
 								device.device.deviceId,
 								"audiooutput",
-								obj.value.newValue,
+								obj.value.newValue
 							]);
 						}
 					);
 
 					// Checkbox listeners
 					$(`#audio-output-${device.device.deviceId}`).off("change");
-					$(`#audio-output-${device.device.deviceId}`).on("change", (e) => {
+					$(`#audio-output-${device.device.deviceId}`).on("change", e => {
 						if ($(`#audio-output-${device.device.deviceId}`).prop("checked")) {
 							$(`.form-check-devices-output`).each((index2, element) => {
 								if (element.id !== `audio-output-${device.device.deviceId}`) {
@@ -1400,36 +1410,30 @@ window.ipc.on.audioDevices((event, arg) => {
 							window.ipc.audioOutputSetting([
 								device.device.deviceId,
 								"audiooutput",
-								true,
+								true
 							]);
 						}
 					});
 
 					$(`#audio-queue-output-${device.device.deviceId}`).off("change");
-					$(`#audio-queue-output-${device.device.deviceId}`).on(
-						"change",
-						(e) => {
-							if (
-								$(`#audio-queue-output-${device.device.deviceId}`).prop(
-									"checked"
-								)
-							) {
-								$(`.form-check-devices-queue`).each((index2, element) => {
-									if (
-										element.id !==
-										`audio-queue-output-${device.device.deviceId}`
-									) {
-										$(element).prop({ checked: false });
-									}
-								});
-								window.ipc.audioQueueSetting([
-									device.device.deviceId,
-									"audiooutput",
-									true,
-								]);
-							}
+					$(`#audio-queue-output-${device.device.deviceId}`).on("change", e => {
+						if (
+							$(`#audio-queue-output-${device.device.deviceId}`).prop("checked")
+						) {
+							$(`.form-check-devices-queue`).each((index2, element) => {
+								if (
+									element.id !== `audio-queue-output-${device.device.deviceId}`
+								) {
+									$(element).prop({ checked: false });
+								}
+							});
+							window.ipc.audioQueueSetting([
+								device.device.deviceId,
+								"audiooutput",
+								true
+							]);
 						}
-					);
+					});
 				});
 			}
 		});
@@ -1529,7 +1533,7 @@ window.ipc.on.serialPorts((event, ports) => {
 	// Populate selection box with available serial ports
 	let delayPorts = `<option value="">(NONE)</option>`;
 	if (ports.constructor === Array && ports.length > 0) {
-		ports.map((port) => {
+		ports.map(port => {
 			delayPorts += `<option value="${port.deviceInstanceId}">${port.displayName} (${port.portName})</option>`;
 		});
 	}
@@ -1545,7 +1549,7 @@ window.ipc.on.serialPorts((event, ports) => {
 
 	// Add select box change handler for setting new port when changed
 	$("#section-serial-delay-port").unbind("change");
-	$("#section-serial-delay-port").on("change", (e) => {
+	$("#section-serial-delay-port").on("change", e => {
 		let val = $(e.target).val();
 		window.saveSettings.delay("port", val);
 		// Restart delay system by closing the process so we can use the new port
@@ -1567,7 +1571,7 @@ socket.on("connect", () => {
 	socket._raw.io._reconnectionAttempts = Infinity;
 
 	discipline.checkDiscipline(() => {
-		hosts.get((success) => {
+		hosts.get(success => {
 			if (success === 1) {
 				config.init();
 				meta.init();
@@ -1655,7 +1659,7 @@ socket.on("disconnect", () => {
 });
 
 // Connection error
-socket.on("reconnect_failed", (error) => {
+socket.on("reconnect_failed", error => {
 	$("#unauthorized").removeClass("d-none");
 	$("#connecting").addClass("d-none");
 	$("#reconnecting").addClass("d-none");
@@ -1680,7 +1684,7 @@ socket.on("delay-system-dump", () => {
 	}
 });
 
-animations.on("updateStatus", "renderer", (updating) => {
+animations.on("updateStatus", "renderer", updating => {
 	if (updating) {
 		$("#animation-refreshing").removeClass("d-none");
 	} else {
@@ -1702,7 +1706,7 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 					$(".operations").block({
 						message: `<h4>${fullMeta.changingState}</h4>`,
 						css: { border: "3px solid #a00" },
-						timeout: 60000,
+						timeout: 60000
 					});
 				} else {
 					$(".operations").unblock();
@@ -1902,12 +1906,14 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 						$(".operation-break").removeClass("d-none");
 						$(".operation-top-add").removeClass("d-none");
 						$(".operation-log").removeClass("d-none");
+						$(".operation-dump").removeClass("d-none");
 						break;
 					case "sports_on":
 						$(".operation-automation").removeClass("d-none");
 						$(".operation-break").removeClass("d-none");
 						$(".operation-extended-break").removeClass("d-none");
 						$(".operation-liner").removeClass("d-none");
+						$(".operation-dump").removeClass("d-none");
 						break;
 					case "remote_on":
 						$(".operation-automation").removeClass("d-none");
@@ -1946,7 +1952,7 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 				"sports_on",
 				"sportsremote_on",
 				"sports_returning",
-				"sportsremote_returning",
+				"sportsremote_returning"
 			].indexOf(updated.state) === -1
 		) {
 			window.ipc.process.remote(["close"]);
@@ -1989,13 +1995,13 @@ meta.on("newMeta", "renderer", (updated, fullMeta) => {
 				"There was an error in meta.newMeta. Please report this to the engineer.",
 			autohide: true,
 			delay: 10000,
-			icon: "fas fa-skull-crossbones fa-lg",
+			icon: "fas fa-skull-crossbones fa-lg"
 		});
 	}
 });
 
 // Meta ticker
-meta.on("metaTick", "renderer", (fullMeta) => {
+meta.on("metaTick", "renderer", fullMeta => {
 	try {
 		// Calculate queue time and countdown time
 		queueLength =
@@ -2091,7 +2097,7 @@ meta.on("metaTick", "renderer", (fullMeta) => {
 			) {
 				$(".operations-bar").removeClass("navbar-gray-dark");
 				$(".operations-bar").addClass("navbar-orange");
-				setTimeout(function () {
+				setTimeout(function() {
 					$(".operations-bar").removeClass("navbar-orange");
 					$(".operations-bar").addClass("navbar-gray-dark");
 				}, 500);
@@ -2165,7 +2171,14 @@ meta.on("metaTick", "renderer", (fullMeta) => {
 		// Tick clockwheel clock
 		animations.add("clockwheel-clock", () => {
 			computeTimePositions($h, $m, $s);
-			setSize($("#clockwheel-donut").width(), $("#clockwheel-donut").height());
+			setClockwheelSize(
+				$("#clockwheel-donut").width(),
+				$("#clockwheel-donut").height()
+			);
+			setForecastClockSize(
+				$("#weather-forecast-donut").width(),
+				$("#weather-forecast-donut").height()
+			);
 		});
 
 		// Countdown voice queues
@@ -2246,8 +2259,8 @@ meta.on("metaTick", "renderer", (fullMeta) => {
 						header: "Do Not Forget the Top of the Hour Break!",
 						flash: true,
 						body:
-							"You are required to take a break before :05 past the hour unless you are ending your broadcast before then.",
-					},
+							"You are required to take a break before :05 past the hour unless you are ending your broadcast before then."
+					}
 				]);
 				window.ipc.flashMain(true);
 			}
@@ -2279,7 +2292,7 @@ meta.on("metaTick", "renderer", (fullMeta) => {
 				"There was an error in meta.metaTick. Please report this to the engineer.",
 			autohide: true,
 			delay: 10000,
-			icon: "fas fa-skull-crossbones fa-lg",
+			icon: "fas fa-skull-crossbones fa-lg"
 		});
 	}
 });
@@ -2303,12 +2316,12 @@ function processStatus(db) {
 		orange: 0,
 		warning: 0,
 		info: 0,
-		primary: 0,
+		primary: 0
 	};
 	recountTodos();
-	db.filter((record) => record.status <= 4)
+	db.filter(record => record.status <= 4)
 		.sort((a, b) => a.status - b.status)
-		.map((record) => {
+		.map(record => {
 			// Notifications on silence detection
 			if (record.name === `silence` && hosts.isHost) {
 				window.ipc.makeNotification([
@@ -2318,8 +2331,8 @@ function processStatus(db) {
 						header:
 							"Silence detection triggered! Please ensure your audio levels are good and not too quiet.",
 						flash: true,
-						body: record.data,
-					},
+						body: record.data
+					}
 				]);
 			}
 
@@ -2394,7 +2407,7 @@ function processStatus(db) {
 	});
 }
 
-status.on("change", "renderer", (db) => {
+status.on("change", "renderer", db => {
 	processStatus(db.get());
 });
 
@@ -2412,7 +2425,7 @@ function processEas(db) {
 
 	// Process each status and generate content
 	let html = `<ul>`;
-	db.map((record) => {
+	db.map(record => {
 		switch (record.severity) {
 			case "Extreme":
 				html += `<li>
@@ -2526,10 +2539,10 @@ function processEas(db) {
 	});
 }
 
-eas.on("change", "renderer", (db) => {
+eas.on("change", "renderer", db => {
 	processEas(db.get());
 });
-eas.on("newAlert", "renderer", (record) => {
+eas.on("newAlert", "renderer", record => {
 	if (record.severity === "Extreme") {
 		iziToast.show({
 			class: "flash-bg",
@@ -2555,7 +2568,7 @@ eas.on("newAlert", "renderer", (record) => {
 			overlayColor: "rgba(255, 0, 0, 0.33)",
 			zindex: 5000,
 			layout: 2,
-			maxWidth: 640,
+			maxWidth: 640
 		});
 	} else if (record.severity === "Severe") {
 		iziToast.show({
@@ -2581,7 +2594,7 @@ eas.on("newAlert", "renderer", (record) => {
 			overlay: true,
 			zindex: 4000,
 			layout: 2,
-			maxWidth: 640,
+			maxWidth: 640
 		});
 	}
 });
@@ -2600,11 +2613,11 @@ function processAnnouncements(db) {
 		// First, process djcontrols announcements for the dashboard
 		let html = ``;
 		db.filter(
-			(record) =>
+			record =>
 				record.type === "djcontrols" &&
 				moment(meta.meta.time).isSameOrAfter(record.starts) &&
 				moment(meta.meta.time).isBefore(record.expires)
-		).map((record) => {
+		).map(record => {
 			if (record.level === "trivial") record.level === "secondary";
 			html += `<div class="alert alert-${record.level}">
                 <h5>${record.title}</h5>
@@ -2615,7 +2628,7 @@ function processAnnouncements(db) {
 	});
 }
 
-announcements.on("change", "renderer", (db) => {
+announcements.on("change", "renderer", db => {
 	processAnnouncements(db.get());
 });
 
@@ -2631,7 +2644,7 @@ function updateCalendar() {
 function updateClockwheel() {
 	// Ask the calendar process to recalculate clockwheel segments
 	animations.add("clockwheel-update", () => {
-		calendar.getEvents((events) => {
+		calendar.getEvents(events => {
 			window.ipc.calendar.updateClockwheel([events, meta.meta]);
 		});
 	});
@@ -2669,7 +2682,7 @@ logs.on("count", "renderer", (danger, orange, warning, info) => {
 		orange,
 		warning,
 		info,
-		primary: 0,
+		primary: 0
 	};
 	recountTodos();
 });
@@ -2731,7 +2744,7 @@ function recountTodos() {
         TRACK REQUESTS FUNCTIONS
     */
 
-requests.on("trackRequested", "renderer", (request) => {
+requests.on("trackRequested", "renderer", request => {
 	$(document).Toasts("create", {
 		class: "bg-primary",
 		title: "Track Requested",
@@ -2740,7 +2753,7 @@ requests.on("trackRequested", "renderer", (request) => {
 		body: `A track was requested.<br />
 Track: <strong>${request.trackname}</strong>`,
 		icon: "fas fa-record-vinyl fa-lg",
-		position: "bottomRight",
+		position: "bottomRight"
 	});
 	window.ipc.flashMain(true);
 });
@@ -2749,7 +2762,7 @@ Track: <strong>${request.trackname}</strong>`,
         RECIPIENTS FUNCTIONS
     */
 
-recipients.on("change", "renderer", (db) => {
+recipients.on("change", "renderer", db => {
 	messages.updateRecipientsTable();
 
 	// If this host wants to make a call, and the host we want to call is online and has a peer, start a call.
@@ -2762,7 +2775,7 @@ recipients.on("change", "renderer", (db) => {
 			meta.meta.state === "automation_sportsremote" ||
 			pendingHostCall)
 	) {
-		let called = db.get().find((rec) => rec.hostID === meta.meta.hostCalled);
+		let called = db.get().find(rec => rec.hostID === meta.meta.hostCalled);
 		if (called && called.peer && called.status === 5) {
 			console.log(
 				`Host ${called.hostID} is ready to take the call. Asking remote process to start audio call if not already in one.`
@@ -2774,7 +2787,7 @@ recipients.on("change", "renderer", (db) => {
 		}
 	}
 });
-recipients.on("recipientChanged", "renderer", (recipient) => {
+recipients.on("recipientChanged", "renderer", recipient => {
 	messages.changeRecipient(recipient);
 });
 
@@ -2783,14 +2796,14 @@ recipients.on("recipientChanged", "renderer", (recipient) => {
     */
 
 messages.on("remove", "renderer", (query, db) => {
-	messages.read = messages.read.filter((value) => value !== query);
-	messages.notified = messages.notified.filter((value) => value !== query);
+	messages.read = messages.read.filter(value => value !== query);
+	messages.notified = messages.notified.filter(value => value !== query);
 });
-messages.on("change", "renderer", (db) => {
+messages.on("change", "renderer", db => {
 	messages.updateRecipient();
 	messages.updateRecipientsTable();
 });
-messages.on("newMessage", "renderer", (message) => {
+messages.on("newMessage", "renderer", message => {
 	window.ipc.flashMain(true);
 	$(document).Toasts("create", {
 		class: "bg-primary",
@@ -2799,7 +2812,7 @@ messages.on("newMessage", "renderer", (message) => {
 		delay: 30000,
 		body: `${message.message}<p><strong>To reply:</strong> Click "Messages / Chat" in the left menu and select the recipient.</p>`,
 		icon: "fas fa-comment fa-lg",
-		position: "bottomRight",
+		position: "bottomRight"
 	});
 });
 
@@ -2807,7 +2820,7 @@ messages.on("newMessage", "renderer", (message) => {
 		HOSTS FUNCTIONS
 	*/
 
-hosts.on("clientChanged", "renderer", (newClient) => {
+hosts.on("clientChanged", "renderer", newClient => {
 	// Refresh the socket
 	socket.disconnect();
 	setTimeout(() => {
@@ -2820,8 +2833,8 @@ hosts.on("clientChanged", "renderer", (newClient) => {
 	*/
 
 let newestVersion = ``;
-_version.on("change", "renderer", (db) => {
-	let record = db.get().find((rec) => rec.app === `wwsu-dj-controls`);
+_version.on("change", "renderer", db => {
+	let record = db.get().find(rec => rec.app === `wwsu-dj-controls`);
 	if (!record) return;
 	if (record.version !== newestVersion) {
 		newestVersion = record.version;
@@ -2845,8 +2858,8 @@ _version.on("change", "renderer", (db) => {
 				  <li>MacOS: You may need to run the .pkg file from Finder. Open Finder, browse to the downloaded .pkg, and hold down the control key while clicking on it. Click "open" in the menu item. The warning dialog should now have an open button, allowing you to run the installer.</li>
 				  <li>Windows (10): Run the exe installer. If Windows displays a warning, click "more info" to expose the "Run Anyway" button.</li>
 				  <li>Antivirus / Firewall: Some antiviruses or firewalls may block the installer or DJ Controls application since it is unsigned. Add them as trusted applications.</li>
-				  </ul>`,
-				},
+				  </ul>`
+				}
 			]);
 		}
 	}
@@ -2857,7 +2870,7 @@ _version.on("change", "renderer", (db) => {
 	*/
 
 // When a remote broadcast is requested, begin the process of starting up an audio call
-state.on("startRemote", "renderer", (host) => {
+state.on("startRemote", "renderer", host => {
 	console.log(`Requested remote broadcast with host ${host}`);
 
 	// Check to make sure the selected host is online. If not, bail.
@@ -2872,7 +2885,7 @@ state.on("startRemote", "renderer", (host) => {
 			title: "Remote broadcast failed",
 			delay: 15000,
 			autohide: true,
-			body: `The host you selected to call is not online. Please try using a different host.`,
+			body: `The host you selected to call is not online. Please try using a different host.`
 		});
 		window.ipc.process.remote(["close"]);
 		pendingHostCall = null;
@@ -2891,7 +2904,7 @@ window.ipc.on.remoteReady((event, arg) => {
 		`Remote process ready. Grabbing a Skyway.js credential from WWSU.`
 	);
 	$(".remote-start-status").html("Getting a Skyway.js credential");
-	remote.credentialComputer({}, (credential) => {
+	remote.credentialComputer({}, credential => {
 		console.dir(credential);
 		if (!credential) {
 			pendingHostCall = undefined;
@@ -2903,7 +2916,7 @@ window.ipc.on.remoteReady((event, arg) => {
 				title: "Remote broadcast failed",
 				delay: 15000,
 				autohide: true,
-				body: `There was a problem getting a skyway.js authorization credential. Please report this to the engineer.`,
+				body: `There was a problem getting a skyway.js authorization credential. Please report this to the engineer.`
 			});
 		} else {
 			console.log(
@@ -2913,7 +2926,7 @@ window.ipc.on.remoteReady((event, arg) => {
 			window.ipc.remote.peerCredential([
 				credential.peerId,
 				credential.apiKey,
-				credential.authToken,
+				credential.authToken
 			]);
 		}
 	});
@@ -2946,7 +2959,7 @@ window.ipc.on.remotePeerReady((event, arg) => {
 		let called = recipients
 			.db()
 			.get()
-			.find((rec) => rec.hostID === pendingHostCall);
+			.find(rec => rec.hostID === pendingHostCall);
 		if (
 			called &&
 			called.peer &&
@@ -2976,7 +2989,7 @@ window.ipc.on.remotePeerUnavailable((event, arg) => {
 		title: "Remote broadcast failed",
 		delay: 15000,
 		autohide: true,
-		body: `The host you selected to call did not answer the call. Please try using a different host.`,
+		body: `The host you selected to call did not answer the call. Please try using a different host.`
 	});
 	window.ipc.process.remote(["close"]);
 	pendingHostCall = null;
@@ -2987,7 +3000,7 @@ window.ipc.on.remoteIncomingCall((event, arg) => {
 	let recipient = recipients.find({
 		peer: arg[0],
 		makeCalls: true,
-		authorized: true,
+		authorized: true
 	});
 	if (recipient) {
 		console.log(
@@ -3018,7 +3031,7 @@ window.ipc.on.peerCallEstablished((event, arg) => {
 		!meta.meta.state.endsWith("_sportsremote")
 	) {
 		$(".remote-start-status").html("Starting remote broadcast");
-		state.finalizeRemote((success) => {
+		state.finalizeRemote(success => {
 			state.unblockBroadcastModal();
 			if (success) {
 				$(".remote-start-status").html("");
@@ -3041,7 +3054,7 @@ window.ipc.on.peerCallEstablished((event, arg) => {
 			title: "Remote call re-established",
 			delay: 30000,
 			autohide: true,
-			body: `The remote audio call was re-established. You can resume / proceed with the broadcast.`,
+			body: `The remote audio call was re-established. You can resume / proceed with the broadcast.`
 		});
 	}
 });
@@ -3081,8 +3094,8 @@ window.ipc.on.peerOutgoingSilence((event, arg) => {
 				bg: "danger",
 				header: "Silence on outgoing audio!",
 				flash: true,
-				body: `<p>Silence was detected for 15 seconds on outgoing audio. Remote broadcast has been sent to break. Please check your audio devices and DJ Controls' Audio settings.</p>`,
-			},
+				body: `<p>Silence was detected for 15 seconds on outgoing audio. Remote broadcast has been sent to break. Please check your audio devices and DJ Controls' Audio settings.</p>`
+			}
 		]);
 		sounds.callSilence.play();
 		window.ipc.process.remote(["close"]); // Restart process in case it is a process problem
@@ -3137,8 +3150,8 @@ window.ipc.on.peerCallClosed((event, arg) => {
 				bg: "danger",
 				header: "Audio Call was Closed",
 				flash: true,
-				body: `<p>The audio call for the remote broadcast closed. The broadcast was sent to break. Please check your network settings and resume the broadcast when things are stable.</p><p>This could also be a network issue on WWSU's end. If so, please report this under "report a problem".</p>`,
-			},
+				body: `<p>The audio call for the remote broadcast closed. The broadcast was sent to break. Please check your network settings and resume the broadcast when things are stable.</p><p>This could also be a network issue on WWSU's end. If so, please report this under "report a problem".</p>`
+			}
 		]);
 		sounds.callTerminated.play();
 
@@ -3175,8 +3188,8 @@ window.ipc.on.peerDestroyed((event, arg) => {
 				bg: "danger",
 				header: "Audio Call was Closed",
 				flash: true,
-				body: `<p>The audio call for the remote broadcast closed. The broadcast was sent to break. Please check your network settings and resume the broadcast when things are stable.</p><p>This could also be a network issue on WWSU's end. If so, please report this under "report a problem".</p>`,
-			},
+				body: `<p>The audio call for the remote broadcast closed. The broadcast was sent to break. Please check your network settings and resume the broadcast when things are stable.</p><p>This could also be a network issue on WWSU's end. If so, please report this under "report a problem".</p>`
+			}
 		]);
 		sounds.callTerminated.play();
 		pendingHostCall = undefined;
@@ -3233,8 +3246,8 @@ window.ipc.on.peerNoCalls((event, arg) => {
 				bg: "danger",
 				header: "Audio Call was Closed",
 				flash: true,
-				body: `<p>You tried to start / resume a broadcast when an audio call was not ongoing. The broadcast was sent to break. Please check your network settings and wait for the resume button to start pulsing.</p>`,
-			},
+				body: `<p>You tried to start / resume a broadcast when an audio call was not ongoing. The broadcast was sent to break. Please check your network settings and wait for the resume button to start pulsing.</p>`
+			}
 		]);
 		sounds.callTerminated.play();
 		pendingHostCall = undefined;
@@ -3274,7 +3287,7 @@ remoteQuality.on("quality", "renderer", (connection, reason, quality) => {
 	}
 });
 
-remote.on("callQuality", "renderer", (quality) => {
+remote.on("callQuality", "renderer", quality => {
 	if (
 		quality <= 0 &&
 		(meta.meta.state.startsWith("remote_") ||
@@ -3296,8 +3309,8 @@ remote.on("callQuality", "renderer", (quality) => {
 					bg: "warning",
 					header: "Poor Audio Call Quality",
 					flash: true,
-					body: `<p>Audio call quality is poor; call will be restarted the next time you take a break (unless it improves). Please check your network connection and ensure you are not running CPU-heavy programs.</p>`,
-				},
+					body: `<p>Audio call quality is poor; call will be restarted the next time you take a break (unless it improves). Please check your network connection and ensure you are not running CPU-heavy programs.</p>`
+				}
 			]);
 			badQualityTimer = setTimeout(() => {
 				badQualityTimer = undefined;

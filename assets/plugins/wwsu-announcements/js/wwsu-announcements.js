@@ -341,7 +341,7 @@ class WWSUannouncements extends WWSUdb {
 									: moment.tz.guess()
 							)
 							.format("LLLL"),
-						`<span class="text-${announcement.level}"><i class="fas fa-dot-circle"></i></span>`,
+						`<span class="badge badge-${announcement.level}">${announcement.level}</span>`,
 						`<div class="btn-group"><button class="btn btn-sm btn-warning btn-announcement-edit" data-id="${announcement.ID}" title="Edit Announcement"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-announcement-delete" data-id="${announcement.ID}" title="Delete Announcement"><i class="fas fa-trash"></i></button></div>`,
 					]);
 				});

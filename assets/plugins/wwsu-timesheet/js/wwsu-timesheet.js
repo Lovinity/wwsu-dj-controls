@@ -447,7 +447,7 @@ class WWSUtimesheet extends WWSUevents {
 							},
 							{ title: "ID", data: "ID" },
 							{ title: "Director", data: "director" },
-							{ title: "Status", data: "status" },
+							{ title: "Statuses", data: "status" },
 							{ title: "Clock In", data: "clockIn" },
 							{ title: "Clock Out", data: "clockOut" },
 							{ title: "Actions", data: "actions" },

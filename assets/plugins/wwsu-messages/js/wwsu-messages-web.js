@@ -225,7 +225,7 @@ class WWSUmessagesweb extends WWSUdb {
               $(document).Toasts("create", {
                 class: "bg-success",
                 title: "Message sent",
-                body: "Your message was sent.",
+                body: "Your message was sent! <strong>You may need to erase the contents in the messages field</strong> before sending a new message.",
                 autohide: true,
                 delay: 10000,
               });

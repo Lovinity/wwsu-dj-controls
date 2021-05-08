@@ -598,11 +598,11 @@ class WWSUdiscipline extends WWSUdb {
 							message: record.message,
 							ID: record.ID,
 							active: record.active
-								? `<i class="fas fa-check-circle text-success" title="This discipline is active."></i>`
-								: ``,
+								? `<span class="badge badge-success" title="This discipline is active."><i class="fas fa-check-circle p-1"></i>Yes</span>`
+								: `<span class="badge badge-danger" title="This discipline is not active (logging only)."><i class="far fa-times-circle p-1"></i>No</span>`,
 							acknowledged: record.acknowledged
-								? `<i class="fas fa-check-circle text-success" title="Someone on this IP/host read and acknowledged the discipline message."></i>`
-								: ``,
+								? `<span class="badge badge-success" title="Someone on this IP/host read and acknowledged the discipline message."><i class="fas fa-check-circle p-1"></i>Yes</span>`
+								: `<span class="badge badge-danger" title="This discipline message was not yet acknowledged by the IP/host."><i class="far fa-times-circle p-1"></i>No</span>`,
 							IP: record.IP,
 							type: record.action,
 							createdAt: moment

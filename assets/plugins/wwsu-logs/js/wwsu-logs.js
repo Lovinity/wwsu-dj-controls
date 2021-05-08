@@ -24,44 +24,44 @@ class WWSUlogs extends WWSUevents {
 			add: "/logs/add",
 			getAttendance: "/attendance/get",
 			getListeners: "/analytics/listeners",
-			getShowtime: "/analytics/showtime",
+			getShowtime: "/analytics/showtime"
 		};
 
 		this.tables = {
 			issues: undefined,
 			attendance: undefined,
-			log: undefined,
+			log: undefined
 		};
 
 		this.modals = {
 			viewLog: new WWSUmodal(`Logs`, null, ``, true, {
 				headerColor: "",
 				zindex: 1200,
-				width: 800,
+				width: 800
 			}),
 
 			addLog: new WWSUmodal(`Add a Log`, null, ``, true, {
 				headerColor: "",
-				zindex: 1100,
-			}),
+				zindex: 1100
+			})
 		};
 
 		this.attendanceID = 0;
 
 		// WWSUdbs
 		this.issues = new WWSUdb(TAFFY());
-		this.issues.on("replace", "WWSUlogs", (data) => {
+		this.issues.on("replace", "WWSUlogs", data => {
 			this.emitEvent("issues-replace", [data]);
 			this.updateIssuesTable();
 		});
 
 		this.dashboardLogs;
 		this.dashboard = new WWSUdb(TAFFY());
-		this.dashboard.on("replace", "WWSUlogs", (data) => {
+		this.dashboard.on("replace", "WWSUlogs", data => {
 			this.updateDashboardLogs();
 		});
 
-		this.manager.socket.on("logs", (data) => {
+		this.manager.socket.on("logs", data => {
 			for (let key in data) {
 				if (key === "remove") {
 					this.emitEvent(`issues-remove`, [data[key]]);
@@ -104,7 +104,7 @@ class WWSUlogs extends WWSUevents {
 						"sign-off-early",
 						"sign-off-late",
 						"sign-off-problem",
-						"recipient-discipline",
+						"recipient-discipline"
 					].indexOf(data[key].logtype) !== -1
 				) {
 					if (!data[key].acknowledged) {
@@ -128,7 +128,7 @@ class WWSUlogs extends WWSUevents {
 	// Initialize issues logs by fetching issues and subscribing to sockets
 	initIssues() {
 		this.issues.replaceData(this.manager.get("hostReq"), this.endpoints.get, {
-			subtype: "ISSUES",
+			subtype: "ISSUES"
 		});
 	}
 
@@ -148,7 +148,7 @@ class WWSUlogs extends WWSUevents {
 	 */
 	setAttendanceID(id) {
 		this.attendanceID = id;
-		this.getLogs({ attendanceID: id }, (records) => {
+		this.getLogs({ attendanceID: id }, records => {
 			this.dashboard.query(records, true);
 		});
 	}
@@ -165,7 +165,7 @@ class WWSUlogs extends WWSUevents {
 				.get("hostReq")
 				.request(
 					{ dom: dom, method: "post", url: this.endpoints.getAttendance, data },
-					(response) => {
+					response => {
 						if (!response) {
 							$(document).Toasts("create", {
 								class: "bg-danger",
@@ -174,7 +174,7 @@ class WWSUlogs extends WWSUevents {
 									"There was an error getting attendance records. Please report this to the engineer.",
 								autohide: true,
 								delay: 10000,
-								icon: "fas fa-skull-crossbones fa-lg",
+								icon: "fas fa-skull-crossbones fa-lg"
 							});
 						} else {
 							if (typeof cb === "function") {
@@ -191,7 +191,7 @@ class WWSUlogs extends WWSUevents {
 					"There was an error getting attendance records. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 		}
@@ -210,7 +210,7 @@ class WWSUlogs extends WWSUevents {
 				.get("hostReq")
 				.request(
 					{ dom: dom, method: "post", url: this.endpoints.getListeners, data },
-					(response) => {
+					response => {
 						if (!response || typeof response.map !== "function") {
 							$(document).Toasts("create", {
 								class: "bg-danger",
@@ -219,7 +219,7 @@ class WWSUlogs extends WWSUevents {
 									"There was an error getting listener analytics. Please report this to the engineer.",
 								autohide: true,
 								delay: 10000,
-								icon: "fas fa-skull-crossbones fa-lg",
+								icon: "fas fa-skull-crossbones fa-lg"
 							});
 						} else {
 							if (typeof cb === "function") {
@@ -236,7 +236,7 @@ class WWSUlogs extends WWSUevents {
 					"There was an error getting listener analytics. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 		}
@@ -254,7 +254,7 @@ class WWSUlogs extends WWSUevents {
 				.get("hostReq")
 				.request(
 					{ method: "post", url: this.endpoints.get, data },
-					(response) => {
+					response => {
 						if (!response || typeof response.map !== "function") {
 							$(document).Toasts("create", {
 								class: "bg-danger",
@@ -263,7 +263,7 @@ class WWSUlogs extends WWSUevents {
 									"There was an error getting logs. Please report this to the engineer.",
 								autohide: true,
 								delay: 10000,
-								icon: "fas fa-skull-crossbones fa-lg",
+								icon: "fas fa-skull-crossbones fa-lg"
 							});
 						} else {
 							if (typeof cb === "function") {
@@ -280,7 +280,7 @@ class WWSUlogs extends WWSUevents {
 					"There was an error getting logs. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 		}
@@ -298,7 +298,7 @@ class WWSUlogs extends WWSUevents {
 				.get("directorReq")
 				.request(
 					{ method: "post", url: this.endpoints.edit, data },
-					(response) => {
+					response => {
 						if (response !== "OK") {
 							$(document).Toasts("create", {
 								class: "bg-danger",
@@ -307,7 +307,7 @@ class WWSUlogs extends WWSUevents {
 									"There was an error editing the log. Please report this to the engineer.",
 								autohide: true,
 								delay: 10000,
-								icon: "fas fa-skull-crossbones fa-lg",
+								icon: "fas fa-skull-crossbones fa-lg"
 							});
 							if (typeof cb === "function") {
 								cb(false);
@@ -318,7 +318,7 @@ class WWSUlogs extends WWSUevents {
 								title: "log edited",
 								autohide: true,
 								delay: 10000,
-								body: `The log was edited.`,
+								body: `The log was edited.`
 							});
 							if (typeof cb === "function") {
 								cb(true);
@@ -334,7 +334,7 @@ class WWSUlogs extends WWSUevents {
 					"There was an error editing the log. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			if (typeof cb === "function") {
 				cb(false);
@@ -355,7 +355,7 @@ class WWSUlogs extends WWSUevents {
 				.get("hostReq")
 				.request(
 					{ method: "post", url: this.endpoints.add, data },
-					(response) => {
+					response => {
 						if (response !== "OK") {
 							$(document).Toasts("create", {
 								class: "bg-danger",
@@ -364,7 +364,7 @@ class WWSUlogs extends WWSUevents {
 									"There was an error adding the log. Please report this to the engineer.",
 								autohide: true,
 								delay: 10000,
-								icon: "fas fa-skull-crossbones fa-lg",
+								icon: "fas fa-skull-crossbones fa-lg"
 							});
 							if (typeof cb === "function") {
 								cb(false);
@@ -377,7 +377,7 @@ class WWSUlogs extends WWSUevents {
 									autohide: true,
 									delay: 15000,
 									body: `The log was added. 
-								<p>If you added a log, <strong>Be sure to click "I am Talking"</strong> on the Dashboard when you are done playing music, or click "Add Log" again when playing a different track.</p>`,
+								<p>If you added a log, <strong>Be sure to click "I am Talking"</strong> on the Dashboard when you are done playing music, or click "Add Log" again when playing a different track.</p>`
 								});
 							}
 							if (typeof cb === "function") {
@@ -394,7 +394,7 @@ class WWSUlogs extends WWSUevents {
 					"There was an error adding the log. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			if (typeof cb === "function") {
 				cb(false);
@@ -430,10 +430,10 @@ class WWSUlogs extends WWSUevents {
 						data: [],
 						columns: [
 							{ title: "ID" },
-							{ title: "Icon" },
+							{ title: "Type" },
 							{ title: "Date/Time" },
 							{ title: "Event" },
-							{ title: "Actions" },
+							{ title: "Actions" }
 						],
 						columnDefs: [{ responsivePriority: 1, targets: 4 }],
 						order: [[0, "asc"]],
@@ -445,7 +445,7 @@ class WWSUlogs extends WWSUevents {
 							$(".btn-issue-excused").unbind("click");
 							$(".btn-issue-dismiss").unbind("click");
 
-							$(".btn-issue-unexcused").click((e) => {
+							$(".btn-issue-unexcused").click(e => {
 								let id = parseInt($(e.currentTarget).data("id"));
 								this.manager.get("WWSUutil").confirmDialog(
 									`Are you sure you want to mark issue ${id} as <strong>unexcused</strong>?
@@ -462,7 +462,7 @@ class WWSUlogs extends WWSUevents {
 								);
 							});
 
-							$(".btn-issue-excused").click((e) => {
+							$(".btn-issue-excused").click(e => {
 								let id = parseInt($(e.currentTarget).data("id"));
 								this.manager.get("WWSUutil").confirmDialog(
 									`Are you sure you want to mark issue ${id} as <strong>excused</strong>?
@@ -479,7 +479,7 @@ class WWSUlogs extends WWSUevents {
 								);
 							});
 
-							$(".btn-issue-dismiss").click((e) => {
+							$(".btn-issue-dismiss").click(e => {
 								let id = parseInt($(e.currentTarget).data("id"));
 								console.log(`dismiss`);
 								this.manager.get("WWSUutil").confirmDialog(
@@ -494,7 +494,7 @@ class WWSUlogs extends WWSUevents {
 									}
 								);
 							});
-						},
+						}
 					});
 
 					this.tables.issues
@@ -533,7 +533,7 @@ class WWSUlogs extends WWSUevents {
 				"sign-on-early",
 				"sign-on-late",
 				"sign-off-early",
-				"sign-off-late",
+				"sign-off-late"
 			].indexOf(log.logtype) !== -1
 		);
 	}
@@ -545,14 +545,16 @@ class WWSUlogs extends WWSUevents {
 		this.manager.get("WWSUanimations").add("logs-update-issues-table", () => {
 			if (this.tables.issues) {
 				this.tables.issues.clear();
-				this.issues.find().forEach((log) => {
+				this.issues.find().forEach(log => {
 					this.tables.issues.row.add([
 						log.ID,
 						`<i class="${
 							log.logIcon !== "" ? log.logIcon : `fas fa-dot-circle`
 						} bg-${
 							log.loglevel
-						}" style="border-radius: 50%; font-size: 15px; height: 30px; line-height: 30px; text-align: center; width: 30px;"></i>`,
+						}" style="border-radius: 50%; font-size: 15px; height: 30px; line-height: 30px; text-align: center; width: 30px;">${
+							log.loglevel
+						}</i>`,
 						moment
 							.tz(
 								log.createdAt,
@@ -583,7 +585,7 @@ class WWSUlogs extends WWSUevents {
 							this.isAccountable(log) && log.attendanceID && !log.excused
 								? `<div class="btn-group"><button class="btn btn-sm btn-danger btn-issue-unexcused" data-id="${log.ID}" title="Mark Unexcused (counts in analytics)"><i class="fas fa-thumbs-down"></i></button><button class="btn btn-sm btn-success btn-issue-excused" data-id="${log.ID}" title="Mark Excused (does not count in analytics)"><i class="fas fa-thumbs-up"></i></button></div>`
 								: `<button class="btn btn-sm btn-warning btn-issue-dismiss" data-id="${log.ID}" title="Acknowledge / Dismiss"><i class="fas fa-check-circle"></i></button>`
-						}`,
+						}`
 					]);
 				});
 				this.tables.issues.draw();
@@ -621,11 +623,11 @@ class WWSUlogs extends WWSUevents {
 					data: [],
 					columns: [
 						{ title: "ID" },
-						{ title: "Level" },
+						{ title: "Type" },
 						{ title: "Event" },
 						{ title: "Start" },
 						{ title: "End" },
-						{ title: "Actions" },
+						{ title: "Actions" }
 					],
 					columnDefs: [{ responsivePriority: 1, targets: 5 }],
 					pageLength: 50,
@@ -633,11 +635,11 @@ class WWSUlogs extends WWSUevents {
 					drawCallback: () => {
 						// Add log buttons click event
 						$(".btn-logs-view").unbind("click");
-						$(".btn-logs-view").click((e) => {
+						$(".btn-logs-view").click(e => {
 							let id = parseInt($(e.currentTarget).data("id"));
 							this.viewLog(id);
 						});
-					},
+					}
 				});
 
 				this.tables.attendance
@@ -657,24 +659,29 @@ class WWSUlogs extends WWSUevents {
 		this.getAttendance(
 			`#section-logs-table`,
 			{ date, duration: 1 },
-			(records) => {
+			records => {
 				this.tables.attendance.clear();
-				records.map((record) => {
+				records.map(record => {
 					let theClass = "secondary";
-					if (
-						record.event.toLowerCase().startsWith("show: ") ||
-						record.event.toLowerCase().startsWith("prerecord: ")
-					) {
+					let theType = `Unknown`;
+					if (record.event.toLowerCase().startsWith("show: ")) {
 						theClass = "danger";
+						theType = "Show";
+					} else if (record.event.toLowerCase().startsWith("prerecord: ")) {
+						theClass = "pink";
+						theType = "Prerecord";
 					} else if (record.event.toLowerCase().startsWith("sports: ")) {
 						theClass = "success";
+						theType = "Sports";
 					} else if (record.event.toLowerCase().startsWith("remote: ")) {
-						theClass = "purple";
-					} else if (
-						record.event.toLowerCase().startsWith("genre: ") ||
-						record.event.toLowerCase().startsWith("playlist: ")
-					) {
+						theClass = "indigo";
+						theType = "Remote";
+					} else if (record.event.toLowerCase().startsWith("genre: ")) {
+						theClass = "info";
+						theType = "Genre";
+					} else if (record.event.toLowerCase().startsWith("playlist: ")) {
 						theClass = "primary";
+						theType = "Playlist";
 					}
 					if (
 						record.actualStart !== null &&
@@ -684,7 +691,7 @@ class WWSUlogs extends WWSUevents {
 						this.tables.attendance.rows.add([
 							[
 								record.ID,
-								`<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
+								`<span class="badge bg-${theClass}">${theType}</span>`,
 								record.event,
 								moment
 									.tz(
@@ -702,8 +709,8 @@ class WWSUlogs extends WWSUevents {
 											: moment.tz.guess()
 									)
 									.format("h:mm A"),
-								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`,
-							],
+								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`
+							]
 						]);
 					} else if (
 						record.actualStart !== null &&
@@ -713,7 +720,7 @@ class WWSUlogs extends WWSUevents {
 						this.tables.attendance.rows.add([
 							[
 								record.ID,
-								`<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
+								`<span class="badge bg-${theClass}">${theType}</span>`,
 								record.event,
 								moment
 									.tz(
@@ -724,8 +731,8 @@ class WWSUlogs extends WWSUevents {
 									)
 									.format("h:mm A"),
 								`ONGOING`,
-								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`,
-							],
+								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`
+							]
 						]);
 					} else if (
 						record.actualStart === null &&
@@ -735,7 +742,7 @@ class WWSUlogs extends WWSUevents {
 						this.tables.attendance.rows.add([
 							[
 								record.ID,
-								`<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
+								`<span class="badge bg-${theClass}">${theType}</span>`,
 								record.event,
 								`CANCELED (${moment
 									.tz(
@@ -753,14 +760,14 @@ class WWSUlogs extends WWSUevents {
 											: moment.tz.guess()
 									)
 									.format("h:mm A")})`,
-								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`,
-							],
+								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`
+							]
 						]);
 					} else if (record.happened === 0) {
 						this.tables.attendance.rows.add([
 							[
 								record.ID,
-								`<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
+								`<span class="badge bg-${theClass}">${theType}</span>`,
 								record.event,
 								`ABSENT (${moment
 									.tz(
@@ -778,14 +785,14 @@ class WWSUlogs extends WWSUevents {
 											: moment.tz.guess()
 									)
 									.format("h:mm A")})`,
-								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`,
-							],
+								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`
+							]
 						]);
 					} else if (record.actualStart !== null && record.actualEnd !== null) {
 						this.tables.attendance.rows.add([
 							[
 								record.ID,
-								`<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
+								`<span class="badge bg-${theClass}">${theType}</span>`,
 								record.event,
 								moment
 									.tz(
@@ -805,14 +812,14 @@ class WWSUlogs extends WWSUevents {
 											)
 											.format("h:mm A")
 									: `ONGOING`,
-								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`,
-							],
+								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`
+							]
 						]);
 					} else {
 						this.tables.attendance.rows.add([
 							[
 								record.ID,
-								`<span class="text-${theClass}"><i class="fas fa-dot-circle"></i></span>`,
+								`<span class="badge bg-${theClass}">${theType}</span>`,
 								record.event,
 								`SCHEDULED (${moment
 									.tz(
@@ -830,8 +837,8 @@ class WWSUlogs extends WWSUevents {
 											: moment.tz.guess()
 									)
 									.format("h:mm A")})`,
-								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`,
-							],
+								`<button class="btn btn-sm btn-primary btn-logs-view" data-id="${record.ID}" title="View this log"><i class="fas fa-eye"></i></button>`
+							]
 						]);
 					}
 				});
@@ -860,7 +867,7 @@ class WWSUlogs extends WWSUevents {
 			this.modals.viewLog.id
 		}-body-log" class="table table-striped display responsive" style="width: 100%;"></table>`;
 		this.modals.viewLog.iziModal("open");
-		this.getAttendance(`#section-logs-table`, { ID: id }, (attendance) => {
+		this.getAttendance(`#section-logs-table`, { ID: id }, attendance => {
 			this.manager
 				.get("WWSUutil")
 				.waitForElement(
@@ -874,11 +881,11 @@ class WWSUlogs extends WWSUevents {
 									attendance.actualEnd
 										? attendance.actualEnd
 										: moment(attendance.actualStart).add(1, "days")
-								).toISOString(true),
+								).toISOString(true)
 							},
-							(listeners) => {
+							listeners => {
 								let data = [];
-								data = listeners.map((listener) => {
+								data = listeners.map(listener => {
 									return {
 										x: moment
 											.tz(
@@ -888,7 +895,7 @@ class WWSUlogs extends WWSUevents {
 													: moment.tz.guess()
 											)
 											.format(),
-										y: listener.listeners,
+										y: listener.listeners
 									};
 								});
 
@@ -906,15 +913,15 @@ class WWSUlogs extends WWSUevents {
 												data: data,
 												steppedLine: true,
 												fill: false,
-												borderColor: `#17a2b8`,
-											},
-										],
+												borderColor: `#17a2b8`
+											}
+										]
 									},
 									options: {
 										responsive: true,
 										title: {
 											display: true,
-											text: "Online Listeners",
+											text: "Online Listeners"
 										},
 										scales: {
 											xAxes: [
@@ -923,12 +930,12 @@ class WWSUlogs extends WWSUevents {
 													display: true,
 													scaleLabel: {
 														display: true,
-														labelString: "Date",
+														labelString: "Date"
 													},
 													ticks: {
 														major: {
 															fontStyle: "bold",
-															fontColor: "#FF0000",
+															fontColor: "#FF0000"
 														},
 														min: moment
 															.tz(
@@ -945,24 +952,24 @@ class WWSUlogs extends WWSUevents {
 																	? this.manager.get("WWSUMeta").meta.timezone
 																	: moment.tz.guess()
 															)
-															.format(),
-													},
-												},
+															.format()
+													}
+												}
 											],
 											yAxes: [
 												{
 													display: true,
 													scaleLabel: {
 														display: true,
-														labelString: "value",
+														labelString: "value"
 													},
 													ticks: {
-														min: 0,
-													},
-												},
-											],
-										},
-									},
+														min: 0
+													}
+												}
+											]
+										}
+									}
 								});
 							}
 						);
@@ -976,14 +983,14 @@ class WWSUlogs extends WWSUevents {
 			this.manager
 				.get("WWSUutil")
 				.waitForElement(`#modal-${this.modals.viewLog.id}-body-log`, () => {
-					const generateLog = (updateOnly) => {
-						this.getLogs({ attendanceID: id }, (logs) => {
+					const generateLog = updateOnly => {
+						this.getLogs({ attendanceID: id }, logs => {
 							if (!updateOnly) {
 								this.tables.log = $(
 									`#modal-${this.modals.viewLog.id}-body-log`
 								).DataTable({
 									paging: false,
-									data: logs.map((log) => {
+									data: logs.map(log => {
 										return [
 											log.ID,
 											moment
@@ -1039,15 +1046,15 @@ class WWSUlogs extends WWSUevents {
 																: `<div class="text-danger">UN-EXCUSED</div>`
 													  }`
 													: ``
-											}`,
+											}`
 										];
 									}),
 									columns: [
 										{ title: "ID" },
 										{ title: "Time" },
-										{ title: "Icon" },
+										{ title: "Type" },
 										{ title: "Event" },
-										{ title: "Actions" },
+										{ title: "Actions" }
 									],
 									columnDefs: [{ responsivePriority: 1, targets: 4 }],
 									pageLength: 25,
@@ -1057,7 +1064,7 @@ class WWSUlogs extends WWSUevents {
 										$(".btn-log-unexcused").unbind("click");
 										$(".btn-log-excused").unbind("click");
 
-										$(".btn-log-unexcused").click((e) => {
+										$(".btn-log-unexcused").click(e => {
 											let id = parseInt($(e.currentTarget).data("id"));
 											this.manager.get("WWSUutil").confirmDialog(
 												`Are you sure you want to mark issue ${id} as <strong>unexcused</strong>?
@@ -1071,7 +1078,7 @@ class WWSUlogs extends WWSUevents {
 												() => {
 													this.edit(
 														{ ID: id, acknowledged: true, excused: false },
-														(success) => {
+														success => {
 															if (success) {
 																generateLog(true);
 															}
@@ -1081,7 +1088,7 @@ class WWSUlogs extends WWSUevents {
 											);
 										});
 
-										$(".btn-log-excused").click((e) => {
+										$(".btn-log-excused").click(e => {
 											let id = parseInt($(e.currentTarget).data("id"));
 											this.manager.get("WWSUutil").confirmDialog(
 												`Are you sure you want to mark issue ${id} as <strong>excused</strong>?
@@ -1095,7 +1102,7 @@ class WWSUlogs extends WWSUevents {
 												() => {
 													this.edit(
 														{ ID: id, acknowledged: true, excused: true },
-														(success) => {
+														success => {
 															if (success) {
 																generateLog(true);
 															}
@@ -1104,7 +1111,7 @@ class WWSUlogs extends WWSUevents {
 												}
 											);
 										});
-									},
+									}
 								});
 
 								this.tables.log
@@ -1118,7 +1125,7 @@ class WWSUlogs extends WWSUevents {
 							} else {
 								this.tables.log.clear();
 								this.tables.log.rows.add(
-									logs.map((log) => {
+									logs.map(log => {
 										return [
 											log.ID,
 											moment
@@ -1174,7 +1181,7 @@ class WWSUlogs extends WWSUevents {
 																: `<div class="text-danger">UN-EXCUSED</div>`
 													  }`
 													: ``
-											}`,
+											}`
 										];
 									})
 								);
@@ -1198,7 +1205,7 @@ class WWSUlogs extends WWSUevents {
 						(a, b) =>
 							moment(a.createdAt).valueOf() - moment(b.createdAt).valueOf()
 					)
-					.map((log) => {
+					.map(log => {
 						$(this.dashboardLogs).prepend(`<div>
                     <i class="${
 											log.logIcon !== "" ? log.logIcon : `fas fa-dot-circle`
@@ -1253,9 +1260,9 @@ class WWSUlogs extends WWSUevents {
 					dom: dom,
 					method: "post",
 					url: this.endpoints.getShowtime,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response[0] && response[1]) {
 						cb(response);
 					} else {
@@ -1266,7 +1273,7 @@ class WWSUlogs extends WWSUevents {
 								"There was an error getting analytics. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						console.error(e);
 						cb(false);
@@ -1281,7 +1288,7 @@ class WWSUlogs extends WWSUevents {
 					"There was an error getting analytics. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			cb(false);
@@ -1303,27 +1310,27 @@ class WWSUlogs extends WWSUevents {
 					date: {
 						format: "datetime",
 						required: true,
-						title: "Air date/time",
+						title: "Air date/time"
 					},
 					trackArtist: {
 						format: "string",
 						title: "Track Artist",
-						required: true,
+						required: true
 					},
 					trackTitle: {
 						format: "string",
 						title: "Track Title",
-						required: true,
+						required: true
 					},
 					trackAlbum: {
 						type: "string",
-						title: "Album Name",
+						title: "Album Name"
 					},
 					trackLabel: {
 						type: "string",
-						title: "Record Label",
-					},
-				},
+						title: "Record Label"
+					}
+				}
 			},
 			options: {
 				fields: {
@@ -1337,16 +1344,16 @@ class WWSUlogs extends WWSUevents {
 							.format("Z")}`,
 						picker: {
 							inline: true,
-							sideBySide: true,
-						},
+							sideBySide: true
+						}
 					},
 					trackLabel: {
 						helpers: [
 							"This is the record company / companies which the artist went through to publish this track.",
 							"Please search online if you do not know. If the internet does not help either, you can leave this blank.",
-							"Please put Independent if this track was published by the artist and not a company / record label.",
-						],
-					},
+							"Please put Independent if this track was published by the artist and not a company / record label."
+						]
+					}
 				},
 				form: {
 					buttons: {
@@ -1371,23 +1378,23 @@ class WWSUlogs extends WWSUevents {
 										? `DJ / Producer played a track.`
 										: `DJ / Producer started talking.`;
 
-								this.add(value, false, (success) => {
+								this.add(value, false, success => {
 									if (success) {
 										this.modals.addLog.iziModal("close");
 									}
 								});
-							},
-						},
-					},
-				},
+							}
+						}
+					}
+				}
 			},
 			data: {
 				date: moment(
 					this.manager.get("WWSUMeta")
 						? this.manager.get("WWSUMeta").meta.time
 						: undefined
-				).toISOString(true),
-			},
+				).toISOString(true)
+			}
 		});
 	}
 }

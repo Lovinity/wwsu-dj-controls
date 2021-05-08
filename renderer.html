@@ -15,7 +15,7 @@
 
 		<!-- Clock styling -->
 		<style>
-			.clock {
+			.clock-container {
 				width: 200px;
 				height: 200px;
 				position: absolute;
@@ -25,14 +25,14 @@
 				margin-top: -100px;
 			}
 
-			#clock {
+			.clock {
 				width: 100%;
 				height: 100%;
 				margin: auto;
 				position: relative;
 			}
 
-			#clock div,
+			.clock div,
 			.faceBox {
 				border: 0;
 				background-color: black;
@@ -44,7 +44,7 @@
 				transform: rotate(0deg);
 			}
 
-			#clock #hour {
+			.clock .clock-hour {
 				border-radius: 0.5em 0.5em 0 0;
 				width: 3%;
 				height: 20%;
@@ -53,7 +53,7 @@
 				z-index: 30;
 			}
 
-			#clock #minute {
+			.clock .clock-minute {
 				border-radius: 0.33em;
 				width: 2%;
 				height: 36.66%;
@@ -62,7 +62,7 @@
 				z-index: 20;
 			}
 
-			#clock #second {
+			.clock .clock-second {
 				border-radius: 0.2em;
 				width: 0.83%;
 				height: 46.66%;
@@ -72,7 +72,7 @@
 				background-color: red;
 			}
 
-			#clock #center {
+			.clock .clock-center {
 				height: 6.66%;
 				width: 6.66%;
 				border-radius: 50%;
@@ -559,7 +559,8 @@
 							style="height: 6em; font-size: 1em;"
 							title="End the broadcast and go to automation"
 						>
-							<i class="fas fa-microphone-slash"></i> End Broadcast
+							<i class="fas fa-microphone-slash"></i> End <br />
+							Broadcast
 						</button>
 					</li>
 					<li class="nav-item operation-button operation-break d-none">
@@ -1335,14 +1336,15 @@
 											>
 											</canvas>
 											<div
-												class="clock"
+												class="clock-container"
+												id="clockwheel-clock"
 												style="user-select: none; pointer-events: none;"
 											>
-												<div id="clock">
-													<div id="hour"></div>
-													<div id="minute"></div>
-													<div id="second"></div>
-													<div id="center"></div>
+												<div class="clock">
+													<div class="clock-hour"></div>
+													<div class="clock-minute"></div>
+													<div class="clock-second"></div>
+													<div class="clock-center"></div>
 												</div>
 											</div>
 										</div>
@@ -1713,88 +1715,86 @@
 							</div>
 						</div>
 
-						<div class="card bg-secondary elevation-2">
+						<div class="card card-success elevation-2">
 							<div class="card-header">
-								<h3 class="card-title">24-hour forecast</h3>
+								<h3 class="card-title">12-hour forecast</h3>
 							</div>
 							<!-- /.card-header -->
 							<div
 								class="card-body"
-								title="WWSU forecast for the next 24 hours."
+								title="Weather conditions for the next 12 hours at WWSU."
 							>
-								<div
-									class="weather-hourly-graph"
-									style="width: 100%; height: 4em;"
-								></div>
-								<div>
-									<span style="color: #ffffff;" class="m-1">Key:</span>
-
-									<span
-										style="color: #f8e187; padding-left: 1em; font-size: 1em;"
-										>Clear
-									</span>
-
-									<span style="color: #f8e187; font-size: 1em;"
-										><i class="fas fa-sun" style="color: #ffffff;"></i
-									></span>
-									<span style="color: #f8e187; font-size: 1em;"
-										><i class="fas fa-cloud-sun" style="color: #ffffff;"></i
-									></span>
-									<span style="color: #f8e187; font-size: 1em;"
-										><i class="fas fa-cloud" style="color: #ffffff;"></i>
-										Cloudy</span
+								<div style="position: relative;">
+									<canvas
+										id="weather-forecast-donut"
+										style="
+										min-height: 50vh;
+										height: 66vh;
+										max-width: 100%;
+									"
 									>
-
-									<span
-										style="color: #99cbed; padding-left: 1em; font-size: 1em;"
-										>Rain Possible
-									</span>
-
-									<span style="color: #99cbed; font-size: 1em;"
-										><i
-											class="fas fa-cloud-sun-rain"
-											style="color: #ffffff;"
-										></i
-									></span>
-									<span style="color: #99cbed; font-size: 1em;"
-										><i
-											class="fas fa-cloud-showers-heavy"
-											style="color: #ffffff;"
-										></i
-									></span>
-									<span style="color: #99cbed; font-size: 1em;"
-										><i class="fas fa-cloud-rain" style="color: #ffffff;"></i>
-										Rain Likely</span
+									</canvas>
+									<div
+										class="clock-container"
+										id="weather-forecast-clock"
+										style="user-select: none; pointer-events: none;"
 									>
-
-									<span
-										style="color: #f8f8f8; padding-left: 1em; font-size: 1em;"
-										>Snow Possible
-									</span>
-
-									<span style="color: #f8f8f8; font-size: 1em;"
-										><i class="far fa-snowflake" style="color: #ffffff;"></i
-									></span>
-									<span style="color: #f8f8f8; font-size: 1em;"
-										><i class="fas fa-snowflake" style="color: #ffffff;"></i
-									></span>
-									<span style="color: #f8f8f8; font-size: 1em;"
-										><i class="fas fa-snowman" style="color: #ffffff;"></i> Snow
-										Likely</span
-									>
-
-									<span
-										style="color: #f78eb4; padding-left: 1em; font-size: 1em;"
-										>Sleet Possible
-									</span>
-
-									<span style="color: #f78eb4; font-size: 1em;"
-										><i class="fas fa-icicles" style="color: #ffffff;"></i
-									></span>
-									<span style="color: #f78eb4; font-size: 1em;"
-										><i class="fas fa-igloo" style="color: #ffffff;"></i> Sleet
-										Likely</span
-									>
+										<div class="clock">
+											<div class="clock-hour"></div>
+											<div class="clock-minute"></div>
+											<div class="clock-second"></div>
+											<div class="clock-center"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="card-footer">
+								<h4>Legend</h4>
+								<div class="container-fluid">
+									<div class="row">
+										<div class="col-12 col-md-6 col-lg-4">
+											Clear
+											<span style="background: #FFD700;"><i class="fas fa-sun"></i></span>
+											<span class="text-light" style="background: #B29600;"><i class="fas fa-cloud-sun"></i></span>
+											<span class="text-light" style="background: #665600;"><i class="fas fa-cloud"></i></span>
+											Cloudy
+										</div>
+										<div class="col-12 col-md-6 col-lg-4">
+											Light Rain
+											<span style="background: #B2B2FF;"><i class="fas fa-cloud-sun-rain"></i></span>
+											<span class="text-light" style="background: #6666FF;"><i class="fas fa-cloud-showers-heavy"></i></span>
+											<span class="text-light" style="background: #0000FF;"><i class="fas fa-cloud-rain"></i></span>
+											Heavy Rain
+										</div>
+										<div class="col-12 col-md-6 col-lg-4">
+											Light Snow
+											<span style="background: #AEAEAE;"><i class="far fa-snowflake"></i></span>
+											<span class="text-light" style="background: #787878;"><i class="fas fa-snowman"></i></span>
+											<span class="text-light" style="background: #484848;"><i class="fas fa-snowboarding"></i></span>
+											Heavy Snow
+										</div>
+										<div class="col-12 col-md-6 col-lg-4">
+											Light Storms
+											<span class="text-light" style="background: #FF6666;"><i class="fas fa-bolt"></i></span>
+											<span class="text-light" style="background: #FF0000;"><i class="fas fa-bolt"></i></span>
+											<span class="text-light" style="background: #990000;"><i class="fas fa-poo-storm"></i></span>
+											Heavy Storms
+										</div>
+										<div class="col-12 col-md-6 col-lg-4">
+											Light Ice
+											<span style="background: #E2A3FF;"><i class="fas fa-icicles"></i></span>
+											<span class="text-light" style="background: #CF66FF;"><i class="fas fa-skating"></i></span>
+											<span class="text-light" style="background: #B000FF;"><i class="fas fa-igloo"></i></span>
+											Heavy Ice
+										</div>
+										<div class="col-12 col-md-6 col-lg-4">
+											Breezy
+											<span style="background: #7FBF7F;"><i class="fas fa-fan"></i></span>
+											<span class="text-light" style="background: #008000;"><i class="fas fa-wind"></i></span>
+											<span class="text-light" style="background: #004000;"><i class="fas fa-wind"></i></span>
+											Very Windy
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>

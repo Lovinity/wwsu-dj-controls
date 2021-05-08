@@ -241,7 +241,7 @@ class WWSUdirectors extends WWSUdb {
 							{ title: "Emails" },
 							{ title: "Actions" },
 						],
-						columnDefs: [{ responsivePriority: 1, targets: 4 }],
+						columnDefs: [{ responsivePriority: 1, targets: 6 }],
 						order: [[0, "asc"]],
 						buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"],
 						pageLength: 100,
@@ -324,31 +324,31 @@ class WWSUdirectors extends WWSUdb {
 						director.name || "",
 						director.position || "Unknown Position",
 						director.present
-							? `<i class="fas fa-check-circle text-${
-									director.present === 2 ? `indigo` : `success`
-							  }" title="${director.name} is currently clocked in${
-									director.present === 2 ? ` for remote hours` : ``
-							  }"></i>`
-							: ``,
+							? `<span class="badge ${
+								director.present === 2 ? `bg-indigo` : `badge-success`
+						  }" title="${director.name} is currently clocked in${
+							director.present === 2 ? ` for remote hours` : ``
+					  }"><i class="fas fa-check-circle p-1"></i>${director.present === 2 ? `Remote` : `Yes`}</span>`
+							: `<span class="badge badge-danger" title="${director.name} is not currently clocked in."><i class="far fa-times-circle p-1"></i>No`,
 						director.admin
-							? `<i class="fas fa-check-circle text-success" title="${director.name} is an administrator director"></i>`
-							: ``,
+							? `<span class="badge badge-success" title="${director.name} is an administrator director"><i class="fas fa-check-circle p-1"></i>Yes</span>`
+							: `<span class="badge badge-danger" title="${director.name} is not an administrator director"><i class="far fa-times-circle p-1"></i>No</span>`,
 						director.assistant
-							? `<i class="fas fa-check-circle text-success" title="${director.name} is an assistant director"></i>`
-							: ``,
-						`${
+							? `<span class="badge badge-success" title="${director.name} is an assistant director"><i class="fas fa-check-circle p-1"></i>Yes</span>`
+							: `<span class="badge badge-danger" title="${director.name} is a primary director"><i class="far fa-times-circle p-1"></i>No</span>`,
+						`<ul>${
 							director.emailEmergencies
-								? `<i class="fas fa-exclamation-triangle text-danger" title="${director.name} will receive emails of critical system issues."></i>`
+								? `<li><span class="badge badge-danger" title="${director.name} will receive emails of critical system issues."><i class="fas fa-exclamation-triangle p-1"></i>Emergencies</span></li>`
 								: ``
 						}${
 							director.emailCalendar
-								? `<i class="fas fa-calendar text-info" title="${director.name} will receive emails regarding calendar events and shows/broadcasts."></i>`
+								? `<li><span class="badge badge-info" title="${director.name} will receive emails regarding calendar events and shows/broadcasts."><i class="fas fa-calendar p-1"></i>Events</span></li>`
 								: ``
 						}${
 							director.emailWeeklyAnalytics
-								? `<i class="fas fa-chart-line text-primary" title="${director.name} will receive emails every Sunday 12AM containing weekly analytics."></i>`
+								? `<li><span class="badge badge-primary" title="${director.name} will receive emails every Sunday 12AM containing weekly analytics."><i class="fas fa-chart-line p-1"></i>Analytics</span></li>`
 								: ``
-						}`,
+						}</ul>`,
 						`<div class="btn-group"><button class="btn btn-sm btn-warning btn-director-edit" data-id="${
 							director.ID
 						}" title="Edit director"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-director-delete" data-id="${
@@ -419,15 +419,15 @@ class WWSUdirectors extends WWSUdb {
 					},
 					emailEmergencies: {
 						type: "boolean",
-						title: "Email on Critical Issues?",
+						title: "Email on Critical Issues (Emergencies)?",
 					},
 					emailCalendar: {
 						type: "boolean",
-						title: "Calendar/broadcast related emails?",
+						title: "Calendar/broadcast related emails (Events)?",
 					},
 					emailWeeklyAnalytics: {
 						type: "boolean",
-						title: "Weekly analytics emails?",
+						title: "Weekly analytics emails (Analytics)?",
 					},
 				},
 			},

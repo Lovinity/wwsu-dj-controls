@@ -1,29 +1,33 @@
 # Changelog for wwsu-dj-controls
 
-## TODO
-
-### Added
-
-- [TODO] Notifications when a broadcast is running into the scheduled time of another broadcast.
-
-### Fixed
-
-- [TODO] Calendar system did not update conflict overrides if the override time for the conflict should be changed (but not removed).
-
 ## 8.18.0-alpha
 
 ### Added
 
 - Email tab for writing and sending emails to DJs or directors in the system.
 - Callout info boxes indicating logs/records are deleted after 2 years.
+- Text to icon columns in tables
+- Event listener for WWSUrecipients in WWSUmessages; when a recipient changes, updateRecipient() is called in case the recipient that changed was the active / selected recipient (updates the text at the top of the message window).
 
 ### Fixed
 
 - Calendar actions dropdown did not proceed for editing / rescheduling an occurrance.
+- WWSUcalendar should have been using WWSUdjs for determining which DJs can be chosen for event hosts, but it was instead using the available authorization users from djReq.
+- doConflictCheck would call event.verify on event removals; this is not necessary and resulted in false errors.
+- Responsive table bugs; sometimes actions buttons did not have priority
+- Deleting a schedule did not properly display necessary info in confirm action window because we were using an undefined variable
+- DJ attendance logs did not have a view log button for canceled / absent records; it should because there is a log for marking it excused or unexcused.
 
 ### Changed
 
+- [BREAKING] Priority 0 events now operate differently; they can overlap other priority 0 events of different types but cannot overlap priority 0 events of the same type.
+- [BREAKING] "Show" and "Sports" event types will always override onair-booking event type regardless of priority.
 - Updated renderer and WWSUclimacell with new climacell API data
+- DJ removal now marks DJ as inactive instead of fully removing them (inactive DJs are deleted after 1 year). However, DJs can be permanently removed after marked inactive.
+  - Inactive DJs cannot be chosen for calendar/event hosts and other functions.
+- Event list now includes inactive events
+- Event removal now involves marking the event inactive first instead of immediately removing it
+- Remote dump button is now visible for live and sports broadcasts just in case someone is more used to clicking that than pushing the physical button in the studio.
 
 ## 8.17.2-alpha - 2021-04-29
 
