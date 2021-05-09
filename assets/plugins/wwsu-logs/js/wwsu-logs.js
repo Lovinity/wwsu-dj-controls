@@ -552,9 +552,7 @@ class WWSUlogs extends WWSUevents {
 							log.logIcon !== "" ? log.logIcon : `fas fa-dot-circle`
 						} bg-${
 							log.loglevel
-						}" style="border-radius: 50%; font-size: 15px; height: 30px; line-height: 30px; text-align: center; width: 30px;">${
-							log.loglevel
-						}</i>`,
+						}" style="border-radius: 50%; font-size: 15px; height: 30px; line-height: 30px; text-align: center; width: 30px;"></i>`,
 						moment
 							.tz(
 								log.createdAt,

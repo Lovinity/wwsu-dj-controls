@@ -4,10 +4,15 @@
 
 ### Added
 
+- Dark mode (DJ Controls also remembers upon next start-up if you had dark mode active)
 - Email tab for writing and sending emails to DJs or directors in the system.
 - Callout info boxes indicating logs/records are deleted after 2 years.
-- Text to icon columns in tables
+- Text/badges to icon columns in tables
 - Event listener for WWSUrecipients in WWSUmessages; when a recipient changes, updateRecipient() is called in case the recipient that changed was the active / selected recipient (updates the text at the top of the message window).
+- System problems box in the announcements tab for DJs to see
+- Tomorrow.io 12-hour forecast clock
+- The friendly name of the host is displayed in the DJ Controls menu under the logo
+- Bootstrap multiselect
 
 ### Fixed
 
@@ -28,10 +33,17 @@
 - Event list now includes inactive events
 - Event removal now involves marking the event inactive first instead of immediately removing it
 - Remote dump button is now visible for live and sports broadcasts just in case someone is more used to clicking that than pushing the physical button in the studio.
+- Reverted AdminLTE color scheme back to its defaults as it is more compatible with dark mode.
+- Styling of meta info on the dashboard
 
 ### Removed
 
 - Scheduled Hours tally in timesheets; it was buggy and not necessary since we expect every director to have a set number of scheduled hours.
+
+### Updated
+
+- AdminLTE packages
+- NPM packages / Electron
 
 ## 8.17.2-alpha - 2021-04-29
 

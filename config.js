@@ -7,28 +7,31 @@ module.exports = new Store({
 	defaults: {
 		recorder: {
 			delay: 10000,
-			recordPath: "./OnAir Recordings",
+			recordPath: "./OnAir Recordings"
 		},
 		silence: {
 			threshold: 0.05,
-			delay: 15000,
+			delay: 15000
 		},
 		delay: {
-			port: "",
+			port: ""
 		},
 		skyway: {
-			api: ``,
+			api: ``
 		},
 		audio: [],
+		renderer: {
+			darkMode: false
+		}
 	},
 
 	// TODO: Keep this updated
 	// TODO: Waiting for https://github.com/sindresorhus/electron-store/issues/142
 	migrations: {
-		">=8.0.0-alpha.18": (store) => {
+		">=8.0.0-alpha.18": store => {
 			store.delete("recorder.deviceId");
 			store.delete("silence.deviceId");
-		},
+		}
 	},
 
 	schema: {
@@ -38,12 +41,12 @@ module.exports = new Store({
 			properties: {
 				delay: {
 					type: "number",
-					minimum: 0,
+					minimum: 0
 				},
 				recordPath: {
-					type: "string",
-				},
-			},
+					type: "string"
+				}
+			}
 		},
 		silence: {
 			type: "object",
@@ -52,31 +55,31 @@ module.exports = new Store({
 				threshold: {
 					type: "number",
 					minimum: 0,
-					maximum: 1,
+					maximum: 1
 				},
 				delay: {
 					type: "number",
-					minimum: 0,
-				},
-			},
+					minimum: 0
+				}
+			}
 		},
 		delay: {
 			type: "object",
 			additionalProperties: false,
 			properties: {
 				port: {
-					type: "string",
-				},
-			},
+					type: "string"
+				}
+			}
 		},
 		skyway: {
 			type: "object",
 			additionalProperties: false,
 			properties: {
 				api: {
-					type: "string",
-				},
-			},
+					type: "string"
+				}
+			}
 		},
 		audio: {
 			type: "array",
@@ -86,34 +89,43 @@ module.exports = new Store({
 				required: ["deviceId", "kind", "volume"],
 				properties: {
 					deviceId: {
-						type: "string",
+						type: "string"
 					},
 					kind: {
-						type: "string",
+						type: "string"
 					},
 					volume: {
 						type: "number",
 						minimum: 0,
 						maximum: 2,
-						default: 1,
+						default: 1
 					},
 					silence: {
-						type: "boolean",
+						type: "boolean"
 					},
 					recorder: {
-						type: "boolean",
+						type: "boolean"
 					},
 					remote: {
-						type: "boolean",
+						type: "boolean"
 					},
 					output: {
-						type: "boolean",
+						type: "boolean"
 					},
 					queue: {
-						type: "boolean",
-					},
-				},
-			},
+						type: "boolean"
+					}
+				}
+			}
 		},
-	},
+		renderer: {
+			type: "object",
+			additionalProperties: false,
+			properties: {
+				darkMode: {
+					type: "boolean"
+				}
+			}
+		}
+	}
 });

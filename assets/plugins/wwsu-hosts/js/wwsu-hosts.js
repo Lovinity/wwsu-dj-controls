@@ -40,12 +40,14 @@ class WWSUhosts extends WWSUdb {
 			if (record.host === this.host) {
 				this.client = record;
 				this.emitEvent("clientChanged", [record]);
+				$(".host-friendlyname").html(record.friendlyname);
 			}
 		});
 		this.on("remove", "WWSUhosts", record => {
 			if (record.host === this.host) {
 				this.client = {};
 				this.emitEvent("clientChanged", [null]);
+				$(".host-friendlyname").html("Unknown Host");
 			}
 		});
 
@@ -74,6 +76,7 @@ class WWSUhosts extends WWSUdb {
 				body => {
 					try {
 						this.client = body;
+						$(".host-friendlyname").html(body.friendlyname);
 
 						if (!this.client.authorized) {
 							cb(0);

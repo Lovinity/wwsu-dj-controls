@@ -1,5 +1,31 @@
 "use strict";
 
+// Alpaca compatibility for Bootstrap Multiselect
+$.fn.extend({
+	multipleSelect: $.fn.multiselect
+});
+
+// Should we be in dark mode?
+let rendererSettings = window.settings.renderer();
+if (rendererSettings.darkMode) {
+	$("body").addClass("dark-mode");
+	$(".toggle-dark-mode").html(`<i class="fas fa-sun"></i>`);
+}
+
+// Dark mode toggle function
+function toggleDarkMode() {
+	let rendererSettings = window.settings.renderer();
+	if (!rendererSettings.darkMode) {
+		window.saveSettings.renderer("darkMode", true);
+		$("body").addClass("dark-mode");
+		$(".toggle-dark-mode").html(`<i class="fas fa-sun"></i>`);
+	} else {
+		window.saveSettings.renderer("darkMode", false);
+		$("body").removeClass("dark-mode");
+		$(".toggle-dark-mode").html(`<i class="fas fa-moon"></i>`);
+	}
+}
+
 // Machine ID
 let machineID = window.ipc.getMachineId();
 $(".connecting-id").html(machineID);
@@ -656,6 +682,11 @@ let clockwheelDonutOptions = {
 	animation: {
 		animateRotate: false,
 		animateScale: false
+	},
+	elements: {
+		arc: {
+			borderColor: "rgba(0, 0, 0, 0)"
+		}
 	}
 };
 let clockwheelDonut = new Chart(clockwheelDonutCanvas, {

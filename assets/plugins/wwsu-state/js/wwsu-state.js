@@ -1198,6 +1198,7 @@ class WWSUstate extends WWSUevents {
 					sport: {
 						type: "select",
 						hideNone: false,
+						emptySelectFirst: false,
 						validator: function (callback) {
 							let value = this.getValue();
 							if (!title || title !== value) {
@@ -1464,6 +1465,7 @@ class WWSUstate extends WWSUevents {
 					sport: {
 						type: "select",
 						hideNone: false,
+						emptySelectFirst: false,
 						validator: function (callback) {
 							let value = this.getValue();
 							if (!title || title !== value) {

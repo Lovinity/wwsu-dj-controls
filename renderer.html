@@ -44,6 +44,11 @@
 				transform: rotate(0deg);
 			}
 
+			.dark-mode .clock div,
+			.dark-mode .faceBox {
+				background-color: white;
+			}
+
 			.clock .clock-hour {
 				border-radius: 0.5em 0.5em 0 0;
 				width: 3%;
@@ -88,10 +93,18 @@
 				background-color: black;
 			}
 
+			.dark-mode .smallTick {
+				background-color: white;
+			}
+
 			.mediumTick {
 				width: 8.33%;
 				height: 26.66%;
 				background-color: black;
+			}
+
+			.dark-mode .mediumTick {
+				background-color: white;
 			}
 
 			.largeTick {
@@ -99,6 +112,10 @@
 				height: 26.66%;
 				background-color: black;
 				position: relative;
+			}
+
+			.dark-mode .largeTick {
+				background-color: white;
 			}
 
 			.tickNum {
@@ -110,6 +127,10 @@
 				top: 3.33%;
 				left: -0.66%;
 				z-index: 1;
+			}
+
+			.dark-mode .tickNum {
+				color: white;
 			}
 
 			.faceBox {
@@ -130,11 +151,8 @@
 			rel="stylesheet"
 			href="assets/plugins/fontawesome-free/css/all.min.css"
 		/>
-		<!-- Theme style -->
-		<link
-			rel="stylesheet"
-			href="assets/plugins/adminlte/css/adminlte.min.css"
-		/>
+		<!-- Theme style (TODO: use min when it is working again) -->
+		<link rel="stylesheet" href="assets/plugins/adminlte/css/adminlte.css" />
 		<!-- overlayScrollbars -->
 		<link
 			rel="stylesheet"
@@ -145,12 +163,6 @@
 		<script src="assets/plugins/jquery/jquery.min.js"></script>
 		<!-- JQuery BlockUI -->
 		<script src="assets/plugins/jquery-blockui/jquery.blockUI.js"></script>
-		<!-- JQuery multipleselect -->
-		<link
-			rel="stylesheet"
-			href="assets/plugins/jquery-multiselect/jquery-MultiSelect.css"
-		/>
-		<script src="assets/plugins/jquery-multiselect/jquery-MultiSelect.js"></script>
 		<!-- JQuery overlayScrollbars -->
 		<script src="assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
 		<!-- JQuery Mousewheel -->
@@ -158,6 +170,12 @@
 
 		<!-- Bootstrap -->
 		<script src="assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+		<!-- Bootstrap multipleselect -->
+		<link
+			rel="stylesheet"
+			href="assets/plugins/bootstrap-multiselect/css/bootstrap-multiselect.css"
+		/>
+		<script src="assets/plugins/bootstrap-multiselect/js/bootstrap-multiselect.min.js"></script>
 		<!-- AdminLTE -->
 		<script src="assets/plugins/adminlte/js/adminlte.js"></script>
 
@@ -441,7 +459,14 @@
 							data-widget="pushmenu"
 							href="#"
 							title="Open/Close navigation menu"
-							><i class="fas fa-bars"></i
+							><i class="fas fa-bars"></i></a
+						><br />
+						<a
+							class="nav-link toggle-dark-mode"
+							href="#"
+							onclick="toggleDarkMode()"
+							title="Toggle Light / Dark Mode"
+							><i class="fas fa-moon"></i
 						></a>
 					</li>
 					<li
@@ -630,7 +655,7 @@
 			<!-- /.navbar -->
 
 			<!-- Main Sidebar Menu -->
-			<aside class="main-sidebar sidebar-dark-maroon elevation-4">
+			<aside class="main-sidebar sidebar-dark-danger elevation-4">
 				<!-- Logo -->
 				<a href="#" class="brand-link">
 					<img
@@ -639,11 +664,20 @@
 						class="brand-image img-circle elevation-3"
 						style="opacity: 0.8;"
 					/>
-					<span class="brand-text font-weight-light">WWSU DJ Controls</span>
+					<span class="brand-text font-weight-light">WWSU DJ Controls</span
+					><br />
 				</a>
 
 				<!-- Sidebar -->
 				<div class="sidebar">
+					<div class="user-panel mt-3 pb-3 mb-3 d-flex">
+						<div class="info">
+							<span class="d-block text-light host-friendlyname"
+								>Unknown Host</span
+							>
+						</div>
+					</div>
+
 					<!-- Sidebar station time -->
 					<div class="user-panel mt-3 pb-3 mb-3 d-flex">
 						<div class="image text-light">
@@ -1156,7 +1190,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Dashboard</h1>
+									<h1 class="m-0">Dashboard</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -1176,42 +1210,30 @@
 							<div class="card-body">
 								<div class="row">
 									<div class="col-12">
-										<div
-											class="card card-widget widget-user-2"
-											title="This is what WWSU is advertising as currently on the air."
-										>
-											<div class="widget-user-header bg-gray-dark card-meta">
-												<div class="widget-user-image">
-													<div
-														class="meta-trackFinish"
-														style="font-size: 1.5em; position: absolute;"
-														title="How much time is left in the current track"
-													>
-														??:??
-													</div>
-												</div>
-												<!-- /.widget-user-image -->
-												<h3 class="widget-user-username meta-line1"></h3>
-												<h5 class="widget-user-desc meta-line2"></h5>
-											</div>
-										</div>
-									</div>
-								</div>
+										<div class="info-box card-meta">
+											<span
+												class="info-box-icon bg-warning meta-trackFinish"
+												title="How much time is left in the current track"
+												style="font-size: 1.33rem;"
+												>??:??</span
+											>
 
-								<div class="row d-none section-dashboard-meta p-1 bg-primary">
-									<div class="col-lg-8 col-md-6 col-sm-12">
-										<h5>
-											Click "I Am Talking" when you are no longer playing music
-										</h5>
-									</div>
-									<div class="col-lg-4 col-md-6 col-sm-12">
-										<button
-											type="button"
-											class="btn btn-block btn-success btn-dashboard-meta-clear"
-											title="Clear current meta when you are talking and no longer playing that track."
-										>
-											I am Talking
-										</button>
+											<div
+												class="info-box-content"
+												title="What is currently being advertised as playing on WWSU."
+											>
+												<span class="info-box-number meta-line1"></span>
+												<span class="info-box-text meta-line2"></span>
+											</div>
+
+											<button
+												class="btn bg-black small-box-footer d-none section-dashboard-meta btn-dashboard-meta-clear"
+												title="Click this button when you are no longer playing music and are talking (or click Add Log when starting a different track)."
+											>
+												Click when done playing music
+											</button>
+											<!-- /.info-box-content -->
+										</div>
 									</div>
 								</div>
 
@@ -1388,7 +1410,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Announcements (View)</h1>
+									<h1 class="m-0">Announcements (View)</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -1399,7 +1421,33 @@
 					<!-- /.content-header -->
 
 					<!-- Main content -->
-					<div class="content announcements"></div>
+					<div class="content">
+						<div class="announcements"></div>
+						<div class="card card-danger elevation-2">
+							<div class="card-header">
+								<h3 class="card-title">
+									System Problems that May Affect Broadcasts
+								</h3>
+							</div>
+							<!-- /.card-header -->
+							<div class="card-body system-status"></div>
+							<!-- /.card-body -->
+							<div class="card-footer">
+								<div class="callout callout-info">
+									<h5>When to be concerned</h5>
+									<p>
+										Generally, only issues of the
+										<span class="badge bg-orange">Major</span> or the
+										<span class="badge badge-danger">Critical</span> status will
+										affect broadcasts. Please be mindful of the issues listed.
+										If you do not believe you can do your show considering the
+										current issues, please email a director ASAP for an excused
+										cancellation or re-schedule.
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 			</section>
 
@@ -1410,7 +1458,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-12">
-									<h1 class="m-0 text-dark">Messages / Chat</h1>
+									<h1 class="m-0">Messages / Chat</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -1475,7 +1523,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Discord Chat</h1>
+									<h1 class="m-0">Discord Chat</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -1528,7 +1576,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Track Requests</h1>
+									<h1 class="m-0">Track Requests</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -1575,7 +1623,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">
+									<h1 class="m-0">
 										WWSU Weather (powered by Tomorrow.io)
 									</h1>
 								</div>
@@ -1724,26 +1772,35 @@
 								class="card-body"
 								title="Weather conditions for the next 12 hours at WWSU."
 							>
-								<div style="position: relative;">
-									<canvas
-										id="weather-forecast-donut"
-										style="
-										min-height: 50vh;
-										height: 66vh;
-										max-width: 100%;
-									"
-									>
-									</canvas>
-									<div
-										class="clock-container"
-										id="weather-forecast-clock"
-										style="user-select: none; pointer-events: none;"
-									>
-										<div class="clock">
-											<div class="clock-hour"></div>
-											<div class="clock-minute"></div>
-											<div class="clock-second"></div>
-											<div class="clock-center"></div>
+								<div class="container-fluid">
+									<div class="row">
+										<div class="col-md-6 col-12">
+											<div style="position: relative;">
+												<canvas
+													id="weather-forecast-donut"
+													style="
+												min-height: 50vh;
+												height: 66vh;
+												max-width: 100%;
+											"
+												>
+												</canvas>
+												<div
+													class="clock-container"
+													id="weather-forecast-clock"
+													style="user-select: none; pointer-events: none;"
+												>
+													<div class="clock">
+														<div class="clock-hour"></div>
+														<div class="clock-minute"></div>
+														<div class="clock-second"></div>
+														<div class="clock-center"></div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-6 col-12">
+											<ul id="weather-forecast-description"></ul>
 										</div>
 									</div>
 								</div>
@@ -1847,7 +1904,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Report a Problem</h1>
+									<h1 class="m-0">Report a Problem</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -1893,7 +1950,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Audio Settings</h1>
+									<h1 class="m-0">Audio Settings</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -2050,7 +2107,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Serial Port Settings</h1>
+									<h1 class="m-0">Serial Port Settings</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -2116,7 +2173,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-12">
-									<h1 class="m-0 text-dark">Notifications / Todo</h1>
+									<h1 class="m-0">Notifications / Todo</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -2162,7 +2219,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Manage Announcements</h1>
+									<h1 class="m-0">Manage Announcements</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -2200,7 +2257,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Make API Query</h1>
+									<h1 class="m-0">Make API Query</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -2239,7 +2296,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Bans / Discipline</h1>
+									<h1 class="m-0">Bans / Discipline</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -2284,7 +2341,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-12">
-									<h1 class="m-0 text-dark">Calendar</h1>
+									<h1 class="m-0">Calendar</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -2599,7 +2656,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Manage Directors</h1>
+									<h1 class="m-0">Manage Directors</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -2644,7 +2701,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Manage DJs</h1>
+									<h1 class="m-0">Manage DJs</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -2698,7 +2755,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">
+									<h1 class="m-0">
 										Manage Internal Emergency Alert System
 									</h1>
 								</div>
@@ -2747,7 +2804,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Send Emails</h1>
+									<h1 class="m-0">Send Emails</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -2788,7 +2845,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Manage Hosts</h1>
+									<h1 class="m-0">Manage Hosts</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -2848,7 +2905,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Manage Inventory</h1>
+									<h1 class="m-0">Manage Inventory</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -2892,7 +2949,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-12">
-									<h1 class="m-0 text-dark">Operation / Program Logs</h1>
+									<h1 class="m-0">Operation / Program Logs</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -2948,7 +3005,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-12">
-									<h1 class="m-0 text-dark">Director Timesheets</h1>
+									<h1 class="m-0">Director Timesheets</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -3015,7 +3072,7 @@
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0 text-dark">Manage Underwritings</h1>
+									<h1 class="m-0">Manage Underwritings</h1>
 								</div>
 								<!-- /.col -->
 							</div>

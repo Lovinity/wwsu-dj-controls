@@ -194,8 +194,9 @@ class WWSUclimacell extends WWSUdb {
 				maintainAspectRatio: false,
 				responsive: true,
 				cutoutPercentage: 80,
-				legend: {
-					display: false
+				plugins: {
+					tooltip: false,
+					legend: false
 				},
 				animation: {
 					animateRotate: false,
@@ -215,194 +216,223 @@ class WWSUclimacell extends WWSUdb {
 	 */
 	updateClock() {
 		this.manager.get("WWSUanimations").add("climacell-forecast-update", () => {
-		let segments = [];
+			let segments = [];
 
-		// Initialize segments array
-		for (let i = 0; i < 720; i++) {
-			segments[i] = {};
-		}
-
-		let updateClockwheel = (weather, start, length) => {
-			while (length > 0) {
-				length--;
-				start++;
-				segments[start] = weather;
-				if (start >= 720) {
-					start -= 720;
-				}
-			}
-		};
-
-		// Determine what the exact date/time is for the "12" (start of the doughnut chart) on the clock
-		let topOfClock = moment
-			.parseZone(this.manager.get("WWSUMeta").meta.time)
-			.startOf("day")
-			.add(1, "days");
-		if (moment.parseZone(this.manager.get("WWSUMeta").meta.time).hours() < 12) {
-			topOfClock = moment.parseZone(topOfClock).subtract(12, "hours");
-		}
-
-		// Determine number of minutes from current time to topOfClock
-		let untilTopOfClock = moment(topOfClock).diff(
-			moment(this.manager.get("WWSUMeta").meta.time),
-			"minutes"
-		);
-
-		// Function to determine what weather condition we will use (sometimes we modify what tomorrow.io uses)
-		const modWeatherCode = (weatherCode, precipIntensity = 0) => {
-			// Tomorrow.io does not have light/heavy thunderstorm designations. Determine based on precip intensity.
-			if (weatherCode === 8000) {
-				if (precipIntensity < 0.1) return 8100;
-				if (precipIntensity > 0.5) return 8101;
+			// Initialize segments array
+			for (let i = 0; i < 720; i++) {
+				segments[i] = {};
 			}
 
-			// Mostly Clear = Clear
-			if (weatherCode === 1100) return 1000;
-
-			// Mostly Cloudy = Partly CLoudy
-			if (weatherCode === 1102) return 1101;
-
-			// Fog = Cloudy
-			if (weatherCode === 2000 || weatherCode === 2100) return 1001;
-
-			// Drizzle = Light Rain
-			if (weatherCode === 4000) return 4200;
-
-			// Flurries = Light Snow
-			if (weatherCode === 5001) return 5100;
-
-			// Freezing Drizzle = Light Ice Pellets
-			if (weatherCode === 6000) return 7102;
-
-			// Freezing Rain = Ice Pellets
-			if (weatherCode === 6001) return 7000;
-
-			// Light Freezing Rain = Light Ice Pellets
-			if (weatherCode === 6200) return 7102;
-
-			// Heavy Freezing Rain = Heavy Ice Pellets
-			if (weatherCode === 6201) return 7101;
-
-			// At this point, no modification. Return actual code.
-			return weatherCode;
-		};
-
-		// Initialize variables for tracking when the weather changes
-		let weatherCode = 0;
-		let weatherData = {};
-		let totalLength = 0;
-		let startTime = moment();
-
-		// Initialize the above with current conditions
-		let currently = this.db({ dataClass: "current-0" }).first();
-		if (currently) {
-			startTime = currently.dataTime;
-			weatherCode = modWeatherCode(
-				currently.data.weatherCode,
-				currently.data.precipitationIntensity
-			);
-		}
-
-		// Now process every record sorted by dataTime
-		let currentTime = this.manager.get("WWSUMeta").meta.time;
-		let shortTerm = this.db()
-			.get()
-			.sort((a, b) => {
-				if (!a.dataTime) return 1;
-				if (!b.dataTime) return -1;
-				if (moment(a.dataTime).isBefore(moment(b.dataTime))) return -1;
-				if (moment(b.dataTime).isBefore(moment(a.dataTime))) return 1;
-				return 0;
-			})
-			.map(record => {
-				// Modify the weather code as necessary using our customized codes
-				record.data.weatherCode = modWeatherCode(
-					record.data.weatherCode,
-					record.data.precipitationIntensity
-				);
-
-				// If the dataTime is before our current time...
-				if (
-					moment(record.dataTime).isSameOrBefore(moment(currentTime), "minutes")
-				) {
-					weatherCode = record.data.weatherCode;
-					weatherData = record.data;
-					startTime = currentTime;
-
-					// If weatherCode changed, create a new segment on the chart
-				} else if (weatherCode !== record.data.weatherCode) {
-					// Calculate segment length and start
-					let length = moment(record.dataTime).diff(startTime, "minutes");
-					let start =
-						720 -
-						untilTopOfClock +
-						moment(startTime).diff(currentTime, "minutes");
-
-					// Correct length if it goes beyond 12 hours
-					if (
-						moment(record.dataTime).isAfter(
-							moment.parseZone(currentTime).add(12, "hours"),
-							"minutes"
-						)
-					) {
-						let correction = moment(record.dataTime).diff(
-							moment.parseZone(currentTime).add(12, "hours"),
-							"minutes"
-						);
-						length -= correction;
-					}
-
+			let updateClockwheel = (weather, start, length) => {
+				while (length > 0) {
+					length--;
+					start++;
+					segments[start] = weather;
 					if (start >= 720) {
 						start -= 720;
 					}
+				}
+			};
 
-					// Add segment
-					updateClockwheel(weatherData, start, length);
+			// Determine what the exact date/time is for the "12" (start of the doughnut chart) on the clock
+			let topOfClock = moment
+				.parseZone(this.manager.get("WWSUMeta").meta.time)
+				.startOf("day")
+				.add(1, "days");
+			if (
+				moment.parseZone(this.manager.get("WWSUMeta").meta.time).hours() < 12
+			) {
+				topOfClock = moment.parseZone(topOfClock).subtract(12, "hours");
+			}
 
-					// Update memory info
-					startTime = record.dataTime;
-					weatherCode = record.data.weatherCode;
-					weatherData = record.data;
-					totalLength += length;
+			// Determine number of minutes from current time to topOfClock
+			let untilTopOfClock = moment(topOfClock).diff(
+				moment(this.manager.get("WWSUMeta").meta.time),
+				"minutes"
+			);
+
+			// Function to determine what weather condition we will use (sometimes we modify what tomorrow.io uses)
+			const modWeatherCode = (weatherCode, precipIntensity = 0) => {
+				// Tomorrow.io does not have light/heavy thunderstorm designations. Determine based on precip intensity.
+				if (weatherCode === 8000) {
+					if (precipIntensity < 0.1) return 8100;
+					if (precipIntensity > 0.5) return 8101;
+				}
+
+				// Mostly Clear = Clear
+				if (weatherCode === 1100) return 1000;
+
+				// Mostly Cloudy = Partly CLoudy
+				if (weatherCode === 1102) return 1101;
+
+				// Fog = Cloudy
+				if (weatherCode === 2000 || weatherCode === 2100) return 1001;
+
+				// Drizzle = Light Rain
+				if (weatherCode === 4000) return 4200;
+
+				// Flurries = Light Snow
+				if (weatherCode === 5001) return 5100;
+
+				// Freezing Drizzle = Light Ice Pellets
+				if (weatherCode === 6000) return 7102;
+
+				// Freezing Rain = Ice Pellets
+				if (weatherCode === 6001) return 7000;
+
+				// Light Freezing Rain = Light Ice Pellets
+				if (weatherCode === 6200) return 7102;
+
+				// Heavy Freezing Rain = Heavy Ice Pellets
+				if (weatherCode === 6201) return 7101;
+
+				// At this point, no modification. Return actual code.
+				return weatherCode;
+			};
+
+			// Initialize variables for tracking when the weather changes
+			let weatherCode = 0;
+			let weatherData = {};
+			let totalLength = 0;
+			let startTime = moment();
+
+			// Initialize the above with current conditions
+			let currently = this.db({ dataClass: "current-0" }).first();
+			if (currently) {
+				startTime = currently.dataTime;
+				weatherCode = currently.data.weatherCode;
+			}
+
+			// Now process every record sorted by dataTime
+			let currentTime = this.manager.get("WWSUMeta").meta.time;
+			let descriptionHtml = ``;
+			let shortTerm = this.db()
+				.get()
+				.sort((a, b) => {
+					if (!a.dataTime) return 1;
+					if (!b.dataTime) return -1;
+					if (moment(a.dataTime).isBefore(moment(b.dataTime))) return -1;
+					if (moment(b.dataTime).isBefore(moment(a.dataTime))) return 1;
+					return 0;
+				})
+				.map(record => {
+					// Add weather descriptions
+					if (record.dataClass === `current-0`) {
+						descriptionHtml += `<li><strong>Now:</strong> ${
+							this.weatherCodeString[record.data.weatherCode]
+						}, ${parseInt(record.data.temperature)}°F</li>`;
+					} else if (
+						record.dataClass.startsWith("1h-") &&
+						record.dataClass !== `1h-0` &&
+						moment(currentTime)
+							.add(12, "hours")
+							.isSameOrAfter(moment(record.dataTime))
+					) {
+						descriptionHtml += `<li><strong>${moment(record.dataTime).format(
+							"h:mm A"
+						)}:</strong> ${
+							this.weatherCodeString[record.data.weatherCode]
+						}, ${parseInt(record.data.temperature)}°F</li>`;
+					}
+
+					// Determine clockwheel segments
+					if (
+						!record.dataClass.startsWith("1h-") ||
+						moment(currentTime)
+							.add(6, "hours")
+							.isBefore(moment(record.dataTime))
+					) {
+						if (
+							moment(record.dataTime).isSameOrBefore(
+								moment(currentTime),
+								"minutes"
+							)
+						) {
+							weatherCode = record.data.weatherCode;
+							weatherData = record.data;
+							startTime = currentTime;
+
+							// If weatherCode changed, create a new segment on the chart
+						} else if (weatherCode !== record.data.weatherCode) {
+							// Calculate segment length and start
+							let length = moment(record.dataTime).diff(startTime, "minutes");
+							let start =
+								720 -
+								untilTopOfClock +
+								moment(startTime).diff(currentTime, "minutes");
+
+							// Correct length if it goes beyond 12 hours
+							if (
+								moment(record.dataTime).isAfter(
+									moment.parseZone(currentTime).add(12, "hours"),
+									"minutes"
+								)
+							) {
+								let correction = moment(record.dataTime).diff(
+									moment.parseZone(currentTime).add(12, "hours"),
+									"minutes"
+								);
+								length -= correction;
+							}
+
+							if (start >= 720) {
+								start -= 720;
+							}
+
+							// Add segment
+							updateClockwheel(weatherData, start, length);
+
+							// Update memory info
+							startTime = record.dataTime;
+							weatherCode = record.data.weatherCode;
+							weatherData = record.data;
+							totalLength += length;
+						}
+					}
+				});
+
+			$(`#weather-forecast-description`).html(descriptionHtml);
+
+			// Now, begin updating clockwheel
+			let clockwheelDonutData = {
+				labels: [],
+				datasets: [
+					{
+						data: [],
+						backgroundColor: []
+					}
+				]
+			};
+
+			// Process donut segments
+			let currentSegment = { weatherCode: null, minutes: 0 };
+			segments.map(segment => {
+				// If we have a new id at this minute, create a new segment
+				if (segment.weatherCode !== currentSegment.weatherCode) {
+					clockwheelDonutData.labels.push(
+						this.weatherCodeString[currentSegment.weatherCode]
+					);
+					clockwheelDonutData.datasets[0].data.push(currentSegment.minutes);
+					clockwheelDonutData.datasets[0].backgroundColor.push(
+						this.weatherCodeColor[currentSegment.weatherCode]
+					);
+					currentSegment = Object.assign({ minutes: 1 }, segment);
+				} else {
+					currentSegment.minutes++;
 				}
 			});
+			// Push the last remaining segment into data
+			clockwheelDonutData.labels.push(
+				this.weatherCodeString[currentSegment.weatherCode]
+			);
+			clockwheelDonutData.datasets[0].data.push(currentSegment.minutes);
+			clockwheelDonutData.datasets[0].backgroundColor.push(
+				this.weatherCodeColor[currentSegment.weatherCode]
+			);
 
-		// Now, begin updating clockwheel
-		let clockwheelDonutData = {
-			labels: [],
-			datasets: [
-				{
-					data: [],
-					backgroundColor: []
-				},
-			]
-		};
-
-		// Process donut segments
-		let currentSegment = { weatherCode: null, minutes: 0 };
-		segments.map(segment => {
-			// If we have a new id at this minute, create a new segment
-			if (segment.weatherCode !== currentSegment.weatherCode) {
-				clockwheelDonutData.labels.push(
-					this.weatherCodeString[currentSegment.weatherCode]
-				);
-				clockwheelDonutData.datasets[0].data.push(currentSegment.minutes);
-				clockwheelDonutData.datasets[0].backgroundColor.push(this.weatherCodeColor[currentSegment.weatherCode]);
-				currentSegment = Object.assign({ minutes: 1 }, segment);
-			} else {
-				currentSegment.minutes++;
-			}
-		});
-		// Push the last remaining segment into data
-		clockwheelDonutData.labels.push(
-			this.weatherCodeString[currentSegment.weatherCode]
-		);
-		clockwheelDonutData.datasets[0].data.push(currentSegment.minutes);
-		clockwheelDonutData.datasets[0].backgroundColor.push(this.weatherCodeColor[currentSegment.weatherCode]);
-
-		// Update the donut
-		this.chart.data = clockwheelDonutData;
-		this.chart.update();
+			// Update the donut
+			this.chart.data = clockwheelDonutData;
+			this.chart.update();
 		});
 	}
 
