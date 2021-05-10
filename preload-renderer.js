@@ -17,7 +17,8 @@ contextBridge.exposeInMainWorld("ipc", {
 	flashMain: arg => ipcRenderer.send("flashMain", arg),
 	progressMain: progress => ipcRenderer.send("progressMain", progress),
 
-	getSerialPorts: () => ipcRenderer.sendSync("getSerialPorts"),
+	// TODO: Workaround for electron user gesture bug
+	getSerialPorts: () => ipcRenderer.send("getSerialPorts"),
 
 	// Delay system
 	restartDelay: status => ipcRenderer.send("delayRestart", status),

@@ -20,7 +20,7 @@ async function connectSerial() {
 	if (port) return;
 	try {
 		// Get the delay system port we should connect to via Electron custom event in index.js
-		port = await navigator.serial.requestPort();
+		port = window.ipc.getDelayPort();
 
 		port.addEventListener("disconnect", (event) => {
 			window.ipc.renderer.console([

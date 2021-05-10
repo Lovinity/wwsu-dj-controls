@@ -33,7 +33,7 @@ $(".connecting-id").html(machineID);
 // Connection
 io.sails.url = "https://server.wwsu1069.org";
 io.sails.query = `host=${machineID}`;
-io.sails.reconnectionAttempts = 3;
+io.sails.reconnectionAttempts = 3; // Upon first loading, we should limit connection attempts to 3. But in the disconnect event, it should be infinity.
 let socket = io.sails.connect();
 $("#connecting").removeClass("d-none");
 $("#loading").addClass("d-none");
@@ -1549,9 +1549,8 @@ window.ipc.on.delay((event, args) => {
 function refreshSerialPorts() {
 	// Get available ports (via custom Electron event in index.js)
 
-	navigator.serial.requestPort().then(() => {
-		// Always returns empty; available serial ports are sent using the serialPorts event
-	});
+	// TODO: this is temporary until Electron fixes their user gesture bug
+	window.ipc.getSerialPorts();
 }
 refreshSerialPorts();
 
@@ -1562,7 +1561,9 @@ window.ipc.on.serialPorts((event, ports) => {
 	*/
 
 	// Populate selection box with available serial ports
+	console.dir(ports);
 	let delayPorts = `<option value="">(NONE)</option>`;
+	ports = ports[0];
 	if (ports.constructor === Array && ports.length > 0) {
 		ports.map(port => {
 			delayPorts += `<option value="${port.deviceInstanceId}">${port.displayName} (${port.portName})</option>`;

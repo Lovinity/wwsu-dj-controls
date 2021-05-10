@@ -142,12 +142,12 @@ const loadSession = () => {
 		}
 	);
 
-	// Web Serial API (mainWindow does not actually use serial ports; it allows config / selection)
+	// Web Serial API
 	session.defaultSession.on(
 		"select-serial-port",
 		(event, portList, webContents, callback) => {
 			event.preventDefault();
-			mainWindow.webContents.send("serialPorts", portList);
+			if (mainWindow) mainWindow.webContents.send("serialPorts", [portList]);
 
 			ports = portList;
 
@@ -405,8 +405,7 @@ const createDelayWindow = () => {
 			preload: path.join(__dirname, "preload-audio.js"),
 			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
 			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
-			sandbox: true,
-			enableBlinkFeatures: "Serial" // Enable experimental Web Serial API
+			sandbox: true
 		}
 	});
 
@@ -487,8 +486,7 @@ const createWindows = () => {
 			preload: path.join(__dirname, "preload-renderer.js"),
 			zoomFactor: 1.25, // Make text bigger since this is used in OnAir studio
 			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
-			sandbox: true,
-			enableBlinkFeatures: "Serial" // Enable experimental Web Serial API
+			sandbox: true
 		}
 	});
 
@@ -710,6 +708,23 @@ app
 // Sync get the machine ID string for this installation
 ipcMain.on("get-machine-id", event => {
 	event.returnValue = machineIdSync();
+});
+
+// Call for retrieval of serial ports which are then emitted through an event
+// (TODO: This is a workaround until electron fixes their serial port user gesture bug)
+ipcMain.on("getSerialPorts", (event, args) => {
+	mainWindow.webContents.executeJavaScriptInIsolatedWorld(
+		999,
+		[{ code: "navigator.serial.requestPort()" }],
+		true
+	);
+});
+
+ipcMain.on("getDelayPort", (event, args) => {
+	// Return saved port for delay system
+	let settings = config.get(`delay`);
+	let portToUse = ports.find(port => port.deviceInstanceId === settings.port);
+	event.returnValue = portToUse ? portToUse.portId : null;
 });
 
 // Sync Get the app and version info

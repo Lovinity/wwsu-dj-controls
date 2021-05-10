@@ -4,6 +4,7 @@
 
 ### Added
 
+- Serial / delay system support via an executeJavascript workaround
 - Dark mode (DJ Controls also remembers upon next start-up if you had dark mode active)
 - Email tab for writing and sending emails to DJs or directors in the system.
 - Callout info boxes indicating logs/records are deleted after 2 years.
