@@ -34,7 +34,7 @@
 		"@doyensec/electronegativity": "^1.9.0",
 		"cross-env": "^7.0.3",
 		"electron": "^12.0.7",
-		"electron-builder": "^22.10.5"
+		"electron-builder": "22.9.1"
 	},
 	"xo": {
 		"envs": [
@@ -50,7 +50,7 @@
 	"build": {
 		"appId": "com.Lovinity.wwsu-dj-controls",
 		"productName": "WWSU DJ Controls",
-		"copyright": "Copyright © 2018-2020 WWSU 106.9 FM",
+		"copyright": "Copyright © 2018-2021 WWSU 106.9 FM",
 		"mac": {
 			"category": "public.app-category.business",
 			"darkModeSupport": false,
