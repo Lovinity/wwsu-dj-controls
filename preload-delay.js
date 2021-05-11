@@ -5,7 +5,7 @@ const { ipcRenderer, contextBridge } = require("electron");
 
 contextBridge.exposeInMainWorld("ipc", {
 	// TODO: Workaround for electron user gesture bug
-	getDelayPort: () => ipcRenderer.sendSync("getDelayPort"),
+	getDelayPort: async () => ipcRenderer.invoke("getDelayPort"),
 
 	on: {
 		dump: fn =>

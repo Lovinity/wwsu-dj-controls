@@ -4,7 +4,7 @@
 const { openNewGitHubIssue, debugInfo } = require("electron-util");
 const unhandled = require("electron-unhandled");
 unhandled({
-	reportButton: error => {
+	reportButton: (error) => {
 		openNewGitHubIssue({
 			user: "Lovinity",
 			repo: "wwsu-dj-controls",
@@ -22,9 +22,9 @@ unhandled({
 			
 			---
 			The following is auto-generated information about the app version you are using and the OS you are running.
-			${debugInfo()}`
+			${debugInfo()}`,
 		});
-	}
+	},
 });
 
 // Require other constants
@@ -36,7 +36,7 @@ const {
 	Menu,
 	ipcMain,
 	session,
-	shell
+	shell,
 } = require("electron");
 // const { autoUpdater } = require("electron-updater");
 const debug = require("electron-debug");
@@ -108,8 +108,8 @@ const loadSession = () => {
 			callback({
 				requestHeaders: {
 					...details.requestHeaders,
-					Origin: "https://server.wwsu1069.org"
-				}
+					Origin: "https://server.wwsu1069.org",
+				},
 			});
 		}
 	);
@@ -153,8 +153,8 @@ const loadSession = () => {
 
 			// Return saved port for delay system
 			let settings = config.get(`delay`);
-			let portToUse = ports.find(
-				port => port.deviceInstanceId === settings.port
+			let portToUse = portList.find(
+				(port) => port.deviceInstanceId === settings.port
 			);
 			callback(portToUse ? portToUse.portId : "");
 		}
@@ -179,8 +179,8 @@ const createLoadingScreen = () => {
 			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
 			contextIsolation: true,
 			enableRemoteModule: false, // electron's remote module is insecure
-			sandbox: true
-		}
+			sandbox: true,
+		},
 	});
 	loadingScreen.setResizable(false);
 	loadingScreen.loadFile("splash.html");
@@ -208,12 +208,12 @@ const createCalendarWindow = () => {
 			preload: path.join(__dirname, "preload-calendar.js"),
 			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
 			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
-			sandbox: true
-		}
+			sandbox: true,
+		},
 	});
 
 	// If the calendar process closes for whatever reason, but the renderer is still loaded, re-load the calendar process
-	calendarWindow.on("closed", function() {
+	calendarWindow.on("closed", function () {
 		if (mainWindow !== null) {
 			createCalendarWindow();
 		}
@@ -245,12 +245,12 @@ const createAudioWindow = () => {
 			preload: path.join(__dirname, "preload-audio.js"),
 			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
 			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
-			sandbox: true
-		}
+			sandbox: true,
+		},
 	});
 
 	// If the audio process closes, but the renderer is still loaded, re-load the audio process and clear the restart timer.
-	audioWindow.on("closed", function() {
+	audioWindow.on("closed", function () {
 		clearInterval(restartInterval);
 		audioWindow = undefined;
 		if (mainWindow !== null) {
@@ -289,12 +289,12 @@ const createSilenceWindow = () => {
 			preload: path.join(__dirname, "preload-audio.js"),
 			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
 			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
-			sandbox: true
-		}
+			sandbox: true,
+		},
 	});
 
 	// If the process closes, report this as an event to the renderer; the renderer should decide if the silence process should be restarted.
-	silenceWindow.on("closed", function() {
+	silenceWindow.on("closed", function () {
 		clearInterval(restartInterval);
 		silenceWindow = null;
 		if (mainWindow !== null) {
@@ -331,12 +331,12 @@ const createRecorderWindow = () => {
 			preload: path.join(__dirname, "preload-audio.js"),
 			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
 			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
-			sandbox: true
-		}
+			sandbox: true,
+		},
 	});
 
 	// If the recorder process closes, report this as an event to the renderer. The renderer should decide what to do.
-	recorderWindow.on("closed", function() {
+	recorderWindow.on("closed", function () {
 		recorderWindow = null;
 		if (mainWindow !== null) {
 			mainWindow.webContents.send("processClosed", ["recorder"]);
@@ -369,12 +369,12 @@ const createRemoteWindow = () => {
 			preload: path.join(__dirname, "preload-audio.js"),
 			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
 			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
-			sandbox: true
-		}
+			sandbox: true,
+		},
 	});
 
 	// If the remote process closes, report this to the renderer. Renderer should decide what to do (re-loading the process, sending the DJ to break, etc)
-	remoteWindow.on("closed", function() {
+	remoteWindow.on("closed", function () {
 		remoteWindow = null;
 		if (mainWindow !== null) {
 			mainWindow.webContents.send("processClosed", ["remote"]);
@@ -391,26 +391,28 @@ const createRemoteWindow = () => {
 
 // Process for delay system; used to monitor a configured delay system on the configured serial port and to request audio dumping
 const createDelayWindow = () => {
-	if (delayWindow) return;
+	// if (delayWindow) return;
+
+	return; // Disabled for now; web serial API does not seem to work with our delay
 
 	// Create the process
 	delayWindow = new BrowserWindow({
 		width: 1280,
 		height: 720,
-		show: false,
+		show: true,
 		title: `${app.name} - Delay Process`,
 		webPreferences: {
 			contextIsolation: true,
 			enableRemoteModule: false, // electron's remote module is insecure
-			preload: path.join(__dirname, "preload-audio.js"),
+			preload: path.join(__dirname, "preload-delay.js"),
 			backgroundThrottling: false, // Do not throttle this process. It doesn't do any work anyway unless told to by another process.
 			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
-			sandbox: true
-		}
+			sandbox: true,
+		},
 	});
 
 	// If the delay process closes, report this to the renderer. The renderer should decide whether or not to restart the process.
-	delayWindow.on("closed", function() {
+	delayWindow.on("closed", function () {
 		delayWindow = null;
 		if (mainWindow !== null) {
 			mainWindow.webContents.send("processClosed", ["delay"]);
@@ -426,7 +428,7 @@ const createDelayWindow = () => {
 };
 
 // Discord window
-const createDiscordWindow = inviteLink => {
+const createDiscordWindow = (inviteLink) => {
 	if (discordWindow) return;
 
 	// Create the audio process
@@ -439,11 +441,11 @@ const createDiscordWindow = inviteLink => {
 			enableRemoteModule: false, // electron's remote module is insecure
 			backgroundThrottling: true,
 			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
-			sandbox: true
-		}
+			sandbox: true,
+		},
 	});
 
-	discordWindow.on("closed", function() {
+	discordWindow.on("closed", function () {
 		discordWindow = null;
 	});
 
@@ -482,12 +484,11 @@ const createWindows = () => {
 		webPreferences: {
 			contextIsolation: true,
 			enableRemoteModule: false, // electron's remote module is insecure
-			nativeWindowOpen: true, // Needed for Discord WidgetBot.io
 			preload: path.join(__dirname, "preload-renderer.js"),
 			zoomFactor: 1.25, // Make text bigger since this is used in OnAir studio
 			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
-			sandbox: true
-		}
+			sandbox: true,
+		},
 	});
 
 	// Do not show the window until DOM has loaded. Otherwise, we will get a white flash effect that is not pleasant.
@@ -512,7 +513,7 @@ const createWindows = () => {
 	mainWindow.loadFile("renderer.html");
 
 	// When mainWindow is closed, all other processes should also be closed
-	mainWindow.on("closed", function() {
+	mainWindow.on("closed", function () {
 		mainWindow = null;
 
 		try {
@@ -563,7 +564,7 @@ const createWindows = () => {
 			bg: "danger",
 			header: "WWSU DJ Controls Crashed!",
 			flash: true,
-			body: `<p>Wuh oh! WWSU DJ Controls crashed, code ${details.reason}!</p><p>Please close and re-open DJ Controls.</p><p>If this problem continues, please contact the engineer or xanaftp@gmail.com.</p><p>If Discord is open in DJ Controls, please log out before closing the window.</p>`
+			body: `<p>Wuh oh! WWSU DJ Controls crashed, code ${details.reason}!</p><p>Please close and re-open DJ Controls.</p><p>If this problem continues, please contact the engineer or xanaftp@gmail.com.</p><p>If Discord is open in DJ Controls, please log out before closing the window.</p>`,
 		});
 		try {
 			// Recorder should be shut down gracefully to save current recording
@@ -616,7 +617,7 @@ const createWindows = () => {
  * @param {string} data.body The contents of the notification
  * @param {boolean} data.flash If true, the background will flash between bg-black and data.bg to draw attention
  */
-const makeNotification = data => {
+const makeNotification = (data) => {
 	let notificationWindow = new BrowserWindow({
 		width: 640,
 		height: 480,
@@ -634,8 +635,8 @@ const makeNotification = data => {
 			backgroundThrottling: false, // Do not throttle this process.
 			zoomFactor: 1.25,
 			disableBlinkFeatures: "Auxclick", // AUXCLICK_JS_CHECK
-			sandbox: true
-		}
+			sandbox: true,
+		},
 	});
 
 	// When the notification is ready to appear, make it visible and send notification data to the process
@@ -706,29 +707,32 @@ app
 */
 
 // Sync get the machine ID string for this installation
-ipcMain.on("get-machine-id", event => {
+ipcMain.on("get-machine-id", (event) => {
 	event.returnValue = machineIdSync();
 });
 
 // Call for retrieval of serial ports which are then emitted through an event
 // (TODO: This is a workaround until electron fixes their serial port user gesture bug)
 ipcMain.on("getSerialPorts", (event, args) => {
-	mainWindow.webContents.executeJavaScriptInIsolatedWorld(
-		999,
-		[{ code: "navigator.serial.requestPort()" }],
+	try {
+		mainWindow.webContents
+			.executeJavaScript("navigator.serial.requestPort()", true)
+			.then((stuff) => console.dir(stuff));
+	} catch (e) {
+		console.error(e);
+	}
+});
+
+ipcMain.handle("getDelayPort", async (event, args) => {
+	if (!delayWindow) return;
+	return await delayWindow.webContents.executeJavaScript(
+		`navigator.serial.requestPort().then((_port) => {port = _port})`,
 		true
 	);
 });
 
-ipcMain.on("getDelayPort", (event, args) => {
-	// Return saved port for delay system
-	let settings = config.get(`delay`);
-	let portToUse = ports.find(port => port.deviceInstanceId === settings.port);
-	event.returnValue = portToUse ? portToUse.portId : null;
-});
-
 // Sync Get the app and version info
-ipcMain.on("get-app-version", event => {
+ipcMain.on("get-app-version", (event) => {
 	event.returnValue = `${packageJson.name} v${packageJson.version}`;
 });
 
@@ -959,7 +963,7 @@ ipcMain.on("audioOutputSetting", (event, args) => {
 	try {
 		// Update settings; only one device should be allowed to have output as true
 		let settings = config.get(`audio`);
-		settings = settings.map(set =>
+		settings = settings.map((set) =>
 			updateAudioSettings(set.deviceId, set.kind, { output: false })
 		);
 		updateAudioSettings(args[0], args[1], { output: args[2] });
@@ -977,7 +981,7 @@ ipcMain.on("audioQueueSetting", (event, args) => {
 	try {
 		// Update settings; only one device should be allowed to have queue as true
 		let settings = config.get(`audio`);
-		settings = settings.map(set =>
+		settings = settings.map((set) =>
 			updateAudioSettings(set.deviceId, set.kind, { queue: false })
 		);
 		updateAudioSettings(args[0], args[1], { output: args[2] });
@@ -1011,7 +1015,7 @@ function saveAudioFile(args) {
 			}
 
 			// Make subdirectories if they do not exist
-			["live", "remote", "sports", "automation", "prerecord"].map(subdir => {
+			["live", "remote", "sports", "automation", "prerecord"].map((subdir) => {
 				if (
 					!fs.existsSync(
 						path.resolve(`${config.get("recorder.recordPath")}/${subdir}/`)
@@ -1054,7 +1058,7 @@ function saveAudioFile(args) {
 						`BE AWARE recordings are only stored temporarily! WWSU reserves the right to delete, modify, and/or monitor any and all recordings at any time without notice. Be sure to save a copy of your recordings ASAP after each show.` +
 						"\n\n" +
 						`WWSU does not guarantee the reliability of automatic recordings! You should always make your own recordings as well, especially if you want your recordings to be higher than 128kbps.`,
-					err => {
+					(err) => {
 						if (err) {
 							console.error(err);
 							if (mainWindow)
@@ -1062,7 +1066,7 @@ function saveAudioFile(args) {
 							if (mainWindow)
 								mainWindow.webContents.send("recorderFailed", [
 									args[0],
-									"Error creating README file in directory."
+									"Error creating README file in directory.",
 								]);
 							reject(err);
 						}
@@ -1075,7 +1079,7 @@ function saveAudioFile(args) {
 			fs.writeFile(
 				`${config.get("recorder.recordPath")}/${args[0]}`,
 				arrayBuffer,
-				function(err) {
+				function (err) {
 					arrayBuffer = undefined;
 					args[1] = undefined;
 					if (err) {
@@ -1086,7 +1090,7 @@ function saveAudioFile(args) {
 						if (mainWindow)
 							mainWindow.webContents.send("recorderFailed", [
 								args[0],
-								err.message
+								err.message,
 							]);
 						reject(err);
 					} else {
@@ -1137,13 +1141,13 @@ function updateAudioSettings(deviceId, kind, setting) {
 
 	// Try to find existing settings for the device
 	let device = settings.find(
-		sett => sett.deviceId === deviceId && sett.kind === kind
+		(sett) => sett.deviceId === deviceId && sett.kind === kind
 	);
 
 	// If device settings exist, filter audio array to exclude that device, then push in the new settings for the device
 	if (device) {
 		settings = settings.filter(
-			sett => sett.deviceId !== deviceId || sett.kind !== kind
+			(sett) => sett.deviceId !== deviceId || sett.kind !== kind
 		);
 		settings.push(Object.assign(device, setting));
 
@@ -1168,9 +1172,7 @@ function updateAudioSettings(deviceId, kind, setting) {
  * @returns {string} Binary value
  */
 function hex2bin(hex) {
-	return parseInt(hex, 16)
-		.toString(2)
-		.padStart(8, "0");
+	return parseInt(hex, 16).toString(2).padStart(8, "0");
 }
 
 function getMemory() {
@@ -1180,7 +1182,7 @@ function getMemory() {
 	console.dir(process.getBlinkMemoryInfo());
 	console.log("------");
 
-	process.getProcessMemoryInfo().then(info => {
+	process.getProcessMemoryInfo().then((info) => {
 		console.log(`PROCESS`);
 		console.dir(info);
 		console.log("------");

@@ -112,6 +112,7 @@ wwsumodules
 	.add("WWSUremoteQuality", WWSUremoteQuality)
 	.add("WWSUunderwritings", WWSUunderwritings)
 	.add("WWSUsongs", WWSUsongs)
+	.add("WWSUdjnotes", WWSUdjnotes)
 	.add("WWSUemail", WWSUemail);
 
 // Reference modules to variables
@@ -145,6 +146,7 @@ let remoteQuality = wwsumodules.get("WWSUremoteQuality");
 let underwritings = wwsumodules.get("WWSUunderwritings");
 let songs = wwsumodules.get("WWSUsongs");
 let email = wwsumodules.get("WWSUemail");
+let djnotes = wwsumodules.get("WWSUdjnotes");
 
 // Sound alerts
 let sounds = {
@@ -1545,12 +1547,12 @@ window.ipc.on.delay((event, args) => {
 });
 
 // Construct serial port settings
-
+// DISABLED: Does not work right now
 function refreshSerialPorts() {
 	// Get available ports (via custom Electron event in index.js)
 
 	// TODO: this is temporary until Electron fixes their user gesture bug
-	window.ipc.getSerialPorts();
+	// window.ipc.getSerialPorts();
 }
 refreshSerialPorts();
 
@@ -2355,7 +2357,8 @@ function processStatus(db) {
 		.sort((a, b) => a.status - b.status)
 		.map(record => {
 			// Notifications on silence detection
-			if (record.name === `silence` && hosts.isHost) {
+			// TODO: Better way to differentiate between actual silence detected and silence alarm not working
+			if (record.name === `silence` && hosts.isHost && record.data.includes("Silence / very low audio detected")) {
 				window.ipc.makeNotification([
 					{
 						title: "Silence Detected",

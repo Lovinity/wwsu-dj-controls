@@ -1,7 +1,10 @@
 "use strict";
 
-let port;
+var port;
 let statusCheck;
+
+let encoder = new TextEncoder();
+let decoder = new TextDecoder();
 
 /**
  * Convert hexadecimal value to binary
@@ -20,7 +23,14 @@ async function connectSerial() {
 	if (port) return;
 	try {
 		// Get the delay system port we should connect to via Electron custom event in index.js
-		port = window.ipc.getDelayPort();
+		// (Assigns to the global port variable via the main process)
+		await window.ipc.getDelayPort();
+
+		// Error if there is no port
+		if (port === "" || !port)
+			throw new Error(
+				"A serial port was not selected. Please choose the delay system serial port under DJ Controls serial port settings."
+			);
 
 		port.addEventListener("disconnect", (event) => {
 			window.ipc.renderer.console([
@@ -29,32 +39,15 @@ async function connectSerial() {
 			]);
 			console.log(`${port} DISCONNECTED! Re-connecting in 10 seconds...`);
 		});
-		setTimeout(() => {
-			port = undefined;
-			if (hosts.client.delaySystem) {
-				connectSerial().then(() => {
-					// READY
-					window.ipc.renderer.console(["log", "Delay: Process is ready"]);
-					console.log(`Process is ready`);
-					window.ipc.renderer.delayReady([]);
-				});
-			}
-		}, 10000);
 
-		window.ipc.renderer.console([
-			"log",
-			`Delay: Connecting to serial port ${port}...`,
-		]);
-		console.log(`Connecting to serial port ${port}...`);
-
-		// Error if there is no port
-		if (port === "" || !port)
-			throw new Error(
-				"A serial port was not selected. Please choose the delay system serial port under DJ Controls serial port settings."
-			);
+		window.ipc.renderer.console(["log", `Delay: Connecting to serial port...`]);
+		console.log(`Connecting to serial port...`);
 
 		// Wait for the serial port to open.
 		await port.open({ baudRate: 38400 });
+
+		window.ipc.renderer.console(["log", `Delay: Serial port opened.`]);
+		console.log(`Serial port opened.`);
 
 		// Construct status checking interval every 15 seconds
 		clearInterval(statusCheck);
@@ -69,14 +62,12 @@ async function connectSerial() {
 		console.error(e);
 		setTimeout(() => {
 			port = undefined;
-			if (hosts.client.delaySystem) {
-				connectSerial().then(() => {
-					// READY
-					window.ipc.renderer.console(["log", "Delay: Process is ready"]);
-					console.log(`Process is ready`);
-					window.ipc.renderer.delayReady([]);
-				});
-			}
+			connectSerial().then(() => {
+				// READY
+				window.ipc.renderer.console(["log", "Delay: Process is ready"]);
+				console.log(`Process is ready`);
+				window.ipc.renderer.delayReady([]);
+			});
 		}, 10000);
 	}
 }
@@ -87,6 +78,8 @@ async function connectSerial() {
 async function delayReadable() {
 	let delayData;
 	let delayTimer;
+
+	console.log(`Delay readable started`);
 
 	while (port && port.readable) {
 		const reader = port.readable.getReader();
@@ -128,6 +121,7 @@ async function delayReadable() {
 					}, 1000);
 				}
 			}
+			console.log(`No longer true for readable`);
 		} catch (error) {
 			window.ipc.renderer.console(["error", e]);
 			console.error(e);
@@ -152,39 +146,38 @@ async function delayReadable() {
 	);
 
 	setTimeout(() => {
-		if (hosts.client.delaySystem) {
-			connectSerial().then(() => {
-				// READY
-				window.ipc.renderer.console(["log", "Delay: Process is ready"]);
-				console.log(`Process is ready`);
-				window.ipc.renderer.delayReady([]);
-			});
-		}
+		connectSerial().then(() => {
+			// READY
+			window.ipc.renderer.console(["log", "Delay: Process is ready"]);
+			console.log(`Process is ready`);
+			window.ipc.renderer.delayReady([]);
+		});
 	}, 10000);
 }
 
 /**
  * Send data to the delay system.
  *
- * @param {string} data Data to send (should be a hexadecimal string)
+ * @param {ArrayBuffer} data Data to send
  */
 async function sendSerial(data) {
 	console.log(`Sending ${data}`);
 	window.ipc.renderer.console("console", ["log", `Delay: sending ${data}`]);
 
-	data = hexStringToUint8Array(data);
+	console.dir(data);
 
 	if (port && port.writable) {
 		const writer = port.writable.getWriter();
 
 		try {
 			await writer.write(data);
+			console.log(`Written`);
 		} catch (e) {
 			window.ipc.renderer.console([
 				"error",
 				new Error("Error sending data to delay system"),
 			]);
-			console.error(new Error("Error sending data to delay system"));
+			console.error(e);
 		}
 
 		writer.releaseLock();
@@ -211,7 +204,7 @@ async function disconnectSerial() {
  * Request current delay system status
  */
 async function requestStatus() {
-	await sendSerial("FBFF000211ED");
+	await sendSerial(new Uint8Array([0xFB, 0xFF, 0x00, 0x02, 0x11, 0xED]));
 }
 
 /**
@@ -260,7 +253,7 @@ function uInt8ArrayToHexString(uint8) {
 }
 
 // Connect to the delay system immediately
-connect().then(() => {
+connectSerial().then(() => {
 	// READY
 	window.ipc.renderer.console(["log", "Delay: Process is ready"]);
 	console.log(`Process is ready`);

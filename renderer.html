@@ -315,6 +315,7 @@
 		<script src="assets/plugins/wwsu-underwritings/js/wwsu-underwritings.js"></script>
 		<script src="assets/plugins/wwsu-songs/js/wwsu-songs.js"></script>
 		<script src="assets/plugins/wwsu-email/js/wwsu-email.js"></script>
+		<script src="assets/plugins/wwsu-djnotes/js/wwsu-djnotes.js"></script>
 		<link
 			rel="stylesheet"
 			href="assets/plugins/wwsu-navigation/css/wwsu-navigation-flash.css"
@@ -326,11 +327,11 @@
 		<div
 			class="wrapper bg-black text-danger d-none"
 			id="unauthorized"
-			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999;"
+			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999"
 		>
 			<i
 				class="text-danger fas fa-skull-crossbones"
-				style="font-size: 33vw;"
+				style="font-size: 33vw"
 			></i>
 			<h1>Connection Problems</h1>
 			<h3>
@@ -346,11 +347,11 @@
 		<div
 			class="wrapper bg-black text-danger d-none"
 			id="already-connected"
-			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999;"
+			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999"
 		>
 			<i
 				class="text-warning fas fa-skull-crossbones"
-				style="font-size: 33vw;"
+				style="font-size: 33vw"
 			></i>
 			<h1>Another DJ Controls is Running!</h1>
 			<h3>
@@ -365,12 +366,12 @@
 		<div
 			class="wrapper bg-black text-danger d-none"
 			id="connecting"
-			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999;"
+			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999"
 		>
 			<div
 				class="spinner-border text-primary"
 				role="status"
-				style="font-size: 33vw;"
+				style="font-size: 33vw"
 			>
 				<span class="sr-only">Loading...</span>
 			</div>
@@ -383,12 +384,12 @@
 		<div
 			class="wrapper bg-black text-danger"
 			id="loading"
-			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999;"
+			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999"
 		>
 			<div
 				class="spinner-border text-info"
 				role="status"
-				style="font-size: 33vw;"
+				style="font-size: 33vw"
 			>
 				<span class="sr-only">Loading...</span>
 			</div>
@@ -401,12 +402,12 @@
 		<div
 			class="wrapper bg-black text-danger d-none"
 			id="reconnecting"
-			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999;"
+			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999"
 		>
 			<div
 				class="spinner-border text-warning"
 				role="status"
-				style="font-size: 33vw;"
+				style="font-size: 33vw"
 			>
 				<span class="sr-only">Loading...</span>
 			</div>
@@ -417,25 +418,6 @@
 			</h3>
 			<h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
 		</div>
-
-		<!-- Click-me screen -->
-		<!--
-		<div
-			class="wrapper bg-black text-danger"
-			id="clickme"
-			style="text-align: center; height: 100vh; width: 100vw; z-index: 999999;"
-		>
-			<i class="text-info fas fa-mouse-pointer" style="font-size: 33vw;"></i>
-			<h1>Click me to activate!</h1>
-			<h3>
-				Please click anywhere inside here to activate DJ Controls.
-			</h3>
-			<small
-				>This is required for the Web Serial API to work. In a future version, a
-				click will no longer be required.</small
-			>
-		</div>
-		-->
 
 		<!-- All other content -->
 		<div class="wrapper d-none" id="content">
@@ -471,18 +453,18 @@
 					</li>
 					<li
 						class="nav-item operation-queue"
-						style="text-align: center; min-width: 6em;"
+						style="text-align: center; min-width: 6em"
 						title="How much audio is in the RadioDJ queue."
 					>
-						<div class="text-light" style="font-size: 1.5em;">Queue:</div>
+						<div class="text-light" style="font-size: 1.5em">Queue:</div>
 						<div
 							class="text-warning meta-queueLength"
-							style="font-size: 1.75em;"
+							style="font-size: 1.75em"
 						>
 							??:??
 						</div>
 						<div
-							style="text-align: center; font-size: 1.4em;"
+							style="text-align: center; font-size: 1.4em"
 							class="badge badge-danger meta-onAir d-none"
 						>
 							ON AIR
@@ -493,30 +475,30 @@
 						>
 							<div
 								class="progress progress-xs"
-								style="background-color: rgba(255, 0, 0, 0.5);"
+								style="background-color: rgba(255, 0, 0, 0.5)"
 							>
 								<div
 									class="progress-bar bg-lime meta-callQuality-progress"
 									role="progressbar"
-									style="width: 100%;"
+									style="width: 100%"
 								></div>
 							</div>
 						</div>
 					</li>
 					<li
 						class="nav-item operation-firstTrack d-none"
-						style="text-align: center; min-width: 6em;"
+						style="text-align: center; min-width: 6em"
 						title="How much time until the first track of the broadcast (such as the intro/opener) begins."
 					>
-						<div class="text-light" style="font-size: 1.5em;">First Track:</div>
-						<div class="text-info meta-firstTrack" style="font-size: 1.75em;">
+						<div class="text-light" style="font-size: 1.5em">First Track:</div>
+						<div class="text-info meta-firstTrack" style="font-size: 1.75em">
 							??:??
 						</div>
 					</li>
 					<li class="nav-item operation-button operation-resume d-none">
 						<button
 							class="btn btn-app bg-success btn-operation-resume"
-							style="height: 6em; font-size: 1em;"
+							style="height: 6em; font-size: 1em"
 							title="End the break and resume the broadcast"
 						>
 							<i class="fas fa-check"></i> Resume
@@ -525,7 +507,7 @@
 					<li class="nav-item operation-button operation-15-psa d-none">
 						<button
 							class="btn btn-app bg-purple btn-operation-15-psa"
-							style="height: 6em; font-size: 1em;"
+							style="height: 6em; font-size: 1em"
 							title="Add a 15-second PSA to the queue"
 						>
 							<i class="fas fa-plus"></i> +15-sec <br />
@@ -535,7 +517,7 @@
 					<li class="nav-item operation-button operation-30-psa d-none">
 						<button
 							class="btn btn-app bg-purple btn-operation-30-psa"
-							style="height: 6em; font-size: 1em;"
+							style="height: 6em; font-size: 1em"
 							title="Add a 30-second PSA to the queue"
 						>
 							<i class="fas fa-plus"></i> +30-sec <br />
@@ -545,7 +527,7 @@
 					<li class="nav-item operation-button operation-live d-none">
 						<button
 							class="btn btn-app bg-danger btn-operation-live"
-							style="height: 6em; font-size: 1em;"
+							style="height: 6em; font-size: 1em"
 							title="Start a live show produced in the WWSU studio"
 						>
 							<i class="fas fa-microphone"></i> Live
@@ -554,7 +536,7 @@
 					<li class="nav-item operation-button operation-remote d-none">
 						<button
 							class="btn btn-app bg-indigo btn-operation-remote"
-							style="height: 6em; font-size: 1em;"
+							style="height: 6em; font-size: 1em"
 							title="Start a remote show streamed via DJ Controls to WWSU"
 						>
 							<i class="fas fa-broadcast-tower"></i> Remote
@@ -563,7 +545,7 @@
 					<li class="nav-item operation-button operation-sports d-none">
 						<button
 							class="btn btn-app bg-success btn-operation-sports"
-							style="height: 6em; font-size: 1em;"
+							style="height: 6em; font-size: 1em"
 							title="Start a sports broadcast produced in the WWSU studio"
 						>
 							<i class="fas fa-basketball-ball"></i> Sports Live
@@ -572,7 +554,7 @@
 					<li class="nav-item operation-button operation-sportsremote d-none">
 						<button
 							class="btn btn-app bg-teal btn-operation-sportsremote"
-							style="height: 6em; font-size: 1em;"
+							style="height: 6em; font-size: 1em"
 							title="Start a sports broadcast streamed via DJ Controls to WWSU"
 						>
 							<i class="fas fa-basketball-ball"></i> Sports Remote
@@ -581,7 +563,7 @@
 					<li class="nav-item operation-button operation-automation d-none">
 						<button
 							class="btn btn-app bg-primary btn-operation-automation"
-							style="height: 6em; font-size: 1em;"
+							style="height: 6em; font-size: 1em"
 							title="End the broadcast and go to automation"
 						>
 							<i class="fas fa-microphone-slash"></i> End <br />
@@ -591,7 +573,7 @@
 					<li class="nav-item operation-button operation-break d-none">
 						<button
 							class="btn btn-app bg-warning btn-operation-break"
-							style="height: 6em; font-size: 1em;"
+							style="height: 6em; font-size: 1em"
 							title="Play underwritings and PSAs until you resume the broadcast"
 						>
 							<i class="fas fa-coffee"></i> Take a <br />
@@ -601,7 +583,7 @@
 					<li class="nav-item operation-button operation-extended-break d-none">
 						<button
 							class="btn btn-app bg-orange btn-operation-extended-break"
-							style="height: 6em; font-size: 1em;"
+							style="height: 6em; font-size: 1em"
 							title="Play music and suspend audio streaming until you resume the broadcast"
 						>
 							<i class="fas fa-hourglass"></i> Extended <br />
@@ -611,7 +593,7 @@
 					<li class="nav-item operation-button operation-top-add d-none">
 						<button
 							class="btn btn-app bg-purple btn-operation-top-add"
-							style="height: 6em; font-size: 1em;"
+							style="height: 6em; font-size: 1em"
 							title="Play a random top add music track immediately"
 						>
 							<i class="fas fa-headphones"></i> Play <br />
@@ -621,7 +603,7 @@
 					<li class="nav-item operation-button operation-liner d-none">
 						<button
 							class="btn btn-app bg-purple btn-operation-liner"
-							style="height: 6em; font-size: 1em;"
+							style="height: 6em; font-size: 1em"
 							title="Play a short station liner"
 						>
 							<i class="fas fa-angle-double-right"></i> Play Liner
@@ -630,23 +612,25 @@
 					<li class="nav-item operation-button operation-log d-none">
 						<button
 							class="btn btn-app bg-info btn-operation-log"
-							style="height: 6em; font-size: 1em;"
+							style="height: 6em; font-size: 1em"
 							title="Log something you played on the air, such as music."
 						>
 							<i class="fas fa-file"></i> Add a <br />
 							Log
 						</button>
 					</li>
+					<!--
 					<li class="nav-item operation-button operation-dump d-none">
 						<button
 							class="btn btn-app bg-fuchsia btn-operation-dump"
-							style="height: 6em; font-size: 1em;"
+							style="height: 6em; font-size: 1em"
 							title="Remotely trigger the dump on the delay system if something inappropriate was said."
 						>
 							<i class="fas fa-eject"></i> Dump <br />
 							(<span class="operation-dump-time">??? Secs</span>)
 						</button>
 					</li>
+					-->
 				</ul>
 
 				<!-- Right navbar links -->
@@ -662,7 +646,7 @@
 						src="assets/images/logo_round.png"
 						alt="WWSU logo"
 						class="brand-image img-circle elevation-3"
-						style="opacity: 0.8;"
+						style="opacity: 0.8"
 					/>
 					<span class="brand-text font-weight-light">WWSU DJ Controls</span
 					><br />
@@ -705,9 +689,7 @@
 									title="View the clockwheel, announcements / reported problems, and broadcast log."
 								>
 									<i class="nav-icon nav-icon-dashboard fas fa-lightbulb"></i>
-									<p>
-										Dashboard
-									</p>
+									<p>Dashboard</p>
 								</a>
 							</li>
 							<li class="nav-item">
@@ -718,9 +700,7 @@
 									title="View announcements and important info for DJs."
 								>
 									<i class="nav-icon fas fa-bullhorn"></i>
-									<p>
-										Announcements
-									</p>
+									<p>Announcements</p>
 								</a>
 							</li>
 							<li class="nav-item">
@@ -733,9 +713,7 @@
 									<i
 										class="nav-icon nav-icon-weather fas fa-cloud-sun-rain"
 									></i>
-									<p>
-										Weather
-									</p>
+									<p>Weather</p>
 								</a>
 							</li>
 							<li class="nav-item">
@@ -746,9 +724,7 @@
 									title="View news from Wright State Guardian Media Group in a new window."
 								>
 									<i class="nav-icon fas fa-newspaper"></i>
-									<p>
-										WSU Guardian
-									</p>
+									<p>WSU Guardian</p>
 								</a>
 							</li>
 							<li class="nav-item">
@@ -759,9 +735,7 @@
 									title="View news from Wright State Newsroom in a new window."
 								>
 									<i class="nav-icon far fa-newspaper"></i>
-									<p>
-										WSU Newsroom
-									</p>
+									<p>WSU Newsroom</p>
 								</a>
 							</li>
 							<li class="nav-item">
@@ -772,9 +746,7 @@
 									title="View the Wright State Raiders sports page in a new window."
 								>
 									<i class="nav-icon fas fa-basketball-ball"></i>
-									<p>
-										WSU Raiders
-									</p>
+									<p>WSU Raiders</p>
 								</a>
 							</li>
 							<li class="nav-item">
@@ -785,9 +757,7 @@
 									title="View the Horizon league sports page in a new window."
 								>
 									<i class="nav-icon fas fa-trophy"></i>
-									<p>
-										Horizon League
-									</p>
+									<p>Horizon League</p>
 								</a>
 							</li>
 							<li class="nav-header text-light">CONTROL</li>
@@ -815,9 +785,7 @@
 									title="Send and view messages from others in the Discord server"
 								>
 									<i class="nav-icon fab fa-discord"></i>
-									<p>
-										Discord
-									</p>
+									<p>Discord</p>
 								</a>
 							</li>
 							<li class="nav-item">
@@ -846,9 +814,7 @@
 									<i
 										class="nav-icon nav-icon-report fas fa-exclamation-triangle"
 									></i>
-									<p>
-										Report a Problem
-									</p>
+									<p>Report a Problem</p>
 								</a>
 							</li>
 							<li class="nav-header text-light">DJ CONTROLS SETTINGS</li>
@@ -864,19 +830,19 @@
 										Audio
 										<span class="right">
 											<span
-												style="margin-left: 0rem;"
+												style="margin-left: 0rem"
 												class="badge badge-secondary notifications-silence"
 												title="Silence Detection Status: Gray = off, Green = no silence, yellow = silence without alarm, red = silence alarm"
 												><i class="fas fa-volume-mute"></i
 											></span>
 											<span
-												style="margin-left: 0rem;"
+												style="margin-left: 0rem"
 												class="badge badge-secondary notifications-recorder"
 												title="Recorder status: Gray = off, Green = recording, Yellow = not recording"
 												><i class="fas fa-circle"></i
 											></span>
 											<span
-												style="margin-left: 0rem;"
+												style="margin-left: 0rem"
 												class="badge badge-secondary notifications-remote"
 												title="Remote broadcast call status: Gray = inactive, blue = active but no call started yet, green = good (sending audio), teal = good (receiving audio), yellow = poor quality detected, red = disconnected"
 												><i class="fas fa-broadcast-tower"></i
@@ -897,7 +863,7 @@
 										Serial Ports
 										<span class="right">
 											<span
-												style="margin-left: 0rem;"
+												style="margin-left: 0rem"
 												class="badge badge-secondary notifications-delay"
 												title="Delay System Status: Gray = off, Green = on/connected"
 												><i class="fas fa-hourglass-start"></i
@@ -921,31 +887,31 @@
 										To-Do
 										<span class="right">
 											<span
-												style="margin-left: 0rem;"
+												style="margin-left: 0rem"
 												class="badge badge-danger notifications-danger"
 												title="Danger items (needs addressed immediately)."
 												>0</span
 											>
 											<span
-												style="margin-left: 0rem;"
+												style="margin-left: 0rem"
 												class="badge bg-orange notifications-orange"
 												title="Urgent items (needs addressed as soon as possible)."
 												>0</span
 											>
 											<span
-												style="margin-left: 0rem;"
+												style="margin-left: 0rem"
 												class="badge bg-warning notifications-warning"
 												title="Important items (needs addressed at earliest convenience)."
 												>0</span
 											>
 											<span
-												style="margin-left: 0rem;"
+												style="margin-left: 0rem"
 												class="badge badge-info notifications-info"
 												title="Things that need reviewed but are not significantly important."
 												>0</span
 											>
 											<span
-												style="margin-left: 0rem;"
+												style="margin-left: 0rem"
 												class="badge badge-primary notifications-primary"
 												title="DJs without email/password set, and timesheets that need approved."
 												>0</span
@@ -962,9 +928,7 @@
 									title="Browse various analytic charts for broadcasts and DJs."
 								>
 									<i class="nav-icon fas fa-chart-line text-danger"></i>
-									<p>
-										Analytics
-									</p>
+									<p>Analytics</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -975,9 +939,7 @@
 									title="Manage announcements and display sign slides."
 								>
 									<i class="nav-icon fas fa-bullhorn"></i>
-									<p>
-										Announcements
-									</p>
+									<p>Announcements</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -988,9 +950,7 @@
 									title="Make a raw API query to WWSU."
 								>
 									<i class="nav-icon fas fa-terminal"></i>
-									<p>
-										API Query
-									</p>
+									<p>API Query</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -1001,9 +961,7 @@
 									title="Manage bans / disciplinary action on web visitors and those who use the WWSU API."
 								>
 									<i class="nav-icon fas fa-ban"></i>
-									<p>
-										Bans
-									</p>
+									<p>Bans</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -1014,9 +972,7 @@
 									title="Manage events / broadcasts and their schedules."
 								>
 									<i class="nav-icon fas fa-calendar"></i>
-									<p>
-										Calendar
-									</p>
+									<p>Calendar</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -1027,9 +983,7 @@
 									title="Manage directors / assistant directors in the system. Directors should always be kept up to date or unauthorized [ex]-directors could make changes to the system."
 								>
 									<i class="nav-icon fas fa-user-tie"></i>
-									<p>
-										Directors
-									</p>
+									<p>Directors</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -1040,9 +994,7 @@
 									title="Manage the DJs (on-air talents) in the system."
 								>
 									<i class="nav-icon fas fa-user"></i>
-									<p>
-										DJs
-									</p>
+									<p>DJs</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -1053,9 +1005,7 @@
 									title="Manage the internal Emergency Alert System for WWSU."
 								>
 									<i class="nav-icon fas fa-bolt"></i>
-									<p>
-										EAS
-									</p>
+									<p>EAS</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -1066,9 +1016,7 @@
 									title="Send emails out to DJs / directors in the system"
 								>
 									<i class="nav-icon fas fa-envelope-open-text"></i>
-									<p>
-										Email
-									</p>
+									<p>Email</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -1079,9 +1027,7 @@
 									title="Manage the devices / DJ Controls allowed to connect to WWSU and their privileges."
 								>
 									<i class="nav-icon fas fa-laptop"></i>
-									<p>
-										Hosts
-									</p>
+									<p>Hosts</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -1092,9 +1038,7 @@
 									title="Manage WWSU equipment inventory and checking equipment in/out."
 								>
 									<i class="nav-icon fas fa-box"></i>
-									<p>
-										Inventory
-									</p>
+									<p>Inventory</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -1105,9 +1049,7 @@
 									title="Browse operation and broadcast logs."
 								>
 									<i class="nav-icon fas fa-file-alt"></i>
-									<p>
-										Logs
-									</p>
+									<p>Logs</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -1118,9 +1060,7 @@
 									title="Perform actions / maintenance on the system."
 								>
 									<i class="nav-icon fas fa-cog text-danger"></i>
-									<p>
-										Maintenance
-									</p>
+									<p>Maintenance</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -1131,9 +1071,7 @@
 									title="Manage and view passwords for WWSU-related accounts."
 								>
 									<i class="nav-icon fas fa-key text-danger"></i>
-									<p>
-										Password Manager
-									</p>
+									<p>Password Manager</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -1144,9 +1082,7 @@
 									title="Manage system-wide configuration for WWSU."
 								>
 									<i class="nav-icon fas fa-cogs text-danger"></i>
-									<p>
-										System Settings
-									</p>
+									<p>System Settings</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -1157,9 +1093,7 @@
 									title="Manage and view the timesheets and clocked hours of directors."
 								>
 									<i class="nav-icon fas fa-clock"></i>
-									<p>
-										Timesheets
-									</p>
+									<p>Timesheets</p>
 								</a>
 							</li>
 							<li class="nav-item nav-admin d-none">
@@ -1170,9 +1104,7 @@
 									title="Manage the underwritings (commercials) in the system and when they should air."
 								>
 									<i class="nav-icon fas fa-hand-holding-usd"></i>
-									<p>
-										Underwritings
-									</p>
+									<p>Underwritings</p>
 								</a>
 							</li>
 						</ul>
@@ -1184,7 +1116,7 @@
 
 			<!-- Dashboard page -->
 			<section id="section-dashboard">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -1214,7 +1146,7 @@
 											<span
 												class="info-box-icon bg-warning meta-trackFinish"
 												title="How much time is left in the current track"
-												style="font-size: 1.33rem;"
+												style="font-size: 1.33rem"
 												>??:??</span
 											>
 
@@ -1252,9 +1184,7 @@
 											<div class="icon">
 												<i class="fas fa-headphones"></i>
 											</div>
-											<div class="small-box-footer">
-												Excludes FM
-											</div>
+											<div class="small-box-footer">Excludes FM</div>
 										</div>
 									</div>
 									<!-- ./col -->
@@ -1275,12 +1205,12 @@
 											<div class="small-box-footer">
 												<div
 													class="progress progress-xs m-2"
-													style="background-color: rgba(0, 0, 0, 0.125);"
+													style="background-color: rgba(0, 0, 0, 0.125)"
 												>
 													<div
 														class="progress-bar bg-light meta-remaining-progress"
 														role="progressbar"
-														style="width: 0%;"
+														style="width: 0%"
 													></div>
 												</div>
 											</div>
@@ -1346,7 +1276,7 @@
 												<div class=""></div>
 											</div>
 										</div>
-										<div style="position: relative;">
+										<div style="position: relative">
 											<canvas
 												id="clockwheel-donut"
 												style="
@@ -1360,7 +1290,7 @@
 											<div
 												class="clock-container"
 												id="clockwheel-clock"
-												style="user-select: none; pointer-events: none;"
+												style="user-select: none; pointer-events: none"
 											>
 												<div class="clock">
 													<div class="clock-hour"></div>
@@ -1391,7 +1321,7 @@
 										<div
 											class="timeline"
 											id="section-dashboard-logs"
-											style="max-height: 500px; overflow-y: scroll;"
+											style="max-height: 500px; overflow-y: scroll"
 										></div>
 									</div>
 								</div>
@@ -1404,7 +1334,7 @@
 
 			<!-- Announcements (view) -->
 			<section id="section-announcements-view">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -1453,7 +1383,7 @@
 
 			<!--Chat--->
 			<section id="section-chat">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<div class="content-header">
 						<div class="container-fluid">
 							<div class="row mb-2">
@@ -1494,7 +1424,7 @@
 								</p>
 								<div
 									class="chat-messages"
-									style="height: 33vh; overflow-x: auto;"
+									style="height: 33vh; overflow-x: auto"
 								>
 									<!--Chat messages go here-->
 								</div>
@@ -1517,7 +1447,7 @@
 
 			<!--Discord--->
 			<section id="section-discord">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -1570,7 +1500,7 @@
 
 			<!-- Track Requests-->
 			<section id="section-requests">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -1617,15 +1547,13 @@
 			</section>
 
 			<section id="section-weather">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0">
-										WWSU Weather (powered by Tomorrow.io)
-									</h1>
+									<h1 class="m-0">WWSU Weather (powered by Tomorrow.io)</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -1743,21 +1671,6 @@
 												More info <i class="fas fa-arrow-circle-right"></i>
 											</a>
 										</div>
-										<div
-											class="small-box bg-gray climacell-nowcast-color"
-											title="How long until precipitation is possible or will end."
-										>
-											<div class="inner">
-												<h3 class="climacell-nowcast-time">???</h3>
-
-												<p class="climacell-nowcast-text">
-													Precipitation Expected
-												</p>
-											</div>
-											<div class="icon">
-												<i class="fas fa-cloud-showers-heavy"></i>
-											</div>
-										</div>
 									</div>
 								</div>
 							</div>
@@ -1775,20 +1688,20 @@
 								<div class="container-fluid">
 									<div class="row">
 										<div class="col-md-6 col-12">
-											<div style="position: relative;">
+											<div style="position: relative">
 												<canvas
 													id="weather-forecast-donut"
 													style="
-												min-height: 50vh;
-												height: 66vh;
-												max-width: 100%;
-											"
+														min-height: 50vh;
+														height: 66vh;
+														max-width: 100%;
+													"
 												>
 												</canvas>
 												<div
 													class="clock-container"
 													id="weather-forecast-clock"
-													style="user-select: none; pointer-events: none;"
+													style="user-select: none; pointer-events: none"
 												>
 													<div class="clock">
 														<div class="clock-hour"></div>
@@ -1811,78 +1724,78 @@
 									<div class="row">
 										<div class="col-12 col-md-6 col-lg-4">
 											Clear
-											<span style="background: #FFD700;"
+											<span style="background: #ffd700"
 												><i class="fas fa-sun"></i
 											></span>
-											<span class="text-light" style="background: #B29600;"
+											<span class="text-light" style="background: #b29600"
 												><i class="fas fa-cloud-sun"></i
 											></span>
-											<span class="text-light" style="background: #665600;"
+											<span class="text-light" style="background: #665600"
 												><i class="fas fa-cloud"></i
 											></span>
 											Cloudy
 										</div>
 										<div class="col-12 col-md-6 col-lg-4">
 											Light Rain
-											<span style="background: #B2B2FF;"
+											<span style="background: #b2b2ff"
 												><i class="fas fa-cloud-sun-rain"></i
 											></span>
-											<span class="text-light" style="background: #6666FF;"
+											<span class="text-light" style="background: #6666ff"
 												><i class="fas fa-cloud-showers-heavy"></i
 											></span>
-											<span class="text-light" style="background: #0000FF;"
+											<span class="text-light" style="background: #0000ff"
 												><i class="fas fa-cloud-rain"></i
 											></span>
 											Heavy Rain
 										</div>
 										<div class="col-12 col-md-6 col-lg-4">
 											Light Snow
-											<span style="background: #AEAEAE;"
+											<span style="background: #aeaeae"
 												><i class="far fa-snowflake"></i
 											></span>
-											<span class="text-light" style="background: #787878;"
+											<span class="text-light" style="background: #787878"
 												><i class="fas fa-snowman"></i
 											></span>
-											<span class="text-light" style="background: #484848;"
+											<span class="text-light" style="background: #484848"
 												><i class="fas fa-snowboarding"></i
 											></span>
 											Heavy Snow
 										</div>
 										<div class="col-12 col-md-6 col-lg-4">
 											Light Storms
-											<span class="text-light" style="background: #FF6666;"
+											<span class="text-light" style="background: #ff6666"
 												><i class="fas fa-bolt"></i
 											></span>
-											<span class="text-light" style="background: #FF0000;"
+											<span class="text-light" style="background: #ff0000"
 												><i class="fas fa-bolt"></i
 											></span>
-											<span class="text-light" style="background: #990000;"
+											<span class="text-light" style="background: #990000"
 												><i class="fas fa-poo-storm"></i
 											></span>
 											Heavy Storms
 										</div>
 										<div class="col-12 col-md-6 col-lg-4">
 											Light Ice
-											<span style="background: #E2A3FF;"
+											<span style="background: #e2a3ff"
 												><i class="fas fa-icicles"></i
 											></span>
-											<span class="text-light" style="background: #CF66FF;"
+											<span class="text-light" style="background: #cf66ff"
 												><i class="fas fa-skating"></i
 											></span>
-											<span class="text-light" style="background: #B000FF;"
+											<span class="text-light" style="background: #b000ff"
 												><i class="fas fa-igloo"></i
 											></span>
 											Heavy Ice
 										</div>
 										<div class="col-12 col-md-6 col-lg-4">
 											Breezy
-											<span style="background: #7FBF7F;"
+											<span style="background: #7fbf7f"
 												><i class="fas fa-fan"></i
 											></span>
-											<span class="text-light" style="background: #008000;"
+											<span class="text-light" style="background: #008000"
 												><i class="fas fa-wind"></i
 											></span>
-											<span class="text-light" style="background: #004000;"
+											<span class="text-light" style="background: #004000"
 												><i class="fas fa-wind"></i
 											></span>
 											Very Windy
@@ -1898,7 +1811,7 @@
 
 			<!-- Report a problem page -->
 			<section id="section-report">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -1944,7 +1857,7 @@
 
 			<!-- Audio settings page -->
 			<section id="section-audio">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -2101,7 +2014,7 @@
 
 			<!-- Serial Port settings -->
 			<section id="section-serial">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -2119,6 +2032,15 @@
 
 					<!-- Main content -->
 					<div class="content">
+						<div class="callout callout-danger">
+							<h5>DISABLED FOR NOW</h5>
+							<p>
+								Due to numerous problems with the web serial API, serial ports
+								and delay system monitoring are not currently supported in this
+								version of DJ Controls.
+							</p>
+						</div>
+						<!--
 						<div class="callout callout-info">
 							<h5>Settings are specific to this DJ Controls</h5>
 							<p>
@@ -2149,7 +2071,6 @@
 									</button>
 								</div>
 							</div>
-							<!-- /.card-header -->
 							<div class="card-body" id="section-serial-delay">
 								<div class="form-group">
 									<label for="section-serial-delay-port"
@@ -2160,15 +2081,15 @@
 									</select>
 								</div>
 							</div>
-							<!-- /.card-body -->
 						</div>
+						-->
 					</div>
 				</div>
 			</section>
 
 			<!-- Todo page -->
 			<section id="section-notifications">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<div class="content-header">
 						<div class="container-fluid">
 							<div class="row mb-2">
@@ -2213,7 +2134,7 @@
 
 			<!-- Announcements options page -->
 			<section id="section-announcements">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -2251,7 +2172,7 @@
 
 			<!-- API Query -->
 			<section id="section-api">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -2290,7 +2211,7 @@
 
 			<!-- Bans management -->
 			<section id="section-bans">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -2336,7 +2257,7 @@
 
 			<!-- Calendar -->
 			<section id="section-calendar">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<div class="content-header">
 						<div class="container-fluid">
 							<div class="row mb-2">
@@ -2650,7 +2571,7 @@
 
 			<!-- Directors management -->
 			<section id="section-directors">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -2695,7 +2616,7 @@
 
 			<!-- DJ management -->
 			<section id="section-djs">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -2749,15 +2670,13 @@
 
 			<!-- EAS management -->
 			<section id="section-eas">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
 							<div class="row mb-2">
 								<div class="col-sm-6">
-									<h1 class="m-0">
-										Manage Internal Emergency Alert System
-									</h1>
+									<h1 class="m-0">Manage Internal Emergency Alert System</h1>
 								</div>
 								<!-- /.col -->
 							</div>
@@ -2798,7 +2717,7 @@
 
 			<!-- Emailing -->
 			<section id="section-email">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -2839,7 +2758,7 @@
 
 			<!-- Hosts management -->
 			<section id="section-hosts">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -2899,7 +2818,7 @@
 
 			<!-- Inventory management -->
 			<section id="section-inventory">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">
@@ -2944,7 +2863,7 @@
 
 			<!--- Logs -->
 			<section id="section-logs">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<div class="content-header">
 						<div class="container-fluid">
 							<div class="row mb-2">
@@ -3000,7 +2919,7 @@
 
 			<!-- Timesheets -->
 			<section id="section-timesheets">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<div class="content-header">
 						<div class="container-fluid">
 							<div class="row mb-2">
@@ -3066,7 +2985,7 @@
 
 			<!-- Underwritings management -->
 			<section id="section-underwritings">
-				<div class="content-wrapper" style="padding-top: 8em;">
+				<div class="content-wrapper" style="padding-top: 8em">
 					<!-- Content Header (Page header) -->
 					<div class="content-header">
 						<div class="container-fluid">

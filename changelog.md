@@ -1,12 +1,30 @@
 # Changelog for wwsu-dj-controls
 
-## 8.18.0-alpha
+## 8.18.0-alpha - 2021-05-10
+
+### Changed
+
+- [BREAKING] Disabled serial / delay support for the time being due to numerous issues both with node-serialport and web serial api
+- [BREAKING] Priority 0 events now operate differently; they can overlap other priority 0 events of different types but cannot overlap priority 0 events of the same type.
+- [BREAKING] "Show" and "Sports" event types will always override onair-booking event type regardless of priority.
+- Updated renderer and WWSUclimacell with new climacell API data
+- DJ removal now marks DJ as inactive instead of fully removing them (inactive DJs are deleted after 1 year). However, DJs can be permanently removed after marked inactive.
+  - Inactive DJs cannot be chosen for calendar/event hosts and other functions.
+- Event list now includes inactive events
+- Event removal now involves marking the event inactive first instead of immediately removing it
+- Remote dump button is now visible for live and sports broadcasts just in case someone is more used to clicking that than pushing the physical button in the studio.
+- Reverted AdminLTE color scheme back to its defaults as it is more compatible with dark mode.
+- Styling of meta info on the dashboard
+
+### Removed
+
+- Scheduled Hours tally in timesheets; it was buggy and not necessary since we expect every director to have a set number of scheduled hours.
 
 ### Added
 
-- Serial / delay system support via an executeJavascript workaround
 - Dark mode (DJ Controls also remembers upon next start-up if you had dark mode active)
 - Email tab for writing and sending emails to DJs or directors in the system.
+- DJ Notes functionality via Admin -> DJs (can add notes, remote credits, or discipline).
 - Callout info boxes indicating logs/records are deleted after 2 years.
 - Text/badges to icon columns in tables
 - Event listener for WWSUrecipients in WWSUmessages; when a recipient changes, updateRecipient() is called in case the recipient that changed was the active / selected recipient (updates the text at the top of the message window).
@@ -23,23 +41,7 @@
 - Responsive table bugs; sometimes actions buttons did not have priority
 - Deleting a schedule did not properly display necessary info in confirm action window because we were using an undefined variable
 - DJ attendance logs did not have a view log button for canceled / absent records; it should because there is a log for marking it excused or unexcused.
-
-### Changed
-
-- [BREAKING] Priority 0 events now operate differently; they can overlap other priority 0 events of different types but cannot overlap priority 0 events of the same type.
-- [BREAKING] "Show" and "Sports" event types will always override onair-booking event type regardless of priority.
-- Updated renderer and WWSUclimacell with new climacell API data
-- DJ removal now marks DJ as inactive instead of fully removing them (inactive DJs are deleted after 1 year). However, DJs can be permanently removed after marked inactive.
-  - Inactive DJs cannot be chosen for calendar/event hosts and other functions.
-- Event list now includes inactive events
-- Event removal now involves marking the event inactive first instead of immediately removing it
-- Remote dump button is now visible for live and sports broadcasts just in case someone is more used to clicking that than pushing the physical button in the studio.
-- Reverted AdminLTE color scheme back to its defaults as it is more compatible with dark mode.
-- Styling of meta info on the dashboard
-
-### Removed
-
-- Scheduled Hours tally in timesheets; it was buggy and not necessary since we expect every director to have a set number of scheduled hours.
+- Silence detection notifications popped up when silence detection reports offline; it should only pop up for actual silence detections.
 
 ### Updated
 

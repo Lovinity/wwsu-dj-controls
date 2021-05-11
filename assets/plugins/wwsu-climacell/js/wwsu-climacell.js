@@ -130,7 +130,6 @@ class WWSUclimacell extends WWSUdb {
 			this.ncTimer = setTimeout(() => {
 				this.updateClock();
 				this.updateData();
-				this.recalculateNowcast();
 			}, 1000);
 		});
 		super.on("update", "WWSUclimacell", query => {
@@ -138,7 +137,6 @@ class WWSUclimacell extends WWSUdb {
 			this.ncTimer = setTimeout(() => {
 				this.updateClock();
 				this.updateData();
-				this.recalculateNowcast();
 			}, 1000);
 		});
 		super.on("remove", "WWSUclimacell", query => {
@@ -147,7 +145,6 @@ class WWSUclimacell extends WWSUdb {
 			this.ncTimer = setTimeout(() => {
 				this.updateClock();
 				this.updateData();
-				this.recalculateNowcast();
 			}, 1000);
 		});
 		super.on("replace", "WWSUclimacell", db => {
@@ -155,7 +152,6 @@ class WWSUclimacell extends WWSUdb {
 			this.ncTimer = setTimeout(() => {
 				this.updateClock();
 				this.updateData();
-				this.recalculateNowcast();
 			}, 1000);
 		});
 	}
@@ -472,114 +468,6 @@ class WWSUclimacell extends WWSUdb {
 					}
 				});
 		});
-	}
-
-	// Recalculate when precipitation is expected
-	recalculateNowcast() {
-		let precip = [];
-
-		// Populate precip
-		this.db()
-			.get()
-			.filter(record => record.dataClass.startsWith("5m-"))
-			.map(record => {
-				let splits = record.dataClass.split("-");
-				let ncNumber = parseInt(splits[1]);
-				if (typeof precip[ncNumber] === "undefined") {
-					precip[ncNumber] = { type: null, rate: null, time: null };
-				}
-
-				for (let value in record.data) {
-					if (!Object.prototype.hasOwnProperty.call(record.data, value)) return;
-
-					if (value === "precipitationType") {
-						precip[ncNumber].type = record.data[value];
-						precip[ncNumber].time = record.dataTime;
-					}
-					if (value === "precipitationIntensity") {
-						precip[ncNumber].rate = record.data[value];
-					}
-				}
-			});
-
-		// sort precip by observation time
-		precip.sort((a, b) => {
-			if (!a.time) return 1;
-			if (!b.time) return -1;
-			if (moment(a.time).isBefore(moment(b.time))) return -1;
-			if (moment(b.time).isBefore(moment(a.time))) return 1;
-			return 0;
-		});
-
-		// Figure out the next chance of precipitation, and update cards
-		let precipExpected = precip.find(record => record.rate);
-		let realtimePrecipType = this.db({
-			dataClass: `current-0-precipitationType`
-		}).first();
-		let realtimePrecipIntensity = this.db({
-			dataClass: `current-0-precipitationIntensity`
-		}).first();
-		if (
-			precipExpected &&
-			(!realtimePrecipType ||
-				!realtimePrecipType.data ||
-				!realtimePrecipIntensity ||
-				!realtimePrecipIntensity.data ||
-				!parseInt(realtimePrecipIntensity.data))
-		) {
-			$(".climacell-nowcast-color").removeClass(`bg-gray`);
-			$(".climacell-nowcast-color").removeClass(`bg-danger`);
-			$(".climacell-nowcast-color").removeClass(`bg-success`);
-			$(".climacell-nowcast-color").addClass(`bg-warning`);
-			$(".climacell-nowcast-time").html(
-				moment
-					.tz(
-						precipExpected.time,
-						this.manager.get("WWSUMeta")
-							? this.manager.get("WWSUMeta").meta.timezone
-							: moment.tz.guess()
-					)
-					.format("h:mm A")
-			);
-			$(".climacell-nowcast-text").html(
-				`${this.precipitationTypeString[precipExpected.type]} possible`
-			);
-		} else if (!precipExpected) {
-			$(".climacell-nowcast-color").removeClass(`bg-gray`);
-			$(".climacell-nowcast-color").removeClass(`bg-danger`);
-			$(".climacell-nowcast-color").removeClass(`bg-warning`);
-			$(".climacell-nowcast-color").addClass(`bg-success`);
-			$(".climacell-nowcast-time").html(`None`);
-			$(".climacell-nowcast-text").html(`No Precip Next 6 Hours`);
-		} else {
-			$(".climacell-nowcast-color").removeClass(`bg-gray`);
-			$(".climacell-nowcast-color").removeClass(`bg-success`);
-			$(".climacell-nowcast-color").removeClass(`bg-warning`);
-			$(".climacell-nowcast-color").addClass(`bg-danger`);
-
-			// Determine when the precip is expected to end
-			let precipEnd = precip.find(record => !record.rate);
-			$(".climacell-nowcast-time").html(
-				precipEnd
-					? moment
-							.tz(
-								precipEnd.time,
-								this.manager.get("WWSUMeta")
-									? this.manager.get("WWSUMeta").meta.timezone
-									: moment.tz.guess()
-							)
-							.format("h:mm A")
-					: `Next >6 Hours`
-			);
-			$(".climacell-nowcast-text").html(
-				`${
-					realtimePrecipType
-						? this.precipitationTypeString[realtimePrecipType.data] ||
-						  `Unknown Precip`
-						: `Unknown Precip`
-				} ending`
-			);
-		}
 	}
 
 	/**
