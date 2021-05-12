@@ -531,12 +531,17 @@ class WWSUcalendar extends CalendarDb {
 								true
 							);
 							let calendarID = parseInt($(e.currentTarget).data("calendarid"));
-							let calendar = this.schedule.find({ ID: calendarID }, true);
 							this.showScheduleForm(schedule, calendarID);
 						});
 
 						// Prompt before deleting a schedule
 						$(".btn-schedule-delete").click(e => {
+							let schedule = this.schedule.find(
+								{ ID: parseInt($(e.currentTarget).data("scheduleid")) },
+								true
+							);
+							let calendarID = parseInt($(e.currentTarget).data("calendarid"));
+							let calendar = this.schedule.find({ ID: calendarID }, true);
 							this.manager.get("WWSUutil").confirmDialog(
 								`<p>Are you sure you want to delete that schedule?</p>
                         <ul>
