@@ -1,5 +1,11 @@
 # Changelog for wwsu-dj-controls
 
+## 8.18.2-alpha - 2021-05-12
+
+### Fixed
+
+- Schedule is not defined in calendar
+
 ## 8.18.1-alpha - 2021-05-12
 
 ### Added
