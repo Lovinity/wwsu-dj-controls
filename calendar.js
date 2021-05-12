@@ -53,7 +53,7 @@ window.ipc.on.updateClockwheel((event, arg) => {
 						"playlist",
 						"genre",
 					].indexOf(event.type) !== -1 &&
-					["canceled", "canceled-system", "canceled-updated"].indexOf(
+					["canceled", "canceled-system", "canceled-changed"].indexOf(
 						event.scheduleType
 					) === -1
 			)

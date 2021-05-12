@@ -1,5 +1,15 @@
 # Changelog for wwsu-dj-controls
 
+## 8.18.1-alpha - 2021-05-12
+
+### Added
+
+- Notifications when an on-air broadcast interferes with another scheduled broadcast.
+
+### Fixed
+
+- Clockwheel was showing canceled-changed events (because the code checked in error for canceled-updated instead of canceled-changed) when it should not have been.
+
 ## 8.18.0-alpha - 2021-05-10
 
 ### Changed
