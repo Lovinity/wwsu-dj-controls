@@ -541,7 +541,7 @@ class WWSUcalendar extends CalendarDb {
 								true
 							);
 							let calendarID = parseInt($(e.currentTarget).data("calendarid"));
-							let calendar = this.schedule.find({ ID: calendarID }, true);
+							let calendar = this.calendar.find({ ID: calendarID }, true);
 							this.manager.get("WWSUutil").confirmDialog(
 								`<p>Are you sure you want to delete that schedule?</p>
                         <ul>

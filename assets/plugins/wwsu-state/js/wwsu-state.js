@@ -40,6 +40,20 @@ class WWSUstate extends WWSUevents {
 			zindex: 1100,
 		});
 
+		this.nextDJModal = new WWSUmodal(
+			`Is the next DJ in the studio?`,
+			`info`,
+			``,
+			false,
+			{
+				headerColor: "",
+				overlayClose: false,
+				zindex: 2000,
+				timeout: 1000 * 60 * 5,
+				timeoutProgressbar: true,
+			}
+		);
+
 		this.pendingRemote;
 	}
 
@@ -1601,5 +1615,53 @@ class WWSUstate extends WWSUevents {
 			}
 			console.error(e);
 		}
+	}
+
+	/**
+	 * Prompt the person ending their show if the next DJ is in the station.
+	 * 
+	 * @param {string} showName Name of the next show to go on the air
+	 */
+	showNextDJModal(showName) {
+		this.nextDJModal.body = `<p><strong>Are the hosts for the next show, ${showName}, present at the WWSU studio?</strong></p><p>Clicking "yes" will keep the system in a 5-minute break, allowing for a quicker transition between shows.</p><p>Clicking "no" will send the system back into regular automation.</p><div id="modal-${this.nextDJModal.id}-form"></div>`;
+		this.manager
+			.get("WWSUutil")
+			.waitForElement(`#modal-${this.nextDJModal.id}-form`, () => {
+				$(`#modal-${this.nextDJModal.id}-form`).alpaca({
+					schema: {
+						type: "object",
+						properties: {
+							confirmText: {
+								type: "string",
+								required: false,
+							},
+						},
+					},
+					options: {
+						fields: {
+							confirmText: {
+								hidden: true,
+							},
+						},
+						form: {
+							buttons: {
+								dismiss: {
+									title: `Yes`,
+									click: (form, e) => {
+										this.nextDJModal.iziModal("close");
+									},
+								},
+								submit: {
+									title: `No`,
+									click: (form, e) => {
+										this.nextDJModal.iziModal("close");
+										this.automation({ transition: false });
+									},
+								},
+							},
+						},
+					},
+				});
+			});
 	}
 }

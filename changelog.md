@@ -1,5 +1,15 @@
 # Changelog for wwsu-dj-controls
 
+## 8.18.2-alpha - 2021-05-13
+
+### Added
+
+- End broadcast will now send to automation_break when a show ends and a live or sports show is immediately on the schedule. DJ Controls will prompt and ask if the next DJ is ready to begin their show.
+
+### Fixed
+
+- Interference notifications in error were popping up for shows interfering with themselves (no such thing)
+
 ## 8.18.1-alpha - 2021-05-12
 
 ### Added

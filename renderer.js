@@ -216,6 +216,8 @@ let todos = {
 
 // What we notified as should be playing now
 let notifiedShouldBePlaying = ``;
+let nowEvent = null;
+let notifyEvent = null;
 
 // Navigation
 navigation
@@ -594,7 +596,16 @@ $(".btn-operation-30-psa").on("click", () => {
 	state.queuePSA({ duration: 30 });
 });
 $(".btn-operation-automation").on("click", () => {
-	state.automation({ transition: false });
+	if (
+		notifyEvent &&
+		notifyEvent.unique !== meta.meta.calendarUnique &&
+		["show", "sports"].indexOf(notifyEvent.type) !== -1
+	) {
+		state.automation({ transition: true });
+		state.showNextDJModal(notifyEvent.name);
+	} else {
+		state.automation({ transition: false });
+	}
 });
 $(".btn-operation-break").on("click", () => {
 	state.break({ halftime: false, problem: false });
@@ -2699,16 +2710,21 @@ function updateClockwheel() {
 		// Skip if this DJ Controls is not hosting a broadcast right now
 		if (!hosts.isHost) return;
 
+		// Skip if there is no broadcast on the air right now
+		if (
+			!meta.meta.calendarUnique ||
+			meta.meta.calendarUnique === "" ||
+			meta.meta.state.startsWith("automation_") ||
+			meta.meta.state.startsWith("prerecord_")
+		)
+			return;
+
 		calendar.whatShouldBePlaying((events) => {
 			// Do not check for automation events or any canceled entries
 			events = events.filter(
 				(event) =>
-					[
-						"show",
-						"remote",
-						"sports",
-						"prerecord",
-					].indexOf(event.type) !== -1 &&
+					["show", "remote", "sports", "prerecord"].indexOf(event.type) !==
+						-1 &&
 					["canceled", "canceled-system", "canceled-changed"].indexOf(
 						event.scheduleType
 					) === -1
@@ -2721,8 +2737,8 @@ function updateClockwheel() {
 
 				// Check if one of these events are scheduled to go on in 2 or less minutes
 			} else {
-				let nowEvent = null;
-				let notifyEvent = null;
+				nowEvent = null;
+				notifyEvent = null;
 
 				// Check each event on the schedule
 				for (let i in events) {
@@ -2737,7 +2753,8 @@ function updateClockwheel() {
 					else if (
 						moment(meta.meta ? meta.meta.time : undefined).isSameOrAfter(
 							moment(events[i].start).subtract(2, "minutes")
-						) && (!notifyEvent || notifyEvent.priority < events[i].priority)
+						) &&
+						(!notifyEvent || notifyEvent.priority < events[i].priority)
 					) {
 						notifyEvent = events[i];
 					}
@@ -2747,7 +2764,10 @@ function updateClockwheel() {
 				if (!notifyEvent) return;
 
 				// If the event we should be notifying was already notified, don't notify again. Otherwise, notify if its priority is higher than the current event on the air.
-				if (notifyEvent.unique !== notifiedShouldBePlaying && (!nowEvent || nowEvent.priority < notifyEvent.priority)) {
+				if (
+					notifyEvent.unique !== notifiedShouldBePlaying &&
+					(!nowEvent || nowEvent.priority < notifyEvent.priority)
+				) {
 					notifiedShouldBePlaying = notifyEvent.unique;
 					window.ipc.makeNotification([
 						{
@@ -2755,7 +2775,13 @@ function updateClockwheel() {
 							bg: "primary",
 							header: "Wrap up your broadcast; another is on the schedule!",
 							flash: true,
-							body: `<p>Please wrap up your broadcast.</p><p>${notifyEvent.type}: ${notifyEvent.hosts} - ${notifyEvent.name} is scheduled to be on the air at ${moment(notifyEvent.start).format("h:mm A")}.</p>`,
+							body: `<p>Please wrap up your broadcast.</p><p>${
+								notifyEvent.type
+							}: ${notifyEvent.hosts} - ${
+								notifyEvent.name
+							} is scheduled to be on the air at ${moment(
+								notifyEvent.start
+							).format("h:mm A")}.</p>`,
 						},
 					]);
 				}
