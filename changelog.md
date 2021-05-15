@@ -1,5 +1,12 @@
 # Changelog for wwsu-dj-controls
 
+## 8.18.3-alpha - 2021-05-14
+
+### Fixed
+
+- No ID property when editing an underwriting.
+- Underwriting schedules were saving as {value, text} objects when they should have been saving as the value of value numbers.
+
 ## 8.18.2-alpha - 2021-05-13
 
 ### Added

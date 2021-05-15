@@ -454,6 +454,8 @@ class WWSUunderwritings extends WWSUdb {
 					data.mode = data.mode.mode === 1;
 				}
 
+				console.dir(data);
+
 				// Validator does not support arrow functions, so we need to declare timezone.
 				let timezone = this.manager.get("WWSUMeta")
 					? this.manager.get("WWSUMeta").meta.timezone
@@ -480,6 +482,9 @@ class WWSUunderwritings extends WWSUdb {
 						title: data ? "Edit Underwriting" : "New Underwriting",
 						type: "object",
 						properties: {
+							ID: {
+								type: "number"
+							},
 							name: {
 								type: "string",
 								required: true,
@@ -613,6 +618,9 @@ class WWSUunderwritings extends WWSUdb {
 					},
 					options: {
 						fields: {
+							ID: {
+								type: "hidden"
+							},
 							name: {
 								helper:
 									"This can be anything you want; the name is used in the underwritings management table and in the system status when alerting of a problem with an underwriting.",
@@ -924,10 +932,10 @@ class WWSUunderwritings extends WWSUdb {
 												schedules: value.schedule.map((schedule) => {
 													// No idea why, but we have to do this to convert {value, text} into just the values; accessing property value directly results in null.
 													schedule.dw = schedule.dw.map((dw) => {
-														return dw;
+														return dw.value;
 													});
 													schedule.h = schedule.h.map((h) => {
-														return h;
+														return h.value;
 													});
 													return schedule;
 												}),
@@ -936,10 +944,10 @@ class WWSUunderwritings extends WWSUdb {
 												schedules: value.scheduleForced.map((schedule) => {
 													// No idea why, but we have to do this to convert {value, text} into just the values; accessing property value directly results in null.
 													schedule.dw = schedule.dw.map((dw) => {
-														return dw;
+														return dw.value;
 													});
 													schedule.h = schedule.h.map((h) => {
-														return h;
+														return h.value;
 													});
 													return schedule;
 												}),
