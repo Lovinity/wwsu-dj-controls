@@ -90,6 +90,41 @@ class WWSUclimacell extends WWSUdb {
 			8101: "#990000"
 		};
 
+		// Map weather codes to icons
+		this.weatherCodeShort = {
+			0: "Unknown",
+			1000: "Clear",
+			1001: "Cloudy",
+			1100: "M. Clear",
+			1101: "P. Cloudy",
+			1102: "M. Cloudy",
+			2000: "Fog",
+			2100: "L. Fog",
+			3000: "Breezy",
+			3001: "Windy",
+			3002: "V. Windy",
+			4000: "Drizzle",
+			4001: "Rain",
+			4200: "L. Rain",
+			4201: "H. Rain",
+			5000: "Snow",
+			5001: "Flurries",
+			5100: "L. Snow",
+			5101: "H. Snow",
+			6000: "F. Drizzle",
+			6001: "F. Rain",
+			6200: "L.F. Rain",
+			6201: "H.F. Rain",
+			7000: "Ice",
+			7101: "H. Ice",
+			7102: "L. Ice",
+			8000: "TStorm",
+
+			// Custom
+			8100: "L. TStorm",
+			8101: "H. TStorm"
+		};
+
 		// Map precipitation type to string
 		this.precipitationTypeString = {
 			0: "N/A",
@@ -454,6 +489,11 @@ class WWSUclimacell extends WWSUdb {
 							$(`.climacell-${query.dataClass}-${value}-string`).html(
 								this.weatherCodeString[query.data[value]]
 							);
+							if (query.dataClass === "current-0") {
+								$(`.climacell-quick-weather-icon`).html(
+									`${this.weatherCodeShort[query.data[value]]}`
+								);
+							}
 						}
 						if (value === "precipitationType") {
 							$(`.climacell-${query.dataClass}-${value}-string`).html(
@@ -464,6 +504,13 @@ class WWSUclimacell extends WWSUdb {
 							$(`.climacell-${query.dataClass}-${value}-string`).html(
 								this.epaHealthConcernString[query.data[value]]
 							);
+						}
+						if (value === "temperature") {
+							if (query.dataClass === "current-0") {
+								$(`.climacell-quick-weather-temperature`).html(
+									Math.round(query.data[value])
+								);
+							}
 						}
 					}
 				});

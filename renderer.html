@@ -331,16 +331,22 @@
 		>
 			<i
 				class="text-danger fas fa-skull-crossbones"
-				style="font-size: 33vw"
+				style="font-size: 25vw"
 			></i>
 			<h1>Connection Problems</h1>
 			<h3>
-				DJ Controls was unable to connect to WWSU. Check your internet
-				connection, and make sure your computer is allowed to connect to WWSU.
-				Contact a director for further assistance (provide the Host ID when you
-				do).
+				DJ Controls was unable to connect to WWSU. Please check your network
+				connection.
 			</h3>
-			<h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
+			<h3>
+				You might not have permission to connect to WWSU especially if this is
+				your first time running DJ Controls. Please contact a director for
+				assistance (provide the last 8 host ID characters below).
+			</h3>
+			<h4>
+				Last 8 characters of host ID:
+				<span class="connecting-id">(loading...)</span>
+			</h4>
 		</div>
 
 		<!-- Already Connected screen -->
@@ -351,7 +357,7 @@
 		>
 			<i
 				class="text-warning fas fa-skull-crossbones"
-				style="font-size: 33vw"
+				style="font-size: 25vw"
 			></i>
 			<h1>Another DJ Controls is Running!</h1>
 			<h3>
@@ -359,7 +365,10 @@
 				computer. Please close it and wait 1 minute before closing and
 				re-opening this instance.
 			</h3>
-			<h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
+			<h4>
+				Last 8 characters of host ID:
+				<span class="connecting-id">(loading...)</span>
+			</h4>
 		</div>
 
 		<!-- Connecting screen -->
@@ -371,13 +380,16 @@
 			<div
 				class="spinner-border text-primary"
 				role="status"
-				style="font-size: 33vw"
+				style="font-size: 25vw"
 			>
 				<span class="sr-only">Loading...</span>
 			</div>
 			<h1>Connecting to WWSU...</h1>
 			<h3>Please allow up to 30 seconds while DJ Controls connects to WWSU.</h3>
-			<h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
+			<h4>
+				Last 8 characters of host ID:
+				<span class="connecting-id">(loading...)</span>
+			</h4>
 		</div>
 
 		<!-- Loading screen -->
@@ -389,13 +401,16 @@
 			<div
 				class="spinner-border text-info"
 				role="status"
-				style="font-size: 33vw"
+				style="font-size: 25vw"
 			>
 				<span class="sr-only">Loading...</span>
 			</div>
 			<h1>Loading DJ Controls...</h1>
 			<h3>Please wait while DJ Controls loads.</h3>
-			<h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
+			<h4>
+				Last 8 characters of host ID:
+				<span class="connecting-id">(loading...)</span>
+			</h4>
 		</div>
 
 		<!-- Reconnecting screen -->
@@ -407,7 +422,7 @@
 			<div
 				class="spinner-border text-warning"
 				role="status"
-				style="font-size: 33vw"
+				style="font-size: 25vw"
 			>
 				<span class="sr-only">Loading...</span>
 			</div>
@@ -416,7 +431,10 @@
 				Attempting to reconnect. Connection loss could be from a bad network
 				connection or WWSU's server rebooting.
 			</h3>
-			<h4>Host ID: <span class="connecting-id">(loading...)</span></h4>
+			<h4>
+				Last 8 characters of host ID:
+				<span class="connecting-id">(loading...)</span>
+			</h4>
 		</div>
 
 		<!-- All other content -->
@@ -689,7 +707,25 @@
 									title="View the clockwheel, announcements / reported problems, and broadcast log."
 								>
 									<i class="nav-icon nav-icon-dashboard fas fa-lightbulb"></i>
-									<p>Dashboard</p>
+									<p>
+										Dash
+										<span class="right">
+											<span
+												class="badge badge-info"
+												title="Number of online listeners currently tuned in"
+											>
+												<i class="fas fa-headphones"></i>
+												<span class="meta-listeners">?</span></span
+											>
+											<span
+												class="badge bg-teal"
+												title="Amount of scheduled time left in the broadcast (hours:minutes)"
+											>
+												<i class="fas fa-stopwatch"></i>
+												<span class="meta-remaining-short">??:??</span></span
+											>
+										</span>
+									</p>
 								</a>
 							</li>
 							<li class="nav-item">
@@ -713,7 +749,14 @@
 									<i
 										class="nav-icon nav-icon-weather fas fa-cloud-sun-rain"
 									></i>
-									<p>Weather</p>
+									<p>
+										Weather
+										<span class="badge badge-info right climacell-quick-weather"
+											><span class="climacell-quick-weather-icon">?</span>
+											<span class="climacell-quick-weather-temperature">?</span
+											>°F</span
+										>
+									</p>
 								</a>
 							</li>
 							<li class="nav-item">
@@ -2855,7 +2898,14 @@
 							<div class="card-header">
 								<h3 class="card-title">Inventory Management</h3>
 							</div>
-							<div class="card-body" id="section-inventory-content"></div>
+							<div class="card-body" id="section-inventory-content">
+								<button
+									type="button"
+									class="btn btn-block btn-primary btn-inventory-init"
+								>
+									Load Inventory System
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>

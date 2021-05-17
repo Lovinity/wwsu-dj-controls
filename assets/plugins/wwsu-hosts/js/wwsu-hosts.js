@@ -307,8 +307,10 @@ class WWSUhosts extends WWSUdb {
 						type: "hidden"
 					},
 					host: {
-						helper:
-							"This string hash identifies the host depending on the application and the machine. It cannot be edited."
+						helpers: [
+							"This string hash identifies the host depending on the application and the machine. It cannot be edited.",
+							"<strong>The host ID should NEVER be given out publicly in full! Treat as a password.</strong>"
+						]
 					},
 					app: {
 						helper:

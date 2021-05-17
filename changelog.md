@@ -1,5 +1,24 @@
 # Changelog for wwsu-dj-controls
 
+## 8.18.4-alpha - 2021-05-16
+
+### Added
+
+- Warnings about host IDs that it should be treated as a password.
+- Quick weather badge on weather tab
+- Pulsing on live/remote/sports buttons when one is currently scheduled to be on the air
+- Pulsing for end broadcast button when the current broadcast should be wrapping up
+
+### Changed
+
+- Inventory system requires a click of a button now to initialize. This saves on data use as inventory is not frequently used but contains many records.
+- On the error messages, only display the last 8 characters of a host ID instead of the full ID.
+- Pulse border size increased for more visibility
+
+### Fixed
+
+- DJ prompt did not actually open/show when ending a show; it only created itself.
+
 ## 8.18.3-alpha - 2021-05-14
 
 ### Fixed

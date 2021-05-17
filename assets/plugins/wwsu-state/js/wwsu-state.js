@@ -1623,7 +1623,7 @@ class WWSUstate extends WWSUevents {
 	 * @param {string} showName Name of the next show to go on the air
 	 */
 	showNextDJModal(showName) {
-		this.nextDJModal.body = `<p><strong>Are the hosts for the next show, ${showName}, present at the WWSU studio?</strong></p><p>Clicking "yes" will keep the system in a 5-minute break, allowing for a quicker transition between shows.</p><p>Clicking "no" will send the system back into regular automation.</p><div id="modal-${this.nextDJModal.id}-form"></div>`;
+		this.nextDJModal.body = `<p><strong>The system will be in break until ${moment(this.manager.get("WWSUMeta")).add(5, "minutes").format("h:mm:ss A")}</strong> to ensure a quicker broadcast transition.</p><p>Are the hosts for ${showName} present at the studio?</p><div id="modal-${this.nextDJModal.id}-form"></div>`;
 		this.manager
 			.get("WWSUutil")
 			.waitForElement(`#modal-${this.nextDJModal.id}-form`, () => {
@@ -1646,13 +1646,13 @@ class WWSUstate extends WWSUevents {
 						form: {
 							buttons: {
 								dismiss: {
-									title: `Yes`,
+									title: `Yes, stay in break`,
 									click: (form, e) => {
 										this.nextDJModal.iziModal("close");
 									},
 								},
 								submit: {
-									title: `No`,
+									title: `No, go to automation`,
 									click: (form, e) => {
 										this.nextDJModal.iziModal("close");
 										this.automation({ transition: false });
@@ -1662,6 +1662,7 @@ class WWSUstate extends WWSUevents {
 						},
 					},
 				});
+				this.nextDJModal.iziModal("open");
 			});
 	}
 }
