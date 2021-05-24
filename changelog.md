@@ -1,5 +1,11 @@
 # Changelog for wwsu-dj-controls
 
+## 8.19.0-alpha - WIP
+
+### Fixed
+
+- Pulsing was not being removed when it should have for operation buttons
+
 ## 8.18.4-alpha - 2021-05-16
 
 ### Added
