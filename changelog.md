@@ -6,6 +6,18 @@
 
 - Pulsing was not being removed when it should have for operation buttons
 
+### Changed
+
+- [BREAKING] WWSU messages now uses simpleMDE instead of tinyMCE; better compatibility with Discord.
+- WWSU Logo
+
+### Updated
+
+- AdminLTE
+- Plugins
+- Electronjs
+- NPM packages
+
 ## 8.18.4-alpha - 2021-05-16
 
 ### Added

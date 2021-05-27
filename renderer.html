@@ -151,8 +151,10 @@
 			rel="stylesheet"
 			href="assets/plugins/fontawesome-free/css/all.min.css"
 		/>
-		<!-- Theme style (TODO: use min when it is working again) -->
-		<link rel="stylesheet" href="assets/plugins/adminlte/css/adminlte.css" />
+		<link
+			rel="stylesheet"
+			href="assets/plugins/adminlte/css/adminlte.min.css"
+		/>
 		<!-- overlayScrollbars -->
 		<link
 			rel="stylesheet"
@@ -177,7 +179,7 @@
 		/>
 		<script src="assets/plugins/bootstrap-multiselect/js/bootstrap-multiselect.min.js"></script>
 		<!-- AdminLTE -->
-		<script src="assets/plugins/adminlte/js/adminlte.js"></script>
+		<script src="assets/plugins/adminlte/js/adminlte.min.js"></script>
 
 		<!-- lodash -->
 		<script src="assets/plugins/lodash/lodash.min.js"></script>
@@ -207,12 +209,15 @@
 		<script src="assets/plugins/chart.js/Chart.bundle.min.js"></script>
 		<link rel="stylesheet" href="assets/plugins/chart.js/Chart.min.css" />
 
-		<!-- Summernote -->
-		<script src="assets/plugins/summernote/summernote.min.js"></script>
-		<link rel="stylesheet" href="assets/plugins/summernote/summernote.css" />
-
 		<!-- TinyMCE -->
 		<script src="assets/plugins/tinymce/tinymce.min.js"></script>
+
+		<!-- SimpleMDE -->
+		<link rel="stylesheet" href="assets/plugins/simplemde/simplemde.min.css" />
+		<script src="assets/plugins/simplemde/simplemde.min.js"></script>
+
+		<!-- Discord Markdown -->
+		<script src="assets/plugins/discord-markdown/discord-markdown.min.js"></script>
 
 		<!-- Bootstrap Tempus Dominus (datetimepicker) -->
 		<link
@@ -661,7 +666,7 @@
 				<!-- Logo -->
 				<a href="#" class="brand-link">
 					<img
-						src="assets/images/logo_round.png"
+						src="assets/images/logo.jpeg"
 						alt="WWSU logo"
 						class="brand-image img-circle elevation-3"
 						style="opacity: 0.8"
@@ -1426,7 +1431,7 @@
 
 			<!--Chat--->
 			<section id="section-chat">
-				<div class="content-wrapper" style="padding-top: 8em">
+				<div class="content-wrapper" style="padding-top: 8em;">
 					<div class="content-header">
 						<div class="container-fluid">
 							<div class="row mb-2">
@@ -1471,11 +1476,11 @@
 								>
 									<!--Chat messages go here-->
 								</div>
+							</div>
+							<div class="card-footer">
 								<div class="chat-form">
 									<!--Chat Alpaca form goes here-->
 								</div>
-							</div>
-							<div class="card-footer">
 								<button type="button" class="btn btn-warning chat-mute d-none">
 									Mute
 								</button>
