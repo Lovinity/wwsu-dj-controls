@@ -167,6 +167,8 @@ class WWSUlogs extends WWSUevents {
 					{ dom: dom, method: "post", url: this.endpoints.getAttendance, data },
 					response => {
 						if (!response) {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error getting attendance records",
@@ -184,6 +186,7 @@ class WWSUlogs extends WWSUevents {
 					}
 				);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error getting attendance records",
@@ -212,11 +215,12 @@ class WWSUlogs extends WWSUevents {
 					{ dom: dom, method: "post", url: this.endpoints.getListeners, data },
 					response => {
 						if (!response || typeof response.map !== "function") {
+							// No error sound because sometimes this is a non-error
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error getting listener analytics",
 								body:
-									"There was an error getting listener analytics. Please report this to the engineer.",
+									"There was an error getting listener analytics. Please report this to the engineer (unless this log record does not have listener counts; in that case, this is a non-error).",
 								autohide: true,
 								delay: 10000,
 								icon: "fas fa-skull-crossbones fa-lg"
@@ -229,6 +233,7 @@ class WWSUlogs extends WWSUevents {
 					}
 				);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error getting listener analytics",
@@ -256,6 +261,8 @@ class WWSUlogs extends WWSUevents {
 					{ method: "post", url: this.endpoints.get, data },
 					response => {
 						if (!response || typeof response.map !== "function") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error getting logs",
@@ -273,6 +280,7 @@ class WWSUlogs extends WWSUevents {
 					}
 				);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error getting logs",
@@ -300,6 +308,8 @@ class WWSUlogs extends WWSUevents {
 					{ method: "post", url: this.endpoints.edit, data },
 					response => {
 						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error editing log",
@@ -327,6 +337,7 @@ class WWSUlogs extends WWSUevents {
 					}
 				);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error editing log",
@@ -357,6 +368,8 @@ class WWSUlogs extends WWSUevents {
 					{ method: "post", url: this.endpoints.add, data },
 					response => {
 						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error adding log",
@@ -387,6 +400,7 @@ class WWSUlogs extends WWSUevents {
 					}
 				);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error adding log",
@@ -1264,6 +1278,8 @@ class WWSUlogs extends WWSUevents {
 					if (response[0] && response[1]) {
 						cb(response);
 					} else {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error getting analytics",
@@ -1279,6 +1295,7 @@ class WWSUlogs extends WWSUevents {
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error getting analytics",
@@ -1360,6 +1377,8 @@ class WWSUlogs extends WWSUevents {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh"))
+										this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}

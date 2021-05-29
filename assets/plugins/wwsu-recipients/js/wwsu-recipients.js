@@ -19,11 +19,11 @@ class WWSUrecipients extends WWSUdb {
 		this.endpoints = {
 			get: "/recipients/get",
 			addComputer: "/recipients/add-computers",
-			registerPeer: "/recipients/register-peer",
+			registerPeer: "/recipients/register-peer"
 		};
 		this.data = {
 			get: {},
-			addComputer: {},
+			addComputer: {}
 		};
 
 		this.assignSocketEvent("recipients", this.manager.socket);
@@ -32,7 +32,7 @@ class WWSUrecipients extends WWSUdb {
 
 		this.formModal = new WWSUmodal(`Select recipient`, null, ``, true, {
 			headerColor: "",
-			zindex: 1100,
+			zindex: 1100
 		});
 
 		// Determines if we connected to the API at least once before
@@ -55,6 +55,11 @@ class WWSUrecipients extends WWSUdb {
 			this.endpoints.get,
 			this.data.get
 		);
+
+		// Update recipients table whenever there is a change in recipients.
+		this.on("change", "WWSUrecipients", db => {
+			this.updateTable();
+		});
 	}
 
 	// Open the modal to choose a recipient.
@@ -73,9 +78,9 @@ class WWSUrecipients extends WWSUdb {
 			{
 				method: "post",
 				url: this.endpoints.addComputer,
-				data: { host: host },
+				data: { host: host }
 			},
-			(response2) => {
+			response2 => {
 				try {
 					this.recipient = response2;
 					if (
@@ -118,31 +123,29 @@ class WWSUrecipients extends WWSUdb {
 					columns: [
 						{ title: "Icon" },
 						{ title: "Status" },
-						{ title: "Group" },
-						{ title: "Friendly Name" },
-						{ title: "Messages" },
-						{ title: "Actions" },
+						{ title: "Name" },
+						{ title: "Actions" }
 					],
 					columnDefs: [
-						{ responsivePriority: 1, targets: 5 },
-						{ responsivePriority: 2, targets: 3 },
+						{ responsivePriority: 1, targets: 3 },
+						{ responsivePriority: 2, targets: 2 }
 					],
-					order: [[2, "desc"]],
+					order: [[2, "asc"]],
 					pageLength: 50,
 					drawCallback: () => {
 						// Action button click events
 						$(".btn-recipient-choose").unbind("click");
 
-						$(".btn-recipient-choose").click((e) => {
+						$(".btn-recipient-choose").click(e => {
 							let recipient = this.find().find(
-								(recipient) =>
+								recipient =>
 									recipient.ID === parseInt($(e.currentTarget).data("id"))
 							);
 							this.activeRecipient = recipient;
 							this.emitEvent("recipientChanged", [recipient]);
 							this.formModal.iziModal("close");
 						});
-					},
+					}
 				});
 			});
 		});
@@ -150,29 +153,28 @@ class WWSUrecipients extends WWSUdb {
 
 	/**
 	 * Update the recipients selection table if it exists.
-	 * NOTE: You should call WWSUmessages.updateRecipientsTable instead.
 	 */
-	_updateTable(recipients) {
+	updateTable() {
 		this.manager.get("WWSUanimations").add("recipients-update-table", () => {
 			if (this.table) {
 				this.table.clear();
-				recipients.map((recipient) => {
-					this.table.row.add([
-						jdenticon.toSvg(recipient.host, 32),
-						(recipient.host === "website" &&
-							this.manager.get("WWSUMeta") &&
-							this.manager.get("WWSUMeta").meta.webchat) ||
-						recipient.status !== 0
-							? `<span class="badge badge-success">ONLINE</span>`
-							: `<span class="badge badge-danger">OFFLINE</span>`,
-						recipient.group,
-						recipient.label,
-						recipient.unreadMessages,
-						`<div class="btn-group">
+				this.db()
+					.get()
+					.map(recipient => {
+						this.table.row.add([
+							jdenticon.toSvg(recipient.host, 32),
+							(recipient.host === "website" &&
+								this.manager.get("WWSUMeta") &&
+								this.manager.get("WWSUMeta").meta.webchat) ||
+							recipient.status !== 0
+								? `<span class="badge badge-success">ONLINE</span>`
+								: `<span class="badge badge-danger">OFFLINE</span>`,
+							recipient.label,
+							`<div class="btn-group">
                         <button class="btn btn-sm btn-primary btn-recipient-choose" data-id="${recipient.ID}" title="Select this recipient"><i class="fas fa-mouse-pointer"></i></button>
-                        </div>`,
-					]);
-				});
+                        </div>`
+						]);
+					});
 				this.table.draw();
 			}
 		});
@@ -189,9 +191,9 @@ class WWSUrecipients extends WWSUdb {
 			{
 				method: "post",
 				url: this.endpoints.registerPeer,
-				data: { peer: peer },
+				data: { peer: peer }
 			},
-			(response) => {
+			response => {
 				if (typeof cb === "function") {
 					cb(response);
 				}

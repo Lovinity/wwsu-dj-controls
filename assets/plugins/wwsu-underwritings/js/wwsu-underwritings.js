@@ -20,10 +20,10 @@ class WWSUunderwritings extends WWSUdb {
 			get: "/underwritings/get",
 			add: "/underwritings/add",
 			edit: "/underwritings/edit",
-			remove: "/underwritings/remove",
+			remove: "/underwritings/remove"
 		};
 		this.data = {
-			get: {},
+			get: {}
 		};
 
 		this.assignSocketEvent("underwritings", this.manager.socket);
@@ -124,15 +124,15 @@ class WWSUunderwritings extends WWSUdb {
 				true,
 				{
 					headerColor: "",
-					zindex: 1100,
+					zindex: 1100
 				}
 			),
 
 			underwriting: new WWSUmodal(`New Underwriting`, null, ``, true, {
 				headerColor: "",
 				overlayClose: false,
-				zindex: 1110,
-			}),
+				zindex: 1110
+			})
 		};
 
 		// Update table whenever something changes
@@ -163,16 +163,18 @@ class WWSUunderwritings extends WWSUdb {
 					dom: `#modal-${this.modals.underwriting.id}`,
 					method: "post",
 					url: this.endpoints.add,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-warning",
 							title: "Error adding underwriting",
 							body:
 								"There was an error adding the underwriting. Please make sure you filled all fields correctly.",
-							delay: 10000,
+							delay: 10000
 						});
 						cb(false);
 					} else {
@@ -181,13 +183,14 @@ class WWSUunderwritings extends WWSUdb {
 							title: "Underwriting Added",
 							autohide: true,
 							delay: 10000,
-							body: `Underwriting has been added`,
+							body: `Underwriting has been added`
 						});
 						cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error adding underwriting",
@@ -195,7 +198,7 @@ class WWSUunderwritings extends WWSUdb {
 					"There was an error adding a new underwriting. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			cb(false);
@@ -215,16 +218,18 @@ class WWSUunderwritings extends WWSUdb {
 					dom: `#modal-${this.modals.underwriting.id}`,
 					method: "post",
 					url: this.endpoints.edit,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-warning",
 							title: "Error editing underwriting",
 							body:
 								"There was an error editing the underwriting. Please make sure you filled all fields correctly.",
-							delay: 10000,
+							delay: 10000
 						});
 						console.log(response);
 						if (typeof cb === "function") cb(false);
@@ -234,13 +239,14 @@ class WWSUunderwritings extends WWSUdb {
 							title: "Underwriting Edited",
 							autohide: true,
 							delay: 10000,
-							body: `Underwriting has been edited`,
+							body: `Underwriting has been edited`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error editing underwriting",
@@ -248,7 +254,7 @@ class WWSUunderwritings extends WWSUdb {
 					"There was an error editing the underwriting. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -267,10 +273,12 @@ class WWSUunderwritings extends WWSUdb {
 				{
 					method: "post",
 					url: this.endpoints.remove,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error removing underwriting",
@@ -278,7 +286,7 @@ class WWSUunderwritings extends WWSUdb {
 								"There was an error removing the underwriting. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -287,13 +295,14 @@ class WWSUunderwritings extends WWSUdb {
 							title: "Underwriting Removed",
 							autohide: true,
 							delay: 30000,
-							body: `Underwriting has been removed.`,
+							body: `Underwriting has been removed.`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error removing underwriting",
@@ -301,7 +310,7 @@ class WWSUunderwritings extends WWSUdb {
 					"There was an error removing the underwriting. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -359,17 +368,17 @@ class WWSUunderwritings extends WWSUdb {
 							$(".btn-underwriting-delete").unbind("click");
 							$(".btn-underwriting-info").unbind("click");
 
-							$(".btn-underwriting-edit").click((e) => {
+							$(".btn-underwriting-edit").click(e => {
 								let underwriting = this.find().find(
-									(underwriting) =>
+									underwriting =>
 										underwriting.ID === parseInt($(e.currentTarget).data("id"))
 								);
 								this.showUnderwritingForm(underwriting);
 							});
 
-							$(".btn-underwriting-delete").click((e) => {
+							$(".btn-underwriting-delete").click(e => {
 								let underwriting = this.find().find(
-									(underwriting) =>
+									underwriting =>
 										underwriting.ID === parseInt($(e.currentTarget).data("id"))
 								);
 								this.manager.get("WWSUutil").confirmDialog(
@@ -386,16 +395,16 @@ class WWSUunderwritings extends WWSUdb {
 								);
 							});
 
-							$(".btn-underwriting-info").click((e) => {
+							$(".btn-underwriting-info").click(e => {
 								let underwriting = this.find().find(
-									(underwriting) =>
+									underwriting =>
 										underwriting.ID === parseInt($(e.currentTarget).data("id"))
 								);
 								this.manager
 									.get("WWSUsongs")
 									.showTrackInfo(underwriting.trackID, true);
 							});
-						},
+						}
 					});
 
 					this.table
@@ -422,10 +431,10 @@ class WWSUunderwritings extends WWSUdb {
 		this.manager.get("WWSUanimations").add("underwritings-update-table", () => {
 			if (this.table) {
 				this.table.clear();
-				this.find().forEach((underwriting) => {
+				this.find().forEach(underwriting => {
 					this.table.row.add([
 						underwriting.name || "Unknown Underwriting",
-						`<div class="btn-group"><button class="btn btn-sm btn-info btn-underwriting-info" data-id="${underwriting.ID}" title="Show underwriting RadioDJ track info (including when it aired so far)"><i class="fas fa-eye"></i></button><button class="btn btn-sm btn-warning btn-underwriting-edit" data-id="${underwriting.ID}" title="Edit underwriting"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-underwriting-delete" data-id="${underwriting.ID}" title="Remove underwriting"><i class="fas fa-trash"></i></button></div>`,
+						`<div class="btn-group"><button class="btn btn-sm btn-info btn-underwriting-info" data-id="${underwriting.ID}" title="Show underwriting RadioDJ track info (including when it aired so far)"><i class="fas fa-eye"></i></button><button class="btn btn-sm btn-warning btn-underwriting-edit" data-id="${underwriting.ID}" title="Edit underwriting"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-underwriting-delete" data-id="${underwriting.ID}" title="Remove underwriting"><i class="fas fa-trash"></i></button></div>`
 					]);
 				});
 				this.table.draw();
@@ -442,7 +451,7 @@ class WWSUunderwritings extends WWSUdb {
 		// First, get a list of tracks in the underwritings category that we can select from
 		this.manager
 			.get("WWSUsongs")
-			.get({ category: "underwritings", limit: 1000 }, (tracks) => {
+			.get({ category: "underwritings", limit: 1000 }, tracks => {
 				this.modals.underwriting.body = ``;
 				this.modals.underwriting.iziModal("open");
 
@@ -462,16 +471,19 @@ class WWSUunderwritings extends WWSUdb {
 					: moment.tz.guess();
 
 				// Also because of Alpaca's lack of arrow function support, get calendar events (but only ones dealing with on-air programming)
-				let events = this.manager.get("WWSUcalendar").calendar.db().get();
+				let events = this.manager
+					.get("WWSUcalendar")
+					.calendar.db()
+					.get();
 				events = events.filter(
-					(event) =>
+					event =>
 						[
 							"show",
 							"prerecord",
 							"remote",
 							"sports",
 							"genre",
-							"playlist",
+							"playlist"
 						].indexOf(event.type) !== -1
 				);
 
@@ -489,18 +501,18 @@ class WWSUunderwritings extends WWSUdb {
 								type: "string",
 								required: true,
 								title: "Name of Underwriting",
-								maxLength: 255,
+								maxLength: 255
 							},
 							trackID: {
 								type: "number",
 								required: true,
 								title: "RadioDJ Track",
-								enum: tracks.map((track) => track.ID),
+								enum: tracks.map(track => track.ID)
 							},
 							mode: {
 								type: "boolean",
 								default: false,
-								title: "Adjust for Online Listeners",
+								title: "Adjust for Online Listeners"
 							},
 							schedule: {
 								title: "Algorithmic Schedules",
@@ -513,15 +525,15 @@ class WWSUunderwritings extends WWSUdb {
 											title: "Days of Week",
 											type: "array",
 											items: {
-												type: "number",
+												type: "number"
 											},
-											enum: [1, 2, 3, 4, 5, 6, 7],
+											enum: [1, 2, 3, 4, 5, 6, 7]
 										},
 										h: {
 											title: "Hours of Day",
 											type: "array",
 											items: {
-												type: "number",
+												type: "number"
 											},
 											enum: [
 												0,
@@ -547,11 +559,11 @@ class WWSUunderwritings extends WWSUdb {
 												20,
 												21,
 												22,
-												23,
-											],
-										},
-									},
-								},
+												23
+											]
+										}
+									}
+								}
 							},
 							scheduleForced: {
 								title: "Forced Schedules",
@@ -564,15 +576,15 @@ class WWSUunderwritings extends WWSUdb {
 											title: "Days of Week",
 											type: "array",
 											items: {
-												type: "number",
+												type: "number"
 											},
-											enum: [1, 2, 3, 4, 5, 6, 7],
+											enum: [1, 2, 3, 4, 5, 6, 7]
 										},
 										h: {
 											title: "Hours of Day",
 											type: "array",
 											items: {
-												type: "number",
+												type: "number"
 											},
 											enum: [
 												0,
@@ -598,11 +610,11 @@ class WWSUunderwritings extends WWSUdb {
 												20,
 												21,
 												22,
-												23,
-											],
-										},
-									},
-								},
+												23
+											]
+										}
+									}
+								}
 							},
 							show: {
 								title: "Calendar Event Filters",
@@ -611,10 +623,10 @@ class WWSUunderwritings extends WWSUdb {
 									title: "Calendar Event",
 									type: "number",
 									required: true,
-									enum: events.map((event) => event.ID),
-								},
-							},
-						},
+									enum: events.map(event => event.ID)
+								}
+							}
+						}
 					},
 					options: {
 						fields: {
@@ -623,21 +635,21 @@ class WWSUunderwritings extends WWSUdb {
 							},
 							name: {
 								helper:
-									"This can be anything you want; the name is used in the underwritings management table and in the system status when alerting of a problem with an underwriting.",
+									"This can be anything you want; the name is used in the underwritings management table and in the system status when alerting of a problem with an underwriting."
 							},
 							trackID: {
 								type: "select",
 								optionLabels: tracks.map(
-									(track) =>
+									track =>
 										`${track.artist} - ${track.title} (ID: ${track.ID})${
 											track.enabled !== 1 ? ` (DISABLED)` : ``
 										}`
 								),
 								helper:
 									"Choose the underwriting track in RadioDJ to associate with this underwriting. If it was not added, please import it first in the configured underwritings/commercials category and then close / re-open this window.",
-								validator: function (callback) {
+								validator: function(callback) {
 									let value = this.getValue();
-									let track = tracks.find((track) => track.ID === value);
+									let track = tracks.find(track => track.ID === value);
 									if (track) {
 										let start = track.start_date
 											? moment.tz(track.start_date, timezone)
@@ -680,19 +692,19 @@ class WWSUunderwritings extends WWSUdb {
 															: `Unlimited`
 													}</li>
 													<li><strong>Estimated Spins So Far: </strong>${track.count_played}</li>
-												</ul>`,
+												</ul>`
 										});
 									} else {
 										callback({
-											status: true,
+											status: true
 										});
 									}
-								},
+								}
 							},
 							mode: {
 								rightLabel: "Yes",
 								helper:
-									"If checked, the number of times this underwriting airs will be adjusted according to how many online listeners are tuned in; the more online listeners tuned in, the more likely/often it will air. <strong>This only applies to algorithmic schedules.</strong>",
+									"If checked, the number of times this underwriting airs will be adjusted according to how many online listeners are tuned in; the more online listeners tuned in, the more likely/often it will air. <strong>This only applies to algorithmic schedules.</strong>"
 							},
 							schedule: {
 								actionbar: {
@@ -700,28 +712,28 @@ class WWSUunderwritings extends WWSUdb {
 									actions: [
 										{
 											label: "Add",
-											action: "add",
+											action: "add"
 										},
 										{
 											label: "Remove",
-											action: "remove",
+											action: "remove"
 										},
 										{
 											label: "Move Up",
 											action: "up",
-											enabled: false,
+											enabled: false
 										},
 										{
 											label: "Move Down",
 											action: "down",
-											enabled: false,
-										},
-									],
+											enabled: false
+										}
+									]
 								},
 								helpers: [
 									"The system uses algorithms during algorthmic schedules to determine when is best to air the underwriting.",
 									"<strong>You should always have at least one algorithmic schedule for underwritings with both an end date and spin count set.</strong> Ideally, you should not used any forced schedules in that case.",
-									"Specify times in the timezone of the WWSU server.",
+									"Specify times in the timezone of the WWSU server."
 								],
 								items: {
 									fields: {
@@ -730,7 +742,7 @@ class WWSUunderwritings extends WWSUdb {
 											multiple: true,
 											multiselect: {
 												enableFiltering: true,
-												includeSelectAllOption: true,
+												includeSelectAllOption: true
 											},
 											optionLabels: [
 												"Sunday",
@@ -739,19 +751,19 @@ class WWSUunderwritings extends WWSUdb {
 												"Wednesday",
 												"Thursday",
 												"Friday",
-												"Saturday",
+												"Saturday"
 											],
 											helper: "Selecting none assumes all days of the week",
-											sort: function (a, b) {
+											sort: function(a, b) {
 												return a.value - b.value;
-											},
+											}
 										},
 										h: {
 											type: "select",
 											multiple: true,
 											multiselect: {
 												enableFiltering: true,
-												includeSelectAllOption: true,
+												includeSelectAllOption: true
 											},
 											optionLabels: [
 												"12 - 1 AM",
@@ -777,15 +789,15 @@ class WWSUunderwritings extends WWSUdb {
 												"8 - 9 PM",
 												"9 - 10 PM",
 												"10 - 11 PM",
-												"11 PM - 12 AM",
+												"11 PM - 12 AM"
 											],
 											helper: "Selecting none assumes all hours of the day",
-											sort: function (a, b) {
+											sort: function(a, b) {
 												return a.value - b.value;
-											},
-										},
-									},
-								},
+											}
+										}
+									}
+								}
 							},
 							scheduleForced: {
 								actionbar: {
@@ -793,27 +805,27 @@ class WWSUunderwritings extends WWSUdb {
 									actions: [
 										{
 											label: "Add",
-											action: "add",
+											action: "add"
 										},
 										{
 											label: "Remove",
-											action: "remove",
+											action: "remove"
 										},
 										{
 											label: "Move Up",
 											action: "up",
-											enabled: false,
+											enabled: false
 										},
 										{
 											label: "Move Down",
 											action: "down",
-											enabled: false,
-										},
-									],
+											enabled: false
+										}
+									]
 								},
 								helpers: [
 									"Forced schedules do NOT use algorithms to determine when to air the underwriting. Instead, <strong>it will always air once per hour during selected days/times.</strong>",
-									"Specify times in the timezone of the WWSU server.",
+									"Specify times in the timezone of the WWSU server."
 								],
 								items: {
 									fields: {
@@ -822,7 +834,7 @@ class WWSUunderwritings extends WWSUdb {
 											multiple: true,
 											multiselect: {
 												enableFiltering: true,
-												includeSelectAllOption: true,
+												includeSelectAllOption: true
 											},
 											optionLabels: [
 												"Sunday",
@@ -831,19 +843,19 @@ class WWSUunderwritings extends WWSUdb {
 												"Wednesday",
 												"Thursday",
 												"Friday",
-												"Saturday",
+												"Saturday"
 											],
 											helper: "Selecting none assumes all days of the week",
-											sort: function (a, b) {
+											sort: function(a, b) {
 												return a.value - b.value;
-											},
+											}
 										},
 										h: {
 											type: "select",
 											multiple: true,
 											multiselect: {
 												enableFiltering: true,
-												includeSelectAllOption: true,
+												includeSelectAllOption: true
 											},
 											optionLabels: [
 												"12 - 1 AM",
@@ -869,15 +881,15 @@ class WWSUunderwritings extends WWSUdb {
 												"8 - 9 PM",
 												"9 - 10 PM",
 												"10 - 11 PM",
-												"11 PM - 12 AM",
+												"11 PM - 12 AM"
 											],
 											helper: "Selecting none assumes all hours of the day",
-											sort: function (a, b) {
+											sort: function(a, b) {
 												return a.value - b.value;
-											},
-										},
-									},
-								},
+											}
+										}
+									}
+								}
 							},
 							show: {
 								actionbar: {
@@ -885,33 +897,33 @@ class WWSUunderwritings extends WWSUdb {
 									actions: [
 										{
 											label: "Add",
-											action: "add",
+											action: "add"
 										},
 										{
 											label: "Remove",
-											action: "remove",
+											action: "remove"
 										},
 										{
 											label: "Move Up",
 											action: "up",
-											enabled: false,
+											enabled: false
 										},
 										{
 											label: "Move Down",
 											action: "down",
-											enabled: false,
-										},
-									],
+											enabled: false
+										}
+									]
 								},
 								helper:
 									"When you specify one or more calendar events, the underwriting will not air unless <strong>both</strong> a defined schedule is matched (if one is defined) and one of the defined calendar events is currently on the air.",
 								items: {
 									type: "select",
 									optionLabels: events.map(
-										(event) => `${event.type}: ${event.hosts} - ${event.name}`
-									),
-								},
-							},
+										event => `${event.type}: ${event.hosts} - ${event.name}`
+									)
+								}
+							}
 						},
 						form: {
 							buttons: {
@@ -920,6 +932,8 @@ class WWSUunderwritings extends WWSUdb {
 									click: (form, e) => {
 										form.refreshValidationState(true);
 										if (!form.isValid(true)) {
+											if (this.manager.has("WWSUehhh"))
+												this.manager.get("WWSUehhh").play();
 											form.focus();
 											return;
 										}
@@ -929,52 +943,52 @@ class WWSUunderwritings extends WWSUdb {
 										value.mode = {
 											mode: value.mode ? 1 : 0,
 											schedule: {
-												schedules: value.schedule.map((schedule) => {
+												schedules: value.schedule.map(schedule => {
 													// No idea why, but we have to do this to convert {value, text} into just the values; accessing property value directly results in null.
-													schedule.dw = schedule.dw.map((dw) => {
+													schedule.dw = schedule.dw.map(dw => {
 														return dw.value;
 													});
-													schedule.h = schedule.h.map((h) => {
+													schedule.h = schedule.h.map(h => {
 														return h.value;
 													});
 													return schedule;
-												}),
+												})
 											},
 											scheduleForced: {
-												schedules: value.scheduleForced.map((schedule) => {
+												schedules: value.scheduleForced.map(schedule => {
 													// No idea why, but we have to do this to convert {value, text} into just the values; accessing property value directly results in null.
-													schedule.dw = schedule.dw.map((dw) => {
+													schedule.dw = schedule.dw.map(dw => {
 														return dw.value;
 													});
-													schedule.h = schedule.h.map((h) => {
+													schedule.h = schedule.h.map(h => {
 														return h.value;
 													});
 													return schedule;
-												}),
+												})
 											},
-											show: value.show,
+											show: value.show
 										};
 
 										// Add or edit the underwriting
 										if (!data) {
-											this.add(value, (success) => {
+											this.add(value, success => {
 												if (success) {
 													this.modals.underwriting.iziModal("close");
 												}
 											});
 										} else {
-											this.edit(value, (success) => {
+											this.edit(value, success => {
 												if (success) {
 													this.modals.underwriting.iziModal("close");
 												}
 											});
 										}
-									},
-								},
-							},
-						},
+									}
+								}
+							}
+						}
 					},
-					data: data ? data : [],
+					data: data ? data : []
 				});
 			});
 	}

@@ -19,10 +19,10 @@ class WWSUdirectors extends WWSUdb {
 			get: "/directors/get",
 			add: "/directors/add",
 			edit: "/directors/edit",
-			remove: "/directors/remove",
+			remove: "/directors/remove"
 		};
 		this.data = {
-			get: {},
+			get: {}
 		};
 
 		this.table;
@@ -32,7 +32,7 @@ class WWSUdirectors extends WWSUdb {
 		this.newDirectorModal = new WWSUmodal(`New Director`, null, ``, true, {
 			headerColor: "",
 			overlayClose: false,
-			zindex: 1110,
+			zindex: 1110
 		});
 
 		this.on("change", "WWSUdirectors", () => {
@@ -62,16 +62,18 @@ class WWSUdirectors extends WWSUdb {
 					dom: `#modal-${this.newDirectorModal.id}`,
 					method: "post",
 					url: this.endpoints.add,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-warning",
 							title: "Error adding director",
 							body:
 								"There was an error adding the director. Please make sure you filled all fields correctly.",
-							delay: 10000,
+							delay: 10000
 						});
 						cb(false);
 					} else {
@@ -80,13 +82,14 @@ class WWSUdirectors extends WWSUdb {
 							title: "Director Added",
 							autohide: true,
 							delay: 10000,
-							body: `Director has been created`,
+							body: `Director has been created`
 						});
 						cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error adding Director",
@@ -94,7 +97,7 @@ class WWSUdirectors extends WWSUdb {
 					"There was an error adding a new Director. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			cb(false);
@@ -116,16 +119,18 @@ class WWSUdirectors extends WWSUdb {
 						dom: `#modal-${this.newDirectorModal.id}`,
 						method: "post",
 						url: this.endpoints.edit,
-						data: data,
+						data: data
 					},
-					(response) => {
+					response => {
 						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-warning",
 								title: "Error editing director",
 								body:
 									"There was an error editing the Director. Please make sure you filled all fields correctly.",
-								delay: 10000,
+								delay: 10000
 							});
 							console.log(response);
 							if (typeof cb === "function") cb(false);
@@ -135,13 +140,14 @@ class WWSUdirectors extends WWSUdb {
 								title: "Director Edited",
 								autohide: true,
 								delay: 10000,
-								body: `Director has been edited`,
+								body: `Director has been edited`
 							});
 							if (typeof cb === "function") cb(true);
 						}
 					}
 				);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error editing Director",
@@ -149,7 +155,7 @@ class WWSUdirectors extends WWSUdb {
 					"There was an error editing the Director. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -168,10 +174,12 @@ class WWSUdirectors extends WWSUdb {
 				{
 					method: "post",
 					url: this.endpoints.remove,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error removing Director",
@@ -179,7 +187,7 @@ class WWSUdirectors extends WWSUdb {
 								"There was an error removing the Director. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -188,13 +196,14 @@ class WWSUdirectors extends WWSUdb {
 							title: "Director Removed",
 							autohide: true,
 							delay: 30000,
-							body: `Director has been removed. <br /><strong>WARNING!</strong> If this director had any DJ Controls installed on personal machines, please remove access under Administration -> Hosts.`,
+							body: `Director has been removed. <br /><strong>WARNING!</strong> If this director had any DJ Controls installed on personal machines, please remove access under Administration -> Hosts.`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error removing Director",
@@ -202,7 +211,7 @@ class WWSUdirectors extends WWSUdb {
 					"There was an error removing the Director. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -239,7 +248,7 @@ class WWSUdirectors extends WWSUdb {
 							{ title: "Admin?" },
 							{ title: "Assistant?" },
 							{ title: "Emails" },
-							{ title: "Actions" },
+							{ title: "Actions" }
 						],
 						columnDefs: [{ responsivePriority: 1, targets: 6 }],
 						order: [[0, "asc"]],
@@ -250,9 +259,9 @@ class WWSUdirectors extends WWSUdb {
 							$(".btn-director-edit").unbind("click");
 							$(".btn-director-delete").unbind("click");
 
-							$(".btn-director-edit").click((e) => {
+							$(".btn-director-edit").click(e => {
 								let director = this.find().find(
-									(director) =>
+									director =>
 										director.ID === parseInt($(e.currentTarget).data("id"))
 								);
 								if (director.ID === 1) {
@@ -270,9 +279,9 @@ class WWSUdirectors extends WWSUdb {
 								}
 							});
 
-							$(".btn-director-delete").click((e) => {
+							$(".btn-director-delete").click(e => {
 								let director = this.find().find(
-									(director) =>
+									director =>
 										director.ID === parseInt($(e.currentTarget).data("id"))
 								);
 								this.manager.get("WWSUutil").confirmDialog(
@@ -292,7 +301,7 @@ class WWSUdirectors extends WWSUdb {
 									}
 								);
 							});
-						},
+						}
 					});
 
 					this.table
@@ -319,16 +328,18 @@ class WWSUdirectors extends WWSUdb {
 		this.manager.get("WWSUanimations").add("directors-update-table", () => {
 			if (this.table) {
 				this.table.clear();
-				this.find().forEach((director) => {
+				this.find().forEach(director => {
 					this.table.row.add([
 						director.name || "",
 						director.position || "Unknown Position",
 						director.present
 							? `<span class="badge ${
-								director.present === 2 ? `bg-indigo` : `badge-success`
-						  }" title="${director.name} is currently clocked in${
-							director.present === 2 ? ` for remote hours` : ``
-					  }"><i class="fas fa-check-circle p-1"></i>${director.present === 2 ? `Remote` : `Yes`}</span>`
+									director.present === 2 ? `bg-indigo` : `badge-success`
+							  }" title="${director.name} is currently clocked in${
+									director.present === 2 ? ` for remote hours` : ``
+							  }"><i class="fas fa-check-circle p-1"></i>${
+									director.present === 2 ? `Remote` : `Yes`
+							  }</span>`
 							: `<span class="badge badge-danger" title="${director.name} is not currently clocked in."><i class="far fa-times-circle p-1"></i>No`,
 						director.admin
 							? `<span class="badge badge-success" title="${director.name} is an administrator director"><i class="fas fa-check-circle p-1"></i>Yes</span>`
@@ -357,7 +368,7 @@ class WWSUdirectors extends WWSUdb {
 							director.ID === 1
 								? `title="Cannot remove the master director" disabled`
 								: `title="Remove Director"`
-						}><i class="fas fa-trash"></i></button></div>`,
+						}><i class="fas fa-trash"></i></button></div>`
 					]);
 				});
 				this.table.draw();
@@ -382,98 +393,98 @@ class WWSUdirectors extends WWSUdb {
 				type: "object",
 				properties: {
 					ID: {
-						type: "number",
+						type: "number"
 					},
 					name: {
 						type: "string",
 						required: true,
 						title: "Full Name",
-						maxLength: 255,
+						maxLength: 255
 					},
 					position: {
 						type: "string",
 						title: "Position",
-						maxLength: 255,
+						maxLength: 255
 					},
 					admin: {
 						type: "boolean",
 						title: "Is Admin Director?",
-						readonly: data && data.ID === 1,
+						readonly: data && data.ID === 1
 					},
 					assistant: {
 						type: "boolean",
-						title: "Is Assistant Director?",
+						title: "Is Assistant Director?"
 					},
 					email: {
 						type: "string",
 						format: "email",
 						title: "Change Email Address",
-						maxLength: 255,
+						maxLength: 255
 					},
 					login: {
 						type: "string",
 						format: "password",
 						required: data ? false : true,
 						title: "Change Password",
-						maxLength: 255,
+						maxLength: 255
 					},
 					emailEmergencies: {
 						type: "boolean",
-						title: "Email on Critical Issues (Emergencies)?",
+						title: "Email on Critical Issues (Emergencies)?"
 					},
 					emailCalendar: {
 						type: "boolean",
-						title: "Calendar/broadcast related emails (Events)?",
+						title: "Calendar/broadcast related emails (Events)?"
 					},
 					emailWeeklyAnalytics: {
 						type: "boolean",
-						title: "Weekly analytics emails (Analytics)?",
-					},
-				},
+						title: "Weekly analytics emails (Analytics)?"
+					}
+				}
 			},
 			options: {
 				fields: {
 					ID: {
-						type: "hidden",
+						type: "hidden"
 					},
 					position: {
-						helper: "What is the director's official title at WWSU?",
+						helper: "What is the director's official title at WWSU?"
 					},
 					admin: {
 						rightLabel: "Yes",
 						helpers: [
 							"Check this box if this director is an admin. Admin directors have the power to manage other directors and their timesheets in the system.",
-							"This option cannot be changed for the master director.",
-						],
+							"This option cannot be changed for the master director."
+						]
 					},
 					assistant: {
 						rightLabel: "Yes",
 						helper:
-							"Check this box if this director is an assistant, defined by WWSU as an unpaid director.",
+							"Check this box if this director is an assistant, defined by WWSU as an unpaid director."
 					},
 					email: {
 						helper:
-							"Change the email address of the director; the system will send emails to them according to email settings. Type remove@example.com to remove their email address. <strong>WWSU work email is highly recommended, or campus email if the director does not have a WWSU work email.</strong>",
+							"Change the email address of the director; the system will send emails to them according to email settings. Type remove@example.com to remove their email address. <strong>WWSU work email is highly recommended, or campus email if the director does not have a WWSU work email.</strong>"
 					},
 					login: {
 						helper:
-							"Change the password for the director. Director will use this password to clock in/out and to perform tasks requiring director authorization. <strong>CAUTION!</strong> If the password is forgotten, it must be changed by an/another admin director.",
+							"Change the password for the director. Director will use this password to clock in/out and to perform tasks requiring director authorization. <strong>CAUTION!</strong> If the password is forgotten, it must be changed by an/another admin director."
 					},
 					emailEmergencies: {
 						rightLabel: "Yes",
 						helper:
-							"Check this box if this director should be emailed when a critical issue occurs with WWSU.",
+							"Check this box if this director should be emailed when a critical issue occurs with WWSU."
 					},
 					emailCalendar: {
 						rightLabel: "Yes",
 						helper:
-							"Check this box if this director should be emailed for calendar/broadcast related matters, such as show absences/cancellations/changes.",
+							"Check this box if this director should be emailed for calendar/broadcast related matters, such as show absences/cancellations/changes."
 					},
 					emailWeeklyAnalytics: {
 						rightLabel: "Yes",
 						helper:
-							"Check this box if this director should be emailed every Sunday 12AM with the broadcast analytics for the week.",
-					},
+							"Check this box if this director should be emailed every Sunday 12AM with the broadcast analytics for the week."
+					}
 				},
 				form: {
 					buttons: {
@@ -482,29 +493,30 @@ class WWSUdirectors extends WWSUdb {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}
 								let value = form.getValue();
 								if (data) {
-									this.editDirector(value, (success) => {
+									this.editDirector(value, success => {
 										if (success) {
 											this.newDirectorModal.iziModal("close");
 										}
 									});
 								} else {
-									this.addDirector(value, (success) => {
+									this.addDirector(value, success => {
 										if (success) {
 											this.newDirectorModal.iziModal("close");
 										}
 									});
 								}
-							},
-						},
-					},
-				},
+							}
+						}
+					}
+				}
 			},
-			data: data ? data : [],
+			data: data ? data : []
 		});
 	}
 }

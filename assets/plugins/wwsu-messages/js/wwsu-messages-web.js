@@ -68,7 +68,9 @@ class WWSUmessagesweb extends WWSUdb {
 				title: `New Message from ${message.fromFriendly}`,
 				autohide: true,
 				delay: 15000,
-				body: `${message.message}<p><strong>To reply:</strong> Click "Chat with DJ" in the left menu.</p>`,
+				body: `${discordMarkdown.toHTML(
+					message.message
+				)}<p><strong>To reply:</strong> Click "Chat with DJ" in the left menu.</p>`,
 				icon: "fas fa-comment fa-lg"
 			});
 		});
@@ -131,16 +133,21 @@ class WWSUmessagesweb extends WWSUdb {
 							"This is the name the DJ and other listeners will see you. If you leave blank, a random name will be given to you."
 					},
 					message: {
-						type: "markdown"
+						type: "markdown",
+						helper:
+							"You are limited to a maximum of 1,024 characters. Each IP address may only send 3 messages per minute."
 					}
 				},
 				form: {
 					buttons: {
 						submit: {
-							title: "Send Publicly",
+							title: "Send Public",
+							styles: "btn btn-primary",
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh"))
+										this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}
@@ -169,10 +176,13 @@ class WWSUmessagesweb extends WWSUdb {
 							}
 						},
 						submitPrivate: {
-							title: "Send Privately",
+							title: "Send Private to the DJs/hosts",
+							styles: "btn btn-danger",
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh"))
+										this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}
@@ -240,13 +250,15 @@ class WWSUmessagesweb extends WWSUdb {
 					{ method: "post", url: this.endpoints.send, data },
 					response => {
 						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-warning",
 								title: "Error sending message",
 								body:
 									"There was an error sending the message. Either you are sending too many messages too quickly (no more than 3 per minute allowed), or the DJ opted to disallow messages during their show. If neither are true, please contact the engineer at wwsu4@wright.edu.",
 								autohide: true,
-								delay: 30000,
+								delay: 20000,
 								icon: "fas fa-skull-crossbones fa-lg"
 							});
 							if (typeof cb === "function") {
@@ -267,6 +279,7 @@ class WWSUmessagesweb extends WWSUdb {
 					}
 				);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error sending message",
@@ -311,7 +324,7 @@ class WWSUmessagesweb extends WWSUdb {
 							message.from,
 							40
 						)}</div>
-            <div class="direct-chat-text bg-success">
+            <div class="direct-chat-text bg-success dark-mode">
                 ${discordMarkdown.toHTML(message.message)}
             </div>
         </div>`;
@@ -336,7 +349,7 @@ class WWSUmessagesweb extends WWSUdb {
 									message.from,
 									40
 								)}</div>
-                <div class="direct-chat-text bg-danger">
+                <div class="direct-chat-text bg-danger dark-mode">
                     ${discordMarkdown.toHTML(message.message)}
                 </div>
             </div>`;
@@ -360,7 +373,7 @@ class WWSUmessagesweb extends WWSUdb {
 									message.from,
 									40
 								)}</div>
-                <div class="direct-chat-text bg-secondary">
+                <div class="direct-chat-text bg-secondary dark-mode">
                     ${discordMarkdown.toHTML(message.message)}
                 </div>
             </div>`;

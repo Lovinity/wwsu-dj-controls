@@ -62,7 +62,7 @@ class WWSUmessages extends WWSUdb {
 	/**
 	 * Initialize chat components. This should be called before init (eg. on DOM ready).
 	 *
-	 * @param {string} chatActiveRecipient DOM query string of the chat header where active recipient will be shown.
+	 * @param {string} chatActiveRecipient DOM query string of where the currently selected recipient should be shown.
 	 * @param {string} chatStatus DOM query string where the chat status info box is contained.
 	 * @param {string} chatMessages DOM query string where chat messages should be displayed.
 	 * @param {string} chatForm DOM query string where the Alpaca form for sending messages should be generated.
@@ -107,7 +107,7 @@ class WWSUmessages extends WWSUdb {
 			options: {
 				fields: {
 					message: {
-						"type": "markdown"
+						type: "markdown"
 					}
 				},
 				form: {
@@ -117,11 +117,15 @@ class WWSUmessages extends WWSUdb {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh"))
+										this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}
 
 								if (!this.manager.get("WWSUrecipients").activeRecipient) {
+									if (this.manager.has("WWSUehhh"))
+										this.manager.get("WWSUehhh").play();
 									$(document).Toasts("create", {
 										class: "bg-warning",
 										title: "Error sending message",
@@ -154,10 +158,100 @@ class WWSUmessages extends WWSUdb {
 			}
 		});
 
+		// Prune removed messages from memory of which were read and which were notified; we don't need them anymore.
+		this.on("remove", "WWSUmessages", (query, db) => {
+			this.read = this.read.filter(value => value !== query);
+			this.notified = this.notified.filter(value => value !== query);
+		});
+
+		// Update messages box when a change in messages occurs
+		this.on("change", "WWSUmessages", db => {
+			this.updateMessages();
+		});
+
+		// On a new message, display a toast.
+		messages.on("newMessage", "WWSUmessages", message => {
+			$(document).Toasts("create", {
+				class: "bg-primary",
+				title: `New Message from ${message.fromFriendly}`,
+				autohide: true,
+				delay: 30000,
+				body: `${discordMarkdown.toHTML(
+					message.message
+				)}<p><strong>To reply:</strong> Click "Messages / Chat" in the left menu and select the recipient.</p>`,
+				icon: "fas fa-comment fa-lg",
+				position: "bottomRight"
+			});
+		});
+
 		// Call updateRecipient whenever a recipient changes. This is in case an actively-selected recipient goes offline/online; we must update the message in the message window.
 		this.manager.get("WWSUrecipients").on("change", "WWSUmessages", () => {
 			this.updateRecipient();
 		});
+
+		// Whenever meta changes, update chat status box
+		this.manager
+			.get("WWSUMeta")
+			.on("newMeta", "WWSUmessages", (newMeta, meta) => {
+				if (!meta.webchat) {
+					$(this.chatStatus).html(`<div class="callout callout-danger">
+	  <ul>
+		<li><i class="fas fa-times-circle text-danger p-1"></i> You or someone else has disabled the chat.</li>
+		<li><i class="fas fa-times-circle text-danger p-1"></i> You will not receive any messages from the website nor the Discord server until the broadcast ends.</li>
+	  </ul>
+	  </div>`);
+				} else if (meta.state.startsWith("automation_")) {
+					$(this.chatStatus).html(`<div class="callout callout-warning">
+	  <ul>
+		<li><i class="fas fa-check-circle text-success p-1"></i> The web chat is enabled.</li>
+		<li><i class="fas fa-minus-circle text-warning p-1"></i> Automation is currently running; public messages you send will go to the website and the #general channel of our Discord server. You will only see Discord messages posted in the #general channel.</li>
+		<li><i class="fas fa-times-circle text-danger p-1"></i> You will not be notified of new messages from the web or Discord when in automation; you will only be notified of messages from other hosts / DJ Controls.</li>
+	  </ul>
+	  </div>`);
+				} else if (meta.state.startsWith("prerecord_")) {
+					$(this.chatStatus).html(`<div class="callout callout-info">
+	  <ul>
+		<li><i class="fas fa-check-circle text-success p-1"></i> The web chat is enabled.</li>
+		<li><i class="fas fa-check-circle text-success p-1"></i> A prerecord is currently running; public messages you send will go to the website and the text channel specific to this broadcast in our Discord server. You will only see Discord messages sent in the text channel specific to the current broadcast.</li>
+		<li><i class="fas fa-times-circle text-danger p-1"></i> The current broadcast is prerecorded; you will not be notified of new messages from the web or Discord; you will only be notified of messages from other hosts / DJ Controls.</li>
+	  </ul>
+	  </div>`);
+				} else if (
+					meta.state.startsWith("sports_") ||
+					meta.state.startsWith("sportsremote_")
+				) {
+					$(this.chatStatus).html(`<div class="callout callout-success">
+	  <ul>
+		<li><i class="fas fa-check-circle text-success p-1"></i> The web chat is enabled.</li>
+		<li><i class="fas fa-check-circle text-success p-1"></i> A sports broadcast is on the air; public messages you send will go to the website and the #sports channel of our Discord server. You will only see Discord messages posted in the #sports channel.</li>
+		${
+			this.manager.get("WWSUhosts").isHost
+				? `<li><i class="fas fa-check-circle text-success p-1"></i> You will be notified of new messages from the web and Discord.</li>`
+				: `<li><i class="fas fa-times-circle text-danger p-1"></i> You will not be notified of new messages from the web / Discord because you did not start the current broadcast.</li>`
+		}
+	  </ul>
+	  </div>`);
+				} else if (
+					meta.state.startsWith("live_") ||
+					meta.state.startsWith("remote_")
+				) {
+					$(this.chatStatus).html(`<div class="callout callout-success">
+	  <ul>
+		<li><i class="fas fa-check-circle text-success p-1"></i> The web chat is enabled.</li>
+		<li><i class="fas fa-check-circle text-success p-1"></i> A broadcast is currently running; public messages you send will go to the website and the text channel specific to this broadcast in our Discord server. You will only see Discord messages sent in the text channel specific to the current broadcast.</li>
+		${
+			this.manager.get("WWSUhosts").isHost
+				? `<li><i class="fas fa-check-circle text-success p-1"></i> You will be notified of new messages from the web and Discord.</li>`
+				: `<li><i class="fas fa-times-circle text-danger p-1"></i> You will not be notified of new messages from the web / Discord because you did not start the current broadcast.</li>`
+		}
+	  </ul>
+	  </div>`);
+				} else {
+					$(this.chatStatus).html(`<div class="callout callout-secondary">
+		<p><i class="fas fa-minus-circle text-secondary p-1"></i> We do not currently know the status of the web chat.</p>
+	  </div>`);
+				}
+			});
 	}
 
 	// Initialize connection. Call this on socket connect event.
@@ -183,6 +277,8 @@ class WWSUmessages extends WWSUdb {
 					{ method: "post", url: this.endpoints.send, data },
 					response => {
 						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error sending message",
@@ -199,8 +295,7 @@ class WWSUmessages extends WWSUdb {
 							$(document).Toasts("create", {
 								class: "bg-success",
 								title: "Message sent",
-								body:
-									"Your message was sent!",
+								body: "Your message was sent!",
 								autohide: true,
 								delay: 5000
 							});
@@ -211,6 +306,7 @@ class WWSUmessages extends WWSUdb {
 					}
 				);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error sending message",
@@ -241,6 +337,8 @@ class WWSUmessages extends WWSUdb {
 					{ method: "post", url: this.endpoints.remove, data },
 					response => {
 						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error removing message",
@@ -261,6 +359,7 @@ class WWSUmessages extends WWSUdb {
 					}
 				);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error removing message",
@@ -277,44 +376,32 @@ class WWSUmessages extends WWSUdb {
 		}
 	}
 
-	// Call WWSUrecipients._updateTable but provide number of unread messages.
-	updateRecipientsTable() {
-		let recipients = [];
+	/**
+	 * Update messages to be displayed.
+	 */
+	updateMessages() {
 		let unreadMessages = 0;
 
-		// Check number of unread messages for each recipient
-		this.manager
-			.get("WWSUrecipients")
-			.find()
-			.forEach(recipient => {
-				recipient.unreadMessages = 0;
-				this.find({ from: recipient.host, status: "active" }).forEach(
-					message => {
-						if (
-							(message.to === "DJ" ||
-								message.to === "DJ-private" ||
-								message.to ===
-									this.manager.get("WWSUrecipients").recipient.host) &&
-							this.read.indexOf(message.ID) === -1
-						) {
-							recipient.unreadMessages++;
-							unreadMessages++;
+		// Check for and notify of new messages
+		this.find({ status: "active" })
+			.filter(
+				message =>
+					(message.to === "DJ" ||
+						message.to === "DJ-private" ||
+						message.to === this.manager.get("WWSUrecipients").recipient.host) &&
+					this.read.indexOf(message.ID) === -1
+			)
+			.forEach(message => {
+				unreadMessages++;
 
-							// Notify new messages
-							if (!this.firstLoad && this.notified.indexOf(message.ID) === -1) {
-								this.notified.push(message.ID);
-								this.emitEvent("newMessage", [message]);
-							}
-						}
-					}
-				);
-				recipients.push(recipient);
+				// Notify on new messages
+				if (!this.firstLoad && this.notified.indexOf(message.ID) === -1) {
+					this.notified.push(message.ID);
+					this.emitEvent("newMessage", [message]);
+				}
 			});
 
-		// Update table
-		this.manager.get("WWSUrecipients")._updateTable(recipients);
-
-		// Update unread messages stuff
+		// Update unread messages badge and pulsing
 		if (unreadMessages <= 0) {
 			$(this.menuNew).html(`0`);
 			$(this.menuNew).removeClass(`badge-danger`);
@@ -326,6 +413,112 @@ class WWSUmessages extends WWSUdb {
 			$(this.menuNew).addClass(`badge-danger`);
 			$(this.menuIcon).addClass(`pulse-success`);
 		}
+
+		// Update messages HTML
+		let chatHTML = ``;
+
+		let query = [
+			{
+				to: [
+					this.manager.get("WWSUhosts").client.host,
+					"DJ",
+					"DJ-private",
+					this.manager.get("WWSUrecipients").recipient.host
+				]
+			},
+			{
+				from: [
+					this.manager.get("WWSUhosts").client.host,
+					this.manager.get("WWSUrecipients").recipient.host
+				]
+			}
+		];
+
+		$(this.chatMessages).html(``);
+
+		this.find(query)
+			.sort(
+				(a, b) => moment(a.createdAt).valueOf() - moment(b.createdAt).valueOf()
+			)
+			.map(message => {
+				chatHTML += `<div class="message" id="message-${message.ID}">
+		${this.messageHTML(message)}
+		</div>`;
+				this.manager
+					.get("WWSUutil")
+					.waitForElement(`#message-${message.ID}`, () => {
+						$(`#message-${message.ID}`).unbind("click");
+
+						$(`#message-${message.ID}`).click(() => {
+							if (this.read.indexOf(message.ID) === -1) {
+								this.read.push(message.ID);
+								this.updateMessages();
+							}
+						});
+					});
+
+				this.manager
+					.get("WWSUutil")
+					.waitForElement(`#message-delete-${message.ID}`, () => {
+						$(`#message-delete-${message.ID}`).unbind("click");
+
+						$(`#message-delete-${message.ID}`).click(() => {
+							this.manager
+								.get("WWSUutil")
+								.confirmDialog(
+									`Are you sure you want to permanently delete this message? It will be removed from everyone's messenger window.`,
+									null,
+									() => {
+										this.remove({ ID: message.ID });
+									}
+								);
+						});
+					});
+			});
+
+		$(this.chatMessages).html(chatHTML);
+
+		// Mark this is no longer first loaded
+		this.firstLoad = false;
+	}
+
+	// Update messages to be displayed
+	checkUnreadMessages() {
+		let unreadMessages = 0;
+
+		// Check number of unread messages
+		this.find({ status: "active" }).forEach(message => {
+			// Check unread messages
+			if (
+				(message.to === "DJ" ||
+					message.to === "DJ-private" ||
+					message.to === this.manager.get("WWSUrecipients").recipient.host) &&
+				this.read.indexOf(message.ID) === -1
+			) {
+				unreadMessages++;
+
+				// Notify on new messages
+				if (!this.firstLoad && this.notified.indexOf(message.ID) === -1) {
+					this.notified.push(message.ID);
+					this.emitEvent("newMessage", [message]);
+				}
+			}
+		});
+
+		// Update unread messages badge and pulsing
+		if (unreadMessages <= 0) {
+			$(this.menuNew).html(`0`);
+			$(this.menuNew).removeClass(`badge-danger`);
+			$(this.menuNew).addClass(`badge-secondary`);
+			$(this.menuIcon).removeClass(`pulse-success`);
+		} else {
+			$(this.menuNew).html(unreadMessages);
+			$(this.menuNew).removeClass(`badge-secondary`);
+			$(this.menuNew).addClass(`badge-danger`);
+			$(this.menuIcon).addClass(`pulse-success`);
+		}
+
+		// This is no longer the first load
 		this.firstLoad = false;
 	}
 
@@ -338,133 +531,23 @@ class WWSUmessages extends WWSUdb {
 		this.manager.get("WWSUanimations").add("change-recipient", () => {
 			if (!recipient) {
 				$(this.chatActiveRecipient).html(`(Select a recipient)`);
-				$(this.chatStatus).html(`<h5>Select a Recipient</h5>
-            <p>Please select a recipient to send a message.</p>`);
-
-				$(this.chatMessages).html(``);
 
 				$(this.chatMute).addClass("d-none");
 				$(this.chatBan).addClass("d-none");
 			} else {
 				$(this.chatActiveRecipient).html(
-					`${jdenticon.toSvg(recipient.host, 24)} ${recipient.label}`
+					`${jdenticon.toSvg(recipient.host, 24)} ${recipient.label} ${
+						recipient.host !== "website" &&
+						recipient.group !== "display" &&
+						recipient.group !== "system"
+							? `${
+									recipient.group === "discord"
+										? ` (public reply)`
+										: ` (private message)`
+							  }`
+							: ``
+					}`
 				);
-				$(this.chatStatus).html(`<div class="row">
-            <div class="col-6 col-md-4 col-lg-3">
-            ${jdenticon.toSvg(recipient.host, 48)}
-            </div>
-            <div class="col-6 col-md-8 col-lg-9">
-            <h5>${recipient.label}</h5>
-            <p>
-            ${
-							recipient.group === "website"
-								? `${
-										recipient.host === "website"
-											? `${
-													this.manager.get("WWSUMeta").meta.webchat
-														? `Web messages are active; visitors can send you messages.<br />Messages you send to "Web Public" will be visible by all visitors.`
-														: `Web messages are NOT active; visitors cannot send you messages.`
-											  }`
-											: `${
-													this.manager.get("WWSUMeta").meta.webchat
-														? `${
-																recipient.status !== 0
-																	? `Visitor is currently online and should receive your message.<br />Messages you send will only be visible to this visitor.`
-																	: `Visitor is offline and was last seen ${moment
-																			.tz(
-																				recipient.time,
-																				this.manager.get("WWSUMeta")
-																					? this.manager.get("WWSUMeta").meta
-																							.timezone
-																					: moment.tz.guess()
-																			)
-																			.format(
-																				"llll"
-																			)}. They will not receive your message unless they come back online within an hour of you sending your message.<br />Messages you send will only be visible to this visitor.`
-														  }`
-														: `Web messages are NOT active; visitors cannot send you messages.`
-											  }`
-								  }`
-								: `${
-										recipient.status !== 0
-											? `Computer/host is online. However, this does not necessarily mean someone is around and will see your message.`
-											: `Computer/host is offline and was last seen ${moment
-													.tz(
-														recipient.time,
-														this.manager.get("WWSUMeta")
-															? this.manager.get("WWSUMeta").meta.timezone
-															: moment.tz.guess()
-													)
-													.format(
-														"llll"
-													)}. They will not receive your message unless they come back online within an hour of you sending your message.`
-								  }`
-						}</p>
-            </div>`);
-
-				let chatHTML = ``;
-
-				let query = [
-					{
-						from: recipient.host,
-						to: [
-							this.manager.get("WWSUhosts").client.host,
-							"DJ",
-							"DJ-private",
-							this.manager.get("WWSUrecipients").recipient.host
-						]
-					},
-					{ to: recipient.host }
-				];
-				if (recipient.host === "website") {
-					query = [{ to: ["DJ", "website"] }];
-				}
-
-				$(this.chatMessages).html(``);
-
-				this.find(query)
-					.sort(
-						(a, b) =>
-							moment(a.createdAt).valueOf() - moment(b.createdAt).valueOf()
-					)
-					.map(message => {
-						chatHTML += `<div class="message" id="message-${message.ID}">
-                ${this.messageHTML(message)}
-                </div>`;
-						this.manager
-							.get("WWSUutil")
-							.waitForElement(`#message-${message.ID}`, () => {
-								$(`#message-${message.ID}`).unbind("click");
-
-								$(`#message-${message.ID}`).click(() => {
-									if (this.read.indexOf(message.ID) === -1) {
-										this.read.push(message.ID);
-										this.updateRecipient();
-										this.updateRecipientsTable();
-									}
-								});
-							});
-
-						this.manager
-							.get("WWSUutil")
-							.waitForElement(`#message-delete-${message.ID}`, () => {
-								$(`#message-delete-${message.ID}`).unbind("click");
-
-								$(`#message-delete-${message.ID}`).click(() => {
-									this.manager
-										.get("WWSUutil")
-										.confirmDialog(
-											`Are you sure you want to permanently delete this message? It will be removed from everyone's messenger window.`,
-											null,
-											() => {
-												this.remove({ ID: message.ID });
-											}
-										);
-								});
-							});
-					});
-
-				$(this.chatMessages).html(chatHTML);
 
 				if (recipient.host.startsWith("website-")) {
 					$(this.chatMute).removeClass("d-none");
@@ -509,8 +592,8 @@ class WWSUmessages extends WWSUdb {
 							message.from,
 							40
 						)}</div>
-            <div class="direct-chat-text bg-success">
-                ${message.message}
+            <div class="direct-chat-text bg-success dark-mode">
+			${discordMarkdown.toHTML(message.message)}
             </div>
         </div>`;
 		} else {
@@ -538,8 +621,8 @@ class WWSUmessages extends WWSUdb {
 									message.from,
 									40
 								)}</div>
-                <div class="direct-chat-text bg-danger">
-                    ${message.message}
+                <div class="direct-chat-text bg-danger dark-mode">
+				${discordMarkdown.toHTML(message.message)}
                 </div>
             </div>`;
 				// Read message
@@ -566,8 +649,8 @@ class WWSUmessages extends WWSUdb {
 									message.from,
 									40
 								)}</div>
-                <div class="direct-chat-text bg-secondary">
-                    ${message.message}
+                <div class="direct-chat-text bg-secondary dark-mode">
+				${discordMarkdown.toHTML(message.message)}
                 </div>
             </div>`;
 			}

@@ -25,11 +25,11 @@ class WWSUinventory extends WWSUdb {
 			edit: "/inventory/edit",
 			get: "/inventory/get",
 			removeCheckout: "/inventory/remove-checkout",
-			remove: "/inventory/remove",
+			remove: "/inventory/remove"
 		};
 
 		this.data = {
-			get: {},
+			get: {}
 		};
 
 		this.table;
@@ -43,20 +43,20 @@ class WWSUinventory extends WWSUdb {
 		this.newItemModal = new WWSUmodal(`New Item`, null, ``, true, {
 			headerColor: "",
 			overlayClose: false,
-			zindex: 1110,
+			zindex: 1110
 		});
 		this.itemInfoModal = new WWSUmodal(``, null, ``, true, {
 			headerColor: "",
 			width: 800,
-			zindex: 1100,
+			zindex: 1100
 		});
 		this.checkoutModal = new WWSUmodal(``, null, ``, true, {
 			headerColor: "",
-			zindex: 1110,
+			zindex: 1110
 		});
 		this.checkInOutModal = new WWSUmodal(``, null, ``, true, {
 			headerColor: "",
-			zindex: 1120,
+			zindex: 1120
 		});
 	}
 
@@ -100,12 +100,12 @@ class WWSUinventory extends WWSUdb {
 							{ title: "Location / Bin" },
 							{ title: "Quantity" },
 							{ title: "Condition" },
-							{ title: "Actions" },
+							{ title: "Actions" }
 						],
 						columnDefs: [{ responsivePriority: 1, targets: 6 }],
 						order: [
 							[3, "asc"],
-							[1, "asc"],
+							[1, "asc"]
 						],
 						scrollCollapse: true,
 						buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"],
@@ -115,20 +115,20 @@ class WWSUinventory extends WWSUdb {
 							$(".btn-inventory-edit").unbind("click");
 							$(".btn-inventory-delete").unbind("click");
 
-							$(".btn-inventory-checkout").click((e) => {
+							$(".btn-inventory-checkout").click(e => {
 								this.showItem(parseInt($(e.currentTarget).data("id")));
 							});
 
-							$(".btn-inventory-edit").click((e) => {
+							$(".btn-inventory-edit").click(e => {
 								let item = this.find().find(
-									(item) => item.ID === parseInt($(e.currentTarget).data("id"))
+									item => item.ID === parseInt($(e.currentTarget).data("id"))
 								);
 								this.showItemForm(item);
 							});
 
-							$(".btn-inventory-delete").click((e) => {
+							$(".btn-inventory-delete").click(e => {
 								let item = this.find().find(
-									(item) => item.ID === parseInt($(e.currentTarget).data("id"))
+									item => item.ID === parseInt($(e.currentTarget).data("id"))
 								);
 								this.manager.get("WWSUutil").confirmDialog(
 									`Are you sure you want to <strong>permanently</strong> remove the item "${item.name}" in ${item.location} / ${item.subLocation} (ID: ${item.ID})?
@@ -142,7 +142,7 @@ class WWSUinventory extends WWSUdb {
 									}
 								);
 							});
-						},
+						}
 					});
 
 					this.table
@@ -175,16 +175,17 @@ class WWSUinventory extends WWSUdb {
 					dom: `#modal-${this.newItemModal.id}`,
 					method: "post",
 					url: this.endpoints.add,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
+					if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 					if (response !== "OK") {
 						$(document).Toasts("create", {
 							class: "bg-warning",
 							title: "Error adding item",
 							body:
 								"There was an error adding the item. Please make sure you filled all fields correctly.",
-							delay: 10000,
+							delay: 10000
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -193,13 +194,14 @@ class WWSUinventory extends WWSUdb {
 							title: "Item Added",
 							autohide: true,
 							delay: 10000,
-							body: `Item has been added`,
+							body: `Item has been added`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error adding item",
@@ -207,7 +209,7 @@ class WWSUinventory extends WWSUdb {
 					"There was an error adding a new item. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -227,19 +229,21 @@ class WWSUinventory extends WWSUdb {
 					dom: `#modal-${this.checkInOutModal.id}`,
 					method: "post",
 					url: this.endpoints.checkIn,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response === "OK") {
 						$(document).Toasts("create", {
 							class: "bg-success",
 							title: "Item Checked In",
 							autohide: true,
 							delay: 10000,
-							body: `Item has been checked in`,
+							body: `Item has been checked in`
 						});
 						if (typeof cb === "function") cb(true);
 					} else if (response === "CHECKOUT_NOT_FOUND") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error checking item in",
@@ -247,10 +251,12 @@ class WWSUinventory extends WWSUdb {
 								"There was an error checking the item in: checkout record not found. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else if (response === "ITEM_NOT_FOUND") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error checking item in",
@@ -258,10 +264,12 @@ class WWSUinventory extends WWSUdb {
 								"There was an error checking the item in: item not found in the inventory. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error checking item in",
@@ -269,13 +277,14 @@ class WWSUinventory extends WWSUdb {
 								"There was an error checking the item in. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error checking item in",
@@ -283,7 +292,7 @@ class WWSUinventory extends WWSUdb {
 					"There was an error checking the item in. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -303,19 +312,21 @@ class WWSUinventory extends WWSUdb {
 					dom: `#modal-${this.checkInOutModal.id}`,
 					method: "post",
 					url: this.endpoints.checkOut,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response === "OK") {
 						$(document).Toasts("create", {
 							class: "bg-success",
 							title: "Item checked out",
 							autohide: true,
 							delay: 10000,
-							body: `Item has been checked out`,
+							body: `Item has been checked out`
 						});
 						if (typeof cb === "function") cb(true);
 					} else if (response === "ITEM_NOT_FOUND") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error checking item out",
@@ -323,10 +334,12 @@ class WWSUinventory extends WWSUdb {
 								"There was an error checking the item out: item not found in the inventory. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else if (response === "CANNOT_CHECK_OUT") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-warning",
 							title: "Error checking item out",
@@ -334,10 +347,12 @@ class WWSUinventory extends WWSUdb {
 								"There was an error checking the item out: that item is not available for checking out via its settings.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else if (response === "QUANTITY_NOT_AVAILABLE") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-warning",
 							title: "Error checking item out",
@@ -345,10 +360,12 @@ class WWSUinventory extends WWSUdb {
 								"There was an error checking the item out: you tried to check out more of that item (quantity) than is available for checking out.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error checking item out",
@@ -356,13 +373,14 @@ class WWSUinventory extends WWSUdb {
 								"There was an error checking the item out. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error checking item out",
@@ -370,7 +388,7 @@ class WWSUinventory extends WWSUdb {
 					"There was an error checking the item out. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -390,16 +408,18 @@ class WWSUinventory extends WWSUdb {
 					dom: `#modal-${this.newItemModal.id}`,
 					method: "post",
 					url: this.endpoints.edit,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-warning",
 							title: "Error editing item",
 							body:
 								"There was an error editing the item. Please make sure you filled all fields correctly.",
-							delay: 10000,
+							delay: 10000
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -408,13 +428,14 @@ class WWSUinventory extends WWSUdb {
 							title: "Item Edited",
 							autohide: true,
 							delay: 10000,
-							body: `Item has been edited`,
+							body: `Item has been edited`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error editing item",
@@ -422,7 +443,7 @@ class WWSUinventory extends WWSUdb {
 					"There was an error editing that item. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -442,16 +463,18 @@ class WWSUinventory extends WWSUdb {
 					dom: `#modal-${this.checkoutModal.id}`,
 					method: "post",
 					url: this.endpoints.editCheckpot,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-warning",
 							title: "Error editing checkout record",
 							body:
 								"There was an error editing the checkout record. Please make sure you filled all fields correctly.",
-							delay: 10000,
+							delay: 10000
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -460,13 +483,14 @@ class WWSUinventory extends WWSUdb {
 							title: "Checkout Record Edited",
 							autohide: true,
 							delay: 10000,
-							body: `Checkout record has been edited`,
+							body: `Checkout record has been edited`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error editing checkout record",
@@ -474,7 +498,7 @@ class WWSUinventory extends WWSUdb {
 					"There was an error editing that checkout record. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -493,10 +517,12 @@ class WWSUinventory extends WWSUdb {
 				{
 					method: "post",
 					url: this.endpoints.get,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (typeof response !== "object") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error fetching items",
@@ -504,7 +530,7 @@ class WWSUinventory extends WWSUdb {
 								"There was an error fetching that item. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -513,6 +539,7 @@ class WWSUinventory extends WWSUdb {
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error fetching items",
@@ -520,7 +547,7 @@ class WWSUinventory extends WWSUdb {
 					"There was an error fetching that item. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -539,10 +566,12 @@ class WWSUinventory extends WWSUdb {
 				{
 					method: "post",
 					url: this.endpoints.remove,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error removing item",
@@ -550,7 +579,7 @@ class WWSUinventory extends WWSUdb {
 								"There was an error removing that item. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -559,13 +588,14 @@ class WWSUinventory extends WWSUdb {
 							title: "Item Removed",
 							autohide: true,
 							delay: 10000,
-							body: `Item has been removed`,
+							body: `Item has been removed`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error removing item",
@@ -573,7 +603,7 @@ class WWSUinventory extends WWSUdb {
 					"There was an error removing that item. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -592,10 +622,12 @@ class WWSUinventory extends WWSUdb {
 				{
 					method: "post",
 					url: this.endpoints.removeCheckout,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error removing checkout record",
@@ -603,7 +635,7 @@ class WWSUinventory extends WWSUdb {
 								"There was an error removing that checkout record. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -612,13 +644,14 @@ class WWSUinventory extends WWSUdb {
 							title: "Checkout record Removed",
 							autohide: true,
 							delay: 10000,
-							body: `Checkout record has been removed`,
+							body: `Checkout record has been removed`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error removing checkout record",
@@ -626,7 +659,7 @@ class WWSUinventory extends WWSUdb {
 					"There was an error removing that checkout record. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -683,7 +716,7 @@ class WWSUinventory extends WWSUdb {
 		this.manager.get("WWSUanimations").add("inventory-update-table", () => {
 			if (this.table) {
 				this.table.clear();
-				this.find().forEach((item) => {
+				this.find().forEach(item => {
 					this.table.row.add([
 						item.ID,
 						item.name,
@@ -695,7 +728,7 @@ class WWSUinventory extends WWSUdb {
 						}`,
 						item.quantity,
 						this.generateConditionProgress(item.condition),
-						`<div class="btn-group"><button class="btn btn-sm btn-primary btn-inventory-checkout" data-id="${item.ID}" title="Check In / Check Out, and view check-in / check-out history."><i class="fas fa-clipboard-check"></i></button><button class="btn btn-sm btn-warning btn-inventory-edit" data-id="${item.ID}" title="Edit Inventory Item"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-inventory-delete" data-id="${item.ID}" title="Remove Inventory Item"><i class="fas fa-trash"></i></button></div>`,
+						`<div class="btn-group"><button class="btn btn-sm btn-primary btn-inventory-checkout" data-id="${item.ID}" title="Check In / Check Out, and view check-in / check-out history."><i class="fas fa-clipboard-check"></i></button><button class="btn btn-sm btn-warning btn-inventory-edit" data-id="${item.ID}" title="Edit Inventory Item"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-inventory-delete" data-id="${item.ID}" title="Remove Inventory Item"><i class="fas fa-trash"></i></button></div>`
 					]);
 				});
 				this.table.draw();
@@ -719,23 +752,23 @@ class WWSUinventory extends WWSUdb {
 				type: "object",
 				properties: {
 					ID: {
-						type: "number",
+						type: "number"
 					},
 					name: {
 						type: "string",
 						required: true,
 						title: "Name of Item",
-						maxLength: 255,
+						maxLength: 255
 					},
 					make: {
 						type: "string",
 						title: "Make / Brand",
-						maxLength: 255,
+						maxLength: 255
 					},
 					model: {
 						type: "string",
 						title: "Model",
-						maxLength: 255,
+						maxLength: 255
 					},
 					location: {
 						type: "string",
@@ -747,55 +780,55 @@ class WWSUinventory extends WWSUdb {
 							"Production Studio",
 							"GM Office",
 							"Engineering",
-							"Penthouse",
-						],
+							"Penthouse"
+						]
 					},
 					subLocation: {
 						type: "string",
-						title: "Sub-location / bin",
+						title: "Sub-location / bin"
 					},
 					quantity: {
 						type: "number",
 						title: "Quantity",
 						required: true,
-						minimum: 1,
+						minimum: 1
 					},
 					condition: {
 						type: "string",
 						required: true,
 						enum: ["Excellent", "Very Good", "Good", "Fair", "Poor", "Broken"],
-						title: "Condition",
+						title: "Condition"
 					},
 					canCheckOut: {
 						type: "boolean",
-						title: "Item can be Checked Out",
+						title: "Item can be Checked Out"
 					},
 					otherInfo: {
 						type: "string",
-						title: "Additional Information",
-					},
-				},
+						title: "Additional Information"
+					}
+				}
 			},
 			options: {
 				fields: {
 					ID: {
-						type: "hidden",
+						type: "hidden"
 					},
 					quantity: {
-						type: "integer",
+						type: "integer"
 					},
 					condition: {
 						helper:
-							"Excellent = New / like new. Very Good = Gently Used. Good = Noticably Used. Fair = Extensively Used / Dirty. Poor = Visible damage, but still works. Broken = Item is inoperatable.",
+							"Excellent = New / like new. Very Good = Gently Used. Good = Noticably Used. Fair = Extensively Used / Dirty. Poor = Visible damage, but still works. Broken = Item is inoperatable."
 					},
 					canCheckOut: {
-						rightLabel: "Yes",
+						rightLabel: "Yes"
 					},
 					otherInfo: {
 						type: "textarea",
 						helper:
-							"Here, you might provide additional info on the condition of the item, or special steps that must be taken by anyone who checks the item out/in.",
-					},
+							"Here, you might provide additional info on the condition of the item, or special steps that must be taken by anyone who checks the item out/in."
+					}
 				},
 				form: {
 					buttons: {
@@ -804,29 +837,31 @@ class WWSUinventory extends WWSUdb {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh"))
+										this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}
 								let value = form.getValue();
 								if (data) {
-									this.edit(value, (success) => {
+									this.edit(value, success => {
 										if (success) {
 											this.newItemModal.iziModal("close");
 										}
 									});
 								} else {
-									this.add(value, (success) => {
+									this.add(value, success => {
 										if (success) {
 											this.newItemModal.iziModal("close");
 										}
 									});
 								}
-							},
-						},
-					},
-				},
+							}
+						}
+					}
+				}
 			},
-			data: data ? data : [],
+			data: data ? data : []
 		});
 	}
 
@@ -839,7 +874,7 @@ class WWSUinventory extends WWSUdb {
 		this.itemInfoModal.title = `Loading...`;
 		this.itemInfoModal.body = ``;
 		this.itemInfoModal.iziModal("open");
-		this.get({ ID: item }, (response) => {
+		this.get({ ID: item }, response => {
 			if (response) {
 				this.itemInfoModal.title = `Item ${response.name} (${response.ID})`;
 				this.itemInfoModal.body = `<table class="table table-striped">
@@ -909,7 +944,7 @@ class WWSUinventory extends WWSUdb {
 						// Generate table
 
 						// Extra information
-						let format = (d) => {
+						let format = d => {
 							return `<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">
 						<tr>
 							<td>Condition when checked out:</td>
@@ -958,7 +993,7 @@ class WWSUinventory extends WWSUdb {
 						};
 						let table = $(`#section-inventory-checkout-table`).DataTable({
 							paging: true,
-							data: response.checkoutRecords.map((record) => {
+							data: response.checkoutRecords.map(record => {
 								record.checkOutDate = moment
 									.tz(
 										record.checkOutDate,
@@ -994,13 +1029,13 @@ class WWSUinventory extends WWSUdb {
 									className: "details-control",
 									orderable: false,
 									data: null,
-									defaultContent: "",
+									defaultContent: ""
 								},
 								{ title: "ID", data: "ID" },
 								{ title: "Name", data: "name" },
 								{ title: "Checked Out", data: "checkOutDate" },
 								{ title: "Checked In", data: "checkInDate" },
-								{ title: "Actions", data: "actions" },
+								{ title: "Actions", data: "actions" }
 							],
 							columnDefs: [{ responsivePriority: 1, targets: 5 }],
 							order: [[1, "asc"]],
@@ -1011,21 +1046,21 @@ class WWSUinventory extends WWSUdb {
 								$(".btn-inventory-checkout-checkin").unbind("click");
 								$(".btn-inventory-checkout-delete").unbind("click");
 
-								$(".btn-inventory-checkout-checkin").click((e) => {
+								$(".btn-inventory-checkout-checkin").click(e => {
 									this.showCheckInForm(
 										parseInt($(e.currentTarget).data("id")),
 										parseInt($(e.currentTarget).data("itemid"))
 									);
 								});
 
-								$(".btn-inventory-checkout-delete").click((e) => {
+								$(".btn-inventory-checkout-delete").click(e => {
 									let id = parseInt($(e.currentTarget).data("id"));
 									this.manager.get("WWSUutil").confirmDialog(
 										`Are you sure you want to <strong>permanently</strong> remove the checkout record ID ${id}?
                             <p><strong>Do NOT permanently remove a checkout record unless it was added by mistake.</strong></p>`,
 										`${id}`,
 										() => {
-											this.removeCheckout({ ID: id }, (response) => {
+											this.removeCheckout({ ID: id }, response => {
 												if (response) {
 													this.showItem(
 														parseInt($(e.currentTarget).data("itemid"))
@@ -1035,7 +1070,7 @@ class WWSUinventory extends WWSUdb {
 										}
 									);
 								});
-							},
+							}
 						});
 
 						table
@@ -1049,7 +1084,7 @@ class WWSUinventory extends WWSUdb {
 						$("#section-inventory-checkout-table tbody").on(
 							"click",
 							"td.details-control",
-							function () {
+							function() {
 								let tr = $(this).closest("tr");
 								let row = table.row(tr);
 
@@ -1067,7 +1102,7 @@ class WWSUinventory extends WWSUdb {
 
 						// Add click event for check out button
 						$(".btn-inventory-check-out").unbind("click");
-						$(".btn-inventory-check-out").click((e) => {
+						$(".btn-inventory-check-out").click(e => {
 							this.showCheckOutForm(parseInt($(e.currentTarget).data("id")));
 						});
 					});
@@ -1093,46 +1128,46 @@ class WWSUinventory extends WWSUdb {
 				type: "object",
 				properties: {
 					item: {
-						type: "number",
+						type: "number"
 					},
 					name: {
 						type: "string",
 						required: true,
-						title: "Full Name of Person Using Item",
+						title: "Full Name of Person Using Item"
 					},
 					checkOutQuantity: {
 						minimum: 1,
 						required: true,
-						title: "Quantity of Item being Checked Out",
+						title: "Quantity of Item being Checked Out"
 					},
 					checkOutCondition: {
 						required: true,
 						enum: ["Excellent", "Very Good", "Good", "Fair", "Poor", "Broken"],
-						title: "Item Condition Upon Checking Out",
+						title: "Item Condition Upon Checking Out"
 					},
 					checkOutDate: {
 						title: "Check Out Date/Time",
 						required: true,
-						format: "datetime",
+						format: "datetime"
 					},
 					checkInDue: {
 						title: "Due Date of Check-In / Return",
-						format: "datetime",
+						format: "datetime"
 					},
 					checkOutNotes: {
 						type: "string",
-						title: "Check-Out Notes",
-					},
-				},
+						title: "Check-Out Notes"
+					}
+				}
 			},
 			options: {
 				fields: {
 					item: {
-						type: "hidden",
+						type: "hidden"
 					},
 					checkOutQuantity: {
 						helper:
-							"This helps keep track of quantity and alert directors via system status if there are missing quantities of this item.",
+							"This helps keep track of quantity and alert directors via system status if there are missing quantities of this item."
 					},
 					checkOutDate: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
@@ -1144,14 +1179,14 @@ class WWSUinventory extends WWSUdb {
 							.format("Z")}`,
 						picker: {
 							inline: true,
-							sideBySide: true,
-						},
+							sideBySide: true
+						}
 					},
 					checkOutCondition: {
 						helpers: [
 							"Excellent = New / like new. Very Good = Gently Used. Good = Noticably Used. Fair = Extensively Used / Dirty. Poor = Visible damage, but still works. Broken = Item is inoperatable.",
-							"Note: This does NOT change the condition listed for the item itself in the inventory; you will need to change this manually if applicable.",
-						],
+							"Note: This does NOT change the condition listed for the item itself in the inventory; you will need to change this manually if applicable."
+						]
 					},
 					checkInDue: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
@@ -1163,16 +1198,16 @@ class WWSUinventory extends WWSUdb {
 							.format("Z")}`,
 						picker: {
 							inline: true,
-							sideBySide: true,
+							sideBySide: true
 						},
 						helper:
-							"When you specify a date/time, if the item(s) are not checked back in by the provided date/time, the system status will show an info message of the past-due item(s) until checked back in.",
+							"When you specify a date/time, if the item(s) are not checked back in by the provided date/time, the system status will show an info message of the past-due item(s) until checked back in."
 					},
 					checkOutNotes: {
 						type: "textarea",
 						helper:
-							"Here, you might provide additional info regarding the checking out of this item. For example, you can explain how/where/when the person plans to use the item/equipment.",
-					},
+							"Here, you might provide additional info regarding the checking out of this item. For example, you can explain how/where/when the person plans to use the item/equipment."
+					}
 				},
 				form: {
 					buttons: {
@@ -1181,27 +1216,29 @@ class WWSUinventory extends WWSUdb {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh"))
+										this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}
 								let value = form.getValue();
-								this.checkOut(value, (success) => {
+								this.checkOut(value, success => {
 									if (success) {
 										this.checkInOutModal.iziModal("close");
 										this.showItem(item.ID);
 									}
 								});
-							},
-						},
-					},
-				},
+							}
+						}
+					}
+				}
 			},
 			data: {
 				item: itemID,
 				checkOutDate: moment(
 					this.manager.get("WWSUMeta").meta.time
-				).toISOString(true),
-			},
+				).toISOString(true)
+			}
 		});
 	}
 
@@ -1224,37 +1261,37 @@ class WWSUinventory extends WWSUdb {
 				type: "object",
 				properties: {
 					ID: {
-						type: "number",
+						type: "number"
 					},
 					checkInQuantity: {
 						minimum: 1,
 						required: true,
-						title: "Quantity of item being Checked In",
+						title: "Quantity of item being Checked In"
 					},
 					checkInCondition: {
 						required: true,
 						enum: ["Excellent", "Very Good", "Good", "Fair", "Poor", "Broken"],
-						title: "Item Condition Upon Checking In",
+						title: "Item Condition Upon Checking In"
 					},
 					checkInDate: {
 						title: "Check In Date/Time",
 						required: true,
-						format: "datetime",
+						format: "datetime"
 					},
 					checkInNotes: {
 						type: "string",
-						title: "Check-In Notes",
-					},
-				},
+						title: "Check-In Notes"
+					}
+				}
 			},
 			options: {
 				fields: {
 					ID: {
-						type: "hidden",
+						type: "hidden"
 					},
 					checkInQuantity: {
 						helper:
-							"If the quantity of the item being checked in is less than what was checked out, system status will alert of missing quantity.",
+							"If the quantity of the item being checked in is less than what was checked out, system status will alert of missing quantity."
 					},
 					checkInDate: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
@@ -1266,20 +1303,20 @@ class WWSUinventory extends WWSUdb {
 							.format("Z")}`,
 						picker: {
 							inline: true,
-							sideBySide: true,
-						},
+							sideBySide: true
+						}
 					},
 					checkInCondition: {
 						helpers: [
 							"Excellent = New / like new. Very Good = Gently Used. Good = Noticably Used. Fair = Extensively Used / Dirty. Poor = Visible damage, but still works. Broken = Item is inoperatable.",
-							"Note: This does NOT change the condition listed for the item itself in the inventory; you will need to change this manually if applicable.",
-						],
+							"Note: This does NOT change the condition listed for the item itself in the inventory; you will need to change this manually if applicable."
+						]
 					},
 					checkInNotes: {
 						type: "textarea",
 						helper:
-							"Here, you might provide additional info regarding the checking in of this item. For example, if any visible damage or wear and tear was observed and probably caused by this person, you may want to log that.",
-					},
+							"Here, you might provide additional info regarding the checking in of this item. For example, if any visible damage or wear and tear was observed and probably caused by this person, you may want to log that."
+					}
 				},
 				form: {
 					buttons: {
@@ -1288,27 +1325,29 @@ class WWSUinventory extends WWSUdb {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh"))
+										this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}
 								let value = form.getValue();
-								this.checkIn(value, (success) => {
+								this.checkIn(value, success => {
 									if (success) {
 										this.checkInOutModal.iziModal("close");
 										this.showItem(itemID);
 									}
 								});
-							},
-						},
-					},
-				},
+							}
+						}
+					}
+				}
 			},
 			data: {
 				ID: checkoutID,
 				checkInDate: moment(this.manager.get("WWSUMeta").meta.time).toISOString(
 					true
-				),
-			},
+				)
+			}
 		});
 	}
 }

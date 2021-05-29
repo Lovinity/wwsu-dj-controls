@@ -406,7 +406,7 @@ class WWSUcalendar extends CalendarDb {
 								() => {
 									this.inactiveCalendar(
 										this.occurrenceModal,
-										{ ID: event.ID },
+										{ ID: event.calendarID },
 										success => {
 											this.eventsModal.body = `<div class="alert alert-warning">
                                 Event changes take several seconds to reflect in the system. Please close and re-open this window.
@@ -554,7 +554,9 @@ class WWSUcalendar extends CalendarDb {
 																"prerecord",
 																"genre",
 																"playlist"
-															].indexOf(schedule ? schedule.type : calendar.type) !== -1
+															].indexOf(
+																schedule ? schedule.type : calendar.type
+															) !== -1
 																? `<li>Does NOT notify subscribers.</li>`
 																: ``
 														}
@@ -565,7 +567,9 @@ class WWSUcalendar extends CalendarDb {
 																"remote",
 																"prerecord",
 																"playlist"
-															].indexOf(schedule ? schedule.type : calendar.type) !== -1
+															].indexOf(
+																schedule ? schedule.type : calendar.type
+															) !== -1
 																? `<li>Does NOT email DJs; you will need to let them know of the change.</li>`
 																: ``
 														}
@@ -642,6 +646,8 @@ class WWSUcalendar extends CalendarDb {
 					{ method: "post", url: this.endpoints.getEventsPlaylists, data: {} },
 					response => {
 						if (!response.playlists || !response.events) {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error loading events and playlists",
@@ -658,6 +664,7 @@ class WWSUcalendar extends CalendarDb {
 					}
 				);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error loading events and playlists",
@@ -691,6 +698,8 @@ class WWSUcalendar extends CalendarDb {
 					},
 					response => {
 						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error adding schedule",
@@ -714,6 +723,7 @@ class WWSUcalendar extends CalendarDb {
 					}
 				);
 			} catch (e) {
+				if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 				$(document).Toasts("create", {
 					class: "bg-danger",
 					title: "Error adding schedule",
@@ -748,6 +758,8 @@ class WWSUcalendar extends CalendarDb {
 					},
 					response => {
 						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error editing schedule",
@@ -771,6 +783,7 @@ class WWSUcalendar extends CalendarDb {
 					}
 				);
 			} catch (e) {
+				if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 				$(document).Toasts("create", {
 					class: "bg-danger",
 					title: "Error editing schedule",
@@ -798,6 +811,7 @@ class WWSUcalendar extends CalendarDb {
 		try {
 			schedule = this.schedule.find({ ID: data.ID }, true);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error removing/reversing schedule",
@@ -821,6 +835,8 @@ class WWSUcalendar extends CalendarDb {
 					},
 					response => {
 						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error removing/reversing schedule",
@@ -844,6 +860,7 @@ class WWSUcalendar extends CalendarDb {
 					}
 				);
 			} catch (e) {
+				if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 				$(document).Toasts("create", {
 					class: "bg-danger",
 					title: "Error removing/reversing schedule",
@@ -878,6 +895,8 @@ class WWSUcalendar extends CalendarDb {
 				},
 				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error adding event",
@@ -901,6 +920,7 @@ class WWSUcalendar extends CalendarDb {
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error adding event",
@@ -935,6 +955,8 @@ class WWSUcalendar extends CalendarDb {
 					},
 					response => {
 						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error editing event",
@@ -958,6 +980,7 @@ class WWSUcalendar extends CalendarDb {
 					}
 				);
 			} catch (e) {
+				if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 				$(document).Toasts("create", {
 					class: "bg-danger",
 					title: "Error editing event",
@@ -994,6 +1017,8 @@ class WWSUcalendar extends CalendarDb {
 					},
 					response => {
 						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error removing event",
@@ -1017,6 +1042,7 @@ class WWSUcalendar extends CalendarDb {
 					}
 				);
 			} catch (e) {
+				if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 				$(document).Toasts("create", {
 					class: "bg-danger",
 					title: "Error removing event",
@@ -1041,6 +1067,7 @@ class WWSUcalendar extends CalendarDb {
 	 */
 	inactiveCalendar(modal, data, cb) {
 		// We need to determine if the removal of this calendar (and thus all its schedules) will affect other events
+		console.dir(data);
 		let calendar = this.calendar.find({ ID: data.ID }, true);
 		this.doConflictCheck(modal, calendar, "removeCalendar", () => {
 			try {
@@ -1053,6 +1080,8 @@ class WWSUcalendar extends CalendarDb {
 					},
 					response => {
 						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error marking event inactive",
@@ -1076,6 +1105,7 @@ class WWSUcalendar extends CalendarDb {
 					}
 				);
 			} catch (e) {
+				if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 				$(document).Toasts("create", {
 					class: "bg-danger",
 					title: "Error marking event inactive",
@@ -1109,6 +1139,8 @@ class WWSUcalendar extends CalendarDb {
 				},
 				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error marking event active",
@@ -1132,6 +1164,7 @@ class WWSUcalendar extends CalendarDb {
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error marking event active",
@@ -1225,6 +1258,7 @@ class WWSUcalendar extends CalendarDb {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}
@@ -1451,7 +1485,7 @@ class WWSUcalendar extends CalendarDb {
 											() => {
 												this.inactiveCalendar(
 													this.occurrenceModal,
-													{ ID: event.ID },
+													{ ID: event.calendarID },
 													success => {
 														if (success) {
 															this.occurrenceModal.iziModal("close");
@@ -1629,6 +1663,7 @@ class WWSUcalendar extends CalendarDb {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}
@@ -1956,6 +1991,7 @@ class WWSUcalendar extends CalendarDb {
 								click: (form, e) => {
 									form.refreshValidationState(true);
 									if (!form.isValid(true)) {
+										if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 										form.focus();
 										return;
 									}
@@ -1964,6 +2000,8 @@ class WWSUcalendar extends CalendarDb {
 									let _event = this.verify(value); // Verify the event is valid first just to be extra sure
 
 									if (!_event.event) {
+										if (this.manager.has("WWSUehhh"))
+											this.manager.get("WWSUehhh").play();
 										$(document).Toasts("create", {
 											class: "bg-warning",
 											title: "Event verification failed",
@@ -2384,6 +2422,7 @@ class WWSUcalendar extends CalendarDb {
 								click: (form, e) => {
 									form.refreshValidationState(true);
 									if (!form.isValid(true)) {
+										if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 										form.focus();
 										return;
 									}
@@ -2394,6 +2433,8 @@ class WWSUcalendar extends CalendarDb {
 
 									let _event = this.verify(value); // Verify the event just to be safe
 									if (!_event.event) {
+										if (this.manager.has("WWSUehhh"))
+											this.manager.get("WWSUehhh").play();
 										$(document).Toasts("create", {
 											class: "bg-warning",
 											title: "Event verification failed",
@@ -3101,6 +3142,7 @@ class WWSUcalendar extends CalendarDb {
 								click: (form, e) => {
 									form.refreshValidationState(true);
 									if (!form.isValid(true)) {
+										if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 										form.focus();
 										return;
 									}
@@ -3147,6 +3189,8 @@ class WWSUcalendar extends CalendarDb {
 
 									let _event = this.verify(value); // Verify the event just to be safe
 									if (!_event.event) {
+										if (this.manager.has("WWSUehhh"))
+											this.manager.get("WWSUehhh").play();
 										$(document).Toasts("create", {
 											class: "bg-warning",
 											title: "Event verification failed",
@@ -3202,6 +3246,7 @@ class WWSUcalendar extends CalendarDb {
 	 * @param {function} cb Callback fired when there are no conflicts detected or the user agreed to proceed with the conflict resolution steps.
 	 */
 	doConflictCheck(modal, event, action, cb) {
+		console.dir(event);
 		$(`#modal-${modal.id}`).block({
 			message: `<h1>Checking conflicts...</h1><p class="conflict-check-progress"></p>`,
 			css: { border: "3px solid #a00" },
@@ -3216,6 +3261,7 @@ class WWSUcalendar extends CalendarDb {
 				}
 				if (!event.event) {
 					$(`#modal-${modal.id}`).unblock();
+					if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 					$(document).Toasts("create", {
 						class: "bg-danger",
 						title: "Error resolving schedule conflicts",
@@ -3497,6 +3543,7 @@ class WWSUcalendar extends CalendarDb {
 
 		// Duration check; do not allow events more than 1 day long
 		if (duration > 60 * 24) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-warning",
 				title: "Multi-day Events Not Allowed",
@@ -3523,7 +3570,7 @@ class WWSUcalendar extends CalendarDb {
 						type: "number",
 						required: true,
 						enum: this.calendar
-							.db()
+							.db({ active: true })
 							.get()
 							.map(cal => cal.ID)
 					},
@@ -3568,6 +3615,7 @@ class WWSUcalendar extends CalendarDb {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}

@@ -23,11 +23,11 @@ class WWSUdiscipline extends WWSUdb {
 			edit: "/discipline/edit",
 			getWeb: "/discipline/get-web",
 			get: "/discipline/get",
-			remove: "/discipline/remove",
+			remove: "/discipline/remove"
 		};
 		this.data = {
 			getWeb: {},
-			get: {},
+			get: {}
 		};
 
 		this.table;
@@ -40,7 +40,7 @@ class WWSUdiscipline extends WWSUdb {
 		});
 
 		// This event is called when the client gets issued discipline
-		this.manager.socket.on("discipline-add", (discipline) => {
+		this.manager.socket.on("discipline-add", discipline => {
 			let activeDiscipline =
 				discipline.active &&
 				(discipline.action !== "dayban" ||
@@ -76,29 +76,29 @@ class WWSUdiscipline extends WWSUdb {
 						let nextDiscipline = this.queuedDiscipline.shift();
 						this.showDiscipline(nextDiscipline);
 					}
-				},
+				}
 			}),
 
 			// Quick form for muting someone
 			mute: new WWSUmodal(`Mute`, `bg-warning`, ``, true, {
 				headerColor: "",
 				zindex: 1100,
-				overlayClose: false,
+				overlayClose: false
 			}),
 
 			// Quick form for banning someone
 			ban: new WWSUmodal(`Ban`, `bg-danger`, ``, true, {
 				headerColor: "",
 				zindex: 1100,
-				overlayClose: false,
+				overlayClose: false
 			}),
 
 			// Full discipline form
 			addDiscipline: new WWSUmodal(``, null, ``, true, {
 				headerColor: "",
 				zindex: 1100,
-				overlayClose: false,
-			}),
+				overlayClose: false
+			})
 		};
 
 		this.modals.discipline.footer = `<button type="button" class="btn btn-success" id="modal-${this.modals.discipline.id}-acknowledge">Acknowledge</button>`;
@@ -132,10 +132,10 @@ class WWSUdiscipline extends WWSUdb {
 				.get("noReq")
 				.request(
 					{ method: "post", url: this.endpoints.getWeb, data: {} },
-					(body) => {
+					body => {
 						let docb = true;
 						if (body.length > 0) {
-							body.map((discipline) => {
+							body.map(discipline => {
 								let activeDiscipline =
 									discipline.active &&
 									(discipline.action !== "dayban" ||
@@ -163,6 +163,7 @@ class WWSUdiscipline extends WWSUdb {
 				);
 		} catch (e) {
 			console.error(e);
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error checking discipline",
@@ -170,7 +171,7 @@ class WWSUdiscipline extends WWSUdb {
 					"There was an error checking to see if you are allowed to access WWSU. Please try again later, or contact the engineer if this problem continues.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 		}
 	}
@@ -262,9 +263,10 @@ class WWSUdiscipline extends WWSUdb {
 					dom: `#modal-${this.modals.discipline.id}`,
 					method: "post",
 					url: this.endpoints.acknowledge,
-					data: { ID: ID },
+					data: { ID: ID }
 				},
-				(response) => {
+				response => {
+					if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 					this.modals.discipline.iziModal("close");
 					if (response !== "OK") {
 						$(document).Toasts("create", {
@@ -274,7 +276,7 @@ class WWSUdiscipline extends WWSUdb {
 								"There was an error acknowledging the discipline. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -283,13 +285,14 @@ class WWSUdiscipline extends WWSUdb {
 							title: "Acknowledged",
 							autohide: true,
 							delay: 10000,
-							body: `Discipline was acknowledged.`,
+							body: `Discipline was acknowledged.`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error acknowledging",
@@ -297,7 +300,7 @@ class WWSUdiscipline extends WWSUdb {
 					"There was an error acknowledging the discipline. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -318,17 +321,19 @@ class WWSUdiscipline extends WWSUdb {
 					dom: dom,
 					method: "post",
 					url: this.endpoints.add,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-warning",
 							title: "Error adding discipline",
 							body:
 								"There was an error adding the discipline. Please make sure you filled all fields correctly. If your DJ Controls is locked to a DJ and you are not on the air, your request might have been blocked.",
 							delay: 15000,
-							autohide: true,
+							autohide: true
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -337,13 +342,14 @@ class WWSUdiscipline extends WWSUdb {
 							title: "Discipline Added",
 							autohide: true,
 							delay: 10000,
-							body: `Discipline was added`,
+							body: `Discipline was added`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error adding discipline",
@@ -351,7 +357,7 @@ class WWSUdiscipline extends WWSUdb {
 					"There was an error adding discipline. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -372,10 +378,12 @@ class WWSUdiscipline extends WWSUdb {
 					dom: dom,
 					method: "post",
 					url: this.endpoints.edit,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error editing discipline",
@@ -383,7 +391,7 @@ class WWSUdiscipline extends WWSUdb {
 								"There was an error editing discipline. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -392,13 +400,14 @@ class WWSUdiscipline extends WWSUdb {
 							title: "Discipline Edited",
 							autohide: true,
 							delay: 10000,
-							body: `Discipline was edited`,
+							body: `Discipline was edited`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error editing discipline",
@@ -406,7 +415,7 @@ class WWSUdiscipline extends WWSUdb {
 					"There was an error editing discipline. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -425,10 +434,12 @@ class WWSUdiscipline extends WWSUdb {
 				{
 					method: "post",
 					url: this.endpoints.remove,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error removing discipline",
@@ -436,7 +447,7 @@ class WWSUdiscipline extends WWSUdb {
 								"There was an error removing discipline. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -445,13 +456,14 @@ class WWSUdiscipline extends WWSUdb {
 							title: "Discipline Removed",
 							autohide: true,
 							delay: 10000,
-							body: `Discipline was removed`,
+							body: `Discipline was removed`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error removing discipline",
@@ -459,7 +471,7 @@ class WWSUdiscipline extends WWSUdb {
 					"There was an error removing discipline. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -492,7 +504,7 @@ class WWSUdiscipline extends WWSUdb {
 							className: "details-control",
 							orderable: false,
 							data: null,
-							defaultContent: "",
+							defaultContent: ""
 						},
 						{ title: "ID", data: "ID" },
 						{ title: "IP/Host", data: "IP" },
@@ -500,7 +512,7 @@ class WWSUdiscipline extends WWSUdb {
 						{ title: "Active?", data: "active" },
 						{ title: "Read?", data: "acknowledged" },
 						{ title: "Type", data: "type" },
-						{ title: "Actions", data: "actions" },
+						{ title: "Actions", data: "actions" }
 					],
 					columnDefs: [{ responsivePriority: 1, targets: 7 }],
 					order: [[1, "desc"]],
@@ -511,18 +523,18 @@ class WWSUdiscipline extends WWSUdb {
 						$(".btn-bans-edit").unbind("click");
 						$(".btn-bans-delete").unbind("click");
 
-						$(".btn-bans-edit").click((e) => {
+						$(".btn-bans-edit").click(e => {
 							let ban = this.find().find(
-								(ban) => ban.ID === parseInt($(e.currentTarget).data("id"))
+								ban => ban.ID === parseInt($(e.currentTarget).data("id"))
 							);
 							if (ban) {
 								this.showBanForm(ban);
 							}
 						});
 
-						$(".btn-bans-delete").click((e) => {
+						$(".btn-bans-delete").click(e => {
 							let ban = this.find().find(
-								(ban) => ban.ID === parseInt($(e.currentTarget).data("id"))
+								ban => ban.ID === parseInt($(e.currentTarget).data("id"))
 							);
 							this.manager.get("WWSUutil").confirmDialog(
 								`Are you sure you want to <strong>permanently</strong> remove the discipline ID ${ban.ID}?
@@ -536,7 +548,7 @@ class WWSUdiscipline extends WWSUdb {
 								}
 							);
 						});
-					},
+					}
 				});
 
 				this.table
@@ -545,7 +557,7 @@ class WWSUdiscipline extends WWSUdb {
 					.appendTo(`#section-bans-table_wrapper .col-md-6:eq(0)`);
 
 				// Additional info rows
-				let format = (d) => {
+				let format = d => {
 					return `<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">
 					<tr>
 						<td>Reason(s):</td>
@@ -553,24 +565,20 @@ class WWSUdiscipline extends WWSUdb {
 					</tr>
 					</table>`;
 				};
-				$("#section-bans-table tbody").on(
-					"click",
-					"td.details-control",
-					(e) => {
-						let tr = $(e.target).closest("tr");
-						let row = this.table.row(tr);
+				$("#section-bans-table tbody").on("click", "td.details-control", e => {
+					let tr = $(e.target).closest("tr");
+					let row = this.table.row(tr);
 
-						if (row.child.isShown()) {
-							// This row is already open - close it
-							row.child.hide();
-							tr.removeClass("shown");
-						} else {
-							// Open this row
-							row.child(format(row.data())).show();
-							tr.addClass("shown");
-						}
+					if (row.child.isShown()) {
+						// This row is already open - close it
+						row.child.hide();
+						tr.removeClass("shown");
+					} else {
+						// Open this row
+						row.child(format(row.data())).show();
+						tr.addClass("shown");
 					}
-				);
+				});
 
 				// Add click event for new DJ button
 				$(".btn-bans-new").unbind("click");
@@ -593,7 +601,7 @@ class WWSUdiscipline extends WWSUdb {
 			this.table.rows.add(
 				this.db()
 					.get()
-					.map((record) => {
+					.map(record => {
 						return {
 							message: record.message,
 							ID: record.ID,
@@ -614,7 +622,7 @@ class WWSUdiscipline extends WWSUdb {
 								)
 								.format("LLL"),
 							actions: `<div class="btn-group">
-                    <button class="btn btn-sm btn-warning btn-bans-edit" data-id="${record.ID}" title="Edit Discipline"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-bans-delete" data-id="${record.ID}" title="Remove Discipline"><i class="fas fa-trash"></i></button></div>`,
+                    <button class="btn btn-sm btn-warning btn-bans-edit" data-id="${record.ID}" title="Edit Discipline"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-bans-delete" data-id="${record.ID}" title="Remove Discipline"><i class="fas fa-trash"></i></button></div>`
 						};
 					})
 			);
@@ -637,51 +645,51 @@ class WWSUdiscipline extends WWSUdb {
 				type: "object",
 				properties: {
 					ID: {
-						type: "number",
+						type: "number"
 					},
 					IP: {
 						type: "string",
 						required: true,
-						title: "IP address or recipient.host string",
+						title: "IP address or recipient.host string"
 					},
 					action: {
 						type: "string",
 						title: "Type of Discipline",
 						enum: ["permaban", "dayban", "showban"],
-						required: true,
+						required: true
 					},
 					active: {
 						type: "boolean",
 						title: "Active?",
-						default: true,
+						default: true
 					},
 					message: {
 						type: "string",
-						title: "Reason(s) for Discipline",
-					},
-				},
+						title: "Reason(s) for Discipline"
+					}
+				}
 			},
 			options: {
 				fields: {
 					ID: {
-						type: "hidden",
+						type: "hidden"
 					},
 					IP: {
-						helper: `<strong>WARNING!</strong> If you ban your own IP or host, DJ Controls will stop working.`,
+						helper: `<strong>WARNING!</strong> If you ban your own IP or host, DJ Controls will stop working.`
 					},
 					action: {
 						optionLabels: [
 							"Permanent Ban (permaban)",
 							"Ban for 24 hours (dayban)",
-							"Ban; Marked Inactive when Broadcast Ends (showban)",
-						],
+							"Ban; Marked Inactive when Broadcast Ends (showban)"
+						]
 					},
 					active: {
 						rightLabel: "Yes",
 						helpers: [
 							"<strong>If adding new discipline and you save as not active (unchecked), this discipline will be auto-acknowledged<strong>, meaning the IP/host will never see the disciplinary message.",
-							"If unchecked, the discipline will not apply, but this will be in the records for reference.",
-						],
+							"If unchecked, the discipline will not apply, but this will be in the records for reference."
+						]
 					},
 					message: {
 						type: "tinymce",
@@ -690,9 +698,9 @@ class WWSUdiscipline extends WWSUdb {
 								"undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | fullscreen preview | image link | ltr rtl",
 							plugins:
 								"autoresize preview paste importcss searchreplace autolink save directionality visualblocks visualchars fullscreen image link table hr pagebreak nonbreaking toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help quickbars",
-							menubar: "file edit view insert format tools table help",
-						},
-					},
+							menubar: "file edit view insert format tools table help"
+						}
+					}
 				},
 				form: {
 					buttons: {
@@ -701,6 +709,8 @@ class WWSUdiscipline extends WWSUdb {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh"))
+										this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}
@@ -718,7 +728,7 @@ class WWSUdiscipline extends WWSUdb {
 											this.add(
 												`#modal-${this.modals.addDiscipline.id}`,
 												value,
-												(success) => {
+												success => {
 													if (success) {
 														this.modals.addDiscipline.iziModal("close");
 													}
@@ -730,19 +740,19 @@ class WWSUdiscipline extends WWSUdb {
 									this.edit(
 										`#modal-${this.modals.addDiscipline.id}`,
 										value,
-										(success) => {
+										success => {
 											if (success) {
 												this.modals.addDiscipline.iziModal("close");
 											}
 										}
 									);
 								}
-							},
-						},
-					},
-				},
+							}
+						}
+					}
+				}
 			},
-			data: data || {},
+			data: data || {}
 		});
 	}
 
@@ -762,9 +772,9 @@ class WWSUdiscipline extends WWSUdb {
 				properties: {
 					message: {
 						type: "string",
-						title: "Reason(s) for Discipline",
-					},
-				},
+						title: "Reason(s) for Discipline"
+					}
+				}
 			},
 			options: {
 				fields: {
@@ -775,10 +785,10 @@ class WWSUdiscipline extends WWSUdb {
 								"undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | fullscreen preview | image link | ltr rtl",
 							plugins:
 								"autoresize preview paste importcss searchreplace autolink save directionality visualblocks visualchars fullscreen image link table hr pagebreak nonbreaking toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help quickbars",
-							menubar: "file edit view insert format tools table help",
+							menubar: "file edit view insert format tools table help"
 						},
-						helper: `A mute means this user will lose access to WWSU for 24 hours, and all messages they sent will be deleted. <strong>You should only mute this user if they are being harassing or inappropriate</strong>`,
-					},
+						helper: `A mute means this user will lose access to WWSU for 24 hours, and all messages they sent will be deleted. <strong>You should only mute this user if they are being harassing or inappropriate</strong>`
+					}
 				},
 				form: {
 					buttons: {
@@ -787,6 +797,8 @@ class WWSUdiscipline extends WWSUdb {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh"))
+										this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}
@@ -796,20 +808,20 @@ class WWSUdiscipline extends WWSUdb {
 									{
 										IP: recipient.host,
 										action: "dayban",
-										message: value.message,
+										message: value.message
 									},
-									(success) => {
+									success => {
 										if (success) {
 											this.modals.mute.iziModal("close");
 										}
 									}
 								);
-							},
-						},
-					},
-				},
+							}
+						}
+					}
+				}
 			},
-			data: {},
+			data: {}
 		});
 	}
 
@@ -829,9 +841,9 @@ class WWSUdiscipline extends WWSUdb {
 				properties: {
 					message: {
 						type: "string",
-						title: "Reason(s) for Discipline",
-					},
-				},
+						title: "Reason(s) for Discipline"
+					}
+				}
 			},
 			options: {
 				fields: {
@@ -842,10 +854,10 @@ class WWSUdiscipline extends WWSUdb {
 								"undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | fullscreen preview | image link | ltr rtl",
 							plugins:
 								"autoresize preview paste importcss searchreplace autolink save directionality visualblocks visualchars fullscreen image link table hr pagebreak nonbreaking toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help quickbars",
-							menubar: "file edit view insert format tools table help",
+							menubar: "file edit view insert format tools table help"
 						},
-						helper: `A ban means this user will lose access to WWSU permanently, and all messages they sent will be deleted. <strong>You should only ban this user if they are making threats to harm people or destroy WWSU / Wright State property</strong>`,
-					},
+						helper: `A ban means this user will lose access to WWSU permanently, and all messages they sent will be deleted. <strong>You should only ban this user if they are making threats to harm people or destroy WWSU / Wright State property</strong>`
+					}
 				},
 				form: {
 					buttons: {
@@ -854,6 +866,8 @@ class WWSUdiscipline extends WWSUdb {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh"))
+										this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}
@@ -863,20 +877,20 @@ class WWSUdiscipline extends WWSUdb {
 									{
 										IP: recipient.host,
 										action: "permaban",
-										message: value.message,
+										message: value.message
 									},
-									(success) => {
+									success => {
 										if (success) {
 											this.modals.ban.iziModal("close");
 										}
 									}
 								);
-							},
-						},
-					},
-				},
+							}
+						}
+					}
+				}
 			},
-			data: {},
+			data: {}
 		});
 	}
 }

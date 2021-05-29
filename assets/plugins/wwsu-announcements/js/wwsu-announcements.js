@@ -22,10 +22,10 @@ class WWSUannouncements extends WWSUdb {
 			add: "/announcements/add",
 			edit: "/announcements/edit",
 			get: "/announcements/get",
-			remove: "/announcements/remove",
+			remove: "/announcements/remove"
 		};
 		this.data = {
-			get: { types: options.types },
+			get: { types: options.types }
 		};
 
 		this.assignSocketEvent("announcements", this.manager.socket);
@@ -34,12 +34,12 @@ class WWSUannouncements extends WWSUdb {
 
 		this.formModal = new WWSUmodal(``, null, ``, true, {
 			headerColor: "",
-			zindex: 1100,
+			zindex: 1100
 		});
 
 		this.on("change", "WWSUannouncements", () => {
 			this.updateTable();
-		})
+		});
 	}
 
 	// Initialize the connection and get initial data; should be called on socket connect event.
@@ -80,12 +80,12 @@ class WWSUannouncements extends WWSUdb {
 							{ title: "Start" },
 							{ title: "End" },
 							{ title: "Priority" },
-							{ title: "Actions" },
+							{ title: "Actions" }
 						],
 						columnDefs: [{ responsivePriority: 1, targets: 5 }],
 						order: [
 							[3, "asc"],
-							[2, "asc"],
+							[2, "asc"]
 						],
 						buttons: ["colvis"],
 						pageLength: 25,
@@ -94,17 +94,17 @@ class WWSUannouncements extends WWSUdb {
 							$(".btn-announcement-edit").unbind("click");
 							$(".btn-announcement-delete").unbind("click");
 
-							$(".btn-announcement-edit").click((e) => {
+							$(".btn-announcement-edit").click(e => {
 								let announcement = this.find().find(
-									(announcement) =>
+									announcement =>
 										announcement.ID === parseInt($(e.currentTarget).data("id"))
 								);
 								this.showForm(announcement);
 							});
 
-							$(".btn-announcement-delete").click((e) => {
+							$(".btn-announcement-delete").click(e => {
 								let announcement = this.find().find(
-									(announcement) =>
+									announcement =>
 										announcement.ID === parseInt($(e.currentTarget).data("id"))
 								);
 								this.manager
@@ -117,7 +117,7 @@ class WWSUannouncements extends WWSUdb {
 										}
 									);
 							});
-						},
+						}
 					});
 
 					this.table
@@ -150,10 +150,12 @@ class WWSUannouncements extends WWSUdb {
 					dom: this.formModal ? `#modal-${this.formModal.id}` : undefined,
 					method: "post",
 					url: this.endpoints.add,
-					data,
+					data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error adding announcement",
@@ -161,7 +163,7 @@ class WWSUannouncements extends WWSUdb {
 								"There was an error adding the announcement. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") {
 							cb(false);
@@ -172,7 +174,7 @@ class WWSUannouncements extends WWSUdb {
 							title: "Announcement added",
 							autohide: true,
 							delay: 10000,
-							body: `The announcement was added.`,
+							body: `The announcement was added.`
 						});
 						if (typeof cb === "function") {
 							cb(true);
@@ -181,6 +183,7 @@ class WWSUannouncements extends WWSUdb {
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error adding announcement",
@@ -188,7 +191,7 @@ class WWSUannouncements extends WWSUdb {
 					"There was an error adding the announcement. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			if (typeof cb === "function") {
 				cb(false);
@@ -210,10 +213,12 @@ class WWSUannouncements extends WWSUdb {
 					dom: this.formModal ? `#modal-${this.formModal.id}` : undefined,
 					method: "post",
 					url: this.endpoints.edit,
-					data,
+					data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error editing announcement",
@@ -221,7 +226,7 @@ class WWSUannouncements extends WWSUdb {
 								"There was an error editing the announcement. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") {
 							cb(false);
@@ -232,7 +237,7 @@ class WWSUannouncements extends WWSUdb {
 							title: "Announcement edited",
 							autohide: true,
 							delay: 10000,
-							body: `The announcement was edited.`,
+							body: `The announcement was edited.`
 						});
 						if (typeof cb === "function") {
 							cb(true);
@@ -241,6 +246,7 @@ class WWSUannouncements extends WWSUdb {
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error editing announcement",
@@ -248,7 +254,7 @@ class WWSUannouncements extends WWSUdb {
 					"There was an error editing the announcement. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			if (typeof cb === "function") {
 				cb(false);
@@ -269,8 +275,10 @@ class WWSUannouncements extends WWSUdb {
 				.get("directorReq")
 				.request(
 					{ method: "post", url: this.endpoints.remove, data },
-					(response) => {
+					response => {
 						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error removing announcement",
@@ -278,7 +286,7 @@ class WWSUannouncements extends WWSUdb {
 									"There was an error removing the announcement. Please report this to the engineer.",
 								autohide: true,
 								delay: 10000,
-								icon: "fas fa-skull-crossbones fa-lg",
+								icon: "fas fa-skull-crossbones fa-lg"
 							});
 							if (typeof cb === "function") {
 								cb(false);
@@ -289,7 +297,7 @@ class WWSUannouncements extends WWSUdb {
 								title: "Announcement removed",
 								autohide: true,
 								delay: 10000,
-								body: `The announcement was removed.`,
+								body: `The announcement was removed.`
 							});
 							if (typeof cb === "function") {
 								cb(true);
@@ -298,6 +306,7 @@ class WWSUannouncements extends WWSUdb {
 					}
 				);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error removing announcement",
@@ -305,7 +314,7 @@ class WWSUannouncements extends WWSUdb {
 					"There was an error removing the announcement. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			if (typeof cb === "function") {
 				cb(false);
@@ -321,7 +330,7 @@ class WWSUannouncements extends WWSUdb {
 		this.manager.get("WWSUanimations").add("announcements-update-table", () => {
 			if (this.table) {
 				this.table.clear();
-				this.find().forEach((announcement) => {
+				this.find().forEach(announcement => {
 					this.table.row.add([
 						announcement.title,
 						announcement.type,
@@ -342,7 +351,7 @@ class WWSUannouncements extends WWSUdb {
 							)
 							.format("LLLL"),
 						`<span class="badge badge-${announcement.level}">${announcement.level}</span>`,
-						`<div class="btn-group"><button class="btn btn-sm btn-warning btn-announcement-edit" data-id="${announcement.ID}" title="Edit Announcement"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-announcement-delete" data-id="${announcement.ID}" title="Delete Announcement"><i class="fas fa-trash"></i></button></div>`,
+						`<div class="btn-group"><button class="btn btn-sm btn-warning btn-announcement-edit" data-id="${announcement.ID}" title="Edit Announcement"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-announcement-delete" data-id="${announcement.ID}" title="Delete Announcement"><i class="fas fa-trash"></i></button></div>`
 					]);
 				});
 				this.table.draw();
@@ -387,7 +396,7 @@ class WWSUannouncements extends WWSUdb {
 				type: "object",
 				properties: {
 					ID: {
-						type: "number",
+						type: "number"
 					},
 					type: {
 						type: "string",
@@ -405,47 +414,47 @@ class WWSUannouncements extends WWSUdb {
 							"display-internal",
 							"display-internal-sticky",
 							"display-public",
-							"display-public-sticky",
-						],
+							"display-public-sticky"
+						]
 					},
 					level: {
 						type: "string",
 						required: true,
 						title: "Importance Level",
-						enum: ["danger", "warning", "info", "success", "secondary"],
+						enum: ["danger", "warning", "info", "success", "secondary"]
 					},
 					title: {
 						type: "string",
 						required: true,
 						title: "Title",
-						maxLength: 32,
+						maxLength: 32
 					},
 					announcement: {
 						type: "string",
 						title: "Content",
-						required: true,
+						required: true
 					},
 					displayTime: {
 						type: "number",
 						default: 15,
 						title: "Display Time (seconds)",
 						minimum: 5,
-						maximum: 60,
+						maximum: 60
 					},
 					starts: {
 						title: "Starts",
-						format: "datetime",
+						format: "datetime"
 					},
 					expires: {
 						title: "Expires",
-						format: "datetime",
-					},
-				},
+						format: "datetime"
+					}
+				}
 			},
 			options: {
 				fields: {
 					ID: {
-						type: "hidden",
+						type: "hidden"
 					},
 					type: {
 						optionLabels: [
@@ -460,9 +469,9 @@ class WWSUannouncements extends WWSUdb {
 							"Internal Display Sign",
 							"Internal Display Sign (sticky)",
 							"Public Display Sign",
-							"Public Display Sign (sticky)",
+							"Public Display Sign (sticky)"
 						],
-						helper: "Where should this announcement be displayed?",
+						helper: "Where should this announcement be displayed?"
 					},
 					level: {
 						optionLabels: [
@@ -470,12 +479,12 @@ class WWSUannouncements extends WWSUdb {
 							"Warning (yellow)",
 							"Info (teal)",
 							"Success (green)",
-							"Secondary (gray)",
+							"Secondary (gray)"
 						],
-						helper: "Level determines the color of the alert background/badge.",
+						helper: "Level determines the color of the alert background/badge."
 					},
 					title: {
-						helper: "Keep short and concise; there is a 32-character limit.",
+						helper: "Keep short and concise; there is a 32-character limit."
 					},
 					announcement: {
 						type: "tinymce",
@@ -484,14 +493,14 @@ class WWSUannouncements extends WWSUdb {
 								"undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | fullscreen preview | image link | ltr rtl",
 							plugins:
 								"autoresize preview paste importcss searchreplace autolink save directionality visualblocks visualchars fullscreen image link table hr pagebreak nonbreaking toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help quickbars",
-							menubar: "file edit view insert format tools table help",
+							menubar: "file edit view insert format tools table help"
 						},
 						helper:
-							"For display signs, content will be auto-scaled to fit the screen. Avoid using large images when also using text for display sign announcements; the text will become very small when scaled.",
+							"For display signs, content will be auto-scaled to fit the screen. Avoid using large images when also using text for display sign announcements; the text will become very small when scaled."
 					},
 					displayTime: {
 						helper:
-							"How long the announcement is displayed. Only applies to Website (Pop-up) or any of the display sign announcement types.",
+							"How long the announcement is displayed. Only applies to Website (Pop-up) or any of the display sign announcement types."
 					},
 					starts: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
@@ -503,13 +512,13 @@ class WWSUannouncements extends WWSUdb {
 							.format("Z")}`,
 						picker: {
 							inline: true,
-							sideBySide: true,
+							sideBySide: true
 						},
 						helper: `Defaults to the timezone ${
 							this.manager.get("WWSUMeta")
 								? this.manager.get("WWSUMeta").meta.timezone
 								: moment.tz.guess()
-						}`,
+						}`
 					},
 					expires: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
@@ -521,14 +530,14 @@ class WWSUannouncements extends WWSUdb {
 							.format("Z")}`,
 						picker: {
 							inline: true,
-							sideBySide: true,
+							sideBySide: true
 						},
 						helper: `Defaults to the timezone ${
 							this.manager.get("WWSUMeta")
 								? this.manager.get("WWSUMeta").meta.timezone
 								: moment.tz.guess()
-						}`,
-					},
+						}`
+					}
 				},
 
 				form: {
@@ -538,30 +547,32 @@ class WWSUannouncements extends WWSUdb {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh"))
+										this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}
 								let value = form.getValue();
 
 								if (!data) {
-									this.add(value, (success) => {
+									this.add(value, success => {
 										if (success) {
 											this.formModal.iziModal("close");
 										}
 									});
 								} else {
-									this.edit(value, (success) => {
+									this.edit(value, success => {
 										if (success) {
 											this.formModal.iziModal("close");
 										}
 									});
 								}
-							},
-						},
-					},
-				},
+							}
+						}
+					}
+				}
 			},
-			data: data ? data : null,
+			data: data ? data : null
 		});
 
 		this.formModal.iziModal("open");

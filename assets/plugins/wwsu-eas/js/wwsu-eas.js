@@ -20,13 +20,13 @@ class WWSUeas extends WWSUdb {
 			get: "/eas/get",
 			remove: "/eas/remove",
 			test: "/eas/test",
-			send: "/eas/send",
+			send: "/eas/send"
 		};
 
 		this.data = {
 			get: {},
 			test: {},
-			send: {},
+			send: {}
 		};
 
 		this.table;
@@ -35,7 +35,7 @@ class WWSUeas extends WWSUdb {
 
 		this.assignSocketEvent("eas", this.manager.socket);
 
-		this.on("change", "WWSUeas", (db) => {
+		this.on("change", "WWSUeas", db => {
 			this.emitNewAlerts();
 			this.updateTable();
 		});
@@ -45,13 +45,13 @@ class WWSUeas extends WWSUdb {
 			overlayClose: true,
 			zindex: 1100,
 			timeout: 180000,
-			timeoutProgressbar: true,
+			timeoutProgressbar: true
 		});
 
 		this.newEASModal = new WWSUmodal(`New EAS Alert`, null, ``, true, {
 			headerColor: "",
 			overlayClose: true,
-			zindex: 1200,
+			zindex: 1200
 		});
 	}
 
@@ -78,10 +78,12 @@ class WWSUeas extends WWSUdb {
 					dom,
 					method: "post",
 					url: this.endpoints.send,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error sending alert",
@@ -89,7 +91,7 @@ class WWSUeas extends WWSUdb {
 								"There was an error sending the alert. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -98,13 +100,14 @@ class WWSUeas extends WWSUdb {
 							title: "Alert Sent!",
 							autohide: true,
 							delay: 10000,
-							body: `Alert was sent!`,
+							body: `Alert was sent!`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error sending alert",
@@ -112,7 +115,7 @@ class WWSUeas extends WWSUdb {
 					"There was an error sending the alert. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -131,8 +134,10 @@ class WWSUeas extends WWSUdb {
 				.get("directorReq")
 				.request(
 					{ dom, method: "post", url: this.endpoints.test, data: {} },
-					(response) => {
+					response => {
 						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error sending test alert",
@@ -140,7 +145,7 @@ class WWSUeas extends WWSUdb {
 									"There was an error sending the test alert. Please report this to the engineer.",
 								autohide: true,
 								delay: 10000,
-								icon: "fas fa-skull-crossbones fa-lg",
+								icon: "fas fa-skull-crossbones fa-lg"
 							});
 							if (typeof cb === "function") cb(false);
 						} else {
@@ -149,13 +154,14 @@ class WWSUeas extends WWSUdb {
 								title: "Test Alert Sent!",
 								autohide: true,
 								delay: 10000,
-								body: `Test alert was sent!`,
+								body: `Test alert was sent!`
 							});
 							if (typeof cb === "function") cb(true);
 						}
 					}
 				);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error sending test alert",
@@ -163,7 +169,7 @@ class WWSUeas extends WWSUdb {
 					"There was an error sending the test alert. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -184,10 +190,12 @@ class WWSUeas extends WWSUdb {
 					dom,
 					method: "post",
 					url: this.endpoints.edit,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error editing alert",
@@ -195,7 +203,7 @@ class WWSUeas extends WWSUdb {
 								"There was an error editing the alert. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -204,13 +212,14 @@ class WWSUeas extends WWSUdb {
 							title: "Alert Edited!",
 							autohide: true,
 							delay: 10000,
-							body: `Alert was edited!`,
+							body: `Alert was edited!`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error editing alert",
@@ -218,7 +227,7 @@ class WWSUeas extends WWSUdb {
 					"There was an error editing the alert. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -239,10 +248,12 @@ class WWSUeas extends WWSUdb {
 					dom,
 					method: "post",
 					url: this.endpoints.remove,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error remove alert",
@@ -250,7 +261,7 @@ class WWSUeas extends WWSUdb {
 								"There was an error removing the alert. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -259,13 +270,14 @@ class WWSUeas extends WWSUdb {
 							title: "Alert Removed!",
 							autohide: true,
 							delay: 10000,
-							body: `Alert was removed!`,
+							body: `Alert was removed!`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error removing alert",
@@ -273,7 +285,7 @@ class WWSUeas extends WWSUdb {
 					"There was an error removing the alert. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -284,7 +296,7 @@ class WWSUeas extends WWSUdb {
 	 * Emit events for new alerts
 	 */
 	emitNewAlerts() {
-		this.find().forEach((record) => {
+		this.find().forEach(record => {
 			if (this.displayed.indexOf(record.ID) === -1) {
 				this.displayed.push(record.ID);
 				this.emitEvent("newAlert", [record]);
@@ -319,7 +331,7 @@ class WWSUeas extends WWSUdb {
 						{ title: "Counties" },
 						{ title: "Starts" },
 						{ title: "Expires" },
-						{ title: "Actions" },
+						{ title: "Actions" }
 					],
 					columnDefs: [{ responsivePriority: 1, targets: 5 }],
 					pageLength: 25,
@@ -328,16 +340,16 @@ class WWSUeas extends WWSUdb {
 						$(".btn-eas-edit").unbind("click");
 						$(".btn-eas-delete").unbind("click");
 
-						$(".btn-eas-edit").click((e) => {
+						$(".btn-eas-edit").click(e => {
 							let eas = this.find().find(
-								(eas) => eas.ID === parseInt($(e.currentTarget).data("id"))
+								eas => eas.ID === parseInt($(e.currentTarget).data("id"))
 							);
 							this.showEASForm(eas);
 						});
 
-						$(".btn-eas-delete").click((e) => {
+						$(".btn-eas-delete").click(e => {
 							let eas = this.find().find(
-								(eas) => eas.ID === parseInt($(e.currentTarget).data("id"))
+								eas => eas.ID === parseInt($(e.currentTarget).data("id"))
 							);
 							this.manager.get("WWSUutil").confirmDialog(
 								`Are you sure you want to <strong>permanently</strong> remove the alert "${eas.alert}"?
@@ -351,7 +363,7 @@ class WWSUeas extends WWSUdb {
 								}
 							);
 						});
-					},
+					}
 				});
 
 				// Add click event for new EAS button
@@ -390,7 +402,7 @@ class WWSUeas extends WWSUdb {
 		this.manager.get("WWSUanimations").add("eas-update-table", () => {
 			if (this.table) {
 				this.table.clear();
-				this.find().forEach((eas) => {
+				this.find().forEach(eas => {
 					this.table.row.add([
 						eas.source,
 						eas.alert,
@@ -413,7 +425,7 @@ class WWSUeas extends WWSUdb {
 							.format("lll"),
 						eas.source === "WWSU"
 							? `<div class="btn-group"><button class="btn btn-sm btn-warning btn-eas-edit" data-id="${eas.ID}" title="Edit certain elements of this alert and re-send it."><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-eas-delete" data-id="${eas.ID}" title="Delete / cancel this EAS elart."><i class="fas fa-trash"></i></button></div>`
-							: `<div class="btn-group"><button class="btn btn-sm btn-warning" title="Cannot edit an alert that did not originate from WWSU." disabled><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger" title="Cannot delete / cancel an alert that did not originate from WWSU." disabled><i class="fas fa-trash"></i></button></div>`,
+							: `<div class="btn-group"><button class="btn btn-sm btn-warning" title="Cannot edit an alert that did not originate from WWSU." disabled><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger" title="Cannot delete / cancel an alert that did not originate from WWSU." disabled><i class="fas fa-trash"></i></button></div>`
 					]);
 				});
 				this.table.draw();
@@ -457,82 +469,82 @@ class WWSUeas extends WWSUdb {
 				type: "object",
 				properties: {
 					ID: {
-						type: "number",
+						type: "number"
 					},
 					counties: {
 						type: "string",
 						required: true,
 						title: "Counties Affected",
-						maxLength: 255,
+						maxLength: 255
 					},
 					alert: {
 						type: "string",
 						required: true,
 						readonly: typeof data !== "undefined",
 						title: "Name of Alert",
-						maxLength: 255,
+						maxLength: 255
 					},
 					severity: {
 						type: "string",
 						required: true,
 						readonly: typeof data !== "undefined",
 						enum: ["Extreme", "Severe", "Moderate", "Minor"],
-						title: "Severity",
+						title: "Severity"
 					},
 					color: {
 						type: "string",
 						required: true,
 						readonly: typeof data !== "undefined",
-						title: "Alert Representative Color",
+						title: "Alert Representative Color"
 					},
 					information: {
 						type: "string",
 						required: true,
 						title: "Alert Information",
-						maxLength: 1024,
+						maxLength: 1024
 					},
 					starts: {
 						format: "datetime",
-						title: "Start Date/Time",
+						title: "Start Date/Time"
 					},
 					expires: {
 						format: "datetime",
-						title: "Expiration Date/Time",
-					},
-				},
+						title: "Expiration Date/Time"
+					}
+				}
 			},
 			options: {
 				fields: {
 					ID: {
-						type: "hidden",
+						type: "hidden"
 					},
 					counties: {
-						helper: "Comma-separated list of counties this alert affects.",
+						helper: "Comma-separated list of counties this alert affects."
 					},
 					alert: {
 						helpers: [
 							"The official name of the alert being issued.",
-							"<strong>CANNOT BE EDITED once set!</strong>",
-						],
+							"<strong>CANNOT BE EDITED once set!</strong>"
+						]
 					},
 					severity: {
 						helpers: [
 							"The severity of this alert.",
 							"Minor = no risk of life or property. Moderate = Minor risk of life and property. Severe = moderate risk of life and property. Extreme = critical risk of life and property.",
-							"<strong>CANNOT BE EDITED once set!</strong>",
-						],
+							"<strong>CANNOT BE EDITED once set!</strong>"
+						]
 					},
 					color: {
 						type: "color",
 						helpers: [
 							"A color representing this alert; used as a background.",
-							"<strong>CANNOT BE EDITED once set!</strong>",
-						],
+							"<strong>CANNOT BE EDITED once set!</strong>"
+						]
 					},
 					information: {
 						type: "textarea",
 						helper:
-							"Information pertaining to this alert, such as what it is, what is happening, what and whom it affects, and what people should do.",
+							"Information pertaining to this alert, such as what it is, what is happening, what and whom it affects, and what people should do."
 					},
 					starts: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
@@ -544,8 +556,8 @@ class WWSUeas extends WWSUdb {
 							.format("Z")}`,
 						picker: {
 							inline: true,
-							sideBySide: true,
-						},
+							sideBySide: true
+						}
 					},
 					expires: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
@@ -557,9 +569,9 @@ class WWSUeas extends WWSUdb {
 							.format("Z")}`,
 						picker: {
 							inline: true,
-							sideBySide: true,
-						},
-					},
+							sideBySide: true
+						}
+					}
 				},
 				form: {
 					buttons: {
@@ -568,6 +580,8 @@ class WWSUeas extends WWSUdb {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh"))
+										this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}
@@ -576,7 +590,7 @@ class WWSUeas extends WWSUdb {
 									this.edit(
 										`#modal-${this.newEASModal.id}-body`,
 										value,
-										(success) => {
+										success => {
 											if (success) {
 												this.newEASModal.iziModal("close");
 											}
@@ -586,19 +600,19 @@ class WWSUeas extends WWSUdb {
 									this.send(
 										`#modal-${this.newEASModal.id}-body`,
 										value,
-										(success) => {
+										success => {
 											if (success) {
 												this.newEASModal.iziModal("close");
 											}
 										}
 									);
 								}
-							},
-						},
-					},
-				},
+							}
+						}
+					}
+				}
 			},
-			data: data ? data : {},
+			data: data ? data : {}
 		});
 	}
 }

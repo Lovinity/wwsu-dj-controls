@@ -41,4 +41,13 @@ class WWSUmodules {
 			throw new Error(`The specified module ${name} was not added yet.`);
 		return this.modules.get(name);
 	}
+
+	/**
+	 * See if a module exists
+	 *
+	 * @param {string} name name of module to return
+	 */
+	has(name) {
+		return this.modules.has(name);
+	}
 }

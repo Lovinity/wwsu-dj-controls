@@ -18,10 +18,10 @@ class WWSUstatus extends WWSUdb {
 		this.endpoints = {
 			get: "/status/get",
 			report: "/status/report",
-			recorder: "/status/recorder",
+			recorder: "/status/recorder"
 		};
 		this.data = {
-			get: {},
+			get: {}
 		};
 
 		this.assignSocketEvent("status", this.manager.socket);
@@ -36,7 +36,7 @@ class WWSUstatus extends WWSUdb {
 				overlayClose: true,
 				zindex: 1100,
 				timeout: 180000,
-				timeoutProgressbar: true,
+				timeoutProgressbar: true
 			}
 		);
 	}
@@ -63,16 +63,18 @@ class WWSUstatus extends WWSUdb {
 				.get("noReq")
 				.request(
 					{ dom: dom, method: "post", url: this.endpoints.report, data },
-					(response) => {
+					response => {
 						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
 							$(document).Toasts("create", {
 								class: "bg-danger",
 								title: "Error reporting problem",
 								body:
-									"There was an error reporting a problem. Please report this to the engineer.",
+									"There was an error reporting a problem. Please report this to the engineer at wwsu4@wright.edu.",
 								autohide: true,
 								delay: 10000,
-								icon: "fas fa-skull-crossbones fa-lg",
+								icon: "fas fa-skull-crossbones fa-lg"
 							});
 							if (typeof cb === "function") {
 								cb(false);
@@ -83,7 +85,7 @@ class WWSUstatus extends WWSUdb {
 								title: "Problem reported",
 								autohide: true,
 								delay: 10000,
-								body: `The issue has been reported to WWSU.`,
+								body: `The issue has been reported to WWSU.`
 							});
 							if (typeof cb === "function") {
 								cb(true);
@@ -92,14 +94,15 @@ class WWSUstatus extends WWSUdb {
 					}
 				);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error reporting problem",
 				body:
-					"There was an error reporting a problem. Please report this to the engineer.",
+					"There was an error reporting a problem. Please report this to the engineer at wwsu4@wright.edu.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			if (typeof cb === "function") {
 				cb(false);
@@ -120,7 +123,7 @@ class WWSUstatus extends WWSUdb {
 				.get("hostReq")
 				.request(
 					{ method: "post", url: this.endpoints.recorder, data },
-					(response) => {
+					response => {
 						if (response !== "OK") {
 							if (typeof cb === "function") {
 								cb(false);
@@ -153,26 +156,26 @@ class WWSUstatus extends WWSUdb {
 				properties: {
 					location: {
 						type: "string",
-						default: location,
+						default: location
 					},
 					information: {
 						type: "string",
 						title: "Describe the problem",
 						maxLength: 1024,
-						required: true,
-					},
-				},
+						required: true
+					}
+				}
 			},
 			options: {
 				fields: {
 					location: {
-						type: "hidden",
+						type: "hidden"
 					},
 					information: {
 						type: "textarea",
 						helper:
-							"Explain concisely what problem you are having, what you did leading up to the problem, and any errors you received. Do NOT include personal information / passwords / etc (reports are public). You have a 1024 character limit.",
-					},
+							"Explain concisely what problem you are having, what you did leading up to the problem, and any errors you received. Do NOT include personal information / passwords / etc (reports are public). You have a 1024 character limit."
+					}
 				},
 				form: {
 					buttons: {
@@ -189,19 +192,19 @@ class WWSUstatus extends WWSUdb {
 									dom,
 									{
 										location: value.location,
-										information: value.information,
+										information: value.information
 									},
-									(success) => {
+									success => {
 										if (success) {
 											form.clear();
 										}
 									}
 								);
-							},
-						},
-					},
-				},
-			},
+							}
+						}
+					}
+				}
+			}
 		});
 	}
 }

@@ -34,6 +34,7 @@ class WWSUSilence extends WWSUevents {
 				{ method: "post", url: this.endpoints.active },
 				(response) => {
 					if (!response) {
+						if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error sending silence alarm",
@@ -51,6 +52,7 @@ class WWSUSilence extends WWSUevents {
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error sending silence alarm",
@@ -75,9 +77,10 @@ class WWSUSilence extends WWSUevents {
 				{ method: "post", url: this.endpoints.inactive },
 				(response) => {
 					if (!response) {
+						if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
-							title: "Error sending silence alarm",
+							title: "Error deactivating silence alarm",
 							body:
 								"There was an error deactivating the silence alarm on WWSU. Please report this to the engineer.",
 							autohide: true,
@@ -92,9 +95,10 @@ class WWSUSilence extends WWSUevents {
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
-				title: "Error sending silence alarm",
+				title: "Error deactivating silence alarm",
 				body:
 					"There was an error deactivating the silence alarm on WWSU. Please report this to the engineer.",
 				autohide: true,

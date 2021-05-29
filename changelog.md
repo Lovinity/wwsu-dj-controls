@@ -2,14 +2,32 @@
 
 ## 8.19.0-alpha - WIP
 
-### Fixed
-
-- Pulsing was not being removed when it should have for operation buttons
-
 ### Changed
 
 - [BREAKING] WWSU messages now uses simpleMDE instead of tinyMCE; better compatibility with Discord.
+- [WIP] Messages tab changed:
+  - [BREAKING] WWSUrecipients.\_updateTable renamed to WWSUrecipients.updateTable.
+  - [BREAKING] WWSUmessages.updateRecipientsTable removed.
+  - Recipients table / modal no longer displays group nor unread messages (since all unread messages are now always visible).
+  - all relevant messages are always displayed (not dependent on which recipient is selected)
+  - Put the message box to the side on large displays to make it easier to use
+  - Discord compatibility added
 - WWSU Logo
+
+### Removed
+
+- Discord tab in favor of Discord integration in the messages / chat tab.
+
+### Added
+
+- Ehhh (error sound) (checks are added to prevent it playing if there is a chance it would go on the air)
+- Engineer email in the error messages when reporting a problem fails (because you can't report a problem via report a problem if report a problem is broken)
+
+### Fixed
+
+- Pulsing was not being removed when it should have for operation buttons
+- Event is invalid error was still present when marking calendar events as inactive.
+- When adding a new occurrence on the calendar, the list of events to choose from also included inactive ones; it should only include active ones.
 
 ### Updated
 

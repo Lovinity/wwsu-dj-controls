@@ -42,6 +42,7 @@ class WWSUconfig extends WWSUevents {
 				},
 				(response) => {
 					if (typeof response !== "object" && !response.website) {
+						if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error loading WWSU server configuration",
@@ -58,6 +59,7 @@ class WWSUconfig extends WWSUevents {
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error loading WWSU server configuration",

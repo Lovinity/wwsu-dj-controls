@@ -112,12 +112,13 @@ class WWSUrequestsweb extends WWSUevents {
           { dom: dom, method: "post", url: this.endpoints.place, data },
           (response) => {
             if (response !== "OK") {
+              if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
               $(document).Toasts("create", {
                 class: "bg-danger",
                 title: "Error placing request",
-                body: `There was an error placing the request. Maybe this track cannot be requested right now?`,
+                body: `There was an error placing the request. Maybe this track cannot be requested right now? If you think this is an error, please contact the engineer at wwsu4@wright.edu.`,
                 autohide: true,
-                delay: 10000,
+                delay: 15000,
                 icon: "fas fa-skull-crossbones fa-lg",
               });
               if (typeof cb === "function") {
@@ -138,11 +139,12 @@ class WWSUrequestsweb extends WWSUevents {
           }
         );
     } catch (e) {
+      if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
       $(document).Toasts("create", {
         class: "bg-danger",
         title: "Error placing request",
         body:
-          "There was an error placing the request. Please report this to the engineer.",
+          "There was an error placing the request. Please report this to the engineer at wwsu4@wright.edu.",
         autohide: true,
         delay: 10000,
         icon: "fas fa-skull-crossbones fa-lg",

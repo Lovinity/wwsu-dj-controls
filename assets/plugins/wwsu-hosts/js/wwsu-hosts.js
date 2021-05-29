@@ -123,6 +123,8 @@ class WWSUhosts extends WWSUdb {
 				},
 				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error editing host",
@@ -147,6 +149,7 @@ class WWSUhosts extends WWSUdb {
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error editing host",
@@ -177,6 +180,8 @@ class WWSUhosts extends WWSUdb {
 				},
 				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error removing host",
@@ -201,6 +206,7 @@ class WWSUhosts extends WWSUdb {
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error removing host",
@@ -383,6 +389,7 @@ class WWSUhosts extends WWSUdb {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}

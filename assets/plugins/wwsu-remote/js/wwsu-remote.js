@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 // REQUIRES these WWSUmodules: hostReq (WWSUreq)
 class WWSUremote extends WWSUevents {
@@ -16,13 +16,13 @@ class WWSUremote extends WWSUevents {
 		this.endpoints = {
 			request: "/call/request",
 			credentialComputer: "/call/credential-computer",
-			quality: "/call/quality",
+			quality: "/call/quality"
 		};
 		this.data = {
-			request: {},
+			request: {}
 		};
 
-		this.manager.socket.on("call-quality", (quality) => {
+		this.manager.socket.on("call-quality", quality => {
 			this.emitEvent("callQuality", [quality]);
 		});
 	}
@@ -35,30 +35,35 @@ class WWSUremote extends WWSUevents {
 	 */
 	request(data, cb) {
 		try {
-			this.manager.get("hostReq").request(
-				{ method: "post", url: this.endpoints.request, data },
-				(response) => {
-					if (response !== "OK") {
-						$(document).Toasts("create", {
-							class: "bg-danger",
-							title: "Error requesting audio call",
-							body:
-								"There was an error informing the WWSU API we want to start an audio call for a remote broadcast. Please contact the engineer.",
-							autohide: true,
-							delay: 15000,
-							icon: "fas fa-skull-crossbones fa-lg",
-						});
-						if (typeof cb === "function") {
-							cb(false);
-						}
-					} else {
-						if (typeof cb === "function") {
-							cb(true);
+			this.manager
+				.get("hostReq")
+				.request(
+					{ method: "post", url: this.endpoints.request, data },
+					response => {
+						if (response !== "OK") {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
+							$(document).Toasts("create", {
+								class: "bg-danger",
+								title: "Error requesting audio call",
+								body:
+									"There was an error informing the WWSU API we want to start an audio call for a remote broadcast. Please contact the engineer.",
+								autohide: true,
+								delay: 15000,
+								icon: "fas fa-skull-crossbones fa-lg"
+							});
+							if (typeof cb === "function") {
+								cb(false);
+							}
+						} else {
+							if (typeof cb === "function") {
+								cb(true);
+							}
 						}
 					}
-				}
-			);
+				);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error requesting audio call",
@@ -66,7 +71,7 @@ class WWSUremote extends WWSUevents {
 					"There was an error informing the WWSU API we want to start an audio call for a remote broadcast. Please contact the engineer.",
 				autohide: true,
 				delay: 15000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			if (typeof cb === "function") {
 				cb(false);
@@ -84,30 +89,35 @@ class WWSUremote extends WWSUevents {
 	 */
 	credentialComputer(data, cb) {
 		try {
-			this.manager.get("hostReq").request(
-				{ method: "post", url: this.endpoints.credentialComputer, data },
-				(response) => {
-					if (response.authToken) {
-						if (typeof cb === "function") {
-							cb(response);
-						}
-					} else {
-						$(document).Toasts("create", {
-							class: "bg-danger",
-							title: "Error generating Skyway.js credential",
-							body:
-								"There was an error generating a credential token to authorize Skyway.js for an audio call. Please contact the engineer.",
-							autohide: true,
-							delay: 15000,
-							icon: "fas fa-skull-crossbones fa-lg",
-						});
-						if (typeof cb === "function") {
-							cb(false);
+			this.manager
+				.get("hostReq")
+				.request(
+					{ method: "post", url: this.endpoints.credentialComputer, data },
+					response => {
+						if (response.authToken) {
+							if (typeof cb === "function") {
+								cb(response);
+							}
+						} else {
+							if (this.manager.has("WWSUehhh"))
+								this.manager.get("WWSUehhh").play();
+							$(document).Toasts("create", {
+								class: "bg-danger",
+								title: "Error generating Skyway.js credential",
+								body:
+									"There was an error generating a credential token to authorize Skyway.js for an audio call. Please contact the engineer.",
+								autohide: true,
+								delay: 15000,
+								icon: "fas fa-skull-crossbones fa-lg"
+							});
+							if (typeof cb === "function") {
+								cb(false);
+							}
 						}
 					}
-				}
-			);
+				);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error generating Skyway.js credential",
@@ -115,7 +125,7 @@ class WWSUremote extends WWSUevents {
 					"There was an error generating a credential token to authorize Skyway.js for an audio call. Please contact the engineer.",
 				autohide: true,
 				delay: 15000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			if (typeof cb === "function") {
 				cb(false);
@@ -131,10 +141,12 @@ class WWSUremote extends WWSUevents {
 	 */
 	sendQuality(data) {
 		try {
-			this.manager.get("hostReq").request(
-				{ method: "post", url: this.endpoints.quality, data },
-				(response) => {}
-			);
+			this.manager
+				.get("hostReq")
+				.request(
+					{ method: "post", url: this.endpoints.quality, data },
+					response => {}
+				);
 		} catch (e) {
 			console.error(e);
 		}

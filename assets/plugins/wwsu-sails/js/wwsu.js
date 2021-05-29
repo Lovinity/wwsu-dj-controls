@@ -272,6 +272,7 @@ class WWSUreq {
 		const step2 = (username, password) => {
 			this._authorize(username, password, (token) => {
 				if (token === 0) {
+					if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 					$(document).Toasts("create", {
 						class: "bg-danger",
 						title: "Error Authorizing",
@@ -285,6 +286,7 @@ class WWSUreq {
 					typeof token.errToken !== `undefined` ||
 					typeof token.token === "undefined"
 				) {
+					if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 					$(document).Toasts("create", {
 						class: "bg-danger",
 						title: "Error Authorizing",
@@ -449,6 +451,7 @@ class WWSUreq {
 			fdb = this.manager.get(this.db).db();
 		}
 		if (!fdb || fdb.length < 1) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Authorization error",
@@ -461,6 +464,7 @@ class WWSUreq {
 		}
 
 		if (!this.usernameField) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Authorization error",

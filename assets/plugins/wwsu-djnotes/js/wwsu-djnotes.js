@@ -20,23 +20,23 @@ class WWSUdjnotes extends WWSUevents {
 			get: "/djnotes/get",
 			add: "/djnotes/add",
 			edit: "/djnotes/edit",
-			remove: "/djnotes/remove",
+			remove: "/djnotes/remove"
 		};
 		this.data = {
-			get: {},
+			get: {}
 		};
 
 		this.modals = {
 			notes: new WWSUmodal(`DJ Notes`, null, ``, true, {
 				headerColor: "",
-				zindex: 1100,
+				zindex: 1100
 				// openFullscreen: true,
 			}),
 			newNote: new WWSUmodal(`New DJ Note`, null, ``, true, {
 				headerColor: "",
-				zindex: 1110,
+				zindex: 1110
 				// openFullscreen: true,
-			}),
+			})
 		};
 
 		this.notes = [];
@@ -51,14 +51,11 @@ class WWSUdjnotes extends WWSUevents {
 	get(data, cb) {
 		this.manager
 			.get("hostReq")
-			.request(
-				{ method: "post", url: this.endpoints.get, data },
-				(response) => {
-					if (response.constructor === Array) this.notes = response;
+			.request({ method: "post", url: this.endpoints.get, data }, response => {
+				if (response.constructor === Array) this.notes = response;
 
-					cb(response);
-				}
-			);
+				cb(response);
+			});
 	}
 
 	/**
@@ -74,10 +71,12 @@ class WWSUdjnotes extends WWSUevents {
 					dom: `#modal-${this.modals.notes.id}`,
 					method: "post",
 					url: this.endpoints.remove,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error removing DJ note",
@@ -85,7 +84,7 @@ class WWSUdjnotes extends WWSUevents {
 								"There was an error removing the DJ note. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -94,13 +93,14 @@ class WWSUdjnotes extends WWSUevents {
 							title: "DJ Note Removed",
 							autohide: true,
 							delay: 10000,
-							body: `DJ note was removed!`,
+							body: `DJ note was removed!`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error removing DJ note",
@@ -108,7 +108,7 @@ class WWSUdjnotes extends WWSUevents {
 					"There was an error removing the DJ note. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -128,10 +128,12 @@ class WWSUdjnotes extends WWSUevents {
 					dom: `#modal-${this.modals.newNote.id}`,
 					method: "post",
 					url: this.endpoints.add,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error adding DJ note",
@@ -139,7 +141,7 @@ class WWSUdjnotes extends WWSUevents {
 								"There was an error adding the DJ note. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -148,13 +150,14 @@ class WWSUdjnotes extends WWSUevents {
 							title: "DJ Note Added",
 							autohide: true,
 							delay: 10000,
-							body: `DJ note was added!`,
+							body: `DJ note was added!`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error adding DJ note",
@@ -162,7 +165,7 @@ class WWSUdjnotes extends WWSUevents {
 					"There was an error adding the DJ note. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -182,10 +185,12 @@ class WWSUdjnotes extends WWSUevents {
 					dom: `#modal-${this.modals.newNote.id}`,
 					method: "post",
 					url: this.endpoints.edit,
-					data: data,
+					data: data
 				},
-				(response) => {
+				response => {
 					if (response !== "OK") {
+						if (this.manager.has("WWSUehhh"))
+							this.manager.get("WWSUehhh").play();
 						$(document).Toasts("create", {
 							class: "bg-danger",
 							title: "Error editing DJ note",
@@ -193,7 +198,7 @@ class WWSUdjnotes extends WWSUevents {
 								"There was an error editing the DJ note. Please report this to the engineer.",
 							autohide: true,
 							delay: 10000,
-							icon: "fas fa-skull-crossbones fa-lg",
+							icon: "fas fa-skull-crossbones fa-lg"
 						});
 						if (typeof cb === "function") cb(false);
 					} else {
@@ -202,13 +207,14 @@ class WWSUdjnotes extends WWSUevents {
 							title: "DJ Note Edited",
 							autohide: true,
 							delay: 10000,
-							body: `DJ note was edited!`,
+							body: `DJ note was edited!`
 						});
 						if (typeof cb === "function") cb(true);
 					}
 				}
 			);
 		} catch (e) {
+			if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 			$(document).Toasts("create", {
 				class: "bg-danger",
 				title: "Error editing DJ note",
@@ -216,7 +222,7 @@ class WWSUdjnotes extends WWSUevents {
 					"There was an error editing the DJ note. Please report this to the engineer.",
 				autohide: true,
 				delay: 10000,
-				icon: "fas fa-skull-crossbones fa-lg",
+				icon: "fas fa-skull-crossbones fa-lg"
 			});
 			console.error(e);
 			if (typeof cb === "function") cb(false);
@@ -247,9 +253,9 @@ class WWSUdjnotes extends WWSUevents {
 			timeout: 30000,
 			onBlock: () => {
 				// Get the data
-				this.get({ dj: dj.ID }, (djnotes) => {
+				this.get({ dj: dj.ID }, djnotes => {
 					// Extra information
-					const format = (d) => {
+					const format = d => {
 						return `<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">
 					<tr>
 						<td>Details:</td>
@@ -271,12 +277,12 @@ class WWSUdjnotes extends WWSUevents {
 								className: "details-control",
 								orderable: false,
 								data: null,
-								defaultContent: "",
+								defaultContent: ""
 							},
 							{ title: "ID", data: "ID" },
 							{ title: "Type", data: "type" },
 							{ title: "Date/Time", data: "date" },
-							{ title: "Actions", data: "actions" },
+							{ title: "Actions", data: "actions" }
 						],
 						columnDefs: [{ responsivePriority: 1, targets: 4 }],
 						order: [[1, "asc"]],
@@ -288,18 +294,18 @@ class WWSUdjnotes extends WWSUevents {
 							$(".btn-djnote-delete").unbind("click");
 
 							// Edit event
-							$(".btn-djnote-edit").click((e) => {
+							$(".btn-djnote-edit").click(e => {
 								let djnote = this.notes.find(
-									(note) =>
+									note =>
 										note.ID === parseInt($(e.currentTarget).data("djnoteid"))
 								);
 								this.showDJNoteForm(djnote, dj);
 							});
 
 							// Confirm before deleting when someone wants to delete an event
-							$(".btn-djnote-delete").click((e) => {
+							$(".btn-djnote-delete").click(e => {
 								let djnote = this.notes.find(
-									(note) =>
+									note =>
 										note.ID === parseInt($(e.currentTarget).data("djnoteid"))
 								);
 								this.manager.get("WWSUutil").confirmDialog(
@@ -323,7 +329,7 @@ class WWSUdjnotes extends WWSUevents {
 									() => {
 										this.remove(
 											{ ID: parseInt($(e.currentTarget).data("djnoteid")) },
-											(success) => {
+											success => {
 												// Reload the modal
 												this.showDJNotes(dj);
 											}
@@ -331,7 +337,7 @@ class WWSUdjnotes extends WWSUevents {
 									}
 								);
 							});
-						},
+						}
 					});
 
 					table
@@ -345,7 +351,7 @@ class WWSUdjnotes extends WWSUevents {
 					$(`#modal-${this.modals.notes.id}-table tbody`).on(
 						"click",
 						"td.details-control",
-						(e) => {
+						e => {
 							let tr = $(e.target).closest("tr");
 							let row = table.row(tr);
 
@@ -363,7 +369,7 @@ class WWSUdjnotes extends WWSUevents {
 
 					// Populate the data table with data.
 					let drawRows = () => {
-						djnotes.forEach((note) => {
+						djnotes.forEach(note => {
 							let badgeClass = `badge-secondary`;
 							if (note.type.startsWith("remote-")) badgeClass = `badge-success`;
 							if (note.type.startsWith("warning-"))
@@ -383,8 +389,8 @@ class WWSUdjnotes extends WWSUevents {
 												: moment.tz.guess()
 										)
 										.format("LLLL"),
-									actions: `<div class="btn-group"><button class="btn btn-sm btn-warning btn-djnote-edit" data-djnoteid="${note.ID}" title="View / Edit DJ Note"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-djnote-delete" data-djnoteid="${note.ID}" title="Delete this DJ Note"><i class="fas fa-trash"></i></button></div>`,
-								},
+									actions: `<div class="btn-group"><button class="btn btn-sm btn-warning btn-djnote-edit" data-djnoteid="${note.ID}" title="View / Edit DJ Note"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger btn-djnote-delete" data-djnoteid="${note.ID}" title="Delete this DJ Note"><i class="fas fa-trash"></i></button></div>`
+								}
 							]);
 						});
 						table.draw();
@@ -394,7 +400,7 @@ class WWSUdjnotes extends WWSUevents {
 
 					drawRows();
 				});
-			},
+			}
 		});
 
 		this.modals.notes.footer = `<button type="button" class="btn btn-outline-success" id="modal-${this.modals.notes.id}-new" data-dismiss="modal">New DJ Note</button>`;
@@ -423,32 +429,32 @@ class WWSUdjnotes extends WWSUevents {
 				type: "object",
 				properties: {
 					ID: {
-						type: "number",
+						type: "number"
 					},
 					dj: data
 						? {
 								type: "number",
 								required: true,
 								title: "Applicable DJ",
-								enum: _djs.map((dj) => dj.ID),
+								enum: _djs.map(dj => dj.ID)
 						  }
 						: undefined,
 					djs: !data
 						? {
 								type: "array",
 								items: {
-									type: "number",
+									type: "number"
 								},
 								required: true,
 								title: "Applicable DJs",
-								enum: _djs.map((dj) => dj.ID),
-								default: defaultDj ? [defaultDj.ID] : [],
+								enum: _djs.map(dj => dj.ID),
+								default: defaultDj ? [defaultDj.ID] : []
 						  }
 						: undefined,
 					date: {
 						title: "Date/time of Occurrance",
 						format: "datetime",
-						required: true,
+						required: true
 					},
 					type: {
 						type: "string",
@@ -471,42 +477,42 @@ class WWSUdjnotes extends WWSUevents {
 							"warning-absence",
 							"warning-handbookviolation",
 							"warning-membership",
-							"warning-deadlineviolation",
-						],
+							"warning-deadlineviolation"
+						]
 					},
 					description: {
 						type: "string",
 						title: "Note",
-						required: true,
+						required: true
 					},
 					amount: {
 						type: "number",
 						default: 0,
 						title: "Remote Credits / Warning Points",
-						required: true,
-					},
-				},
+						required: true
+					}
+				}
 			},
 			options: {
 				fields: {
 					ID: {
-						type: "hidden",
+						type: "hidden"
 					},
 					dj: {
 						type: data ? "select" : "hidden",
 						helper: [
 							"Change the DJ this note applies to.",
-							"WARNING! Changing the DJ will alter the applicable remote credits / warning points. Also, do note that notes that were added to multiple DJs cannot be edited en masse; they must be edited one at a time from each DJ.",
+							"WARNING! Changing the DJ will alter the applicable remote credits / warning points. Also, do note that notes that were added to multiple DJs cannot be edited en masse; they must be edited one at a time from each DJ."
 						],
-						optionLabels: _djs.map((dj) => dj.name),
+						optionLabels: _djs.map(dj => dj.name)
 					},
 					djs: {
 						type: data ? "hidden" : "select",
 						helpers: [
 							"Choose all of the DJs that you want this note to be saved.",
-							"WARNING! After adding the note, you cannot edit it for all selected DJs en masse; you must edit the note from each DJ individually in their respective notes screen.",
+							"WARNING! After adding the note, you cannot edit it for all selected DJs en masse; you must edit the note from each DJ individually in their respective notes screen."
 						],
-						optionLabels: _djs.map((dj) => dj.name),
+						optionLabels: _djs.map(dj => dj.name)
 					},
 					date: {
 						dateFormat: `YYYY-MM-DDTHH:mm:[00]${moment
@@ -518,15 +524,15 @@ class WWSUdjnotes extends WWSUevents {
 							.format("Z")}`,
 						picker: {
 							inline: true,
-							sideBySide: true,
+							sideBySide: true
 						},
 						helper:
-							"This should generally be the date/time the note was applicable. For examples: date/time the remote credit was earned; date/time the incident being disciplined occurred, etc.",
+							"This should generally be the date/time the note was applicable. For examples: date/time the remote credit was earned; date/time the incident being disciplined occurred, etc."
 					},
 					type: {
 						type: "select",
 						helper:
-							"public- are notes that will be visible to the DJ. private- are notes that will not be visible to the DJ. remote- are remote credits earned by the DJ. warning- are warning points / discipline issued against the DJ.",
+							"public- are notes that will be visible to the DJ. private- are notes that will not be visible to the DJ. remote- are remote credits earned by the DJ. warning- are warning points / discipline issued against the DJ."
 					},
 					description: {
 						type: "tinymce",
@@ -535,11 +541,11 @@ class WWSUdjnotes extends WWSUevents {
 								"undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | fullscreen preview | image link | ltr rtl",
 							plugins:
 								"autoresize preview paste importcss searchreplace autolink save directionality visualblocks visualchars fullscreen image link table hr pagebreak nonbreaking toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help quickbars",
-							menubar: "file edit view insert format tools table help",
+							menubar: "file edit view insert format tools table help"
 						},
 						helper:
-							"Be sure to include all relevant information especially for warning- types",
-					},
+							"Be sure to include all relevant information especially for warning- types"
+					}
 				},
 				form: {
 					buttons: {
@@ -548,34 +554,35 @@ class WWSUdjnotes extends WWSUevents {
 							click: (form, e) => {
 								form.refreshValidationState(true);
 								if (!form.isValid(true)) {
+									if (this.manager.has("WWSUehhh")) this.manager.get("WWSUehhh").play();
 									form.focus();
 									return;
 								}
 								let value = form.getValue();
 
-								if (value.djs) value.djs = value.djs.map((item) => item.value);
+								if (value.djs) value.djs = value.djs.map(item => item.value);
 
 								if (data) {
-									this.edit(value, (success) => {
+									this.edit(value, success => {
 										if (success) {
 											this.modals.newNote.iziModal("close");
 											if (defaultDj) this.showDJNotes(defaultDj);
 										}
 									});
 								} else {
-									this.add(value, (success) => {
+									this.add(value, success => {
 										if (success) {
 											this.modals.newNote.iziModal("close");
 											if (defaultDj) this.showDJNotes(defaultDj);
 										}
 									});
 								}
-							},
-						},
-					},
-				},
+							}
+						}
+					}
+				}
 			},
-			data: data ? data : [],
+			data: data ? data : []
 		});
 	}
 }
