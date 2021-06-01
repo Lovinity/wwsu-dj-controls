@@ -17,10 +17,11 @@ class WWSUehhh extends Howl {
 
 	// Intercept the play command to prevent playing when this DJ Controls might be on the air
 	play() {
-		// Do not play if this DJ Controls started the current broadcast.
+		// Do not play if this DJ Controls started the current broadcast (we don't want "ehhhs" going on the air).
 		if (this.manager.get("WWSUhosts").isHost) return;
 
 		// Do not play if this DJ Controls is on a computer that might be on the air with automation (judged by the answerCalls permission)
+		// (We don't want "ehhhs" going on the air)
 		if (this.manager.get("WWSUhosts").client.answerCalls) return;
 
 		// Else, we can play the error sound.
