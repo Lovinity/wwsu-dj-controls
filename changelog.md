@@ -1,6 +1,6 @@
 # Changelog for wwsu-dj-controls
 
-## 8.19.0-alpha - WIP
+## 8.19.0-alpha - 2021-06-01
 
 ### Changed
 
@@ -13,10 +13,7 @@
   - Put the message box to the side on large displays to make it easier to use
   - Discord compatibility added
 - WWSU Logo
-
-### Removed
-
-- Discord tab in favor of Discord integration in the messages / chat tab.
+- Discord tab now opens Discord in a new window instead of being an actual tab with a Titan Embed.
 
 ### Added
 

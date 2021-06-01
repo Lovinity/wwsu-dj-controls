@@ -257,13 +257,6 @@ navigation
 		false
 	)
 	.addItem(
-		"#nav-discord",
-		"#section-discord",
-		"Discord Chat - WWSU DJ Controls",
-		"/discord",
-		false
-	)
-	.addItem(
 		"#nav-requests",
 		"#section-requests",
 		"Track requests - WWSU DJ Controls",
@@ -1693,15 +1686,6 @@ socket.on("connect", () => {
 				} else {
 					window.ipc.process.delay(["close"]);
 				}
-
-				// Discord iframe
-				$("#section-chat-iframe").attr(
-					"src",
-					`https://titanembeds.com/embed/830253278465097758?defaultchannel=830253279166464042&theme=DiscordDark&username=${hosts.client.friendlyname.replace(
-						/[^a-zA-Z0-9\d\-_\s]+/gi,
-						""
-					)}`
-				);
 			} else if (success === -1) {
 				animations.add("socket-connect-2", () => {
 					$("#content").addClass("d-none");
