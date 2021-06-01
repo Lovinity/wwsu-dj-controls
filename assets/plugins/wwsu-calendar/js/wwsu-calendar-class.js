@@ -239,7 +239,37 @@ class WWSUcalendar extends CalendarDb {
 	 */
 	showSimpleEvents() {
 		// Initialize the table class
-		this.eventsModal.body = `<table id="modal-${this.eventsModal.id}-table" class="table table-striped" style="min-width: 100%;"></table>`;
+		this.eventsModal.body = `<table id="modal-${this.eventsModal.id}-table" class="table table-striped" style="min-width: 100%;"></table>
+								<h5>Actions Key:</h5>
+								<div class="container-fluid">
+									<div class="row">
+										<div class="col">
+											<span class="badge badge-primary"
+												><i class="fas fa-calendar"></i></span
+											>Manage Schedules
+										</div>
+										<div class="col">
+											<span class="badge badge-warning"
+												><i class="fas fa-edit"></i></span
+											>Edit Event / Defaults
+										</div>
+										<div class="col">
+											<span class="badge bg-orange"
+												><i class="fas fa-times-circle"></i></span
+											>Mark Event Inactive and Delete Schedules
+										</div>
+										<div class="col">
+											<span class="badge badge-success"
+												><i class="fas fa-check-circle"></i></span
+											>Mark Event Active
+										</div>
+										<div class="col">
+											<span class="badge badge-danger"
+												><i class="fas fa-trash"></i></span
+											>Delete Event and Schedules
+										</div>
+									</div>
+								</div>`;
 		this.eventsModal.iziModal("open");
 
 		// Block the modal while we generate the table
@@ -502,7 +532,22 @@ class WWSUcalendar extends CalendarDb {
 	 */
 	showSchedules(calendarID) {
 		// Initialize the table
-		this.schedulesModal.body = `<table id="modal-${this.schedulesModal.id}-table" class="table table-striped" style="min-width: 100%;"></table>`;
+		this.schedulesModal.body = `<table id="modal-${this.schedulesModal.id}-table" class="table table-striped" style="min-width: 100%;"></table>
+		<h5>Actions Key:</h5>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col">
+					<span class="badge badge-warning"
+						><i class="fas fa-edit"></i></span
+					>Edit
+				</div>
+				<div class="col">
+					<span class="badge badge-danger"
+						><i class="fas fa-trash"></i></span
+					>Delete
+				</div>
+			</div>
+		</div>`;
 		this.schedulesModal.iziModal("open");
 
 		// Block the modal while we populate

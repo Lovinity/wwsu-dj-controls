@@ -877,7 +877,22 @@ class WWSUlogs extends WWSUevents {
 			this.modals.viewLog.id
 		}-body-info"></div><table id="modal-${
 			this.modals.viewLog.id
-		}-body-log" class="table table-striped display responsive" style="width: 100%;"></table>`;
+		}-body-log" class="table table-striped display responsive" style="width: 100%;"></table>
+								<h5>Actions Key:</h5>
+								<div class="container-fluid">
+									<div class="row">
+										<div class="col">
+											<span class="badge badge-danger"
+												><i class="fas fa-thumbs-down"></i></span
+											>Mark unexcused (counts in analytics)
+										</div>
+										<div class="col">
+											<span class="badge badge-success"
+												><i class="fas fa-thumbs-up"></i></span
+											>Mark excused (ignored in analytics)
+										</div>
+									</div>
+								</div>`;
 		this.modals.viewLog.iziModal("open");
 		this.getAttendance(`#section-logs-table`, { ID: id }, attendance => {
 			this.manager

@@ -243,7 +243,22 @@ class WWSUdjnotes extends WWSUevents {
 				: moment.tz.guess()
 		}.</p><table id="modal-${
 			this.modals.notes.id
-		}-table" class="table table-striped" style="min-width: 100%;"></table>`;
+		}-table" class="table table-striped" style="min-width: 100%;"></table>
+								<h5>Actions Key:</h5>
+								<div class="container-fluid">
+									<div class="row">
+										<div class="col">
+											<span class="badge badge-warning"
+												><i class="fas fa-edit"></i></span
+											>Edit
+										</div>
+										<div class="col">
+											<span class="badge badge-danger"
+												><i class="fas fa-trash"></i></span
+											>Delete
+										</div>
+									</div>
+								</div>`;
 		this.modals.notes.iziModal("open");
 
 		// Block the modal while we generate the table

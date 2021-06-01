@@ -759,8 +759,8 @@ class WWSUdjs extends WWSUdb {
 									.format("LLLL")
 							: "Unknown / Long Ago",
 						dj.active
-							? `<div class="btn-group"><button class="btn btn-sm btn-primary btn-dj-analytics" data-id="${dj.ID}" title="View DJ and Show Analytics"><i class="fas fa-chart-line"></i></button><button class="btn btn-sm btn-secondary btn-dj-logs" data-id="${dj.ID}" title="View Show Logs"><i class="fas fa-clipboard-list"></i></button><button class="btn btn-sm bg-indigo btn-dj-notes" data-id="${dj.ID}" title="View/Edit Notes and Remote Credits"><i class="fas fa-sticky-note"></i></button><button class="btn btn-sm btn-warning btn-dj-edit" data-id="${dj.ID}" title="Edit DJ"><i class="fas fa-edit"></i></button><button class="btn btn-sm bg-orange btn-dj-inactive" data-id="${dj.ID}" title="Mark DJ as inactive"><i class="fas fa-times-circle"></i></button></div>`
-							: `<div class="btn-group"><button class="btn btn-sm btn-primary btn-dj-analytics" data-id="${dj.ID}" title="View DJ and Show Analytics"><i class="fas fa-chart-line"></i></button><button class="btn btn-sm btn-secondary btn-dj-logs" data-id="${dj.ID}" title="View Show Logs"><i class="fas fa-clipboard-list"></i></button><button class="btn btn-sm bg-indigo btn-dj-notes" data-id="${dj.ID}" title="View/Edit Notes and Remote Credits"><i class="fas fa-sticky-note"></i></button><button class="btn btn-sm btn-success btn-dj-active" data-id="${dj.ID}" title="Mark DJ as active"><i class="fas fa-check-circle"></i></button><button class="btn btn-sm btn-danger btn-dj-delete" data-id="${dj.ID}" title="Permanently remove this DJ"><i class="fas fa-trash"></i></button></div>`
+							? `<div class="btn-group"><button class="btn btn-sm btn-primary btn-dj-analytics" data-id="${dj.ID}" title="View DJ and Show Analytics"><i class="fas fa-chart-line"></i></button><button class="btn btn-sm btn-secondary btn-dj-logs" data-id="${dj.ID}" title="View Broadcast Logs"><i class="fas fa-clipboard-list"></i></button><button class="btn btn-sm bg-indigo btn-dj-notes" data-id="${dj.ID}" title="View/Edit Notes, Remote Credits, and Warnings"><i class="fas fa-sticky-note"></i></button><button class="btn btn-sm btn-warning btn-dj-edit" data-id="${dj.ID}" title="Edit DJ"><i class="fas fa-edit"></i></button><button class="btn btn-sm bg-orange btn-dj-inactive" data-id="${dj.ID}" title="Mark DJ Inactive and Remove as Host/Co-Host from All Events"><i class="fas fa-times-circle"></i></button></div>`
+							: `<div class="btn-group"><button class="btn btn-sm btn-primary btn-dj-analytics" data-id="${dj.ID}" title="View DJ and Show Analytics"><i class="fas fa-chart-line"></i></button><button class="btn btn-sm btn-secondary btn-dj-logs" data-id="${dj.ID}" title="View Broadcast Logs"><i class="fas fa-clipboard-list"></i></button><button class="btn btn-sm bg-indigo btn-dj-notes" data-id="${dj.ID}" title="View/Edit Notes, Remote Credits, and Warnings"><i class="fas fa-sticky-note"></i></button><button class="btn btn-sm btn-success btn-dj-active" data-id="${dj.ID}" title="Mark DJ as active"><i class="fas fa-check-circle"></i></button><button class="btn btn-sm btn-danger btn-dj-delete" data-id="${dj.ID}" title="Permanently remove this DJ"><i class="fas fa-trash"></i></button></div>`
 					]);
 				});
 				this.table.draw();
@@ -1009,7 +1009,17 @@ class WWSUdjs extends WWSUdb {
 		this.manager.get("WWSUMeta")
 			? this.manager.get("WWSUMeta").meta.timezone
 			: moment.tz.guess()
-	}.</p><table id="section-djs-table-logs" class="table table-striped display responsive" style="width: 100%;"></table>`;
+	}.</p><table id="section-djs-table-logs" class="table table-striped display responsive" style="width: 100%;"></table>
+								<h5>Actions Key:</h5>
+								<div class="container-fluid">
+									<div class="row">
+										<div class="col">
+											<span class="badge badge-primary"
+												><i class="fas fa-eye"></i></span
+											>View Log and Online Listener Graph
+										</div>
+									</div>
+								</div>`;
 
 		this.djInfoModal.iziModal("open");
 

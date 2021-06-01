@@ -936,7 +936,27 @@ class WWSUinventory extends WWSUdb {
 					this.manager.get("WWSUMeta")
 						? this.manager.get("WWSUMeta").meta.timezone
 						: moment.tz.guess()
-				}.</p><table id="section-inventory-checkout-table" class="table table-striped display responsive" style="width: 100%;"></table>`;
+				}.</p><table id="section-inventory-checkout-table" class="table table-striped display responsive" style="width: 100%;"></table>
+								<h5>Actions Key:</h5>
+								<div class="container-fluid">
+									<div class="row">
+										<div class="col">
+											<span class="badge badge-success"
+												><i class="fas fa-clipboard-check"></i></span
+											>Check In
+										</div>
+										<div class="col">
+											<span class="badge badge-warning"
+												><i class="fas fa-edit"></i></span
+											>Edit
+										</div>
+										<div class="col">
+											<span class="badge badge-danger"
+												><i class="fas fa-trash"></i></span
+											>Delete
+										</div>
+									</div>
+								</div>`;
 
 				this.manager
 					.get("WWSUutil")

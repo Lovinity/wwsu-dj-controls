@@ -378,7 +378,7 @@ class WWSUeas extends WWSUdb {
 						`<p>Please confirm you want to send out an internal EAS test. When sent, please check the following to ensure it worked:</p>
             <ul>
               <li>Active DJ Controls instances</li>
-              <li>Public Display Signs (/display/public)</li>
+              <li>Display Signs (both public and internal)</li>
               <li>Listener's Corner website</li>
             </ul>
             <p>The test will be active for 3 minutes.</p>`,

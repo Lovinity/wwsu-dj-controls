@@ -20,6 +20,7 @@
 
 ### Added
 
+- Keys at the bottom of tables that have action buttons. That way, you'll know what each button does without having to hover over for a tool tip.
 - Ehhh (error sound) (checks are added to prevent it playing if there is a chance it would go on the air)
 - Engineer email in the error messages when reporting a problem fails (because you can't report a problem via report a problem if report a problem is broken)
 
