@@ -1,5 +1,25 @@
 # Changelog for wwsu-dj-controls
 
+## 8.20.0-alpha
+
+### Added
+
+- Cleanup and timeout logs added to Admin to-do panel
+- Time out counter for when a break will time out and the system will go to automation.
+
+### Changed
+
+- WWSUqueue timer method in hopes of improving performance
+- Queue time color to teal so that time out can be orange
+- Do not display queue time during breaks; it's confusing
+- Weather formatting
+- Use new wwsuclocks module
+- When queue is 0 but not yet considered on the air, display "WAIT" instead of "00".
+
+### Fixed
+
+- Bug in event selection when adding a new occurrance to the calendar; events did not match the correct IDs
+
 ## 8.19.0-alpha - 2021-06-01
 
 ### Changed

@@ -9,7 +9,7 @@
  * @requires moment moment.js time/date library
  */
 
-// REQUIRES these WWSUmodules: noReq (WWSUreq), WWSUMeta, WWSUanimations
+// REQUIRES these WWSUmodules: noReq (WWSUreq), WWSUMeta, WWSUanimations, WWSUclocks (if doing 12-hour forecast clock)
 class WWSUclimacell extends WWSUdb {
 	/**
 	 * The class constructor.
@@ -52,42 +52,7 @@ class WWSUclimacell extends WWSUdb {
 
 			// Custom
 			8100: "Light Thunderstorms",
-			8101: "Heavy Thunderstorms"
-		};
-
-		// Map weather codes to colors
-		this.weatherCodeColor = {
-			0: "#000000",
-			1000: "#FFD700",
-			1001: "#665600",
-			1100: "#FFD700",
-			1101: "#B29600",
-			1102: "#B29600",
-			2000: "#665600",
-			2100: "#665600",
-			3000: "#7FBF7F",
-			3001: "#008000",
-			3002: "#004000",
-			4000: "#B2B2FF",
-			4001: "#6666FF",
-			4200: "#B2B2FF",
-			4201: "#0000FF",
-			5000: "#787878",
-			5001: "#AEAEAE",
-			5100: "#AEAEAE",
-			5101: "#484848",
-			6000: "#E2A3FF",
-			6001: "#CF66FF",
-			6200: "#E2A3FF",
-			6201: "#B000FF",
-			7000: "#CF66FF",
-			7101: "#B000FF",
-			7102: "#E2A3FF",
-			8000: "#FF0000",
-
-			// Custom
-			8100: "#FF6666",
-			8101: "#990000"
+			8101: "Heavy Thunderstorms",
 		};
 
 		// Map weather codes to icons
@@ -122,7 +87,42 @@ class WWSUclimacell extends WWSUdb {
 
 			// Custom
 			8100: "L. TStorm",
-			8101: "H. TStorm"
+			8101: "H. TStorm",
+		};
+
+		// Map weather codes to colors
+		this.weatherCodeColor = {
+			0: "#000000",
+			1000: "#FFD700",
+			1001: "#665600",
+			1100: "#FFD700",
+			1101: "#B29600",
+			1102: "#B29600",
+			2000: "#665600",
+			2100: "#665600",
+			3000: "#7FBF7F",
+			3001: "#008000",
+			3002: "#004000",
+			4000: "#B2B2FF",
+			4001: "#6666FF",
+			4200: "#B2B2FF",
+			4201: "#0000FF",
+			5000: "#787878",
+			5001: "#AEAEAE",
+			5100: "#AEAEAE",
+			5101: "#484848",
+			6000: "#E2A3FF",
+			6001: "#CF66FF",
+			6200: "#E2A3FF",
+			6201: "#B000FF",
+			7000: "#CF66FF",
+			7101: "#B000FF",
+			7102: "#E2A3FF",
+			8000: "#FF0000",
+
+			// Custom
+			8100: "#FF6666",
+			8101: "#990000",
 		};
 
 		// Map precipitation type to string
@@ -131,7 +131,7 @@ class WWSUclimacell extends WWSUdb {
 			1: "Rain",
 			2: "Snow",
 			3: "Freezing Rain",
-			4: "Ice Pellets"
+			4: "Ice Pellets",
 		};
 
 		// Map epaHealthConcern to string
@@ -141,18 +141,18 @@ class WWSUclimacell extends WWSUdb {
 			2: "Unhealthy for Sensitive Groups [++---]",
 			3: "Unhealthy [+++--]",
 			4: "Very Unhealthy [++++-]",
-			5: "Hazardous [+++++]"
+			5: "Hazardous [+++++]",
 		};
 
-		this.chart;
+		this.clock;
 
 		this.manager = manager;
 
 		this.endpoints = {
-			get: "/climacell/get"
+			get: "/climacell/get",
 		};
 		this.data = {
-			get: {}
+			get: {},
 		};
 
 		this.assignSocketEvent("climacell", this.manager.socket);
@@ -160,21 +160,21 @@ class WWSUclimacell extends WWSUdb {
 		this.ncTimer;
 
 		// Data operations
-		super.on("insert", "WWSUclimacell", query => {
+		super.on("insert", "WWSUclimacell", (query) => {
 			clearTimeout(this.ncTimer);
 			this.ncTimer = setTimeout(() => {
 				this.updateClock();
 				this.updateData();
 			}, 1000);
 		});
-		super.on("update", "WWSUclimacell", query => {
+		super.on("update", "WWSUclimacell", (query) => {
 			clearTimeout(this.ncTimer);
 			this.ncTimer = setTimeout(() => {
 				this.updateClock();
 				this.updateData();
 			}, 1000);
 		});
-		super.on("remove", "WWSUclimacell", query => {
+		super.on("remove", "WWSUclimacell", (query) => {
 			let record = this.find({ ID: query }, true);
 			clearTimeout(this.ncTimer);
 			this.ncTimer = setTimeout(() => {
@@ -182,7 +182,7 @@ class WWSUclimacell extends WWSUdb {
 				this.updateData();
 			}, 1000);
 		});
-		super.on("replace", "WWSUclimacell", db => {
+		super.on("replace", "WWSUclimacell", (db) => {
 			clearTimeout(this.ncTimer);
 			this.ncTimer = setTimeout(() => {
 				this.updateClock();
@@ -201,51 +201,52 @@ class WWSUclimacell extends WWSUdb {
 	}
 
 	/**
-	 * Initialize the donut for the 12-hour forecast
+	 * Initialize a 12-hour forecast clock.
 	 *
-	 * @param {string} canvas DOM query string of the canvas to use for the donut.
+	 * @param {string} name Name to use for the clock
+	 * @param {string} dom DOM container (must be position relative) to place the forecast clock.
+	 * @param {string} size The size of the clock height/width
 	 */
-	initClockForecast(canvas) {
-		let chartCanvas = $(canvas)
-			.get(0)
-			.getContext("2d");
-
-		this.chart = new Chart(chartCanvas, {
-			type: "doughnut",
-			data: {
+	initClockForecast(name, dom) {
+		this.clock = name;
+		this.manager.get("WWSUclocks").new(
+			name,
+			dom,
+			{
 				labels: ["Not Yet Loaded"],
 				datasets: [
 					{
 						data: [720],
-						backgroundColor: ["#000000"]
-					}
-				]
+						backgroundColor: ["#000000"],
+					},
+				],
 			},
-			options: {
+			{
 				maintainAspectRatio: false,
 				responsive: true,
 				cutoutPercentage: 80,
 				plugins: {
 					tooltip: false,
-					legend: false
+					legend: false,
 				},
 				animation: {
 					animateRotate: false,
-					animateScale: false
+					animateScale: false,
 				},
 				elements: {
 					arc: {
-						borderWidth: 0
-					}
-				}
+						borderWidth: 0,
+					},
+				},
 			}
-		});
+		);
 	}
 
 	/**
 	 * Update the Donut 12-hour forecast
 	 */
 	updateClock() {
+		if (!this.clock) return;
 		this.manager.get("WWSUanimations").add("climacell-forecast-update", () => {
 			let segments = [];
 
@@ -336,7 +337,7 @@ class WWSUclimacell extends WWSUdb {
 
 			// Now process every record sorted by dataTime
 			let currentTime = this.manager.get("WWSUMeta").meta.time;
-			let descriptionHtml = ``;
+			let innerHtml = ``;
 			let shortTerm = this.db()
 				.get()
 				.sort((a, b) => {
@@ -346,12 +347,14 @@ class WWSUclimacell extends WWSUdb {
 					if (moment(b.dataTime).isBefore(moment(a.dataTime))) return 1;
 					return 0;
 				})
-				.map(record => {
+				.map((record) => {
 					// Add weather descriptions
 					if (record.dataClass === `current-0`) {
-						descriptionHtml += `<li><strong>Now:</strong> ${
-							this.weatherCodeString[record.data.weatherCode]
-						}, ${parseInt(record.data.temperature)}°F</li>`;
+						innerHtml += `<div class="row">
+			<div class="col-3"><strong>Now:</strong></div>
+			<div class="col-6">${this.weatherCodeString[record.data.weatherCode]}</div>
+			<div class="col-3">${parseInt(record.data.temperature)}°F</div>
+			</div>`;
 					} else if (
 						record.dataClass.startsWith("1h-") &&
 						record.dataClass !== `1h-0` &&
@@ -359,11 +362,13 @@ class WWSUclimacell extends WWSUdb {
 							.add(12, "hours")
 							.isSameOrAfter(moment(record.dataTime))
 					) {
-						descriptionHtml += `<li><strong>${moment(record.dataTime).format(
-							"h:mm A"
-						)}:</strong> ${
-							this.weatherCodeString[record.data.weatherCode]
-						}, ${parseInt(record.data.temperature)}°F</li>`;
+						innerHtml += `<div class="row">
+			<div class="col-3"><strong>${moment(record.dataTime).format(
+				"h:mm A"
+			)}:</strong></div>
+			<div class="col-6">${this.weatherCodeString[record.data.weatherCode]}</div>
+			<div class="col-3">${parseInt(record.data.temperature)}°F</div>
+			</div>`;
 					}
 
 					// Determine clockwheel segments
@@ -422,7 +427,9 @@ class WWSUclimacell extends WWSUdb {
 					}
 				});
 
-			$(`#weather-forecast-description`).html(descriptionHtml);
+			$(`#weather-forecast-description`).html(
+				`<div class="container-fluid">${innerHtml}</div>`
+			);
 
 			// Now, begin updating clockwheel
 			let clockwheelDonutData = {
@@ -430,14 +437,14 @@ class WWSUclimacell extends WWSUdb {
 				datasets: [
 					{
 						data: [],
-						backgroundColor: []
-					}
-				]
+						backgroundColor: [],
+					},
+				],
 			};
 
 			// Process donut segments
 			let currentSegment = { weatherCode: null, minutes: 0 };
-			segments.map(segment => {
+			segments.map((segment) => {
 				// If we have a new id at this minute, create a new segment
 				if (segment.weatherCode !== currentSegment.weatherCode) {
 					clockwheelDonutData.labels.push(
@@ -462,8 +469,9 @@ class WWSUclimacell extends WWSUdb {
 			);
 
 			// Update the donut
-			this.chart.data = clockwheelDonutData;
-			this.chart.update();
+			this.manager
+				.get("WWSUclocks")
+				.updateChart(this.clock, clockwheelDonutData);
 		});
 	}
 
@@ -474,7 +482,7 @@ class WWSUclimacell extends WWSUdb {
 		this.manager.get("WWSUanimations").add(`update-climacell`, () => {
 			this.db()
 				.get()
-				.map(query => {
+				.map((query) => {
 					for (let value in query.data) {
 						if (!Object.prototype.hasOwnProperty.call(query.data, value))
 							return;
@@ -504,13 +512,6 @@ class WWSUclimacell extends WWSUdb {
 							$(`.climacell-${query.dataClass}-${value}-string`).html(
 								this.epaHealthConcernString[query.data[value]]
 							);
-						}
-						if (value === "temperature") {
-							if (query.dataClass === "current-0") {
-								$(`.climacell-quick-weather-temperature`).html(
-									Math.round(query.data[value])
-								);
-							}
 						}
 					}
 				});

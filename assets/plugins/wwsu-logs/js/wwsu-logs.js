@@ -104,7 +104,9 @@ class WWSUlogs extends WWSUevents {
 						"sign-off-early",
 						"sign-off-late",
 						"sign-off-problem",
-						"recipient-discipline"
+						"recipient-discipline",
+						"cleanup",
+						"timeout"
 					].indexOf(data[key].logtype) !== -1
 				) {
 					if (!data[key].acknowledged) {

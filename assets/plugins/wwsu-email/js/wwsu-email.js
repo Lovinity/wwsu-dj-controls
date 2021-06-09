@@ -100,7 +100,8 @@ class WWSUemail {
 					body: {
 						type: "string",
 						title: "Email Body",
-						required: true
+						required: true,
+						maxLength: 65535
 					}
 				}
 			},
