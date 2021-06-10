@@ -264,7 +264,7 @@ class WWSUstate extends WWSUevents {
 											cb(response);
 										}
 										if (!data || !data.problem)
-											this.checklistModal.isiModal("open");
+											this.checklistModal.iziModal("open");
 									}
 								}
 							);

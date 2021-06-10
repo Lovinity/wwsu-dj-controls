@@ -1,5 +1,11 @@
 # Changelog for wwsu-dj-controls
 
+## 8.20.1-alpha - 2021-06-10
+
+### Fixed
+
+- Typo preventing checklist at end of show from appearing
+
 ## 8.20.0-alpha - 2021-06-09
 
 ### Added
