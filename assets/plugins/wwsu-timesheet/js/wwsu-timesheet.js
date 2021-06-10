@@ -36,12 +36,12 @@ class WWSUtimesheet extends WWSUevents {
 
 		this.modals = {
 			edit: new WWSUmodal(`Edit Timesheet`, null, ``, true, {
-				headerColor: "",
+				
 				zindex: 1200,
 				width: 800
 			}),
 			clock: new WWSUmodal(``, null, ``, true, {
-				headerColor: "",
+				
 				zindex: 1100
 			})
 		};

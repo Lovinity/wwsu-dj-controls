@@ -52,7 +52,7 @@ class WWSUclimacell extends WWSUdb {
 
 			// Custom
 			8100: "Light Thunderstorms",
-			8101: "Heavy Thunderstorms",
+			8101: "Heavy Thunderstorms"
 		};
 
 		// Map weather codes to icons
@@ -87,7 +87,7 @@ class WWSUclimacell extends WWSUdb {
 
 			// Custom
 			8100: "L. TStorm",
-			8101: "H. TStorm",
+			8101: "H. TStorm"
 		};
 
 		// Map weather codes to colors
@@ -122,7 +122,7 @@ class WWSUclimacell extends WWSUdb {
 
 			// Custom
 			8100: "#FF6666",
-			8101: "#990000",
+			8101: "#990000"
 		};
 
 		// Map precipitation type to string
@@ -131,7 +131,7 @@ class WWSUclimacell extends WWSUdb {
 			1: "Rain",
 			2: "Snow",
 			3: "Freezing Rain",
-			4: "Ice Pellets",
+			4: "Ice Pellets"
 		};
 
 		// Map epaHealthConcern to string
@@ -141,7 +141,7 @@ class WWSUclimacell extends WWSUdb {
 			2: "Unhealthy for Sensitive Groups [++---]",
 			3: "Unhealthy [+++--]",
 			4: "Very Unhealthy [++++-]",
-			5: "Hazardous [+++++]",
+			5: "Hazardous [+++++]"
 		};
 
 		this.clock;
@@ -149,10 +149,10 @@ class WWSUclimacell extends WWSUdb {
 		this.manager = manager;
 
 		this.endpoints = {
-			get: "/climacell/get",
+			get: "/climacell/get"
 		};
 		this.data = {
-			get: {},
+			get: {}
 		};
 
 		this.assignSocketEvent("climacell", this.manager.socket);
@@ -160,21 +160,21 @@ class WWSUclimacell extends WWSUdb {
 		this.ncTimer;
 
 		// Data operations
-		super.on("insert", "WWSUclimacell", (query) => {
+		super.on("insert", "WWSUclimacell", query => {
 			clearTimeout(this.ncTimer);
 			this.ncTimer = setTimeout(() => {
 				this.updateClock();
 				this.updateData();
 			}, 1000);
 		});
-		super.on("update", "WWSUclimacell", (query) => {
+		super.on("update", "WWSUclimacell", query => {
 			clearTimeout(this.ncTimer);
 			this.ncTimer = setTimeout(() => {
 				this.updateClock();
 				this.updateData();
 			}, 1000);
 		});
-		super.on("remove", "WWSUclimacell", (query) => {
+		super.on("remove", "WWSUclimacell", query => {
 			let record = this.find({ ID: query }, true);
 			clearTimeout(this.ncTimer);
 			this.ncTimer = setTimeout(() => {
@@ -182,7 +182,7 @@ class WWSUclimacell extends WWSUdb {
 				this.updateData();
 			}, 1000);
 		});
-		super.on("replace", "WWSUclimacell", (db) => {
+		super.on("replace", "WWSUclimacell", db => {
 			clearTimeout(this.ncTimer);
 			this.ncTimer = setTimeout(() => {
 				this.updateClock();
@@ -217,9 +217,9 @@ class WWSUclimacell extends WWSUdb {
 				datasets: [
 					{
 						data: [720],
-						backgroundColor: ["#000000"],
-					},
-				],
+						backgroundColor: ["#000000"]
+					}
+				]
 			},
 			{
 				maintainAspectRatio: false,
@@ -227,17 +227,17 @@ class WWSUclimacell extends WWSUdb {
 				cutoutPercentage: 80,
 				plugins: {
 					tooltip: false,
-					legend: false,
+					legend: false
 				},
 				animation: {
 					animateRotate: false,
-					animateScale: false,
+					animateScale: false
 				},
 				elements: {
 					arc: {
-						borderWidth: 0,
-					},
-				},
+						borderWidth: 0
+					}
+				}
 			}
 		);
 	}
@@ -347,7 +347,7 @@ class WWSUclimacell extends WWSUdb {
 					if (moment(b.dataTime).isBefore(moment(a.dataTime))) return 1;
 					return 0;
 				})
-				.map((record) => {
+				.map(record => {
 					// Add weather descriptions
 					if (record.dataClass === `current-0`) {
 						innerHtml += `<div class="row">
@@ -437,14 +437,14 @@ class WWSUclimacell extends WWSUdb {
 				datasets: [
 					{
 						data: [],
-						backgroundColor: [],
-					},
-				],
+						backgroundColor: []
+					}
+				]
 			};
 
 			// Process donut segments
 			let currentSegment = { weatherCode: null, minutes: 0 };
-			segments.map((segment) => {
+			segments.map(segment => {
 				// If we have a new id at this minute, create a new segment
 				if (segment.weatherCode !== currentSegment.weatherCode) {
 					clockwheelDonutData.labels.push(
@@ -482,12 +482,13 @@ class WWSUclimacell extends WWSUdb {
 		this.manager.get("WWSUanimations").add(`update-climacell`, () => {
 			this.db()
 				.get()
-				.map((query) => {
+				.map(query => {
 					for (let value in query.data) {
 						if (!Object.prototype.hasOwnProperty.call(query.data, value))
 							return;
 
 						$(`.climacell-${query.dataClass}-${value}`).html(query.data[value]);
+
 						if (value === "windDirection") {
 							$(`.climacell-${query.dataClass}-${value}-card`).html(
 								this.degToCard(parseInt(query.data[value]))
@@ -500,6 +501,13 @@ class WWSUclimacell extends WWSUdb {
 							if (query.dataClass === "current-0") {
 								$(`.climacell-quick-weather-icon`).html(
 									`${this.weatherCodeShort[query.data[value]]}`
+								);
+							}
+						}
+						if (value === "temperature") {
+							if (query.dataClass === "current-0") {
+								$(`.climacell-quick-weather-temperature`).html(
+									Math.round(query.data[value])
 								);
 							}
 						}

@@ -123,13 +123,13 @@ class WWSUunderwritings extends WWSUdb {
                 Example ratios when it says on average 56 times per week (priority : average airs per week): 0:28, 25:42, 50:56, 75:89, 100:112.</p>`,
 				true,
 				{
-					headerColor: "",
+					
 					zindex: 1100
 				}
 			),
 
 			underwriting: new WWSUmodal(`New Underwriting`, null, ``, true, {
-				headerColor: "",
+				
 				overlayClose: false,
 				zindex: 1110
 			})

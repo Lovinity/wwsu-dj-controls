@@ -29680,7 +29680,8 @@ this["HandlebarsPrecompiled"]["bootstrap-edit"]["message"] = Handlebars.template
             }
 
             // default html5 input type = "color";
-            if (typeof(this.options.spectrum) === "undefined" && self.spectrumAvailable)
+            // WWSU-modified: !self.spectrumAvailable was originally self.spectrumAvailable which is a bug
+            if (typeof(this.options.spectrum) === "undefined" && !self.spectrumAvailable)
             {
                 this.inputType = "color";
             }

@@ -28,12 +28,12 @@ class WWSUdjnotes extends WWSUevents {
 
 		this.modals = {
 			notes: new WWSUmodal(`DJ Notes`, null, ``, true, {
-				headerColor: "",
+				
 				zindex: 1100
 				// openFullscreen: true,
 			}),
 			newNote: new WWSUmodal(`New DJ Note`, null, ``, true, {
-				headerColor: "",
+				
 				zindex: 1110
 				// openFullscreen: true,
 			})

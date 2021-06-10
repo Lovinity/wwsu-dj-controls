@@ -82,7 +82,6 @@ class WWSUcalendar extends CalendarDb {
 			``,
 			false,
 			{
-				headerColor: "",
 				overlayClose: false,
 				zindex: 2000,
 			}
@@ -107,46 +106,46 @@ class WWSUcalendar extends CalendarDb {
         <p>Example: A priority 5 show, scheduled Thursdays 8-11PM, was rescheduled to 9-11PM on one Thursday by a priority 9 sports broadcast. But the sports broadcast was later canceled. The system will automatically reverse the show's re-scheduled time since the sports broadcast was canceled, therefore the show can air at its original time of 8-11PM.</p>`,
 			true,
 			{
-				headerColor: "",
+				
 				zindex: 2000,
 			}
 		);
 
 		// Generate other modals
 		this.occurrenceModal = new WWSUmodal(``, null, ``, true, {
-			headerColor: "",
+			
 			zindex: 1100,
 			// openFullscreen: true,
 		});
 		this.newOccurrenceModal = new WWSUmodal(``, null, ``, true, {
-			headerColor: "",
+			
 			zindex: 1100,
 			// openFullscreen: true,
 		});
 		this.occurrenceActionModal = new WWSUmodal(``, null, ``, true, {
-			headerColor: "",
+			
 			zindex: 1110,
 			overlayClose: false,
 			// openFullscreen: true,
 		});
 		this.eventsModal = new WWSUmodal(`Events`, null, ``, true, {
-			headerColor: "",
+			
 			zindex: 1100,
 			// openFullscreen: true,
 		});
 		this.schedulesModal = new WWSUmodal(`Schedules`, null, ``, true, {
-			headerColor: "",
+			
 			zindex: 1110,
 			// openFullscreen: true,
 		});
 		this.scheduleModal = new WWSUmodal(`Schedules`, null, ``, true, {
-			headerColor: "",
+			
 			zindex: 1120,
 			overlayClose: false,
 			// openFullscreen: true,
 		});
 		this.eventModal = new WWSUmodal(`New Event`, null, ``, true, {
-			headerColor: "",
+			
 			zindex: 1120,
 			overlayClose: false,
 			// openFullscreen: true,
@@ -163,7 +162,7 @@ class WWSUcalendar extends CalendarDb {
         place. (Example: "February 30, 2000, 9 - 10PM")</p>`,
 			true,
 			{
-				headerColor: "",
+				
 				zindex: 1100,
 				// openFullscreen: true,
 			}
@@ -191,7 +190,7 @@ class WWSUcalendar extends CalendarDb {
       via "Directors" administration menu if they have not already been added.</p>`,
 			true,
 			{
-				headerColor: "",
+				
 				zindex: 1100,
 				// openFullscreen: true,
 			}

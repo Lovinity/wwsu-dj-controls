@@ -34,25 +34,21 @@ class WWSUdjs extends WWSUdb {
 		this.table;
 
 		this.djsModal = new WWSUmodal(`Manage DJs`, null, ``, true, {
-			headerColor: "",
 			overlayClose: false,
 			zindex: 1100
 		});
 
 		this.djModal = new WWSUmodal(``, null, ``, true, {
-			headerColor: "",
 			overlayClose: false,
 			zindex: 1100
 		});
 
 		this.djInfoModal = new WWSUmodal(``, null, ``, true, {
-			headerColor: "",
 			width: 800,
 			zindex: 1100
 		});
 
 		this.newDjModal = new WWSUmodal(`New DJ`, null, ``, true, {
-			headerColor: "",
 			overlayClose: false,
 			zindex: 1110
 		});

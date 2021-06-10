@@ -64,7 +64,7 @@ class WWSUdiscipline extends WWSUdb {
 		this.modals = {
 			// Modal for displaying issued discipline
 			discipline: new WWSUmodal(``, `bg-danger`, ``, false, {
-				headerColor: "",
+				
 				overlayClose: false,
 				zindex: 5000,
 				timeout: false,
@@ -81,21 +81,21 @@ class WWSUdiscipline extends WWSUdb {
 
 			// Quick form for muting someone
 			mute: new WWSUmodal(`Mute`, `bg-warning`, ``, true, {
-				headerColor: "",
+				
 				zindex: 1100,
 				overlayClose: false
 			}),
 
 			// Quick form for banning someone
 			ban: new WWSUmodal(`Ban`, `bg-danger`, ``, true, {
-				headerColor: "",
+				
 				zindex: 1100,
 				overlayClose: false
 			}),
 
 			// Full discipline form
 			addDiscipline: new WWSUmodal(``, null, ``, true, {
-				headerColor: "",
+				
 				zindex: 1100,
 				overlayClose: false
 			})

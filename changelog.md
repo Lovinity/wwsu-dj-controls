@@ -6,6 +6,7 @@
 
 - Cleanup and timeout logs added to Admin to-do panel
 - Time out counter for when a break will time out and the system will go to automation.
+- End of broadcast checklist reminder
 
 ### Changed
 
@@ -15,10 +16,12 @@
 - Weather formatting
 - Use new wwsuclocks module
 - When queue is 0 but not yet considered on the air, display "WAIT" instead of "00".
+- Using custom iziModal that does not close other modals when one is opened; we want modals to stack.
 
 ### Fixed
 
 - Bug in event selection when adding a new occurrance to the calendar; events did not match the correct IDs
+- Alpaca did not render input type color when it should have.
 
 ## 8.19.0-alpha - 2021-06-01
 

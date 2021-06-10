@@ -32,7 +32,7 @@ class WWSUstatus extends WWSUdb {
 			``,
 			true,
 			{
-				headerColor: "",
+				
 				overlayClose: true,
 				zindex: 1100,
 				timeout: 180000,

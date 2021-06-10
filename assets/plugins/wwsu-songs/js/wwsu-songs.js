@@ -80,7 +80,7 @@ class WWSUsongs extends WWSUevents {
 		  </table>`,
 				true,
 				{
-					headerColor: "",
+					
 					zindex: 1200
 				}
 			)

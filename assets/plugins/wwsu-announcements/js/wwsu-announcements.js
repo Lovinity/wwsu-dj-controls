@@ -33,7 +33,7 @@ class WWSUannouncements extends WWSUdb {
 		this.table;
 
 		this.formModal = new WWSUmodal(``, null, ``, true, {
-			headerColor: "",
+			
 			zindex: 1100
 		});
 

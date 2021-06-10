@@ -35,13 +35,13 @@ class WWSUlogs extends WWSUevents {
 
 		this.modals = {
 			viewLog: new WWSUmodal(`Logs`, null, ``, true, {
-				headerColor: "",
+				
 				zindex: 1200,
 				width: 800
 			}),
 
 			addLog: new WWSUmodal(`Add a Log`, null, ``, true, {
-				headerColor: "",
+				
 				zindex: 1100
 			})
 		};

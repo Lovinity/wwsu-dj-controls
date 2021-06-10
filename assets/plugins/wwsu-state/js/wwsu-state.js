@@ -35,7 +35,6 @@ class WWSUstate extends WWSUevents {
 		};
 
 		this.broadcastModal = new WWSUmodal(``, `operations`, ``, true, {
-			headerColor: "",
 			overlayClose: false,
 			zindex: 1100
 		});
@@ -46,13 +45,36 @@ class WWSUstate extends WWSUevents {
 			``,
 			false,
 			{
-				headerColor: "",
 				overlayClose: false,
 				zindex: 2000,
 				timeout: 1000 * 60 * 5,
 				timeoutProgressbar: true
 			}
 		);
+
+		this.checklistModal = new WWSUmodal(
+			`Do not forget (End of Broadcast Checklist)!`,
+			`info`,
+			`<strong>Do not forget to do the following when applicable:</strong>
+			<ul>
+				<li>Turn off all channels on the OnAir mixerboard except ones labeled "leave on".</li>
+				<li>Stop any live streams / recordings that are running.</li>
+				<li>Log out of all personal accounts (Discord, Spotify, etc) on the OnAir computer</li>
+				<li><strong>...but leave the OnAir computer on and logged in.</strong></li>
+				<li>Sanitize WWSU equipment before you leave the studio.</li>
+				<li>Take all your personal belongings.</li>
+			</ul>
+			<p>Recordings of this broadcast can be found momentarily at <a class="text-warning" href="https://server.wwsu1069.org/recordings" target="_blank">https://server.wwsu1069.org/recordings</a><p>
+			<p>For non-sports broadcasts, analytics of the broadcast will be emailed to you within the next several minutes if an email is on file.</p>`,
+			true,
+			{
+				zindex: 1100,
+				timeout: 1000 * 60 * 5
+			}
+		);
+
+		this.showNextDJModal("my butt");
+		this.checklistModal.iziModal("open");
 
 		this.pendingRemote;
 	}
@@ -244,6 +266,8 @@ class WWSUstate extends WWSUevents {
 										if (typeof cb === "function") {
 											cb(response);
 										}
+										if (!data || !data.problem)
+											this.checklistModal.isiModal("open");
 									}
 								}
 							);
@@ -1650,44 +1674,30 @@ class WWSUstate extends WWSUevents {
 	 * @param {string} showName Name of the next show to go on the air
 	 */
 	showNextDJModal(showName) {
-		this.nextDJModal.body = `<p><strong>The system will be in break until ${moment(
-			this.manager.get("WWSUMeta")
-		)
-			.add(5, "minutes")
-			.format(
-				"h:mm:ss A"
-			)}</strong> to ensure a quicker broadcast transition.</p><p>Are the hosts for ${showName} present at the studio?</p><div id="modal-${
-			this.nextDJModal.id
-		}-form"></div>`;
+		this.nextDJModal.body = `<p>The system will be in break until the "time out" time runs out to ensure a quicker broadcast transition.</p>
+			<p><strong>Are the hosts for the next broadcast, ${showName}, present at the studio?<strong></p>
+			<div id="modal-${this.nextDJModal.id}-form"></div>`;
+		this.nextDJModal.iziModal("open");
 		this.manager
 			.get("WWSUutil")
 			.waitForElement(`#modal-${this.nextDJModal.id}-form`, () => {
 				$(`#modal-${this.nextDJModal.id}-form`).alpaca({
 					schema: {
 						type: "object",
-						properties: {
-							confirmText: {
-								type: "string",
-								required: false
-							}
-						}
+						properties: {}
 					},
 					options: {
-						fields: {
-							confirmText: {
-								hidden: true
-							}
-						},
+						fields: {},
 						form: {
 							buttons: {
-								dismiss: {
-									title: `Yes, stay in break`,
+								stayinbreak: {
+									title: `Yes (stay in break)`,
 									click: (form, e) => {
 										this.nextDJModal.iziModal("close");
 									}
 								},
-								submit: {
-									title: `No, go to automation`,
+								gotoautomation: {
+									title: `No (go to automation)`,
 									click: (form, e) => {
 										this.nextDJModal.iziModal("close");
 										this.automation({ transition: false });
@@ -1697,7 +1707,6 @@ class WWSUstate extends WWSUevents {
 						}
 					}
 				});
-				this.nextDJModal.iziModal("open");
 			});
 	}
 }

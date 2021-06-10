@@ -41,7 +41,7 @@ class WWSUeas extends WWSUdb {
 		});
 
 		this.easModal = new WWSUmodal(`Active Emergency Alerts`, null, ``, true, {
-			headerColor: "",
+			
 			overlayClose: true,
 			zindex: 1100,
 			timeout: 180000,
@@ -49,7 +49,7 @@ class WWSUeas extends WWSUdb {
 		});
 
 		this.newEASModal = new WWSUmodal(`New EAS Alert`, null, ``, true, {
-			headerColor: "",
+			
 			overlayClose: true,
 			zindex: 1200
 		});

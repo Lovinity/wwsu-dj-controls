@@ -41,21 +41,21 @@ class WWSUinventory extends WWSUdb {
 		});
 
 		this.newItemModal = new WWSUmodal(`New Item`, null, ``, true, {
-			headerColor: "",
+			
 			overlayClose: false,
 			zindex: 1110
 		});
 		this.itemInfoModal = new WWSUmodal(``, null, ``, true, {
-			headerColor: "",
+			
 			width: 800,
 			zindex: 1100
 		});
 		this.checkoutModal = new WWSUmodal(``, null, ``, true, {
-			headerColor: "",
+			
 			zindex: 1110
 		});
 		this.checkInOutModal = new WWSUmodal(``, null, ``, true, {
-			headerColor: "",
+			
 			zindex: 1120
 		});
 	}

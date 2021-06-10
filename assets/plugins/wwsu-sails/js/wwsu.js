@@ -481,7 +481,6 @@ class WWSUreq {
 			``,
 			true,
 			{
-				headerColor: "",
 				overlayClose: false,
 				zindex: 10000,
 				timeout: false,
@@ -742,7 +741,6 @@ class WWSUutil {
 	 */
 	confirmDialog(description, confirmText, cb) {
 		let tempModal = new WWSUmodal(`Confirm Action`, `bg-warning`, ``, false, {
-			headerColor: "",
 			overlayClose: false,
 			zindex: 5000,
 			timeout: false,
@@ -922,32 +920,34 @@ class WWSUmodal {
 		if ($.fn.iziModal) {
 			this.id = this.util.createUUID();
 
+			modalOptions.closeButton = closeButton;
+
+			// Change defaults
+			modalOptions = Object.assign(
+				{
+					title: title,
+					headerColor: "#6c757d",
+					focusInput: false,
+					timeoutProgressbar: true,
+					timeoutProgressbarColor: "#E32283",
+					bodyOverflow: true
+				},
+				modalOptions
+			);
+
 			this.util.waitForElement("body", () => {
 				// Append the model
-				$("body").append(`<div class="modal" id="modal-${
+				$("body").append(`<div class="card ${bgClass ? `${bgClass}` : ``}" id="modal-${
 					this.id
-				}" aria-hidden="true" aria-labelledby="modal-${this.id}-title">
-      <div class="modal-content${bgClass ? ` ${bgClass}` : ``}">
-          <div class="modal-header">
-              <h4 class="modal-title" id="modal-${this.id}-title">${title}</h4>
-              ${
-								closeButton
-									? `<button type="button" class="close" data-izimodal-close="" aria-label="Close">
-              <span aria-hidden="true">×</span>
-          </button>`
-									: ``
-							}
-          </div>
-          <div class="modal-body" id="modal-${this.id}-body">
+				}">
+          <div class="card-body bg-${bgClass ? `${bgClass}` : ``}" id="modal-${this.id}-body">
               ${body}
           </div>
-          <div class="modal-footer justify-content-between" id="modal-${
-						this.id
-					}-footer">
-          </div>
-      </div>
-      <!-- /.modal-content -->
-  </div>`);
+		  <div class="card-footer justify-content-between" id="modal-${
+			this.id
+		}-footer">
+			</div>
+      </div>`);
 
 				// Initialize the model once loaded in the DOM
 				this.util.waitForElement(`#modal-${this.id}`, () => {
@@ -958,13 +958,11 @@ class WWSUmodal {
 	}
 
 	get title() {
-		return $(`#modal-${this.id}-title`).html();
+		return $(`#modal-${this.id} .iziModal-header-title`).html();
 	}
 
 	set title(value) {
-		this.util.waitForElement(`#modal-${this.id}-title`, () => {
-			$(`#modal-${this.id}-title`).html(value);
-		});
+		$(`#modal-${this.id} .iziModal-header-title`).html(value);
 	}
 
 	get body() {

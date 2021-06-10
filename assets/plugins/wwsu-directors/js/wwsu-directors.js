@@ -30,7 +30,7 @@ class WWSUdirectors extends WWSUdb {
 		this.assignSocketEvent("directors", this.manager.socket);
 
 		this.newDirectorModal = new WWSUmodal(`New Director`, null, ``, true, {
-			headerColor: "",
+			
 			overlayClose: false,
 			zindex: 1110
 		});

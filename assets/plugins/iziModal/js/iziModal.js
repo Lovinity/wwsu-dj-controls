@@ -288,15 +288,6 @@
 
 				var that = this;
 
-				$.each( $('.'+PLUGIN_NAME) , function(index, modal) {
-					if( $(modal).data().iziModal !== undefined ){
-						var state = $(modal).iziModal('getState');
-						if(state == 'opened' || state == 'opening'){
-							$(modal).iziModal('close');
-						}
-					}
-				});
-
 	            (function urlHash(){
 					if(that.options.history){
 		            	var oldTitle = document.title;

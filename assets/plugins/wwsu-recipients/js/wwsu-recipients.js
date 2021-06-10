@@ -31,7 +31,7 @@ class WWSUrecipients extends WWSUdb {
 		this.activeRecipient = null;
 
 		this.formModal = new WWSUmodal(`Select recipient`, null, ``, true, {
-			headerColor: "",
+			
 			zindex: 1100
 		});
 
