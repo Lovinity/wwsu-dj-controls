@@ -73,9 +73,6 @@ class WWSUstate extends WWSUevents {
 			}
 		);
 
-		this.showNextDJModal("my butt");
-		this.checklistModal.iziModal("open");
-
 		this.pendingRemote;
 	}
 
