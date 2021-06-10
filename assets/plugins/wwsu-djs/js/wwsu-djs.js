@@ -38,12 +38,12 @@ class WWSUdjs extends WWSUdb {
 			zindex: 1100
 		});
 
-		this.djModal = new WWSUmodal(``, null, ``, true, {
+		this.djModal = new WWSUmodal(`DJ`, null, ``, true, {
 			overlayClose: false,
 			zindex: 1100
 		});
 
-		this.djInfoModal = new WWSUmodal(``, null, ``, true, {
+		this.djInfoModal = new WWSUmodal(`DJ Analytics`, null, ``, true, {
 			width: 800,
 			zindex: 1100
 		});

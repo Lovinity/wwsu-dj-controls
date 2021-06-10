@@ -45,16 +45,16 @@ class WWSUinventory extends WWSUdb {
 			overlayClose: false,
 			zindex: 1110
 		});
-		this.itemInfoModal = new WWSUmodal(``, null, ``, true, {
+		this.itemInfoModal = new WWSUmodal(`Item Information`, null, ``, true, {
 			
 			width: 800,
 			zindex: 1100
 		});
-		this.checkoutModal = new WWSUmodal(``, null, ``, true, {
+		this.checkoutModal = new WWSUmodal(`Check Item Out`, null, ``, true, {
 			
 			zindex: 1110
 		});
-		this.checkInOutModal = new WWSUmodal(``, null, ``, true, {
+		this.checkInOutModal = new WWSUmodal(`Check Item In/Out`, null, ``, true, {
 			
 			zindex: 1120
 		});

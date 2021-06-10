@@ -63,7 +63,7 @@ class WWSUdiscipline extends WWSUdb {
 
 		this.modals = {
 			// Modal for displaying issued discipline
-			discipline: new WWSUmodal(``, `bg-danger`, ``, false, {
+			discipline: new WWSUmodal(`Discipline Active`, `bg-danger`, ``, false, {
 				
 				overlayClose: false,
 				zindex: 5000,
@@ -94,7 +94,7 @@ class WWSUdiscipline extends WWSUdb {
 			}),
 
 			// Full discipline form
-			addDiscipline: new WWSUmodal(``, null, ``, true, {
+			addDiscipline: new WWSUmodal(`New Discipline`, null, ``, true, {
 				
 				zindex: 1100,
 				overlayClose: false

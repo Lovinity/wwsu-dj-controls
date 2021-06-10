@@ -34,7 +34,7 @@ class WWSUstate extends WWSUevents {
 			get: {}
 		};
 
-		this.broadcastModal = new WWSUmodal(``, `operations`, ``, true, {
+		this.broadcastModal = new WWSUmodal(`Start Broadcast`, `operations`, ``, true, {
 			overlayClose: false,
 			zindex: 1100
 		});

@@ -910,7 +910,7 @@ class WWSUmodal {
 	 * @param {object} modalOptions Options to pass to iziModal
 	 */
 	constructor(
-		title = ``,
+		title = `Untitled Window`,
 		bgClass = null,
 		body = ``,
 		closeButton = true,

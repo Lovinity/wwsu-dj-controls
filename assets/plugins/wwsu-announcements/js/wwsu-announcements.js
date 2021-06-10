@@ -32,7 +32,7 @@ class WWSUannouncements extends WWSUdb {
 
 		this.table;
 
-		this.formModal = new WWSUmodal(``, null, ``, true, {
+		this.formModal = new WWSUmodal(`New Announcement`, null, ``, true, {
 			
 			zindex: 1100
 		});

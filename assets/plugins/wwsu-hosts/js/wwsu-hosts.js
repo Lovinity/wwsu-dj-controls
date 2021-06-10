@@ -51,7 +51,7 @@ class WWSUhosts extends WWSUdb {
 			}
 		});
 
-		this.hostModal = new WWSUmodal(``, null, ``, true, {
+		this.hostModal = new WWSUmodal(`Host`, null, ``, true, {
 			
 			overlayClose: false,
 			zindex: 1100

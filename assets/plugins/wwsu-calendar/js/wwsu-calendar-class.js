@@ -112,17 +112,17 @@ class WWSUcalendar extends CalendarDb {
 		);
 
 		// Generate other modals
-		this.occurrenceModal = new WWSUmodal(``, null, ``, true, {
+		this.occurrenceModal = new WWSUmodal(`Occurrence`, null, ``, true, {
 			
 			zindex: 1100,
 			// openFullscreen: true,
 		});
-		this.newOccurrenceModal = new WWSUmodal(``, null, ``, true, {
+		this.newOccurrenceModal = new WWSUmodal(`New Occurrence`, null, ``, true, {
 			
 			zindex: 1100,
 			// openFullscreen: true,
 		});
-		this.occurrenceActionModal = new WWSUmodal(``, null, ``, true, {
+		this.occurrenceActionModal = new WWSUmodal(`Occurrence Action`, null, ``, true, {
 			
 			zindex: 1110,
 			overlayClose: false,

@@ -40,7 +40,7 @@ class WWSUtimesheet extends WWSUevents {
 				zindex: 1200,
 				width: 800
 			}),
-			clock: new WWSUmodal(``, null, ``, true, {
+			clock: new WWSUmodal(`Clock In / Out`, null, ``, true, {
 				
 				zindex: 1100
 			})
